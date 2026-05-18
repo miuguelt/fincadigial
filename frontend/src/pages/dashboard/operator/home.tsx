@@ -1,4 +1,4 @@
-import React from "react";
+
 import { useNavigate } from "react-router-dom";
 import StatisticsCard from "@/widgets/dashboard/Cards";
 import { useAuth } from "@/features/auth/model/useAuth";
