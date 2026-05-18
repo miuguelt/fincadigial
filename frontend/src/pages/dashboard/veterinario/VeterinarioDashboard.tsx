@@ -18,7 +18,9 @@ import {
   Wifi,
   WifiOff,
   RefreshCw,
-  Calendar
+  Calendar,
+  Check,
+  X
 } from 'lucide-react';
 import { useOnlineStatus } from '@/shared/hooks/useOnlineStatus';
 import { LiveStats } from '@/widgets/dashboard/LiveStats';
@@ -127,7 +129,7 @@ export default function VeterinarioDashboard() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-foreground">
             Panel de Veterinario
           </h1>
           <p className="text-muted-foreground">
@@ -161,8 +163,8 @@ export default function VeterinarioDashboard() {
 
       {/* Accesos rápidos optimizados para campo */}
       <section>
-        <h2 className="text-lg font-bold mb-2 flex items-center gap-2">
-          <Activity className="h-5 w-5 text-green-600" />
+        <h2 className="text-lg font-bold mb-2 flex items-center gap-2 text-foreground">
+          <Activity className="h-5 w-5 text-success" />
           Acciones Rápidas (Campo)
         </h2>
         <QuickActionCards />
@@ -191,12 +193,12 @@ export default function VeterinarioDashboard() {
                       {action.icon}
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{action.label}</h3>
+                      <h3 className="font-semibold text-foreground">{action.label}</h3>
                       <p className="text-sm text-muted-foreground mt-1">
                         {action.description}
                       </p>
                     </div>
-                    <Plus className="h-5 w-5 text-gray-400" />
+                    <Plus className="h-5 w-5 text-muted-foreground" />
                   </div>
                 </CardContent>
               </Card>
@@ -205,15 +207,15 @@ export default function VeterinarioDashboard() {
 
           {/* Alerta de modo offline */}
           {!isOnline && (
-            <Card className="bg-yellow-50 border-yellow-200">
+            <Card className="bg-warning/10 border-warning/20">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  <WifiOff className="h-5 w-5 text-yellow-600 mt-0.5" />
+                  <WifiOff className="h-5 w-5 text-warning mt-0.5" />
                   <div>
-                    <h4 className="font-medium text-yellow-800">
+                    <h4 className="font-bold text-warning-foreground">
                       Modo Sin Conexión
                     </h4>
-                    <p className="text-sm text-yellow-700 mt-1">
+                    <p className="text-sm text-warning-foreground mt-1">
                       Los registros se guardarán localmente y se sincronizarán 
                       al recuperar conexión.
                     </p>
@@ -234,11 +236,11 @@ export default function VeterinarioDashboard() {
               >
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-lg bg-gray-100 ${module.color}`}>
+                    <div className={`p-3 rounded-lg bg-surface ${module.color}`}>
                       {module.icon}
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{module.title}</h3>
+                      <h3 className="font-semibold text-foreground">{module.title}</h3>
                       <p className="text-sm text-muted-foreground">
                         Ver {module.count.toLowerCase()}
                       </p>
@@ -269,52 +271,52 @@ export default function VeterinarioDashboard() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Nombre</label>
-                  <p className="text-gray-900">{user?.fullname}</p>
+                  <label className="text-sm font-medium text-muted-foreground">Nombre</label>
+                  <p className="text-foreground">{user?.fullname}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Identificación</label>
-                  <p className="text-gray-900">{user?.identification}</p>
+                  <label className="text-sm font-medium text-muted-foreground">Identificación</label>
+                  <p className="text-foreground">{user?.identification}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Rol</label>
-                  <p className="text-gray-900">{user?.role}</p>
+                  <label className="text-sm font-medium text-muted-foreground">Rol</label>
+                  <p className="text-foreground">{user?.role}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Finca</label>
-                  <p className="text-gray-900">{user?.finca_name || 'No asignada'}</p>
+                  <label className="text-sm font-medium text-muted-foreground">Finca</label>
+                  <p className="text-foreground">{user?.finca_name || 'No asignada'}</p>
                 </div>
               </div>
 
               <div className="border-t pt-4 mt-4">
-                <h4 className="font-medium text-gray-900 mb-2">Permisos del Rol Veterinario</h4>
-                <ul className="space-y-2 text-sm text-gray-600">
+                <h4 className="font-medium text-foreground mb-2">Permisos del Rol Veterinario</h4>
+                <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-green-500" />
+                    <Check className="h-4 w-4 text-success" />
                     Ver todos los animales
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-green-500" />
+                    <Check className="h-4 w-4 text-success" />
                     Crear vacunaciones
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-green-500" />
+                    <Check className="h-4 w-4 text-success" />
                     Crear tratamientos
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-green-500" />
+                    <Check className="h-4 w-4 text-success" />
                     Registrar diagnósticos de enfermedades
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-green-500" />
+                    <Check className="h-4 w-4 text-success" />
                     Crear controles sanitarios
                   </li>
                   <li className="flex items-center gap-2">
-                    <X className="h-4 w-4 text-red-500" />
+                    <X className="h-4 w-4 text-danger" />
                     No puede modificar registros existentes
                   </li>
                   <li className="flex items-center gap-2">
-                    <X className="h-4 w-4 text-red-500" />
+                    <X className="h-4 w-4 text-danger" />
                     No puede ver usuarios ni gestión de finca
                   </li>
                 </ul>
@@ -324,22 +326,5 @@ export default function VeterinarioDashboard() {
         </TabsContent>
       </Tabs>
     </div>
-  );
-}
-
-// Iconos auxiliares
-function Check({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-    </svg>
-  );
-}
-
-function X({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-    </svg>
   );
 }
