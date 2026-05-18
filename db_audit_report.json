@@ -1,0 +1,281 @@
+{
+  "total_tables": 68,
+  "tables_with_data": [
+    {
+      "name": "activity_daily_agg",
+      "records": 22
+    },
+    {
+      "name": "activity_log",
+      "records": 1944
+    },
+    {
+      "name": "animal_alert_configs",
+      "records": 8
+    },
+    {
+      "name": "animal_alerts",
+      "records": 4777
+    },
+    {
+      "name": "animal_diseases",
+      "records": 1400
+    },
+    {
+      "name": "animal_fields",
+      "records": 1
+    },
+    {
+      "name": "animal_groups",
+      "records": 1
+    },
+    {
+      "name": "animals",
+      "records": 6909
+    },
+    {
+      "name": "breeds",
+      "records": 11
+    },
+    {
+      "name": "control",
+      "records": 6901
+    },
+    {
+      "name": "diseases",
+      "records": 12
+    },
+    {
+      "name": "fields",
+      "records": 281
+    },
+    {
+      "name": "financial_summary",
+      "records": 3
+    },
+    {
+      "name": "finca",
+      "records": 14
+    },
+    {
+      "name": "food_types",
+      "records": 56
+    },
+    {
+      "name": "genetic_improvements",
+      "records": 3300
+    },
+    {
+      "name": "infrastructure",
+      "records": 53
+    },
+    {
+      "name": "inventory_lots",
+      "records": 6900
+    },
+    {
+      "name": "inventory_movements",
+      "records": 1400
+    },
+    {
+      "name": "kb_calendario",
+      "records": 12
+    },
+    {
+      "name": "kb_recomendaciones",
+      "records": 28
+    },
+    {
+      "name": "kb_reglas",
+      "records": 49
+    },
+    {
+      "name": "livestock_summary",
+      "records": 14
+    },
+    {
+      "name": "medications",
+      "records": 5
+    },
+    {
+      "name": "milk_production",
+      "records": 6900
+    },
+    {
+      "name": "milk_summary",
+      "records": 14
+    },
+    {
+      "name": "offspring",
+      "records": 1298
+    },
+    {
+      "name": "operational_costs",
+      "records": 6900
+    },
+    {
+      "name": "pasture_aforos",
+      "records": 70
+    },
+    {
+      "name": "reproductive_events",
+      "records": 6900
+    },
+    {
+      "name": "route_administrations",
+      "records": 5
+    },
+    {
+      "name": "sinigan_registrations",
+      "records": 10
+    },
+    {
+      "name": "species",
+      "records": 5
+    },
+    {
+      "name": "tasks",
+      "records": 6901
+    },
+    {
+      "name": "territories",
+      "records": 11
+    },
+    {
+      "name": "transactions",
+      "records": 4
+    },
+    {
+      "name": "treatment_medications",
+      "records": 4300
+    },
+    {
+      "name": "treatment_vaccines",
+      "records": 580
+    },
+    {
+      "name": "treatments",
+      "records": 4300
+    },
+    {
+      "name": "user",
+      "records": 1
+    },
+    {
+      "name": "user_finca",
+      "records": 11
+    },
+    {
+      "name": "user_locations",
+      "records": 290
+    },
+    {
+      "name": "vaccinations",
+      "records": 6400
+    },
+    {
+      "name": "vaccines",
+      "records": 9
+    },
+    {
+      "name": "water_measurements",
+      "records": 140
+    },
+    {
+      "name": "water_sources",
+      "records": 14
+    }
+  ],
+  "empty_tables": [
+    {
+      "name": "animal_group_membership",
+      "records": 0
+    },
+    {
+      "name": "animal_images",
+      "records": 0
+    },
+    {
+      "name": "attachment_blobs",
+      "records": 0
+    },
+    {
+      "name": "chat_messages",
+      "records": 0
+    },
+    {
+      "name": "climate_risk_alerts",
+      "records": 0
+    },
+    {
+      "name": "community_nodes",
+      "records": 0
+    },
+    {
+      "name": "crop_activities",
+      "records": 0
+    },
+    {
+      "name": "crop_plots",
+      "records": 0
+    },
+    {
+      "name": "devices",
+      "records": 0
+    },
+    {
+      "name": "farm_expenses",
+      "records": 0
+    },
+    {
+      "name": "management_plans",
+      "records": 0
+    },
+    {
+      "name": "market_offers",
+      "records": 0
+    },
+    {
+      "name": "membership_request",
+      "records": 0
+    },
+    {
+      "name": "node_messages",
+      "records": 0
+    },
+    {
+      "name": "offline_learning_materials",
+      "records": 0
+    },
+    {
+      "name": "producer_profiles",
+      "records": 0
+    },
+    {
+      "name": "push_subscription",
+      "records": 0
+    },
+    {
+      "name": "sync_conflicts",
+      "records": 0
+    },
+    {
+      "name": "sync_operation_receipts",
+      "records": 0
+    },
+    {
+      "name": "sync_operations",
+      "records": 0
+    },
+    {
+      "name": "sync_sessions",
+      "records": 0
+    },
+    {
+      "name": "technical_assistance_requests",
+      "records": 0
+    }
+  ],
+  "total_records": 79164,
+  "timestamp": "2026-05-14T18:26:52.874805"
+}

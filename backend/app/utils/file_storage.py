@@ -1,0 +1,387 @@
+import os
+import shutil
+import uuid
+from datetime import datetime
+from werkzeug.utils import secure_filename
+import flask
+import logging
+
+logger = logging.getLogger(__name__)
+
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp', 'gif'}
+CHAT_ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf', 'doc', 'docx', 'txt', 'xls', 'xlsx'}
+MIME_TYPES = {
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'png': 'image/png',
+    'webp': 'image/webp',
+    'gif': 'image/gif'
+}
+
+
+def allowed_file(filename):
+    """Verifica si el archivo tiene una extensión permitida"""
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def get_file_extension(filename):
+    """Obtiene la extensión del archivo"""
+    if '.' in filename:
+        return filename.rsplit('.', 1)[1].lower()
+    return None
+
+
+def get_mime_type(filename):
+    """Obtiene el tipo MIME basado en la extensión del archivo"""
+    ext = get_file_extension(filename)
+    return MIME_TYPES.get(ext, 'application/octet-stream')
+
+
+def generate_unique_filename(original_filename):
+    """
+    Genera un nombre único para el archivo usando timestamp y UUID.
+    Formato: timestamp_uuid_original.ext
+    """
+    ext = get_file_extension(original_filename)
+    if not ext:
+        ext = 'jpg'  # extensión por defecto
+
+    # Limpiar el nombre original
+    safe_name = secure_filename(original_filename)
+    base_name = safe_name.rsplit('.', 1)[0] if '.' in safe_name else safe_name
+
+    # Generar nombre único
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    unique_id = str(uuid.uuid4())[:8]
+
+    return f"{timestamp}_{unique_id}_{base_name}.{ext}"
+
+
+def get_animal_upload_path(animal_id):
+    """
+    Genera la ruta de almacenamiento para las imágenes de un animal.
+    Formato: static/uploads/animals/{animal_id}/
+    """
+    upload_folder = flask.current_app.config.get('UPLOAD_FOLDER', 'static/uploads')
+    return os.path.join(upload_folder, 'animals', str(animal_id))
+
+
+def ensure_upload_directory(directory_path):
+    """Crea el directorio de uploads si no existe"""
+    try:
+        os.makedirs(directory_path, exist_ok=True)
+        return True
+    except Exception as e:
+        logger.error(f"Error creando directorio {directory_path}: {str(e)}")
+        return False
+
+
+def save_animal_image(file, animal_id, generate_thumbnail=True):
+    """
+    Guarda una imagen de animal, la redimensiona si es muy grande y genera una miniatura.
+
+    Args:
+        file: FileStorage object de werkzeug
+        animal_id: ID del animal al que pertenece la imagen
+        generate_thumbnail: Si se debe generar una versión reducida
+
+    Returns:
+        dict con filename, filepath, thumb_path, file_size, mime_type
+    """
+    try:
+        from PIL import Image
+        import io
+
+        # Validar archivo
+        if not file or file.filename == '':
+            raise ValueError("No se proporcionó ningún archivo")
+
+        if not allowed_file(file.filename):
+            raise ValueError(f"Tipo de archivo no permitido. Extensiones permitidas: {', '.join(ALLOWED_EXTENSIONS)}")
+
+        # Leer archivo en memoria para procesar
+        img_data = file.read()
+        file_size = len(img_data)
+        
+        # Validar tamaño original
+        max_size = flask.current_app.config.get('MAX_IMAGE_SIZE', 10 * 1024 * 1024)  # 10MB para proceso
+        if file_size > max_size:
+            raise ValueError(f"El archivo excede el tamaño máximo permitido")
+
+        # Generar nombres
+        unique_filename = generate_unique_filename(file.filename)
+        thumb_filename = f"thumb_{unique_filename}"
+        upload_dir = get_animal_upload_path(animal_id)
+
+        if not ensure_upload_directory(upload_dir):
+            raise IOError(f"No se pudo crear el directorio de uploads")
+
+        # Procesar Imagen con Pillow
+        img = Image.open(io.BytesIO(img_data))
+        
+        # Corregir orientación EXIF si existe
+        try:
+            from PIL import ImageOps
+            img = ImageOps.exif_transpose(img)
+        except Exception:
+            pass
+
+        # 1. Guardar Versión Optimizada (Max 1600px)
+        max_dim = 1600
+        if img.width > max_dim or img.height > max_dim:
+            img.thumbnail((max_dim, max_dim), Image.Resampling.LANCZOS)
+        
+        full_path = os.path.join(upload_dir, unique_filename)
+        # Convertir a RGB si es necesario (para JPEG)
+        if img.mode in ("RGBA", "P"):
+            img = img.convert("RGB")
+        img.save(full_path, "JPEG", quality=85, optimize=True)
+
+        # 2. Generar Miniatura (Max 400px)
+        thumb_relative_path = None
+        if generate_thumbnail:
+            thumb_img = img.copy()
+            thumb_img.thumbnail((400, 400), Image.Resampling.LANCZOS)
+            thumb_full_path = os.path.join(upload_dir, thumb_filename)
+            thumb_img.save(thumb_full_path, "JPEG", quality=70, optimize=True)
+            thumb_relative_path = f"static/uploads/animals/{animal_id}/{thumb_filename}"
+
+        relative_path = f"static/uploads/animals/{animal_id}/{unique_filename}"
+
+        return {
+            'filename': unique_filename,
+            'filepath': relative_path,
+            'thumb_path': thumb_relative_path,
+            'file_size': os.path.getsize(full_path),
+            'mime_type': 'image/jpeg'
+        }
+
+    except Exception as e:
+        logger.error(f"Error procesando imagen para animal {animal_id}: {str(e)}")
+        raise
+
+
+def delete_animal_image(filepath):
+    """
+    Elimina físicamente un archivo de imagen.
+
+    Args:
+        filepath: Ruta relativa del archivo (ej: static/uploads/animals/123/image.jpg)
+
+    Returns:
+        bool: True si se eliminó correctamente, False en caso contrario
+    """
+    try:
+        if not filepath:
+            return False
+
+        # Construir ruta absoluta
+        full_path = os.path.join(flask.current_app.root_path, '..', filepath)
+        full_path = os.path.normpath(full_path)
+
+        # Verificar que existe
+        if os.path.exists(full_path) and os.path.isfile(full_path):
+            os.remove(full_path)
+            logger.info(f"Archivo eliminado: {full_path}")
+            return True
+        else:
+            logger.warning(f"Archivo no encontrado: {full_path}")
+            return False
+
+    except Exception as e:
+        logger.error(f"Error eliminando archivo {filepath}: {str(e)}")
+        return False
+
+
+def _cleanup_empty_parents(start_path, stop_at):
+    """
+    Elimina directorios vacíos ascendiendo hasta stop_at (exclusivo).
+    """
+    stop_at = os.path.normpath(stop_at)
+    current = os.path.dirname(os.path.normpath(start_path))
+
+    while current and current.startswith(stop_at) and current != stop_at:
+        try:
+            if os.path.isdir(current) and not os.listdir(current):
+                os.rmdir(current)
+                current = os.path.dirname(current)
+            else:
+                break
+        except OSError:
+            break
+
+
+def delete_animal_directory(animal_id):
+    """
+    Elimina todo el directorio de uploads asociado a un animal.
+    """
+    try:
+        upload_folder = flask.current_app.config.get('UPLOAD_FOLDER', 'static/uploads')
+        relative_path = os.path.join(upload_folder, 'animals', str(animal_id))
+        base_path = os.path.normpath(os.path.join(flask.current_app.root_path, '..'))
+        full_path = os.path.normpath(os.path.join(base_path, relative_path))
+        uploads_root = os.path.normpath(os.path.join(base_path, upload_folder))
+
+        if not full_path.startswith(uploads_root):
+            logger.warning(
+                "Intento de eliminar directorio fuera de uploads (animal_id=%s, path=%s)",
+                animal_id,
+                full_path,
+            )
+            return False
+
+        if os.path.isdir(full_path):
+            shutil.rmtree(full_path)
+            logger.info("Directorio de animal %s eliminado: %s", animal_id, full_path)
+            _cleanup_empty_parents(full_path, uploads_root)
+            return True
+
+        logger.debug("Directorio de animal %s no existe (%s)", animal_id, full_path)
+        return False
+    except Exception as e:
+        logger.error(f"Error eliminando directorio del animal {animal_id}: {str(e)}")
+        return False
+
+
+def get_public_url(filepath):
+    """
+    Genera la URL pública accesible desde el frontend usando el endpoint público.
+
+    Args:
+        filepath: Ruta relativa del archivo
+
+    Returns:
+        str: URL completa del archivo
+    """
+    import flask
+
+    # Derivar origen preferentemente desde flask.request.host_url
+    try:
+        if flask.request and getattr(flask.request, 'host_url', None):
+            base_url = (flask.request.host_url or '').rstrip('/')
+        elif flask.request and flask.request.host:
+            scheme = 'https' if flask.request.is_secure else 'http'
+            base_url = f"{scheme}://{flask.request.host}"
+        else:
+            base_url = flask.current_app.config.get('API_BASE_URL_NO_VERSION', 'http://localhost:5000')
+    except Exception:
+        base_url = flask.current_app.config.get('API_BASE_URL_NO_VERSION', 'http://localhost:5000')
+
+    # Normalizar filepath y extraer ruta relativa
+    relative_path = (filepath or '').replace('\\', '/')
+    if relative_path.startswith('static/uploads/'):
+        relative_path = relative_path[len('static/uploads/') :]
+    return f"{base_url}/public/images/{relative_path}"
+
+
+def validate_image_count(animal_id, max_images=20):
+    """
+    Valida que un animal no exceda el número máximo de imágenes permitidas.
+
+    Args:
+        animal_id: ID del animal
+        max_images: Número máximo de imágenes permitidas
+
+    Returns:
+        tuple: (bool, int) - (es_válido, cantidad_actual)
+    """
+    try:
+        from app.models.animal_images import AnimalImages
+        current_count = AnimalImages.query.filter_by(animal_id=animal_id).count()
+        return (current_count < max_images, current_count)
+    except Exception as e:
+        logger.error(f"Error validando cantidad de imágenes: {str(e)}")
+        return (True, 0)  # En caso de error, permitir la subida
+
+
+def chat_allowed_file(filename):
+    """Verifica si el archivo tiene una extensión permitida para el chat"""
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in CHAT_ALLOWED_EXTENSIONS
+
+
+def get_chat_upload_path(finca_id):
+    """
+    Genera la ruta de almacenamiento para los archivos del chat.
+    Formato: static/uploads/chat/{finca_id}/
+    """
+    upload_folder = flask.current_app.config.get('UPLOAD_FOLDER', 'static/uploads')
+    return os.path.join(upload_folder, 'chat', str(finca_id))
+
+
+def save_chat_file(file, finca_id):
+    """
+    Guarda un archivo para el chat.
+
+    Args:
+        file: FileStorage object de werkzeug
+        finca_id: ID de la finca para organizar por tenant
+
+    Returns:
+        dict con url, type, name, file_size
+    """
+    try:
+        # Validar archivo
+        if not file or file.filename == '':
+            raise ValueError("No se proporcionó ningún archivo")
+
+        if not chat_allowed_file(file.filename):
+            raise ValueError(f"Tipo de archivo no permitido. Extensiones permitidas: {', '.join(CHAT_ALLOWED_EXTENSIONS)}")
+
+        # Validar tamaño
+        file.seek(0, os.SEEK_END)
+        file_size = file.tell()
+        file.seek(0)
+        
+        max_size = flask.current_app.config.get('MAX_CHAT_FILE_SIZE', 10 * 1024 * 1024)  # 10MB
+        if file_size > max_size:
+            raise ValueError(f"El archivo excede el tamaño máximo permitido de {max_size // (1024*1024)}MB")
+
+        # Generar nombre único
+        timestamp = str(int(datetime.utcnow().timestamp()))
+        safe_filename = secure_filename(file.filename)
+        unique_filename = f"{timestamp}_{safe_filename}"
+        
+        # Crear directorio
+        upload_dir = get_chat_upload_path(finca_id)
+        if not ensure_upload_directory(upload_dir):
+            raise IOError(f"No se pudo crear el directorio de uploads")
+
+        # Guardar archivo
+        file_path = os.path.join(upload_dir, unique_filename)
+        file.save(file_path)
+
+        # Determinar tipo
+        file_ext = safe_filename.rsplit('.', 1)[1].lower()
+        attachment_type = 'image' if file_ext in {'jpg', 'jpeg', 'png', 'webp', 'gif'} else 'file'
+
+        # Generar URL pública
+        relative_path = f"static/uploads/chat/{finca_id}/{unique_filename}"
+        public_url = get_public_url(relative_path)
+
+        return {
+            'url': public_url,
+            'type': attachment_type,
+            'name': safe_filename,
+            'file_size': file_size
+        }
+
+    except Exception as e:
+        logger.error(f"Error guardando archivo de chat: {str(e)}")
+        raise
+
+
+def get_chat_file_url(finca_id, filename):
+    """
+    Genera la URL pública para un archivo del chat.
+    
+    Args:
+        finca_id: ID de la finca
+        filename: Nombre del archivo
+        
+    Returns:
+        str: URL pública del archivo
+    """
+    relative_path = f"static/uploads/chat/{finca_id}/{filename}"
+    return get_public_url(relative_path)

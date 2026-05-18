@@ -1,0 +1,34 @@
+repos:
+  # Python (backend)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+        files: ^BackFinca/
+      - id: ruff-format
+        files: ^BackFinca/
+
+  # JavaScript / TypeScript (frontend)
+  - repo: local
+    hooks:
+      - id: eslint-frontend
+        name: ESLint (frontend)
+        language: node
+        entry: bash -c 'cd VillaLuzFront && npx eslint --max-warnings=0 "$@"' --
+        files: ^VillaLuzFront/src/.*\.(ts|tsx)$
+        pass_filenames: true
+
+  # General
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^(VillaLuzFront/dist|BackFinca/migrations)
+      - id: end-of-file-fixer
+        exclude: ^(VillaLuzFront/dist|BackFinca/migrations)
+      - id: check-yaml
+      - id: check-json
+        exclude: ^VillaLuzFront/node_modules
+      - id: check-merge-conflict
+      - id: detect-private-key

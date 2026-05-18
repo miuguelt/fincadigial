@@ -1,0 +1,31 @@
+{
+  "_readme": "Fuente de Verdad de Credenciales. Ver ECOSYSTEM.md para contexto completo.",
+  "_sincronizado_con": "BackFinca/.env (TEST_USER_*)",
+  "_seeding": "Automático al iniciar run.py en modo development",
+  "frontend_url": "https://localhost:3005",
+  "backend_url": "http://127.0.0.1:5000",
+  "login_field": "identificacion (numerico)",
+  "test_users": [
+    {
+      "role": "Administrador",
+      "identificacion": 1098,
+      "password": "12345678",
+      "email": "admin@villaluz.co",
+      "ui_button": "Admin"
+    },
+    {
+      "role": "Veterinario",
+      "identificacion": 66666666,
+      "password": "12345678",
+      "email": "veterinario@villaluz.co",
+      "ui_button": "Veterin."
+    },
+    {
+      "role": "Operario",
+      "identificacion": 55555555,
+      "password": "12345678",
+      "email": "operario@villaluz.co",
+      "ui_button": "Operario"
+    }
+  ]
+}

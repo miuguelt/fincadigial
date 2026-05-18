@@ -1,0 +1,39 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 70%
+        threshold: 2%
+      backend:
+        target: 70%
+        flags: backend
+      frontend:
+        target: 70%
+        flags: frontend
+
+flags:
+  backend:
+    paths:
+      - backend/app/
+  frontend:
+    paths:
+      - frontend/src/
+
+component_management:
+  individual_components:
+    - name: backend_animales
+      paths:
+        - backend/app/services/animal_service.py
+        - backend/app/routes/animales.py
+      status:
+        project:
+          default:
+            target: 85%
+    - name: frontend_animales
+      paths:
+        - frontend/src/hooks/useAnimales.ts
+        - frontend/src/components/modules/AnimalForm.tsx
+      status:
+        project:
+          default:
+            target: 85%

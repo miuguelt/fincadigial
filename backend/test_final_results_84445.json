@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-05-04T03:47:33.758497",
+  "unique_id": 84445,
+  "score_global": 87.82051282051282,
+  "resultados": {
+    "ecosistema": {
+      "ok": 6,
+      "total": 9,
+      "pct": 66.66666666666666
+    },
+    "backend": {
+      "healthy": true,
+      "docs": true
+    },
+    "frontend": {
+      "accesible": true,
+      "react_detected": true
+    },
+    "crud": {
+      "entidades": 13,
+      "ops_total": 52,
+      "ops_ok": 47,
+      "pct": 90.38461538461539
+    },
+    "rendimiento": {
+      "get_avg_ms": 19.62593885568472,
+      "post_avg_ms": 32.47611339275654,
+      "total_requests": 26
+    }
+  }
+}

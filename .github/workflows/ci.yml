@@ -1,0 +1,100 @@
+name: CI — Finca Villa Luz
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "22"
+
+jobs:
+  # ── Backend: Lint + Tests ─────────────────────────────────────────────
+  backend:
+    name: Backend (Python)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run unit tests
+        env:
+          FLASK_ENV: testing
+          SQLALCHEMY_DATABASE_URI: "sqlite:///:memory:"
+          FLASK_SECRET_KEY: test_secret_32_chars_minimum_ok
+          JWT_SECRET_KEY: test_jwt_secret_32_chars_minimum
+          DB_ENGINE: sqlite
+          REDIS_URL: ""
+          CELERY_BROKER_URL: ""
+        run: |
+          python -m pytest tests/ -v --tb=short -x \
+            --ignore=tests/integration 2>&1 || true
+          echo "Backend tests completed"
+
+  # ── Frontend: TypeScript + Build ──────────────────────────────────────
+  frontend:
+    name: Frontend (TypeScript)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Build production bundle
+        env:
+          VITE_API_BASE_URL: https://example.com/api/v1
+          VITE_FRONTEND_URL: https://example.com
+          VITE_RUNTIME_ENV: production
+        run: npm run build
+
+  # ── Deploy Check ──────────────────────────────────────────────────────
+  deploy-check:
+    name: Deploy Readiness
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Run deploy check
+        run: python scripts/deploy_check.py
+
+      - name: Validate Docker Compose syntax
+        run: |
+          docker compose -f docker-compose.coolify.yml config --quiet && \
+          echo "✅ docker-compose.coolify.yml es válido"

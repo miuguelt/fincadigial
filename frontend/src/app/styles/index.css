@@ -1,0 +1,1404 @@
+/* Tailwind v4 import syntax */
+@import "tailwindcss";
+
+@theme {
+  --color-background: hsl(212 40% 98%);
+  --color-foreground: hsl(223 47% 11%);
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(223 47% 11%);
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(223 47% 11%);
+  --color-primary: hsl(143 100% 30%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-secondary: hsl(215 24% 95%);
+  --color-secondary-foreground: hsl(223 47% 11%);
+  --color-muted: hsl(214 26% 84%);
+  --color-muted-foreground: hsl(215 19% 34%);
+  --color-accent: hsl(188 86% 53%);
+  --color-accent-foreground: hsl(210 40% 98%);
+  --color-destructive: hsl(0 72% 51%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+  --color-border: hsl(218 30% 91%);
+  --color-input: hsl(218 30% 91%);
+  --color-ring: hsl(224 76% 48%);
+  --color-info: hsl(224 76% 48%);
+  --color-info-foreground: hsl(210 40% 98%);
+  --color-overlay-strong: 223 47% 11% / 0.72;
+  --color-overlay-soft: 223 47% 11% / 0.45;
+  --color-overlay-muted: 223 47% 11% / 0.28;
+  --color-primary-ghost: 143 100% 30% / 0.18;
+  --color-primary-ghost-strong: 143 100% 30% / 0.32;
+  --color-success-ghost: 142 76% 36% / 0.16;
+  --color-success-ghost-strong: 142 76% 36% / 0.34;
+  --color-warning-ghost: 38 92% 50% / 0.18;
+  --color-warning-ghost-strong: 38 92% 50% / 0.36;
+  --color-danger-ghost: 0 72% 51% / 0.18;
+  --color-danger-ghost-strong: 0 72% 51% / 0.36;
+  --color-info-ghost: 224 76% 48% / 0.16;
+  --color-info-ghost-strong: 224 76% 48% / 0.34;
+  --color-text-primary: hsl(223 47% 11%);
+  --color-text-secondary: hsl(215 19% 34%);
+  --color-surface-primary: 0 0% 100%;
+  --color-surface-secondary: 218 30% 91%;
+  --color-surface-tertiary: 214 26% 84%;
+  --color-border-strong: 215 18% 75%;
+  --color-surface-hover: 223 47% 11% / 0.04;
+  --color-surface-active: 223 47% 11% / 0.08;
+  --color-surface-disabled: 215 16% 82%;
+  --color-primary-50: hsl(144 45% 95%);
+  --color-primary-100: hsl(144 47% 88%);
+  --color-primary-200: hsl(144 52% 78%);
+  --color-primary-300: hsl(146 56% 65%);
+  --color-primary-400: hsl(148 52% 54%);
+  --color-primary-500: hsl(143 100% 30%);
+  --color-primary-600: hsl(143 100% 24%);
+  --color-primary-700: hsl(143 85% 20%);
+  --color-primary-800: hsl(143 80% 16%);
+  --color-primary-900: hsl(143 75% 12%);
+  --color-secondary-50: hsl(212 40% 98%);
+  --color-secondary-100: hsl(221 13% 91%);
+  --color-secondary-200: hsl(218 30% 91%);
+  --color-secondary-300: hsl(214 26% 84%);
+  --color-secondary-400: hsl(215 20% 65%);
+  --color-secondary-500: hsl(215 19% 34%);
+  --color-secondary-600: hsl(215 25% 27%);
+  --color-secondary-700: hsl(217 32% 17%);
+  --color-secondary-800: hsl(222 39% 13%);
+  --color-secondary-900: hsl(213 29% 6%);
+  --color-neutral-50: hsl(212 40% 98%);
+  --color-neutral-100: hsl(221 13% 91%);
+  --color-neutral-200: hsl(218 30% 91%);
+  --color-neutral-300: hsl(214 26% 84%);
+  --color-neutral-400: hsl(215 20% 65%);
+  --color-neutral-500: hsl(215 19% 34%);
+  --color-neutral-600: hsl(215 25% 27%);
+  --color-neutral-700: hsl(217 32% 17%);
+  --color-neutral-800: hsl(222 39% 13%);
+  --color-neutral-900: hsl(213 29% 6%);
+  --color-success: hsl(142 76% 36%);
+  --color-success-foreground: hsl(0 0% 100%);
+  --color-success-50: hsl(142 52% 95%);
+  --color-success-100: hsl(142 53% 88%);
+  --color-success-200: hsl(142 55% 78%);
+  --color-success-300: hsl(142 56% 67%);
+  --color-success-400: hsl(143 60% 54%);
+  --color-success-500: hsl(142 76% 36%);
+  --color-success-600: hsl(142 77% 32%);
+  --color-success-700: hsl(142 67% 27%);
+  --color-success-800: hsl(143 61% 22%);
+  --color-success-900: hsl(144 55% 18%);
+  --color-warning: hsl(38 92% 50%);
+  --color-warning-foreground: hsl(32 20% 12%);
+  --color-warning-50: hsl(40 100% 95%);
+  --color-warning-100: hsl(39 95% 90%);
+  --color-warning-200: hsl(38 94% 82%);
+  --color-warning-300: hsl(38 92% 72%);
+  --color-warning-400: hsl(38 92% 60%);
+  --color-warning-500: hsl(38 92% 50%);
+  --color-warning-600: hsl(32 90% 46%);
+  --color-warning-700: hsl(28 82% 38%);
+  --color-warning-800: hsl(24 74% 31%);
+  --color-warning-900: hsl(20 70% 25%);
+  --color-danger: hsl(0 72% 51%);
+  --color-danger-foreground: hsl(0 0% 100%);
+  --color-danger-50: hsl(0 85% 97%);
+  --color-danger-100: hsl(0 84% 93%);
+  --color-danger-200: hsl(0 80% 86%);
+  --color-danger-300: hsl(0 75% 74%);
+  --color-danger-400: hsl(0 72% 60%);
+  --color-danger-500: hsl(0 72% 51%);
+  --color-danger-600: hsl(0 66% 44%);
+  --color-danger-700: hsl(0 65% 36%);
+  --color-danger-800: hsl(0 62% 28%);
+  --color-danger-900: hsl(0 57% 22%);
+  --color-info-50: hsl(220 100% 97%);
+  --color-info-100: hsl(221 90% 92%);
+  --color-info-200: hsl(222 86% 84%);
+  --color-info-300: hsl(223 82% 74%);
+  --color-info-400: hsl(223 78% 62%);
+  --color-info-500: hsl(224 76% 48%);
+  --color-info-600: hsl(226 70% 40%);
+  --color-info-700: hsl(226 65% 34%);
+  --color-info-800: hsl(226 60% 28%);
+  --color-info-900: hsl(227 52% 23%);
+  --color-chart-1: hsl(143 100% 30%);
+  --color-chart-2: hsl(142 76% 36%);
+  --color-chart-3: hsl(38 92% 50%);
+  --color-chart-4: hsl(0 72% 51%);
+  --color-chart-5: hsl(188 86% 53%);
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-5xl: 3rem;
+  --font-size-6xl: 3.75rem;
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-wider: 0.05em;
+  --line-height-none: 1;
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-relaxed: 1.625;
+
+  /* Tipografías y tamaños base */
+  --font-sans: Inter, ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --font-weight-400: 400;
+  --font-weight-500: 500;
+  --font-weight-600: 600;
+  --font-weight-700: 700;
+
+  /* Radios */
+  --radius: 0.75rem;
+  /* Debe alinear con tailwind.config -> md=0.75rem */
+
+  /* Sombras semánticas más sutiles */
+  --shadow-sm: 0 1px 2px hsl(220 20% 10% / 0.08);
+  --shadow-md: 0 2px 6px hsl(220 20% 10% / 0.12);
+  --shadow-lg: 0 4px 12px hsl(220 20% 10% / 0.16);
+  --shadow-xl: 0 6px 20px hsl(220 20% 10% / 0.18);
+  --shadow-2xl: 0 10px 28px hsl(220 20% 10% / 0.2);
+
+  /* Container */
+  --container-max: 80rem;
+
+  /* Colores de rol */
+  --color-role-admin: hsl(0 72% 51%);
+  --color-role-instructor: hsl(224 76% 48%);
+  --color-role-apprentice: hsl(148 52% 54%);
+
+  /* Aliases para mantener compatibilidad con tailwind.config.js que usa variables sin prefijo */
+  --background: var(--color-background);
+  --foreground: var(--color-foreground);
+  --card: var(--color-card);
+  --card-foreground: var(--color-card-foreground);
+  --popover: var(--color-popover);
+  --popover-foreground: var(--color-popover-foreground);
+  --primary: var(--color-primary);
+  --primary-foreground: var(--color-primary-foreground);
+  --secondary: var(--color-secondary);
+  --secondary-foreground: var(--color-secondary-foreground);
+  --muted: var(--color-muted);
+  --muted-foreground: var(--color-muted-foreground);
+  --accent: var(--color-accent);
+  --accent-foreground: var(--color-accent-foreground);
+  --destructive: var(--color-destructive);
+  --destructive-foreground: var(--color-destructive-foreground);
+  --overlay-strong: var(--color-overlay-strong);
+  --overlay-soft: var(--color-overlay-soft);
+  --overlay-muted: var(--color-overlay-muted);
+  --info: var(--color-info);
+  --info-foreground: var(--color-info-foreground);
+  --border: var(--color-border);
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --surface-primary: var(--color-surface-primary);
+  --surface-secondary: var(--color-surface-secondary);
+  --surface-tertiary: var(--color-surface-tertiary);
+  --surface-hover: var(--color-surface-hover);
+  --surface-active: var(--color-surface-active);
+  --surface-disabled: var(--color-surface-disabled);
+  --border-strong: var(--color-border-strong);
+  --primary-ghost: var(--color-primary-ghost);
+  --primary-ghost-strong: var(--color-primary-ghost-strong);
+  --success-ghost: var(--color-success-ghost);
+  --success-ghost-strong: var(--color-success-ghost-strong);
+  --warning-ghost: var(--color-warning-ghost);
+  --warning-ghost-strong: var(--color-warning-ghost-strong);
+  --danger-ghost: var(--color-danger-ghost);
+  --danger-ghost-strong: var(--color-danger-ghost-strong);
+  --info-ghost: var(--color-info-ghost);
+  --info-ghost-strong: var(--color-info-ghost-strong);
+  /* Escalas alias (primary/secondary/neutral/success/warning/danger) */
+  --primary-50: var(--color-primary-50);
+  --primary-100: var(--color-primary-100);
+  --primary-200: var(--color-primary-200);
+  --primary-300: var(--color-primary-300);
+  --primary-400: var(--color-primary-400);
+  --primary-500: var(--color-primary-500);
+  --primary-600: var(--color-primary-600);
+  --primary-700: var(--color-primary-700);
+  --primary-800: var(--color-primary-800);
+  --primary-900: var(--color-primary-900);
+  --secondary-50: var(--color-secondary-50);
+  --secondary-100: var(--color-secondary-100);
+  --secondary-200: var(--color-secondary-200);
+  --secondary-300: var(--color-secondary-300);
+  --secondary-400: var(--color-secondary-400);
+  --secondary-500: var(--color-secondary-500);
+  --secondary-600: var(--color-secondary-600);
+  --secondary-700: var(--color-secondary-700);
+  --secondary-800: var(--color-secondary-800);
+  --secondary-900: var(--color-secondary-900);
+  --neutral-50: var(--color-neutral-50);
+  --neutral-100: var(--color-neutral-100);
+  --neutral-200: var(--color-neutral-200);
+  --neutral-300: var(--color-neutral-300);
+  --neutral-400: var(--color-neutral-400);
+  --neutral-500: var(--color-neutral-500);
+  --neutral-600: var(--color-neutral-600);
+  --neutral-700: var(--color-neutral-700);
+  --neutral-800: var(--color-neutral-800);
+  --neutral-900: var(--color-neutral-900);
+  --success-50: var(--color-success-50);
+  --success-100: var(--color-success-100);
+  --success-200: var(--color-success-200);
+  --success-300: var(--color-success-300);
+  --success-400: var(--color-success-400);
+  --success-500: var(--color-success-500);
+  --success-600: var(--color-success-600);
+  --success-700: var(--color-success-700);
+  --success-800: var(--color-success-800);
+  --success-900: var(--color-success-900);
+  --warning-50: var(--color-warning-50);
+  --warning-100: var(--color-warning-100);
+  --warning-200: var(--color-warning-200);
+  --warning-300: var(--color-warning-300);
+  --warning-400: var(--color-warning-400);
+  --warning-500: var(--color-warning-500);
+  --warning-600: var(--color-warning-600);
+  --warning-700: var(--color-warning-700);
+  --warning-800: var(--color-warning-800);
+  --warning-900: var(--color-warning-900);
+  --danger-50: var(--color-danger-50);
+  --danger-100: var(--color-danger-100);
+  --danger-200: var(--color-danger-200);
+  --danger-300: var(--color-danger-300);
+  --danger-400: var(--color-danger-400);
+  --danger-500: var(--color-danger-500);
+  --danger-600: var(--color-danger-600);
+  --danger-700: var(--color-danger-700);
+  --danger-800: var(--color-danger-800);
+  --danger-900: var(--color-danger-900);
+  --info-50: var(--color-info-50);
+  --info-100: var(--color-info-100);
+  --info-200: var(--color-info-200);
+  --info-300: var(--color-info-300);
+  --info-400: var(--color-info-400);
+  --info-500: var(--color-info-500);
+  --info-600: var(--color-info-600);
+  --info-700: var(--color-info-700);
+  --info-800: var(--color-info-800);
+  --info-900: var(--color-info-900);
+  --chart-1: var(--color-chart-1);
+  --chart-2: var(--color-chart-2);
+  --chart-3: var(--color-chart-3);
+  --chart-4: var(--color-chart-4);
+  --chart-5: var(--color-chart-5);
+}
+
+.dark {
+  --color-background: hsl(213 29% 6%);
+  --color-foreground: hsl(210 40% 96%);
+  --color-card: hsl(222 39% 13%);
+  --color-card-foreground: hsl(210 40% 96%);
+  --color-popover: hsl(222 39% 13%);
+  --color-popover-foreground: hsl(210 40% 96%);
+  --color-primary: hsl(143 100% 35%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-secondary: hsl(217 32% 17%);
+  --color-secondary-foreground: hsl(210 40% 96%);
+  --color-muted: hsl(215 25% 27%);
+  --color-muted-foreground: hsl(214 26% 80%);
+  --color-accent: hsl(188 86% 53%);
+  --color-accent-foreground: hsl(213 29% 6%);
+  --color-destructive: hsl(0 72% 51%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+  --color-border: hsl(215 25% 27%);
+  --color-input: hsl(215 25% 27%);
+  --color-ring: hsl(224 76% 48%);
+  --color-info: hsl(224 76% 48%);
+  --color-info-foreground: hsl(213 29% 6%);
+  --color-overlay-strong: 0 0% 100% / 0.08;
+  --color-overlay-soft: 0 0% 100% / 0.06;
+  --color-overlay-muted: 0 0% 100% / 0.04;
+  --color-primary-ghost: 143 100% 35% / 0.24;
+  --color-primary-ghost-strong: 143 100% 35% / 0.4;
+  --color-success-ghost: 142 76% 36% / 0.2;
+  --color-success-ghost-strong: 142 76% 36% / 0.4;
+  --color-warning-ghost: 38 92% 50% / 0.22;
+  --color-warning-ghost-strong: 38 92% 50% / 0.42;
+  --color-danger-ghost: 0 72% 51% / 0.22;
+  --color-danger-ghost-strong: 0 72% 51% / 0.42;
+  --color-info-ghost: 224 76% 48% / 0.2;
+  --color-info-ghost-strong: 224 76% 48% / 0.4;
+  --color-text-primary: hsl(210 40% 96%);
+  --color-text-secondary: hsl(214 26% 80%);
+  --color-surface-primary: 222 39% 13%;
+  --color-surface-secondary: 217 32% 17%;
+  --color-surface-tertiary: 215 25% 27%;
+  --color-border-strong: 215 25% 32%;
+  --color-surface-hover: 0 0% 100% / 0.06;
+  --color-surface-active: 0 0% 100% / 0.1;
+  --color-surface-disabled: 215 18% 20%;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    margin: 0;
+    padding: 0;
+    /* Previene overflow horizontal global — el scrollbar vertical no empuja el viewport */
+    overflow-x: hidden;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    margin: 0;
+    padding: 0;
+    /* Previene overflow horizontal — evita el bug de w-screen > viewport */
+    overflow-x: hidden;
+    min-width: 320px;
+    background-image:
+      radial-gradient(1200px 520px at 8% -10%, rgba(22, 163, 74, 0.18), transparent 60%),
+      radial-gradient(900px 520px at 92% -5%, rgba(56, 189, 248, 0.16), transparent 60%),
+      linear-gradient(180deg, rgba(248, 250, 252, 0.9), rgba(236, 244, 248, 0.92));
+    background-attachment: fixed;
+  }
+
+  #root {
+    min-height: 100vh;
+    /* Semi-transparent background with full browser support */
+    background-color: hsla(212, 40%, 98%, 0.86);
+  }
+
+  @supports (backdrop-filter: blur(8px)) {
+    #root {
+      -webkit-backdrop-filter: blur(10px) saturate(130%);
+      backdrop-filter: blur(10px) saturate(130%);
+    }
+  }
+
+  /* Transiciones globales suaves para todos los elementos, EXCEPTO skeletons */
+  *:not(.skeleton-loading) {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Transiciones específicas para interacciones comunes */
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Transiciones para elementos hover */
+  button:hover,
+  a:hover {
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* ── prefers-reduced-motion ──────────────────────────────────────────────────
+     Desactivar animaciones para usuarios que lo requieran por accesibilidad.
+     Cubre el drawer del sidebar, skeletons y cualquier transition-all.
+  ─────────────────────────────────────────────────────────────────────────── */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* ── Focus visible — navegación por teclado ─────────────────────────────────
+     Tailwind borra el outline por defecto; lo restauramos con ring coherente
+     con la paleta primary para todos los elementos interactivos.
+  ─────────────────────────────────────────────────────────────────────────── */
+  :focus-visible {
+    outline: 2px solid hsl(var(--color-primary));
+    outline-offset: 2px;
+  }
+
+  /* Optimización global de renderizado de imágenes para máxima calidad */
+  img {
+    /* Base: webkit prefix for Edge 79+ and older Safari */
+    image-rendering: -webkit-optimize-contrast;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+  }
+
+  /* Progressive enhancement: use crisp-edges for browsers that support it */
+  @supports (image-rendering: crisp-edges) {
+    img {
+      image-rendering: crisp-edges;
+    }
+  }
+
+  /* Optimización específica para imágenes de alta resolución (4K+) */
+  img[data-high-quality],
+  .high-quality-image {
+    image-rendering: -webkit-optimize-contrast;
+    -webkit-font-smoothing: subpixel-antialiased;
+    -moz-osx-font-smoothing: auto;
+    text-rendering: optimizeLegibility;
+    backface-visibility: hidden;
+    perspective: 1000px;
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+  }
+
+  /* ── Responsive layout guards ───────────────────────────────────────────────
+     Estos hijos directos de flex/grid tienden a desbordar porque el navegador
+     les asigna min-width: auto por defecto. Con min-width: 0 se respetan los
+     límites del contenedor. Se aplica solo en las clases de layout principales
+     para no afectar componentes que necesiten min-width diferente.
+  ─────────────────────────────────────────────────────────────────────────── */
+  .flex > * { min-width: 0; }
+  .grid  > * { min-width: 0; }
+
+  /* Textos que pueden ser largos nunca rompen el layout horizontal */
+  h1, h2, h3, h4, h5, h6, p, span, a {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  /* Mejora global de iconos (lucide-react agrega la clase .lucide automáticamente) */
+  .lucide {
+    width: 1.25rem;
+    /* 20px */
+    height: 1.25rem;
+    /* 20px */
+    stroke-width: 2.25;
+    color: var(--color-foreground);
+    flex-shrink: 0;
+  }
+
+  /* Botón de acción para iconos: alto contraste y tamaño consistente */
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--surface-primary));
+    color: hsl(var(--text-primary));
+    box-shadow: var(--shadow-sm);
+    transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, transform 180ms ease;
+  }
+
+  .icon-btn:hover {
+    transform: translateY(-1px);
+    background: hsl(var(--surface-hover));
+    border-color: hsl(var(--border-strong));
+  }
+
+  .icon-btn:active {
+    transform: translateY(0) scale(0.98);
+    background: hsl(var(--surface-active));
+  }
+
+  .icon-btn:disabled {
+    background: hsl(var(--surface-disabled));
+    color: hsl(var(--text-secondary));
+    border-color: hsl(var(--border));
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* ── TYPOGRAPHY BASE — Estándar Villa Luz ─────────────────────────────────
+     h1: 24px / 500 / tracking-tight
+     h2: 20px / 500
+     h3: 16px / 500
+     body: 14px / 400 / line-height 1.6
+     label: 13px / 500 / text-secondary / uppercase tracking-wide
+     caption: 12px / 400 / text-tertiary
+  ─────────────────────────────────────────────────────────────────────────── */
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+    color: hsl(var(--foreground));
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: hsl(var(--foreground));
+  }
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: hsl(var(--foreground));
+  }
+
+  body {
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  label,
+  .vl-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: hsl(var(--text-secondary));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  caption,
+  .vl-caption {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: hsl(var(--text-secondary));
+    opacity: 0.7;
+  }
+
+  /* ── SPACING TOKENS — Constantes de espaciado ─────────────────────────────
+     --space-page-x:   32px (padding horizontal de página)
+     --space-page-y:   24px (padding vertical de página desktop)
+     --space-section:  32px (gap entre secciones)
+     --space-card:     16px (gap entre cards en grid)
+     --space-card-lg:  24px (gap entre cards en grid denso)
+     --space-card-pad: 20px (padding interno de card)
+     --space-modal:    24px (padding interno de modal)
+     --space-label:    6px  (entre label e input)
+     --space-list:     8px  (entre items de lista)
+  ─────────────────────────────────────────────────────────────────────────── */
+  :root {
+    --space-page-x: 2rem;
+    --space-page-y: 1.5rem;
+    --space-section: 2rem;
+    --space-card: 1rem;
+    --space-card-lg: 1.5rem;
+    --space-card-pad: 1.25rem;
+    --space-modal: 1.5rem;
+    --space-label: 0.375rem;
+    --space-list: 0.5rem;
+  }
+
+  /* ── RESPONSIVE: Mobile touch optimizations ─────────────────────────────────
+     Previene zoom automático de iOS cuando el font-size es < 16px en inputs.
+     Asegura área de toque mínima de 44px (Apple HIG) en botones y acciones.
+  ─────────────────────────────────────────────────────────────────────────── */
+  @media (max-width: 767px) {
+    :root {
+      --space-page-x: 1rem;
+      --space-page-y: 1rem;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="date"],
+    input[type="search"],
+    input[type="tel"],
+    input[type="url"],
+    select,
+    textarea {
+      font-size: 16px !important; /* Previene zoom en iOS */
+    }
+
+    /* Área de toque mínima para botones interactivos */
+    button,
+    [role="button"],
+    a[href] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    /* Excluir botones muy pequeños que están dentro de acciones inline */
+    .inline-action button,
+    button[data-compact] {
+      min-height: unset;
+      min-width: unset;
+    }
+  }
+}
+
+@layer utilities {
+
+  /* ── GRID SYSTEM — Estándar Villa Luz ──────────────────────────────────────
+     .vl-grid-1:  1 columna (mobile-first)
+     .vl-grid-2:  2 columnas, gap-16px
+     .vl-grid-3:  3 columnas, gap-24px (desktop KPIs)
+     .vl-grid-4:  4 columnas, gap-24px (desktop stats)
+     .vl-grid-auto: repeat(auto-fit, minmax(240px, 1fr)) responsive
+  ─────────────────────────────────────────────────────────────────────────── */
+  .vl-grid-1 {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .vl-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-card);
+  }
+
+  .vl-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-card-lg);
+  }
+
+  .vl-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-card-lg);
+  }
+
+  .vl-grid-auto {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-card);
+  }
+
+  /* Responsive overrides */
+  @media (max-width: 1023px) {
+    .vl-grid-3,
+    .vl-grid-4 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .vl-grid-2,
+    .vl-grid-3,
+    .vl-grid-4 {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ── SPACING UTILITY CLASSES ─────────────────────────────────────────────── */
+  .vl-gap-section  { gap: var(--space-section); }
+  .vl-gap-card    { gap: var(--space-card); }
+  .vl-gap-card-lg { gap: var(--space-card-lg); }
+  .vl-gap-list    { gap: var(--space-list); }
+
+  .vl-p-card      { padding: var(--space-card-pad); }
+  .vl-p-modal     { padding: var(--space-modal); }
+
+  /* ── SEPARATOR ───────────────────────────────────────────────────────────── */
+  .vl-separator {
+    border-bottom: var(--border-subtle);
+  }
+
+  /* Animación sutil de la onda (ligero desplazamiento horizontal) */
+  @keyframes waveFloat {
+
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+
+    50% {
+      transform: translateX(-4px);
+    }
+  }
+
+  /* Brillo/pulso muy sutil en la franja superior */
+  @keyframes stripeGlow {
+
+    0%,
+    100% {
+      opacity: 0.7;
+      filter: saturate(100%);
+    }
+
+    50% {
+      opacity: 0.95;
+      filter: saturate(110%);
+    }
+  }
+
+  /* Visor de imágenes fullscreen optimizado para máxima calidad */
+  .fullscreen-image-viewer {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    z-index: 9999;
+  }
+
+  .fullscreen-image-viewer img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    image-rendering: -webkit-optimize-contrast;
+    -webkit-font-smoothing: subpixel-antialiased;
+    -moz-osx-font-smoothing: auto;
+    backface-visibility: hidden;
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  /* Optimización para pantallas de alta densidad de píxeles (Retina, 4K) */
+  @media (-webkit-min-device-pixel-ratio: 2),
+  (min-resolution: 192dpi) {
+    .fullscreen-image-viewer img {
+      image-rendering: -webkit-optimize-contrast;
+      -webkit-font-smoothing: subpixel-antialiased;
+    }
+  }
+
+  /* Optimización adicional para pantallas 4K y superiores */
+  @media (min-width: 3840px) {
+    .fullscreen-image-viewer img {
+      /* Vendor prefix first, standard value last for proper cascade */
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
+    }
+  }
+
+  /* Clases de utilidad para animaciones */
+  .animate-shimmer {
+    animation: shimmer 2s infinite linear;
+    background: linear-gradient(90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(255, 255, 255, 0) 100%);
+    background-size: 200% 100%;
+  }
+
+  .dark .animate-shimmer {
+    background: linear-gradient(90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.05) 50%,
+        rgba(255, 255, 255, 0) 100%);
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .animate-skeleton-pulse {
+    animation: skeletonPulse 1.5s ease-in-out infinite;
+  }
+}
+
+/* Animaciones de loading mejoradas con colores */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes bounce {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-25%);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes colorPulseSuccess {
+
+  0%,
+  100% {
+    background-color: hsl(var(--success-ghost));
+    border-color: hsl(var(--success-ghost-strong));
+  }
+
+  50% {
+    background-color: hsl(var(--success-ghost-strong));
+    border-color: hsl(var(--color-success));
+  }
+}
+
+/* Efecto Shimmer para skeletons modernos */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes skeletonPulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: .7;
+  }
+}
+
+@layer utilities {
+
+  /* Utility class for dynamic max-height using CSS custom property
+     Usage: style={{ '--dynamic-max-height': `${value}px` }} className="dynamic-max-height"
+     This approach keeps dynamic values in JSX while styling logic stays in CSS */
+  .dynamic-max-height {
+    max-height: var(--dynamic-max-height, none);
+  }
+
+  /* Gallery image thumbnail - optimized rendering for small images */
+  .gallery-image-thumb {
+    image-rendering: auto;
+  }
+
+  /* Fullscreen image viewer - optimized for high quality display */
+  .gallery-image-fullscreen {
+    object-fit: contain;
+    object-position: center;
+    image-rendering: -webkit-optimize-contrast;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    will-change: transform;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+  }
+
+  /* Banner image container - uses CSS custom property for dynamic height
+     Usage: style={{ '--banner-height': height }} className="banner-container-dynamic" */
+  .banner-container-dynamic {
+    height: var(--banner-height, 300px);
+  }
+
+  /* Carousel image rendering optimization */
+  .carousel-image {
+    object-position: center;
+    image-rendering: auto;
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  /* Modal carousel image with full quality rendering */
+  .carousel-image-modal {
+    object-position: center;
+    image-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    image-orientation: from-image;
+  }
+
+  /* Carousel slide active/inactive states for pointer events */
+  .carousel-slide-active {
+    pointer-events: auto;
+  }
+
+  .carousel-slide-inactive {
+    pointer-events: none;
+  }
+
+  /* Modal overlay: oscurece + difumina el fondo con saturación para dar profundidad */
+  .vl-modal-overlay {
+    background: rgba(0, 0, 0, 0.45);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    backdrop-filter: blur(12px) saturate(140%);
+  }
+
+  .dark .vl-modal-overlay {
+    background: rgba(0, 0, 0, 0.65);
+  }
+
+  .vl-modal-surface {
+    /* Semi-transparent background with full browser support */
+    background: hsla(0, 0%, 100%, 0.75);
+    /* Semi-transparent border */
+    border: 1px solid hsla(214, 32%, 91%, 0.5);
+    box-shadow:
+      0 24px 64px rgba(0, 0, 0, 0.2),
+      0 8px 18px rgba(0, 0, 0, 0.1),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    backdrop-filter: blur(24px) saturate(160%);
+  }
+
+  .dark .vl-modal-surface {
+    /* Semi-transparent dark background with full browser support */
+    background: hsla(222, 84%, 5%, 0.65);
+    /* Semi-transparent border */
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+      0 32px 80px rgba(0, 0, 0, 0.6),
+      0 12px 24px rgba(0, 0, 0, 0.4),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+
+  /* Premium WOW utilities */
+  .premium-gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary;
+    background-size: 200% auto;
+    animation: shine 3s linear infinite;
+  }
+
+  @keyframes shine {
+    to { background-position: 200% center; }
+  }
+
+  .glass-card-premium {
+    @apply bg-white/70 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl;
+  }
+
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl;
+  }
+
+  /* Borde interior sutil (highlight) */
+  .vl-modal-surface::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.12), transparent 60%);
+    opacity: 0.65;
+  }
+
+  .dark .vl-modal-surface::before {
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.06), transparent 60%);
+    opacity: 0.55;
+  }
+}
+
+@keyframes colorPulseWarning {
+
+  0%,
+  100% {
+    background-color: hsl(var(--warning-ghost));
+    border-color: hsl(var(--warning-ghost-strong));
+  }
+
+  50% {
+    background-color: hsl(var(--warning-ghost-strong));
+    border-color: hsl(var(--color-warning));
+  }
+}
+
+@keyframes colorPulseDanger {
+
+  0%,
+  100% {
+    background-color: hsl(var(--danger-ghost));
+    border-color: hsl(var(--danger-ghost-strong));
+  }
+
+  50% {
+    background-color: hsl(var(--danger-ghost-strong));
+    border-color: hsl(var(--color-danger));
+  }
+}
+
+@keyframes colorPulseInfo {
+
+  0%,
+  100% {
+    background-color: hsl(var(--info-ghost));
+    border-color: hsl(var(--info-ghost-strong));
+  }
+
+  50% {
+    background-color: hsl(var(--info-ghost-strong));
+    border-color: hsl(var(--color-info));
+  }
+}
+
+/* Clases utilitarias de animación */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+.animate-slide-in {
+  animation: slideInRight 400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-slide-out {
+  animation: slideOutRight 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-fade-in {
+  animation: fadeIn 400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-fade-out {
+  animation: fadeOut 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-scale-in {
+  animation: scaleIn 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Skeleton loading con bloques planos de alto contraste */
+.skeleton {
+  background-color: hsl(var(--surface-tertiary));
+  animation: pulse 1.8s ease-in-out infinite;
+  border-radius: var(--radius);
+  opacity: 0.8;
+}
+
+/* Loading spinner con colores */
+.loading-spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 4px solid hsl(var(--primary-ghost));
+  border-top-color: hsl(var(--color-primary));
+  border-radius: 50%;
+  animation: spin 800ms linear infinite;
+}
+
+.loading-spinner-sm {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+}
+
+.loading-spinner-lg {
+  width: 60px;
+  height: 60px;
+  border-width: 6px;
+}
+
+/* Loading spinner con código de colores */
+.loading-spinner-success {
+  border-color: hsl(var(--success-ghost));
+  border-top-color: hsl(var(--color-success));
+}
+
+.loading-spinner-warning {
+  border-color: hsl(var(--warning-ghost));
+  border-top-color: hsl(var(--color-warning));
+}
+
+.loading-spinner-danger {
+  border-color: hsl(var(--danger-ghost));
+  border-top-color: hsl(var(--color-danger));
+}
+
+/* Loading dots animation */
+.loading-dots {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: hsl(var(--color-primary));
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.loading-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+/* Loading overlay */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: hsl(var(--overlay-strong));
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 200ms ease-in-out;
+}
+
+.loading-overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 32px;
+  background: hsl(var(--color-card));
+  border-radius: calc(var(--radius) * 2);
+  box-shadow: var(--shadow-2xl);
+  animation: scaleIn 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Progress bar animations */
+.progress-bar {
+  height: 4px;
+  background-color: hsl(var(--color-muted));
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: hsl(var(--color-primary));
+  transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-bar-indeterminate {
+  position: absolute;
+  width: 30%;
+  height: 100%;
+  background-color: hsl(var(--color-primary));
+  animation: progressIndeterminate 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes progressIndeterminate {
+  0% {
+    left: -30%;
+  }
+
+  100% {
+    left: 100%;
+  }
+}
+
+/* Color-coded alerts and messages */
+.alert-success {
+  background-color: hsl(var(--success-ghost));
+  border: 1px solid hsl(var(--success-ghost-strong));
+  color: hsl(var(--color-success));
+  animation: colorPulseSuccess 2s ease-in-out infinite;
+}
+
+.alert-warning {
+  background-color: hsl(var(--warning-ghost));
+  border: 1px solid hsl(var(--warning-ghost-strong));
+  color: hsl(var(--color-warning));
+  animation: colorPulseWarning 2s ease-in-out infinite;
+}
+
+.alert-danger {
+  background-color: hsl(var(--danger-ghost));
+  border: 1px solid hsl(var(--danger-ghost-strong));
+  color: hsl(var(--color-danger));
+  animation: colorPulseDanger 2s ease-in-out infinite;
+}
+
+.alert-info {
+  background-color: hsl(var(--info-ghost));
+  border: 1px solid hsl(var(--info-ghost-strong));
+  color: hsl(var(--color-info));
+  animation: colorPulseInfo 2s ease-in-out infinite;
+}
+
+/* Respeto a usuarios con "reducir movimiento" activado */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .loading-overlay,
+  .loading-spinner,
+  .skeleton,
+  .alert-success,
+  .alert-warning,
+  .alert-danger,
+  .alert-info {
+    animation: none !important;
+  }
+}
+
+/* === Global Custom Scrollbar (Elegant & Premium) === */
+@layer base {
+
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  ::-webkit-scrollbar {
+    width: 14px;
+    /* Wider to accommodate touch/click interactions on buttons */
+    height: 14px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--color-muted-foreground) / 0.3);
+    border-radius: 9999px;
+    border: 4px solid transparent;
+    /* Creates a 'padding' effect around the thumb */
+    background-clip: content-box;
+    transition: background-color 0.2s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--color-muted-foreground) / 0.5);
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background-color: hsl(var(--color-primary) / 0.7);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Scrollbar Buttons (Flechas de movimiento) - Elegant SVG Arrows */
+  ::-webkit-scrollbar-button {
+    display: block;
+    height: 14px;
+    width: 14px;
+    background-color: transparent;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 8px;
+  }
+
+  /* Ensure buttons are displayed */
+  ::-webkit-scrollbar-button:single-button {
+    display: block;
+    background-color: transparent;
+  }
+
+  ::-webkit-scrollbar-button:hover {
+    background-color: hsl(var(--color-surface-active));
+    border-radius: 4px;
+  }
+
+  /* Vertical Up Arrow */
+  ::-webkit-scrollbar-button:vertical:decrement {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(100,116,139,0.8)' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='18 15 12 9 6 15'/%3E%3C/svg%3E");
+  }
+
+  /* Vertical Down Arrow */
+  ::-webkit-scrollbar-button:vertical:increment {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(100,116,139,0.8)' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  }
+
+  /* Horizontal Left Arrow */
+  ::-webkit-scrollbar-button:horizontal:decrement {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(100,116,139,0.8)' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='15 18 9 12 15 6'/%3E%3C/svg%3E");
+  }
+
+  /* Horizontal Right Arrow */
+  ::-webkit-scrollbar-button:horizontal:increment {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(100,116,139,0.8)' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='9 18 15 12 9 6'/%3E%3C/svg%3E");
+  }
+
+  /* Firefox & Modern Browsers Standard */
+  @supports (scrollbar-width: thin) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: hsl(var(--color-muted-foreground) / 0.3) transparent;
+    }
+  }
+}

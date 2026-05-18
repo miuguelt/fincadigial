@@ -1,0 +1,6891 @@
+{
+  "tables": [
+    {
+      "table": "activity_daily_agg",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "actor_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "entity",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "action",
+          "type": "VARCHAR(20)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "severity",
+          "type": "VARCHAR(20)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "animal_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "count",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_activity_daily_agg_date",
+          "columns": [
+            "date"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_activity_daily_agg_actor_date",
+          "columns": [
+            "actor_id",
+            "date"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_activity_daily_agg_actor_date_entity",
+          "columns": [
+            "actor_id",
+            "date",
+            "entity"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "activity_log",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "action",
+          "type": "VARCHAR(20)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "entity",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "entity_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "title",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "severity",
+          "type": "VARCHAR(20)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "actor_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "animal_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "relations",
+          "type": "JSON",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "actor_id",
+          "target": "user.id",
+          "ondelete": null
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_activity_log_actor_severity_created_at",
+          "columns": [
+            "actor_id",
+            "severity",
+            "created_at"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_activity_log_actor_created_at",
+          "columns": [
+            "actor_id",
+            "created_at"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_activity_log_actor_id",
+          "columns": [
+            "actor_id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_activity_log_action",
+          "columns": [
+            "action"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_activity_log_actor_animal_created_at",
+          "columns": [
+            "actor_id",
+            "animal_id",
+            "created_at"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_activity_log_actor_entity_created_at",
+          "columns": [
+            "actor_id",
+            "entity",
+            "created_at"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_activity_log_entity_id",
+          "columns": [
+            "entity_id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_activity_log_entity",
+          "columns": [
+            "entity"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_activity_log_actor_action_created_at",
+          "columns": [
+            "actor_id",
+            "action",
+            "created_at"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_activity_log_animal_id",
+          "columns": [
+            "animal_id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_activity_log_severity",
+          "columns": [
+            "severity"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_activity_log_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "animal_alert_configs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "animal_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "alert_type",
+          "type": "VARCHAR(12)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "dimension",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "condition_value",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "message",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "priority",
+          "type": "VARCHAR(8)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "is_active",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "is_default",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "animal_id",
+          "target": "animals.id",
+          "ondelete": null
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "table": "animal_alerts",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "animal_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "field_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "config_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "alert_type",
+          "type": "VARCHAR(12)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "message",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "recommendation",
+          "type": "TEXT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "priority",
+          "type": "VARCHAR(8)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "is_read",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "triggered_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "animal_id",
+          "target": "animals.id",
+          "ondelete": null
+        },
+        {
+          "column": "field_id",
+          "target": "fields.id",
+          "ondelete": null
+        },
+        {
+          "column": "config_id",
+          "target": "animal_alert_configs.id",
+          "ondelete": null
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_animal_alerts_animal_read",
+          "columns": [
+            "animal_id",
+            "is_read"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_animal_alerts_finca_id",
+          "columns": [
+            "finca_id"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "animal_diseases",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "animal_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "disease_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "instructor_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "diagnosis_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "animal_id",
+          "target": "animals.id",
+          "ondelete": null
+        },
+        {
+          "column": "disease_id",
+          "target": "diseases.id",
+          "ondelete": null
+        },
+        {
+          "column": "instructor_id",
+          "target": "user.id",
+          "ondelete": null
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_animal_diseases_finca_id",
+          "columns": [
+            "finca_id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_animal_diseases_animal_id",
+          "columns": [
+            "animal_id"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "animal_fields",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "animal_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "field_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "assignment_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "removal_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "animal_id",
+          "target": "animals.id",
+          "ondelete": null
+        },
+        {
+          "column": "field_id",
+          "target": "fields.id",
+          "ondelete": null
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_animal_fields_field_id",
+          "columns": [
+            "field_id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_animal_fields_finca_id",
+          "columns": [
+            "finca_id"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "animal_group_membership",
+      "columns": [
+        {
+          "name": "animal_id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "group_id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "animal_id",
+          "target": "animals.id",
+          "ondelete": null
+        },
+        {
+          "column": "group_id",
+          "target": "animal_groups.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "table": "animal_groups",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "description",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "table": "animal_images",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "animal_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "filename",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "filepath",
+          "type": "VARCHAR(500)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "thumbnail_path",
+          "type": "VARCHAR(500)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "file_size",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "mime_type",
+          "type": "VARCHAR(100)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "is_primary",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "animal_id",
+          "target": "animals.id",
+          "ondelete": "CASCADE"
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_animal_images_animal_id",
+          "columns": [
+            "animal_id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_animal_images_is_primary",
+          "columns": [
+            "is_primary"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_animal_images_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "animals",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "sex",
+          "type": "VARCHAR(6)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "birth_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "weight",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "record",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "qr_code",
+          "type": "VARCHAR(100)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": true
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(7)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "entry_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "purchase_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "sale_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "exit_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "exit_reason",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "breeds_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "idFather",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "idMother",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "idFatherFather",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "idFatherMother",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "idMotherFather",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "idMotherMother",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "is_pregnant",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "is_lactating",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "last_calving_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        },
+        {
+          "column": "breeds_id",
+          "target": "breeds.id",
+          "ondelete": null
+        },
+        {
+          "column": "idFather",
+          "target": "animals.id",
+          "ondelete": null
+        },
+        {
+          "column": "idMother",
+          "target": "animals.id",
+          "ondelete": null
+        },
+        {
+          "column": "idFatherFather",
+          "target": "animals.id",
+          "ondelete": null
+        },
+        {
+          "column": "idFatherMother",
+          "target": "animals.id",
+          "ondelete": null
+        },
+        {
+          "column": "idMotherFather",
+          "target": "animals.id",
+          "ondelete": null
+        },
+        {
+          "column": "idMotherMother",
+          "target": "animals.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_animals_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_animals_breeds_status",
+          "columns": [
+            "breeds_id",
+            "status"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_animals_updated_at",
+          "columns": [
+            "updated_at"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_animals_finca_id",
+          "columns": [
+            "finca_id"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "breeds",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "species_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "species_id",
+          "target": "species.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_breeds_updated_at",
+          "columns": [
+            "updated_at"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_breeds_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "chat_messages",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "sender_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "recipient_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "message",
+          "type": "TEXT",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "attachment_url",
+          "type": "VARCHAR(500)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "attachment_type",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "attachment_name",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "is_read",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        },
+        {
+          "column": "sender_id",
+          "target": "user.id",
+          "ondelete": null
+        },
+        {
+          "column": "recipient_id",
+          "target": "user.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "table": "control",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "checkup_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "health_status",
+          "type": "VARCHAR(9)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "weight",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "height",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "description",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "animal_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "animal_id",
+          "target": "animals.id",
+          "ondelete": null
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_control_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_control_finca_id",
+          "columns": [
+            "finca_id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_control_animal_checkup",
+          "columns": [
+            "animal_id",
+            "checkup_date"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "diseases",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": true
+        },
+        {
+          "name": "symptoms",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "details",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "name": "ix_diseases_updated_at",
+          "columns": [
+            "updated_at"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_diseases_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "fields",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "ubication",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "capacity",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "state",
+          "type": "VARCHAR(13)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "handlings",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "gauges",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "area",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "food_type_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "latitude",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "longitude",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "radius_meters",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "last_grazing_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "rest_days",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "grazing_days",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "food_type_id",
+          "target": "food_types.id",
+          "ondelete": null
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_fields_finca_id",
+          "columns": [
+            "finca_id"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "financial_summary",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": true
+        },
+        {
+          "name": "total_income",
+          "type": "NUMERIC(15, 2)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "total_expense",
+          "type": "NUMERIC(15, 2)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "balance",
+          "type": "NUMERIC(15, 2)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "last_update",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "table": "finca",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "type",
+          "type": "VARCHAR(11)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "nit",
+          "type": "VARCHAR(20)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "department",
+          "type": "VARCHAR(100)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "municipality",
+          "type": "VARCHAR(100)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "address",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "latitude",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "longitude",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "is_active",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "logo_url",
+          "type": "VARCHAR(500)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "ica_registration",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [],
+      "indexes": []
+    },
+    {
+      "table": "food_types",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "food_type",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "sowing_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "harvest_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "area",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "handlings",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "gauges",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "table": "genetic_improvements",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "details",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "results",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "genetic_event_technique",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "animal_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "animal_id",
+          "target": "animals.id",
+          "ondelete": null
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "table": "infrastructure",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "type",
+          "type": "VARCHAR(10)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "last_maintenance",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "next_maintenance",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "table": "inventory_lots",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "product_type",
+          "type": "VARCHAR(11)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "medication_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "vaccine_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "lot_number",
+          "type": "VARCHAR(100)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "quantity",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "current_quantity",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "unit",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "expiry_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "entry_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "supplier",
+          "type": "VARCHAR(200)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "unit_cost",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "min_stock",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "notes",
+          "type": "VARCHAR(500)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "medication_id",
+          "target": "medications.id",
+          "ondelete": null
+        },
+        {
+          "column": "vaccine_id",
+          "target": "vaccines.id",
+          "ondelete": null
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_inventory_lots_vaccine_id",
+          "columns": [
+            "vaccine_id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_inventory_lots_expiry_date",
+          "columns": [
+            "expiry_date"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_inventory_lots_medication_id",
+          "columns": [
+            "medication_id"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "inventory_movements",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "lot_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "movement_type",
+          "type": "VARCHAR(7)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "quantity",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "reference_type",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "reference_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "notes",
+          "type": "VARCHAR(500)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "actor_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "lot_id",
+          "target": "inventory_lots.id",
+          "ondelete": null
+        },
+        {
+          "column": "actor_id",
+          "target": "user.id",
+          "ondelete": null
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_inventory_movements_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_inventory_movements_lot_id",
+          "columns": [
+            "lot_id"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "livestock_summary",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": true
+        },
+        {
+          "name": "total_animals",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "active_animals",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "sold_animals",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "dead_animals",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "male_count",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "female_count",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "sick_animals",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "last_recalculation",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "table": "medications",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": true
+        },
+        {
+          "name": "description",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "indications",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "dosis",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "contraindications",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "route_administration_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "availability",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "route_administration_id",
+          "target": "route_administrations.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "table": "membership_request",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(8)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "requested_role",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "message",
+          "type": "TEXT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "processed_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "processed_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "user_id",
+          "target": "user.id",
+          "ondelete": null
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        },
+        {
+          "column": "processed_by",
+          "target": "user.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "table": "milk_production",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "animal_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "liters",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "milking_session",
+          "type": "VARCHAR(5)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "fat_percentage",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "protein_percentage",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "somatic_cells",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "notes",
+          "type": "VARCHAR(500)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "animal_id",
+          "target": "animals.id",
+          "ondelete": null
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_milk_production_date",
+          "columns": [
+            "date"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_milk_production_animal_id",
+          "columns": [
+            "animal_id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_milk_production_finca_id",
+          "columns": [
+            "finca_id"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "milk_summary",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": true
+        },
+        {
+          "name": "total_liters",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "avg_liters_per_animal",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "total_entries",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "last_update",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "table": "offspring",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "birth_event_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "animal_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "sex",
+          "type": "VARCHAR(10)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "alive",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "birth_weight",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "notes",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "birth_event_id",
+          "target": "reproductive_events.id",
+          "ondelete": null
+        },
+        {
+          "column": "animal_id",
+          "target": "animals.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_offspring_birth_event_id",
+          "columns": [
+            "birth_event_id"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "operational_costs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "concept",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "amount",
+          "type": "NUMERIC(15, 2)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "category",
+          "type": "VARCHAR(13)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "table": "pasture_aforos",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "field_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "entry_height",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "exit_height",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "pasture_quality",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "notes",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "field_id",
+          "target": "fields.id",
+          "ondelete": null
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "table": "push_subscription",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "endpoint",
+          "type": "VARCHAR(500)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "p256dh",
+          "type": "VARCHAR(200)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "auth",
+          "type": "VARCHAR(100)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "user_agent",
+          "type": "VARCHAR(500)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "platform",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "browser",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "is_active",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "last_used",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "user_id",
+          "target": "user.id",
+          "ondelete": "CASCADE"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_push_subscription_endpoint",
+          "columns": [
+            "endpoint"
+          ],
+          "unique": true
+        },
+        {
+          "name": "ix_push_subscription_is_active",
+          "columns": [
+            "is_active"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_push_subscription_user_id",
+          "columns": [
+            "user_id"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "reproductive_events",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "animal_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "event_type",
+          "type": "VARCHAR(12)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "event_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "sire_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "technique",
+          "type": "VARCHAR(25)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "diagnosis_result",
+          "type": "VARCHAR(9)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "expected_birth_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "alive_count",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "dead_count",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "complications",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "actor_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "notes",
+          "type": "VARCHAR(500)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "animal_id",
+          "target": "animals.id",
+          "ondelete": null
+        },
+        {
+          "column": "sire_id",
+          "target": "animals.id",
+          "ondelete": null
+        },
+        {
+          "column": "actor_id",
+          "target": "user.id",
+          "ondelete": null
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_repr_events_event_type",
+          "columns": [
+            "event_type"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_repr_events_animal_id",
+          "columns": [
+            "animal_id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_repr_events_event_date",
+          "columns": [
+            "event_date"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "route_administrations",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": true
+        },
+        {
+          "name": "description",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "status",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [],
+      "indexes": []
+    },
+    {
+      "table": "species",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": true
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [],
+      "indexes": []
+    },
+    {
+      "table": "tasks",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "title",
+          "type": "VARCHAR(150)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(11)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "priority",
+          "type": "VARCHAR(6)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "due_date",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "animal_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "field_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "assigned_to",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "animal_id",
+          "target": "animals.id",
+          "ondelete": null
+        },
+        {
+          "column": "field_id",
+          "target": "fields.id",
+          "ondelete": null
+        },
+        {
+          "column": "assigned_to",
+          "target": "user.id",
+          "ondelete": null
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_tasks_finca_status",
+          "columns": [
+            "finca_id",
+            "status"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_tasks_due_date",
+          "columns": [
+            "due_date"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "transactions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "animal_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "transaction_type",
+          "type": "VARCHAR(7)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "category",
+          "type": "VARCHAR(10)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "amount",
+          "type": "NUMERIC(12, 2)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "description",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        },
+        {
+          "column": "animal_id",
+          "target": "animals.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_transactions_animal_id",
+          "columns": [
+            "animal_id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_transactions_finca_id",
+          "columns": [
+            "finca_id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_transactions_date",
+          "columns": [
+            "date"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "treatment_medications",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "treatment_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "medication_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "lot_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "quantity",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "treatment_id",
+          "target": "treatments.id",
+          "ondelete": null
+        },
+        {
+          "column": "medication_id",
+          "target": "medications.id",
+          "ondelete": null
+        },
+        {
+          "column": "lot_id",
+          "target": "inventory_lots.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "table": "treatment_vaccines",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "treatment_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "vaccine_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "lot_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "quantity",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "treatment_id",
+          "target": "treatments.id",
+          "ondelete": null
+        },
+        {
+          "column": "vaccine_id",
+          "target": "vaccines.id",
+          "ondelete": null
+        },
+        {
+          "column": "lot_id",
+          "target": "inventory_lots.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "table": "treatments",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "treatment_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "description",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "frequency",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "observations",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "dosis",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "withdrawal_days",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "withdrawal_end_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "animal_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "animal_id",
+          "target": "animals.id",
+          "ondelete": null
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_treatments_animal_date",
+          "columns": [
+            "animal_id",
+            "treatment_date"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_treatments_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_treatments_finca_id",
+          "columns": [
+            "finca_id"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "user",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "identification",
+          "type": "BIGINT",
+          "primary_key": false,
+          "nullable": false,
+          "unique": true
+        },
+        {
+          "name": "fullname",
+          "type": "VARCHAR(120)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "password",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "email",
+          "type": "VARCHAR(120)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": true
+        },
+        {
+          "name": "phone",
+          "type": "VARCHAR(40)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": true
+        },
+        {
+          "name": "address",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "role",
+          "type": "VARCHAR(13)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "status",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "approval_status",
+          "type": "VARCHAR(9)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_user_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_user_updated_at",
+          "columns": [
+            "updated_at"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "user_finca",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "role",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_active",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_primary",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "user_id",
+          "target": "user.id",
+          "ondelete": "CASCADE"
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": "CASCADE"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_user_finca_finca_id",
+          "columns": [
+            "finca_id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_user_finca_is_active",
+          "columns": [
+            "is_active"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_user_finca_user_finca",
+          "columns": [
+            "user_id",
+            "finca_id"
+          ],
+          "unique": true
+        },
+        {
+          "name": "ix_user_finca_is_primary",
+          "columns": [
+            "is_primary"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_user_finca_user_id",
+          "columns": [
+            "user_id"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "user_locations",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "latitude",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "longitude",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "accuracy",
+          "type": "FLOAT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "detection_method",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "reported_by_node_id",
+          "type": "VARCHAR(100)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "user_id",
+          "target": "user.id",
+          "ondelete": null
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "table": "vaccinations",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "animal_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "vaccine_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "vaccination_date",
+          "type": "DATE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "apprentice_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "instructor_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "finca_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "animal_id",
+          "target": "animals.id",
+          "ondelete": null
+        },
+        {
+          "column": "vaccine_id",
+          "target": "vaccines.id",
+          "ondelete": null
+        },
+        {
+          "column": "apprentice_id",
+          "target": "user.id",
+          "ondelete": null
+        },
+        {
+          "column": "instructor_id",
+          "target": "user.id",
+          "ondelete": null
+        },
+        {
+          "column": "finca_id",
+          "target": "finca.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_vaccinations_finca_id",
+          "columns": [
+            "finca_id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_vaccinations_animal_date",
+          "columns": [
+            "animal_id",
+            "vaccination_date"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_vaccinations_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "table": "vaccines",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "primary_key": true,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": true
+        },
+        {
+          "name": "dosis",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "route_administration_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "vaccination_interval",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "type",
+          "type": "VARCHAR(12)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "national_plan",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "target_disease_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "version_id",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "created_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        },
+        {
+          "name": "updated_by",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "column": "route_administration_id",
+          "target": "route_administrations.id",
+          "ondelete": null
+        },
+        {
+          "column": "target_disease_id",
+          "target": "diseases.id",
+          "ondelete": null
+        }
+      ],
+      "indexes": []
+    }
+  ],
+  "mappers": [
+    {
+      "class": "app.models.finca.Finca",
+      "mapped": true,
+      "table": "finca",
+      "relationships": [
+        {
+          "name": "users",
+          "target": "User",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "finca"
+        },
+        {
+          "name": "animals",
+          "target": "Animals",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "finca"
+        },
+        {
+          "name": "user_memberships",
+          "target": "UserFinca",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "finca"
+        },
+        {
+          "name": "membership_requests",
+          "target": "MembershipRequest",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "finca"
+        }
+      ]
+    },
+    {
+      "class": "app.models.user.User",
+      "mapped": true,
+      "table": "user",
+      "relationships": [
+        {
+          "name": "finca",
+          "target": "Finca",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "users"
+        },
+        {
+          "name": "diseases",
+          "target": "AnimalDiseases",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "instructor"
+        },
+        {
+          "name": "vaccines_as_apprentice",
+          "target": "Vaccinations",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "apprentice"
+        },
+        {
+          "name": "vaccines_as_instructor",
+          "target": "Vaccinations",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "instructor"
+        },
+        {
+          "name": "finca_memberships",
+          "target": "UserFinca",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "user"
+        },
+        {
+          "name": "push_subscriptions",
+          "target": "PushSubscription",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "user"
+        },
+        {
+          "name": "membership_requests",
+          "target": "MembershipRequest",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "user"
+        },
+        {
+          "name": "processed_requests",
+          "target": "MembershipRequest",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "processor"
+        },
+        {
+          "name": "sent_messages",
+          "target": "ChatMessage",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "sender"
+        },
+        {
+          "name": "received_messages",
+          "target": "ChatMessage",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "recipient"
+        },
+        {
+          "name": "assigned_tasks",
+          "target": "Tasks",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "assignee"
+        }
+      ]
+    },
+    {
+      "class": "app.models.animals.Animals",
+      "mapped": true,
+      "table": "animals",
+      "relationships": [
+        {
+          "name": "finca",
+          "target": "Finca",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "animals"
+        },
+        {
+          "name": "breed",
+          "target": "Breeds",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "animals"
+        },
+        {
+          "name": "father",
+          "target": "Animals",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": null
+        },
+        {
+          "name": "mother",
+          "target": "Animals",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": null
+        },
+        {
+          "name": "treatments",
+          "target": "Treatments",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "animals"
+        },
+        {
+          "name": "vaccinations",
+          "target": "Vaccinations",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "animals"
+        },
+        {
+          "name": "diseases",
+          "target": "AnimalDiseases",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "animal"
+        },
+        {
+          "name": "controls",
+          "target": "Control",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "animals"
+        },
+        {
+          "name": "genetic_improvements",
+          "target": "GeneticImprovements",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "animals"
+        },
+        {
+          "name": "animal_fields",
+          "target": "AnimalFields",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "animal"
+        },
+        {
+          "name": "images",
+          "target": "AnimalImages",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "animal"
+        },
+        {
+          "name": "alerts",
+          "target": "AnimalAlert",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "animal"
+        },
+        {
+          "name": "alert_configs",
+          "target": "AnimalAlertConfig",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "animal"
+        },
+        {
+          "name": "tasks",
+          "target": "Tasks",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "animal"
+        },
+        {
+          "name": "groups",
+          "target": "AnimalGroup",
+          "direction": "MANYTOMANY",
+          "uselist": true,
+          "back_populates": "animals"
+        }
+      ]
+    },
+    {
+      "class": "app.models.species.Species",
+      "mapped": true,
+      "table": "species",
+      "relationships": [
+        {
+          "name": "breeds",
+          "target": "Breeds",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "species"
+        }
+      ]
+    },
+    {
+      "class": "app.models.breeds.Breeds",
+      "mapped": true,
+      "table": "breeds",
+      "relationships": [
+        {
+          "name": "animals",
+          "target": "Animals",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "breed"
+        },
+        {
+          "name": "species",
+          "target": "Species",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "breeds"
+        }
+      ]
+    },
+    {
+      "class": "app.models.fields.Fields",
+      "mapped": true,
+      "table": "fields",
+      "relationships": [
+        {
+          "name": "animal_fields",
+          "target": "AnimalFields",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "field"
+        },
+        {
+          "name": "food_types",
+          "target": "FoodTypes",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "fields"
+        },
+        {
+          "name": "alerts",
+          "target": "AnimalAlert",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "field"
+        },
+        {
+          "name": "tasks",
+          "target": "Tasks",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "field"
+        }
+      ]
+    },
+    {
+      "class": "app.models.diseases.Diseases",
+      "mapped": true,
+      "table": "diseases",
+      "relationships": [
+        {
+          "name": "animals",
+          "target": "AnimalDiseases",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "disease"
+        },
+        {
+          "name": "vaccines",
+          "target": "Vaccines",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "diseases"
+        }
+      ]
+    },
+    {
+      "class": "app.models.animalDiseases.AnimalDiseases",
+      "mapped": true,
+      "table": "animal_diseases",
+      "relationships": [
+        {
+          "name": "animal",
+          "target": "Animals",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "diseases"
+        },
+        {
+          "name": "disease",
+          "target": "Diseases",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "animals"
+        },
+        {
+          "name": "instructor",
+          "target": "User",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "diseases"
+        }
+      ]
+    },
+    {
+      "class": "app.models.animalFields.AnimalFields",
+      "mapped": true,
+      "table": "animal_fields",
+      "relationships": [
+        {
+          "name": "animal",
+          "target": "Animals",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "animal_fields"
+        },
+        {
+          "name": "field",
+          "target": "Fields",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "animal_fields"
+        }
+      ]
+    },
+    {
+      "class": "app.models.vaccinations.Vaccinations",
+      "mapped": true,
+      "table": "vaccinations",
+      "relationships": [
+        {
+          "name": "animals",
+          "target": "Animals",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "vaccinations"
+        },
+        {
+          "name": "vaccines",
+          "target": "Vaccines",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "vaccinations"
+        },
+        {
+          "name": "apprentice",
+          "target": "User",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "vaccines_as_apprentice"
+        },
+        {
+          "name": "instructor",
+          "target": "User",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "vaccines_as_instructor"
+        }
+      ]
+    },
+    {
+      "class": "app.models.vaccines.Vaccines",
+      "mapped": true,
+      "table": "vaccines",
+      "relationships": [
+        {
+          "name": "diseases",
+          "target": "Diseases",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "vaccines"
+        },
+        {
+          "name": "treatments",
+          "target": "TreatmentVaccines",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "vaccines"
+        },
+        {
+          "name": "vaccinations",
+          "target": "Vaccinations",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "vaccines"
+        },
+        {
+          "name": "route_administration_rel",
+          "target": "RouteAdministration",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "vaccines"
+        }
+      ]
+    },
+    {
+      "class": "app.models.medications.Medications",
+      "mapped": true,
+      "table": "medications",
+      "relationships": [
+        {
+          "name": "treatments",
+          "target": "TreatmentMedications",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "medications"
+        },
+        {
+          "name": "route_administration_rel",
+          "target": "RouteAdministration",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "medications"
+        }
+      ]
+    },
+    {
+      "class": "app.models.treatments.Treatments",
+      "mapped": true,
+      "table": "treatments",
+      "relationships": [
+        {
+          "name": "animals",
+          "target": "Animals",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "treatments"
+        },
+        {
+          "name": "vaccines_treatments",
+          "target": "TreatmentVaccines",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "treatments"
+        },
+        {
+          "name": "medication_treatments",
+          "target": "TreatmentMedications",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "treatments"
+        }
+      ]
+    },
+    {
+      "class": "app.models.treatment_medications.TreatmentMedications",
+      "mapped": true,
+      "table": "treatment_medications",
+      "relationships": [
+        {
+          "name": "treatments",
+          "target": "Treatments",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "medication_treatments"
+        },
+        {
+          "name": "medications",
+          "target": "Medications",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "treatments"
+        },
+        {
+          "name": "lot",
+          "target": "InventoryLot",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "medication_treatments"
+        }
+      ]
+    },
+    {
+      "class": "app.models.treatment_vaccines.TreatmentVaccines",
+      "mapped": true,
+      "table": "treatment_vaccines",
+      "relationships": [
+        {
+          "name": "treatments",
+          "target": "Treatments",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "vaccines_treatments"
+        },
+        {
+          "name": "vaccines",
+          "target": "Vaccines",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "treatments"
+        },
+        {
+          "name": "lot",
+          "target": "InventoryLot",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "vaccine_treatments"
+        }
+      ]
+    },
+    {
+      "class": "app.models.control.Control",
+      "mapped": true,
+      "table": "control",
+      "relationships": [
+        {
+          "name": "animals",
+          "target": "Animals",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "controls"
+        }
+      ]
+    },
+    {
+      "class": "app.models.foodTypes.FoodTypes",
+      "mapped": true,
+      "table": "food_types",
+      "relationships": [
+        {
+          "name": "fields",
+          "target": "Fields",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "food_types"
+        }
+      ]
+    },
+    {
+      "class": "app.models.geneticImprovements.GeneticImprovements",
+      "mapped": true,
+      "table": "genetic_improvements",
+      "relationships": [
+        {
+          "name": "animals",
+          "target": "Animals",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "genetic_improvements"
+        }
+      ]
+    },
+    {
+      "class": "app.models.route_administration.RouteAdministration",
+      "mapped": true,
+      "table": "route_administrations",
+      "relationships": [
+        {
+          "name": "medications",
+          "target": "Medications",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "route_administration_rel"
+        },
+        {
+          "name": "vaccines",
+          "target": "Vaccines",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "route_administration_rel"
+        }
+      ]
+    },
+    {
+      "class": "app.models.animal_images.AnimalImages",
+      "mapped": true,
+      "table": "animal_images",
+      "relationships": [
+        {
+          "name": "animal",
+          "target": "Animals",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "images"
+        }
+      ]
+    },
+    {
+      "class": "app.models.activity_log.ActivityLog",
+      "mapped": true,
+      "table": "activity_log",
+      "relationships": [
+        {
+          "name": "actor",
+          "target": "User",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": null
+        }
+      ]
+    },
+    {
+      "class": "app.models.activity_daily_agg.ActivityDailyAgg",
+      "mapped": true,
+      "table": "activity_daily_agg",
+      "relationships": []
+    },
+    {
+      "class": "app.models.alerts.AnimalAlertConfig",
+      "mapped": true,
+      "table": "animal_alert_configs",
+      "relationships": [
+        {
+          "name": "animal",
+          "target": "Animals",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "alert_configs"
+        },
+        {
+          "name": "triggered_alerts",
+          "target": "AnimalAlert",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "config"
+        }
+      ]
+    },
+    {
+      "class": "app.models.alerts.AnimalAlert",
+      "mapped": true,
+      "table": "animal_alerts",
+      "relationships": [
+        {
+          "name": "animal",
+          "target": "Animals",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "alerts"
+        },
+        {
+          "name": "field",
+          "target": "Fields",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "alerts"
+        },
+        {
+          "name": "config",
+          "target": "AnimalAlertConfig",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "triggered_alerts"
+        }
+      ]
+    },
+    {
+      "class": "app.models.inventory.InventoryLot",
+      "mapped": true,
+      "table": "inventory_lots",
+      "relationships": [
+        {
+          "name": "medication",
+          "target": "Medications",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": null
+        },
+        {
+          "name": "vaccine",
+          "target": "Vaccines",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": null
+        },
+        {
+          "name": "movements",
+          "target": "InventoryMovement",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "lot"
+        },
+        {
+          "name": "medication_treatments",
+          "target": "TreatmentMedications",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "lot"
+        },
+        {
+          "name": "vaccine_treatments",
+          "target": "TreatmentVaccines",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "lot"
+        }
+      ]
+    },
+    {
+      "class": "app.models.inventory.InventoryMovement",
+      "mapped": true,
+      "table": "inventory_movements",
+      "relationships": [
+        {
+          "name": "lot",
+          "target": "InventoryLot",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "movements"
+        },
+        {
+          "name": "actor",
+          "target": "User",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": null
+        }
+      ]
+    },
+    {
+      "class": "app.models.reproduction.ReproductiveEvent",
+      "mapped": true,
+      "table": "reproductive_events",
+      "relationships": [
+        {
+          "name": "animal",
+          "target": "Animals",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": null
+        },
+        {
+          "name": "sire",
+          "target": "Animals",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": null
+        },
+        {
+          "name": "actor",
+          "target": "User",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": null
+        },
+        {
+          "name": "offspring",
+          "target": "Offspring",
+          "direction": "ONETOMANY",
+          "uselist": true,
+          "back_populates": "birth_event"
+        }
+      ]
+    },
+    {
+      "class": "app.models.reproduction.Offspring",
+      "mapped": true,
+      "table": "offspring",
+      "relationships": [
+        {
+          "name": "birth_event",
+          "target": "ReproductiveEvent",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "offspring"
+        },
+        {
+          "name": "animal",
+          "target": "Animals",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": null
+        }
+      ]
+    },
+    {
+      "class": "app.models.milk_production.MilkProduction",
+      "mapped": true,
+      "table": "milk_production",
+      "relationships": []
+    },
+    {
+      "class": "app.models.user_finca.UserFinca",
+      "mapped": true,
+      "table": "user_finca",
+      "relationships": [
+        {
+          "name": "user",
+          "target": "User",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "finca_memberships"
+        },
+        {
+          "name": "finca",
+          "target": "Finca",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "user_memberships"
+        }
+      ]
+    },
+    {
+      "class": "app.models.push_subscription.PushSubscription",
+      "mapped": true,
+      "table": "push_subscription",
+      "relationships": [
+        {
+          "name": "user",
+          "target": "User",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "push_subscriptions"
+        }
+      ]
+    },
+    {
+      "class": "app.models.membership_request.MembershipRequest",
+      "mapped": true,
+      "table": "membership_request",
+      "relationships": [
+        {
+          "name": "user",
+          "target": "User",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "membership_requests"
+        },
+        {
+          "name": "finca",
+          "target": "Finca",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "membership_requests"
+        },
+        {
+          "name": "processor",
+          "target": "User",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "processed_requests"
+        }
+      ]
+    },
+    {
+      "class": "app.models.chat_message.ChatMessage",
+      "mapped": true,
+      "table": "chat_messages",
+      "relationships": [
+        {
+          "name": "sender",
+          "target": "User",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "sent_messages"
+        },
+        {
+          "name": "recipient",
+          "target": "User",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "received_messages"
+        }
+      ]
+    },
+    {
+      "class": "app.models.user_location.UserLocation",
+      "mapped": true,
+      "table": "user_locations",
+      "relationships": []
+    },
+    {
+      "class": "app.models.financial.Transaction",
+      "mapped": true,
+      "table": "transactions",
+      "relationships": [
+        {
+          "name": "animal",
+          "target": "Animals",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": null
+        }
+      ]
+    },
+    {
+      "class": "app.models.tasks.Tasks",
+      "mapped": true,
+      "table": "tasks",
+      "relationships": [
+        {
+          "name": "animal",
+          "target": "Animals",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "tasks"
+        },
+        {
+          "name": "field",
+          "target": "Fields",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "tasks"
+        },
+        {
+          "name": "assignee",
+          "target": "User",
+          "direction": "MANYTOONE",
+          "uselist": false,
+          "back_populates": "assigned_tasks"
+        }
+      ]
+    },
+    {
+      "class": "app.models.extended_summaries.FinancialSummary",
+      "mapped": true,
+      "table": "financial_summary",
+      "relationships": []
+    },
+    {
+      "class": "app.models.extended_summaries.MilkSummary",
+      "mapped": true,
+      "table": "milk_summary",
+      "relationships": []
+    },
+    {
+      "class": "app.models.livestock_summary.LivestockSummary",
+      "mapped": true,
+      "table": "livestock_summary",
+      "relationships": []
+    },
+    {
+      "class": "app.models.operational.AnimalGroup",
+      "mapped": true,
+      "table": "animal_groups",
+      "relationships": [
+        {
+          "name": "animals",
+          "target": "Animals",
+          "direction": "MANYTOMANY",
+          "uselist": true,
+          "back_populates": "groups"
+        }
+      ]
+    },
+    {
+      "class": "app.models.operational.AnimalGroupMembership",
+      "mapped": true,
+      "table": "animal_group_membership",
+      "relationships": []
+    },
+    {
+      "class": "app.models.operational.PastureAforo",
+      "mapped": true,
+      "table": "pasture_aforos",
+      "relationships": []
+    },
+    {
+      "class": "app.models.operational.Infrastructure",
+      "mapped": true,
+      "table": "infrastructure",
+      "relationships": []
+    },
+    {
+      "class": "app.models.operational_costs.OperationalCost",
+      "mapped": true,
+      "table": "operational_costs",
+      "relationships": []
+    },
+    {
+      "class": "app.models.production_finance.MilkProduction",
+      "mapped": false,
+      "error": "UnmappedClassError(\"Class 'app.models.production_finance.MilkProduction' is not mapped\")"
+    }
+  ],
+  "import_errors": [
+    {
+      "module": "app.models.production_finance",
+      "error": "InvalidRequestError(\"Table 'milk_production' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.\")"
+    }
+  ]
+}

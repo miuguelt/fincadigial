@@ -1,0 +1,176 @@
+[
+  {
+    "name": "MilkProduction - Listar",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/milk-production",
+    "count": 10
+  },
+  {
+    "name": "Dashboard - Resumen",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/analytics/dashboard",
+    "keys": [
+      "total_animals",
+      "active_animals",
+      "average_weight",
+      "total_treatments",
+      "health_summary"
+    ]
+  },
+  {
+    "name": "Analytics - Producción",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/analytics/production/statistics",
+    "keys": [
+      "weight_trends",
+      "growth_rates",
+      "productivity_metrics",
+      "best_performers",
+      "group_statistics"
+    ]
+  },
+  {
+    "name": "Financial - Listar Transacciones",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/financial/transactions",
+    "count": 30
+  },
+  {
+    "name": "Financial - Resumen",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/financial/summary",
+    "keys": [
+      "total_income",
+      "total_expense",
+      "balance",
+      "roi_percentage"
+    ]
+  },
+  {
+    "name": "Reproduction - Listar Eventos",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/reproduction/events/",
+    "count": 20
+  },
+  {
+    "name": "Reproduction - Resumen",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/reproduction/summary",
+    "keys": [
+      "total_females",
+      "total_events",
+      "total_inseminations",
+      "total_births",
+      "active_pregnancies"
+    ]
+  },
+  {
+    "name": "Reproduction - Partos Pendientes",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/reproduction/pending-births",
+    "count": 25
+  },
+  {
+    "name": "Reproduction - Alertas de Celo",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/reproduction/heat-alerts",
+    "count": 0
+  },
+  {
+    "name": "Growth - Resumen",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/growth/summary",
+    "count": 13
+  },
+  {
+    "name": "Growth - Alertas",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/growth/alerts",
+    "keys": [
+      "negative_trend",
+      "stagnant",
+      "below_reference",
+      "summary"
+    ]
+  },
+  {
+    "name": "Health - Listar Tratamientos",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/treatments/",
+    "count": 10
+  },
+  {
+    "name": "Inventory - Listar Lotes",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/inventory/lots",
+    "count": 6
+  },
+  {
+    "name": "Inventory - Movimientos",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/inventory/movements",
+    "count": 20
+  },
+  {
+    "name": "Inventory - Resumen",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/inventory/summary",
+    "keys": [
+      "total_lots",
+      "medication_lots",
+      "vaccine_lots",
+      "expired_lots",
+      "expiring_soon_lots"
+    ]
+  },
+  {
+    "name": "Inventory - Alertas",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/inventory/alerts",
+    "keys": [
+      "expired",
+      "expiring_soon",
+      "low_stock",
+      "summary"
+    ]
+  },
+  {
+    "name": "AnimalImages - Listar",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/animal-images/1",
+    "keys": [
+      "animal_id",
+      "total",
+      "images",
+      "base_url"
+    ]
+  },
+  {
+    "name": "UserFinca - Listar",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/multi-finca/my-fincas",
+    "keys": [
+      "fincas",
+      "count",
+      "is_multi_finca"
+    ]
+  }
+]

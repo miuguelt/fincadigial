@@ -1,0 +1,333 @@
+# ════════════════════════════════════════════════════════════════════════
+# FINCA VILLA LUZ — Docker Compose PRODUCCIÓN (Coolify / Contabo VPS)
+# ════════════════════════════════════════════════════════════════════════
+#
+# Diseño:
+#   Frontend  → Nginx (puerto interno 80)
+#   Backend   → Gunicorn + Flask (puerto interno 8081)
+#   DB        → PostgreSQL 16 (reemplaza MySQL, menor RAM en VPS barato)
+#   Redis     → Cola de tareas (Celery Beat/Worker)
+#   Backup    → pg_dump automático diario
+#
+# En Coolify:
+#   1. Importar este archivo como "Docker Compose" en tu proyecto.
+#   2. Configurar las variables de entorno en la UI de Coolify.
+#   3. Habilitar el dominio HTTPS desde el panel de Coolify (Traefik).
+#   4. Click "Deploy".
+#
+# Prerequisito único: el VPS debe tener Docker + Docker Compose instalado.
+# ════════════════════════════════════════════════════════════════════════
+
+services:
+
+  # ── FRONTEND (Nginx + SPA Build) ──────────────────────────────────────
+  villaluz-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # En Coolify, estas ARGs se inyectan como Build Arguments en la UI
+        VITE_RUNTIME_ENV: production
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+        VITE_FRONTEND_URL: ${VITE_FRONTEND_URL}
+        VITE_USE_BEARER_AUTH: "true"
+    image: villaluz-frontend:${APP_VERSION:-latest}
+    container_name: villaluz_frontend
+    restart: unless-stopped
+    # Coolify gestiona el puerto externo vía Traefik (HTTPS automático)
+    expose:
+      - "80"
+    depends_on:
+      villaluz-backend:
+        condition: service_healthy
+    networks:
+      - villaluz-net
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    labels:
+      # Etiquetas Coolify/Traefik (Coolify las lee automáticamente)
+      coolify.managed: "true"
+
+  # ── BACKEND (Flask + Gunicorn) ────────────────────────────────────────
+  villaluz-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: villaluz-backend:${APP_VERSION:-latest}
+    container_name: villaluz_backend
+    restart: unless-stopped
+    # Workers = 2 × CPU_CORES + 1 (VPS de 2 vCPU = 5 workers óptimos)
+    command: >
+      gunicorn
+      --preload
+      --worker-class gevent
+      --workers ${GUNICORN_WORKERS:-5}
+      --worker-connections ${GUNICORN_CONNECTIONS:-200}
+      --timeout ${GUNICORN_TIMEOUT:-120}
+      --graceful-timeout 30
+      --max-requests 1000
+      --max-requests-jitter 100
+      --bind 0.0.0.0:8081
+      --access-logfile -
+      --error-logfile -
+      wsgi:app
+    expose:
+      - "8081"
+    environment:
+      # ── App ──
+      FLASK_ENV: production
+      APP_VERSION: ${APP_VERSION:-1.0.0}
+      LOG_LEVEL: ${LOG_LEVEL:-WARNING}
+      # ── Base de Datos (PostgreSQL) ──
+      DB_ENGINE: postgresql+psycopg2
+      DB_HOST: villaluz-db
+      DB_PORT: "5432"
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME:-villaluz}
+      SQLALCHEMY_DATABASE_URI: "postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@villaluz-db:5432/${DB_NAME}"
+      # ── Seguridad ──
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_COOKIE_DOMAIN: ${DOMAIN}
+      JWT_COOKIE_SECURE: "true"
+      JWT_COOKIE_SAMESITE: Lax
+      JWT_COOKIE_CSRF_PROTECT: "true"
+      # ── CORS ──
+      CORS_ORIGINS: "https://${DOMAIN},https://www.${DOMAIN}"
+      # ── Redis ──
+      REDIS_URL: redis://villaluz-redis:6379/0
+      CELERY_BROKER_URL: redis://villaluz-redis:6379/0
+      CELERY_RESULT_BACKEND: redis://villaluz-redis:6379/0
+      # ── Observabilidad ──
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_TRACES_SAMPLE_RATE: "0.05"
+    volumes:
+      # Uploads persistentes (fotos de animales, adjuntos)
+      - uploads_data:/app/static/uploads
+      # Logs de mantenimiento
+      - maintenance_logs:/app/maintenance
+    depends_on:
+      villaluz-db:
+        condition: service_healthy
+      villaluz-redis:
+        condition: service_healthy
+    networks:
+      - villaluz-net
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8081/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 45s
+
+  # ── DB INITIALIZER (corre y muere — idempotente) ───────────────────────
+  villaluz-db-init:
+    image: villaluz-backend:${APP_VERSION:-latest}
+    container_name: villaluz_db_init
+    restart: "no"
+    command: >
+      sh -c "
+        echo '🔄 Esperando base de datos...' &&
+        sleep 5 &&
+        echo '🔧 Ejecutando migraciones...' &&
+        flask db upgrade &&
+        echo '🌱 Ejecutando seed de Base de Conocimiento...' &&
+        python -c \"
+        from app.utils.seed_master import run_master_seed;
+        app = create_app('production');
+        with app.app_context():
+            run_master_seed();
+        \" &&
+        echo '✅ Inicialización completa.'
+      "
+    environment:
+      FLASK_ENV: production
+      FLASK_APP: wsgi.py
+      DB_ENGINE: postgresql+psycopg2
+      DB_HOST: villaluz-db
+      DB_PORT: "5432"
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME:-villaluz}
+      SQLALCHEMY_DATABASE_URI: "postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@villaluz-db:5432/${DB_NAME:-villaluz}"
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+    depends_on:
+      villaluz-db:
+        condition: service_healthy
+    networks:
+      - villaluz-net
+
+  # ── CELERY WORKER (tareas asíncronas) ─────────────────────────────────
+  villaluz-worker:
+    image: villaluz-backend:${APP_VERSION:-latest}
+    container_name: villaluz_celery_worker
+    restart: unless-stopped
+    command: >
+      celery -A celery_worker.celery worker
+      --loglevel=warning
+      --concurrency=${CELERY_CONCURRENCY:-2}
+      --max-tasks-per-child=200
+    environment:
+      FLASK_ENV: production
+      DB_ENGINE: postgresql+psycopg2
+      DB_HOST: villaluz-db
+      DB_PORT: "5432"
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME:-villaluz}
+      SQLALCHEMY_DATABASE_URI: "postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@villaluz-db:5432/${DB_NAME:-villaluz}"
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      REDIS_URL: redis://villaluz-redis:6379/0
+      CELERY_BROKER_URL: redis://villaluz-redis:6379/0
+      CELERY_RESULT_BACKEND: redis://villaluz-redis:6379/0
+    depends_on:
+      villaluz-db:
+        condition: service_healthy
+      villaluz-redis:
+        condition: service_healthy
+    networks:
+      - villaluz-net
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A celery_worker.celery inspect ping -d celery@$$HOSTNAME || exit 1"]
+      interval: 60s
+      timeout: 15s
+      retries: 3
+      start_period: 40s
+
+  # ── CELERY BEAT (scheduler periódico) ─────────────────────────────────
+  villaluz-beat:
+    image: villaluz-backend:${APP_VERSION:-latest}
+    container_name: villaluz_celery_beat
+    restart: unless-stopped
+    command: celery -A celery_worker.celery beat --loglevel=warning --scheduler celery.beat:PersistentScheduler
+    environment:
+      FLASK_ENV: production
+      DB_ENGINE: postgresql+psycopg2
+      DB_HOST: villaluz-db
+      DB_PORT: "5432"
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME:-villaluz}
+      SQLALCHEMY_DATABASE_URI: "postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@villaluz-db:5432/${DB_NAME:-villaluz}"
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      REDIS_URL: redis://villaluz-redis:6379/0
+      CELERY_BROKER_URL: redis://villaluz-redis:6379/0
+      CELERY_RESULT_BACKEND: redis://villaluz-redis:6379/0
+    depends_on:
+      villaluz-db:
+        condition: service_healthy
+      villaluz-redis:
+        condition: service_healthy
+    networks:
+      - villaluz-net
+
+  # ── POSTGRESQL 16 ──────────────────────────────────────────────────────
+  villaluz-db:
+    image: postgres:16-alpine
+    container_name: villaluz_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-villaluz}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      # Tuning para VPS de 2GB RAM (ajustar si tienes más memoria)
+      POSTGRES_INITDB_ARGS: "--locale=es_CO.UTF-8 --encoding=UTF8"
+    command: >
+      postgres
+      -c shared_buffers=256MB
+      -c max_connections=50
+      -c work_mem=4MB
+      -c maintenance_work_mem=64MB
+      -c effective_cache_size=512MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=8MB
+      -c random_page_cost=1.1
+      -c log_min_duration_statement=1000
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - villaluz-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME:-villaluz}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  # ── REDIS 7 ───────────────────────────────────────────────────────────
+  villaluz-redis:
+    image: redis:7-alpine
+    container_name: villaluz_redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --maxmemory 128mb
+      --maxmemory-policy allkeys-lru
+      --save ""
+      --appendonly no
+    networks:
+      - villaluz-net
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── BACKUP (pg_dump diario) ────────────────────────────────────────────
+  villaluz-backup:
+    image: postgres:16-alpine
+    container_name: villaluz_backup
+    restart: unless-stopped
+    entrypoint: >
+      sh -c "
+        while true; do
+          BACKUP_FILE=/backups/villaluz_$$(date +%Y%m%d_%H%M%S).sql.gz
+          echo \"[backup] Iniciando dump: $$BACKUP_FILE\"
+          PGPASSWORD=$$POSTGRES_PASSWORD pg_dump -h villaluz-db -U $$POSTGRES_USER $$POSTGRES_DB | gzip > $$BACKUP_FILE &&
+          echo \"[backup] ✅ Dump completo.\" ||
+          echo \"[backup] ❌ Error al hacer dump.\"
+          # Retener solo los últimos 7 backups
+          ls -t /backups/*.sql.gz 2>/dev/null | tail -n +8 | xargs rm -f 2>/dev/null || true
+          echo \"[backup] Próximo backup en 24h...\"
+          sleep 86400
+        done
+      "
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-villaluz}
+    volumes:
+      - ./backups:/backups
+    depends_on:
+      villaluz-db:
+        condition: service_healthy
+    networks:
+      - villaluz-net
+
+# ── REDES ──────────────────────────────────────────────────────────────
+networks:
+  villaluz-net:
+    driver: bridge
+    # Red interna — Coolify/Traefik conecta su red externa automáticamente
+    internal: false
+
+# ── VOLÚMENES PERSISTENTES ────────────────────────────────────────────
+volumes:
+  pg_data:
+    driver: local
+  redis_data:
+    driver: local
+  uploads_data:
+    driver: local
+  maintenance_logs:
+    driver: local

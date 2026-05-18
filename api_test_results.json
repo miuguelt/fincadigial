@@ -1,0 +1,132 @@
+[
+  {
+    "name": "MilkProduction - Listar",
+    "status": "FAIL",
+    "status_code": 400,
+    "url": "http://localhost:5000/api/v1/milk-production",
+    "error": "{\"error\":{\"code\":\"HTTP_400\",\"details\":{\"context\":\"list MilkProduction\",\"error\":\"(sqlite3.OperationalError) no such column: milk_production.milking_session\\n[SQL: SELECT milk_production.id AS milk_prod"
+  },
+  {
+    "name": "MilkProduction - Por Animal",
+    "status": "FAIL",
+    "status_code": 500,
+    "url": "http://localhost:5000/api/v1/milk-production/animal/1",
+    "error": "{\"message\": \"Internal Server Error\", \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc3NzgzNzc0NywianRpIjoiNzJkMzU3YTktMzg2Yi00NTJkLTk3YjAtYjBlNzI1NDczZWIxIiwidHlwZ"
+  },
+  {
+    "name": "MilkProduction - Resumen Diario",
+    "status": "FAIL",
+    "status_code": 500,
+    "url": "http://localhost:5000/api/v1/milk-production/summary/daily",
+    "error": "{\"message\": \"Internal Server Error\", \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc3NzgzNzc0NywianRpIjoiNzJkMzU3YTktMzg2Yi00NTJkLTk3YjAtYjBlNzI1NDczZWIxIiwidHlwZ"
+  },
+  {
+    "name": "Financial - Listar Transacciones",
+    "status": "FAIL",
+    "status_code": 500,
+    "url": "http://localhost:5000/api/v1/financial/transactions",
+    "error": "{\"success\": false, \"message\": \"Error interno del servidor\", \"error\": {\"code\": \"HTTP_500\", \"message\": \"Error interno del servidor\", \"details\": {\"error\": \"(sqlite3.OperationalError) no such column: anim"
+  },
+  {
+    "name": "Financial - Resumen",
+    "status": "FAIL",
+    "status_code": 404,
+    "url": "http://localhost:5000/api/v1/financial/transactions/summary",
+    "error": "{\"message\": \"The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again. You have requested this URI [/api/v1/financial/transactions/summar"
+  },
+  {
+    "name": "Reproduction - Listar Eventos",
+    "status": "FAIL",
+    "status_code": 500,
+    "url": "http://localhost:5000/api/v1/reproduction/events",
+    "error": "{\"message\": \"Internal Server Error\", \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc3NzgzNzc0NywianRpIjoiNzJkMzU3YTktMzg2Yi00NTJkLTk3YjAtYjBlNzI1NDczZWIxIiwidHlwZ"
+  },
+  {
+    "name": "Reproduction - Historial Animal",
+    "status": "FAIL",
+    "status_code": 500,
+    "url": "http://localhost:5000/api/v1/reproduction/events/animal/1",
+    "error": "{\"message\": \"Internal Server Error\", \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc3NzgzNzc0NywianRpIjoiNzJkMzU3YTktMzg2Yi00NTJkLTk3YjAtYjBlNzI1NDczZWIxIiwidHlwZ"
+  },
+  {
+    "name": "Reproduction - Resumen",
+    "status": "FAIL",
+    "status_code": 404,
+    "url": "http://localhost:5000/api/v1/reproduction/events/summary",
+    "error": "{\"message\": \"The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again. You have requested this URI [/api/v1/reproduction/events/summary] "
+  },
+  {
+    "name": "Reproduction - Partos Pendientes",
+    "status": "FAIL",
+    "status_code": 404,
+    "url": "http://localhost:5000/api/v1/reproduction/events/pending-births",
+    "error": "{\"message\": \"The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again. You have requested this URI [/api/v1/reproduction/events/pending-b"
+  },
+  {
+    "name": "Reproduction - Alertas de Celo",
+    "status": "FAIL",
+    "status_code": 404,
+    "url": "http://localhost:5000/api/v1/reproduction/events/heat-alerts",
+    "error": "{\"message\": \"The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again. You have requested this URI [/api/v1/reproduction/events/heat-aler"
+  },
+  {
+    "name": "Reproduction - Listar Crías",
+    "status": "FAIL",
+    "status_code": 500,
+    "url": "http://localhost:5000/api/v1/reproduction/offspring",
+    "error": "{\"message\": \"Internal Server Error\", \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc3NzgzNzc0NywianRpIjoiNzJkMzU3YTktMzg2Yi00NTJkLTk3YjAtYjBlNzI1NDczZWIxIiwidHlwZ"
+  },
+  {
+    "name": "Inventory - Listar Lotes",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/inventory/lots",
+    "count": 6
+  },
+  {
+    "name": "Inventory - Movimientos",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/inventory/movements",
+    "count": 20
+  },
+  {
+    "name": "Inventory - Resumen",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/inventory/summary",
+    "keys": [
+      "total_lots",
+      "medication_lots",
+      "vaccine_lots",
+      "expired_lots",
+      "expiring_soon_lots"
+    ]
+  },
+  {
+    "name": "Inventory - Alertas",
+    "status": "OK",
+    "status_code": 200,
+    "url": "http://localhost:5000/api/v1/inventory/alerts",
+    "keys": [
+      "expired",
+      "expiring_soon",
+      "low_stock",
+      "summary"
+    ]
+  },
+  {
+    "name": "AnimalImages - Listar",
+    "status": "FAIL",
+    "status_code": 404,
+    "url": "http://localhost:5000/api/v1/animal-images",
+    "error": "{\"message\": \"The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again. You have requested this URI [/api/v1/animal-images] but did you me"
+  },
+  {
+    "name": "UserFinca - Listar",
+    "status": "FAIL",
+    "status_code": 404,
+    "url": "http://localhost:5000/api/v1/user-finca",
+    "error": "{\"message\": \"The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again. You have requested this URI [/api/v1/user-finca] but did you mean "
+  }
+]

@@ -1,0 +1,6988 @@
+{
+  "db": "instance\\test_finca.db",
+  "table_count": 44,
+  "tables": [
+    "activity_daily_agg",
+    "activity_log",
+    "animal_alert_configs",
+    "animal_alerts",
+    "animal_diseases",
+    "animal_fields",
+    "animal_group_membership",
+    "animal_groups",
+    "animal_images",
+    "animals",
+    "breeds",
+    "chat_messages",
+    "control",
+    "diseases",
+    "fields",
+    "financial_summary",
+    "finca",
+    "food_types",
+    "genetic_improvements",
+    "infrastructure",
+    "inventory_lots",
+    "inventory_movements",
+    "livestock_summary",
+    "medications",
+    "membership_request",
+    "milk_production",
+    "milk_summary",
+    "offspring",
+    "operational_costs",
+    "pasture_aforos",
+    "push_subscription",
+    "reproductive_events",
+    "route_administrations",
+    "species",
+    "tasks",
+    "transactions",
+    "treatment_medications",
+    "treatment_vaccines",
+    "treatments",
+    "user",
+    "user_finca",
+    "user_locations",
+    "vaccinations",
+    "vaccines"
+  ],
+  "schema": {
+    "activity_daily_agg": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "date",
+          "type": "DATE",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "actor_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "entity",
+          "type": "VARCHAR(50)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "action",
+          "type": "VARCHAR(20)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "severity",
+          "type": "VARCHAR(20)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "animal_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "count",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_activity_daily_agg_actor_date_entity",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_activity_daily_agg_actor_date",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 2,
+          "name": "ix_activity_daily_agg_date",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 3,
+          "name": "sqlite_autoindex_activity_daily_agg_1",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        }
+      ]
+    },
+    "activity_log": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "action",
+          "type": "VARCHAR(20)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "entity",
+          "type": "VARCHAR(50)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "entity_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "title",
+          "type": "VARCHAR(255)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "description",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "severity",
+          "type": "VARCHAR(20)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "actor_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "animal_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "relations",
+          "type": "JSON",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 17,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "user",
+          "from": "actor_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_activity_log_animal_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_activity_log_actor_action_created_at",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 2,
+          "name": "ix_activity_log_entity",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 3,
+          "name": "ix_activity_log_entity_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 4,
+          "name": "ix_activity_log_actor_entity_created_at",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 5,
+          "name": "ix_activity_log_actor_animal_created_at",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 6,
+          "name": "ix_activity_log_action",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 7,
+          "name": "ix_activity_log_actor_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 8,
+          "name": "ix_activity_log_actor_created_at",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 9,
+          "name": "ix_activity_log_actor_severity_created_at",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 10,
+          "name": "ix_activity_log_created_at",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 11,
+          "name": "ix_activity_log_severity",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        }
+      ]
+    },
+    "animal_alert_configs": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "animal_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "alert_type",
+          "type": "VARCHAR(12)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "dimension",
+          "type": "VARCHAR(50)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "condition_value",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "message",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "priority",
+          "type": "VARCHAR(8)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "is_active",
+          "type": "BOOLEAN",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "is_default",
+          "type": "BOOLEAN",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "animals",
+          "from": "animal_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": []
+    },
+    "animal_alerts": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "animal_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "field_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "config_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "alert_type",
+          "type": "VARCHAR(12)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "message",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "recommendation",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "priority",
+          "type": "VARCHAR(8)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "is_read",
+          "type": "BOOLEAN",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "triggered_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 17,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "animal_alert_configs",
+          "from": "config_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "table": "fields",
+          "from": "field_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 3,
+          "seq": 0,
+          "table": "animals",
+          "from": "animal_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_animal_alerts_finca_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_animal_alerts_animal_read",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        }
+      ]
+    },
+    "animal_diseases": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "animal_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "disease_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "instructor_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "diagnosis_date",
+          "type": "DATE",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "status",
+          "type": "VARCHAR(50)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "notes",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "user",
+          "from": "instructor_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "table": "diseases",
+          "from": "disease_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 3,
+          "seq": 0,
+          "table": "animals",
+          "from": "animal_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_animal_diseases_finca_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_animal_diseases_animal_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 2,
+          "name": "sqlite_autoindex_animal_diseases_1",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        }
+      ]
+    },
+    "animal_fields": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "animal_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "field_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "assignment_date",
+          "type": "DATE",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "removal_date",
+          "type": "DATE",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "notes",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "fields",
+          "from": "field_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "table": "animals",
+          "from": "animal_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_animal_fields_finca_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_animal_fields_field_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 2,
+          "name": "sqlite_autoindex_animal_fields_1",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        }
+      ]
+    },
+    "animal_group_membership": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "animal_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "group_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 2
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "animal_groups",
+          "from": "group_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "animals",
+          "from": "animal_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "sqlite_autoindex_animal_group_membership_1",
+          "unique": 1,
+          "origin": "pk",
+          "partial": 0
+        }
+      ]
+    },
+    "animal_groups": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "description",
+          "type": "VARCHAR(255)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": []
+    },
+    "animal_images": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "animal_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "filename",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "filepath",
+          "type": "VARCHAR(500)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "thumbnail_path",
+          "type": "VARCHAR(500)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "file_size",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "mime_type",
+          "type": "VARCHAR(100)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "is_primary",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "animals",
+          "from": "animal_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "CASCADE",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_animal_images_animal_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_animal_images_created_at",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 2,
+          "name": "ix_animal_images_is_primary",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        }
+      ]
+    },
+    "animals": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "sex",
+          "type": "VARCHAR(6)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "birth_date",
+          "type": "DATE",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "weight",
+          "type": "FLOAT",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "record",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "qr_code",
+          "type": "VARCHAR(100)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "status",
+          "type": "VARCHAR(7)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "entry_date",
+          "type": "DATE",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "purchase_date",
+          "type": "DATE",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "sale_date",
+          "type": "DATE",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "exit_date",
+          "type": "DATE",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "exit_reason",
+          "type": "VARCHAR(255)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "breeds_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "idFather",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "idMother",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 17,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 18,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 19,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 20,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 21,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 22,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "animals",
+          "from": "idMother",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "animals",
+          "from": "idFather",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "table": "breeds",
+          "from": "breeds_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 3,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_animals_created_at",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_animals_updated_at",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 2,
+          "name": "ix_animals_breeds_status",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 3,
+          "name": "ix_animals_finca_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 4,
+          "name": "sqlite_autoindex_animals_2",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        },
+        {
+          "seq": 5,
+          "name": "sqlite_autoindex_animals_1",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        }
+      ]
+    },
+    "breeds": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "name",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "species_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "species",
+          "from": "species_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_breeds_created_at",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_breeds_updated_at",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        }
+      ]
+    },
+    "chat_messages": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "sender_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "recipient_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "message",
+          "type": "TEXT",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "attachment_url",
+          "type": "VARCHAR(500)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "attachment_type",
+          "type": "VARCHAR(50)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "attachment_name",
+          "type": "VARCHAR(255)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "is_read",
+          "type": "BOOLEAN",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "user",
+          "from": "recipient_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "user",
+          "from": "sender_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": []
+    },
+    "control": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "checkup_date",
+          "type": "DATE",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "health_status",
+          "type": "VARCHAR(9)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "weight",
+          "type": "FLOAT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "height",
+          "type": "FLOAT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "description",
+          "type": "VARCHAR(255)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "animal_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "animals",
+          "from": "animal_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_control_finca_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_control_created_at",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 2,
+          "name": "ix_control_animal_checkup",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        }
+      ]
+    },
+    "diseases": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "symptoms",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "details",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_diseases_created_at",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_diseases_updated_at",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 2,
+          "name": "sqlite_autoindex_diseases_1",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        }
+      ]
+    },
+    "fields": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "name",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ubication",
+          "type": "VARCHAR(255)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "capacity",
+          "type": "VARCHAR(255)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "state",
+          "type": "VARCHAR(13)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "handlings",
+          "type": "VARCHAR(255)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "gauges",
+          "type": "VARCHAR(255)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "area",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "food_type_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "latitude",
+          "type": "FLOAT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "longitude",
+          "type": "FLOAT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "radius_meters",
+          "type": "FLOAT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 17,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 18,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 19,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "food_types",
+          "from": "food_type_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_fields_finca_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "sqlite_autoindex_fields_1",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        }
+      ]
+    },
+    "financial_summary": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "total_income",
+          "type": "NUMERIC(15, 2)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "total_expense",
+          "type": "NUMERIC(15, 2)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "balance",
+          "type": "NUMERIC(15, 2)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "last_update",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "sqlite_autoindex_financial_summary_1",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        }
+      ]
+    },
+    "finca": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "name",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "type",
+          "type": "VARCHAR(11)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "nit",
+          "type": "VARCHAR(20)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "department",
+          "type": "VARCHAR(100)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "municipality",
+          "type": "VARCHAR(100)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "address",
+          "type": "VARCHAR(255)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "latitude",
+          "type": "FLOAT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "longitude",
+          "type": "FLOAT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "is_active",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "logo_url",
+          "type": "VARCHAR(500)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "ica_registration",
+          "type": "VARCHAR(50)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 17,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 18,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [],
+      "indexes": []
+    },
+    "food_types": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "food_type",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "sowing_date",
+          "type": "DATE",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "harvest_date",
+          "type": "DATE",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "area",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "handlings",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "gauges",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "sqlite_autoindex_food_types_1",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        }
+      ]
+    },
+    "genetic_improvements": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "date",
+          "type": "DATE",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "details",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "results",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "genetic_event_technique",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "animal_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "animals",
+          "from": "animal_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": []
+    },
+    "infrastructure": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "type",
+          "type": "VARCHAR(10)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "last_maintenance",
+          "type": "DATE",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "next_maintenance",
+          "type": "DATE",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "status",
+          "type": "VARCHAR(50)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": []
+    },
+    "inventory_lots": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "product_type",
+          "type": "VARCHAR(11)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "medication_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "vaccine_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "lot_number",
+          "type": "VARCHAR(100)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "quantity",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "current_quantity",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "unit",
+          "type": "VARCHAR(50)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "expiry_date",
+          "type": "DATE",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "entry_date",
+          "type": "DATE",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "supplier",
+          "type": "VARCHAR(200)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "unit_cost",
+          "type": "FLOAT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "min_stock",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "notes",
+          "type": "VARCHAR(500)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 17,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 18,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 19,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 20,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 21,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "vaccines",
+          "from": "vaccine_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "table": "medications",
+          "from": "medication_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_inventory_lots_medication_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_inventory_lots_expiry_date",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 2,
+          "name": "ix_inventory_lots_vaccine_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        }
+      ]
+    },
+    "inventory_movements": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "lot_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "movement_type",
+          "type": "VARCHAR(7)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "quantity",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "reference_type",
+          "type": "VARCHAR(50)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "reference_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "notes",
+          "type": "VARCHAR(500)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "actor_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "user",
+          "from": "actor_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "table": "inventory_lots",
+          "from": "lot_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_inventory_movements_created_at",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_inventory_movements_lot_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        }
+      ]
+    },
+    "livestock_summary": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "total_animals",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "active_animals",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "sold_animals",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "dead_animals",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "male_count",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "female_count",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "sick_animals",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "last_recalculation",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "sqlite_autoindex_livestock_summary_1",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        }
+      ]
+    },
+    "medications": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "description",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "indications",
+          "type": "VARCHAR(255)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "dosis",
+          "type": "VARCHAR(50)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "contraindications",
+          "type": "VARCHAR(255)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "route_administration_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "availability",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "route_administrations",
+          "from": "route_administration_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "sqlite_autoindex_medications_1",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        }
+      ]
+    },
+    "membership_request": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "user_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "status",
+          "type": "VARCHAR(8)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "requested_role",
+          "type": "VARCHAR(50)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "message",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "processed_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "processed_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "user",
+          "from": "processed_by",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "table": "user",
+          "from": "user_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": []
+    },
+    "milk_production": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "animal_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "date",
+          "type": "DATE",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "liters",
+          "type": "FLOAT",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "milking_session",
+          "type": "VARCHAR(5)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "fat_percentage",
+          "type": "FLOAT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "protein_percentage",
+          "type": "FLOAT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "somatic_cells",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "notes",
+          "type": "VARCHAR(500)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "animals",
+          "from": "animal_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_milk_production_date",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_milk_production_finca_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 2,
+          "name": "ix_milk_production_animal_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        }
+      ]
+    },
+    "milk_summary": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "total_liters",
+          "type": "FLOAT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "avg_liters_per_animal",
+          "type": "FLOAT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "total_entries",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "last_update",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "sqlite_autoindex_milk_summary_1",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        }
+      ]
+    },
+    "offspring": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "birth_event_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "animal_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "sex",
+          "type": "VARCHAR(10)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "alive",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "birth_weight",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "notes",
+          "type": "VARCHAR(255)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "animals",
+          "from": "animal_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "reproductive_events",
+          "from": "birth_event_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_offspring_birth_event_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        }
+      ]
+    },
+    "operational_costs": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "concept",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "amount",
+          "type": "NUMERIC(15, 2)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "date",
+          "type": "DATE",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "category",
+          "type": "VARCHAR(13)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "notes",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": []
+    },
+    "pasture_aforos": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "field_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "entry_height",
+          "type": "FLOAT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "exit_height",
+          "type": "FLOAT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "pasture_quality",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "notes",
+          "type": "VARCHAR(255)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "fields",
+          "from": "field_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": []
+    },
+    "push_subscription": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "user_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "endpoint",
+          "type": "VARCHAR(500)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "p256dh",
+          "type": "VARCHAR(200)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "auth",
+          "type": "VARCHAR(100)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "user_agent",
+          "type": "VARCHAR(500)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "platform",
+          "type": "VARCHAR(50)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "browser",
+          "type": "VARCHAR(50)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "is_active",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "last_used",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "user",
+          "from": "user_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "CASCADE",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_push_subscription_endpoint",
+          "unique": 1,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_push_subscription_user_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 2,
+          "name": "ix_push_subscription_is_active",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        }
+      ]
+    },
+    "reproductive_events": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "animal_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "event_type",
+          "type": "VARCHAR(12)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "event_date",
+          "type": "DATE",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "sire_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "technique",
+          "type": "VARCHAR(25)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "diagnosis_result",
+          "type": "VARCHAR(9)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "expected_birth_date",
+          "type": "DATE",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "alive_count",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "dead_count",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "complications",
+          "type": "BOOLEAN",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "actor_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "notes",
+          "type": "VARCHAR(500)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 17,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 18,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 19,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 20,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "user",
+          "from": "actor_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "table": "animals",
+          "from": "sire_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 3,
+          "seq": 0,
+          "table": "animals",
+          "from": "animal_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_repr_events_animal_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_repr_events_event_date",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 2,
+          "name": "ix_repr_events_event_type",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        }
+      ]
+    },
+    "route_administrations": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "name",
+          "type": "VARCHAR(50)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "description",
+          "type": "VARCHAR(255)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "status",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "sqlite_autoindex_route_administrations_1",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        }
+      ]
+    },
+    "species": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "name",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "sqlite_autoindex_species_1",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        }
+      ]
+    },
+    "tasks": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "title",
+          "type": "VARCHAR(150)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "description",
+          "type": "TEXT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "status",
+          "type": "VARCHAR(11)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "priority",
+          "type": "VARCHAR(6)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "due_date",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "animal_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "field_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "assigned_to",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "user",
+          "from": "assigned_to",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "table": "fields",
+          "from": "field_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 3,
+          "seq": 0,
+          "table": "animals",
+          "from": "animal_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_tasks_finca_status",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_tasks_due_date",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        }
+      ]
+    },
+    "transactions": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "animal_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "transaction_type",
+          "type": "VARCHAR(7)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "category",
+          "type": "VARCHAR(10)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "amount",
+          "type": "NUMERIC(12, 2)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "date",
+          "type": "DATE",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "description",
+          "type": "VARCHAR(255)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "animals",
+          "from": "animal_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_transactions_date",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_transactions_finca_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 2,
+          "name": "ix_transactions_animal_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        }
+      ]
+    },
+    "treatment_medications": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "treatment_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "medication_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "lot_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "quantity",
+          "type": "FLOAT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "inventory_lots",
+          "from": "lot_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "medications",
+          "from": "medication_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "table": "treatments",
+          "from": "treatment_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "sqlite_autoindex_treatment_medications_1",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        }
+      ]
+    },
+    "treatment_vaccines": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "treatment_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "vaccine_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "lot_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "quantity",
+          "type": "FLOAT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "inventory_lots",
+          "from": "lot_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "vaccines",
+          "from": "vaccine_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "table": "treatments",
+          "from": "treatment_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "sqlite_autoindex_treatment_vaccines_1",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        }
+      ]
+    },
+    "treatments": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "treatment_date",
+          "type": "DATE",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "description",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "frequency",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "observations",
+          "type": "VARCHAR(255)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "dosis",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "animal_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "animals",
+          "from": "animal_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_treatments_animal_date",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_treatments_finca_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 2,
+          "name": "ix_treatments_created_at",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        }
+      ]
+    },
+    "user": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "identification",
+          "type": "BIGINT",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "fullname",
+          "type": "VARCHAR(120)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "password",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "email",
+          "type": "VARCHAR(120)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "phone",
+          "type": "VARCHAR(40)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "address",
+          "type": "VARCHAR(255)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "role",
+          "type": "VARCHAR(13)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "status",
+          "type": "BOOLEAN",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "approval_status",
+          "type": "VARCHAR(9)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 17,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_user_updated_at",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_user_created_at",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 2,
+          "name": "sqlite_autoindex_user_3",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        },
+        {
+          "seq": 3,
+          "name": "sqlite_autoindex_user_2",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        },
+        {
+          "seq": 4,
+          "name": "sqlite_autoindex_user_1",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        }
+      ]
+    },
+    "user_finca": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "user_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "role",
+          "type": "VARCHAR(50)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "is_active",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "is_primary",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "CASCADE",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "user",
+          "from": "user_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "CASCADE",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_user_finca_user_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_user_finca_is_primary",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 2,
+          "name": "ix_user_finca_user_finca",
+          "unique": 1,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 3,
+          "name": "ix_user_finca_is_active",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 4,
+          "name": "ix_user_finca_finca_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        }
+      ]
+    },
+    "user_locations": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "user_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "latitude",
+          "type": "FLOAT",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "longitude",
+          "type": "FLOAT",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "accuracy",
+          "type": "FLOAT",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "detection_method",
+          "type": "VARCHAR(50)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "reported_by_node_id",
+          "type": "VARCHAR(100)",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "user",
+          "from": "user_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": []
+    },
+    "vaccinations": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "animal_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "vaccine_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "vaccination_date",
+          "type": "DATE",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "apprentice_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "instructor_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "finca_id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "finca",
+          "from": "finca_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "user",
+          "from": "instructor_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "table": "user",
+          "from": "apprentice_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 3,
+          "seq": 0,
+          "table": "vaccines",
+          "from": "vaccine_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 4,
+          "seq": 0,
+          "table": "animals",
+          "from": "animal_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "ix_vaccinations_finca_id",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 1,
+          "name": "ix_vaccinations_created_at",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        },
+        {
+          "seq": 2,
+          "name": "ix_vaccinations_animal_date",
+          "unique": 0,
+          "origin": "c",
+          "partial": 0
+        }
+      ]
+    },
+    "vaccines": {
+      "columns": [
+        {
+          "cid": 0,
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "dosis",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "route_administration_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "vaccination_interval",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "type",
+          "type": "VARCHAR(12)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "national_plan",
+          "type": "VARCHAR(255)",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "target_disease_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "created_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "updated_at",
+          "type": "DATETIME",
+          "notnull": 1,
+          "dflt_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "version_id",
+          "type": "INTEGER",
+          "notnull": 1,
+          "dflt_value": "'1'",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "notnull": 1,
+          "dflt_value": "'0'",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "deleted_at",
+          "type": "DATETIME",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "created_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "updated_by",
+          "type": "INTEGER",
+          "notnull": 0,
+          "dflt_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "id": 0,
+          "seq": 0,
+          "table": "diseases",
+          "from": "target_disease_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "table": "route_administrations",
+          "from": "route_administration_id",
+          "to": "id",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION",
+          "match": "NONE"
+        }
+      ],
+      "indexes": [
+        {
+          "seq": 0,
+          "name": "sqlite_autoindex_vaccines_1",
+          "unique": 1,
+          "origin": "u",
+          "partial": 0
+        }
+      ]
+    }
+  }
+}

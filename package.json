@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "guardian": "pwsh -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\Miguel\\Documents\\Aplicaciones\\_infrastructure\\devbraind\\scripts\\DEVBRAIN_GUARDIAN.ps1 -Mode Audit -DevPort 3005",
+    "guardian:repair": "pwsh -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\Miguel\\Documents\\Aplicaciones\\_infrastructure\\devbraind\\scripts\\DEVBRAIN_GUARDIAN.ps1 -Mode Audit -DevPort 3005 -Repair",
+    "dev": "npm run dev --prefix frontend",
+    "health": "npm run guardian",
+    "test:coverage": "npm run test:coverage --prefix frontend"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1"
+  }
+}

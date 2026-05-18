@@ -1,0 +1,1243 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for src/widgets/dashboard/RoleBasedSideBar.tsx</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../prettify.css" />
+    <link rel="stylesheet" href="../../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../../index.html">All files</a> / <a href="index.html">src/widgets/dashboard</a> RoleBasedSideBar.tsx</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>0/109</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/126</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>0/31</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>0/103</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line low'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a>
+<a name='L105'></a><a href='#L105'>105</a>
+<a name='L106'></a><a href='#L106'>106</a>
+<a name='L107'></a><a href='#L107'>107</a>
+<a name='L108'></a><a href='#L108'>108</a>
+<a name='L109'></a><a href='#L109'>109</a>
+<a name='L110'></a><a href='#L110'>110</a>
+<a name='L111'></a><a href='#L111'>111</a>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a>
+<a name='L118'></a><a href='#L118'>118</a>
+<a name='L119'></a><a href='#L119'>119</a>
+<a name='L120'></a><a href='#L120'>120</a>
+<a name='L121'></a><a href='#L121'>121</a>
+<a name='L122'></a><a href='#L122'>122</a>
+<a name='L123'></a><a href='#L123'>123</a>
+<a name='L124'></a><a href='#L124'>124</a>
+<a name='L125'></a><a href='#L125'>125</a>
+<a name='L126'></a><a href='#L126'>126</a>
+<a name='L127'></a><a href='#L127'>127</a>
+<a name='L128'></a><a href='#L128'>128</a>
+<a name='L129'></a><a href='#L129'>129</a>
+<a name='L130'></a><a href='#L130'>130</a>
+<a name='L131'></a><a href='#L131'>131</a>
+<a name='L132'></a><a href='#L132'>132</a>
+<a name='L133'></a><a href='#L133'>133</a>
+<a name='L134'></a><a href='#L134'>134</a>
+<a name='L135'></a><a href='#L135'>135</a>
+<a name='L136'></a><a href='#L136'>136</a>
+<a name='L137'></a><a href='#L137'>137</a>
+<a name='L138'></a><a href='#L138'>138</a>
+<a name='L139'></a><a href='#L139'>139</a>
+<a name='L140'></a><a href='#L140'>140</a>
+<a name='L141'></a><a href='#L141'>141</a>
+<a name='L142'></a><a href='#L142'>142</a>
+<a name='L143'></a><a href='#L143'>143</a>
+<a name='L144'></a><a href='#L144'>144</a>
+<a name='L145'></a><a href='#L145'>145</a>
+<a name='L146'></a><a href='#L146'>146</a>
+<a name='L147'></a><a href='#L147'>147</a>
+<a name='L148'></a><a href='#L148'>148</a>
+<a name='L149'></a><a href='#L149'>149</a>
+<a name='L150'></a><a href='#L150'>150</a>
+<a name='L151'></a><a href='#L151'>151</a>
+<a name='L152'></a><a href='#L152'>152</a>
+<a name='L153'></a><a href='#L153'>153</a>
+<a name='L154'></a><a href='#L154'>154</a>
+<a name='L155'></a><a href='#L155'>155</a>
+<a name='L156'></a><a href='#L156'>156</a>
+<a name='L157'></a><a href='#L157'>157</a>
+<a name='L158'></a><a href='#L158'>158</a>
+<a name='L159'></a><a href='#L159'>159</a>
+<a name='L160'></a><a href='#L160'>160</a>
+<a name='L161'></a><a href='#L161'>161</a>
+<a name='L162'></a><a href='#L162'>162</a>
+<a name='L163'></a><a href='#L163'>163</a>
+<a name='L164'></a><a href='#L164'>164</a>
+<a name='L165'></a><a href='#L165'>165</a>
+<a name='L166'></a><a href='#L166'>166</a>
+<a name='L167'></a><a href='#L167'>167</a>
+<a name='L168'></a><a href='#L168'>168</a>
+<a name='L169'></a><a href='#L169'>169</a>
+<a name='L170'></a><a href='#L170'>170</a>
+<a name='L171'></a><a href='#L171'>171</a>
+<a name='L172'></a><a href='#L172'>172</a>
+<a name='L173'></a><a href='#L173'>173</a>
+<a name='L174'></a><a href='#L174'>174</a>
+<a name='L175'></a><a href='#L175'>175</a>
+<a name='L176'></a><a href='#L176'>176</a>
+<a name='L177'></a><a href='#L177'>177</a>
+<a name='L178'></a><a href='#L178'>178</a>
+<a name='L179'></a><a href='#L179'>179</a>
+<a name='L180'></a><a href='#L180'>180</a>
+<a name='L181'></a><a href='#L181'>181</a>
+<a name='L182'></a><a href='#L182'>182</a>
+<a name='L183'></a><a href='#L183'>183</a>
+<a name='L184'></a><a href='#L184'>184</a>
+<a name='L185'></a><a href='#L185'>185</a>
+<a name='L186'></a><a href='#L186'>186</a>
+<a name='L187'></a><a href='#L187'>187</a>
+<a name='L188'></a><a href='#L188'>188</a>
+<a name='L189'></a><a href='#L189'>189</a>
+<a name='L190'></a><a href='#L190'>190</a>
+<a name='L191'></a><a href='#L191'>191</a>
+<a name='L192'></a><a href='#L192'>192</a>
+<a name='L193'></a><a href='#L193'>193</a>
+<a name='L194'></a><a href='#L194'>194</a>
+<a name='L195'></a><a href='#L195'>195</a>
+<a name='L196'></a><a href='#L196'>196</a>
+<a name='L197'></a><a href='#L197'>197</a>
+<a name='L198'></a><a href='#L198'>198</a>
+<a name='L199'></a><a href='#L199'>199</a>
+<a name='L200'></a><a href='#L200'>200</a>
+<a name='L201'></a><a href='#L201'>201</a>
+<a name='L202'></a><a href='#L202'>202</a>
+<a name='L203'></a><a href='#L203'>203</a>
+<a name='L204'></a><a href='#L204'>204</a>
+<a name='L205'></a><a href='#L205'>205</a>
+<a name='L206'></a><a href='#L206'>206</a>
+<a name='L207'></a><a href='#L207'>207</a>
+<a name='L208'></a><a href='#L208'>208</a>
+<a name='L209'></a><a href='#L209'>209</a>
+<a name='L210'></a><a href='#L210'>210</a>
+<a name='L211'></a><a href='#L211'>211</a>
+<a name='L212'></a><a href='#L212'>212</a>
+<a name='L213'></a><a href='#L213'>213</a>
+<a name='L214'></a><a href='#L214'>214</a>
+<a name='L215'></a><a href='#L215'>215</a>
+<a name='L216'></a><a href='#L216'>216</a>
+<a name='L217'></a><a href='#L217'>217</a>
+<a name='L218'></a><a href='#L218'>218</a>
+<a name='L219'></a><a href='#L219'>219</a>
+<a name='L220'></a><a href='#L220'>220</a>
+<a name='L221'></a><a href='#L221'>221</a>
+<a name='L222'></a><a href='#L222'>222</a>
+<a name='L223'></a><a href='#L223'>223</a>
+<a name='L224'></a><a href='#L224'>224</a>
+<a name='L225'></a><a href='#L225'>225</a>
+<a name='L226'></a><a href='#L226'>226</a>
+<a name='L227'></a><a href='#L227'>227</a>
+<a name='L228'></a><a href='#L228'>228</a>
+<a name='L229'></a><a href='#L229'>229</a>
+<a name='L230'></a><a href='#L230'>230</a>
+<a name='L231'></a><a href='#L231'>231</a>
+<a name='L232'></a><a href='#L232'>232</a>
+<a name='L233'></a><a href='#L233'>233</a>
+<a name='L234'></a><a href='#L234'>234</a>
+<a name='L235'></a><a href='#L235'>235</a>
+<a name='L236'></a><a href='#L236'>236</a>
+<a name='L237'></a><a href='#L237'>237</a>
+<a name='L238'></a><a href='#L238'>238</a>
+<a name='L239'></a><a href='#L239'>239</a>
+<a name='L240'></a><a href='#L240'>240</a>
+<a name='L241'></a><a href='#L241'>241</a>
+<a name='L242'></a><a href='#L242'>242</a>
+<a name='L243'></a><a href='#L243'>243</a>
+<a name='L244'></a><a href='#L244'>244</a>
+<a name='L245'></a><a href='#L245'>245</a>
+<a name='L246'></a><a href='#L246'>246</a>
+<a name='L247'></a><a href='#L247'>247</a>
+<a name='L248'></a><a href='#L248'>248</a>
+<a name='L249'></a><a href='#L249'>249</a>
+<a name='L250'></a><a href='#L250'>250</a>
+<a name='L251'></a><a href='#L251'>251</a>
+<a name='L252'></a><a href='#L252'>252</a>
+<a name='L253'></a><a href='#L253'>253</a>
+<a name='L254'></a><a href='#L254'>254</a>
+<a name='L255'></a><a href='#L255'>255</a>
+<a name='L256'></a><a href='#L256'>256</a>
+<a name='L257'></a><a href='#L257'>257</a>
+<a name='L258'></a><a href='#L258'>258</a>
+<a name='L259'></a><a href='#L259'>259</a>
+<a name='L260'></a><a href='#L260'>260</a>
+<a name='L261'></a><a href='#L261'>261</a>
+<a name='L262'></a><a href='#L262'>262</a>
+<a name='L263'></a><a href='#L263'>263</a>
+<a name='L264'></a><a href='#L264'>264</a>
+<a name='L265'></a><a href='#L265'>265</a>
+<a name='L266'></a><a href='#L266'>266</a>
+<a name='L267'></a><a href='#L267'>267</a>
+<a name='L268'></a><a href='#L268'>268</a>
+<a name='L269'></a><a href='#L269'>269</a>
+<a name='L270'></a><a href='#L270'>270</a>
+<a name='L271'></a><a href='#L271'>271</a>
+<a name='L272'></a><a href='#L272'>272</a>
+<a name='L273'></a><a href='#L273'>273</a>
+<a name='L274'></a><a href='#L274'>274</a>
+<a name='L275'></a><a href='#L275'>275</a>
+<a name='L276'></a><a href='#L276'>276</a>
+<a name='L277'></a><a href='#L277'>277</a>
+<a name='L278'></a><a href='#L278'>278</a>
+<a name='L279'></a><a href='#L279'>279</a>
+<a name='L280'></a><a href='#L280'>280</a>
+<a name='L281'></a><a href='#L281'>281</a>
+<a name='L282'></a><a href='#L282'>282</a>
+<a name='L283'></a><a href='#L283'>283</a>
+<a name='L284'></a><a href='#L284'>284</a>
+<a name='L285'></a><a href='#L285'>285</a>
+<a name='L286'></a><a href='#L286'>286</a>
+<a name='L287'></a><a href='#L287'>287</a>
+<a name='L288'></a><a href='#L288'>288</a>
+<a name='L289'></a><a href='#L289'>289</a>
+<a name='L290'></a><a href='#L290'>290</a>
+<a name='L291'></a><a href='#L291'>291</a>
+<a name='L292'></a><a href='#L292'>292</a>
+<a name='L293'></a><a href='#L293'>293</a>
+<a name='L294'></a><a href='#L294'>294</a>
+<a name='L295'></a><a href='#L295'>295</a>
+<a name='L296'></a><a href='#L296'>296</a>
+<a name='L297'></a><a href='#L297'>297</a>
+<a name='L298'></a><a href='#L298'>298</a>
+<a name='L299'></a><a href='#L299'>299</a>
+<a name='L300'></a><a href='#L300'>300</a>
+<a name='L301'></a><a href='#L301'>301</a>
+<a name='L302'></a><a href='#L302'>302</a>
+<a name='L303'></a><a href='#L303'>303</a>
+<a name='L304'></a><a href='#L304'>304</a>
+<a name='L305'></a><a href='#L305'>305</a>
+<a name='L306'></a><a href='#L306'>306</a>
+<a name='L307'></a><a href='#L307'>307</a>
+<a name='L308'></a><a href='#L308'>308</a>
+<a name='L309'></a><a href='#L309'>309</a>
+<a name='L310'></a><a href='#L310'>310</a>
+<a name='L311'></a><a href='#L311'>311</a>
+<a name='L312'></a><a href='#L312'>312</a>
+<a name='L313'></a><a href='#L313'>313</a>
+<a name='L314'></a><a href='#L314'>314</a>
+<a name='L315'></a><a href='#L315'>315</a>
+<a name='L316'></a><a href='#L316'>316</a>
+<a name='L317'></a><a href='#L317'>317</a>
+<a name='L318'></a><a href='#L318'>318</a>
+<a name='L319'></a><a href='#L319'>319</a>
+<a name='L320'></a><a href='#L320'>320</a>
+<a name='L321'></a><a href='#L321'>321</a>
+<a name='L322'></a><a href='#L322'>322</a>
+<a name='L323'></a><a href='#L323'>323</a>
+<a name='L324'></a><a href='#L324'>324</a>
+<a name='L325'></a><a href='#L325'>325</a>
+<a name='L326'></a><a href='#L326'>326</a>
+<a name='L327'></a><a href='#L327'>327</a>
+<a name='L328'></a><a href='#L328'>328</a>
+<a name='L329'></a><a href='#L329'>329</a>
+<a name='L330'></a><a href='#L330'>330</a>
+<a name='L331'></a><a href='#L331'>331</a>
+<a name='L332'></a><a href='#L332'>332</a>
+<a name='L333'></a><a href='#L333'>333</a>
+<a name='L334'></a><a href='#L334'>334</a>
+<a name='L335'></a><a href='#L335'>335</a>
+<a name='L336'></a><a href='#L336'>336</a>
+<a name='L337'></a><a href='#L337'>337</a>
+<a name='L338'></a><a href='#L338'>338</a>
+<a name='L339'></a><a href='#L339'>339</a>
+<a name='L340'></a><a href='#L340'>340</a>
+<a name='L341'></a><a href='#L341'>341</a>
+<a name='L342'></a><a href='#L342'>342</a>
+<a name='L343'></a><a href='#L343'>343</a>
+<a name='L344'></a><a href='#L344'>344</a>
+<a name='L345'></a><a href='#L345'>345</a>
+<a name='L346'></a><a href='#L346'>346</a>
+<a name='L347'></a><a href='#L347'>347</a>
+<a name='L348'></a><a href='#L348'>348</a>
+<a name='L349'></a><a href='#L349'>349</a>
+<a name='L350'></a><a href='#L350'>350</a>
+<a name='L351'></a><a href='#L351'>351</a>
+<a name='L352'></a><a href='#L352'>352</a>
+<a name='L353'></a><a href='#L353'>353</a>
+<a name='L354'></a><a href='#L354'>354</a>
+<a name='L355'></a><a href='#L355'>355</a>
+<a name='L356'></a><a href='#L356'>356</a>
+<a name='L357'></a><a href='#L357'>357</a>
+<a name='L358'></a><a href='#L358'>358</a>
+<a name='L359'></a><a href='#L359'>359</a>
+<a name='L360'></a><a href='#L360'>360</a>
+<a name='L361'></a><a href='#L361'>361</a>
+<a name='L362'></a><a href='#L362'>362</a>
+<a name='L363'></a><a href='#L363'>363</a>
+<a name='L364'></a><a href='#L364'>364</a>
+<a name='L365'></a><a href='#L365'>365</a>
+<a name='L366'></a><a href='#L366'>366</a>
+<a name='L367'></a><a href='#L367'>367</a>
+<a name='L368'></a><a href='#L368'>368</a>
+<a name='L369'></a><a href='#L369'>369</a>
+<a name='L370'></a><a href='#L370'>370</a>
+<a name='L371'></a><a href='#L371'>371</a>
+<a name='L372'></a><a href='#L372'>372</a>
+<a name='L373'></a><a href='#L373'>373</a>
+<a name='L374'></a><a href='#L374'>374</a>
+<a name='L375'></a><a href='#L375'>375</a>
+<a name='L376'></a><a href='#L376'>376</a>
+<a name='L377'></a><a href='#L377'>377</a>
+<a name='L378'></a><a href='#L378'>378</a>
+<a name='L379'></a><a href='#L379'>379</a>
+<a name='L380'></a><a href='#L380'>380</a>
+<a name='L381'></a><a href='#L381'>381</a>
+<a name='L382'></a><a href='#L382'>382</a>
+<a name='L383'></a><a href='#L383'>383</a>
+<a name='L384'></a><a href='#L384'>384</a>
+<a name='L385'></a><a href='#L385'>385</a>
+<a name='L386'></a><a href='#L386'>386</a>
+<a name='L387'></a><a href='#L387'>387</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">﻿import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { cn } from '@/shared/ui/cn';
+import { useAuth } from '@/features/auth/model/useAuth';
+import { sidebarItems, type Role as SidebarRole } from '@/widgets/dashboard/sidebarConfig';
+import { Link, useLocation } from 'react-router-dom';
+import { Loader } from '@/shared/ui/Loader';
+import { normalizeRole } from '@/features/auth/api/auth.service';
+import { ChevronDown, ChevronUp, X, LogOut } from 'lucide-react';
+import Button from '@/shared/ui/button';
+import Badge from '@/shared/ui/badge';
+import ThemeToggle from './ThemeToggle';
+import { membershipService } from '@/entities/user/api/membership.service';
+import { subscribeSSE } from '@/lib/events';
+&nbsp;
+interface SidebarProps {
+  isSidebarOpen: boolean;
+  setIsSidebarOpen: React.Dispatch&lt;React.SetStateAction&lt;boolean&gt;&gt;; // Cambiar a un tipo que tu hook useAuth devuelve para el usuario
+}
+&nbsp;
+const RoleBasedSideBar: React.FC&lt;SidebarProps&gt; = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >({</span> isSidebarOpen, setIsSidebarOpen }) =&gt; {</span>
+  const { user, role, loading, isAuthenticated, checkAuthStatus, logout: signOut } = <span class="cstat-no" title="statement not covered" >useAuth() as any;</span>
+  const location = <span class="cstat-no" title="statement not covered" >useLocation();</span>
+  const [pendingMemberships, setPendingMemberships] = <span class="cstat-no" title="statement not covered" >useState(0);</span>
+&nbsp;
+  // Preferir el rol del contexto y, si no existe, usar el del usuario
+  const rawRole = <span class="cstat-no" title="statement not covered" >role ?? (user as any)?.role ?? null;</span>
+  const currentRole = <span class="cstat-no" title="statement not covered" >useMemo(<span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
+    const norm = (<span class="cstat-no" title="statement not covered" >normalizeRole as any)?.(rawRole);</span>
+<span class="cstat-no" title="statement not covered" >    return norm ?? (typeof rawRole === 'string' ? rawRole : null);</span>
+  }, [rawRole]);
+&nbsp;
+  const [openGroups, setOpenGroups] = <span class="cstat-no" title="statement not covered" >useState&lt;Record&lt;string, boolean&gt;&gt;({});</span>
+  const [sidebarWidth] = <span class="cstat-no" title="statement not covered" >useState(288);</span> // Ancho fijo en desktop (w-72 = 288px)
+  const [isResizing, setIsResizing] = <span class="cstat-no" title="statement not covered" >useState(false);</span>
+  const sidebarRef = <span class="cstat-no" title="statement not covered" >useRef&lt;HTMLElement&gt;(null);</span>
+  const resizeRef = <span class="cstat-no" title="statement not covered" >useRef&lt;HTMLDivElement&gt;(null);</span>
+  const closeBtnRef = <span class="cstat-no" title="statement not covered" >useRef&lt;HTMLButtonElement&gt;(null);</span>
+&nbsp;
+  const minWidth = <span class="cstat-no" title="statement not covered" >200;</span>
+  const maxWidth = <span class="cstat-no" title="statement not covered" >320;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
+    // Exponer ancho a CSS para reservar espacio en desktop desde el layout
+<span class="cstat-no" title="statement not covered" >    document.documentElement.style.setProperty('--sidebar-width', `${sidebarWidth}px`);</span>
+  }, [sidebarWidth]);
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
+    const handleMouseMove = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(e</span>: MouseEvent) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (!isResizing || !sidebarRef.current) <span class="cstat-no" title="statement not covered" >return;</span></span>
+      const newWidth = <span class="cstat-no" title="statement not covered" >e.clientX;</span>
+<span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (newWidth &gt;= minWidth &amp;&amp; newWidth &lt;= maxWidth) {</span>
+        // setSidebarWidth(newWidth); // Deshabilitado: no permitimos redimensionar
+      }
+    };
+&nbsp;
+    const handleMouseUp = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      setIsResizing(false);</span>
+<span class="cstat-no" title="statement not covered" >      document.body.classList.remove('resizing-sidebar');</span>
+    };
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (isResizing) {</span>
+<span class="cstat-no" title="statement not covered" >      document.addEventListener('mousemove', handleMouseMove);</span>
+<span class="cstat-no" title="statement not covered" >      document.addEventListener('mouseup', handleMouseUp);</span>
+<span class="cstat-no" title="statement not covered" >      document.body.classList.add('resizing-sidebar');</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    return <span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      document.removeEventListener('mousemove', handleMouseMove);</span>
+<span class="cstat-no" title="statement not covered" >      document.removeEventListener('mouseup', handleMouseUp);</span>
+<span class="cstat-no" title="statement not covered" >      document.body.classList.remove('resizing-sidebar');</span>
+    };
+  }, [isResizing, minWidth, maxWidth]);
+&nbsp;
+  // En móvil: enfocar el botón de cierre al abrir y permitir cerrar con ESC
+<span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
+    const isMobile = <span class="cstat-no" title="statement not covered" >typeof window !== 'undefined' &amp;&amp; window.innerWidth &lt; 1024;</span>
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (isSidebarOpen &amp;&amp; isMobile) {</span>
+<span class="cstat-no" title="statement not covered" >      closeBtnRef.current?.focus();</span>
+    }
+    const onKeyDown = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(e</span>: KeyboardEvent) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (e.key === 'Escape' &amp;&amp; isSidebarOpen &amp;&amp; isMobile) {</span>
+<span class="cstat-no" title="statement not covered" >        setIsSidebarOpen(false);</span>
+      }
+    };
+<span class="cstat-no" title="statement not covered" >    document.addEventListener('keydown', onKeyDown);</span>
+<span class="cstat-no" title="statement not covered" >    return <span class="fstat-no" title="function not covered" >() =</span>&gt; <span class="cstat-no" title="statement not covered" >document.removeEventListener('keydown', onKeyDown);</span></span>
+  }, [isSidebarOpen, setIsSidebarOpen]);
+&nbsp;
+  const handleResizeStart = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(e</span>: React.MouseEvent) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    e.preventDefault();</span>
+    // Deshabilitado: no permitimos iniciar redimensionamiento
+<span class="cstat-no" title="statement not covered" >    setIsResizing(false);</span>
+  };
+&nbsp;
+  const toggleGroup = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(t</span>itle: string) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    setOpenGroups(<span class="fstat-no" title="function not covered" >prev </span>=&gt; <span class="cstat-no" title="statement not covered" >({ ...prev, [title]: !prev[title] }))</span>;</span>
+  };
+&nbsp;
+  // Si el usuario está autenticado pero el rol aún no está resuelto (p. ej. tras F5),
+  // disparar una revalidación y mostrar un loader temporal en lugar del mensaje de error.
+<span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (!loading &amp;&amp; isAuthenticated &amp;&amp; !currentRole) {</span>
+<span class="cstat-no" title="statement not covered" >      try {</span>
+<span class="cstat-no" title="statement not covered" >        void (checkAuthStatus as any)?.({ background: true });</span>
+      } catch {
+        // no-op
+      }
+    }
+  }, [loading, isAuthenticated, currentRole, checkAuthStatus]);
+&nbsp;
+  // Cargar solicitudes pendientes si es admin
+<span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (currentRole === 'Administrador') {</span>
+      // Temporalmente deshabilitado hasta que el backend se reinicie
+      // membershipService.getPendingCount().then(res =&gt; {
+      //   setPendingMemberships(res.data?.count || 0);
+      // });
+&nbsp;
+      const unsubscribe = <span class="cstat-no" title="statement not covered" >subscribeSSE(<span class="fstat-no" title="function not covered" >(e</span>vent) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >        <span class="missing-if-branch" title="if path not taken" >I</span>if (event.event === 'new_membership_request') {</span>
+<span class="cstat-no" title="statement not covered" >          setPendingMemberships(<span class="fstat-no" title="function not covered" >prev </span>=&gt; <span class="cstat-no" title="statement not covered" >prev + 1)</span>;</span>
+        }
+      });
+<span class="cstat-no" title="statement not covered" >      return <span class="fstat-no" title="function not covered" >() =</span>&gt; <span class="cstat-no" title="statement not covered" >unsubscribe();</span></span>
+    }
+  }, [currentRole]);
+&nbsp;
+  const filteredCategories = <span class="cstat-no" title="statement not covered" >useMemo(<span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (!currentRole) <span class="cstat-no" title="statement not covered" >return [];</span></span>
+<span class="cstat-no" title="statement not covered" >    return sidebarItems</span>
+      .filter(<span class="fstat-no" title="function not covered" >(c</span>at) =&gt; (<span class="cstat-no" title="statement not covered" >cat.roles as SidebarRole[]).includes(currentRole as SidebarRole))</span>
+      .map(<span class="fstat-no" title="function not covered" >(c</span>at) =&gt; <span class="cstat-no" title="statement not covered" >({</span>
+        ...cat,
+        children: (cat.children || []).filter(<span class="fstat-no" title="function not covered" >(c</span>hild) =&gt; (<span class="cstat-no" title="statement not covered" >child.roles as SidebarRole[]).includes(currentRole as SidebarRole))</span>
+      }))
+      .filter(<span class="fstat-no" title="function not covered" >(c</span>at) =&gt; <span class="cstat-no" title="statement not covered" >(cat.children || []).length &gt; 0)</span>;
+  }, [currentRole]);
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  <span class="missing-if-branch" title="if path not taken" >I</span>if (loading) {</span>
+<span class="cstat-no" title="statement not covered" >    return (</span>
+      &lt;div className="h-full w-full flex items-center justify-center bg-card text-foreground"&gt;
+        &lt;Loader /&gt;
+        &lt;span className="ml-2 text-sm"&gt;Cargando menú...&lt;/span&gt;
+      &lt;/div&gt;
+    );
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  <span class="missing-if-branch" title="if path not taken" >I</span>if (!currentRole) {</span>
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (!isAuthenticated) {</span>
+<span class="cstat-no" title="statement not covered" >      return (</span>
+        &lt;div className="h-full w-full flex items-center justify-center bg-card"&gt;
+          &lt;span className="text-muted-foreground text-sm"&gt;Inicia sesión para acceder al menú.&lt;/span&gt;
+        &lt;/div&gt;
+      );
+    }
+<span class="cstat-no" title="statement not covered" >    return (</span>
+      &lt;div className="h-full w-full flex items-center justify-center bg-card text-foreground"&gt;
+        &lt;Loader /&gt;
+        &lt;span className="ml-2 text-sm"&gt;Validando sesión y cargando menú...&lt;/span&gt;
+      &lt;/div&gt;
+    );
+  }
+&nbsp;
+  const getRolePrefix = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(r</span>: string): string =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    switch (r) {</span>
+      case 'Administrador':
+      case 'Propietario':
+      case 'Capataz':
+<span class="cstat-no" title="statement not covered" >        return '/admin';</span>
+      case 'Instructor':
+<span class="cstat-no" title="statement not covered" >        return '/instructor';</span>
+      case 'Veterinario':
+<span class="cstat-no" title="statement not covered" >        return '/veterinario';</span>
+      case 'Aprendiz':
+<span class="cstat-no" title="statement not covered" >        return '/apprentice';</span>
+      case 'Operario':
+<span class="cstat-no" title="statement not covered" >        return '/operario';</span>
+      default:
+<span class="cstat-no" title="statement not covered" >        return '/';</span>
+    }
+  };
+&nbsp;
+  const getRoleStyle = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(r</span>: string) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    switch (r) {</span>
+      case 'Administrador': <span class="cstat-no" title="statement not covered" >return { bg: 'bg-purple-600', text: 'text-purple-600', border: 'border-purple-200', light: 'bg-purple-50' };</span>
+      case 'Propietario': <span class="cstat-no" title="statement not covered" >return { bg: 'bg-indigo-600', text: 'text-indigo-600', border: 'border-indigo-200', light: 'bg-indigo-50' };</span>
+      case 'Capataz': <span class="cstat-no" title="statement not covered" >return { bg: 'bg-blue-600', text: 'text-blue-600', border: 'border-blue-200', light: 'bg-blue-50' };</span>
+      case 'Instructor': <span class="cstat-no" title="statement not covered" >return { bg: 'bg-emerald-600', text: 'text-emerald-600', border: 'border-emerald-200', light: 'bg-emerald-50' };</span>
+      case 'Veterinario': <span class="cstat-no" title="statement not covered" >return { bg: 'bg-rose-600', text: 'text-rose-600', border: 'border-rose-200', light: 'bg-rose-50' };</span>
+      case 'Aprendiz': <span class="cstat-no" title="statement not covered" >return { bg: 'bg-amber-600', text: 'text-amber-600', border: 'border-amber-200', light: 'bg-amber-50' };</span>
+      case 'Operario': <span class="cstat-no" title="statement not covered" >return { bg: 'bg-slate-600', text: 'text-slate-600', border: 'border-slate-200', light: 'bg-slate-50' };</span>
+      default: <span class="cstat-no" title="statement not covered" >return { bg: 'bg-primary', text: 'text-primary', border: 'border-border', light: 'bg-surface' };</span>
+    }
+  };
+&nbsp;
+  const roleStyle = <span class="cstat-no" title="statement not covered" >getRoleStyle(currentRole);</span>
+&nbsp;
+  const rolePrefix = <span class="cstat-no" title="statement not covered" >getRolePrefix(currentRole);</span>
+&nbsp;
+  const handleItemClick = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof window !== 'undefined' &amp;&amp; window.innerWidth &lt; 1024) {</span>
+<span class="cstat-no" title="statement not covered" >      setIsSidebarOpen(false);</span>
+    }
+  };
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return (</span>
+    &lt;&gt;
+      &lt;aside
+        ref={sidebarRef}
+        id="dashboard-sidebar"
+        className="h-full w-full bg-card/95 backdrop-blur-xl border-r border-border/50 flex flex-col overflow-hidden shadow-2xl relative"
+        role="navigation"
+      &gt;
+        {/* Branding Decorativo */}
+        &lt;div className="p-8 flex flex-col items-center gap-4 relative overflow-hidden border-b border-border/20"&gt;
+          &lt;div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-primary/10 to-transparent opacity-50" /&gt;
+          
+          &lt;div className="w-14 h-14 rounded-3xl bg-gradient-to-br from-primary via-primary/80 to-primary-dark flex items-center justify-center text-white font-black text-xl shadow-2xl shadow-primary/40 rotate-3 ring-4 ring-white/5 relative z-10"&gt;
+            VL
+          &lt;/div&gt;
+          
+          &lt;div className="text-center relative z-10"&gt;
+            &lt;h2 className="text-base font-black text-foreground tracking-tighter uppercase leading-none mb-1"&gt;
+              Villa Luz
+            &lt;/h2&gt;
+            &lt;span className="text-[9px] font-bold text-primary tracking-[0.3em] uppercase opacity-70"&gt;
+              Ecosystem v2.5
+            &lt;/span&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+&nbsp;
+        {/* Header del sidebar con diseño premium (Info de Usuario) */}
+        &lt;div className="p-5 border-b border-border/40 bg-surface/30 backdrop-blur-md relative z-20"&gt;
+          &lt;div className="flex items-center justify-between gap-2"&gt;
+            &lt;Link
+              to="/profile"
+              onClick={handleItemClick}
+              className="flex-1 flex items-center gap-3 group relative z-10 rounded-2xl px-3 py-2.5 transition-all hover:bg-primary/10 border border-transparent hover:border-primary/20 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              aria-label="Ir al perfil"
+            &gt;
+              &lt;div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl ${roleStyle.bg} text-white shadow-lg shadow-black/10 transform transition-all group-hover:scale-105 group-hover:rotate-3 relative overflow-hidden`}&gt;
+                &lt;div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" /&gt;
+                &lt;span className="font-black text-lg tracking-tighter relative z-10"&gt;
+                  {(user?.fullname || currentRole || '?').toString().trim().charAt(0).toUpperCase() || '?'}
+                &lt;/span&gt;
+              &lt;/div&gt;
+              &lt;div className="flex flex-col min-w-0 flex-1"&gt;
+                &lt;span className="font-black text-sm text-text-primary group-hover:text-primary transition-colors truncate"&gt;
+                  {user?.fullname || 'Usuario'}
+                &lt;/span&gt;
+                &lt;div className={cn(
+                  "mt-1.5 inline-flex items-center self-start px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border",
+                  roleStyle.light, roleStyle.text, roleStyle.border
+                )}&gt;
+                  &lt;div className={cn("w-1.5 h-1.5 rounded-full mr-1.5 animate-pulse", roleStyle.bg)} /&gt;
+                  {currentRole || 'Rol'}
+                &lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/Link&gt;
+            
+            &lt;Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden h-12 w-12 flex-shrink-0 flex flex-col items-center justify-center rounded-2xl bg-muted/40 hover:bg-destructive hover:text-white text-text-secondary transition-all duration-500 shadow-sm active:scale-95 group/close"
+              onClick={<span class="fstat-no" title="function not covered" >() =</span>&gt; <span class="cstat-no" title="statement not covered" >setIsSidebarOpen(false)}</span>
+              aria-label="Cerrar menú lateral"
+            &gt;
+              &lt;X className="h-5 w-5 group-hover/close:rotate-90 transition-transform duration-500" /&gt;
+              &lt;span className="text-[8px] font-black uppercase mt-0.5 opacity-60 group-hover/close:opacity-100"&gt;Cerrar&lt;/span&gt;
+            &lt;/Button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+&nbsp;
+        {/* Navegación principal */}
+        &lt;nav className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3 relative z-10 scrollbar-none" role="menu"&gt;
+          {filteredCategories.map(<span class="fstat-no" title="function not covered" >(c</span>ategory) =&gt; {
+            const isOpen = <span class="cstat-no" title="statement not covered" >openGroups[category.title] ?? true;</span> // Por defecto abierto para mejor UX
+<span class="cstat-no" title="statement not covered" >            return (</span>
+              &lt;div key={category.title} className="space-y-1"&gt;
+                &lt;button
+                  type="button"
+                  onClick={<span class="fstat-no" title="function not covered" >() =</span>&gt; <span class="cstat-no" title="statement not covered" >toggleGroup(category.title)}</span>
+                  className={cn(
+                    "w-full flex items-center justify-between py-2.5 px-4 rounded-xl transition-all duration-300 group",
+                    isOpen ? "bg-muted/30 text-primary" : "hover:bg-muted/50 text-text-muted hover:text-text-primary"
+                  )}
+                  aria-expanded={isOpen}
+                &gt;
+                  &lt;div className="flex items-center gap-3"&gt;
+                    &lt;span className={cn(
+                      "p-2 rounded-lg transition-all duration-300",
+                      isOpen ? "bg-primary/20 text-primary scale-110" : "bg-transparent group-hover:bg-muted group-hover:scale-105"
+                    )}&gt;
+                      {category.icon}
+                    &lt;/span&gt;
+                    &lt;span className="font-bold text-xs uppercase tracking-widest"&gt;{category.title}&lt;/span&gt;
+                  &lt;/div&gt;
+                  &lt;ChevronDown className={cn(
+                    "h-4 w-4 transition-transform duration-500",
+                    isOpen ? "rotate-180" : "rotate-0 opacity-50"
+                  )} /&gt;
+                &lt;/button&gt;
+&nbsp;
+                &lt;div className={cn(
+                  "grid transition-all duration-500 ease-in-out",
+                  isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 overflow-hidden"
+                )}&gt;
+                  &lt;div className="overflow-hidden pl-11 pr-1 space-y-1 mt-1"&gt;
+                    {(category.children || []).map(<span class="fstat-no" title="function not covered" >child </span>=&gt; {
+                      const fullPath = <span class="cstat-no" title="statement not covered" >`${rolePrefix}/${child.path}`;</span>
+                      const isActive = <span class="cstat-no" title="statement not covered" >location.pathname === fullPath || location.pathname.startsWith(`${fullPath}/`);</span>
+                      
+<span class="cstat-no" title="statement not covered" >                      return (</span>
+                        &lt;Link
+                          key={`${category.title}-${child.title}-${child.path}`}
+                          to={fullPath}
+                          onClick={handleItemClick}
+                          className={cn(
+                            "flex items-center py-2.5 px-3.5 rounded-2xl transition-all duration-300 group relative overflow-hidden",
+                            isActive 
+                              ? "bg-primary/15 text-primary font-bold shadow-[0_4px_12px_rgba(var(--primary-rgb),0.1)] translate-x-1" 
+                              : "text-text-muted hover:bg-muted/50 hover:text-text-primary hover:translate-x-1"
+                          )}
+                          role="menuitem"
+                        &gt;
+                          {/* Left accent border for active item */}
+                          {isActive &amp;&amp; (
+                            &lt;div className="absolute left-0 top-2 bottom-2 w-1 bg-primary rounded-full shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)] animate-in fade-in slide-in-from-left-2 duration-500" /&gt;
+                          )}
+                          
+                          &lt;div className={cn(
+                            "p-2 rounded-xl mr-3 transition-all duration-300",
+                            isActive ? "bg-primary/20 text-primary rotate-3 scale-110" : "bg-muted/40 text-text-muted group-hover:bg-muted group-hover:text-primary group-hover:rotate-6"
+                          )}&gt;
+                            {child.icon}
+                          &lt;/div&gt;
+                          &lt;span className="flex-1 truncate text-[13px] tracking-tight"&gt;{child.title}&lt;/span&gt;
+                          {(child as any).badge &amp;&amp; (
+                            &lt;Badge 
+                              variant={(child as any).badge === 'Admin' ? 'destructive' : 'default'} 
+                              className="ml-auto text-[8px] px-1.5 py-0 h-4 min-w-[32px] justify-center font-black tracking-tighter uppercase"
+                            &gt;
+                              {(child as any).badge}
+                            &lt;/Badge&gt;
+                          )}
+                        &lt;/Link&gt;
+                      );
+                    })}
+                  &lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+            );
+          })}
+        &lt;/nav&gt;
+&nbsp;
+        {/* Pie de menú con acciones */}
+        &lt;div className="mt-auto border-t border-border/40 bg-surface/50 backdrop-blur-md p-4 space-y-4"&gt;
+          &lt;div className="flex items-center justify-between gap-3"&gt;
+            &lt;div className="flex-1 bg-muted/30 p-1 rounded-xl border border-border/30"&gt;
+              &lt;ThemeToggle /&gt;
+            &lt;/div&gt;
+            &lt;button
+              type="button"
+              onClick={<span class="fstat-no" title="function not covered" >() =</span>&gt; <span class="cstat-no" title="statement not covered" >signOut?.()}</span>
+              className="flex h-11 w-11 items-center justify-center rounded-xl bg-destructive/10 text-destructive hover:bg-destructive hover:text-white transition-all duration-300 group shadow-sm hover:shadow-destructive/20 focus:outline-none focus:ring-2 focus:ring-destructive/50"
+              title="Cerrar Sesión"
+            &gt;
+              &lt;LogOut className="h-5 w-5 transition-transform group-hover:rotate-12" /&gt;
+            &lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+&nbsp;
+        {/* Resizer deshabilitado (oculto) */}
+        &lt;div
+          ref={resizeRef}
+          className="hidden"
+          onMouseDown={handleResizeStart}
+          aria-hidden="true"
+        /&gt;
+      &lt;/aside&gt;
+    &lt;/&gt;
+  );
+};
+&nbsp;
+export default RoleBasedSideBar;
+&nbsp;
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-05-14T21:08:51.447Z
+            </div>
+        <script src="../../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../../sorter.js"></script>
+        <script src="../../../block-navigation.js"></script>
+    </body>
+</html>
+    
