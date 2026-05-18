@@ -138,7 +138,6 @@ export default defineConfig(({ command, mode }) => {
       hmr: {
         protocol: disableHttps ? 'ws' : 'wss',
         host: 'localhost',
-        port: 3005,
         overlay: true,
       },
       watch: {

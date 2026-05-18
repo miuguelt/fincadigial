@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ToastProvider } from '@/app/providers/ToastContext'
 
-jest.mock('@/shared/ui/common/AdminCRUDPage', () => {
+jest.mock('@/widgets/admin-crud', () => {
   return {
     AdminCRUDPage: ({ config }: any) => {
       const item = { id: 41, diagnosis: 'Dx', animal_id: 1, treatment_date: '2025-01-10' }
@@ -80,13 +80,11 @@ describe('Tratamientos: Insumos layout', () => {
     fireEvent.click(btns[0])
 
     await waitFor(() => {
-      expect(screen.getByText(/Vacunas/i)).toBeInTheDocument()
-      expect(screen.getByText(/Medicamentos/i)).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /Vacunas/ })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /Medicamentos/ })).toBeInTheDocument()
+      expect(screen.getByText('Vacuna #8')).toBeInTheDocument()
+      expect(screen.getByText('Medicamento #11')).toBeInTheDocument()
     })
-
-    // Verificar presencia de los items
-    expect(screen.getByText('Vacuna #8')).toBeInTheDocument()
-    expect(screen.getByText('Medicamento #11')).toBeInTheDocument()
 
     // Verificar que el grid responsivo esté presente
     const containers = document.querySelectorAll('.grid.grid-cols-1.lg\\:grid-cols-2')
