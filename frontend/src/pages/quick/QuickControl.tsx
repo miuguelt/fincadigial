@@ -71,7 +71,7 @@ export default function QuickControl() {
         await controlService.createControl(payload);
         showToast('Control registrado exitosamente', 'success');
       }
-      navigate('/dashboard/operario');
+      navigate('/dashboard');
     } catch (error) {
       console.error('Error creating control:', error);
       showToast('Error al registrar control', 'error');
@@ -84,8 +84,8 @@ export default function QuickControl() {
     <div className="container mx-auto p-4 max-w-md">
       <Button
         variant="ghost"
-        onClick={() => navigate('/dashboard/operario')}
-        className="mb-4"
+        onClick={() => navigate('/dashboard')}
+        className="mb-4 text-foreground"
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
         Volver
@@ -93,16 +93,16 @@ export default function QuickControl() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Scale className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <Scale className="h-5 w-5 text-primary" />
             Nuevo Control Rápido
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isOnline && (
-              <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-                <WifiOff className="h-4 w-4" />
+              <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-lg text-sm text-warning-foreground font-bold">
+                <WifiOff className="h-4 w-4 text-warning" />
                 Modo sin conexión - El registro se guardará localmente
               </div>
             )}

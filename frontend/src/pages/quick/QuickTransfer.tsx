@@ -90,7 +90,7 @@ export default function QuickTransfer() {
         await animalFieldsService.createAnimalField(payload);
         showToast('Traslado registrado exitosamente', 'success');
       }
-      navigate('/dashboard/operario');
+      navigate('/dashboard');
     } catch (error) {
       console.error('Error creating transfer:', error);
       showToast('Error al registrar traslado', 'error');
@@ -103,8 +103,8 @@ export default function QuickTransfer() {
     <div className="container mx-auto p-4 max-w-md">
       <Button
         variant="ghost"
-        onClick={() => navigate('/dashboard/operario')}
-        className="mb-4"
+        onClick={() => navigate('/dashboard')}
+        className="mb-4 text-foreground"
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
         Volver
@@ -112,16 +112,16 @@ export default function QuickTransfer() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <MapPin className="h-5 w-5 text-success" />
             Trasladar Animal
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isOnline && (
-              <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-                <WifiOff className="h-4 w-4" />
+              <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-lg text-sm text-warning-foreground font-bold">
+                <WifiOff className="h-4 w-4 text-warning" />
                 Modo sin conexión - El registro se guardará localmente
               </div>
             )}

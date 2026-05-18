@@ -67,6 +67,8 @@ const QuickControl = lazy(() => import('@/pages/quick/QuickControl'));
 const QuickTransfer = lazy(() => import('@/pages/quick/QuickTransfer'));
 const QuickDisease = lazy(() => import('@/pages/quick/QuickDisease'));
 const QuickTreatment = lazy(() => import('@/pages/quick/QuickTreatment'));
+const QuickMilk = lazy(() => import('@/pages/quick/QuickMilk'));
+const QuickWater = lazy(() => import('@/pages/quick/QuickWater'));
 
 // Analytics Pages
 const DashboardExecutive = lazy(() => import('@/pages/dashboard/admin/analytics/DashboardExecutive'));
@@ -214,6 +216,8 @@ const AppRoutes = () => {
             <Route path="/quick/transfer" element={<QuickTransfer />} />
             <Route path="/quick/disease" element={<QuickDisease />} />
             <Route path="/quick/treatment" element={<QuickTreatment />} />
+            <Route path="/quick/milk" element={<QuickMilk />} />
+            <Route path="/quick/water" element={<QuickWater />} />
             {renderRoleRoutes('/apprentice')}
             {renderRoleRoutes('/operario')}
           </Route>

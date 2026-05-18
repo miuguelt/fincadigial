@@ -195,38 +195,38 @@ export default function AnimalScannerPage() {
 
           {/* Encontrado */}
           {scanState === 'found' && animalFound && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-green-900/85">
-              <CheckCircle2 className="h-16 w-16 text-green-400" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-success/80">
+              <CheckCircle2 className="h-16 w-16 text-white" />
               <div className="text-center">
                 <p className="text-white font-bold text-xl">{animalFound.record}</p>
-                <p className="text-green-200 text-sm mt-1">Animal encontrado</p>
+                <p className="text-white/90 text-sm mt-1">Animal encontrado</p>
               </div>
             </div>
           )}
 
           {/* No encontrado */}
           {scanState === 'not-found' && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-amber-900/85">
-              <AlertCircle className="h-16 w-16 text-amber-400" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-warning/80">
+              <AlertCircle className="h-16 w-16 text-white" />
               <div className="text-center">
                 <p className="text-white font-bold">Sin resultado</p>
-                <p className="text-amber-200 text-sm">Código: {scannedValue}</p>
+                <p className="text-white/90 text-sm">Código: {scannedValue}</p>
               </div>
             </div>
           )}
 
           {/* Error */}
           {scanState === 'error' && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-red-900/85 p-4">
-              <AlertCircle className="h-12 w-12 text-red-300" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-danger/80 p-4">
+              <AlertCircle className="h-12 w-12 text-white" />
               <p className="text-white text-sm text-center">Error al buscar el animal</p>
             </div>
           )}
 
           {/* Error de cámara */}
           {cameraError && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-red-900/85 p-4">
-              <CameraOff className="h-12 w-12 text-red-300" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-danger/80 p-4">
+              <CameraOff className="h-12 w-12 text-white" />
               <p className="text-white text-sm text-center">{cameraError}</p>
             </div>
           )}
