@@ -11,6 +11,7 @@ import {
   Zap,
   CheckCircle,
   RotateCw,
+  Eye,
 } from "lucide-react";
 import { offlineQueue } from "@/shared/api/offline/offlineQueue";
 import {
@@ -24,9 +25,6 @@ const BLUETOOTH_AVAILABLE =
   typeof navigator !== "undefined" && "bluetooth" in navigator;
 
 export const MeshMonitor: React.FC = () => {
-  // Ocultar completamente en browsers sin Web Bluetooth (Firefox, Safari)
-  if (!BLUETOOTH_AVAILABLE) return null;
-
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [pendingCount, setPendingCount] = useState(0);
   const [nearbyNodes, setNearbyNodes] = useState<DiscoveredPeer[]>([]);
@@ -40,12 +38,20 @@ export const MeshMonitor: React.FC = () => {
     setSyncState(proximitySync.getSyncState());
   }, []);
 
-  // Manejar descubrimiento de peer
+  // Manejar descubrimiento de peer con sincronización automática invisible
   const handlePeerDiscovered = useCallback((peer: DiscoveredPeer) => {
     setNearbyNodes((prev) => {
       const filtered = prev.filter((p) => p.id !== peer.id);
       return [...filtered, peer];
     });
+
+    // Sincronización Invisible: Sincronizar automáticamente en segundo plano si no está conectado
+    if (!peer.isConnected) {
+      console.log(`[MeshMonitor] Iniciando sincronización invisible con ${peer.name}...`);
+      proximitySync.syncWithPeer(peer.id).catch((err) => {
+        console.error(`[MeshMonitor] Error en sincronización invisible con ${peer.name}:`, err);
+      });
+    }
   }, []);
 
   // Manejar pérdida de peer
@@ -58,10 +64,10 @@ export const MeshMonitor: React.FC = () => {
     (result: { peerId: string; opsSynced: number }) => {
       const peer = nearbyNodes.find((p) => p.id === result.peerId);
       setLastSyncMessage(
-        `Sincronizado con ${peer?.name || "dispositivo"}: ${result.opsSynced} operaciones`,
+        `Datos pasados con ${peer?.name || "dispositivo"}: ${result.opsSynced} registros transferidos con éxito.`,
       );
       updateSyncState();
-      setTimeout(() => setLastSyncMessage(null), 3000);
+      setTimeout(() => setLastSyncMessage(null), 4000);
     },
     [nearbyNodes, updateSyncState],
   );
@@ -80,6 +86,11 @@ export const MeshMonitor: React.FC = () => {
     updateQueue();
     updateSyncState();
 
+    // Sincronización Invisible: Iniciar escaneo pasivo automático al montar
+    proximitySync.startPassiveScanning().catch((err) => 
+      console.error("[MeshMonitor] Error en escaneado invisible inicial:", err)
+    );
+
     // Suscribirse a eventos de sincronización
     const unsubDiscovered =
       proximitySync.onPeerDiscovered(handlePeerDiscovered);
@@ -90,6 +101,7 @@ export const MeshMonitor: React.FC = () => {
       window.removeEventListener("online", handleStatus);
       window.removeEventListener("offline", handleStatus);
       clearInterval(interval);
+      proximitySync.stopPassiveScanning();
       unsubDiscovered();
       unsubLost();
       unsubSync();
@@ -133,23 +145,42 @@ export const MeshMonitor: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-card text-card-foreground rounded-2xl p-6 border border-border shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h3 className="text-lg font-bold text-gray-900">
-            Estado de Red Mesh
+          <h3 className="text-lg font-bold text-foreground">
+            Estado de Red Local (Mesh)
           </h3>
-          <p className="text-sm text-gray-500">Villa Luz Smart Field</p>
+          <p className="text-sm text-muted-foreground">Villa Luz Smart Field — Conectividad Rural</p>
         </div>
-        <div
-          className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 ${
-            isOnline
-              ? "bg-green-100 text-green-700"
-              : "bg-amber-100 text-amber-700"
-          }`}
-        >
-          {isOnline ? <Wifi size={14} /> : <WifiOff size={14} />}
-          {isOnline ? "CONECTADO A NUBE" : "MODO LOCAL MESH"}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Badge: Estado de Internet */}
+          <div
+            className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 ${
+              isOnline
+                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+            }`}
+          >
+            {isOnline ? <Wifi size={14} /> : <WifiOff size={14} />}
+            {isOnline ? "Conectado a Internet" : "Red Local (Sin Internet)"}
+          </div>
+          {/* Badge: Estado de Bluetooth */}
+          <div
+            className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 ${
+              BLUETOOTH_AVAILABLE
+                ? "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
+                : "bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-zinc-400"
+            }`}
+            title={
+              BLUETOOTH_AVAILABLE
+                ? "El Bluetooth de tu celular está activo para buscar compañeros."
+                : "El Bluetooth no está disponible en este navegador o requiere HTTPS."
+            }
+          >
+            <Bluetooth size={14} />
+            {BLUETOOTH_AVAILABLE ? "Bluetooth Listo" : "Bluetooth No Disp."}
+          </div>
         </div>
       </div>
 
@@ -160,95 +191,94 @@ export const MeshMonitor: React.FC = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2"
+            className="mb-4 p-3 bg-emerald-50 border border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900 rounded-lg flex items-center gap-2"
           >
-            <CheckCircle size={16} className="text-green-600" />
-            <span className="text-sm text-green-700">{lastSyncMessage}</span>
+            <CheckCircle size={16} className="text-emerald-600 dark:text-emerald-400" />
+            <span className="text-sm text-emerald-800 dark:text-emerald-300">{lastSyncMessage}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Controles principales */}
-      <div className="flex gap-2 mb-6">
+      {/* Controles principales con semántica rural */}
+      <div className="flex flex-col sm:flex-row gap-2 mb-6">
         <button
           onClick={handleScan}
           disabled={isScanning}
-          className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl hover:opacity-90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition-all font-semibold shadow-sm"
         >
           <RefreshCw size={18} className={isScanning ? "animate-spin" : ""} />
-          {isScanning ? "Buscando..." : "Buscar Dispositivos"}
+          {isScanning ? "Buscando..." : "Buscar Compañeros"}
         </button>
         <button
           onClick={handleToggleAdvertising}
-          className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+          className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all font-semibold shadow-sm ${
             isAdvertising
-              ? "bg-red-100 text-red-700 hover:bg-red-200"
-              : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+              ? "bg-destructive text-destructive-foreground hover:opacity-90"
+              : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
           }`}
         >
           <Radio size={18} className={isAdvertising ? "animate-pulse" : ""} />
-          {isAdvertising ? "Dejar de Anunciar" : "Anunciar Presencia"}
+          {isAdvertising ? "Ocultarse" : "Hacerse Visible"}
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Card: Cola Offline */}
-        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+        {/* Card: Cola Offline (Datos por Guardar) */}
+        <div className="bg-muted/40 rounded-xl p-4 border border-border">
           <div className="flex items-center gap-3 mb-2">
             <RotateCw
-              className={`text-blue-500 ${pendingCount > 0 ? "animate-spin" : ""}`}
+              className={`text-primary ${pendingCount > 0 ? "animate-spin" : ""}`}
               size={18}
             />
-            <span className="text-sm font-semibold">Pendiente de Sincro</span>
+            <span className="text-sm font-semibold text-foreground">Datos por Guardar</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{pendingCount}</p>
-          <p className="text-[10px] text-gray-400 mt-1">
-            Mensajes y registros en espera
+          <p className="text-2xl font-bold text-foreground">{pendingCount}</p>
+          <p className="text-[10px] text-muted-foreground mt-1">
+            Registros en este celular en espera de enviarse
           </p>
         </div>
 
-        {/* Card: Nodos Cercanos */}
-        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+        {/* Card: Compañeros en Alcance */}
+        <div className="bg-muted/40 rounded-xl p-4 border border-border">
           <div className="flex items-center gap-3 mb-2">
-            <Users className="text-purple-500" size={18} />
-            <span className="text-sm font-semibold">Nodos en Alcance</span>
+            <Users className="text-indigo-500" size={18} />
+            <span className="text-sm font-semibold text-foreground">Compañeros en Rango</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">
+          <p className="text-2xl font-bold text-foreground">
             {nearbyNodes.length}
           </p>
-          <p className="text-[10px] text-gray-400 mt-1">
-            {nearbyNodes.filter((n) => n.isConnected).length} conectados
+          <p className="text-[10px] text-muted-foreground mt-1">
+            {nearbyNodes.filter((n) => n.isConnected).length} conectados ahora
           </p>
         </div>
 
         {/* Card: Estadísticas de Sync */}
-        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+        <div className="bg-muted/40 rounded-xl p-4 border border-border">
           <div className="flex items-center gap-3 mb-2">
             <Zap className="text-amber-500" size={18} />
-            <span className="text-sm font-semibold">Sincronización</span>
+            <span className="text-sm font-semibold text-foreground">Sincronizaciones</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">
+          <p className="text-2xl font-bold text-foreground">
             {syncState?.messagesReceived || 0}
           </p>
-          <p className="text-[10px] text-gray-400 mt-1">
+          <p className="text-[10px] text-muted-foreground mt-1">
             {syncState?.lastSyncAt
-              ? `Última: ${new Date(syncState.lastSyncAt).toLocaleTimeString()}`
-              : "Sin sincronizar aún"}
+              ? `Último paso: ${new Date(syncState.lastSyncAt).toLocaleTimeString()}`
+              : "Sin pasar datos aún"}
           </p>
         </div>
       </div>
 
       {/* Lista de Nodos */}
       <div className="mt-6">
-        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-          Dispositivos Encontrados ({nearbyNodes.length})
+        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
+          Vecinos Conectados ({nearbyNodes.length})
         </h4>
         <div className="space-y-2 max-h-48 overflow-y-auto">
           {nearbyNodes.length === 0 ? (
-            <div className="flex items-center gap-3 text-sm text-gray-500 py-4 italic bg-gray-50 rounded-lg px-4">
+            <div className="flex items-center gap-3 text-sm text-muted-foreground py-4 italic bg-muted/20 rounded-xl px-4 border border-border/50">
               <Activity size={16} strokeWidth={1} />
-              No hay dispositivos cercanos. Presiona "Buscar Dispositivos" para
-              escanear.
+              No hay compañeros cerca en este momento. El sistema busca automáticamente en segundo plano.
             </div>
           ) : (
             nearbyNodes.map((node) => (
@@ -256,44 +286,44 @@ export const MeshMonitor: React.FC = () => {
                 key={node.id}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition-colors"
+                className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border border-border hover:bg-muted/50 transition-all"
               >
                 <div className="flex items-center gap-3">
                   {node.connectionType === "bluetooth" ? (
                     <Bluetooth size={16} className="text-blue-500" />
                   ) : (
-                    <Wifi size={16} className="text-green-500" />
+                    <Wifi size={16} className="text-emerald-500" />
                   )}
                   <div>
-                    <p className="text-sm font-medium">{node.name}</p>
-                    <p className="text-[10px] text-gray-400">
+                    <p className="text-sm font-medium text-foreground">{node.name}</p>
+                    <p className="text-[10px] text-muted-foreground">
                       {node.connectionType === "bluetooth"
-                        ? "Bluetooth"
-                        : "WiFi (WebRTC)"}
+                        ? "Bluetooth Directo"
+                        : "Red WiFi del Campo"}
                       {" • "}
-                      Hace{" "}
-                      {Math.floor(
+                      Visto hace{" "}
+                      {Math.max(0, Math.floor(
                         (new Date().getTime() - node.lastSeen.getTime()) /
                           60000,
-                      )}{" "}
+                      ))}{" "}
                       min
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   {node.isConnected ? (
-                    <span className="flex items-center gap-1 text-xs text-green-600 font-bold">
-                      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-bold">
+                      <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
                       Conectado
                     </span>
                   ) : (
                     <button
                       onClick={() => handleSyncWithPeer(node.id)}
                       disabled={node.isConnected || syncState?.isSyncing}
-                      className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 disabled:bg-gray-300 transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground text-xs rounded-lg hover:opacity-90 disabled:bg-muted disabled:text-muted-foreground transition-all font-semibold shadow-sm"
                     >
                       <RefreshCw size={12} />
-                      Sincronizar
+                      Pasar Datos
                     </button>
                   )}
                 </div>
@@ -308,10 +338,10 @@ export const MeshMonitor: React.FC = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-3"
+          className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded-xl flex items-center gap-3"
         >
-          <RefreshCw size={18} className="text-blue-600 animate-spin" />
-          <span className="text-sm text-blue-700">Sincronizando datos...</span>
+          <RefreshCw size={18} className="text-primary animate-spin" />
+          <span className="text-sm text-primary font-medium">Pasando datos entre celulares...</span>
         </motion.div>
       )}
     </div>

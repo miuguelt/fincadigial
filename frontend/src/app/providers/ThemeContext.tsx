@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 // Definición de tipos para los temas
-export type ThemeMode = 'light' | 'dark' | 'nature' | 'ocean' | 'forest';
+export type ThemeMode = 'light' | 'dark' | 'nature' | 'ocean' | 'forest' | 'contrast';
 
 interface ThemeColors {
   // Colores principales
@@ -282,6 +282,51 @@ const themes: Record<ThemeMode, ThemeConfig> = {
       chart3: '140 60% 25%',
       chart4: '80 60% 25%',
       chart5: '160 60% 25%'
+    }
+  },
+  contrast: {
+    name: 'contrast',
+    displayName: 'Alto Contraste',
+    colors: {
+      primary: '0 0% 0%',
+      primaryForeground: '0 0% 100%',
+      secondary: '0 0% 100%',
+      secondaryForeground: '0 0% 0%',
+      accent: '0 0% 0%',
+      accentForeground: '0 0% 100%',
+      
+      background: '0 0% 100%',
+      foreground: '0 0% 0%',
+      card: '0 0% 100%',
+      cardForeground: '0 0% 0%',
+      popover: '0 0% 100%',
+      popoverForeground: '0 0% 0%',
+      
+      muted: '0 0% 90%',
+      mutedForeground: '0 0% 0%',
+      destructive: '0 100% 40%',
+      destructiveForeground: '0 0% 100%',
+      success: '120 100% 20%',
+      successForeground: '0 0% 100%',
+      warning: '40 100% 30%',
+      warningForeground: '0 0% 100%',
+      info: '240 100% 35%',
+      infoForeground: '0 0% 100%',
+      
+      border: '0 0% 0%',
+      input: '0 0% 0%',
+      ring: '0 0% 0%',
+      
+      sidebar: '0 0% 100%',
+      sidebarForeground: '0 0% 0%',
+      header: '0 0% 100%',
+      headerForeground: '0 0% 0%',
+      
+      chart1: '0 0% 0%',
+      chart2: '120 100% 20%',
+      chart3: '240 100% 35%',
+      chart4: '0 0% 40%',
+      chart5: '0 0% 20%'
     }
   }
 };

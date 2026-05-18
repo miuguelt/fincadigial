@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { Badge } from "@/shared/ui/badge";
-import { Moon, Sun, Leaf, Palette, Check, Waves, Trees } from "lucide-react";
+import { Moon, Sun, Leaf, Palette, Check, Waves, Trees, Eye } from "lucide-react";
 
 const ThemeSelector: React.FC = () => {
   const { theme, setTheme, availableThemes } = useTheme();
@@ -25,6 +25,8 @@ const ThemeSelector: React.FC = () => {
         return <Waves className="w-4 h-4" />;
       case "forest":
         return <Trees className="w-4 h-4" />;
+      case "contrast":
+        return <Eye className="w-4 h-4" />;
       default:
         return <Palette className="w-4 h-4" />;
     }
@@ -42,6 +44,8 @@ const ThemeSelector: React.FC = () => {
         return "Azules oceánicos frescos y profesionales";
       case "forest":
         return "Verdes profundos del bosque, elegante";
+      case "contrast":
+        return "Alto contraste en blanco y negro para lectura bajo sol directo en el campo";
       default:
         return "Tema personalizado";
     }
