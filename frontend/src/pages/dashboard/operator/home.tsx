@@ -14,6 +14,8 @@ import {
 import { MeshMonitor } from "@/widgets/dashboard/MeshMonitor";
 import { FastInventoryAction } from "@/widgets/dashboard/FastInventoryAction";
 import { FastWeightEntry } from "@/widgets/dashboard/FastWeightEntry";
+import { FieldReadyWidget } from "@/widgets/dashboard/FieldReadyWidget";
+import { VoiceNoteWidget } from "@/widgets/dashboard/VoiceNoteWidget";
 
 const OperatorHome = () => {
   const { name } = useAuth();
@@ -112,6 +114,8 @@ const OperatorHome = () => {
           </Card>
 
           <div className="space-y-6">
+            <FieldReadyWidget />
+            <VoiceNoteWidget />
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">

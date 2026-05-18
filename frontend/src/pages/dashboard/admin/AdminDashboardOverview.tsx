@@ -16,6 +16,8 @@ import { ConflictLogWidget } from '@/widgets/dashboard/ConflictLogWidget';
 import { ExecutiveIntelligence } from '@/widgets/dashboard/ExecutiveIntelligence';
 import DailyFarmGuide from '@/widgets/dashboard/DailyFarmGuide';
 import UpcomingEventsPanel from '@/widgets/dashboard/UpcomingEventsPanel';
+import { FieldReadyWidget } from '@/widgets/dashboard/FieldReadyWidget';
+import { VoiceNoteWidget } from '@/widgets/dashboard/VoiceNoteWidget';
 
 /**
  * Página de inicio del Dashboard Administrativo
@@ -196,6 +198,18 @@ const AdminDashboardOverview: React.FC = () => {
           <MeshMonitor />
           <AppSharePortal />
           <ConflictLogWidget />
+        </div>
+      </div>
+
+      {/* Trabajo de Campo Offline y Notas de Voz */}
+      <div className="space-y-6">
+        <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
+          <div className="w-2 h-6 bg-green-500 rounded-full" />
+          Trabajo de Campo Offline & Notas de Voz
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <FieldReadyWidget />
+          <VoiceNoteWidget />
         </div>
       </div>
 
