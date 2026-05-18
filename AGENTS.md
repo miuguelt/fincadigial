@@ -2,6 +2,76 @@
 
 Para asegurar entregas 100% funcionales y mitigar la fricción de entorno (WSL/Docker/MCP), se aplican estas reglas de cumplimiento obligatorio:
 
+---
+
+# 🛡️ PROTOCOLO ANTI-PÉRDIDA DE TRABAJO (Nuevo — Obligatorio)
+
+> **Objetivo:** Ninguna sesión de agente debe destruir configuraciones, funcionalidades o vistas ya establecidas.
+> **Documento maestro:** `DEVBRAIN_PERSISTENCE_STRATEGY.md`
+
+## 0. Single Source of Truth (SSOT)
+- **Único directorio activo:** `frontend/src/` y `backend/`
+- **PROHIBIDO** crear: `frontend_VALIDATED_TMP/`, `frontend_backup/`, `*_TMP/`, duplicados en `_archive/`
+- Si necesitas backup, usa `git branch backup/YYYY-MM-DD`, NUNCA copies carpetas.
+- Antes de tocar cualquier archivo, verificar que la ruta NO contiene `archive`, `backup`, `tmp`, `validated`, `duplicate`.
+
+## 1. Checkpoint Obligatorio (Inicio de Sesión)
+Cada agente DEBE ejecutar al inicio:
+```bash
+bash .devbrain/session-start.sh
+```
+Esto:
+- Verifica que no estás en un directorio prohibido
+- Inicializa Git si no existe
+- Crea un tag de punto de retorno (`session-start-YYYYMMDD-HHMMSS`)
+- Verifica integridad del código
+
+## 2. Checkpoint Automático (Durante Sesión)
+Antes de **cualquier** operación destructiva (reemplazo de archivo completo, refactor masivo, eliminación de funciones):
+```bash
+bash .devbrain/checkpoint.sh "mensaje descriptivo"
+```
+Esto crea un commit con todo el trabajo actual como punto de retorno.
+
+## 3. Integridad de Archivos (Pre-Edit)
+Antes de modificar cualquier archivo:
+- [ ] Leer las primeras 5 líneas. Si el archivo tiene **< 5 líneas** y **> 500 chars en línea 1**, está **corrupto/minificado**. NO EDITAR.
+- [ ] Si tiene header `⚠️ COMPONENTE CRÍTICO`, leer qué funciones maneja y no eliminarlas.
+- [ ] Si existe `FEATURE_MANIFEST.md`, verificar que la funcionalidad no está marcada como crítica antes de modificarla.
+
+## 4. Commits Atómicos (Durante Sesión)
+- Un cambio lógico = un commit
+- Nunca mezclar: feature + refactor + fix en el mismo commit
+- Mensaje de commit descriptivo: `feat:`, `fix:`, `refactor:`, `chore:`
+
+## 5. Verificación de Persistencia (Post-Sesión)
+Antes de declarar "terminé", ejecutar:
+```bash
+bash .devbrain/session-end.sh
+```
+Esto:
+- Verifica que no quedan archivos sin commitear
+- Ejecuta `npm run build`
+- Corre `integrity-check.sh`
+- Crea tag `session-end-YYYYMMDD-HHMMSS`
+
+## 6. Recuperación Rápida
+Si algo se rompió en la sesión:
+```bash
+# Volver al inicio de la sesión
+git reset --hard session-start-YYYYMMDD-HHMMSS
+
+# O revertir último commit
+git reset --hard HEAD~1
+
+# O restaurar archivo específico desde tag
+git checkout session-start-YYYYMMDD-HHMMSS -- ruta/al/archivo.tsx
+```
+
+---
+
+# Reglas Originales del Proyecto
+
 ## 1. Validación de Integridad de Contexto (Pre-Edit)
 - Antes de usar un nuevo componente o utilidad (ej: `cn`, `Info`, `Button`), **DEBES** leer el encabezado del archivo para verificar si ya está importado.
 - Si no existe el import, **DEBES** añadirlo en la misma sesión. Las ediciones quirúrgicas parciales son la causa #1 de errores `ReferenceError`.

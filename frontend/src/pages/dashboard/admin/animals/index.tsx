@@ -170,6 +170,7 @@ function AdminAnimalsPage() {
 
   // Estados para modales de acciones masivas
   const [bulkModal, setBulkModal] = useState<'transfer' | 'weight' | 'vaccinate' | 'print' | null>(null);
+  const [selectedAnimalsForPrint, setSelectedAnimalsForPrint] = useState<any[]>([]);
   const clearSelectionRef = useRef<(() => void) | null>(null);
   const selectedIdsRef = useRef<number[]>([]);
 
@@ -623,7 +624,11 @@ function AdminAnimalsPage() {
           onTransfer={() => setBulkModal('transfer')}
           onWeight={() => setBulkModal('weight')}
           onVaccinate={() => setBulkModal('vaccinate')}
-          onPrintTags={() => setBulkModal('print')}
+          onPrintTags={() => {
+            const selected = _items.filter(item => selectedIds.includes(item.id));
+            setSelectedAnimalsForPrint(selected);
+            setBulkModal('print');
+          }}
           onDelete={() => {
             showToast(`Seleccionados ${selectedIds.length} animales para eliminar. Use el botón de la barra flotante.`, 'warning');
           }}
@@ -994,7 +999,19 @@ function AdminAnimalsPage() {
         <BulkTagPrintModal
           isOpen
           onClose={() => setBulkModal(null)}
-          selectedAnimalIds={selectedIdsRef.current}
+          animals={selectedAnimalsForPrint.map(item => {
+            const breedId = item.breeds_id || item.breed_id;
+            const breedLabel = breedId
+              ? (breedOptions.find((b) => Number(b.value) === Number(breedId))?.label || (item.breed?.name) || `ID ${breedId}`)
+              : undefined;
+            return {
+              id: item.id,
+              record: item.record || `ID-${item.id}`,
+              breedLabel,
+              gender: item.gender || item.sex || undefined,
+              birthDate: item.birth_date ? new Date(item.birth_date).toLocaleDateString('es-ES') : undefined
+            };
+          })}
           onSuccess={() => {
             setBulkModal(null);
             clearSelectionRef.current?.();

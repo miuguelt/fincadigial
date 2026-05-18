@@ -232,7 +232,7 @@ export const GenericModal: React.FC<GenericModalProps> = ({
                 <span className="flex-1 min-w-0 truncate">{title}</span>
               </DialogTitle>
             ) : (
-              <VisuallyHidden asChild>
+              <VisuallyHidden>
                 <DialogTitle id={titleId}>Modal</DialogTitle>
               </VisuallyHidden>
             )}
@@ -268,7 +268,7 @@ export const GenericModal: React.FC<GenericModalProps> = ({
               {description}
             </DialogDescription>
           ) : (
-            <VisuallyHidden asChild>
+            <VisuallyHidden>
               <DialogDescription id={descriptionId}>Contenido del diálogo</DialogDescription>
             </VisuallyHidden>
           )}

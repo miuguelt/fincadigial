@@ -41,7 +41,7 @@ interface BulkTagPrintModalProps {
 export const BulkTagPrintModal: React.FC<BulkTagPrintModalProps> = ({
   isOpen,
   onClose,
-  animals,
+  animals = [],
 }) => {
   const printRef = useRef<HTMLDivElement>(null);
   const handlePrint = () => {

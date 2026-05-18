@@ -296,15 +296,19 @@ const DialogContent = React.forwardRef<
         {...props}
       >
         <DialogA11yContext.Provider value={a11yValue}>
-          {/* Always render fallback Title/Description for Radix a11y - they're visually hidden */}
-          <VisuallyHidden>
-            <DialogPrimitive.Title id={titleId}>Dialog</DialogPrimitive.Title>
-          </VisuallyHidden>
-          <VisuallyHidden>
-            <DialogPrimitive.Description id={descriptionId}>
-              Dialog content
-            </DialogPrimitive.Description>
-          </VisuallyHidden>
+          {/* Render fallback Title/Description only if not registered, and align IDs with finalAria attributes */}
+          {!registeredTitleId && (
+            <VisuallyHidden>
+              <DialogPrimitive.Title id={finalAriaLabelledBy}>Dialog</DialogPrimitive.Title>
+            </VisuallyHidden>
+          )}
+          {!registeredDescriptionId && (
+            <VisuallyHidden>
+              <DialogPrimitive.Description id={finalAriaDescribedBy}>
+                Dialog content
+              </DialogPrimitive.Description>
+            </VisuallyHidden>
+          )}
           {children}
         </DialogA11yContext.Provider>
         <DialogPrimitive.Close className={cn(
