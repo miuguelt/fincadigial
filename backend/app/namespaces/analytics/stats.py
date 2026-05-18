@@ -57,11 +57,21 @@ class AnimalStatistics(Resource):
             if isinstance(avg_weight, decimal.Decimal):
                 avg_weight = float(avg_weight)
 
+            by_sex_dict = {}
+            for sex, count in sex_stats:
+                if sex is not None:
+                    key = sex.value if hasattr(sex, 'value') else str(sex)
+                    by_sex_dict[key] = count
+
+            age_distribution_list = [{'age_range': k, 'count': v} for k, v in age_groups.items()]
+
             return APIResponse.success(data={
-                'by_status': {status.value: count for status, count in status_stats},
-                'by_sex': {sex.value: count for sex, count in sex_stats},
+                'by_status': {status.value if hasattr(status, 'value') else str(status): count for status, count in status_stats if status is not None},
+                'by_sex': by_sex_dict,
+                'by_gender': by_sex_dict,
                 'by_breed': [{'breed': breed, 'count': count} for breed, count in breed_stats],
                 'by_age_group': age_groups,
+                'age_distribution': age_distribution_list,
                 'weight_distribution': weight_ranges,
                 'total_animals': sum((count for _, count in status_stats)),
                 'average_weight': avg_weight

@@ -9,6 +9,7 @@ def register_namespaces(api):
     from ..namespaces.animals.animals_namespace import animals_ns
     from ..namespaces.animals.milk_production_namespace import milk_ns
     from ..namespaces.analytics.legacy import legacy_ns
+    from ..namespaces.analytics import analytics_ns
     from ..namespaces.analytics.dashboard import dashboard_ns
     from ..namespaces.analytics.animals import animals_ns as analytics_animals_ns
     from ..namespaces.analytics.alerts import alerts_analytics_ns
@@ -84,6 +85,7 @@ def register_namespaces(api):
     api.add_namespace(animals_ns)
     api.add_namespace(milk_ns)
     api.add_namespace(legacy_ns)
+    api.add_namespace(analytics_ns)
     api.add_namespace(dashboard_ns)
     api.add_namespace(analytics_animals_ns)
     api.add_namespace(alerts_analytics_ns)
