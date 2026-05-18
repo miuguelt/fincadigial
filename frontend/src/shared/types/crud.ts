@@ -64,6 +64,7 @@ export interface CRUDFormSection<T = any> {
 export interface CRUDConfig<T = any, TInput = any> {
   title: string;
   entityName: string;
+  entityNamePlural?: string;
   columns: CRUDColumn<T>[];
   formSections?: CRUDFormSection<TInput>[];
   searchPlaceholder?: string;

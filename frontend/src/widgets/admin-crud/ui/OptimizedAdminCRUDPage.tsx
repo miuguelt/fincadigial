@@ -579,12 +579,11 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
             items={filteredItems}
             columns={config.columns}
             config={config}
-            onDetail={openDetail}
-            onEdit={openEdit}
-            onDelete={openDeleteConfirm}
+            onOpenDetail={openDetail}
+            onOpenEdit={openEdit}
+            onOpenDelete={openDeleteConfirm}
             enhancedHover={enhancedHover}
-            loading={refreshing}
-            deletingIds={new Set()} // Simplificado para este ejemplo
+            refreshing={refreshing}
             selectedIds={selectedIds}
             onToggleSelect={toggleSelect}
           />
@@ -652,7 +651,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       {/* Floating Selection Bar for Bulk Actions */}
       <FloatingSelectionBar
         count={selectedIds.length}
-        entityLabel={config.selectionLabelPlural || config.entityName + 's'}
+        entityLabel={config.entityNamePlural || `${config.entityName}s`}
         onClear={clearSelection}
         onDelete={() => setConfirmOpen(true)}
         onExport={() => {

@@ -6,6 +6,7 @@
 
 // Componente principal optimizado
 export { AdminCRUDPage as default } from './AdminCRUDPage';
+export type { AdminCRUDPageProps } from './AdminCRUDPage';
 
 // Componentes especializados
 export { default as CRUDTable } from './CRUDTable';
@@ -14,11 +15,10 @@ export { default as CRUDPagination } from './CRUDPagination';
 export { default as CRUDSearch } from './CRUDSearch';
 export { default as CRUDToolbar } from './CRUDToolbar';
 
-// Interfaces y tipos (reexportar del componente original)
+// Interfaces y tipos
 export type {
   CRUDColumn,
   CRUDFormField,
   CRUDFormSection,
   CRUDConfig,
-  AdminCRUDPageProps,
 } from '@/shared/types/crud';

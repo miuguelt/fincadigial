@@ -51,7 +51,7 @@ import { formatValidationToastMessage, mapBackendFieldErrorsToLabels, buildConfl
 // Interfaces
 import type { CRUDConfig, CRUDFormField } from '../../../shared/types/crud';
 
-interface AdminCRUDPageProps<T extends { id: number }, TInput extends Record<string, any>> {
+export interface AdminCRUDPageProps<T extends { id: number }, TInput extends Record<string, any>> {
   config: CRUDConfig<T, TInput>;
   service: any; // BaseService instance
   initialFormData: TInput;

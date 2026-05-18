@@ -45,7 +45,7 @@ export const getBackendBaseURL = (): string => {
     const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
     const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
     if (isLocalHost && isProduction()) {
-      return 'http://127.0.0.1:8081';
+      return 'http://127.0.0.1:8092';
     }
   } catch {
     // Ignorar errores de acceso a window en entornos SSR/tests
@@ -58,7 +58,7 @@ export const getBackendBaseURL = (): string => {
       return 'https://finca.enlinea.sbs';
     case 'development':
     default:
-      return 'http://127.0.0.1:8081';
+      return 'http://127.0.0.1:8092';
   }
 };
 
