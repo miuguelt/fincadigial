@@ -37,6 +37,7 @@ widgets/MiWidget/
 6. **Componentes "dumb" en `ui/`.** Solo props y render, sin efectos ni llamadas API.
 7. **Componentes "smart" en `features/` o `widgets/`.** Estado, efectos, coordinación.
 8. **FSD boundaries obligatorios.** `pages` → `widgets` → `features` → `entities` → `shared`. Nunca al revés.
+9. **Política de Ancho de Pantalla Completo (Full Screen Width Policy).** El sistema Villa Luz OS está diseñado para ser operado y visualizado desde cualquier dispositivo, incluyendo celulares, portátiles y pantallas de TV de gran formato. Todo layout principal y página de dashboard debe ocupar el 100% del ancho de pantalla disponible. Queda **PROHIBIDO** usar la clase `.container` de Tailwind en layouts principales y páginas (usar `w-full` en su lugar), dado que sus media-queries restringen el ancho máximo de forma predeterminada a 1280px o 1536px, dejando márgenes vacíos en pantallas grandes.
 
 ### Prohibido
 

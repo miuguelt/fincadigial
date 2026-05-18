@@ -75,7 +75,7 @@ export default function OperarioDashboard() {
   };
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
+    <div className="w-full p-4 space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>

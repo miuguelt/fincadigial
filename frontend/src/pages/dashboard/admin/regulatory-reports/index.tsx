@@ -3,7 +3,7 @@ import { RegulatoryReportsDashboard } from '@/features/regulatory-reports/compon
 
 const RegulatoryReportsPage: React.FC = () => {
   return (
-    <div className="container mx-auto py-6">
+    <div className="w-full py-6">
       <RegulatoryReportsDashboard />
     </div>
   );

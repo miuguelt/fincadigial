@@ -12,11 +12,25 @@
 | Tree Genealógico | `widgets/dashboard/GeneticTreeModal.tsx`, `DescendantsTreeModal.tsx` | ✅ Activo | 2026-05-17 | Ver detalle animal → Árbol genealógico |
 | Modales de detalle | `widgets/dashboard/animals/AnimalModalContent.tsx` | ✅ Activo | 2026-05-17 | Click en animal → detalle completo |
 
+## Archivos legacy/deprecated (NO USAR)
+
+| Ruta | Estado | Reemplazo activo |
+|------|--------|------------------|
+| `shared/ui/common/AdminCRUDPage.tsx` (2844L) | ⚠️ Legacy monolith | `widgets/admin-crud/ui/AdminCRUDPage.tsx` |
+| `shared/ui/common/AdminCRUDPage/` (carpeta) | ⚠️ Legacy extracted | `widgets/admin-crud/ui/` |
+
 ## Archivos corruptos conocidos (NO USAR)
 
 | Archivo | Estado | Acción |
 |---------|--------|--------|
-| `widgets/admin-crud/ui/OptimizedAdminCRUDPage.tsx` | ❌ Minificado/corrupto (25 líneas) | Usar `shared/ui/common/AdminCRUDPage/OptimizedAdminCRUDPage.tsx` |
+| `widgets/admin-crud/ui/OptimizedAdminCRUDPage.tsx` | ❌ ELIMINADO (estaba minificado) | Usar `shared/ui/common/AdminCRUDPage/OptimizedAdminCRUDPage.tsx` si se necesita |
+
+## Single Source of Truth (SSOT)
+- **UI Components:** `frontend/src/widgets/admin-crud/ui/` (activo)
+- **Types:** `frontend/src/shared/types/crud.ts`
+- **Pages:** `frontend/src/pages/dashboard/admin/`
+- **Features:** `frontend/src/features/`
+- **TODO import debe usar `@/widgets/admin-crud`**, NUNCA `@/shared/ui/common/AdminCRUDPage`
 
 ## Reglas para nuevas funcionalidades críticas
 

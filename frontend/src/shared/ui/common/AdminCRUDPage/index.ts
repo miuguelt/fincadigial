@@ -1,4 +1,10 @@
 /*
+ * ⚠️ DIRECTORIO LEGACY — NO USAR — DEPRECATED
+ * Estos componentes fueron reemplazados por: widgets/admin-crud/ui/
+ * NO importar desde esta ruta. Todos los imports deben usar '@/widgets/admin-crud'
+ * Fecha de deprecación: 2026-05-17
+ * Mantenido solo como referencia histórica. Eliminar cuando se confirme migración completa.
+ *
  * AdminCRUDPage Components
  * 
  * Exportación de todos los componentes refactorizados y optimizados.
