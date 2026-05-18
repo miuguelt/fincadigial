@@ -151,7 +151,7 @@ export function AnimalCard({
                   e.stopPropagation();
                   onFatherClick(animal.idFather || animal.father_id);
                 }}
-                className="text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:underline truncate w-full text-left transition-colors"
+                className="text-sm font-medium text-primary hover:text-primary/80 hover:underline truncate w-full text-left transition-colors"
               >
                 {fatherLabel}
               </button>
@@ -167,7 +167,7 @@ export function AnimalCard({
                   e.stopPropagation();
                   onMotherClick(animal.idMother || animal.mother_id);
                 }}
-                className="text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:underline truncate w-full text-left transition-colors"
+                className="text-sm font-medium text-primary hover:text-primary/80 hover:underline truncate w-full text-left transition-colors"
               >
                 {motherLabel}
               </button>
@@ -190,7 +190,7 @@ export function AnimalCard({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-9 w-9 p-0 rounded-lg border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                  className="h-9 w-9 p-0 rounded-lg border-primary/30 text-primary hover:bg-primary/10 hover:text-primary"
                   onClick={(e) => { e.stopPropagation(); onCardClick?.(); }}
                   title="Ver Detalle"
                 >
@@ -202,9 +202,9 @@ export function AnimalCard({
                   <Button
                     variant="outline"
                     size="sm"
-                    className={`h-9 w-9 p-0 transition-all duration-200 rounded-lg border-red-200 ${isConfirmingRemove
-                      ? 'bg-red-600 border-red-600 text-white shadow-lg shadow-red-500/50 animate-pulse scale-110'
-                      : 'text-red-600 hover:bg-red-50 hover:text-red-700'
+                    className={`h-9 w-9 p-0 transition-all duration-200 rounded-lg border-danger/30 ${isConfirmingRemove
+                      ? 'bg-danger border-danger text-danger-foreground shadow-lg shadow-danger/50 animate-pulse scale-110'
+                      : 'text-danger hover:bg-danger/10 hover:text-danger'
                       }`}
                     onClick={(e) => {
                       e.stopPropagation();

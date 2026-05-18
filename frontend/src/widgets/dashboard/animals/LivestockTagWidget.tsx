@@ -159,8 +159,8 @@ export function LivestockTagWidget({ animal }: LivestockTagWidgetProps) {
                 "w-24 h-24 rounded-full flex items-center justify-center transition-all duration-500",
                 nfcStatus === 'idle' ? "bg-slate-100 dark:bg-white/5 text-slate-400" :
                 nfcStatus === 'writing' ? "bg-primary/20 text-primary animate-pulse" :
-                nfcStatus === 'success' ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/50" :
-                "bg-rose-500 text-white shadow-lg shadow-rose-500/50"
+                nfcStatus === 'success' ? "bg-success text-success-foreground shadow-lg shadow-success/50" :
+                "bg-danger text-danger-foreground shadow-lg shadow-danger/50"
               )}>
                 {nfcStatus === 'idle' && <Smartphone className="h-10 w-10" />}
                 {nfcStatus === 'writing' && <Nfc className="h-10 w-10" />}
@@ -176,19 +176,19 @@ export function LivestockTagWidget({ animal }: LivestockTagWidgetProps) {
                   {nfcStatus === 'error' && "Error o No Soportado"}
                 </h4>
                 <p className="text-[11px] text-muted-foreground font-medium mt-1">
-                  {nfcStatus === 'idle' && "Graba la información del animal en un chip físico para acceso rápido en campo."}
+                  {nfcStatus === 'idle' && "Graba la info del animal en un chip físico para acceso rápido en campo."}
                   {nfcStatus === 'writing' && "Mantén el dispositivo cerca del chip NFC."}
                   {nfcStatus === 'success' && `El registro ${animal.record} se ha grabado correctamente.`}
                   {nfcStatus === 'error' && "Asegúrate de usar un navegador compatible (Chrome Android) y tener el NFC activo."}
                 </p>
-              </div>
+               </div>
 
               <Button 
                 disabled={isProgramming}
                 onClick={programNfc}
                 className={cn(
                   "rounded-xl font-black uppercase tracking-widest text-[10px] h-12 px-8 gap-2 transition-all",
-                  nfcStatus === 'success' ? "bg-emerald-600 hover:bg-emerald-700" : "bg-primary shadow-lg shadow-primary/30"
+                  nfcStatus === 'success' ? "bg-success hover:bg-success/80 text-success-foreground" : "bg-primary shadow-lg shadow-primary/30"
                 )}
               >
                 {isProgramming ? "Escribiendo..." : nfcStatus === 'success' ? "Programar Otro" : "Iniciar Grabación"}

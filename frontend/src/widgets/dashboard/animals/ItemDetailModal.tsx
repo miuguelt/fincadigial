@@ -335,7 +335,7 @@ export function ItemDetailModal({
                         onClick={handleDeleteClick}
                         className={cn(
                             "rounded-xl px-4 mr-auto",
-                            showDeleteConfirm ? "bg-red-600 text-white hover:bg-red-700" : "text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900/30 dark:hover:bg-red-900/10"
+                            showDeleteConfirm ? "bg-danger text-danger-foreground hover:bg-danger/90" : "text-danger border-danger/30 hover:bg-danger/10"
                         )}
                         disabled={isDeleting}
                     >
@@ -399,15 +399,15 @@ export function DetailSection({
     icon?: React.ReactNode;
 }) {
     const accentClasses: Record<string, string> = {
-        blue: "text-blue-700 dark:text-blue-300 before:bg-blue-500 shadow-blue-500/10",
-        cyan: "text-cyan-700 dark:text-cyan-300 before:bg-cyan-500 shadow-cyan-500/10",
-        teal: "text-teal-700 dark:text-teal-300 before:bg-teal-500 shadow-teal-500/10",
-        emerald: "text-emerald-700 dark:text-emerald-300 before:bg-emerald-500 shadow-emerald-500/10",
-        purple: "text-purple-700 dark:text-purple-300 before:bg-purple-500 shadow-purple-500/10",
-        indigo: "text-indigo-700 dark:text-indigo-300 before:bg-indigo-500 shadow-indigo-500/10",
-        red: "text-red-700 dark:text-red-300 before:bg-red-500 shadow-red-500/10",
-        amber: "text-amber-700 dark:text-amber-300 before:bg-amber-500 shadow-amber-500/10",
-        slate: "text-slate-700 dark:text-slate-300 before:bg-slate-500 shadow-slate-500/10",
+        blue: "text-info dark:text-info/90 before:bg-info shadow-info/10",
+        cyan: "text-info dark:text-info/90 before:bg-info shadow-info/10",
+        teal: "text-primary dark:text-primary/90 before:bg-primary shadow-primary/10",
+        emerald: "text-success dark:text-success/90 before:bg-success shadow-success/10",
+        purple: "text-primary dark:text-primary/90 before:bg-primary shadow-primary/10",
+        indigo: "text-primary dark:text-primary/90 before:bg-primary shadow-primary/10",
+        red: "text-danger dark:text-danger/90 before:bg-danger shadow-danger/10",
+        amber: "text-warning dark:text-warning/90 before:bg-warning shadow-warning/10",
+        slate: "text-muted-foreground before:bg-muted-foreground shadow-border/10",
     };
 
     const classes = accentClasses[accent] || accentClasses.slate;
@@ -458,11 +458,11 @@ export function InfoField({
                 {label}
             </div>
             {badge ? (
-                <Badge
+               <Badge
                     variant={badgeVariant as any}
                     className={cn(
                         "text-[10px] px-2 py-0 h-5",
-                        badgeVariant === 'success' && "bg-green-600 text-white"
+                        badgeVariant === 'success' && "bg-success text-success-foreground"
                     )}
                 >
                     {displayValue}

@@ -736,9 +736,9 @@ export function AnimalImageBanner({
                 className="group absolute top-8 sm:top-10 right-8 sm:right-10 z-30
                   p-3 sm:p-4
                   rounded-2xl
-                  bg-gradient-to-br from-red-500/30 to-red-600/20 hover:from-red-500/50 hover:to-red-600/40
+                  bg-gradient-to-br from-danger/30 to-danger/20 hover:from-danger/50 hover:to-danger/40
                   text-white backdrop-blur-xl
-                  shadow-2xl border border-red-400/40
+                  shadow-2xl border border-danger/40
                   transform hover:scale-110 hover:rotate-90 active:scale-95
                   transition-all duration-300"
                 aria-label="Cerrar"

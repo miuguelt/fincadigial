@@ -280,7 +280,7 @@ export function AnimalImagePreUpload({
             ))}
           </div>
 
-          <p className="text-xs text-muted-foreground bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-2.5">
+          <p className="text-xs text-info-foreground bg-info/10 border border-info/20 rounded-lg p-2.5">
             💡 <strong>Nota:</strong> Las imágenes se subirán automáticamente después de crear el animal
           </p>
         </div>

@@ -346,7 +346,7 @@ export function AnimalImageGallery({
               {/* Badge de imagen principal */}
               {image.is_primary && (
                 <div className="absolute top-2 left-2">
-                  <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white">
+                  <Badge className="bg-warning hover:bg-warning/80 text-warning-foreground">
                     <Star className="w-3 h-3 mr-1 fill-current" />
                     Principal
                   </Badge>
@@ -475,7 +475,7 @@ export function AnimalImageGallery({
           <DialogHeader className="sr-only">
             <DialogTitle className="flex items-center gap-2">
               {selectedImage?.is_primary && (
-                <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                <Star className="w-5 h-5 text-warning fill-current" />
               )}
               {selectedImage?.filename}
             </DialogTitle>
@@ -521,7 +521,7 @@ export function AnimalImageGallery({
                 <div className="bg-black/80 backdrop-blur-md text-white px-6 py-3 rounded-full text-sm font-medium shadow-2xl border border-white/10">
                   {selectedImage.filename} • {(selectedImage.file_size / 1024).toFixed(0)} KB • {selectedImage.mime_type}
                   {selectedImage.is_primary && (
-                    <span className="ml-2 text-yellow-400">⭐ Principal</span>
+                    <span className="ml-2 text-warning">⭐ Principal</span>
                   )}
                 </div>
               </div>

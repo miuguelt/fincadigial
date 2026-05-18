@@ -433,9 +433,9 @@ export function AnimalImageUpload({
 
       {/* Mensajes de éxito */}
       {success && (
-        <Alert className="border-green-500 bg-green-500/10">
-          <CheckCircle2 className="h-4 w-4 text-green-500" />
-          <AlertDescription className="text-green-700 dark:text-green-400">
+        <Alert className="border-success bg-success/10">
+          <CheckCircle2 className="h-4 w-4 text-success" />
+          <AlertDescription className="text-success-foreground">
             {success}
           </AlertDescription>
         </Alert>
