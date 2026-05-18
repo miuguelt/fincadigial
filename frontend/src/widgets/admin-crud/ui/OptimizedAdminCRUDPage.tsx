@@ -1,4 +1,9 @@
 /*
+ * ⚠️ COMPONENTE CRÍTICO - NO ELIMINAR SIN REVISIÓN
+ * Funciones: AdminCRUDPage optimizado con memoización, virtualización, componentes especializados
+ * Última modificación: 2026-05-17
+ * SSOT: widgets/admin-crud/ui/OptimizedAdminCRUDPage.tsx
+ *
  * OptimizedAdminCRUDPage
  * 
  * Versión optimizada y refactorizada del componente AdminCRUDPage original.

@@ -23,7 +23,7 @@
 
 | Archivo | Estado | Acción |
 |---------|--------|--------|
-| `widgets/admin-crud/ui/OptimizedAdminCRUDPage.tsx` | ❌ ELIMINADO (estaba minificado) | Usar `shared/ui/common/AdminCRUDPage/OptimizedAdminCRUDPage.tsx` si se necesita |
+| `shared/ui/common/AdminCRUDPage/OptimizedAdminCRUDPage.tsx` | ⚠️ Legacy copy | Usar `widgets/admin-crud/ui/OptimizedAdminCRUDPage.tsx` |
 
 ## Single Source of Truth (SSOT)
 - **UI Components:** `frontend/src/widgets/admin-crud/ui/` (activo)

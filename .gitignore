@@ -71,3 +71,10 @@ Thumbs.db
 .gemini/
 _tmp*/
 _archive*/
+
+# --- Generated / Coverage (NO COMMIT) ---
+frontend/coverage/
+frontend/test-results/
+test-results/
+*.lcov
+*.lcov-report/
