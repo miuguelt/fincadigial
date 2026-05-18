@@ -78,3 +78,10 @@ frontend/test-results/
 test-results/
 *.lcov
 *.lcov-report/
+scratch/
+backend/scratch/
+*.json
+!package.json
+!package-lock.json
+!IDENTITY.json
+!.devbrain/config/IDENTITY.json
