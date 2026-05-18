@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Edit } from 'lucide-react';
 import { AdminCRUDPage } from '@/widgets/admin-crud';
@@ -28,6 +28,13 @@ import { AnimalModalContent } from '@/widgets/dashboard/animals/AnimalModalConte
 import { AnimalImagePreUpload } from '@/widgets/dashboard/animals/AnimalImagePreUpload';
 import { animalImageService } from '@/entities/animal/api/animalImage.service';
 import { useToast } from '@/app/providers/ToastContext';
+import {
+  BatchActionToolbar,
+  BatchWeightModal,
+  BatchVaccinationModal,
+  BatchFieldTransferModal,
+  BulkTagPrintModal,
+} from '@/features/animal-bulk-actions';
 
 const ANIMAL_STATUS_OPTIONS = [
   { value: 'Vivo', label: 'Vivo' },
@@ -160,6 +167,11 @@ function AdminAnimalsPage() {
 
   // Estado para imágenes pre-seleccionadas durante la creación
   const [pendingImages, setPendingImages] = useState<File[]>([]);
+
+  // Estados para modales de acciones masivas
+  const [bulkModal, setBulkModal] = useState<'transfer' | 'weight' | 'vaccinate' | 'print' | null>(null);
+  const clearSelectionRef = useRef<(() => void) | null>(null);
+  const selectedIdsRef = useRef<number[]>([]);
 
   // Preferencia global ya persistida en el hook
 
@@ -600,6 +612,24 @@ function AdminAnimalsPage() {
     enableCreateModal: true,
     enableEditModal: true,
     enableDelete: true,
+    enableSelection: true,
+    batchActions: (selectedIds: number[], _items: any[], clearSelection: () => void) => {
+      clearSelectionRef.current = clearSelection;
+      selectedIdsRef.current = selectedIds;
+      return (
+        <BatchActionToolbar
+          selectedCount={selectedIds.length}
+          onClear={clearSelection}
+          onTransfer={() => setBulkModal('transfer')}
+          onWeight={() => setBulkModal('weight')}
+          onVaccinate={() => setBulkModal('vaccinate')}
+          onPrintTags={() => setBulkModal('print')}
+          onDelete={() => {
+            showToast(`Seleccionados ${selectedIds.length} animales para eliminar. Use el botón de la barra flotante.`, 'warning');
+          }}
+        />
+      );
+    },
     viewMode,
     renderCard: renderAnimalCard,
     customToolbar: (
@@ -922,6 +952,56 @@ function AdminAnimalsPage() {
           setDescEdgeExamples(merged.edge_examples);
         }}
       />
+
+      {/* Modales de acciones masivas */}
+      {bulkModal === 'transfer' && (
+        <BatchFieldTransferModal
+          isOpen
+          onClose={() => setBulkModal(null)}
+          selectedAnimalIds={selectedIdsRef.current}
+          onSuccess={() => {
+            setBulkModal(null);
+            clearSelectionRef.current?.();
+            showToast('Traslado masivo completado', 'success');
+          }}
+        />
+      )}
+      {bulkModal === 'weight' && (
+        <BatchWeightModal
+          isOpen
+          onClose={() => setBulkModal(null)}
+          selectedAnimalIds={selectedIdsRef.current}
+          onSuccess={() => {
+            setBulkModal(null);
+            clearSelectionRef.current?.();
+            showToast('Pesaje masivo registrado', 'success');
+          }}
+        />
+      )}
+      {bulkModal === 'vaccinate' && (
+        <BatchVaccinationModal
+          isOpen
+          onClose={() => setBulkModal(null)}
+          selectedAnimalIds={selectedIdsRef.current}
+          onSuccess={() => {
+            setBulkModal(null);
+            clearSelectionRef.current?.();
+            showToast('Vacunación masiva registrada', 'success');
+          }}
+        />
+      )}
+      {bulkModal === 'print' && (
+        <BulkTagPrintModal
+          isOpen
+          onClose={() => setBulkModal(null)}
+          selectedAnimalIds={selectedIdsRef.current}
+          onSuccess={() => {
+            setBulkModal(null);
+            clearSelectionRef.current?.();
+            showToast('Etiquetas generadas', 'success');
+          }}
+        />
+      )}
     </>
   );
 }

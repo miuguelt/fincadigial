@@ -10,9 +10,10 @@
  * - Escritorio (≥1024px): tabla completa con sticky header
  */
 
-import React, { memo, useMemo, useCallback, useState } from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import { Eye, Edit, Trash2, Loader2, MoreVertical } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
+import { Checkbox } from '@/shared/ui/checkbox';
 import { cn } from '@/shared/ui/cn.ts';
 import { useT } from '@/shared/i18n';
 import { useMediaQuery } from '@/shared/hooks/useMediaQuery';
@@ -26,6 +27,11 @@ import {
 // Interfaces
 import { CRUDColumn, CRUDConfig } from '@/shared/types/crud';
 
+// ⚠️ COMPONENTE CRÍTICO - NO ELIMINAR SIN REVISIÓN
+// Funciones: [Tabla CRUD con selección masiva, virtualización, responsive cards]
+// Última modificación: 2026-05-17
+// Relacionado con: AdminCRUDPage, OptimizedAdminCRUDPage
+
 interface CRUDTableProps<T extends { id: number }> {
   items: T[];
   columns: CRUDColumn<T>[];
@@ -35,6 +41,10 @@ interface CRUDTableProps<T extends { id: number }> {
   onOpenDelete?: (id: number) => void;
   enhancedHover?: boolean;
   refreshing?: boolean;
+  // Selección masiva
+  selectedIds?: number[];
+  onToggleSelect?: (id: number) => void;
+  onToggleSelectAll?: () => void;
 }
 
 interface InternalTableProps<T extends { id: number }> {
@@ -47,6 +57,9 @@ interface InternalTableProps<T extends { id: number }> {
   enhancedHover?: boolean;
   fkLabelMap: Record<string, Map<string, string>>;
   deletingItems: Set<string>;
+  selectedIds?: number[];
+  onToggleSelect?: (id: number) => void;
+  onToggleSelectAll?: () => void;
 }
 
 interface TableRowProps<T extends { id: number }> {
@@ -60,6 +73,8 @@ interface TableRowProps<T extends { id: number }> {
   enhancedHover?: boolean;
   fkLabelMap: Record<string, Map<string, string>>;
   deletingItems: Set<string>;
+  selectedIds?: number[];
+  onToggleSelect?: (id: number) => void;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -74,10 +89,12 @@ interface MobileCardProps<T extends { id: number }> {
   onOpenEdit?: (item: T) => void;
   onOpenDelete?: (id: number) => void;
   fkLabelMap: Record<string, Map<string, string>>;
+  selectedIds?: number[];
+  onToggleSelect?: (id: number) => void;
 }
 
 function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>) {
-  const { item, index, columns, config, onOpenDetail, onOpenEdit, onOpenDelete, fkLabelMap } = props;
+  const { item, index, columns, config, onOpenDetail, onOpenEdit, onOpenDelete, fkLabelMap, selectedIds, onToggleSelect } = props;
   const t = useT();
 
   const firstCol = columns[0];
@@ -126,18 +143,29 @@ function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>
           {firstCol && firstCol.render ? getCellValue(firstCol) : titleText}
         </h3>
 
-        {/* Badge del segundo campo (usualmente el tipo/evento) */}
-        {columns[1] && (
-          columns[1].render ? (
-            <div className="flex-shrink-0">
-              {getCellValue(columns[1])}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {config.enableSelection && onToggleSelect && (
+            <div onClick={(e) => e.stopPropagation()}>
+              <Checkbox
+                checked={selectedIds?.includes(item.id) || false}
+                onCheckedChange={() => onToggleSelect(item.id)}
+                aria-label={`Seleccionar ${config.entityName} ${item.id}`}
+              />
             </div>
-          ) : (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 flex-shrink-0">
-              {getCellValue(columns[1])}
-            </span>
-          )
-        )}
+          )}
+          {/* Badge del segundo campo (usualmente el tipo/evento) */}
+          {columns[1] && (
+            columns[1].render ? (
+              <div className="flex-shrink-0">
+                {getCellValue(columns[1])}
+              </div>
+            ) : (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 flex-shrink-0">
+                {getCellValue(columns[1])}
+              </span>
+            )
+          )}
+        </div>
       </div>
 
       {/* ── Pares clave:valor ── */}
@@ -258,7 +286,7 @@ const MobileCard = memo(MobileCardComponent) as typeof MobileCardComponent;
 // MOBILE CARD LIST — renderiza cards en stack vertical
 // ═══════════════════════════════════════════════════════
 function MobileCardList<T extends { id: number }>(props: InternalTableProps<T>) {
-  const { items, columns, config, onOpenDetail, onOpenEdit, onOpenDelete, fkLabelMap } = props;
+  const { items, columns, config, onOpenDetail, onOpenEdit, onOpenDelete, fkLabelMap, selectedIds, onToggleSelect } = props;
 
   return (
     <div className="p-3 space-y-3">
@@ -273,6 +301,8 @@ function MobileCardList<T extends { id: number }>(props: InternalTableProps<T>) 
           onOpenEdit={onOpenEdit}
           onOpenDelete={onOpenDelete}
           fkLabelMap={fkLabelMap}
+          selectedIds={selectedIds}
+          onToggleSelect={onToggleSelect}
         />
       ))}
     </div>
@@ -294,6 +324,8 @@ function TableRowComponent<T extends { id: number }>(props: TableRowProps<T>) {
     enhancedHover,
     fkLabelMap,
     deletingItems,
+    selectedIds,
+    onToggleSelect,
   } = props;
 
   const t = useT();
@@ -347,6 +379,18 @@ function TableRowComponent<T extends { id: number }>(props: TableRowProps<T>) {
       }}
       data-item-id={item.id}
     >
+      {config.enableSelection && onToggleSelect && (
+        <td
+          className="px-2 sm:px-3 py-2 whitespace-nowrap"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Checkbox
+            checked={selectedIds?.includes(item.id) || false}
+            onCheckedChange={() => onToggleSelect(item.id)}
+            aria-label={`Seleccionar ${config.entityName} ${item.id}`}
+          />
+        </td>
+      )}
       {columns.map((col) => (
         <td
           key={String(col.key)}
@@ -434,12 +478,26 @@ function TraditionalTableComponent<T extends { id: number }>(props: InternalTabl
     enhancedHover,
     fkLabelMap,
     deletingItems,
+    selectedIds,
+    onToggleSelect,
+    onToggleSelectAll,
   } = props;
+
+  const allSelected = items.length > 0 && items.every((item) => selectedIds?.includes(item.id));
 
   return (
     <table className="min-w-full divide-y divide-border/70 text-[12px] md:text-sm shadow-sm rounded-lg overflow-hidden">
       <thead className="sticky top-0 z-10 bg-muted/80 backdrop-blur-sm supports-[backdrop-filter]:bg-muted/60 border-b border-border/50">
         <tr className="h-10">
+          {config.enableSelection && onToggleSelectAll && (
+            <th className="px-2 sm:px-3 py-2 w-10">
+              <Checkbox
+                checked={allSelected}
+                onCheckedChange={onToggleSelectAll}
+                aria-label="Seleccionar todos"
+              />
+            </th>
+          )}
           {columns.map((col) => (
             <th
               key={String(col.key)}
@@ -474,6 +532,8 @@ function TraditionalTableComponent<T extends { id: number }>(props: InternalTabl
             enhancedHover={enhancedHover}
             fkLabelMap={fkLabelMap}
             deletingItems={deletingItems}
+            selectedIds={selectedIds}
+            onToggleSelect={onToggleSelect}
           />
         ))}
       </tbody>
@@ -495,6 +555,9 @@ export function CRUDTable<T extends { id: number }>({
   onOpenDelete,
   enhancedHover = false,
   refreshing = false,
+  selectedIds,
+  onToggleSelect,
+  onToggleSelectAll,
 }: CRUDTableProps<T>) {
   const isMobile = useMediaQuery('(max-width: 767px)');
 
@@ -545,9 +608,21 @@ export function CRUDTable<T extends { id: number }>({
               return (
                 <div
                   key={item.id}
-                  className="bg-card border border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
+                  className="bg-card border border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer relative"
                   onClick={() => onOpenDetail?.(item)}
                 >
+                  {config.enableSelection && onToggleSelect && (
+                    <div
+                      className="absolute top-2 right-2 z-10"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Checkbox
+                        checked={selectedIds?.includes(item.id) || false}
+                        onCheckedChange={() => onToggleSelect(item.id)}
+                        aria-label={`Seleccionar ${config.entityName} ${item.id}`}
+                      />
+                    </div>
+                  )}
                   <h3 className="font-medium text-sm mb-2 truncate">{titleText}</h3>
                   <div className="text-xs text-muted-foreground space-y-1">
                     {columns.slice(1, 3).map((col) => {
@@ -618,6 +693,8 @@ export function CRUDTable<T extends { id: number }>({
             fkLabelMap={fkLabelMap}
             deletingItems={deletingItems}
             enhancedHover={enhancedHover}
+            selectedIds={selectedIds}
+            onToggleSelect={onToggleSelect}
           />
         ) : (
           /* ── TABLET/DESKTOP: Tabla tradicional ── */
@@ -631,6 +708,9 @@ export function CRUDTable<T extends { id: number }>({
             enhancedHover={enhancedHover}
             fkLabelMap={fkLabelMap}
             deletingItems={deletingItems}
+            selectedIds={selectedIds}
+            onToggleSelect={onToggleSelect}
+            onToggleSelectAll={onToggleSelectAll}
           />
         )}
       </div>

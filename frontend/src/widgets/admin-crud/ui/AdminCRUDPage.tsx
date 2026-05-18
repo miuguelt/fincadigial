@@ -40,6 +40,7 @@ import { EmptyState } from '@/widgets/feedback/EmptyState';
 import { ErrorState } from '@/widgets/feedback/ErrorState';
 import { SkeletonTable } from '@/widgets/feedback/SkeletonTable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Checkbox } from '@/shared/ui/checkbox';
 import { Plus } from 'lucide-react';
 
 // Utilidades
@@ -92,6 +93,13 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   const [formErrors, setFormErrors] = useState<FieldErrors>({});
   const [formErrorMessages, setFormErrorMessages] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Selección masiva
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const toggleSelect = useCallback((id: number) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  }, []);
+  const clearSelection = useCallback(() => setSelectedIds([]), []);
 
     const updateFieldValue = useCallback((field: CRUDFormField<TInput>, value: any) => {
     const key = String(field.name);
@@ -172,6 +180,13 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       return !tombstoneIds.has(idStr);
     });
   }, [items, entityKey]);
+
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds(prev => {
+      const allIds = (filteredItems || []).map((i: T) => (i as any).id as number);
+      return prev.length === allIds.length ? [] : allIds;
+    });
+  }, [filteredItems]);
   
   // Handlers
   const openCreate = useCallback(() => {
@@ -600,7 +615,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
                 return (
                   <Card
                     key={item.id}
-                    className="cursor-pointer transition-all duration-200 flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                    className="cursor-pointer transition-all duration-200 flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-md hover:shadow-lg hover:-translate-y-0.5 relative"
                     onClick={() => { config.enableDetailModal !== false && openDetail(item); }}
                     role="button"
                     tabIndex={0}
@@ -611,6 +626,18 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
                       }
                     }}
                   >
+                    {config.enableSelection && (
+                      <div
+                        className="absolute top-2 right-2 z-10"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Checkbox
+                          checked={selectedIds.includes((item as any).id)}
+                          onCheckedChange={() => toggleSelect((item as any).id)}
+                          aria-label={`Seleccionar ${config.entityName} ${(item as any).id}`}
+                        />
+                      </div>
+                    )}
                     {!config.renderCard && (
                       <CardHeader className="py-3 flex-shrink-0 border-b border-border/30">
                         <CardTitle className="text-sm font-semibold truncate" title={titleText}>{titleText}</CardTitle>
@@ -657,6 +684,9 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
             onOpenDelete={config.enableDelete ? openDeleteConfirm : undefined}
             enhancedHover={enhancedHover}
             refreshing={refreshing}
+            selectedIds={selectedIds}
+            onToggleSelect={toggleSelect}
+            onToggleSelectAll={toggleSelectAll}
           />
 
           <CRUDPagination
@@ -667,6 +697,11 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
             loading={loading}
           />
         </div>
+      )}
+
+      {/* Batch actions bar */}
+      {config.enableSelection && selectedIds.length > 0 && config.batchActions && (
+        config.batchActions(selectedIds, filteredItems, clearSelection)
       )}
       
       {/* Create/Edit Modal */}

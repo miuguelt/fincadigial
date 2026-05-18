@@ -56,6 +56,11 @@ export interface CRUDFormSection<T = any> {
   gridCols?: number;
 }
 
+// ⚠️ COMPONENTE CRÍTICO - NO ELIMINAR SIN REVISIÓN
+// Funciones: [Configuración de CRUD, selección masiva, batch actions]
+// Última modificación: 2026-05-17
+// Relacionado con: AdminCRUDPage, CRUDTable, OptimizedAdminCRUDPage
+
 export interface CRUDConfig<T = any, TInput = any> {
   title: string;
   entityName: string;
@@ -73,6 +78,9 @@ export interface CRUDConfig<T = any, TInput = any> {
   customActions?: (item: T) => ReactNode;
   viewMode?: 'table' | 'cards';
   renderCard?: (item: T) => ReactNode;
+  // Selección masiva y acciones por lote
+  enableSelection?: boolean;
+  batchActions?: (selectedIds: number[], items: T[], clearSelection: () => void) => ReactNode;
   // Propiedades adicionales detectadas en la auditoría
   defaultFields?: string[];
   additionalFilters?: Record<string, any>;
