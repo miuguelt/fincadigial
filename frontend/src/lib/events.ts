@@ -1,6 +1,6 @@
 type Handler = (data: any) => void;
 
-const SSE_URL = '/api/v1/events'; // Temporalmente deshabilitado - return null en connectSSE
+const SSE_URL = '/api/v1/sse/events'; // Temporalmente deshabilitado - return null en connectSSE
 const BASE_RETRY_DELAY_MS = 10000; // 10 seconds base delay
 const MAX_RETRY_DELAY_MS = 300000; // 5 minutes max
 const RATE_LIMIT_BACKOFF_MS = 20000; // 20 seconds base backoff on 429

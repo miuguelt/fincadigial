@@ -5,6 +5,7 @@ import RoleBasedSideBar from '@/widgets/dashboard/RoleBasedSideBar';
 import Header from './Header';
 import LoadingScreen from '@/shared/ui/common/LoadingScreen';
 import { ChatWidget } from '@/widgets/chat/ChatWidget';
+import { FloatingQuickActions } from '@/widgets/dashboard/FloatingQuickActions';
 import { cn } from '@/shared/lib/utils';
 
 const DashboardLayout: React.FC = () => {
@@ -96,6 +97,7 @@ const DashboardLayout: React.FC = () => {
       </div>
 
       <ChatWidget />
+      <FloatingQuickActions />
     </div>
   );
 };
