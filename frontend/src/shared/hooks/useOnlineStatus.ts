@@ -5,6 +5,7 @@ interface OnlineStatus {
   isOnline: boolean;
   wasOffline: boolean;
   pendingOperations: number;
+  totalOperations: number;
   syncStatus: SyncStatus;
 }
 
@@ -23,6 +24,7 @@ export const useOnlineStatus = (): OnlineStatus => {
     isOnline,
     wasOffline,
     pendingOperations: pendingCount,
+    totalOperations: pendingCount + syncStatus.failed,
     syncStatus,
   };
 };

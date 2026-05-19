@@ -37,8 +37,8 @@ export const OnlineStatusIndicator: React.FC = () => {
         bgColor: 'bg-orange-100 dark:bg-orange-900/30',
         borderColor: 'border-orange-300 dark:border-orange-700',
         label: 'Sin conexión',
-        description: pendingOperations > 0
-          ? `${pendingOperations} operación(es) pendiente(s) de sincronizar`
+        description: syncStatus.pending > 0
+          ? `${syncStatus.pending} operación(es) pendiente(s) de sincronizar`
           : 'Trabajando offline - Los cambios se sincronizarán automáticamente'
       };
     }
@@ -65,7 +65,7 @@ export const OnlineStatusIndicator: React.FC = () => {
       };
     }
 
-    if (wasOffline && pendingOperations === 0) {
+    if (wasOffline && syncStatus.pending === 0 && syncStatus.failed === 0) {
       return {
         icon: CheckCircle2,
         color: 'text-green-600 dark:text-green-400',
@@ -83,7 +83,7 @@ export const OnlineStatusIndicator: React.FC = () => {
         bgColor: 'bg-blue-100 dark:bg-blue-900/30',
         borderColor: 'border-blue-300 dark:border-blue-700',
         label: 'Pendiente',
-        description: `${pendingOperations} operación(es) esperando sincronización`
+        description: `${syncStatus.pending} operación(es) esperando sincronización`
       };
     }
 
@@ -106,11 +106,11 @@ export const OnlineStatusIndicator: React.FC = () => {
     return null;
   }
 
-  // BUG FIX FASE 3: Posición corregida.
-  // Antes: fixed bottom-4 right-4 z-50 — aparecía encima de tablas y el contenido.
-  // Ahora: bottom-6 right-6 z-30 — posición menos intrusiva y z-index más bajo.
+  // BUG FIX FASE 4: Resolución de colisión visual (UI Overlap).
+  // Antes: fixed bottom-6 right-6 z-30 — colisionaba directamente con los botones flotantes FAB (FloatingQuickActions y ChatWidget).
+  // Ahora: bottom-6 left-6 md:left-20 lg:left-64 z-40 — reubicado estratégicamente en la esquina inferior izquierda, respetando el ancho del sidebar en todos los breakpoints.
   return (
-    <div className="fixed bottom-6 right-6 z-30 max-w-[320px]">
+    <div className="fixed bottom-6 left-6 md:left-20 lg:left-64 z-40 max-w-[320px] transition-all duration-300">
       <div
         className={cn(
           "rounded-lg border-2 shadow-lg backdrop-blur-sm transition-all duration-300",
@@ -136,13 +136,13 @@ export const OnlineStatusIndicator: React.FC = () => {
               {status.label}
             </p>
           </div>
-          {pendingOperations > 0 && (
+          {(pendingOperations > 0 || syncStatus.failed > 0) && (
             <span className={cn(
               "px-2 py-0.5 rounded-full text-xs font-bold",
               "bg-white/50 dark:bg-black/20",
               status.color
             )}>
-              {pendingOperations}
+              {pendingOperations + syncStatus.failed}
             </span>
           )}
         </button>
@@ -155,9 +155,17 @@ export const OnlineStatusIndicator: React.FC = () => {
             </p>
 
             {/* Detalles de sincronización */}
-            {(syncStatus.pending > 0 || syncStatus.failed > 0) && (
+            {(syncStatus.pending > 0 || syncStatus.failed > 0 || syncStatus.syncing) && (
               <div className="space-y-1.5 text-xs">
-                {syncStatus.pending > 0 && (
+                {syncStatus.syncing && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-600 dark:text-blue-400">Sincronizando:</span>
+                    <span className="font-semibold text-blue-600 dark:text-blue-400">
+                      {syncStatus.pending + syncStatus.failed}
+                    </span>
+                  </div>
+                )}
+                {!syncStatus.syncing && syncStatus.pending > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Pendientes:</span>
                     <span className="font-semibold">{syncStatus.pending}</span>

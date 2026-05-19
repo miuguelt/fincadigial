@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Image as ImageIcon, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import {
   Dialog,
@@ -12,6 +12,7 @@ import {
   animalImageService,
   type AnimalImage,
 } from '@/entities/animal/api/animalImage.service';
+import { IconPhoto } from '@/shared/ui/icons';
 
 interface AnimalImageBannerProps {
   animalId: number;
@@ -325,7 +326,7 @@ export function AnimalImageBanner({
           }`}
       >
         <div className="text-center">
-          <ImageIcon className="w-10 h-10 mx-auto text-muted-foreground/70 mb-2" />
+          <IconPhoto className="w-10 h-10 mx-auto text-muted-foreground/70 mb-2" />
           <p className="text-xs text-muted-foreground">Cargando imágenes...</p>
         </div>
       </div>
@@ -342,7 +343,7 @@ export function AnimalImageBanner({
           }`}
       >
         <div className="text-center">
-          <ImageIcon className="w-12 h-12 mx-auto text-muted-foreground animate-pulse mb-2" />
+          <IconPhoto className="w-12 h-12 mx-auto text-muted-foreground animate-pulse mb-2" />
           <p className="text-sm text-muted-foreground">Cargando imágenes...</p>
         </div>
       </div>
@@ -364,7 +365,7 @@ export function AnimalImageBanner({
       >
         <div className="text-center px-4">
           <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-destructive/10 flex items-center justify-center">
-            <ImageIcon className="w-8 h-8 text-destructive" />
+            <IconPhoto className="w-8 h-8 text-destructive" />
           </div>
           <p className="text-base font-medium mb-1 text-destructive">Error al cargar imágenes</p>
           <p className="text-sm text-muted-foreground">
@@ -394,10 +395,10 @@ export function AnimalImageBanner({
           : 'relative w-full h-full rounded-xl banner-container-dynamic'
           }`}
       >
-        <div className="text-center">
-          <ImageIcon className="w-16 h-16 mx-auto text-muted-foreground mb-3" />
-          <p className="text-base font-medium mb-1">No hay imágenes</p>
-          <p className="text-sm text-muted-foreground">
+        <div className="text-center px-4">
+          <IconPhoto className="w-12 h-12 mx-auto text-muted-foreground/50 mb-2" />
+          <p className="text-sm font-medium mb-0.5">Sin imágenes</p>
+          <p className="text-xs text-muted-foreground">
             Este animal aún no tiene imágenes
           </p>
           {brokenImages > 0 && (
@@ -628,7 +629,7 @@ export function AnimalImageBanner({
                     {imageErrors.has(image.id) ? (
                       <div className="w-full h-full flex items-center justify-center">
                         <div className="text-center">
-                          <ImageIcon className="w-16 h-16 mx-auto text-white/30 mb-2" />
+                          <IconPhoto className="w-16 h-16 mx-auto text-white/30 mb-2" />
                           <p className="text-sm text-white/50">No se pudo cargar la imagen</p>
                         </div>
                       </div>

@@ -172,13 +172,6 @@ const DialogPortal = DialogPrimitive.Portal
 
 const DialogClose = DialogPrimitive.Close
 
-const DialogA11yContext = React.createContext<{
-  titleId?: string
-  descriptionId?: string
-  registerTitleId: (id: string) => void
-  registerDescriptionId: (id: string) => void
-} | null>(null)
-
 const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
@@ -220,110 +213,76 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  Omit<React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>, "aria-labelledby" | "aria-describedby"> & {
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
     overlayClassName?: string
     zIndex?: number
-    ["aria-labelledby"]?: string
-    ["aria-describedby"]?: string
   }
->(({ className, children, overlayClassName, zIndex, ["aria-labelledby"]: ariaLabelledByProp, ["aria-describedby"]: ariaDescribedByProp, style: propsStyle, ...props }, ref) => {
-  const [registeredTitleId, setRegisteredTitleId] = React.useState<string | undefined>(undefined)
-  const [registeredDescriptionId, setRegisteredDescriptionId] = React.useState<string | undefined>(undefined)
-  const a11yValue = React.useMemo(() => ({
-    titleId: registeredTitleId,
-    descriptionId: registeredDescriptionId,
-    registerTitleId: (id: string) => setRegisteredTitleId(id),
-    registerDescriptionId: (id: string) => setRegisteredDescriptionId(id),
-  }), [registeredTitleId, registeredDescriptionId])
+>(({ className, children, overlayClassName, zIndex, style: propsStyle, ...props }, ref) => (
+  <DialogPortal>
+    <DialogOverlay
+      className={overlayClassName}
+      style={zIndex ? { zIndex: zIndex - 1 } : undefined}
+    />
+    <DialogPrimitive.Content
+      ref={ref}
+      className={cn(
+        // Posicionamiento centrado
+        "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+        // Solo aplicar z-[1000] si NO hay zIndex personalizado (el inline style tiene precedencia)
+        !zIndex && "z-[1000]",
 
-  // IDs for accessibility
-  const titleId = React.useId()
-  const descriptionId = React.useId()
+        // Dimensiones ADAPTATIVAS al contenido
+        "w-[95vw] sm:w-auto",
+        "min-w-[300px] sm:min-w-[400px]",
+        "max-w-[95vw] sm:max-w-lg md:max-w-xl lg:max-w-2xl",
 
-  // Compute robust ARIA attributes, avoiding undefined overrides from callers
-  const finalAriaLabelledBy = ariaLabelledByProp ?? registeredTitleId ?? titleId
-  const finalAriaDescribedBy = ariaDescribedByProp ?? registeredDescriptionId ?? descriptionId
+        // Altura adaptativa con límites
+        "h-auto",
+        "max-h-[90vh] sm:max-h-[92vh]",
 
-  return (
-    <DialogPortal>
-      <DialogOverlay
-        className={overlayClassName}
-        style={zIndex ? { zIndex: zIndex - 1 } : undefined}
-      />
-      <DialogPrimitive.Content
-        ref={ref}
-        className={cn(
-          // Posicionamiento centrado
-          "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-          // Solo aplicar z-[1000] si NO hay zIndex personalizado (el inline style tiene precedencia)
-          !zIndex && "z-[1000]",
+        // Layout y espaciado
+        "grid gap-4 p-6",
+        "isolate",
 
-          // Dimensiones ADAPTATIVAS al contenido
-          "w-[95vw] sm:w-auto",
-          "min-w-[300px] sm:min-w-[400px]",
-          "max-w-[95vw] sm:max-w-lg md:max-w-xl lg:max-w-2xl",
+        // Estética premium
+        "vl-modal-surface",
+        "ring-1 ring-black/5 dark:ring-white/10",
+        "rounded-2xl",
+        "shadow-2xl shadow-black/20 dark:shadow-black/40",
 
-          // Altura adaptativa con límites
-          "h-auto",
-          "max-h-[90vh] sm:max-h-[92vh]",
+        // Estados y animaciones
+        "data-[state=closed]:pointer-events-none",
+        "overflow-hidden",
+        "motion-safe:duration-300 motion-safe:ease-out motion-reduce:duration-0",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out motion-reduce:animate-none",
+        "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+        "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-100",
+        "data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-1/2",
+        "data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-1/2",
 
-          // Layout y espaciado
-          "grid gap-4 p-6",
-          "isolate",
-
-          // Estética premium
-          "vl-modal-surface",
-          "ring-1 ring-black/5 dark:ring-white/10",
-          "rounded-2xl",
-          "shadow-2xl shadow-black/20 dark:shadow-black/40",
-
-          // Estados y animaciones
-          "data-[state=closed]:pointer-events-none",
-          "overflow-hidden",
-          "motion-safe:duration-300 motion-safe:ease-out motion-reduce:duration-0",
-          "data-[state=open]:animate-in data-[state=closed]:animate-out motion-reduce:animate-none",
-          "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-          "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-100",
-          "data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-1/2",
-          "data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-1/2",
-
-          className
-        )}
-        aria-labelledby={finalAriaLabelledBy}
-        aria-describedby={finalAriaDescribedBy}
-        onClick={(e) => e.stopPropagation()}
-        style={zIndex ? { ...propsStyle, zIndex } : propsStyle}
-        {...props}
-      >
-        <DialogA11yContext.Provider value={a11yValue}>
-          {/* Always render fallback Title/Description for Radix a11y - they're visually hidden */}
-          <VisuallyHidden>
-            <DialogPrimitive.Title id={titleId}>Dialog</DialogPrimitive.Title>
-          </VisuallyHidden>
-          <VisuallyHidden>
-            <DialogPrimitive.Description id={descriptionId}>
-              Dialog content
-            </DialogPrimitive.Description>
-          </VisuallyHidden>
-          {children}
-        </DialogA11yContext.Provider>
-        <DialogPrimitive.Close className={cn(
-          "absolute right-2 top-2 sm:right-3 sm:top-2",
-          "rounded-md p-1.5 sm:p-2",
-          "opacity-70 hover:opacity-100",
-          "ring-offset-background transition-all duration-200",
-          "hover:bg-accent/50 hover:scale-105",
-          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-          "disabled:pointer-events-none",
-          "data-[state=open]:bg-accent/30 data-[state=open]:text-muted-foreground"
-        )}>
-          <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
-        </DialogPrimitive.Close>
-      </DialogPrimitive.Content>
-    </DialogPortal>
-  )
-})
+        className
+      )}
+      onClick={(e) => e.stopPropagation()}
+      style={zIndex ? { ...propsStyle, zIndex } : propsStyle}
+      {...props}
+    >
+      {children}
+      <DialogPrimitive.Close className={cn(
+        "absolute right-2 top-2 sm:right-3 sm:top-2",
+        "rounded-md p-1.5 sm:p-2",
+        "opacity-70 hover:opacity-100",
+        "ring-offset-background transition-all duration-200",
+        "hover:bg-accent/50 hover:scale-105",
+        "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+        "disabled:pointer-events-none",
+        "data-[state=open]:bg-accent/30 data-[state=open]:text-muted-foreground"
+      )}>
+        <X className="h-4 w-4" />
+        <span className="sr-only">Close</span>
+      </DialogPrimitive.Close>
+    </DialogPrimitive.Content>
+  </DialogPortal>
+))
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
 const DialogHeader = ({
@@ -357,46 +316,28 @@ DialogFooter.displayName = "DialogFooter"
 const DialogTitle = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
->(({ className, id, ...props }, ref) => {
-  const a11y = React.useContext(DialogA11yContext)
-  const generatedId = React.useId()
-  const finalId = id ?? generatedId
-  React.useEffect(() => {
-    a11y?.registerTitleId(finalId)
-  }, [a11y, finalId])
-  return (
-    <DialogPrimitive.Title
-      ref={ref}
-      id={finalId}
-      className={cn(
-        "text-lg font-semibold leading-none tracking-tight",
-        className
-      )}
-      {...props}
-    />
-  )
-})
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Title
+    ref={ref}
+    className={cn(
+      "text-lg font-semibold leading-none tracking-tight",
+      className
+    )}
+    {...props}
+  />
+))
 DialogTitle.displayName = DialogPrimitive.Title.displayName
 
 const DialogDescription = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
->(({ className, id, ...props }, ref) => {
-  const a11y = React.useContext(DialogA11yContext)
-  const generatedId = React.useId()
-  const finalId = id ?? generatedId
-  React.useEffect(() => {
-    a11y?.registerDescriptionId(finalId)
-  }, [a11y, finalId])
-  return (
-    <DialogPrimitive.Description
-      ref={ref}
-      id={finalId}
-      className={cn("text-sm text-muted-foreground", className)}
-      {...props}
-    />
-  )
-})
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Description
+    ref={ref}
+    className={cn("text-sm text-muted-foreground", className)}
+    {...props}
+  />
+))
 DialogDescription.displayName = DialogPrimitive.Description.displayName
 
 export {

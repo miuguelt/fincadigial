@@ -1,15 +1,9 @@
-import { Species } from "./speciesTypes";
+import { Species } from '@/entities/species/model/types';
 
-export interface Breeds{
-    id?: number;
-    name: string;
-    species_id: number;
+export interface Breeds {
+  id?: number;
+  name: string;
+  species_id: number;
 
-    species?: Species; // Made optional to allow create/edit forms to omit nested species object
+  species?: Species;
 }
-
-export interface ApiResponse<T> {
-    success: boolean;
-    message: string;
-    data: T;
-  }

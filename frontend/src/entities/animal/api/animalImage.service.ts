@@ -196,7 +196,7 @@ class AnimalImageService extends BaseService<AnimalImage> {
 
     const cacheKey = `animal-images:${animalId}`;
     const cached = await this.getFromCache(cacheKey);
-    if (cached) return cached as AnimalImagesResponse;
+    if (cached) return cached as unknown as AnimalImagesResponse;
 
     await acquireImageFetchSlot();
     try {
@@ -205,13 +205,13 @@ class AnimalImageService extends BaseService<AnimalImage> {
         {
           params: { _ts: Date.now() },
           headers: { 'Cache-Control': 'no-cache' },
-          timeout: IMAGE_FETCH_TIMEOUT_MS, // Timeout más agresivo para imágenes
-          skipTimeoutRetry: true,
+          timeout: IMAGE_FETCH_TIMEOUT_MS,
         }
       );
 
-      // Asegurar que las URLs de las imágenes sean absolutas y evitar contenido mixto en dev
-      if (response.data && response.data.data && response.data.data.images) {
+      const responseData = response.data as unknown as AnimalImagesResponse;
+
+      if (responseData && responseData.data && responseData.data.images) {
         const backendBaseURL = getBackendBaseURL();
         const apiBaseURL = getApiBaseURL();
         const addVersionParam = (url: string, updatedAt?: string): string => {
@@ -255,7 +255,7 @@ class AnimalImageService extends BaseService<AnimalImage> {
           return addVersionParam(`${backendBase}${cleanPath}`, updatedAt);
         };
 
-        response.data.data.images = response.data.data.images.map((image: AnimalImage) => {
+        responseData.data.images = responseData.data.images.map((image: AnimalImage) => {
           // Si la URL ya es absoluta, respetarla para evitar 404 innecesarios
           if (image.url && (image.url.startsWith('http://') || image.url.startsWith('https://'))) {
             return { ...image, url: addVersionParam(image.url, image.updated_at) };
@@ -290,8 +290,8 @@ class AnimalImageService extends BaseService<AnimalImage> {
         });
       }
 
-      this.setCache(cacheKey, response.data);
-      return response.data;
+      this.setCache(cacheKey, responseData);
+      return responseData;
     } catch (error: any) {
       const status = error?.response?.status;
       const apiError = error?.response?.data?.error;

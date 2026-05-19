@@ -69,18 +69,18 @@ export const ControlCard: React.FC<ControlCardProps> = ({
             <span className="text-sm">{getAnimalName(control.animal_id)}</span>
           </div>
           
-          {(control.weight || control.height) && (
+          {(control.weight != null || control.height != null) && (
             <div className="flex items-center gap-4">
-              {control.weight && (
+              {control.weight != null && (
                 <div className="flex items-center gap-2">
                   <IconScale size="sm" className="text-muted-foreground" />
-                  <span className="text-sm">{control.weight} kg</span>
+                  <span className="text-sm">{Number(control.weight).toFixed(1)} kg</span>
                 </div>
               )}
-              {control.height && (
+              {control.height != null && (
                 <div className="flex items-center gap-2">
                   <IconActivity size="sm" className="text-muted-foreground" />
-                  <span className="text-sm">{control.height} m</span>
+                  <span className="text-sm">{Number(control.height).toFixed(1)} m</span>
                 </div>
               )}
             </div>

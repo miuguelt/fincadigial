@@ -13,9 +13,8 @@ import { evaluateCondition, getValueByDimension } from '@/shared/utils/condition
  * para generar alertas virtuales sin necesidad de conexión.
  */
 export const useAlertEngine = () => {
-  // 1. Obtener reglas (Configs)
-  const { data: configs } = useResource<AlertConfig[]>(
-    { 
+  const { data: configs } = useResource(
+    {
       getAll: () => alertService.getConfigs(),
       getPaginated: async (params: any) => {
         const data = await alertService.getConfigs(params);
@@ -23,11 +22,10 @@ export const useAlertEngine = () => {
       }
     } as any,
     { key: 'alert-configs', cache: true }
-  );
+  ) as { data: AlertConfig[] | undefined };
 
-  // 2. Obtener datos operativos
-  const { data: animals } = useResource<any[]>(
-    { 
+  const { data: animals } = useResource(
+    {
       getAll: () => animalsService.getAnimals({ limit: 1000 }),
       getPaginated: async (params: any) => {
         const data = await animalsService.getAnimals({ ...params, limit: 1000 });
@@ -35,10 +33,10 @@ export const useAlertEngine = () => {
       }
     } as any,
     { key: 'animals-local', cache: true }
-  );
+  ) as { data: any[] | undefined };
 
-  const { data: controls } = useResource<any[]>(
-    { 
+  const { data: controls } = useResource(
+    {
       getAll: () => controlService.getAll({ limit: 1000 }),
       getPaginated: async (params: any) => {
         const data = await controlService.getAll({ ...params, limit: 1000 });
@@ -46,10 +44,10 @@ export const useAlertEngine = () => {
       }
     } as any,
     { key: 'controls-local', cache: true }
-  );
+  ) as { data: any[] | undefined };
 
-  const { data: milkRecords } = useResource<any[]>(
-    { 
+  const { data: milkRecords } = useResource(
+    {
       getAll: () => milkService.getAll({ limit: 1000 }),
       getPaginated: async (params: any) => {
         const data = await milkService.getAll({ ...params, limit: 1000 });
@@ -57,10 +55,10 @@ export const useAlertEngine = () => {
       }
     } as any,
     { key: 'milk-local', cache: true }
-  );
+  ) as { data: any[] | undefined };
 
-  const { data: fieldAssignments } = useResource<any[]>(
-    { 
+  const { data: fieldAssignments } = useResource(
+    {
       getAll: () => animalFieldsService.getAnimalFields({ limit: 1000 }),
       getPaginated: async (params: any) => {
         const resp = await animalFieldsService.getAnimalFields({ ...params, limit: 1000 });
@@ -68,7 +66,7 @@ export const useAlertEngine = () => {
       }
     } as any,
     { key: 'field-assignments-local', cache: true }
-  );
+  ) as { data: any[] | undefined };
 
   // 3. Evaluar reglas localmente
   const localAlerts = useMemo(() => {

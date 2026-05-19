@@ -59,6 +59,27 @@ const SirePerformance = lazy(() => import('@/pages/dashboard/admin/reproduction/
 const AdminGrowthPage = lazy(() => import('@/pages/dashboard/admin/growth/index.tsx'));
 const RegulatoryReportsPage = lazy(() => import('@/pages/dashboard/admin/regulatory-reports/index.tsx'));
 
+// Páginas cableadas pendientes
+const AdminMilkProductionPage = lazy(() => import('@/pages/dashboard/admin/milk_production/index.tsx'));
+const AdminTasksPage = lazy(() => import('@/pages/dashboard/admin/tasks/index.tsx'));
+const AdminActivityLogPage = lazy(() => import('@/pages/dashboard/admin/activity_log/index.tsx'));
+const AdminDataOverviewPage = lazy(() => import('@/pages/dashboard/admin/data-overview/index.tsx'));
+const AdminDiagnosticsPage = lazy(() => import('@/pages/dashboard/admin/diagnostics/index.tsx'));
+const AdminOperationalPage = lazy(() => import('@/pages/dashboard/admin/operational/index.tsx'));
+
+// Módulo Campesino
+const CampesinoDashboard = lazy(() => import('@/pages/dashboard/campesino/CampesinoDashboard'));
+const CropPlotsPage = lazy(() => import('@/pages/dashboard/campesino/CropPlotsPage'));
+const CropActivitiesPage = lazy(() => import('@/pages/dashboard/campesino/CropActivitiesPage'));
+const WaterSourcesPage = lazy(() => import('@/pages/dashboard/campesino/WaterSourcesPage'));
+const ClimateAlertsPage = lazy(() => import('@/pages/dashboard/campesino/ClimateAlertsPage'));
+const MarketOffersPage = lazy(() => import('@/pages/dashboard/campesino/MarketOffersPage'));
+const TechnicalAssistancePage = lazy(() => import('@/pages/dashboard/campesino/TechnicalAssistancePage'));
+
+// Calculadoras y herramientas
+const FrameScoreCalculator = lazy(() => import('@/features/cattle/ui/FrameScoreCalculator'));
+const RationCalculator = lazy(() => import('@/features/operational/ui/RationCalculator'));
+
 const AnimalScannerPage = lazy(() => import('@/pages/scanner/AnimalScannerPage'));
 const ChatPage = lazy(() => import('@/pages/chat/ChatPage'));
 
@@ -107,6 +128,10 @@ const renderRoleRoutes = (prefix: string) => (
     <Route path={`${prefix}/reproduction`} element={<AdminReproductionPage />} />
     <Route path={`${prefix}/growth`} element={<AdminGrowthPage />} />
     <Route path={`${prefix}/regulatory-reports`} element={<RegulatoryReportsPage />} />
+    <Route path={`${prefix}/milk-production`} element={<AdminMilkProductionPage />} />
+    <Route path={`${prefix}/tasks`} element={<AdminTasksPage />} />
+    <Route path={`${prefix}/tools/frame-calculator`} element={<FrameScoreCalculator />} />
+    <Route path={`${prefix}/tools/ration-calculator`} element={<RationCalculator />} />
   </>
 );
 
@@ -168,6 +193,7 @@ const AppRoutes = () => {
             <Route path="/admin/membership" element={<AdminMembershipPage />} />
 <Route path="/admin/fincas" element={<FincasAdminPage />} />
             <Route path="/admin/animals" element={<AdminAnimalsPage />} />
+            <Route path="/admin/animals/:id" element={<AdminAnimalsPage />} />
             <Route path="/admin/fields" element={<AdminFieldsPage />} />
             <Route path="/admin/species" element={<AdminSpeciesPage />} />
             <Route path="/admin/breeds" element={<AdminBreedsPage />} />
@@ -207,6 +233,14 @@ const AppRoutes = () => {
             <Route path="/admin/reproduction/sire-performance" element={<SirePerformance />} />
             <Route path="/admin/growth" element={<AdminGrowthPage />} />
             <Route path="/admin/regulatory-reports" element={<RegulatoryReportsPage />} />
+            <Route path="/admin/milk-production" element={<AdminMilkProductionPage />} />
+            <Route path="/admin/tasks" element={<AdminTasksPage />} />
+            <Route path="/admin/activity-log" element={<AdminActivityLogPage />} />
+            <Route path="/admin/data-overview" element={<AdminDataOverviewPage />} />
+            <Route path="/admin/diagnostics" element={<AdminDiagnosticsPage />} />
+            <Route path="/admin/operational" element={<AdminOperationalPage />} />
+            <Route path="/admin/tools/frame-calculator" element={<FrameScoreCalculator />} />
+            <Route path="/admin/tools/ration-calculator" element={<RationCalculator />} />
           </Route>
           <Route element={<ProtectedRoute allowedRoles={['Aprendiz', 'Operario', 'Administrador']} />}>
             <Route path="/apprentice/dashboard" element={<ApprenticeDashboard />} />
@@ -231,6 +265,16 @@ const AppRoutes = () => {
           </Route>
           <Route element={<ProtectedRoute allowedRoles={['Administrador', 'Propietario', 'Capataz', 'Operario']} />}>
             <Route path="/scanner" element={<AnimalScannerPage />} />
+          </Route>
+          {/* Módulo Campesino - Accesible para todos los roles */}
+          <Route element={<ProtectedRoute allowedRoles={['Administrador', 'Propietario', 'Capataz', 'Instructor', 'Veterinario', 'Aprendiz', 'Operario']} />}>
+            <Route path="/campesino" element={<CampesinoDashboard />} />
+            <Route path="/campesino/crop-plots" element={<CropPlotsPage />} />
+            <Route path="/campesino/crop-activities" element={<CropActivitiesPage />} />
+            <Route path="/campesino/water-sources" element={<WaterSourcesPage />} />
+            <Route path="/campesino/climate-alerts" element={<ClimateAlertsPage />} />
+            <Route path="/campesino/market-offers" element={<MarketOffersPage />} />
+            <Route path="/campesino/technical-assistance" element={<TechnicalAssistancePage />} />
           </Route>
         </Route>
         <Route path="*" element={<NotFoundPage />} />

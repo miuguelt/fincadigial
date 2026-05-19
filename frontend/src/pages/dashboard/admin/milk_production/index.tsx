@@ -3,7 +3,7 @@ import { AdminCRUDPage } from '@/widgets/admin-crud';
 import { milkService, MilkProduction } from '@/entities/milk/api/milk.service';
 import { CRUDConfig, CRUDColumn, CRUDFormSection } from '@/shared/types/crud';
 import { Badge } from '@/shared/ui/badge';
-import { IconFlask, IconCalendar, IconInfoCircle } from '@/shared/ui/icons';
+import { IconFlask, IconCalendar } from '@/shared/ui/icons';
 import { formatDateColombia } from '@/shared/utils/dateUtils';
 import { animalService } from '@/entities/animal/api/animal.service';
 

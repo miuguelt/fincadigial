@@ -43,7 +43,7 @@ export default function VeterinarioDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { isOnline, pendingOperations } = useOnlineStatus();
+  const { isOnline, totalOperations } = useOnlineStatus();
   const [activeTab, setActiveTab] = useState('acciones');
 
   const quickActions: QuickAction[] = [
@@ -146,10 +146,10 @@ export default function VeterinarioDashboard() {
             )}
           </Badge>
           
-          {pendingOperations > 0 && (
+          {totalOperations > 0 && (
             <Badge className={getStatusBadgeClass('warning')}>
               <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-              {pendingOperations} pendiente(s)
+              {totalOperations} pendiente(s)
             </Badge>
           )}
         </div>

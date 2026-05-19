@@ -290,6 +290,14 @@ async function ensureAuthReady(): Promise<void> {
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     try {
+      // Normalizar URL para evitar duplicación de /api/v1 si el baseURL ya lo incluye
+      if (config.url && config.baseURL?.endsWith('/api/v1')) {
+        config.url = config.url.replace(/^(?:\/?api\/v1)+/i, '');
+        if (!config.url.startsWith('/')) {
+          config.url = '/' + config.url;
+        }
+      }
+
       // Gate global: si el endpoint requiere autenticación, esperar a /auth/me
       if (!shouldSkipGate(config)) {
         await ensureAuthReady();
@@ -364,6 +372,14 @@ api.interceptors.request.use(
 refreshClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     try {
+      // Normalizar URL para evitar duplicación de /api/v1 si el baseURL ya lo incluye
+      if (config.url && config.baseURL?.endsWith('/api/v1')) {
+        config.url = config.url.replace(/^(?:\/?api\/v1)+/i, '');
+        if (!config.url.startsWith('/')) {
+          config.url = '/' + config.url;
+        }
+      }
+
       const path = normalizePath(config.url as any);
       const skipAuthHeader =
         isPublicEndpoint(path) ||

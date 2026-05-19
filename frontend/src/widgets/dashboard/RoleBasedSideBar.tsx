@@ -297,14 +297,14 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
         ref={sidebarRef}
         id="dashboard-sidebar"
         className={cn(
-          "h-full bg-card border-r border-border flex flex-col overflow-hidden transition-all duration-300",
+          "h-full bg-card/80 backdrop-blur-sm border-r border-border/30 flex flex-col overflow-hidden transition-all duration-300",
           isCollapsed ? "w-[64px]" : "w-full"
         )}
         aria-hidden={!isSidebarOpen ? "true" : "false"}
         role="navigation"
       >
         {/* Header del sidebar con diseño premium */}
-        <div className="p-4 border-b border-border bg-surface/50 backdrop-blur-sm flex justify-center items-center">
+        <div className="p-4 border-b border-border/30 bg-gradient-to-b from-primary/5 to-transparent flex justify-center items-center">
           {isCollapsed ? (
             <Link
               to="/profile"
@@ -386,7 +386,8 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
         >
           {isCollapsed ? (
             allChildItems.map((child) => {
-              const fullPath = `${child.rolePrefix}/${child.path}`;
+              if (!child.path) return null;
+              const fullPath = child.path.startsWith('/') ? child.path : `${child.rolePrefix}/${child.path}`;
               const isActive =
                 location.pathname === fullPath ||
                 location.pathname.startsWith(`${fullPath}/`);
@@ -396,10 +397,10 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                   key={`collapsed-${child.title}-${child.path}`}
                   to={fullPath}
                   className={cn(
-                    "flex items-center justify-center h-10 w-10 rounded-xl transition-all duration-300 group relative mb-0.5",
+                    "flex items-center justify-center h-10 w-10 rounded-full transition-all duration-300 group relative mb-1",
                     isActive
-                      ? "bg-primary/10 text-primary font-bold shadow-sm"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      ? "bg-primary/15 text-primary font-bold shadow-sm"
+                      : "text-muted-foreground hover:bg-primary/8 hover:text-primary",
                   )}
                   role="menuitem"
                   title={child.title}
@@ -408,7 +409,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                     {child.icon}
                   </span>
                   {isActive && (
-                    <div className="absolute left-0 top-2 bottom-2 w-1 bg-primary rounded-full" />
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
                   )}
                 </Link>
               );
@@ -422,7 +423,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                   <button
                     type="button"
                     onClick={() => toggleGroup(category.title)}
-                    className="w-full flex items-center justify-between py-3 px-4 rounded-lg bg-surface-secondary hover:bg-state-hover text-text-primary transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface group"
+                    className="w-full flex items-center justify-between py-2.5 px-3 rounded-full bg-transparent hover:bg-primary/8 text-text-primary transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 group"
                     aria-expanded={isOpen}
                     aria-controls={`category-${category.title.replace(/\s+/g, "-").toLowerCase()}`}
                     aria-label={`Toggle ${category.title} category`}
@@ -444,15 +445,15 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                     </div>
                   </button>
                   {/* Children */}
-                  {isOpen && (
+                      {isOpen && (
                     <div
                       id={`category-${category.title.replace(/\s+/g, "-").toLowerCase()}`}
-                      className="mt-2 ml-4 border-l border-border pl-4 space-y-1 animate-in slide-in-from-top-2 duration-200"
+                      className="mt-2 ml-2 space-y-0.5 animate-in slide-in-from-top-2 duration-200"
                       role="menu"
                       aria-label={`${category.title} items`}
                     >
                       {(category.children || []).map((child) => {
-                        const fullPath = `${rolePrefix}/${child.path}`;
+                        const fullPath = child.path?.startsWith('/') ? child.path : `${rolePrefix}/${child.path}`;
                         const isActive =
                           location.pathname === fullPath ||
                           location.pathname.startsWith(`${fullPath}/`);
@@ -463,17 +464,14 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                             to={fullPath}
                             onClick={handleItemClick}
                             className={cn(
-                              "flex items-center py-2.5 px-3 rounded-xl transition-all duration-300 group relative mb-0.5",
+                              "flex items-center py-2 px-3 rounded-full transition-all duration-300 group relative",
                               isActive
-                                ? "bg-primary/10 text-primary font-bold shadow-sm"
-                                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                                ? "bg-primary/15 text-primary font-semibold"
+                                : "text-muted-foreground hover:bg-primary/8 hover:text-primary",
                             )}
                             role="menuitem"
                             aria-label={`Ir a ${child.title}`}
                           >
-                            {isActive && (
-                              <div className="absolute left-0 top-2 bottom-2 w-1 bg-primary rounded-full" />
-                            )}
                             <span
                               className={cn(
                                 "mr-3 transition-transform duration-300 group-hover:scale-110",
@@ -512,7 +510,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
         </nav>
 
         {/* Pie de menú con acciones */}
-        <div className="mt-auto border-t border-border bg-surface p-3 flex flex-col items-center gap-3">
+        <div className="mt-auto border-t border-border/30 bg-gradient-to-t from-primary/5 to-transparent p-3 flex flex-col items-center gap-3">
           {isCollapsed ? (
             <>
               <ThemeToggle />

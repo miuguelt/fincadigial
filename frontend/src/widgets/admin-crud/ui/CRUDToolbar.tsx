@@ -38,15 +38,15 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
   }, [setSearchQuery]);
   
   return (
-    <div className="flex items-center gap-1.5 sm:gap-3">
-      <div className="relative group">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
+      <div className="relative group flex-1 min-w-0">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors h-4 w-4" />
         <Input
           placeholder={searchPlaceholder || 'Buscar...'}
           value={searchQuery}
           onChange={(e) => handleSearchChange(e.target.value)}
           className={cn(
-            "pl-9 w-32 sm:w-64 h-9 sm:h-10 text-sm rounded-xl border-border/50 bg-background/50 focus:bg-background transition-all shadow-sm",
+            "pl-9 w-full h-10 text-sm rounded-xl border-border/50 bg-background/50 focus:bg-background transition-all shadow-sm",
             searchQuery && "pr-8"
           )}
           aria-label="Buscar registros"
@@ -65,17 +65,17 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
         )}
       </div>
       
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-2 flex-shrink-0">
         {onOpenCreate && (
           <Button
             size="sm"
-            className="h-9 w-9 sm:h-10 sm:w-auto sm:px-4 rounded-xl shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20 transition-all"
+            className="h-10 w-10 sm:w-auto sm:px-4 rounded-xl shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20 transition-all"
             onClick={onOpenCreate}
             disabled={saving}
             aria-label="Crear nuevo registro"
           >
             {saving ? (
-              <Loader2 className="h-4 w-4 animate-spin sm:mr-2" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Plus className="h-4 w-4 sm:mr-2" />
             )}

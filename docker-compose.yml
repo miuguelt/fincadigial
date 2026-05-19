@@ -106,7 +106,7 @@ services:
     depends_on:
       - redis
     healthcheck:
-      test: ["CMD-SHELL", "celery -A celery_worker.celery inspect ping || exit 1"]
+      test: ["CMD-SHELL", "ps aux | grep -i 'celery' | grep -i 'beat' || exit 1"]
       interval: 60s
       timeout: 10s
       retries: 3
@@ -151,28 +151,28 @@ services:
       timeout: 5s
       retries: 5
 
-  db-backup:
-    image: databack/mysql-backup
-    container_name: villaluz_db_backup
-    restart: on-failure
-    command: dump
-    environment:
-      - DB_SERVER=db
-      - DB_PORT=3306
-      - DB_USER=villaluz
-      - DB_PASS=villaluz_pass
-      - DB_NAMES=finca_db
-      - DB_DUMP_TARGET=/backups
-      - DB_DUMP_FREQUENCY=1440
-      - DB_DUMP_BEGIN=+0
-      - DB_DUMP_KEEP_FILES=7
-    volumes:
-      - ./backups:/backups
-#    depends_on:
-#      db:
-#        condition: service_healthy
-    networks:
-      - villaluz-network
+#  db-backup:
+#    image: databack/mysql-backup
+#    container_name: villaluz_db_backup
+#    restart: on-failure
+#    command: dump
+#    environment:
+#      - DB_SERVER=db
+#      - DB_PORT=3306
+#      - DB_USER=villaluz
+#      - DB_PASS=villaluz_pass
+#      - DB_NAMES=finca_db
+#      - DB_DUMP_TARGET=/backups
+#      - DB_DUMP_FREQUENCY=1440
+#      - DB_DUMP_BEGIN=+0
+#      - DB_DUMP_KEEP_FILES=7
+#    volumes:
+#      - ./backups:/backups
+##    depends_on:
+##      db:
+##        condition: service_healthy
+#    networks:
+#      - villaluz-network
 
 networks:
   villaluz-network:

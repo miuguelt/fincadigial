@@ -12,7 +12,7 @@ import { cn } from "@/shared/lib/utils";
 import { offlineQueue } from "@/shared/api/offline/offlineQueue";
 
 export const GlobalAlertBanner: React.FC = () => {
-  const { isOnline, pendingOperations, syncStatus } = useOnlineStatus();
+  const { isOnline, syncStatus } = useOnlineStatus();
   const [isVisible, setIsVisible] = React.useState(true);
 
   // Determinar la alerta más importante
@@ -24,8 +24,8 @@ export const GlobalAlertBanner: React.FC = () => {
         icon: IconWifiOff,
         title: "Modo Offline Activo",
         message:
-          pendingOperations > 0
-            ? `Tienes ${pendingOperations} cambios guardados localmente. Se sincronizarán al recuperar conexión.`
+          syncStatus.pending > 0
+            ? `Tienes ${syncStatus.pending} cambios guardados localmente. Se sincronizarán al recuperar conexión.`
             : "Estás trabajando sin internet. Los cambios se guardarán en tu dispositivo.",
         color: "bg-amber-500",
         textColor: "text-amber-950",

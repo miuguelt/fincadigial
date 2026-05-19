@@ -35,7 +35,7 @@ export default function OperarioDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { isOnline, pendingOperations } = useOnlineStatus();
+  const { isOnline, totalOperations } = useOnlineStatus();
   const [activeTab, setActiveTab] = useState('acciones');
 
   const quickActions: QuickAction[] = [
@@ -100,10 +100,10 @@ export default function OperarioDashboard() {
           </Badge>
           
           {/* Operaciones pendientes */}
-          {pendingOperations > 0 && (
+          {totalOperations > 0 && (
             <Badge className={getStatusBadgeClass('warning')}>
               <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-              {pendingOperations} pendiente(s)
+              {totalOperations} pendiente(s)
             </Badge>
           )}
         </div>
@@ -163,9 +163,9 @@ export default function OperarioDashboard() {
                       Tus registros se guardarán localmente y se sincronizarán 
                       automáticamente cuando recuperes conexión.
                     </p>
-                    {pendingOperations > 0 && (
+                    {totalOperations > 0 && (
                       <p className="text-sm text-warning-foreground mt-2 font-bold">
-                        Tienes {pendingOperations} operación(es) pendiente(s) de sincronizar.
+                        Tienes {totalOperations} operación(es) pendiente(s) de sincronizar.
                       </p>
                     )}
                   </div>

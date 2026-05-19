@@ -1,16 +1,10 @@
-import { Animals } from "./animalsTypes";
+import { Animals } from '@/entities/animal/model/types';
 
 export interface Diseases {
-    id?: number;
-    name: string;
-    symptoms: string;
-    details: string;
+  id?: number;
+  name: string;
+  symptoms: string;
+  details: string;
 
-    animals?: Animals[];
+  animals?: Animals[];
 }
-
-export interface ApiResponse<T> {
-    success: boolean;
-    message: string;
-    data: T;
-  }

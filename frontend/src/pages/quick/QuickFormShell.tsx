@@ -25,7 +25,7 @@ export function QuickFormShell({
   volver = '/operario/dashboard',
 }: QuickFormShellProps) {
   const navigate = useNavigate();
-  const { isOnline, pendingOperations } = useOnlineStatus();
+  const { isOnline, totalOperations } = useOnlineStatus();
 
   return (
     <div className="min-h-screen bg-background font-sans">
@@ -64,10 +64,10 @@ export function QuickFormShell({
         </div>
 
         {/* Cola offline */}
-        {pendingOperations > 0 && (
+        {totalOperations > 0 && (
           <div className="mt-6 max-w-lg mx-auto rounded-[var(--radius-md)] bg-black/20 backdrop-blur-md px-5 py-3 text-[10px] font-black text-white/90 border border-white/5 uppercase tracking-widest">
             <IconRefresh className="w-3 h-3 inline mr-2 animate-spin" />
-            {pendingOperations} registros pendientes de envío
+            {totalOperations} registros pendientes de envío
           </div>
         )}
       </header>

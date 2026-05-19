@@ -1,45 +1,61 @@
-import { create } from 'zustand'; // Asumiendo que se usa zustand por el estilo del proyecto
 import { InventoryLotResponse } from '@/shared/api/generated/swaggerTypes';
 
 interface InventoryState {
   lots: Record<number, InventoryLotResponse>;
-  projectedAdjustments: Record<number, number>; // lotId -> adjustment value (+ or -)
-  
-  setLots: (lots: InventoryLotResponse[]) => void;
-  recordMovement: (lotId: number, quantity: number, type: 'Entrada' | 'Salida') => void;
-  getProjectedQuantity: (lotId: number) => number;
+  projectedAdjustments: Record<number, number>;
 }
 
-export const useInventoryStore = create<InventoryState>((set, get) => ({
-  lots: {},
-  projectedAdjustments: {},
+class InventoryStore {
+  private state: InventoryState = {
+    lots: {},
+    projectedAdjustments: {},
+  };
 
-  setLots: (lots) => {
+  private listeners: Set<() => void> = new Set();
+
+  getState() {
+    return { ...this.state };
+  }
+
+  setLots(lots: InventoryLotResponse[]) {
     const lotMap = lots.reduce((acc, lot) => {
       acc[lot.id] = lot;
       return acc;
     }, {} as Record<number, InventoryLotResponse>);
-    set({ lots: lotMap });
-  },
+    this.state = { ...this.state, lots: lotMap };
+    this.notify();
+  }
 
-  recordMovement: (lotId, quantity, type) => {
+  recordMovement(lotId: number, quantity: number, type: 'Entrada' | 'Salida') {
     const adjustment = type === 'Salida' ? -quantity : quantity;
-    set((state) => ({
+    this.state = {
+      ...this.state,
       projectedAdjustments: {
-        ...state.projectedAdjustments,
-        [lotId]: (state.projectedAdjustments[lotId] || 0) + adjustment
-      }
-    }));
-  },
+        ...this.state.projectedAdjustments,
+        [lotId]: (this.state.projectedAdjustments[lotId] || 0) + adjustment,
+      },
+    };
+    this.notify();
+  }
 
-  getProjectedQuantity: (lotId) => {
-    const lot = get().lots[lotId];
+  getProjectedQuantity(lotId: number): number {
+    const lot = this.state.lots[lotId];
     if (!lot) return 0;
-    
-    // El backend usa float o int para quantity; convertimos a número
+
     const baseQuantity = typeof lot.quantity === 'string' ? parseFloat(lot.quantity) : (lot.quantity || 0);
-    const adjustment = get().projectedAdjustments[lotId] || 0;
-    
+    const adjustment = this.state.projectedAdjustments[lotId] || 0;
+
     return baseQuantity + adjustment;
   }
-}));
+
+  subscribe(listener: () => void) {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  private notify() {
+    this.listeners.forEach((listener) => listener());
+  }
+}
+
+export const inventoryStore = new InventoryStore();

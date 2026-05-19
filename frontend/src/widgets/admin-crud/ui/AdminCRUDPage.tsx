@@ -529,8 +529,8 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     <PageHeader
       title={config.title}
       dense
-      className="mb-0 sm:mb-0 p-0 sm:p-1"
-      titleClassName="text-lg sm:text-xl"
+      className="mb-0 p-0"
+      titleClassName="text-base sm:text-lg lg:text-xl"
       actions={
         <CRUDToolbar
           searchQuery={searchQuery}
@@ -551,7 +551,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
         className="px-2 sm:px-3 pt-0 sm:pt-1 pb-0 max-w-full min-h-0"
         contentClassName="space-y-0"
       >
-        <div className="bg-card/95 backdrop-blur-sm border-2 border-border/50 rounded-xl shadow-2xl shadow-primary/10 overflow-hidden">
+        <div className="bg-white/95 backdrop-blur-sm border border-border/30 rounded-2xl shadow-lg overflow-hidden">
           <SkeletonTable
             columnLabels={config.columns.map((c: any) => c.label)}
             columnWidths={config.columns.map((c: any) => c.width)}
@@ -584,7 +584,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   return (
     <AppLayout
       header={header}
-      className="px-2 sm:px-3 pt-0 sm:pt-0 pb-0 sm:pb-0 md:pb-0 lg:pb-0 max-w-full min-h-0 flex flex-col h-full"
+      className="px-2 sm:px-3 lg:px-4 pt-0 pb-0 max-w-full min-h-0 flex flex-col h-full"
       contentClassName="space-y-0 flex-1 flex flex-col min-h-0"
     >
       {config.customHeader && (
@@ -597,6 +597,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
         <EmptyState
           title={config.emptyStateMessage || `${t('state.empty.title', 'Sin datos')}: ${config.entityName}`}
           description={config.emptyStateDescription || t('state.empty.description', 'Crea el primer registro para comenzar.')}
+          icon={config.emptyStateIcon}
           action={config.enableCreateModal !== false && (
             <button onClick={openCreate} aria-label={`${t('common.create', 'Crear')} ${config.entityName.toLowerCase()}`}>
               <Plus className="h-4 w-4 mr-2" />
@@ -605,9 +606,9 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
           )}
         />
       ) : config.viewMode === 'cards' ? (
-        <div className="flex flex-col flex-1 min-h-0 mt-1">
-          <div className="overflow-y-auto flex-1 bg-muted/30 rounded-xl border border-border/50 p-3 sm:p-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 xl:gap-5">
+        <div className="flex flex-col flex-1 min-h-0 mt-2 sm:mt-3">
+          <div className="overflow-y-auto flex-1 bg-transparent rounded-2xl p-2 sm:p-3 lg:p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-5">
               {filteredItems.map((item) => {
                 const firstCol = config.columns[0];
                 const rawTitle = (item as any)[firstCol?.key];
@@ -615,7 +616,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
                 return (
                   <Card
                     key={item.id}
-                    className="cursor-pointer transition-all duration-200 flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-md hover:shadow-lg hover:-translate-y-0.5 relative"
+                    className="cursor-pointer transition-all duration-200 flex flex-col overflow-hidden rounded-2xl border border-border/30 bg-white shadow-md hover:shadow-lg hover:-translate-y-0.5 relative"
                     onClick={() => { config.enableDetailModal !== false && openDetail(item); }}
                     role="button"
                     tabIndex={0}
@@ -628,7 +629,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
                   >
                     {config.enableSelection && (
                       <div
-                        className="absolute top-2 right-2 z-10"
+                        className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-10"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Checkbox
@@ -674,7 +675,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
           />
         </div>
       ) : (
-        <div className="bg-card/95 backdrop-blur-sm border-2 border-border/50 rounded-xl shadow-2xl shadow-primary/10 overflow-hidden flex-1 flex flex-col min-h-0 mt-1">
+        <div className="bg-white/95 backdrop-blur-sm border border-border/30 rounded-2xl shadow-lg overflow-hidden flex-1 flex flex-col min-h-0 mt-1">
           <CRUDTable
             items={filteredItems}
             columns={config.columns}

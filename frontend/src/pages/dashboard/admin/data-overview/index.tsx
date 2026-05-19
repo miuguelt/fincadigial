@@ -424,7 +424,7 @@ export default function DataOverviewDashboard() {
           data={productions?.flatMap(p => {
             // Generar datos de actividad basados en producción
             const date = new Date(p.date);
-            const hour = p.session === 'AM' ? 6 : p.session === 'PM' ? 18 : 12;
+            const hour = p.milking_session === 'AM' ? 6 : p.milking_session === 'PM' ? 18 : 12;
             return [
               {
                 date: p.date,

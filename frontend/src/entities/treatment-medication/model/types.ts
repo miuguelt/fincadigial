@@ -1,17 +1,11 @@
-import { Medications } from "./medicationsTypes";
-import { Treatments } from "./treatmentsTypes";
+import { Medications } from '@/entities/medication/model/types';
+import { Treatment } from '@/entities/treatment/model/types';
 
 export interface TreatmentMedications {
   id?: number;
   treatment_id: number;
   medication_id: number;
 
-  treatments?: Treatments[];
+  treatments?: Treatment[];
   medications?: Medications;
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  message: string;
-  data: T;
 }

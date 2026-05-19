@@ -8,17 +8,19 @@ interface SparklineProps {
   fill?: string;
   strokeWidth?: number;
   className?: string;
+  showArea?: boolean;
 }
 
-// Lightweight SVG sparkline (no external deps)
+// Lightweight SVG sparkline with premium styling
 const Sparkline: React.FC<SparklineProps> = ({
   values = [],
   width = 80,
-  height = 24,
+  height = 28,
   stroke = "hsl(var(--primary))",
-  fill = "none",
-  strokeWidth = 2,
+  fill,
+  strokeWidth = 2.5,
   className,
+  showArea = true,
 }) => {
   if (!values.length) {
     return (
@@ -32,11 +34,15 @@ const Sparkline: React.FC<SparklineProps> = ({
   const range = max - min || 1;
   const points = values
     .map((v, i) => {
-      const x = (i / (values.length - 1)) * (width - 2) + 1;
-      const y = height - (((v - min) / range) * (height - 2) + 1);
+      const x = (i / (values.length - 1)) * (width - 4) + 2;
+      const y = height - (((v - min) / range) * (height - 4) + 2);
       return `${x},${y}`;
     })
     .join(" ");
+
+  const areaPoints = points + ` ${width - 2},${height - 1} 2,${height - 1}`;
+  const gradientId = `sparkline-gradient-${Math.random().toString(36).slice(2, 8)}`;
+
   return (
     <svg
       width={width}
@@ -45,8 +51,23 @@ const Sparkline: React.FC<SparklineProps> = ({
       className={className}
       aria-label="sparkline"
     >
+      {showArea && (
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={stroke} stopOpacity="0.2" />
+            <stop offset="100%" stopColor={stroke} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+      )}
+      {showArea && (
+        <polyline
+          fill={`url(#${gradientId})`}
+          stroke="none"
+          points={areaPoints}
+        />
+      )}
       <polyline
-        fill={fill}
+        fill={fill || "none"}
         stroke={stroke}
         strokeWidth={strokeWidth}
         strokeLinejoin="round"

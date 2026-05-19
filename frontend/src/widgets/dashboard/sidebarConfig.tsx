@@ -3,8 +3,6 @@ import {
   TrendingUp,
   AlertTriangle,
   Activity,
-  Pill,
-  Syringe,
   Calendar,
   FileCheck,
   Map,
@@ -18,8 +16,54 @@ import {
   Home,
   Package,
   ShieldCheck,
+  FileText,
+  DollarSign,
+  Route,
+  Database,
+  UserPlus,
+  Scan,
+  MessageSquare,
+  Globe,
+  Droplets,
+  CheckSquare,
+  Calculator,
+  ClipboardList,
+  Sprout
 } from "lucide-react";
 import { ReactNode } from "react";
+
+// Custom cattle icon set
+import {
+  IconCow,
+  IconCalf,
+  IconHerd,
+  IconWeight,
+  IconMilk,
+  IconBreeding,
+  IconVaccine,
+  IconVeterinary,
+  IconQuarantine,
+  IconHealthCheck,
+  IconMedication,
+  IconHealthAlert,
+  IconPasture,
+  IconWater,
+  IconFence,
+  IconLocation,
+  IconRotation,
+  IconSoil,
+  IconTruck,
+  IconInOut,
+  IconInventory,
+  IconMovement,
+  IconRoute as IconRouteCattle,
+  IconCalendar as IconCalendarCattle,
+  IconDocument,
+  IconChart,
+  IconBell,
+  IconTag,
+  IconSettings as IconSettingsCattle,
+} from "@/shared/icons/cattle";
 
 export type Role =
   | "Administrador"
@@ -83,7 +127,34 @@ export const sidebarItems: SidebarItemConfig[] = [
           "Aprendiz",
           "Operario",
         ],
-        badge: "Nuevo",
+      },
+      {
+        title: "Analítica de Lotes",
+        icon: <Map className="h-4 w-4" />,
+        path: "analytics/fields",
+        roles: [
+          "Administrador",
+          "Propietario",
+          "Capataz",
+          "Instructor",
+          "Veterinario",
+          "Aprendiz",
+          "Operario",
+        ],
+      },
+      {
+        title: "Reportes Personalizados",
+        icon: <FileText className="h-4 w-4" />,
+        path: "analytics/reports",
+        roles: [
+          "Administrador",
+          "Propietario",
+          "Capataz",
+          "Instructor",
+          "Veterinario",
+          "Aprendiz",
+          "Operario",
+        ],
       },
       {
         title: "Cumplimiento ICA",
@@ -91,6 +162,25 @@ export const sidebarItems: SidebarItemConfig[] = [
         path: "analytics/ica-compliance",
         roles: ["Administrador", "Propietario", "Capataz", "Veterinario"],
         badge: "Legal",
+      },
+      {
+        title: "Reportes Regulatorios",
+        icon: <FileCheck className="h-4 w-4" />,
+        path: "regulatory-reports",
+        roles: ["Administrador", "Propietario", "Capataz", "Veterinario"],
+        badge: "Legal",
+      },
+      {
+        title: "Analítica Multi-Finca",
+        icon: <Globe className="h-4 w-4" />,
+        path: "analytics/multi-finca",
+        roles: ["Administrador", "Propietario"],
+      },
+      {
+        title: "Finanzas",
+        icon: <DollarSign className="h-4 w-4" />,
+        path: "financial",
+        roles: ["Administrador", "Propietario"],
       },
     ],
   },
@@ -100,7 +190,7 @@ export const sidebarItems: SidebarItemConfig[] = [
   // ============================================
   {
     title: "Gestión de Animales",
-    icon: <Heart className="h-4 w-4" />,
+    icon: <IconCow size={16} color="forest" />,
     roles: [
       "Administrador",
       "Propietario",
@@ -113,7 +203,7 @@ export const sidebarItems: SidebarItemConfig[] = [
     children: [
       {
         title: "Ver Animales",
-        icon: <Heart className="h-4 w-4" />,
+        icon: <IconHerd size={16} color="forest" />,
         path: "animals",
         roles: [
           "Administrador",
@@ -127,7 +217,7 @@ export const sidebarItems: SidebarItemConfig[] = [
       },
       {
         title: "Reproducción",
-        icon: <Activity className="h-4 w-4" />,
+        icon: <IconBreeding size={16} color="light-green" />,
         path: "reproduction",
         roles: [
           "Administrador",
@@ -138,11 +228,10 @@ export const sidebarItems: SidebarItemConfig[] = [
           "Aprendiz",
           "Operario",
         ],
-        badge: "Nuevo",
       },
       {
         title: "Curvas de Crecimiento",
-        icon: <TrendingUp className="h-4 w-4" />,
+        icon: <IconWeight size={16} color="earth-blue" />,
         path: "growth",
         roles: [
           "Administrador",
@@ -153,11 +242,10 @@ export const sidebarItems: SidebarItemConfig[] = [
           "Aprendiz",
           "Operario",
         ],
-        badge: "Nuevo",
       },
       {
         title: "Razas",
-        icon: <TestTube className="h-4 w-4" />,
+        icon: <IconTag size={16} color="brown" />,
         path: "breeds",
         roles: [
           "Administrador",
@@ -170,8 +258,22 @@ export const sidebarItems: SidebarItemConfig[] = [
         ],
       },
       {
+        title: "Especies",
+        icon: <IconCalf size={16} color="light-green" />,
+        path: "species",
+        roles: [
+          "Administrador",
+          "Propietario",
+          "Capataz",
+          "Instructor",
+          "Veterinario",
+          "Aprendiz",
+          "Operario",
+        ],
+      },
+      {
         title: "Mejoramiento Genético",
-        icon: <TrendingUp className="h-4 w-4" />,
+        icon: <IconBreeding size={16} color="light-green" filled />,
         path: "genetic-improvements",
         roles: [
           "Administrador",
@@ -184,9 +286,23 @@ export const sidebarItems: SidebarItemConfig[] = [
         ],
       },
       {
-        title: "Controles Sanitarios",
-        icon: <FileCheck className="h-4 w-4" />,
+        title: "Controles Biométricos",
+        icon: <IconHealthCheck size={16} color="earth-blue" />,
         path: "controls",
+        roles: [
+          "Administrador",
+          "Propietario",
+          "Capataz",
+          "Instructor",
+          "Veterinario",
+          "Aprendiz",
+          "Operario",
+        ],
+      },
+      {
+        title: "Registro de Leche",
+        icon: <IconMilk size={16} color="earth-blue" />,
+        path: "milk-production",
         roles: [
           "Administrador",
           "Propietario",
@@ -205,7 +321,7 @@ export const sidebarItems: SidebarItemConfig[] = [
   // ============================================
   {
     title: "Sanidad y Salud",
-    icon: <HeartPulse className="h-4 w-4" />,
+    icon: <IconVeterinary size={16} color="earth-blue" />,
     roles: [
       "Administrador",
       "Propietario",
@@ -218,7 +334,7 @@ export const sidebarItems: SidebarItemConfig[] = [
     children: [
       {
         title: "Animales Enfermos",
-        icon: <HeartPulse className="h-4 w-4" />,
+        icon: <IconHealthAlert size={16} color="orange" />,
         path: "disease-animals",
         roles: [
           "Administrador",
@@ -232,7 +348,7 @@ export const sidebarItems: SidebarItemConfig[] = [
       },
       {
         title: "Enfermedades",
-        icon: <AlertTriangle className="h-4 w-4" />,
+        icon: <IconQuarantine size={16} color="orange" />,
         path: "diseases",
         roles: [
           "Administrador",
@@ -245,8 +361,8 @@ export const sidebarItems: SidebarItemConfig[] = [
         ],
       },
       {
-        title: "Tratamientos",
-        icon: <Activity className="h-4 w-4" />,
+        title: "Tratamientos Generales",
+        icon: <IconHealthCheck size={16} color="earth-blue" />,
         path: "treatments",
         roles: [
           "Administrador",
@@ -259,8 +375,20 @@ export const sidebarItems: SidebarItemConfig[] = [
         ],
       },
       {
+        title: "Tratamientos (Medicamentos)",
+        icon: <IconMedication size={16} color="earth-blue" />,
+        path: "treatment_medications",
+        roles: ["Administrador", "Veterinario", "Propietario", "Capataz"],
+      },
+      {
+        title: "Tratamientos (Vacunas)",
+        icon: <IconVaccine size={16} color="earth-blue" />,
+        path: "treatment_vaccines",
+        roles: ["Administrador", "Veterinario", "Propietario", "Capataz"],
+      },
+      {
         title: "Inventario de Insumos",
-        icon: <Package className="h-4 w-4" />,
+        icon: <IconInventory size={16} color="gray" />,
         path: "inventory",
         roles: [
           "Administrador",
@@ -271,11 +399,10 @@ export const sidebarItems: SidebarItemConfig[] = [
           "Aprendiz",
           "Operario",
         ],
-        badge: "Stock",
       },
       {
         title: "Medicamentos",
-        icon: <Pill className="h-4 w-4" />,
+        icon: <IconMedication size={16} color="earth-blue" filled />,
         path: "medications",
         roles: [
           "Administrador",
@@ -289,7 +416,7 @@ export const sidebarItems: SidebarItemConfig[] = [
       },
       {
         title: "Vacunas",
-        icon: <Syringe className="h-4 w-4" />,
+        icon: <IconVaccine size={16} color="earth-blue" filled />,
         path: "vaccines",
         roles: [
           "Administrador",
@@ -302,8 +429,8 @@ export const sidebarItems: SidebarItemConfig[] = [
         ],
       },
       {
-        title: "Vacunaciones",
-        icon: <Calendar className="h-4 w-4" />,
+        title: "Vacunaciones Registradas",
+        icon: <IconCalendarCattle size={16} color="gray" />,
         path: "vaccinations",
         roles: [
           "Administrador",
@@ -323,7 +450,7 @@ export const sidebarItems: SidebarItemConfig[] = [
   // ============================================
   {
     title: "Terrenos y Alimentación",
-    icon: <Mountain className="h-4 w-4" />,
+    icon: <IconPasture size={16} color="light-green" />,
     roles: [
       "Administrador",
       "Propietario",
@@ -336,7 +463,7 @@ export const sidebarItems: SidebarItemConfig[] = [
     children: [
       {
         title: "Potreros",
-        icon: <Mountain className="h-4 w-4" />,
+        icon: <IconPasture size={16} color="light-green" filled />,
         path: "fields",
         roles: [
           "Administrador",
@@ -350,7 +477,7 @@ export const sidebarItems: SidebarItemConfig[] = [
       },
       {
         title: "Ubicación de Animales",
-        icon: <Map className="h-4 w-4" />,
+        icon: <IconLocation size={16} color="earth-blue" />,
         path: "animal-fields",
         roles: [
           "Administrador",
@@ -364,7 +491,7 @@ export const sidebarItems: SidebarItemConfig[] = [
       },
       {
         title: "Tipos de Alimento",
-        icon: <Leaf className="h-4 w-4" />,
+        icon: <IconSoil size={16} color="brown" />,
         path: "food-types",
         roles: [
           "Administrador",
@@ -380,11 +507,149 @@ export const sidebarItems: SidebarItemConfig[] = [
   },
 
   // ============================================
-  // ADMINISTRACIÓN (SOLO ADMIN)
+  // HERRAMIENTAS Y OPERACIONES
+  // ============================================
+  {
+    title: "Herramientas",
+    icon: <IconSettingsCattle size={16} color="gray" />,
+    roles: [
+      "Administrador",
+      "Propietario",
+      "Capataz",
+      "Instructor",
+      "Veterinario",
+      "Aprendiz",
+      "Operario",
+    ],
+    children: [
+      {
+        title: "Escáner Animal",
+        icon: <IconTag size={16} color="brown" />,
+        path: "scanner",
+        roles: [
+          "Administrador",
+          "Propietario",
+          "Capataz",
+          "Instructor",
+          "Veterinario",
+          "Aprendiz",
+          "Operario",
+        ],
+      },
+      {
+        title: "Chat / Comunicación",
+        icon: <MessageSquare className="h-4 w-4" />,
+        path: "chat",
+        roles: [
+          "Administrador",
+          "Propietario",
+          "Capataz",
+          "Instructor",
+          "Veterinario",
+          "Aprendiz",
+          "Operario",
+        ],
+      },
+      {
+        title: "Tareas",
+        icon: <CheckSquare className="h-4 w-4" />,
+        path: "tasks",
+        roles: [
+          "Administrador",
+          "Propietario",
+          "Capataz",
+          "Instructor",
+          "Veterinario",
+          "Aprendiz",
+          "Operario",
+        ],
+      },
+      {
+        title: "Calculadoras",
+        icon: <Calculator className="h-4 w-4" />,
+        roles: [
+          "Administrador",
+          "Propietario",
+          "Capataz",
+          "Instructor",
+          "Veterinario",
+          "Aprendiz",
+          "Operario",
+        ],
+        children: [
+          {
+            title: "Frame Score",
+            icon: <IconWeight size={16} color="earth-blue" />,
+            path: "tools/frame-calculator",
+            roles: [
+              "Administrador",
+              "Propietario",
+              "Capataz",
+              "Instructor",
+              "Veterinario",
+              "Aprendiz",
+              "Operario",
+            ],
+          },
+          {
+            title: "Calculadora de Ración",
+            icon: <IconSoil size={16} color="brown" />,
+            path: "tools/ration-calculator",
+            roles: [
+              "Administrador",
+              "Propietario",
+              "Capataz",
+              "Instructor",
+              "Veterinario",
+              "Aprendiz",
+              "Operario",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  // ============================================
+  // MÓDULO CAMPESINO
+  // ============================================
+  {
+    title: "Campesino",
+    icon: <Sprout className="h-4 w-4" />,
+    roles: [
+      "Administrador",
+      "Propietario",
+      "Capataz",
+      "Instructor",
+      "Veterinario",
+      "Aprendiz",
+      "Operario",
+    ],
+    children: [
+      {
+        title: "Panel Campesino",
+        icon: <Sprout className="h-4 w-4" />,
+        path: "/campesino",
+        roles: [
+          "Administrador",
+          "Propietario",
+          "Capataz",
+          "Instructor",
+          "Veterinario",
+          "Aprendiz",
+          "Operario",
+        ],
+        badge: "Nuevo",
+      },
+    ],
+  },
+
+  // ============================================
+  // ADMINISTRACIÓN (SOLO ADMIN Y SUPERIORES)
   // ============================================
   {
     title: "Administración",
-    icon: <Settings className="h-4 w-4" />,
+    icon: <IconSettingsCattle size={16} color="gray" filled />,
     roles: ["Administrador", "Propietario", "Capataz"],
     children: [
       {
@@ -401,10 +666,28 @@ export const sidebarItems: SidebarItemConfig[] = [
         badge: "Admin",
       },
       {
+        title: "Solicitudes de Membresía",
+        icon: <UserPlus className="h-4 w-4" />,
+        path: "membership",
+        roles: ["Administrador"],
+      },
+      {
         title: "Gestión de Fincas",
-        icon: <Mountain className="h-4 w-4" />,
+        icon: <IconPasture size={16} color="light-green" />,
         path: "fincas",
         roles: ["Administrador", "Propietario", "Capataz"],
+      },
+      {
+        title: "Administración de Rutas",
+        icon: <IconRouteCattle size={16} color="earth-blue" />,
+        path: "route_administration",
+        roles: ["Administrador"],
+      },
+      {
+        title: "Modelos Base",
+        icon: <Database className="h-4 w-4" />,
+        path: "base_model",
+        roles: ["Administrador"],
       },
     ],
   },

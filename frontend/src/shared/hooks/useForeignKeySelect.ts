@@ -72,9 +72,12 @@ export function useForeignKeySelect(
     }
   }, [initialLimit, toList]);
 
-  // Carga inicial
+  // Carga inicial (desacoplada con baja prioridad para no bloquear el renderizado principal)
   React.useEffect(() => {
-    loadOptions();
+    const timer = setTimeout(() => {
+      loadOptions();
+    }, 150);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

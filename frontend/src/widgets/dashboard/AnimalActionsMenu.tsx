@@ -60,6 +60,23 @@ import { TreatmentSuppliesModal } from "@/widgets/dashboard/treatments/Treatment
 import { ItemDetailModal } from "./animals/ItemDetailModal";
 import { ApiFetchError } from "@/shared/api/apiFetch";
 
+// Iconos estandarizados
+import {
+  IconDna,
+  IconActivity,
+  IconSyringe,
+  IconPill,
+  IconMapPin,
+  IconClipboardList,
+  IconEye,
+  IconPlus,
+  IconHistory,
+  IconGitBranch,
+  IconBabyCarriage,
+  IconEdit,
+  IconTrash,
+} from "@/shared/ui/icons";
+
 function formatDate(dateStr: string) {
   if (!dateStr) return "-";
   try {
@@ -258,7 +275,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
             className="cursor-pointer"
             data-testid="menu-item-history"
           >
-            <History className="mr-2 h-4 w-4" />
+            <IconHistory className="mr-2 h-4 w-4" />
             Historial
           </DropdownMenuItem>
 
@@ -269,7 +286,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
             }}
             className="cursor-pointer"
           >
-            <GitBranch className="mr-2 h-4 w-4" />
+            <IconGitBranch className="mr-2 h-4 w-4" />
             Árbol de Antepasados
           </DropdownMenuItem>
 
@@ -280,7 +297,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
             }}
             className="cursor-pointer"
           >
-            <Baby className="mr-2 h-4 w-4" />
+            <IconBabyCarriage className="mr-2 h-4 w-4" />
             Árbol de Descendientes
           </DropdownMenuItem>
 
@@ -288,7 +305,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
 
           <DropdownMenuSub>
             <DropdownMenuSubTrigger data-testid="menu-sub-genetic_improvement">
-              <Dna className="mr-2 h-4 w-4" />
+              <IconDna className="mr-2 h-4 w-4" />
               Mejora Genética
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
@@ -299,7 +316,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
                 }}
                 className="cursor-pointer"
               >
-                <Plus className="mr-2 h-4 w-4" />
+                <IconPlus className="mr-2 h-4 w-4" />
                 Insertar
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -309,7 +326,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
                 }}
                 className="cursor-pointer"
               >
-                <Eye className="mr-2 h-4 w-4" />
+                <IconEye className="mr-2 h-4 w-4" />
                 Ver Lista
               </DropdownMenuItem>
             </DropdownMenuSubContent>
@@ -317,7 +334,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
 
           <DropdownMenuSub>
             <DropdownMenuSubTrigger data-testid="menu-sub-animal_disease">
-              <Activity className="mr-2 h-4 w-4" />
+              <IconActivity className="mr-2 h-4 w-4" />
               Enfermedad
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
@@ -328,7 +345,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
                 }}
                 className="cursor-pointer"
               >
-                <Plus className="mr-2 h-4 w-4" />
+                <IconPlus className="mr-2 h-4 w-4" />
                 Insertar
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -338,7 +355,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
                 }}
                 className="cursor-pointer"
               >
-                <Eye className="mr-2 h-4 w-4" />
+                <IconEye className="mr-2 h-4 w-4" />
                 Ver Lista
               </DropdownMenuItem>
             </DropdownMenuSubContent>
@@ -348,7 +365,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
 
           <DropdownMenuSub>
             <DropdownMenuSubTrigger data-testid="menu-sub-animal_field">
-              <MapPin className="mr-2 h-4 w-4" />
+              <IconMapPin className="mr-2 h-4 w-4" />
               Asignar Campo
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
@@ -359,7 +376,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
                 }}
                 className="cursor-pointer"
               >
-                <Plus className="mr-2 h-4 w-4" />
+                <IconPlus className="mr-2 h-4 w-4" />
                 Insertar
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -369,7 +386,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
                 }}
                 className="cursor-pointer"
               >
-                <Eye className="mr-2 h-4 w-4" />
+                <IconEye className="mr-2 h-4 w-4" />
                 Ver Lista
               </DropdownMenuItem>
             </DropdownMenuSubContent>
@@ -377,7 +394,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
 
           <DropdownMenuSub>
             <DropdownMenuSubTrigger data-testid="menu-sub-vaccination">
-              <Syringe className="mr-2 h-4 w-4" />
+              <IconSyringe className="mr-2 h-4 w-4" />
               Vacunación
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
@@ -388,7 +405,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
                 }}
                 className="cursor-pointer"
               >
-                <Plus className="mr-2 h-4 w-4" />
+                <IconPlus className="mr-2 h-4 w-4" />
                 Insertar
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -398,7 +415,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
                 }}
                 className="cursor-pointer"
               >
-                <Eye className="mr-2 h-4 w-4" />
+                <IconEye className="mr-2 h-4 w-4" />
                 Ver Lista
               </DropdownMenuItem>
             </DropdownMenuSubContent>
@@ -406,7 +423,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
 
           <DropdownMenuSub>
             <DropdownMenuSubTrigger data-testid="menu-sub-treatment">
-              <Pill className="mr-2 h-4 w-4" />
+              <IconPill className="mr-2 h-4 w-4" />
               Tratamiento
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
@@ -417,7 +434,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
                 }}
                 className="cursor-pointer"
               >
-                <Plus className="mr-2 h-4 w-4" />
+                <IconPlus className="mr-2 h-4 w-4" />
                 Insertar
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -427,7 +444,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
                 }}
                 className="cursor-pointer"
               >
-                <Eye className="mr-2 h-4 w-4" />
+                <IconEye className="mr-2 h-4 w-4" />
                 Ver Lista
               </DropdownMenuItem>
             </DropdownMenuSubContent>
@@ -437,7 +454,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
 
           <DropdownMenuSub>
             <DropdownMenuSubTrigger data-testid="menu-sub-control">
-              <ClipboardList className="mr-2 h-4 w-4" />
+              <IconClipboardList className="mr-2 h-4 w-4" />
               Control
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
@@ -448,7 +465,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
                 }}
                 className="cursor-pointer"
               >
-                <Plus className="mr-2 h-4 w-4" />
+                <IconPlus className="mr-2 h-4 w-4" />
                 Insertar
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -458,7 +475,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({
                 }}
                 className="cursor-pointer"
               >
-                <Eye className="mr-2 h-4 w-4" />
+                <IconEye className="mr-2 h-4 w-4" />
                 Ver Lista
               </DropdownMenuItem>
             </DropdownMenuSubContent>
@@ -1175,7 +1192,7 @@ const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps> = ({
     if (listData.length === 0)
       return (
         <div className="py-10 text-center bg-muted/5 rounded-2xl border-2 border-dashed border-border/40">
-          <ClipboardList className="w-12 h-12 mx-auto text-muted-foreground/20 mb-3" />
+          <IconClipboardList className="w-12 h-12 mx-auto text-muted-foreground/20 mb-3" />
           <p className="text-sm font-medium text-muted-foreground">
             No se encontraron registros
           </p>
@@ -1246,7 +1263,7 @@ const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps> = ({
                     className="p-2 rounded-lg bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 transition-colors"
                     title="Editar"
                   >
-                    <Edit2 className="w-4 h-4" />
+                    <IconEdit className="w-4 h-4" />
                   </button>
                   <button
                     type="button"
@@ -1282,7 +1299,7 @@ const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps> = ({
                     ) : confirmingDeleteId === resolveRecordId(item) ? (
                       <span className="text-xs font-bold">✓</span>
                     ) : (
-                      <Trash2 className="w-4 h-4" />
+                      <IconTrash className="w-4 h-4" />
                     )}
                   </button>
                 </div>

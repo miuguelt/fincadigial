@@ -4,7 +4,7 @@ import json
 URL = "http://127.0.0.1:8092/api/v1/auth/login"
 PAYLOAD = {
     "identification": "1098",
-    "password": "12345678"
+    "password": "Villaluz2024!"
 }
 
 print(f"Enviando login a {URL}...")

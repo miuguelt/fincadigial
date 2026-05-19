@@ -1,7 +1,8 @@
 import React from "react";
+import { Plus } from "lucide-react";
 
 /**
- * EmptyState: estado vacío simple y accesible.
+ * EmptyState: estado vacío premium con tarjeta central, icono grande y botón prominente.
  *
  * @example
  * ```tsx
@@ -17,20 +18,28 @@ export interface EmptyStateProps {
   description?: string;
   action?: React.ReactNode;
   className?: string;
+  icon?: React.ReactNode;
 }
 
-export function EmptyState({ title, description, action, className }: EmptyStateProps) {
+export function EmptyState({ title, description, action, className, icon }: EmptyStateProps) {
   return (
     <div
-      className={["flex flex-col items-center justify-center text-center px-6 py-12 bg-muted border border-border rounded-lg", className].filter(Boolean).join(" ")}
+      className={["flex flex-col items-center justify-center text-center px-6 py-16 sm:py-20", className].filter(Boolean).join(" ")}
       role="status"
       aria-live="polite"
     >
-      <h3 className="text-base font-semibold text-foreground">{title}</h3>
-      {description ? (
-        <p className="mt-1 text-sm text-muted-foreground max-w-prose">{description}</p>
-      ) : null}
-      {action ? <div className="mt-6">{action}</div> : null}
+      <div className="w-full max-w-md mx-auto bg-card rounded-3xl shadow-lg border border-border/30 p-8 sm:p-10">
+        <div className="mb-6 flex items-center justify-center">
+          <div className="h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center">
+            {icon || <Plus className="h-10 w-10 text-primary" />}
+          </div>
+        </div>
+        <h3 className="text-lg sm:text-xl font-semibold text-[#111827] mb-2">{title}</h3>
+        {description ? (
+          <p className="text-sm text-[#6B7280] max-w-prose mx-auto mb-6">{description}</p>
+        ) : null}
+        {action ? <div className="flex justify-center">{action}</div> : null}
+      </div>
     </div>
   );
 }

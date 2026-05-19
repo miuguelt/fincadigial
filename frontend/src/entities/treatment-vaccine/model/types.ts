@@ -1,17 +1,11 @@
-import { Treatments } from "./treatmentsTypes";
-import { Vaccines } from "./vaccinesTypes";
+import { Treatment } from '@/entities/treatment/model/types';
+import { Vaccines } from '@/entities/vaccine/model/types';
 
-export interface TreatmentVaccines{
-    id?: number;
-    treatment_id: number | undefined;
-    vaccine_id: number;
+export interface TreatmentVaccines {
+  id?: number;
+  treatment_id: number | undefined;
+  vaccine_id: number;
 
-    treatments?: Treatments[];
-    vaccines?: Vaccines;
+  treatments?: Treatment[];
+  vaccines?: Vaccines;
 }
-
-export interface ApiResponse<T> {
-    success: boolean;
-    message: string;
-    data: T;
-  }

@@ -1,33 +1,28 @@
-import { ControlResponse, AnimalsResponse } from '@/shared/api/generated/swaggerTypes';
+import { ControlResponse } from '@/shared/api/generated/swaggerTypes';
 
 export interface HealthInsight {
   status: 'optimal' | 'warning' | 'critical';
   message: string;
   trend: 'up' | 'down' | 'stable';
-  score: number; // 0-100
+  score: number;
 }
 
-/**
- * HealthAnalyzer: IA Local para análisis de salud animal en campo.
- */
 export class HealthAnalyzer {
-  /**
-   * Analiza el estado de un animal basado en sus controles históricos (en caché).
-   */
-  static analyze(animal: any, controls: ControlResponse[]): HealthInsight {
+  static analyze(_animal: any, controls: ControlResponse[]): HealthInsight {
     if (!controls || controls.length === 0) {
-      return { 
-        status: 'warning', 
-        message: 'Sin historial suficiente para diagnóstico.', 
-        trend: 'stable', 
-        score: 50 
+      return {
+        status: 'warning',
+        message: 'Sin historial suficiente para diagnóstico.',
+        trend: 'stable',
+        score: 50,
       };
     }
 
-    // Ordenar por fecha descendente
-    const sorted = [...controls].sort((a, b) => 
-      new Date(b.checkup_date).getTime() - new Date(a.checkup_date).getTime()
-    );
+    const sorted = [...controls].sort((a, b) => {
+      const dateA = a.checkup_date ? new Date(a.checkup_date).getTime() : 0;
+      const dateB = b.checkup_date ? new Date(b.checkup_date).getTime() : 0;
+      return dateB - dateA;
+    });
 
     const latest = sorted[0];
     const previous = sorted[1];
@@ -37,7 +32,6 @@ export class HealthAnalyzer {
     let status: HealthInsight['status'] = 'optimal';
     let message = 'Estado general saludable.';
 
-    // 1. Análisis de Peso (Crecimiento)
     if (latest.weight && previous?.weight) {
       const diff = latest.weight - previous.weight;
       if (diff > 0) trend = 'up';
@@ -48,15 +42,14 @@ export class HealthAnalyzer {
       }
     }
 
-    // 2. Análisis de Estado de Salud
     if (latest.health_status === 'Malo' || latest.health_status === 'Regular') {
       status = latest.health_status === 'Malo' ? 'critical' : 'warning';
       score -= 30;
       message = `Reportado con estado ${latest.health_status}.`;
     }
 
-    // 3. Análisis de Frecuencia de Control
-    const daysSinceLast = (Date.now() - new Date(latest.checkup_date).getTime()) / (1000 * 60 * 60 * 24);
+    const lastCheckupDate = latest.checkup_date ? new Date(latest.checkup_date).getTime() : 0;
+    const daysSinceLast = lastCheckupDate > 0 ? (Date.now() - lastCheckupDate) / (1000 * 60 * 60 * 24) : 999;
     if (daysSinceLast > 30) {
       status = 'warning';
       message = 'Control veterinario vencido (>30 días).';

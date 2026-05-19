@@ -169,7 +169,7 @@ export const ChatWidget: React.FC = () => {
   if (!user) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
+    <div className="fixed bottom-4 sm:bottom-6 right-[76px] sm:right-24 z-50 flex flex-col items-end pointer-events-none transition-all duration-300">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -341,7 +341,7 @@ export const ChatWidget: React.FC = () => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="pointer-events-auto h-14 w-14 bg-primary rounded-full shadow-lg flex items-center justify-center text-primary-foreground relative hover:bg-primary/80 transition-colors"
+        className="pointer-events-auto h-12 w-12 sm:h-14 sm:w-14 bg-primary rounded-full shadow-lg flex items-center justify-center text-primary-foreground relative hover:bg-primary/80 transition-colors"
       >
         {isOpen ? <X /> : <MessageCircle />}
         {unreadCount > 0 && !isOpen && (

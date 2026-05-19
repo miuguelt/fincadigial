@@ -39,5 +39,15 @@ Este estándar debe ser replicado inmediatamente en:
 - `AdminFieldManagement.tsx`
 - Dashboards de Reportes Regulatorios.
 
+## 🧠 Lecciones Técnicas Críticas (Mayo 2026)
+
+### 1. Enlazado Nativo de Accesibilidad en Radix UI (Evitar Alertas ARIA)
+- **Causa del Error**: Intentar forzar un contexto custom (`DialogA11yContext`) y renderizar elementos `<VisuallyHidden><DialogPrimitive.Title id={titleId}></VisuallyHidden>` como fallback dentro de `DialogContent` generaba duplicidad de IDs en el DOM durante el primer render cuando el consumidor ya aportaba su propio `<DialogTitle>`. Al desmontarse el fallback en el segundo render tras registrarse el ID, Radix UI detectaba un desajuste o elemento faltante y emitía la alerta: `DialogContent requires a DialogTitle`.
+- **Solución Arquitectónica**: Eliminar por completo el contexto custom y los fallbacks inyectados en `DialogContent`. Permitir que el mecanismo nativo de Radix UI enlace automáticamente el `DialogPrimitive.Content` con los componentes `DialogTitle` y `DialogDescription` aportados por el desarrollador dentro del modal.
+
+### 2. Normalización de URLs en Axios (Prevención de 404 por Duplicación)
+- **Causa del Error**: Cuando la configuración global de Axios define un `baseURL` que termina en `/api/v1` (ej. en entornos locales o de desarrollo proxy), y los servicios individuales pasan rutas relativas que ya incluyen `/api/v1` (ej. `/api/v1/location/report`), Axios concatena ambos valores produciendo rutas malformadas como `/api/v1/api/v1/location/report`.
+- **Solución Arquitectónica**: Implementar un interceptor de solicitud (`request interceptor`) que verifique si `config.baseURL` termina en `/api/v1` y limpie dinámicamente cualquier prefijo `/api/v1` duplicado al inicio de `config.url`, asegurando que la ruta final enviada al servidor sea siempre limpia y canónica.
+
 ---
 *Registrado en el DevBrain Neural Store - Mayo 2026*

@@ -8,27 +8,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
-import { LayoutDashboard, RefreshCw, Plus, UserPlus } from "lucide-react";
-import { Button } from "@/shared/ui/button";
-import { useNavigate } from "react-router-dom";
-import { JoinFincaRequestDialog } from "./JoinFincaRequestDialog";
+import { LayoutDashboard, RefreshCw } from "lucide-react";
 
 export const FincaSelector: React.FC = () => {
   const { user } = useAuth();
   const { switchFinca, switching } = useMultiFinca();
-  const navigate = useNavigate();
-  const [isRequestDialogOpen, setIsRequestDialogOpen] = React.useState(false);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5 flex-shrink-0">
       {user?.fincas && user.fincas.length > 1 ? (
         <Select
           defaultValue={String(user.finca_id)}
           onValueChange={(val) => switchFinca(Number(val))}
           disabled={switching}
         >
-          <SelectTrigger className="w-[200px] h-9 bg-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all">
-            <SelectValue placeholder="Seleccionar finca" />
+          <SelectTrigger className="w-[130px] sm:w-[160px] h-8 sm:h-9 bg-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all text-xs sm:text-sm">
+            <SelectValue placeholder="Finca" />
           </SelectTrigger>
           <SelectContent>
             {user.fincas.map((f: any) => (
@@ -39,41 +34,15 @@ export const FincaSelector: React.FC = () => {
           </SelectContent>
         </Select>
       ) : (
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20">
-          <LayoutDashboard className="h-4 w-4" />
-          <span className="text-sm font-medium">
-            {user?.finca_name || "Mi Finca"}
+        <div className="flex items-center gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 max-w-[130px] sm:max-w-none">
+          <LayoutDashboard className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+          <span className="text-xs sm:text-sm font-medium truncate">
+            {user?.finca_name || "Finca"}
           </span>
         </div>
       )}
 
-      {switching && <RefreshCw className="h-4 w-4 animate-spin text-primary" />}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-9 px-2 text-primary hover:bg-primary/10"
-        onClick={() => setIsRequestDialogOpen(true)}
-        title="Solicitar unirse a otra finca"
-      >
-        <UserPlus className="h-4 w-4 md:mr-1" />
-        <span className="text-xs font-medium hidden md:inline">Unirse</span>
-      </Button>
-
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-9 px-2 text-primary hover:bg-primary/10"
-        onClick={() => navigate("/admin/fincas/create")}
-        title="Crear nueva finca"
-      >
-        <Plus className="h-4 w-4 md:mr-1" />
-        <span className="text-xs font-medium hidden md:inline">Nueva</span>
-      </Button>
-
-      <JoinFincaRequestDialog
-        isOpen={isRequestDialogOpen}
-        onClose={() => setIsRequestDialogOpen(false)}
-      />
+      {switching && <RefreshCw className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin text-primary flex-shrink-0" />}
     </div>
   );
 };

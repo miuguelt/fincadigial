@@ -7,7 +7,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/shared/ui/dialog';
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { cn } from '@/shared/ui/cn.ts';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -204,7 +203,7 @@ export const GenericModal: React.FC<GenericModalProps> = ({
         className={cn(modalClasses)}
         overlayClassName={overlayClasses}
         aria-labelledby={titleId}
-        aria-describedby={descriptionId}
+        aria-describedby={description ? descriptionId : undefined}
         style={{
           cursor: isDragging ? 'grabbing' : 'default',
           ...(draggable && { transform: `translate(${position.x}px, ${position.y}px)` }),
@@ -232,9 +231,9 @@ export const GenericModal: React.FC<GenericModalProps> = ({
                 <span className="flex-1 min-w-0 truncate">{title}</span>
               </DialogTitle>
             ) : (
-              <VisuallyHidden>
-                <DialogTitle id={titleId}>Modal</DialogTitle>
-              </VisuallyHidden>
+              <DialogTitle id={titleId} className="sr-only">
+                Modal
+              </DialogTitle>
             )}
 
             <div className="flex-shrink-0 flex items-center gap-1.5">
@@ -268,9 +267,9 @@ export const GenericModal: React.FC<GenericModalProps> = ({
               {description}
             </DialogDescription>
           ) : (
-            <VisuallyHidden>
-              <DialogDescription id={descriptionId}>Contenido del diálogo</DialogDescription>
-            </VisuallyHidden>
+            <DialogDescription id={descriptionId} className="sr-only">
+              Contenido del diálogo
+            </DialogDescription>
           )}
         </DialogHeader>
 

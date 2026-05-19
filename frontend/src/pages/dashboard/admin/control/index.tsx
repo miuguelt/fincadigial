@@ -112,16 +112,16 @@ const renderControlCard = (animalOptions: { value: number; label: string }[]) =>
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-2 gap-3 bg-muted/20 rounded-lg p-3 border border-border/40">
-        <div className="space-y-1">
+        <div className="space-y-1 min-w-0">
           <span className="text-[10px] uppercase text-muted-foreground font-semibold">Peso</span>
-          <div className="text-sm font-bold text-foreground">
-            {item.weight ? `${item.weight} kg` : '-'}
+          <div className="text-sm font-bold text-foreground truncate">
+            {item.weight != null ? `${Number(item.weight).toFixed(1)} kg` : '-'}
           </div>
         </div>
-        <div className="space-y-1">
+        <div className="space-y-1 min-w-0">
           <span className="text-[10px] uppercase text-muted-foreground font-semibold">Altura</span>
-          <div className="text-sm font-bold text-foreground">
-            {item.height ? `${item.height} m` : '-'}
+          <div className="text-sm font-bold text-foreground truncate">
+            {item.height != null ? `${Number(item.height).toFixed(1)} m` : '-'}
           </div>
         </div>
       </div>
@@ -274,8 +274,8 @@ const makeCustomDetailContent = (animalOptions: { value: number; label: string }
         <div className={modalStyles.spacing.section}>
           <SectionCard title="Métricas Físicas">
             <div className={modalStyles.fieldsGrid}>
-              <InfoField label="Peso" value={item.weight ? `${item.weight} kg` : '-'} valueSize="xlarge" />
-              <InfoField label="Altura" value={item.height ? `${item.height} m` : '-'} valueSize="xlarge" />
+              <InfoField label="Peso" value={item.weight != null ? `${Number(item.weight).toFixed(1)} kg` : '-'} valueSize="xlarge" />
+              <InfoField label="Altura" value={item.height != null ? `${Number(item.height).toFixed(1)} m` : '-'} valueSize="xlarge" />
             </div>
           </SectionCard>
 
@@ -389,12 +389,12 @@ const AdminControlPage: React.FC = () => {
     {
       key: 'weight',
       label: 'Peso',
-      render: (value: any) => (value ?? '-') as any,
+      render: (value: any) => value != null ? `${Number(value).toFixed(1)} kg` : '-',
     },
     {
       key: 'height',
       label: 'Altura',
-      render: (value: any) => (value ?? '-') as any,
+      render: (value: any) => value != null ? `${Number(value).toFixed(1)} m` : '-',
     },
     {
       key: 'health_status',

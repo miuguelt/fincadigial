@@ -70,6 +70,7 @@ export interface CRUDConfig<T = any, TInput = any> {
   searchPlaceholder?: string;
   emptyStateMessage?: string;
   emptyStateDescription?: string;
+  emptyStateIcon?: ReactNode;
   enableDetailModal?: boolean;
   enableCreateModal?: boolean;
   enableEditModal?: boolean;

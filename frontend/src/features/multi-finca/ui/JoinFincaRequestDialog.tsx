@@ -108,7 +108,7 @@ export const JoinFincaRequestDialog: React.FC<JoinFincaRequestDialogProps> = ({
   return (
     <GenericModal
       isOpen={isOpen}
-      onClose={onClose}
+      onOpenChange={(open) => !open && onClose()}
       title="Unirse a una Finca"
       description="Busca una finca y solicita unirte a su ecosistema."
       size="md"

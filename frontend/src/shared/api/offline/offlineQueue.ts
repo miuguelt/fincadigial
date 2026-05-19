@@ -104,7 +104,7 @@ class OfflineQueue {
   constructor() {
     if (typeof window !== 'undefined') {
       window.addEventListener('online', () => {
-        this.syncQueue().catch(() => {});
+        setTimeout(() => this.syncQueue().catch(() => {}), 1000);
       });
     }
   }
@@ -132,7 +132,7 @@ class OfflineQueue {
     await dbPut(operation);
 
     if (typeof navigator !== 'undefined' && navigator.onLine && !this.isSyncing) {
-      setTimeout(() => this.syncQueue().catch(() => {}), 100);
+      setTimeout(() => this.syncQueue().catch(() => {}), 500);
     }
 
     return operation.id;
@@ -144,7 +144,8 @@ class OfflineQueue {
   }
 
   async getPendingCount(): Promise<number> {
-    return (await this.getPendingOperations()).length;
+    const all = await dbGetAll();
+    return all.filter(op => op.status === 'pending').length;
   }
 
   async syncQueue(): Promise<void> {
@@ -297,7 +298,7 @@ class OfflineQueue {
 
     // Intentar sincronizar si estamos online
     if (typeof navigator !== 'undefined' && navigator.onLine && !this.isSyncing) {
-      setTimeout(() => this.syncQueue().catch(() => {}), 100);
+      setTimeout(() => this.syncQueue().catch(() => {}), 500);
     }
   }
 

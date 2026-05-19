@@ -259,7 +259,7 @@ class LoginResource(Resource):
             identity = str(user.id)
             access_token = create_access_token(identity=identity, additional_claims=user_claims)
             refresh_token = create_refresh_token(identity=identity, additional_claims=user_claims)
-            log_authentication_attempt(identifier_str, True, {'user_id': user.id, 'role': user.role.value})
+            log_authentication_attempt(identifier_str, True, {'user_id': user.id, 'role': getattr(user.role, 'value', str(user.role))})
             log_jwt_token_event('CREATED', user.id, {'access_token_created': True})
 
             # Respuesta optimizada y consistente

@@ -1,44 +1,37 @@
 
 import { useResource } from '@/shared/hooks/useResource';
-import { Treatments } from '@/entities/treatment/model/types';
+import { Treatment } from '@/entities/treatment/model/types';
 import type { TreatmentResponse } from '@/shared/api/generated/swaggerTypes';
 import { treatmentsService } from '@/entities/treatment/api/treatments.service';
 
-// Normalizador único para evitar duplicidad y errores de tipo
 import type { Dispatch, SetStateAction } from 'react';
 
-const mapTreatmentResponseToLocal = (r: Partial<TreatmentResponse> & { [key: string]: any }): Treatments => ({
+const mapTreatmentResponseToLocal = (r: Partial<TreatmentResponse> & { [key: string]: any }): Treatment => ({
   id: r.id ?? 0,
-  // aceptar treatment_date o treatment_date o date
   treatment_date: (r as any).treatment_date ?? (r as any).treatment_date ?? (r as any).date ?? '',
   end_date: (r as any).end_date ?? '',
-  // aceptar description (nuevo) o diagnosis (legacy)
   description: (r as any).description ?? (r as any).diagnosis ?? '',
   frequency: (r as any).frequency ?? '',
   observations: (r as any).observations ?? '',
   dosis: (r as any).dosis ?? '',
   animal_id: (r as any).animal_id ?? 0,
-  // si no viene animals, crear un stub con id para poder mostrar #id en la tabla
   animals: (r as any).animals ?? ((r as any).animal_id != null ? ({ id: (r as any).animal_id } as any) : undefined),
   vaccines_treatments: (r as any).vaccines_treatments,
   medication_treatments: (r as any).medication_treatments,
 });
 
 export interface UseTreatmentResult {
-  treatments: Treatments[];
-  data: Treatments[];
+  treatments: Treatment[];
+  data: Treatment[];
   loading: boolean;
   error: string | null;
-  refetch: (params?: Record<string, any>) => Promise<Treatments[]>;
-  // Compatibilidad hacia atrás
-  createItem: (payload: Partial<Treatments>) => Promise<Treatments | null>;
-  updateItem: (id: number | string, payload: Partial<Treatments>) => Promise<Treatments | null>;
-  // Nuevos wrappers normalizados
-  addTreatment: (payload: Partial<Treatments>) => Promise<Treatments | null>;
-  editTreatment: (id: number | string, payload: Partial<Treatments>) => Promise<Treatments | null>;
+  refetch: (params?: Record<string, any>) => Promise<Treatment[]>;
+  createItem: (payload: Partial<Treatment>) => Promise<Treatment | null>;
+  updateItem: (id: number | string, payload: Partial<Treatment>) => Promise<Treatment | null>;
+  addTreatment: (payload: Partial<Treatment>) => Promise<Treatment | null>;
+  editTreatment: (id: number | string, payload: Partial<Treatment>) => Promise<Treatment | null>;
   deleteItem: (id: number | string) => Promise<boolean>;
-  setData: Dispatch<SetStateAction<Treatments[]>>;
-  // Meta y setters opcionales provenientes de useResource
+  setData: Dispatch<SetStateAction<Treatment[]>>;
   meta?: any;
   setPage?: (p: number) => void;
   setLimit?: (l: number) => void;
@@ -46,7 +39,6 @@ export interface UseTreatmentResult {
   setFields?: (f: string) => void;
 }
 
-// El tipo base para useResource será TreatmentResponse, pero el resultado se normaliza a Treatments
 export function useTreatment(): UseTreatmentResult {
   const resource = useResource<TreatmentResponse, any>(treatmentsService as any, {
     autoFetch: true,
@@ -54,9 +46,9 @@ export function useTreatment(): UseTreatmentResult {
     map: ((items: any[]) => (items as TreatmentResponse[]).map(mapTreatmentResponseToLocal)) as any,
   });
 
-  const mapped = resource.data as unknown as Treatments[];
+  const mapped = resource.data as unknown as Treatment[];
 
-  const addTreatment = async (payload: Partial<Treatments>): Promise<Treatments | null> => {
+  const addTreatment = async (payload: Partial<Treatment>): Promise<Treatment | null> => {
     const created = await (resource.createItem as any)(payload as any);
     if (!created) return null;
     const mappedCreated = mapTreatmentResponseToLocal(created as any);
@@ -68,7 +60,7 @@ export function useTreatment(): UseTreatmentResult {
     return mappedCreated;
   };
 
-  const editTreatment = async (id: number | string, payload: Partial<Treatments>): Promise<Treatments | null> => {
+  const editTreatment = async (id: number | string, payload: Partial<Treatment>): Promise<Treatment | null> => {
     const updated = await (resource.updateItem as any)(id, payload as any);
     if (!updated) return null;
     const mappedUpdated = mapTreatmentResponseToLocal(updated as any);
@@ -79,7 +71,6 @@ export function useTreatment(): UseTreatmentResult {
     return mappedUpdated;
   };
 
-  // Alias de compatibilidad
   const createItem = addTreatment;
   const updateItem = editTreatment;
 
@@ -88,13 +79,13 @@ export function useTreatment(): UseTreatmentResult {
     data: mapped,
     loading: (resource as any).loading,
     error: (resource as any).error,
-    refetch: resource.refetch as unknown as (params?: Record<string, any>) => Promise<Treatments[]>,
+    refetch: resource.refetch as unknown as (params?: Record<string, any>) => Promise<Treatment[]>,
     createItem,
     updateItem,
     addTreatment,
     editTreatment,
     deleteItem: resource.deleteItem,
-    setData: resource.setData as unknown as Dispatch<SetStateAction<Treatments[]>>,
+    setData: resource.setData as unknown as Dispatch<SetStateAction<Treatment[]>>,
     meta: (resource as any).meta,
     setPage: (resource as any).setPage,
     setLimit: (resource as any).setLimit,

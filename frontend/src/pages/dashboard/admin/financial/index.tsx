@@ -26,7 +26,7 @@ const FinancialDashboard = () => {
   const summaryQuery = useQuery({
     queryKey: ['financial_summary'],
     queryFn: async () => {
-      const res = await apiFetch({ url: '/financial/summary' } as any);
+      const res = await apiFetch({ url: '/financial/transactions/summary' } as any);
       return unwrapApi(res);
     },
   });

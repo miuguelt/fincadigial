@@ -68,19 +68,19 @@ export const ControlDetailModal: React.FC<ControlDetailModalProps> = ({
               </div>
             </div>
             
-            {(selectedControl.weight || selectedControl.height) && (
+            {(selectedControl.weight != null || selectedControl.height != null) && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {selectedControl.weight && (
+                {selectedControl.weight != null && (
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-muted-foreground">Peso</label>
-                    <p className="text-base">{selectedControl.weight} kg</p>
+                    <p className="text-base">{Number(selectedControl.weight).toFixed(1)} kg</p>
                   </div>
                 )}
                 
-                {selectedControl.height && (
+                {selectedControl.height != null && (
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-muted-foreground">Altura</label>
-                    <p className="text-base">{selectedControl.height} m</p>
+                    <p className="text-base">{Number(selectedControl.height).toFixed(1)} m</p>
                   </div>
                 )}
               </div>

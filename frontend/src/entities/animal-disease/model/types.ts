@@ -1,20 +1,14 @@
-import { Animals } from "./animalsTypes";
-import { Diseases } from "./diseasesTypes";
+import { Animals } from '@/entities/animal/model/types';
+import { Diseases } from '@/entities/disease/model/types';
 
-export interface AnimalDiseases{
-    id?: number;
-    animal_id: number;
-    disease_id: number;
-    instructor_id?: number;
-    diagnosis_date: string;
-    status: "Activo" | "En tratamiento" | "Recuperado" | "Crónico" | undefined; // Adjusted to match expected values
+export interface AnimalDiseases {
+  id?: number;
+  animal_id: number;
+  disease_id: number;
+  instructor_id?: number;
+  diagnosis_date: string;
+  status: 'Activo' | 'En tratamiento' | 'Recuperado' | 'Crónico' | undefined;
 
-    animals?: Animals;
-    diseases?: Diseases[];
+  animals?: Animals;
+  diseases?: Diseases[];
 }
-
-export interface ApiResponse<T> {
-    success: boolean;
-    message: string;
-    data: T;
-  }

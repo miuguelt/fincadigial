@@ -412,18 +412,18 @@ const ControlsPage: React.FC<ControlsPageProps> = () => {
                     <span className="text-sm">{getAnimalName(control.animal_id)}</span>
                   </div>
                   
-                  {(control.weight || control.height) && (
+                  {(control.weight != null || control.height != null) && (
                     <div className="flex items-center gap-4">
-                      {control.weight && (
+                      {control.weight != null && (
                         <div className="flex items-center gap-2">
                           <Weight className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm">{control.weight} kg</span>
+                          <span className="text-sm">{Number(control.weight).toFixed(1)} kg</span>
                         </div>
                       )}
-                      {control.height && (
+                      {control.height != null && (
                         <div className="flex items-center gap-2">
                           <Activity className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm">{control.height} m</span>
+                          <span className="text-sm">{Number(control.height).toFixed(1)} m</span>
                         </div>
                       )}
                     </div>
@@ -698,19 +698,19 @@ const ControlsPage: React.FC<ControlsPageProps> = () => {
               </div>
               
               {/* Mediciones */}
-              {(selectedControl.weight || selectedControl.height) && (
+              {(selectedControl.weight != null || selectedControl.height != null) && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {selectedControl.weight && (
+                  {selectedControl.weight != null && (
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-muted-foreground">Peso</label>
-                      <p className="text-base">{selectedControl.weight} kg</p>
+                      <p className="text-base">{Number(selectedControl.weight).toFixed(1)} kg</p>
                     </div>
                   )}
                   
-                  {selectedControl.height && (
+                  {selectedControl.height != null && (
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-muted-foreground">Altura</label>
-                      <p className="text-base">{selectedControl.height} m</p>
+                      <p className="text-base">{Number(selectedControl.height).toFixed(1)} m</p>
                     </div>
                   )}
                 </div>

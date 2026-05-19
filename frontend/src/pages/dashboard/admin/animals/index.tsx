@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Edit } from 'lucide-react';
+import React, { useRef, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, Edit, Plus } from 'lucide-react';
 import { AdminCRUDPage } from '@/widgets/admin-crud';
 import type { CRUDColumn, CRUDFormSection, CRUDConfig } from '../../../../shared/types/crud';
 import { animalsService } from '@/entities/animal/api/animal.service';
@@ -28,6 +28,7 @@ import { AnimalModalContent } from '@/widgets/dashboard/animals/AnimalModalConte
 import { AnimalImagePreUpload } from '@/widgets/dashboard/animals/AnimalImagePreUpload';
 import { animalImageService } from '@/entities/animal/api/animalImage.service';
 import { useToast } from '@/app/providers/ToastContext';
+import Sparkline from '@/widgets/dashboard/Sparkline';
 import {
   BatchActionToolbar,
   BatchWeightModal,
@@ -160,6 +161,7 @@ const initialFormData: Partial<AnimalInput> = {
 
 function AdminAnimalsPage() {
   const navigate = useNavigate();
+  const { id: routeAnimalId } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { showToast } = useToast();
   const [, setFormData] = useState<Partial<AnimalInput>>(initialFormData);
@@ -524,6 +526,16 @@ function AdminAnimalsPage() {
     }
   };
 
+  // Manejar parámetro :id de la ruta para abrir detalle directamente
+  useEffect(() => {
+    if (routeAnimalId) {
+      const animalId = Number(routeAnimalId);
+      if (!Number.isNaN(animalId)) {
+        openAnimalDetailModal(animalId);
+      }
+    }
+  }, [routeAnimalId]);
+
   // Función personalizada para renderizar las tarjetas de animales
   const renderAnimalCard = (item: AnimalResponse & { [k: string]: any }) => {
     const breedId = item.breeds_id || item.breed_id;
@@ -607,8 +619,9 @@ function AdminAnimalsPage() {
     columns,
     formSections: formSectionsLocal,
     searchPlaceholder: 'Buscar animales...',
-    emptyStateMessage: 'No hay animales',
-    emptyStateDescription: 'Crea el primero para comenzar',
+    emptyStateMessage: 'No hay animales registrados',
+    emptyStateDescription: 'Comienza agregando tu primer animal al sistema',
+    emptyStateIcon: <Plus className="h-10 w-10 text-primary" />,
     enableDetailModal: true,
     enableCreateModal: true,
     enableEditModal: true,
@@ -642,20 +655,22 @@ function AdminAnimalsPage() {
         <Button
           variant={viewMode === 'table' ? 'primary' : 'outline'}
           size="sm"
-          className="h-7"
+          className="h-8 px-2 sm:px-3 text-xs sm:text-sm"
           onClick={() => setViewMode('table')}
           aria-label="Vista en tabla"
         >
-          Tabla
+          <span className="hidden sm:inline">Tabla</span>
+          <span className="sm:hidden">T</span>
         </Button>
         <Button
           variant={viewMode === 'cards' ? 'primary' : 'outline'}
           size="sm"
-          className="h-7"
+          className="h-8 px-2 sm:px-3 text-xs sm:text-sm"
           onClick={() => setViewMode('cards')}
           aria-label="Vista en tarjetas"
         >
-          Tarjetas
+          <span className="hidden sm:inline">Tarjetas</span>
+          <span className="sm:hidden">C</span>
         </Button>
       </div>
     ),

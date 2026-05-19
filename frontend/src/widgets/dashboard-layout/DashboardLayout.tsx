@@ -91,7 +91,7 @@ const DashboardLayout: React.FC = () => {
           isSidebarOpen={isSidebarOpen}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         />
-        <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-background/50 px-4 sm:px-8 py-4 sm:py-6">
+        <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-background/50 px-2 sm:px-4 lg:px-6 py-2 sm:py-4 pb-24 sm:pb-20">
           <Outlet />
         </main>
       </div>

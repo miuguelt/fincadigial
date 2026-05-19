@@ -43,15 +43,15 @@ export function PageHeader({
 }: PageHeaderProps) {
   const headerBase = dense
     ? "mb-0 bg-transparent rounded-none p-0 sm:p-1 shadow-none border-none"
-    : "mb-6 sm:mb-8 bg-card/30 backdrop-blur-sm rounded-lg p-4 sm:p-6 shadow-sm border border-border/50 transition-all duration-300 hover:shadow-md";
+    : "mb-6 sm:mb-8 bg-card/50 backdrop-blur-sm rounded-2xl p-4 sm:p-6 shadow-sm border border-border/30 transition-all duration-300 hover:shadow-md";
   const wrapperClasses = dense
     ? "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
     : "flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between";
-  const breadcrumbsMb = dense ? "mb-2" : "mb-3";
+  const breadcrumbsMb = dense ? "mb-1 sm:mb-2" : "mb-3";
   const titleClasses = [
     dense
-      ? "text-xl sm:text-2xl font-bold tracking-tight text-foreground transition-colors duration-200"
-      : "text-2xl sm:text-3xl font-bold tracking-tight text-foreground transition-colors duration-200",
+      ? "text-lg sm:text-xl lg:text-2xl font-bold tracking-tight text-[#111827] transition-colors duration-200"
+      : "text-2xl sm:text-3xl font-bold tracking-tight text-[#111827] transition-colors duration-200",
     titleClassName,
   ]
     .filter(Boolean)
@@ -68,7 +68,7 @@ export function PageHeader({
         <div className="space-y-1.5">
           <h1 className={titleClasses}>{title}</h1>
           {description ? (
-            <p className="text-sm sm:text-base text-muted-foreground transition-colors duration-200">
+            <p className="text-sm sm:text-base text-[#6B7280] transition-colors duration-200">
               {description}
             </p>
           ) : null}

@@ -1,10 +1,9 @@
 import { BaseService } from '@/shared/api/base-service';
-import type { 
-  AnimalFieldResponse, 
-  AnimalFieldInput, 
-  PaginatedResponse 
+import type {
+  AnimalFieldResponse,
+  AnimalFieldInput,
+  PaginatedResponse
 } from '@/shared/api/generated/swaggerTypes';
-import type { APIResponse } from '@/shared/api/types';
 
 export interface BulkTransferRequest {
   animal_ids: number[];
@@ -64,8 +63,8 @@ class AnimalFieldsService extends BaseService<AnimalFieldResponse> {
    * TRASLADO MASIVO: Traslada múltiples animales a un nuevo potrero.
    * @param data Datos del traslado masivo
    */
-  async bulkTransfer(data: BulkTransferRequest): Promise<APIResponse<AnimalFieldResponse[]>> {
-    return this.customRequest<APIResponse<AnimalFieldResponse[]>>('transfer', 'POST', data);
+  async bulkTransfer(data: BulkTransferRequest): Promise<{ success: boolean; message: string; data: AnimalFieldResponse[] }> {
+    return this.customRequest<{ success: boolean; message: string; data: AnimalFieldResponse[] }>('transfer', 'POST', data);
   }
 
   /**
