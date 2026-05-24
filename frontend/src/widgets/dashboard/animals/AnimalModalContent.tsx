@@ -581,7 +581,7 @@ export function AnimalModalContent({
           {/* Información Básica - Collapsible */}
           <CollapsibleCard
             title="Información Básica"
-            defaultCollapsed={true}
+            defaultCollapsed={false}
             accent="blue"
             data-testid="collapsible-section-basic-info"
           >

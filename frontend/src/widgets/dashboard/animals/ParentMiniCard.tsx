@@ -81,7 +81,7 @@ export function ParentMiniCard({ parentId, parentLabel, gender, onClick }: Paren
   // Si no hay parentId, mostrar card vacía
   if (!parentId) {
     return (
-      <div className="relative group rounded-xl overflow-hidden bg-gradient-to-br from-muted/30 to-muted/10 border-2 border-dashed border-border/50 aspect-[4/3] flex flex-col items-center justify-center p-3">
+      <div className="relative group rounded-xl overflow-hidden bg-gradient-to-br from-muted/30 to-muted/10 border-2 border-dashed border-border/50 w-full max-w-[340px] aspect-[16/10] mx-auto flex flex-col items-center justify-center p-3">
         <ImageIcon className="w-8 h-8 text-muted-foreground/40 mb-1.5" />
         <p className="text-xs font-medium text-muted-foreground/60">{gender}</p>
         <p className="text-[10px] text-muted-foreground/40">Sin registro</p>
@@ -92,7 +92,7 @@ export function ParentMiniCard({ parentId, parentLabel, gender, onClick }: Paren
   return (
     <div
       onClick={onClick}
-      className="relative group rounded-xl overflow-hidden bg-gradient-to-br from-accent/20 to-accent/5 border border-border/60 hover:border-primary/50 aspect-[4/3] cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+      className="relative group rounded-xl overflow-hidden bg-gradient-to-br from-accent/20 to-accent/5 border border-border/60 hover:border-primary/50 w-full max-w-[340px] aspect-[16/10] mx-auto cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
     >
       {/* Carrusel de imágenes */}
       <div className="absolute inset-0 w-full h-full">
@@ -164,8 +164,8 @@ export function ParentMiniCard({ parentId, parentLabel, gender, onClick }: Paren
                         key={index}
                         className={`rounded-full transition-all duration-300 ${
                           index === currentIndex
-                            ? 'bg-white w-3 h-1.5'
-                            : 'bg-white/50 w-1.5 h-1.5'
+                            ? 'bg-card w-3 h-1.5'
+                            : 'bg-card/50 w-1.5 h-1.5'
                         }`}
                       />
                     ))}
@@ -185,7 +185,7 @@ export function ParentMiniCard({ parentId, parentLabel, gender, onClick }: Paren
         <div className="text-[10px] uppercase tracking-wider font-bold text-white/80 mb-0.5">
           {gender}
         </div>
-        <div className="text-sm font-bold text-white truncate drop-shadow-lg">
+        <div className="text-sm font-bold text-white truncate drop-shadow-lg" title={parentLabel}>
           {parentLabel}
         </div>
       </div>
