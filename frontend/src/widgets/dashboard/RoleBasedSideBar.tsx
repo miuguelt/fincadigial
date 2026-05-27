@@ -14,6 +14,7 @@ import ThemeToggle from "./ThemeToggle";
 import { subscribeSSE } from "@/lib/events";
 import { FincaSelector } from "@/features/multi-finca/ui/FincaSelector";
 import { GlobalSearchBar } from "@/features/search/ui/GlobalSearchBar";
+import { useNotifications } from "@/shared/hooks/useNotifications";
 
 const getRolePrefix = (r: string): string => {
   switch (r) {
@@ -55,6 +56,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
   } = useAuth() as any;
   const location = useLocation();
   const navigate = useNavigate();
+  const { farmPending } = useNotifications();
   
   const [pendingMemberships, setPendingMemberships] = useState(0);
   const [sickAnimalsCount, setSickAnimalsCount] = useState(0);
@@ -259,7 +261,10 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
     if (item.title === "Cría y Reproducción" && upcomingBirthsCount > 0) {
       return { count: upcomingBirthsCount, color: 'bg-emerald-500' };
     }
-    if (item.badge) {
+    if (item.badge === "farmNotificationsCount" && farmPending > 0) {
+      return { count: farmPending, color: 'bg-danger' };
+    }
+    if (item.badge && item.badge !== "farmNotificationsCount") {
       return { count: item.badge, color: 'bg-primary' };
     }
     return null;

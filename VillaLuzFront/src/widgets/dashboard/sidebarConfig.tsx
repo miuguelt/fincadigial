@@ -68,6 +68,7 @@ export const sidebarItems: SidebarItemConfig[] = [
         path: "/select-finca",
         activePaths: ["fincas/crear"],
         roles: AllRoles,
+        badge: "farmNotificationsCount",
       },
       {
         title: "Agregar Finca",

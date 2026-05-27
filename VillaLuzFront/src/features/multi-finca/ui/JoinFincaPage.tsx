@@ -11,6 +11,9 @@ import {
   IconShieldCheck,
   IconCircleX,
   IconCircleCheck,
+  IconBuildingFarm,
+  IconClock,
+  IconMail
 } from "@/shared/ui/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/shared/ui/card";
@@ -30,6 +33,7 @@ interface MembershipGestions {
 import { useToast } from "@/app/providers/ToastContext";
 import { cn } from "@/shared/ui/cn";
 import { useAuth } from "@/features/auth/model/useAuth";
+import { useNotifications } from "@/shared/hooks/useNotifications";
 export const JoinFincaPage: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -38,19 +42,13 @@ export const JoinFincaPage: React.FC = () => {
   const [fincas, setFincas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [requestingId, setRequestingId] = useState<number | null>(null);
-  const [gestions, setGestions] = useState<MembershipGestions>({
-    requests_to_approve: [],
-    invitations_received: [],
-  });
+  const { notifications, refresh } = useNotifications();
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [fincaListResp, pendingResp] = await Promise.all([
-        fincaService.getPublicFincas(),
-        membershipService.getPendingGestions(),
-      ]);
+      const fincaListResp = await fincaService.getPublicFincas();
       setFincas(fincaListResp?.data || []);
-      setGestions(pendingResp?.data || { requests_to_approve: [], invitations_received: [] });
+      refresh();
     } catch (err) {
       showToast("Error al sincronizar datos de acceso", "error");    } finally {
       setLoading(false);
@@ -65,15 +63,7 @@ export const JoinFincaPage: React.FC = () => {
       const resp = await membershipService.createGestion({ finca_id: fincaId });
       if (resp.success) {
         showToast("Solicitud enviada correctamente", "success");
-        /* Actualizar localmente para mostrar el botón como Solicitado inmediatamente */ setGestions(
-          (prev: MembershipGestions) => ({
-            ...prev,
-            requests_to_approve: [
-              ...prev.requests_to_approve,
-              { finca_id: fincaId, status: "pending" } as any,
-            ],
-          }),
-        );
+        refresh();
       } else {
         showToast(resp.message || "Error al enviar solicitud", "error");
       }
@@ -81,31 +71,6 @@ export const JoinFincaPage: React.FC = () => {
       showToast("Error de comunicación", "error");
     } finally {
       setRequestingId(null);
-    }
-  };
-  const handleRespond = async (id: number, approve: boolean) => {
-    try {
-      const resp = await membershipService.respondGestion(id, approve);
-      if (resp.success) {
-        showToast(
-          approve ? "Has aceptado la invitación" : "Invitación rechazada",
-          "success",
-        );
-        /* Actualizar UI localmente */ setGestions((prev: MembershipGestions) => ({
-          ...prev,
-          invitations_received: prev.invitations_received.filter(
-            (inv: any) => inv.id !== id,
-          ),
-          requests_to_approve: prev.requests_to_approve.filter(
-            (req: any) => req.id !== id,
-          ),
-        }));
-        if (approve) {
-          /* Refrescar el usuario para que vea la nueva finca en su lista */           refreshUserData?.();
-        }
-      }
-    } catch (err) {
-      showToast("Error al procesar respuesta", "error");
     }
   };
   const filteredFincas = fincas.filter(
@@ -118,208 +83,27 @@ export const JoinFincaPage: React.FC = () => {
       {" "}
       <div className="p-6 sm:p-10 space-y-12 max-w-7xl mx-auto pb-32">
         {" "}
-        {/* HEADER CRYSTAL */}{" "}
-        <header className="relative py-12 px-8 rounded-[3rem] overflow-hidden bg-card border border-border shadow-md">
-          {" "}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-[var(--radius-full)] blur-[100px] -mr-48 -mt-48" />{" "}
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 rounded-[var(--radius-full)] blur-[80px] -ml-32 -mb-32" />{" "}
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-            {" "}
-            <div className="space-y-4">
-              {" "}
-              <div className="flex items-center gap-3">
-                {" "}
-                <div className="p-2 bg-primary/10 rounded-xl">
-                  {" "}
-                  <IconSparkles className="h-5 w-5 text-primary" />{" "}
-                </div>{" "}
-                <span className="text-xs font-black uppercase tracking-[0.2em] text-primary">
-                  Ecosistema Villa Luz
-                </span>{" "}
-              </div>{" "}
-              <h1 className="text-5xl md:text-6xl font-black tracking-tighter text-foreground uppercase leading-none">
-                {" "}
-                Expandir{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-500">
-                  Horizontes
-                </span>{" "}
-              </h1>{" "}
-              <p className="text-muted-foreground dark:text-muted-foreground font-bold uppercase text-xs tracking-widest max-w-lg leading-relaxed">
-                {" "}
-                Descubre nuevas fincas productivas, solicita unirte a ellas o
-                responde a invitaciones de administradores.{" "}
-              </p>{" "}
-            </div>{" "}
-            <div className="relative group w-full md:w-96">
-              {" "}
-              <Input
-                placeholder="Busca por nombre o ubicación..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-16 rounded-lg border-2 border-border pl-14 font-bold text-lg bg-card/50 /50 backdrop-blur-xl shadow-inner focus:border-primary transition-all"
-              />{" "}
-              <IconSearch className="absolute left-5 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground group-focus-within:text-primary transition-colors" />{" "}
-            </div>{" "}
-          </div>{" "}
-        </header>{" "}
-        {/* SECCIÓN DE GESTIONES PENDIENTES */}{" "}
-        <AnimatePresence mode="popLayout">
-          {" "}
-          {(gestions.invitations_received.length > 0 ||
-            gestions.requests_to_approve.length > 0) && (
-            <motion.section
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="space-y-6"
-            >
-              {" "}
-              <div className="flex items-center gap-3 px-2">
-                {" "}
-                <div className="h-2.5 w-2.5 rounded-[var(--radius-full)] bg-destructive animate-pulse shadow-[0_0_10px_rgba(244,63,94,0.5)]" />{" "}
-                <h2 className="text-sm font-black uppercase tracking-[0.3em] text-muted-foreground">
-                  Atención Requerida
-                </h2>{" "}
-              </div>{" "}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {" "}
-                {/* Invitaciones para el Usuario */}{" "}
-                {gestions.invitations_received.map((inv) => (
-                  <motion.div key={inv.id} layout>
-                    {" "}
-                    <Card className="rounded-[2.5rem] border-2 border-primary/20 bg-primary/5 backdrop-blur-md p-6 shadow-md relative overflow-hidden group">
-                      {" "}
-                      <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        {" "}
-                        <IconSparkles className="h-20 w-20 text-primary" />{" "}
-                      </div>{" "}
-                      <div className="flex items-center justify-between gap-4 relative z-10">
-                        {" "}
-                        <div className="flex items-center gap-5">
-                          {" "}
-                          <div className="h-16 w-16 rounded-[1.25rem] bg-card shadow-sm flex items-center justify-center border border-primary/10">
-                            {" "}
-                            <IconBuilding className="h-8 w-8 text-primary" />{" "}
-                          </div>{" "}
-                          <div>
-                            {" "}
-                            <p className="text-[10px] font-black uppercase text-primary tracking-widest mb-1 flex items-center gap-1.5">
-                              {" "}
-                              <IconShieldCheck size="sm" /> Invitación VIP{" "}
-                            </p>{" "}
-                            <h4 className="text-xl font-black text-foreground leading-tight">
-                              {inv.finca_name}
-                            </h4>{" "}
-                            <div className="flex items-center gap-2 mt-1">
-                              {" "}
-                              <Badge
-                                variant="outline"
-                                className="bg-card/50 /50 text-[10px] border-primary/20 font-bold"
-                              >
-                                {" "}
-                                {inv.requested_role}{" "}
-                              </Badge>{" "}
-                            </div>{" "}
-                          </div>{" "}
-                        </div>{" "}
-                        <motion.div
-                          initial="hidden"
-                          animate="visible"
-                          variants={{ visible: { transition: { staggerChildren: 0.08 } }, hidden: {} }}
-                          className="flex flex-col sm:flex-row gap-2"
-                        >
-                          {" "}
-                          <motion.div variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}>
-                          <Button
-                            size="sm"
-                            onClick={() => handleRespond(inv.id, true)}
-                            className="rounded-xl bg-card dark:bg-card text-white dark:text-foreground font-black text-[10px] uppercase h-12 px-6 shadow-sm hover:scale-105 active:scale-95 transition-all"
-                          >
-                            {" "}
-                            Aceptar{" "}
-                          </Button>{" "}
-                          </motion.div>
-                          <motion.div variants={{ hidden: { opacity: 0, x: 10 }, visible: { opacity: 1, x: 0 } }}>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleRespond(inv.id, false)}
-                            className="rounded-xl text-destructive hover:bg-destructive/5 dark:hover:bg-rose-950/30 font-black text-[10px] uppercase h-12 px-6"
-                          >
-                            {" "}
-                            Rechazar{" "}
-                          </Button>{" "}
-                          </motion.div>
-                        </motion.div>{" "}
-                      </div>{" "}
-                    </Card>{" "}
-                  </motion.div>
-                ))}{" "}
-                {/* Solicitudes de Entrada (Admin) */}{" "}
-                {gestions.requests_to_approve.map((req) => (
-                  <motion.div key={req.id} layout>
-                    {" "}
-                    <Card className="rounded-[2.5rem] border-2 border-warning/20 bg-warning/5 backdrop-blur-md p-6 shadow-md relative overflow-hidden group">
-                      {" "}
-                      <div className="flex items-center justify-between gap-4 relative z-10">
-                        {" "}
-                        <div className="flex items-center gap-5">
-                          {" "}
-                          <div className="h-16 w-16 rounded-[1.25rem] bg-card shadow-sm flex items-center justify-center border border-warning/10">
-                            {" "}
-                            <IconUserPlus className="h-8 w-8 text-warning" />{" "}
-                          </div>{" "}
-                          <div>
-                            {" "}
-                            <p className="text-[10px] font-black uppercase text-warning tracking-widest mb-1">
-                              Solicitud de Acceso
-                            </p>{" "}
-                            <h4 className="text-xl font-black text-foreground leading-tight">
-                              {req.user_fullname}
-                            </h4>{" "}
-                            <p className="text-xs font-bold text-muted-foreground mt-1">
-                              Hacia: {req.finca_name}
-                            </p>{" "}
-                          </div>{" "}
-                        </div>{" "}
-                        <motion.div
-                          initial="hidden"
-                          animate="visible"
-                          variants={{ visible: { transition: { staggerChildren: 0.08 } }, hidden: {} }}
-                          className="flex flex-col sm:flex-row gap-2"
-                        >
-                          {" "}
-                          <motion.div variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}>
-                          <Button
-                            size="sm"
-                            onClick={() => handleRespond(req.id, true)}
-                            className="rounded-xl bg-amber-600 hover:bg-warning text-white font-black text-[10px] uppercase h-12 px-6 shadow-sm hover:scale-105 active:scale-95 transition-all"
-                          >
-                            {" "}
-                            Aprobar{" "}
-                          </Button>{" "}
-                          </motion.div>
-                          <motion.div variants={{ hidden: { opacity: 0, x: 10 }, visible: { opacity: 1, x: 0 } }}>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleRespond(req.id, false)}
-                            className="rounded-xl text-muted-foreground hover:bg-muted dark:hover:bg-card font-black text-[10px] uppercase h-12 px-6"
-                          >
-                            {" "}
-                            Ignorar{" "}
-                          </Button>{" "}
-                          </motion.div>
-                        </motion.div>{" "}
-                      </div>{" "}
-                    </Card>{" "}
-                  </motion.div>
-                ))}{" "}
-              </div>{" "}
-            </motion.section>
-          )}{" "}
-        </AnimatePresence>{" "}
-        {/* EXPLORADOR DE FINCAS */}{" "}
+        {/* HEADER CRYSTAL */} 
+        <header className="relative flex flex-col md:flex-row items-center justify-between gap-6 py-8 px-6 sm:px-8 rounded-[2rem] bg-surface-raised border border-border shadow-sm overflow-hidden h-auto md:h-[120px]"> 
+          <div className="relative z-10 space-y-1 w-full md:w-auto"> 
+            <h1 className="text-2xl font-black text-foreground"> 
+              Explorar fincas 
+            </h1> 
+            <p className="text-sm text-muted-foreground font-medium"> 
+              Encuentra fincas productivas, solicita unirte o responde invitaciones pendientes. 
+            </p> 
+          </div> 
+          <div className="relative group w-full md:w-80 shrink-0 z-10"> 
+            <Input
+              placeholder="Busca por nombre o ubicación..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-12 rounded-xl border border-border pl-12 text-sm bg-card/50 shadow-inner focus:border-primary transition-all"
+            /> 
+            <IconSearch className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" /> 
+          </div> 
+        </header> 
+        {/* EXPLORADOR DE FINCAS */}
         <section className="space-y-10">
           {" "}
           <div className="flex items-center justify-between border-b-2 border-border pb-6">
@@ -330,19 +114,16 @@ export const JoinFincaPage: React.FC = () => {
                 {" "}
                 <IconBuilding className="h-6 w-6 text-white dark:text-foreground" />{" "}
               </div>{" "}
-              <h2 className="text-3xl font-black text-foreground uppercase tracking-tighter">
-                Predios Públicos
+              <h2 className="text-2xl font-bold text-foreground tracking-tight">
+                Fincas disponibles
               </h2>{" "}
             </div>{" "}
-            <div className="hidden sm:flex gap-4">
+            <div className="hidden sm:flex gap-4 items-center">
               {" "}
-              <Badge
-                variant="outline"
-                className="rounded-[var(--radius-full)] px-4 py-1.5 border-border font-bold text-muted-foreground"
-              >
+              <span className="font-medium text-sm text-muted-foreground">
                 {" "}
-                {filteredFincas.length} Fincas encontradas{" "}
-              </Badge>{" "}
+                {filteredFincas.length} fincas{" "}
+              </span>{" "}
             </div>{" "}
           </div>{" "}
           {loading ? (
@@ -366,13 +147,9 @@ export const JoinFincaPage: React.FC = () => {
               <AnimatePresence>
                 {" "}
                 {filteredFincas.map((finca) => {
-                  const alreadyRequested =
-                    gestions.requests_to_approve.some(
-                      (r) => r.finca_id === finca.id,
-                    ) ||
-                    gestions.invitations_received.some(
-                      (r) => r.finca_id === finca.id,
-                    );
+                  const joinRequest = notifications.find(n => n.finca_id === finca.id && n.type === 'JOIN_REQUEST' && n.status === 'pending');
+                  const invitation = notifications.find(n => n.finca_id === finca.id && n.type === 'INVITATION_RECEIVED' && n.status === 'pending');
+                  const isManaged = finca.is_member || false; // Assuming API might return this. If not, fallback.
                   return (
                     <motion.div
                       key={finca.id}
@@ -394,7 +171,7 @@ export const JoinFincaPage: React.FC = () => {
                               className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
                             />
                           ) : (
-                            <IconBuilding className="h-16 w-16 text-foreground/80 dark:text-foreground group-hover:scale-110 transition-transform duration-500" />
+                            <IconBuildingFarm className="h-16 w-16 text-foreground/50 group-hover:scale-110 transition-transform duration-500" />
                           )}{" "}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />{" "}
                           <Badge className="absolute top-4 right-4 bg-card/90 /90 text-foreground border-none text-[8px] font-semibold text-sm px-3 py-1 rounded-[var(--radius-full)] backdrop-blur-md">
@@ -419,16 +196,16 @@ export const JoinFincaPage: React.FC = () => {
                             {" "}
                             <div className="flex flex-col">
                               {" "}
-                              <span className="text-[9px] font-black uppercase text-muted-foreground tracking-[0.2em] mb-1">
+                              <span className="text-[10px] font-medium text-muted-foreground mb-1">
                                 Población
                               </span>{" "}
                               <div className="flex items-center gap-1.5">
                                 {" "}
-                                <span className="text-lg font-black text-foreground tabular-nums">
+                                <span className="text-lg font-bold text-foreground tabular-nums">
                                   {finca.animal_count || 0}
                                 </span>{" "}
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                                  Cabezas
+                                <span className="text-[10px] text-muted-foreground">
+                                  cabezas
                                 </span>{" "}
                               </div>{" "}
                             </div>{" "}
@@ -438,26 +215,37 @@ export const JoinFincaPage: React.FC = () => {
                               transition={{ duration: 0.3, delay: 0.1, ease: "easeOut" }}
                             >
                             <Button
-                              onClick={() => handleRequestJoin(finca.id)}
+                              onClick={() => {
+                                if (isManaged) navigate('/dashboard');
+                                else if (invitation) {/* open panel maybe? or do nothing */}
+                                else handleRequestJoin(finca.id);
+                              }}
                               disabled={
-                                requestingId === finca.id || alreadyRequested
+                                requestingId === finca.id || !!joinRequest
                               }
                               className={cn(
-                                "rounded-lg h-10 px-8 font-black uppercase text-[10px] tracking-widest gap-3 shadow-sm active:scale-95 transition-all",
-                                alreadyRequested
-                                  ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30"
-                                  : "bg-card dark:bg-card text-white dark:text-foreground hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white shadow-primary/10",
+                                "rounded-lg h-10 px-6 font-black text-[10px] uppercase tracking-widest gap-2 shadow-sm active:scale-95 transition-all",
+                                isManaged
+                                  ? "bg-surface-raised border border-border text-foreground hover:bg-muted"
+                                  : joinRequest
+                                  ? "bg-warning/20 text-warning border border-warning/30"
+                                  : invitation
+                                  ? "bg-info/10 text-info border border-info/30 hover:bg-info/20"
+                                  : "bg-primary text-white hover:bg-primary/90 shadow-primary/20"
                               )}
                             >
                               {" "}
                               {requestingId === finca.id ? (
                                 <IconLoader2 className="h-4 w-4 animate-spin" />
-                              ) : alreadyRequested ? (
-                                <IconCircleCheck className="h-4 w-4" />
+                              ) : isManaged ? (
+                                <>Ir a la finca <IconArrowRight className="h-4 w-4" /></>
+                              ) : joinRequest ? (
+                                <>Solicitud enviada <IconClock className="h-4 w-4" /></>
+                              ) : invitation ? (
+                                <>Ver invitación <IconMail className="h-4 w-4" /></>
                               ) : (
-                                <IconUserPlus className="h-4 w-4" />
+                                <>Unirme <IconUserPlus className="h-4 w-4" /></>
                               )}{" "}
-                              {alreadyRequested ? "Gestionado" : "Unirme"}{" "}
                             </Button>{" "}
                             </motion.div>
                           </div>{" "}

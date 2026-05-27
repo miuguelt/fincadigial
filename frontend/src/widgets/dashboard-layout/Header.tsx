@@ -5,7 +5,7 @@ import { cn } from '@/shared/ui/cn.ts';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ThemeToggle from '@/widgets/dashboard/ThemeToggle';
 import { useUnreadMessages } from '@/features/chat/hooks/useUnreadMessages';
-import { NotificationCenter } from '@/shared/components/notifications';
+import { NotificationsPanel } from '@/shared/components/notifications';
 import { SyncStatus } from '@/widgets/dashboard/SyncStatus';
 import { Breadcrumbs } from '@/shared/ui/common';
 
@@ -159,7 +159,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar }) => {
             
             {user?.finca_id && (
               <>
-                <NotificationCenter />
+                <NotificationsPanel />
                 <button
                   onClick={() => navigate('/campesino/market-offers')}
                   className="relative flex h-8 w-8 items-center justify-center rounded-xl hover:bg-primary/10 transition-all text-muted-foreground hover:text-primary"

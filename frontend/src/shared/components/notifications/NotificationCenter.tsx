@@ -1,152 +1,203 @@
-import { useState, useMemo, useCallback } from 'react';
-import { Bell, CheckCircle, RefreshCw } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bell, CheckCircle, RefreshCw, Send, Inbox, Check, X, Clock } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { ScrollArea } from '@/shared/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover';
-import { cn } from '@/shared/lib/utils';
+import { cn } from '@/shared/ui/cn';
 import { useRealtimeNotifications } from '@/shared/hooks/useRealtimeNotifications';
+import { useFarmRequests } from '@/shared/hooks/useFarmRequests';
 import { useToast } from '@/app/providers/ToastContext';
-import { CompactAlertCard } from './components/CompactAlertCard';
-import { NotificationCenterHeader } from './components/NotificationCenterHeader';
-import { NotificationFilterTabs } from './components/NotificationFilterTabs';
-import { NotificationFooter } from './components/NotificationFooter';
-import { useNavigate } from 'react-router-dom';
+import { formatLongDateColombia } from '@/shared/utils/dateUtils';
 
-type FilterTab = 'todas' | 'criticas' | 'pendientes' | 'leidas';
+type MainTab = 'alertas' | 'accesos';
+type AccesoTab = 'recibidas' | 'enviadas';
 
-interface NotificationCenterProps {
-  className?: string;
-}
-
-export function NotificationCenter({ className }: NotificationCenterProps) {
+export function NotificationCenter() {
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<FilterTab>('pendientes');
+  const [mainTab, setMainTab] = useState<MainTab>('alertas');
+  const [accesoTab, setAccesoTab] = useState<AccesoTab>('recibidas');
   const { showToast } = useToast();
-  const navigate = useNavigate();
 
   const {
     notifications,
-    unreadCount,
-    connected,
-    loading,
+    unreadCount: unreadAlerts,
+    loading: loadingAlerts,
     markAsRead,
     markAllAsRead,
-    removeNotification,
     refreshAlerts,
-  } = useRealtimeNotifications({
-    onNotification: useCallback((notification: any) => {
-      if (notification.priority === 'Crítica' || notification.priority === 'Alta') {
-        showToast(notification.message, notification.type);
-      }
-    }, [showToast]),
-  });
+  } = useRealtimeNotifications({});
 
-  const criticalCount = useMemo(
-    () => notifications.filter(n => n.priority === 'Crítica' && !n.read).length,
-    [notifications]
-  );
+  const {
+    received,
+    sent,
+    loading: loadingRequests,
+    respondToInvitation,
+    pendingCount: unreadRequests
+  } = useFarmRequests();
 
-  const filteredNotifications = useMemo(() => {
-    switch (activeTab) {
-      case 'criticas': return notifications.filter(n => n.priority === 'Crítica');
-      case 'pendientes': return notifications.filter(n => !n.read);
-      case 'leidas': return notifications.filter(n => n.read);
-      default: return notifications;
+  const totalUnread = unreadAlerts + unreadRequests;
+
+  const handleRespond = async (id: number, action: 'accept' | 'reject') => {
+    const res = await respondToInvitation(id, action);
+    if (res.success) {
+      showToast(`Invitación ${action === 'accept' ? 'aceptada' : 'rechazada'}`, 'success');
+    } else {
+      showToast(res.message || 'Error', 'error');
     }
-  }, [notifications, activeTab]);
-
-  const mapToCard = (n: any) => ({
-    id: n.id,
-    type: n.alertType || n.title,
-    priority: n.priority || 'Media',
-    message: n.message,
-    recommendation: n.recommendation,
-    triggered_at: n.timestamp,
-    is_read: n.read,
-    action_url: n.action?.url,
-    action_label: n.action?.label,
-  });
-
-  const handleMarkAsRead = (id: string | number) => markAsRead(String(id));
-  const handleRemove = (id: string | number) => removeNotification(String(id));
-
-  const tabs = [
-    { key: 'pendientes' as FilterTab, label: 'Pendientes', count: unreadCount },
-    { key: 'criticas' as FilterTab, label: 'Críticas', count: criticalCount },
-    { key: 'todas' as FilterTab, label: 'Todas', count: notifications.length },
-    { key: 'leidas' as FilterTab, label: 'Leídas' },
-  ];
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className={cn('relative', className)}>
-          <Bell className="h-5 w-5" />
-          {criticalCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-white animate-pulse">
-              {criticalCount > 9 ? '!' : criticalCount}
+        <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-xl hover:bg-primary/10 transition-all">
+          <Bell className="h-5 w-5 text-muted-foreground" />
+          {totalUnread > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-white shadow-sm ring-2 ring-background animate-in zoom-in duration-300">
+              {totalUnread > 9 ? '9+' : totalUnread}
             </span>
-          )}
-          {unreadCount > 0 && criticalCount === 0 && (
-            <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </Badge>
           )}
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-[calc(100vw-2rem)] sm:w-[420px] p-0 z-[60]" align="end" sideOffset={8} collisionPadding={16}>
-        <NotificationCenterHeader
-          connected={connected}
-          loading={loading}
-          unreadCount={unreadCount}
-          criticalCount={criticalCount}
-          onRefresh={refreshAlerts}
-        />
-
-        <NotificationFilterTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
-
-        <ScrollArea className="h-[400px]">
-          {loading && notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-40 text-center p-4">
-              <RefreshCw className="h-8 w-8 text-primary animate-spin mb-2" />
-              <p className="text-sm text-muted-foreground">Cargando alertas...</p>
+      <PopoverContent className="w-[calc(100vw-2rem)] sm:w-[450px] p-0 z-[1050] overflow-hidden rounded-[2rem] border-border/40 shadow-2xl backdrop-blur-2xl bg-card/95" align="end" sideOffset={8}>
+        {/* Header Personalizado */}
+        <div className="bg-primary/5 p-5 border-b border-border/20">
+            <div className="flex items-center justify-between mb-4">
+                <h3 className="font-black text-lg tracking-tight flex items-center gap-2">
+                    <Bell className="h-5 w-5 text-primary" />
+                    Notificaciones
+                </h3>
+                <button 
+                    onClick={() => { refreshAlerts(); }}
+                    className="p-2 rounded-lg hover:bg-primary/10 text-primary transition-all active:rotate-180 duration-500"
+                >
+                    <RefreshCw className={cn("h-4 w-4", (loadingAlerts || loadingRequests) && "animate-spin")} />
+                </button>
             </div>
-          ) : filteredNotifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-40 text-center p-4 text-muted-foreground">
-              <CheckCircle className="h-12 w-12 mb-2 opacity-20" />
-              <p className="text-sm font-medium">
-                {activeTab === 'pendientes' ? 'Todo al día' : 'Sin notificaciones'}
-              </p>
-              <p className="text-xs mt-1">
-                {activeTab === 'pendientes' ? 'No hay alertas pendientes' : 'Las notificaciones aparecerán aquí'}
-              </p>
+
+            {/* Pestañas Principales */}
+            <div className="flex p-1 bg-muted/50 rounded-2xl border border-border/20">
+                <button
+                    onClick={() => setMainTab('alertas')}
+                    className={cn(
+                        "flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-xl transition-all",
+                        mainTab === 'alertas' ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+                    )}
+                >
+                    Alertas del Hato
+                    {unreadAlerts > 0 && <Badge variant="destructive" className="h-4 px-1 min-w-[1rem] text-[8px]">{unreadAlerts}</Badge>}
+                </button>
+                <button
+                    onClick={() => setMainTab('accesos')}
+                    className={cn(
+                        "flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-xl transition-all",
+                        mainTab === 'accesos' ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+                    )}
+                >
+                    Accesos
+                    {unreadRequests > 0 && <Badge variant="destructive" className="h-4 px-1 min-w-[1rem] text-[8px]">{unreadRequests}</Badge>}
+                </button>
+            </div>
+        </div>
+
+        <ScrollArea className="h-[420px]">
+          {mainTab === 'alertas' ? (
+            <div className="p-3 space-y-2">
+              {notifications.length === 0 ? (
+                <EmptyNotifications icon={<CheckCircle size={48} />} title="Todo tranquilo" description="No hay novedades sanitarias en el hato por ahora." />
+              ) : (
+                notifications.map((n) => (
+                  <div key={n.id} className={cn("p-4 rounded-[1.5rem] border transition-all", n.read ? "bg-muted/10 border-transparent opacity-60" : "bg-background border-border/40 shadow-sm")}>
+                    <div className="flex gap-3">
+                       <div className={cn("h-2 w-2 rounded-full mt-1.5 shrink-0", n.priority === 'Crítica' ? "bg-destructive" : "bg-primary")} />
+                       <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-foreground leading-tight">{n.message}</p>
+                          <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                             <Clock size={10} /> {new Date(n.timestamp).toLocaleTimeString('es-CO')}
+                          </p>
+                       </div>
+                       {!n.read && (
+                         <button onClick={() => markAsRead(n.id)} className="p-1 hover:bg-primary/10 rounded-md text-primary">
+                            <Check size={14} />
+                         </button>
+                       )}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           ) : (
-            <div className="p-2 space-y-2">
-              {filteredNotifications.map((n) => (
-                <CompactAlertCard
-                  key={n.id}
-                  alert={mapToCard(n)}
-                  onMarkRead={handleMarkAsRead}
-                  onDismiss={handleRemove}
-                />
-              ))}
+            <div className="flex flex-col h-full">
+                <div className="flex border-b border-border/10">
+                    <button onClick={() => setAccesoTab('recibidas')} className={cn("flex-1 py-3 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all", accesoTab === 'recibidas' ? "border-primary text-primary" : "border-transparent text-muted-foreground")}>Recibidas</button>
+                    <button onClick={() => setAccesoTab('enviadas')} className={cn("flex-1 py-3 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all", accesoTab === 'enviadas' ? "border-primary text-primary" : "border-transparent text-muted-foreground")}>Enviadas</button>
+                </div>
+                
+                <div className="p-3 space-y-2">
+                    {(accesoTab === 'recibidas' ? received : sent).length === 0 ? (
+                        <EmptyNotifications 
+                            icon={accesoTab === 'recibidas' ? <Inbox size={48} /> : <Send size={48} />} 
+                            title={accesoTab === 'recibidas' ? "Bandeja vacía" : "Sin envíos"} 
+                            description={accesoTab === 'recibidas' ? "No tiene invitaciones de otras fincas pendientes." : "No ha solicitado entrar a ninguna finca todavía."} 
+                        />                    ) : (
+                        (accesoTab === 'recibidas' ? received : sent).map((r) => (
+                            <div key={r.id} className="p-4 rounded-[1.5rem] border border-border/40 bg-background shadow-sm hover:border-primary/30 transition-all">
+                                <div className="flex items-start gap-3">
+                                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black shadow-inner">
+                                        {r.farm_name?.[0]}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-black uppercase tracking-tighter text-muted-foreground">{r.farm_name}</p>
+                                        <p className="text-sm font-bold text-foreground truncate">{r.type === 'INVITE' ? `De: ${r.user_name}` : 'Solicitud de unión'}</p>
+                                        {r.message && <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 italic italic-muted">"{r.message}"</p>}
+                                        
+                                        {accesoTab === 'recibidas' && r.status === 'pending' && (
+                                            <div className="flex gap-2 mt-4">
+                                                <Button size="sm" onClick={() => handleRespond(r.id, 'accept')} className="flex-1 rounded-xl h-8 bg-emerald-600 hover:bg-emerald-700 font-bold text-[10px]">
+                                                    <Check size={14} className="mr-1" /> Aceptar
+                                                </Button>
+                                                <Button size="sm" variant="ghost" onClick={() => handleRespond(r.id, 'reject')} className="flex-1 rounded-xl h-8 text-rose-600 hover:bg-rose-50 font-bold text-[10px]">
+                                                    <X size={14} className="mr-1" /> Rechazar
+                                                </Button>
+                                            </div>
+                                        )}
+
+                                        <div className="flex items-center justify-between mt-3">
+                                            <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest">{r.status}</Badge>
+                                            <span className="text-[9px] text-muted-foreground font-medium">{formatLongDateColombia(r.created_at)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
             </div>
           )}
         </ScrollArea>
 
-        <NotificationFooter
-          connected={connected}
-          totalCount={notifications.length}
-          unreadCount={unreadCount}
-          onMarkAllAsRead={markAllAsRead}
-          onViewAll={() => { setOpen(false); navigate('/alerts'); }}
-        />
+        {mainTab === 'alertas' && unreadAlerts > 0 && (
+            <div className="p-4 border-t border-border/20 bg-muted/20">
+                <button 
+                    onClick={() => markAllAsRead()}
+                    className="w-full py-2.5 rounded-xl border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest hover:bg-primary/5 transition-all"
+                >
+                    Marcar todas como leídas
+                </button>
+            </div>
+        )}
       </PopoverContent>
     </Popover>
   );
 }
+
+const EmptyNotifications: React.FC<{ icon: React.ReactNode, title: string, description: string }> = ({ icon, title, description }) => (
+    <div className="flex flex-col items-center justify-center py-20 text-center px-6">
+        <div className="text-primary/20 mb-4">{icon}</div>
+        <h4 className="font-bold text-foreground">{title}</h4>
+        <p className="text-xs text-muted-foreground mt-1 max-w-[200px] mx-auto">{description}</p>
+    </div>
+);
 
 export default NotificationCenter;
