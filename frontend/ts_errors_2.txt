@@ -1,0 +1,8 @@
+﻿
+> fincafront@0.0.0 type-check
+> tsc -p tsconfig.app.json --noEmit
+
+src/features/cattle/ui/IndividualFemaleReport.tsx(14,1): error TS1109: Expression expected.
+src/features/cattle/ui/IndividualFemaleReport.tsx(14,3): error TS1434: Unexpected keyword or identifier.
+src/features/production/ui/MilkControl.tsx(7,1): error TS1109: Expression expected.
+src/features/production/ui/MilkControl.tsx(7,3): error TS1434: Unexpected keyword or identifier.

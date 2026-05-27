@@ -1,0 +1,80 @@
+src/features/diagnostics/api/routeCoverageReport.ts(8,25): error TS2307: Cannot find module '../../routes.json' or its corresponding type declarations.
+src/features/multi-finca/model/useMultiFinca.ts(19,13): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/features/multi-finca/ui/FincaSelector.tsx(73,17): error TS18048: 'user.fincas' is possibly 'undefined'.
+src/features/multi-finca/ui/JoinFincaPage.tsx(22,3): error TS2305: Module '"@/entities/user/api/membership.service"' has no exported member 'MembershipGestions'.
+src/features/multi-finca/ui/JoinFincaPage.tsx(63,12): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+src/features/multi-finca/ui/JoinFincaPage.tsx(88,53): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+src/features/multi-finca/ui/JoinFincaPage.tsx(91,14): error TS7006: Parameter 'inv' implicitly has an 'any' type.
+src/features/multi-finca/ui/JoinFincaPage.tsx(94,14): error TS7006: Parameter 'req' implicitly has an 'any' type.
+src/features/multi-finca/ui/JoinFincaPage.tsx(181,53): error TS7006: Parameter 'inv' implicitly has an 'any' type.
+src/features/multi-finca/ui/JoinFincaPage.tsx(244,52): error TS7006: Parameter 'req' implicitly has an 'any' type.
+src/features/multi-finca/ui/JoinFincaPage.tsx(347,24): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/features/multi-finca/ui/JoinFincaPage.tsx(350,24): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/features/multi-finca/ui/JoinFincaRequestDialog.tsx(176,28): error TS2322: Type '"primary"' is not assignable to type 'BadgeVariant | undefined'.
+src/features/reporting/index.ts(2,15): error TS2305: Module '"./model/analytics.types"' has no exported member 'AnalyticsData'.
+src/features/reporting/index.ts(2,30): error TS2305: Module '"./model/analytics.types"' has no exported member 'ModelStats'.
+src/features/reporting/index.ts(2,42): error TS2305: Module '"./model/analytics.types"' has no exported member 'AnalyticsFilters'.
+src/pages/auth/register-user/index.tsx(79,11): error TS6133: 'EMAIL_REGEX' is declared but its value is never read.
+src/pages/auth/register-user/index.tsx(80,11): error TS6133: 'PHONE_REGEX' is declared but its value is never read.
+src/pages/auth/register-user/index.tsx(104,17): error TS2304: Cannot find name 'EMAIL_REGEX'.
+src/pages/auth/register-user/index.tsx(109,17): error TS2304: Cannot find name 'PHONE_REGEX'.
+src/pages/auth/signup/index.tsx(474,21): error TS2304: Cannot find name 'Info'.
+src/pages/chat/ChatPage.backend.tsx(328,19): error TS1117: An object literal cannot have multiple properties with the same name.
+src/pages/dashboard/admin/AdminDashboard.tsx(136,11): error TS6196: 'SystemStats' is declared but never used.
+src/pages/dashboard/admin/alerts/AlertConfigsPage.tsx(186,9): error TS2322: Type 'CRUDConfig<AlertConfig, any>' is not assignable to type 'CRUDConfig<{ id: number; }, { alert_type: string; priority: string; is_active: boolean; dimension: string; condition_value: string; message: string; }>'.
+  Type '{ id: number; }' is missing the following properties from type 'AlertConfig': alert_type, dimension, condition_value, message, and 3 more.
+src/pages/dashboard/admin/analytics/ICADashboard.tsx(352,32): error TS2322: Type '"ghost"' is not assignable to type 'BadgeVariant | undefined'.
+src/pages/dashboard/admin/animals/index.tsx(281,25): error TS6133: 'setSelectedBreed' is declared but its value is never read.
+src/pages/dashboard/admin/animals/index.tsx(1045,11): error TS2322: Type '{ isOpen: true; onClose: () => void; animals: { id: any; record: any; breedLabel: any; gender: any; birthDate: string | undefined; }[]; onSuccess: () => void; }' is not assignable to type 'IntrinsicAttributes & BulkTagPrintModalProps'.
+  Property 'onSuccess' does not exist on type 'IntrinsicAttributes & BulkTagPrintModalProps'.
+src/pages/dashboard/admin/breeds/index.tsx(186,5): error TS2322: Type 'string' is not assignable to type 'string[]'.
+src/pages/dashboard/admin/milk_production/index.tsx(4,10): error TS6133: 'CRUDConfig' is declared but its value is never read.
+src/pages/dashboard/admin/operational/index.tsx(4,10): error TS6133: 'CRUDConfig' is declared but its value is never read.
+src/pages/dashboard/admin/species/index.tsx(105,3): error TS2322: Type 'string' is not assignable to type 'string[]'.
+src/pages/dashboard/admin/treatments/index.tsx(197,25): error TS2322: Type '() => TreatmentInput & { [k: string]: any; }' is not assignable to type 'TreatmentInput & { [k: string]: any; }'.
+  Type '() => TreatmentInput & { [k: string]: any; }' is not assignable to type 'TreatmentInput'.
+src/pages/dashboard/apprentice/ApprenticeDashboard.tsx(237,17): error TS2741: Property '$$typeof' is missing in type '({ className }: { className?: string; }) => JSX.Element' but required in type 'ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>'.
+src/pages/dashboard/campesino/ClimateAlertsPage.tsx(4,10): error TS6133: 'CRUDConfig' is declared but its value is never read.
+src/pages/dashboard/campesino/CropActivitiesPage.tsx(4,10): error TS6133: 'CRUDConfig' is declared but its value is never read.
+src/pages/dashboard/campesino/CropPlotsPage.tsx(4,10): error TS6133: 'CRUDConfig' is declared but its value is never read.
+src/pages/dashboard/campesino/MarketOffersPage.tsx(4,10): error TS6133: 'CRUDConfig' is declared but its value is never read.
+src/pages/dashboard/campesino/TechnicalAssistancePage.tsx(4,10): error TS6133: 'CRUDConfig' is declared but its value is never read.
+src/pages/dashboard/campesino/WaterSourcesPage.tsx(4,10): error TS6133: 'CRUDConfig' is declared but its value is never read.
+src/pages/dashboard/instructor/InstructorDashboard.tsx(71,28): error TS2304: Cannot find name 'Calendar'.
+src/pages/dashboard/instructor/InstructorDashboard.tsx(293,17): error TS2741: Property '$$typeof' is missing in type '({ className }: { className?: string; }) => JSX.Element' but required in type 'ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>'.
+src/pages/learning/components/MaterialUploadDialog.tsx(56,46): error TS2345: Argument of type '{ title: string; category: string; content_type: string; summary: string; local_uri: string; reading_level: string; }' is not assignable to parameter of type 'Partial<OfflineLearningMaterial>'.
+  Types of property 'content_type' are incompatible.
+    Type 'string' is not assignable to type 'LearningContentType | undefined'.
+src/pages/learning/OfflineLearningView.tsx(57,24): error TS2538: Type 'undefined' cannot be used as an index type.
+src/pages/learning/OfflineLearningView.tsx(75,38): error TS2464: A computed property name must be of type 'string', 'number', 'symbol', or 'any'.
+src/pages/learning/OfflineLearningView.tsx(158,26): error TS2538: Type 'undefined' cannot be used as an index type.
+src/pages/learning/OfflineLearningView.tsx(185,28): error TS2538: Type 'undefined' cannot be used as an index type.
+src/pages/learning/OfflineLearningView.tsx(196,21): error TS2322: Type '"default"' is not assignable to type '"link" | "destructive" | "primary" | "secondary" | "outline" | "ghost" | undefined'.
+src/shared/api/mcpResilientClient.ts(235,13): error TS6133: '_duration' is declared but its value is never read.
+src/shared/api/offline/GeofenceService.ts(36,12): error TS2339: Property 'lastFencesFetch' does not exist on type 'GeofenceService'.
+src/shared/api/offline/ProximitySyncService.ts(663,10): error TS2339: Property 'heartbeatInterval' does not exist on type 'ProximitySyncService'.
+src/shared/components/SyncPulse.tsx(21,21): error TS2339: Property 'initialize' does not exist on type 'ProximitySyncService'.
+src/shared/components/SyncPulse.tsx(21,40): error TS7006: Parameter 'err' implicitly has an 'any' type.
+src/shared/components/SyncPulse.tsx(29,37): error TS2339: Property 'onSyncStateChange' does not exist on type 'ProximitySyncService'.
+src/shared/components/SyncPulse.tsx(29,56): error TS7006: Parameter 'state' implicitly has an 'any' type.
+src/shared/components/SyncPulse.tsx(43,39): error TS2339: Property 'onStatusUpdate' does not exist on type 'ProximitySyncService'.
+src/shared/components/SyncPulse.tsx(43,55): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/shared/components/SyncPulse.tsx(43,60): error TS7006: Parameter 'type' implicitly has an 'any' type.
+src/shared/hooks/resource/useResourceCrud.ts(35,22): error TS2488: Type 'unknown' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/shared/hooks/resource/useResourceCrud.ts(145,24): error TS2488: Type 'unknown' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/shared/utils/formValidation.ts(124,25): error TS2731: Implicit conversion of a 'symbol' to a 'string' will fail at runtime. Consider wrapping this expression in 'String(...)'.
+src/shared/utils/performance.ts(336,20): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/test/setup.ts(70,1): error TS2322: Type 'typeof IntersectionObserverStub' is not assignable to type '{ new (callback: IntersectionObserverCallback, options?: IntersectionObserverInit | undefined): IntersectionObserver; prototype: IntersectionObserver; }'.
+  Types of property 'prototype' are incompatible.
+    Type 'IntersectionObserverStub' is missing the following properties from type 'IntersectionObserver': root, rootMargin, thresholds, takeRecords
+src/widgets/analytics/GlobalCalendarWidget.tsx(67,29): error TS2304: Cannot find name 'AlertCircle'.
+src/widgets/dashboard/animals/components/HealthAndReproductionSection.tsx(58,38): error TS2339: Property 'health_status' does not exist on type 'AnimalResponse'.
+src/widgets/dashboard/animals/components/HealthAndReproductionSection.tsx(80,29): error TS2339: Property 'reproductive_status' does not exist on type 'AnimalResponse'.
+src/widgets/dashboard/animals/components/HealthAndReproductionSection.tsx(82,21): error TS2339: Property 'sex' does not exist on type 'AnimalResponse'.
+src/widgets/dashboard/ExecutiveIntelligence.tsx(11,34): error TS2307: Cannot find module '@/entities/finca/api/livestock.service' or its corresponding type declarations.
+src/widgets/dashboard/ExecutiveIntelligence.tsx(39,23): error TS2304: Cannot find name 'proximitySync'.
+src/widgets/dashboard/FastInventoryAction.tsx(97,43): error TS2339: Property 'presentation' does not exist on type 'InventoryLotResponse'.
+src/widgets/dashboard/NodeCommunicationWidget.tsx(71,36): error TS2339: Property 'onMessageReceived' does not exist on type 'ProximitySyncService'.
+src/widgets/dashboard/NodeCommunicationWidget.tsx(71,55): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/widgets/dashboard/NodeCommunicationWidget.tsx(107,41): error TS2339: Property 'sendMessageToPeer' does not exist on type 'ProximitySyncService'.

@@ -1,8 +1,13 @@
 """
-Seed Simulations (V1.0)
-Prepara el entorno de datos para los motores de simulación.
-Genera historiales de peso realistas para calibrar el SimulationService.
+⚠️ SIMULACIÓN — NO USAR EN PRODUCCIÓN
+Prepara historiales de peso para calibrar el SimulationService.
+Requiere ALLOW_SIMULATION_SCRIPTS=true.
 """
+import os, sys
+_ALLOW_SIM = os.getenv('ALLOW_SIMULATION_SCRIPTS', '').lower() == 'true'
+if not _ALLOW_SIM:
+    print("⛔ Simulación deshabilitada. ALLOW_SIMULATION_SCRIPTS=true para permitir.")
+    sys.exit(0)
 
 import sys
 import os

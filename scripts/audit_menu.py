@@ -91,7 +91,7 @@ def check_backend_namespaces(backend_path: str) -> Tuple[List[str], List[str]]:
         return [], BACKEND_ENDPOINTS
     
     # Obtener todos los archivos de namespace
-    namespace_files = list(namespaces_dir.glob('*_namespace.py'))
+    namespace_files = list(namespaces_dir.rglob('*_namespace.py'))
     namespace_names = [f.stem.replace('_namespace', '') for f in namespace_files]
     
     # Mapeo de endpoints a nombres de namespace
@@ -113,7 +113,7 @@ def check_backend_namespaces(backend_path: str) -> Tuple[List[str], List[str]]:
         '/genetic_improvements': 'genetic_improvements',
         '/controls': 'control',
         '/fincas': 'fincas',
-        '/membership': 'membership_requests',
+        '/membership': 'membership',
     }
     
     for endpoint, namespace in endpoint_to_namespace.items():

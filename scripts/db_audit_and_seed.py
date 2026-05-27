@@ -117,9 +117,12 @@ def seed_animal_images(app, db):
         img_data['file_size'] = randint(50000, 500000)
         
         try:
-            AnimalImages.create(**img_data)
-            created += 1
+            existing = AnimalImages.query.filter_by(animal_id=animal.id, filename=img_data['filename']).first()
+            if not existing:
+                AnimalImages.create(**img_data)
+                created += 1
         except Exception as e:
+            db.session.rollback()
             print(f"  ⚠ Error creando imagen para animal {animal.id}: {e}")
     
     print(f"  ✅ Creadas {created} imágenes de animales")
@@ -152,19 +155,26 @@ def seed_milk_production(app, db):
             for session in sessions:
                 try:
                     record_date = date.today() - timedelta(days=days_ago)
-                    MilkProduction.create(
+                    existing = MilkProduction.query.filter_by(
                         animal_id=animal.id,
-                        finca_id=animal.finca_id,
                         date=record_date,
-                        liters=round(uniform(5.0, 25.0), 2),
-                        session=session,
-                        fat_percentage=round(uniform(3.0, 5.0), 2),
-                        protein_percentage=round(uniform(3.0, 4.0), 2),
-                        somatic_cells=randint(100000, 500000),
-                        notes=f"Ordeño {session.value} - {record_date}"
-                    )
-                    created += 1
+                        milking_session=session
+                    ).first()
+                    if not existing:
+                        MilkProduction.create(
+                            animal_id=animal.id,
+                            finca_id=animal.finca_id,
+                            date=record_date,
+                            liters=round(uniform(5.0, 25.0), 2),
+                            milking_session=session,
+                            fat_percentage=round(uniform(3.0, 5.0), 2),
+                            protein_percentage=round(uniform(3.0, 4.0), 2),
+                            somatic_cells=randint(100000, 500000),
+                            notes=f"Ordeño {session.value} - {record_date}"
+                        )
+                        created += 1
                 except Exception as e:
+                    db.session.rollback()
                     print(f"  ⚠ Error: {e}")
     
     print(f"  ✅ Creados {created} registros de producción láctea")
@@ -199,40 +209,62 @@ def seed_reproductive_events(app, db):
     for female in females:
         try:
             # Evento de celo
-            ReproductiveEvent.create(
+            ev_date = date.today() - timedelta(days=30)
+            existing = ReproductiveEvent.query.filter_by(
                 animal_id=female.id,
                 event_type=EventType.Celo,
-                event_date=date.today() - timedelta(days=30),
-                finca_id=female.finca_id,
-                notes="Celo detectado por comportamiento"
-            )
-            created += 1
+                event_date=ev_date
+            ).first()
+            if not existing:
+                ReproductiveEvent.create(
+                    animal_id=female.id,
+                    event_type=EventType.Celo,
+                    event_date=ev_date,
+                    finca_id=female.finca_id,
+                    notes="Celo detectado por comportamiento"
+                )
+                created += 1
             
             # Evento de inseminación
-            sire = choice(males) if males else None
-            ReproductiveEvent.create(
+            ev_date_ins = date.today() - timedelta(days=25)
+            existing = ReproductiveEvent.query.filter_by(
                 animal_id=female.id,
                 event_type=EventType.Inseminacion,
-                event_date=date.today() - timedelta(days=25),
-                sire_id=sire.id if sire else None,
-                technique=InseminationTechnique.Artificial,
-                finca_id=female.finca_id,
-                notes="Inseminación artificial"
-            )
-            created += 1
+                event_date=ev_date_ins
+            ).first()
+            if not existing:
+                sire = choice(males) if males else None
+                ReproductiveEvent.create(
+                    animal_id=female.id,
+                    event_type=EventType.Inseminacion,
+                    event_date=ev_date_ins,
+                    sire_id=sire.id if sire else None,
+                    technique=InseminationTechnique.Artificial,
+                    finca_id=female.finca_id,
+                    notes="Inseminación artificial"
+                )
+                created += 1
             
             # Evento de diagnóstico
-            ReproductiveEvent.create(
+            ev_date_diag = date.today() - timedelta(days=10)
+            existing = ReproductiveEvent.query.filter_by(
                 animal_id=female.id,
                 event_type=EventType.Diagnostico,
-                event_date=date.today() - timedelta(days=10),
-                diagnosis_result='Positivo',
-                finca_id=female.finca_id,
-                notes="Diagnóstico positivo de preñez"
-            )
-            created += 1
+                event_date=ev_date_diag
+            ).first()
+            if not existing:
+                ReproductiveEvent.create(
+                    animal_id=female.id,
+                    event_type=EventType.Diagnostico,
+                    event_date=ev_date_diag,
+                    diagnosis_result='Positivo',
+                    finca_id=female.finca_id,
+                    notes="Diagnóstico positivo de preñez"
+                )
+                created += 1
             
         except Exception as e:
+            db.session.rollback()
             print(f"  ⚠ Error creando eventos: {e}")
     
     print(f"  ✅ Creados {created} eventos reproductivos")
@@ -269,15 +301,19 @@ def seed_offspring(app, db):
     created = 0
     for event in events:
         try:
-            Offspring.create(
-                birth_event_id=event.id,
-                sex=choice(['Macho', 'Hembra']),
-                alive=True,
-                birth_weight=randint(25, 45),
-                notes="Cría saludable"
-            )
-            created += 1
+            existing = Offspring.query.filter_by(birth_event_id=event.id).first()
+            if not existing:
+                Offspring.create(
+                    birth_event_id=event.id,
+                    sex=choice(['Macho', 'Hembra']),
+                    alive=True,
+                    birth_weight=randint(25, 45),
+                    notes="Cría saludable",
+                    finca_id=event.finca_id
+                )
+                created += 1
         except Exception as e:
+            db.session.rollback()
             print(f"  ⚠ Error creando offspring: {e}")
     
     print(f"  ✅ Creados {created} registros de crías")
@@ -305,17 +341,23 @@ def seed_transactions(app, db):
     created = 0
     for i, trans in enumerate(transactions_data):
         try:
-            Transaction.create(
+            existing = Transaction.query.filter_by(
                 finca_id=finca_id,
-                animal_id=animals[i % len(animals)].id if animals else None,
-                transaction_type=trans['type'],
-                category=trans['category'],
-                amount=trans['amount'],
-                date=date.today() - timedelta(days=i*5),
                 description=trans['desc']
-            )
-            created += 1
+            ).first()
+            if not existing:
+                Transaction.create(
+                    finca_id=finca_id,
+                    animal_id=animals[i % len(animals)].id if animals else None,
+                    transaction_type=trans['type'],
+                    category=trans['category'],
+                    amount=trans['amount'],
+                    date=date.today() - timedelta(days=i*5),
+                    description=trans['desc']
+                )
+                created += 1
         except Exception as e:
+            db.session.rollback()
             print(f"  ⚠ Error creando transacción: {e}")
     
     print(f"  ✅ Creadas {created} transacciones financieras")
@@ -337,17 +379,23 @@ def seed_inventory_movements(app, db):
     
     for lot in lots:
         try:
-            InventoryMovement.create(
+            existing = InventoryMovement.query.filter_by(
                 lot_id=lot.id,
-                movement_type=choice(movement_types),
-                quantity=randint(1, 5),
-                reference_type='treatment',
-                reference_id=randint(1, 10),
-                notes=f"Movimiento automático para lote {lot.lot_number}",
                 finca_id=lot.finca_id
-            )
-            created += 1
+            ).first()
+            if not existing:
+                InventoryMovement.create(
+                    lot_id=lot.id,
+                    movement_type=choice(movement_types),
+                    quantity=randint(1, 5),
+                    reference_type='treatment',
+                    reference_id=randint(1, 10),
+                    notes=f"Movimiento automático para lote {lot.lot_number}",
+                    finca_id=lot.finca_id
+                )
+                created += 1
         except Exception as e:
+            db.session.rollback()
             print(f"  ⚠ Error creando movimiento: {e}")
     
     print(f"  ✅ Creados {created} movimientos de inventario")
@@ -483,6 +531,52 @@ def seed_livestock_summary(app, db):
     print(f"  ✅ Calculados {created} resúmenes de ganado")
     return created
 
+def seed_animal_fields(app, db):
+    """Poblar tabla animal_fields para asignar animales a potreros y revivir las barras de progreso"""
+    from app.models import Animals, Fields
+    from app.models.animalFields import AnimalFields
+    
+    print("\n🏞️ [Extra] Poblando animal_fields (Asignación de Animales a Potreros)...")
+    
+    # Hacer rollback si hay transacciones pendientes
+    db.session.rollback()
+    
+    # Obtener todas las fincas con animales
+    animals = Animals.query.all()
+    if not animals:
+        print("  ⚠ No hay animales registrados para asignar a potreros")
+        return 0
+        
+    created = 0
+    for animal in animals:
+        try:
+            # Verificar si ya tiene una asignación activa
+            existing = AnimalFields.query.filter_by(
+                animal_id=animal.id,
+                removal_date=None
+            ).first()
+            
+            if not existing:
+                # Buscar potreros disponibles para la finca de este animal
+                fields = Fields.query.filter_by(finca_id=animal.finca_id).all()
+                if fields:
+                    target_field = choice(fields)
+                    AnimalFields.create(
+                        animal_id=animal.id,
+                        field_id=target_field.id,
+                        assignment_date=date.today() - timedelta(days=randint(1, 30)),
+                        removal_date=None,
+                        notes="Asignación inicial por seeder automático",
+                        finca_id=animal.finca_id
+                    )
+                    created += 1
+        except Exception as e:
+            db.session.rollback()
+            print(f"  ⚠ Error asignando animal {animal.id} a potrero: {e}")
+            
+    print(f"  ✅ Creadas {created} asignaciones de animales a potreros (animal_fields)")
+    return created
+
 def seed_all_tables():
     """Poblar todas las tablas vacías"""
     from app import create_app
@@ -491,6 +585,8 @@ def seed_all_tables():
     app = create_app()
     
     with app.app_context():
+        from flask import g
+        g.is_admin = True
         print("\n" + "="*70)
         print("🌱 INICIANDO POBLAMIENTO DE TABLAS")
         print("="*70)
@@ -507,6 +603,7 @@ def seed_all_tables():
             'treatment_medications': seed_treatment_medications(app, db),
             'treatment_vaccines': seed_treatment_vaccines(app, db),
             'livestock_summary': seed_livestock_summary(app, db),
+            'animal_fields': seed_animal_fields(app, db),
         }
         
         # Poblado de tablas adicionales
@@ -778,6 +875,8 @@ def main():
         from app.extensions import db
         app = create_app()
         with app.app_context():
+            from flask import g
+            g.is_admin = True
             seed_functions = {
                 'animal_images': seed_animal_images,
                 'milk_production': seed_milk_production,
@@ -794,6 +893,7 @@ def main():
                 'membership_request': seed_membership_requests,
                 'push_subscription': seed_push_subscriptions,
                 'user_locations': seed_user_locations,
+                'animal_fields': seed_animal_fields,
             }
             if args.table in seed_functions:
                 count = seed_functions[args.table](app, db)

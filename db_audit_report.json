@@ -1,21 +1,25 @@
 {
-  "total_tables": 68,
+  "total_tables": 77,
   "tables_with_data": [
     {
       "name": "activity_daily_agg",
-      "records": 22
+      "records": 86
     },
     {
       "name": "activity_log",
-      "records": 1944
+      "records": 5157
+    },
+    {
+      "name": "alembic_version",
+      "records": 1
     },
     {
       "name": "animal_alert_configs",
-      "records": 8
+      "records": 16
     },
     {
       "name": "animal_alerts",
-      "records": 4777
+      "records": 343118
     },
     {
       "name": "animal_diseases",
@@ -23,43 +27,63 @@
     },
     {
       "name": "animal_fields",
-      "records": 1
+      "records": 48
     },
     {
       "name": "animal_groups",
-      "records": 1
+      "records": 5
     },
     {
       "name": "animals",
-      "records": 6909
+      "records": 7059
+    },
+    {
+      "name": "breed_growth_standards",
+      "records": 120
     },
     {
       "name": "breeds",
-      "records": 11
+      "records": 16
+    },
+    {
+      "name": "chat_messages",
+      "records": 3
+    },
+    {
+      "name": "climate_risk_alerts",
+      "records": 1
     },
     {
       "name": "control",
       "records": 6901
     },
     {
+      "name": "crop_activities",
+      "records": 2
+    },
+    {
+      "name": "crop_plots",
+      "records": 1
+    },
+    {
       "name": "diseases",
-      "records": 12
+      "records": 36
     },
     {
       "name": "fields",
-      "records": 281
+      "records": 335
     },
     {
       "name": "financial_summary",
-      "records": 3
+      "records": 24
     },
     {
       "name": "finca",
-      "records": 14
+      "records": 27
     },
     {
       "name": "food_types",
-      "records": 56
+      "records": 90
     },
     {
       "name": "genetic_improvements",
@@ -67,7 +91,7 @@
     },
     {
       "name": "infrastructure",
-      "records": 53
+      "records": 57
     },
     {
       "name": "inventory_lots",
@@ -76,6 +100,10 @@
     {
       "name": "inventory_movements",
       "records": 1400
+    },
+    {
+      "name": "join_requests",
+      "records": 1
     },
     {
       "name": "kb_calendario",
@@ -91,19 +119,27 @@
     },
     {
       "name": "livestock_summary",
-      "records": 14
+      "records": 24
+    },
+    {
+      "name": "market_offers",
+      "records": 1
     },
     {
       "name": "medications",
-      "records": 5
+      "records": 29
     },
     {
       "name": "milk_production",
-      "records": 6900
+      "records": 629662
     },
     {
       "name": "milk_summary",
-      "records": 14
+      "records": 24
+    },
+    {
+      "name": "offline_learning_materials",
+      "records": 2
     },
     {
       "name": "offspring",
@@ -126,16 +162,24 @@
       "records": 5
     },
     {
+      "name": "seasonal_adjustments",
+      "records": 12
+    },
+    {
       "name": "sinigan_registrations",
       "records": 10
     },
     {
       "name": "species",
-      "records": 5
+      "records": 9
     },
     {
       "name": "tasks",
-      "records": 6901
+      "records": 7265
+    },
+    {
+      "name": "technical_assistance_requests",
+      "records": 1
     },
     {
       "name": "territories",
@@ -143,19 +187,19 @@
     },
     {
       "name": "transactions",
-      "records": 4
+      "records": 12823
     },
     {
       "name": "treatment_medications",
-      "records": 4300
+      "records": 4320
     },
     {
       "name": "treatment_vaccines",
-      "records": 580
+      "records": 600
     },
     {
       "name": "treatments",
-      "records": 4300
+      "records": 4320
     },
     {
       "name": "user",
@@ -163,11 +207,11 @@
     },
     {
       "name": "user_finca",
-      "records": 11
+      "records": 20
     },
     {
       "name": "user_locations",
-      "records": 290
+      "records": 3627
     },
     {
       "name": "vaccinations",
@@ -175,15 +219,15 @@
     },
     {
       "name": "vaccines",
-      "records": 9
+      "records": 33
     },
     {
       "name": "water_measurements",
-      "records": 140
+      "records": 141
     },
     {
       "name": "water_sources",
-      "records": 14
+      "records": 15
     }
   ],
   "empty_tables": [
@@ -192,7 +236,15 @@
       "records": 0
     },
     {
+      "name": "animal_health_history",
+      "records": 0
+    },
+    {
       "name": "animal_images",
+      "records": 0
+    },
+    {
+      "name": "animal_production_metrics",
       "records": 0
     },
     {
@@ -200,23 +252,11 @@
       "records": 0
     },
     {
-      "name": "chat_messages",
-      "records": 0
-    },
-    {
-      "name": "climate_risk_alerts",
+      "name": "body_condition_scores",
       "records": 0
     },
     {
       "name": "community_nodes",
-      "records": 0
-    },
-    {
-      "name": "crop_activities",
-      "records": 0
-    },
-    {
-      "name": "crop_plots",
       "records": 0
     },
     {
@@ -228,11 +268,11 @@
       "records": 0
     },
     {
-      "name": "management_plans",
+      "name": "lactation_cycles",
       "records": 0
     },
     {
-      "name": "market_offers",
+      "name": "management_plans",
       "records": 0
     },
     {
@@ -244,11 +284,11 @@
       "records": 0
     },
     {
-      "name": "offline_learning_materials",
+      "name": "producer_profiles",
       "records": 0
     },
     {
-      "name": "producer_profiles",
+      "name": "production_targets",
       "records": 0
     },
     {
@@ -270,12 +310,8 @@
     {
       "name": "sync_sessions",
       "records": 0
-    },
-    {
-      "name": "technical_assistance_requests",
-      "records": 0
     }
   ],
-  "total_records": 79164,
-  "timestamp": "2026-05-14T18:26:52.874805"
+  "total_records": 1060716,
+  "timestamp": "2026-05-23T11:09:18.619954"
 }

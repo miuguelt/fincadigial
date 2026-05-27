@@ -12,7 +12,7 @@ services:
     container_name: villaluz_frontend
     ports:
       - "3003:80"
-    restart: always
+    restart: unless-stopped
     environment:
       - NODE_ENV=production
     depends_on:
@@ -29,7 +29,7 @@ services:
     command: gunicorn --preload --worker-class gevent --workers 4 --worker-connections 1000 --timeout 120 --bind 0.0.0.0:8081 wsgi:app
     ports:
       - "8093:8081"
-    restart: always
+    restart: unless-stopped
     environment:
       - FLASK_ENV=production
       - DB_ENGINE=postgresql+psycopg2
@@ -47,6 +47,8 @@ services:
       - REDIS_URL=redis://:${REDIS_PASSWORD:-villaluz_redis_pass}@redis:6379/0
       - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD:-villaluz_redis_pass}@redis:6379/0
       - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD:-villaluz_redis_pass}@redis:6379/0
+      - API_BASE_URL_NO_VERSION=http://localhost:8093
+      - BACKEND_URL=http://localhost:8093
     networks:
       - villaluz-network
     volumes:
@@ -60,7 +62,7 @@ services:
     image: villaluz-backend:latest
     container_name: villaluz_celery_worker
     command: celery -A celery_worker.celery worker --loglevel=info
-    restart: always
+    restart: unless-stopped
     environment:
       - FLASK_ENV=production
       - DB_ENGINE=postgresql+psycopg2
@@ -88,7 +90,7 @@ services:
     image: villaluz-backend:latest
     container_name: villaluz_celery_beat
     command: celery -A celery_worker.celery beat --loglevel=info
-    restart: always
+    restart: unless-stopped
     environment:
       - FLASK_ENV=production
       - DB_ENGINE=postgresql+psycopg2
@@ -106,11 +108,11 @@ services:
     depends_on:
       - redis
     healthcheck:
-      test: ["CMD-SHELL", "ps aux | grep -i 'celery' | grep -i 'beat' || exit 1"]
-      interval: 60s
+      test: ["CMD-SHELL", "grep -q 'beat' /proc/1/cmdline || exit 1"]
+      interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 30s
+      start_period: 15s
 
 #  db:
 #    image: mariadb:10.11
@@ -137,7 +139,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: villaluz_redis
-    restart: always
+    restart: unless-stopped
     command: redis-server --requirepass ${REDIS_PASSWORD:-villaluz_redis_pass}
     networks:
       - villaluz-network

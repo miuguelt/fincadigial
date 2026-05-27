@@ -67,17 +67,18 @@ models/{recurso}.py              ← SQLAlchemy models + queries simples
 2. **Queries SQLAlchemy en models o services.** NUNCA `db.session.query()` en un namespace route.
 3. **Type hints en todas las funciones públicas.**
 4. **Configuración solo desde `config.py` / variables de entorno.** Sin strings hardcoded de URLs o secrets.
-5. **Errores → excepciones personalizadas** capturadas por `error_handlers.py`. Sin `try/except Exception: return 500` en rutas.
+5. **Errores → excepciones personalizadas** capturadas por `error_handlers.py`. Queda prohibido usar bloques `try/except Exception` genéricos en las rutas para formatear/retornar errores manualmente. En su lugar, se deben lanzar excepciones personalizadas (`ValidationError`, `BusinessRuleException`, `ResourceNotFoundException`, `ForbiddenException`, `UnauthorizedException`, `ConflictException`) y dejar que se propaguen de forma natural para ser capturadas y formateadas centralmente en respuestas JSON estandarizadas. Todo nuevo escenario de error o excepción debe estar cubierto por pruebas unitarias en el backend.
 6. **Nuevos namespaces en `app/namespaces/{dominio}/`.** NO en `app/api/namespaces/` (legacy, unificar).
 7. **Application factory siempre.** Ningún código ejecutable a nivel módulo fuera de `create_app()`.
 
 ### Prohibido
 
-- `db.session.query()` / `Model.query.filter()` en archivos `*_namespace.py`
+- `db.session.query()` / `Model.query.filter()` in `*_namespace.py` files
 - Lógica de negocio (cálculos, transformaciones, reglas) directamente en rutas
 - `print()` para logging (usar `logging.getLogger(__name__)`)
 - Credenciales / URLs hardcoded (usar `current_app.config['KEY']`)
 - Crear nuevos archivos `*_namespace.py` > 200 líneas (dividir desde el inicio)
+- **Simular funcionalidad en backend:** Queda PROHIBIDO simular rutas, respuestas o modelos de base de datos. Toda característica o acción requerida debe implementarse en código Python/SQLAlchemy real con actualizaciones físicas de la base de datos.
 
 ---
 

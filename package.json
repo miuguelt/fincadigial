@@ -5,7 +5,15 @@
     "dev": "npm run dev --prefix frontend",
     "health": "npm run guardian",
     "checkpoint": "git add -A && git commit -m \"checkpoint: $(date +%Y-%m-%d %H:%M)\"",
-    "test:coverage": "npm run test:coverage --prefix frontend"
+    "test:coverage": "npm run test:coverage --prefix frontend",
+
+    "test": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/run_tests.ps1 -Layer all",
+    "test:backend": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/run_tests.ps1 -Layer backend",
+    "test:frontend": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/run_tests.ps1 -Layer frontend",
+    "test:e2e": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/run_tests.ps1 -Layer e2e",
+    "test:e2e:headed": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/run_tests.ps1 -Layer e2e -Headed",
+    "test:e2e:debug": "npx playwright test --debug",
+    "test:e2e:report": "npx playwright show-report test-results/playwright"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1"

@@ -1,0 +1,365 @@
+﻿
+> fincafront@0.0.0 type-check
+> tsc -p tsconfig.app.json --noEmit
+
+src/components/Navigation/Breadcrumbs.tsx(32,9): error TS6133: 'user' is declared but its value is never read.
+src/entities/animal/model/useDescendantsTree.ts(118,14): error TS2322: Type 'AnimalResponse' is not assignable to type 'AnimalNode'.
+  Types of property 'gender' are incompatible.
+    Type '"Macho" | "Hembra" | "Castrado"' is not assignable to type '"Macho" | "Hembra" | undefined'.
+      Type '"Castrado"' is not assignable to type '"Macho" | "Hembra" | undefined'.
+src/features/animal-bulk-actions/BatchVaccinationModal.tsx(98,45): error TS2339: Property 'bulkVaccinate' does not exist on type 'AnimalsService'.
+src/features/animal-bulk-actions/BatchWeightModal.tsx(53,45): error TS2339: Property 'bulkWeight' does not exist on type 'AnimalsService'.
+src/features/animal-bulk-actions/BulkTagPrintModal.tsx(6,3): error TS6133: 'IconDownload' is declared but its value is never read.
+src/features/animal-bulk-actions/BulkTagPrintModal.tsx(7,3): error TS6133: 'IconTag' is declared but its value is never read.
+src/features/animal-bulk-actions/BulkTagPrintModal.tsx(15,3): error TS6133: 'IconCircleCheck' is declared but its value is never read.
+src/features/animal-bulk-actions/BulkTagPrintModal.tsx(153,25): error TS2322: Type 'string' is not assignable to type 'number'.
+src/features/auth/api/auth.service.ts(33,7): error TS6133: '_meRateLimitUntil' is declared but its value is never read.
+src/features/auth/api/auth.service.ts(46,10): error TS6133: '_getCachedLoginPath' is declared but its value is never read.
+src/features/auth/api/auth.service.ts(56,10): error TS6133: '_setCachedLoginPath' is declared but its value is never read.
+src/features/auth/api/auth.service.ts(262,20): error TS6133: 'TOKEN_COOKIE_NAME' is declared but its value is never read.
+src/features/auth/api/auth.service.ts(496,9): error TS2353: Object literal may only specify known properties, and 'skipAuth' does not exist in type 'AxiosRequestConfig<any> & { retryOnCsrfError?: boolean | undefined; __csrfRetried?: boolean | undefined; }'.
+src/features/auth/api/auth.service.ts(532,9): error TS2353: Object literal may only specify known properties, and 'skipAuth' does not exist in type 'AxiosRequestConfig<any> & { retryOnCsrfError?: boolean | undefined; __csrfRetried?: boolean | undefined; }'.
+src/features/cattle/ui/FrameScoreCalculator.tsx(4,3): error TS6133: 'IconInfoCircle' is declared but its value is never read.
+src/features/cattle/ui/FrameScoreCalculator.tsx(7,3): error TS6133: 'IconChevronRight' is declared but its value is never read.
+src/features/cattle/ui/IndividualFemaleReport.tsx(8,7): error TS2322: Type '({ animal, onBack, }: FemaleReportProps) => void' is not assignable to type 'FC<FemaleReportProps>'.
+  Type 'void' is not assignable to type 'ReactNode'.
+src/features/cattle/ui/IndividualFemaleReport.tsx(8,62): error TS6198: All destructured elements are unused.
+src/features/dashboard/model/useDataPreload.ts(2,25): error TS2307: Cannot find module './useAuth' or its corresponding type declarations.
+src/features/diagnostics/api/dependencyCheck.farm.ts(17,34): error TS2304: Cannot find name 'animalsService'.
+src/features/diagnostics/api/dependencyCheck.farm.ts(102,32): error TS2304: Cannot find name 'vaccinesService'.
+src/features/diagnostics/api/dependencyCheck.health.ts(25,34): error TS2304: Cannot find name 'animalsService'.
+src/features/diagnostics/api/dependencyCheck.health.ts(247,14): error TS2552: Cannot find name 'checkSpeciesDependencies'. Did you mean 'checkDependencies'?
+src/features/diagnostics/api/dependencyCheck.health.ts(253,14): error TS2552: Cannot find name 'checkBreedDependencies'. Did you mean 'checkDependencies'?
+src/features/diagnostics/api/dependencyCheck.health.ts(258,14): error TS2552: Cannot find name 'checkAnimalDependencies'. Did you mean 'checkDependencies'?
+src/features/diagnostics/api/dependencyCheck.health.ts(264,14): error TS2552: Cannot find name 'checkFieldDependencies'. Did you mean 'checkDependencies'?
+src/features/diagnostics/api/dependencyCheck.health.ts(302,14): error TS2552: Cannot find name 'checkRouteAdministrationDependencies'. Did you mean 'checkMedicationDependencies'?
+src/features/diagnostics/api/dependencyCheck.health.ts(308,14): error TS2552: Cannot find name 'checkUserDependencies'. Did you mean 'checkDependencies'?
+src/features/diagnostics/api/dependencyCheck.users.ts(13,34): error TS2304: Cannot find name 'treatmentsService'.
+src/features/diagnostics/api/dependencyCheck.users.ts(23,24): error TS2304: Cannot find name 'validateAndFilterDependencies'.
+src/features/diagnostics/api/dependencyCheck.users.ts(43,36): error TS2304: Cannot find name 'vaccinationsService'.
+src/features/diagnostics/api/dependencyCheck.users.ts(52,26): error TS2304: Cannot find name 'validateAndFilterDependencies'.
+src/features/diagnostics/api/dependencyCheck.users.ts(72,32): error TS2304: Cannot find name 'animalDiseasesService'.
+src/features/diagnostics/api/dependencyCheck.users.ts(81,22): error TS2304: Cannot find name 'validateAndFilterDependencies'.
+src/features/diagnostics/api/dependencyCheck.users.ts(102,31): error TS2304: Cannot find name 'animalsService'.
+src/features/diagnostics/api/dependencyCheck.users.ts(110,21): error TS2304: Cannot find name 'validateAndFilterDependencies'.
+src/features/diagnostics/api/routeCoverageReport.ts(8,25): error TS2307: Cannot find module '../../routes.json' or its corresponding type declarations.
+src/features/diagnostics/index.ts(3,3): error TS2724: '"./api/dependencyCheck.service"' has no exported member named 'checkFarmDependencies'. Did you mean 'checkDependencies'?
+src/features/diagnostics/index.ts(4,3): error TS2724: '"./api/dependencyCheck.service"' has no exported member named 'checkHealthDependencies'. Did you mean 'checkDependencies'?
+src/features/diagnostics/index.ts(6,3): error TS2724: '"./api/dependencyCheck.service"' has no exported member named 'checkCacheDependencies'. Did you mean 'checkDependencies'?
+src/features/diagnostics/index.ts(7,3): error TS2305: Module '"./api/dependencyCheck.service"' has no exported member 'runAllDependencyChecks'.
+src/features/diagnostics/index.ts(12,3): error TS2305: Module '"./api/dependencyCheck.types"' has no exported member 'DependencyStatus'.
+src/features/diagnostics/index.ts(13,3): error TS2724: '"./api/dependencyCheck.types"' has no exported member named 'DependencyCheckReport'. Did you mean 'DependencyCheckResult'?
+src/features/diagnostics/index.ts(17,3): error TS2614: Module '"./api/routesCoverage.service"' has no exported member 'generateRouteCoverageReport'. Did you mean to use 'import generateRouteCoverageReport from "./api/routesCoverage.service"' instead?
+src/features/health/ui/EmergencyKit.tsx(6,3): error TS6133: 'IconAlertTriangle' is declared but its value is never read.
+src/features/health/ui/EmergencyKit.tsx(11,3): error TS6133: 'IconDroplet' is declared but its value is never read.
+src/features/health/ui/SanitaryActivityForm.tsx(3,3): error TS6133: 'IconFileText' is declared but its value is never read.
+src/features/health/ui/SanitaryActivityForm.tsx(4,3): error TS6133: 'IconShieldCheck' is declared but its value is never read.
+src/features/health/ui/SanitaryActivityForm.tsx(9,3): error TS6133: 'IconSyringe' is declared but its value is never read.
+src/features/health/ui/SanitaryActivityForm.tsx(10,3): error TS6133: 'IconClipboardList' is declared but its value is never read.
+src/features/multi-finca/model/useMultiFinca.ts(19,13): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/features/multi-finca/ui/FincaSelector.tsx(67,16): error TS18048: 'user.fincas' is possibly 'undefined'.
+src/features/multi-finca/ui/JoinFincaPage.tsx(22,3): error TS2305: Module '"@/entities/user/api/membership.service"' has no exported member 'MembershipGestions'.
+src/features/multi-finca/ui/JoinFincaPage.tsx(29,11): error TS2339: Property 'refreshUser' does not exist on type 'AuthContextType'.
+src/features/multi-finca/ui/JoinFincaPage.tsx(42,27): error TS2339: Property 'getPublicFincas' does not exist on type '{ sendRequest(data: { finca_id: number; requested_role: string; message?: string | undefined; }): Promise<ApiResponse<MembershipRequest>>; getPendingRequests(): Promise<...>; approveRequest(requestId: number, data: { ...; }): Promise<...>; rejectRequest(requestId: number): Promise<...>; getPendingCount(): Promise<.....'.
+src/features/multi-finca/ui/JoinFincaPage.tsx(43,27): error TS2339: Property 'getPendingGestions' does not exist on type '{ sendRequest(data: { finca_id: number; requested_role: string; message?: string | undefined; }): Promise<ApiResponse<MembershipRequest>>; getPendingRequests(): Promise<...>; approveRequest(requestId: number, data: { ...; }): Promise<...>; rejectRequest(requestId: number): Promise<...>; getPendingCount(): Promise<.....'.
+src/features/multi-finca/ui/JoinFincaPage.tsx(59,44): error TS2339: Property 'createGestion' does not exist on type '{ sendRequest(data: { finca_id: number; requested_role: string; message?: string | undefined; }): Promise<ApiResponse<MembershipRequest>>; getPendingRequests(): Promise<...>; approveRequest(requestId: number, data: { ...; }): Promise<...>; rejectRequest(requestId: number): Promise<...>; getPendingCount(): Promise<.....'.
+src/features/multi-finca/ui/JoinFincaPage.tsx(63,12): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+src/features/multi-finca/ui/JoinFincaPage.tsx(82,44): error TS2339: Property 'respondGestion' does not exist on type '{ sendRequest(data: { finca_id: number; requested_role: string; message?: string | undefined; }): Promise<ApiResponse<MembershipRequest>>; getPendingRequests(): Promise<...>; approveRequest(requestId: number, data: { ...; }): Promise<...>; rejectRequest(requestId: number): Promise<...>; getPendingCount(): Promise<.....'.
+src/features/multi-finca/ui/JoinFincaPage.tsx(88,53): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+src/features/multi-finca/ui/JoinFincaPage.tsx(91,14): error TS7006: Parameter 'inv' implicitly has an 'any' type.
+src/features/multi-finca/ui/JoinFincaPage.tsx(94,14): error TS7006: Parameter 'req' implicitly has an 'any' type.
+src/features/multi-finca/ui/JoinFincaPage.tsx(181,53): error TS7006: Parameter 'inv' implicitly has an 'any' type.
+src/features/multi-finca/ui/JoinFincaPage.tsx(244,52): error TS7006: Parameter 'req' implicitly has an 'any' type.
+src/features/multi-finca/ui/JoinFincaPage.tsx(347,24): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/features/multi-finca/ui/JoinFincaPage.tsx(350,24): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/features/multi-finca/ui/JoinFincaRequestDialog.tsx(176,28): error TS2322: Type '"primary"' is not assignable to type 'BadgeVariant | undefined'.
+src/features/multi-finca/ui/MultiFincaPage.tsx(3,3): error TS6133: 'IconRefresh' is declared but its value is never read.
+src/features/multi-finca/ui/MultiFincaPage.tsx(6,3): error TS6133: 'IconChevronRight' is declared but its value is never read.
+src/features/multi-finca/ui/MultiFincaPage.tsx(23,10): error TS6133: 'loading' is declared but its value is never read.
+src/features/multi-finca/ui/MultiFincaPage.tsx(23,19): error TS6133: 'setLoading' is declared but its value is never read.
+src/features/multi-finca/ui/MultiFincaPage.tsx(26,11): error TS2339: Property 'finca_memberships' does not exist on type 'User'.
+src/features/multi-finca/ui/MultiFincaPage.tsx(31,44): error TS2339: Property 'switchFinca' does not exist on type '{ sendRequest(data: { finca_id: number; requested_role: string; message?: string | undefined; }): Promise<ApiResponse<MembershipRequest>>; getPendingRequests(): Promise<...>; approveRequest(requestId: number, data: { ...; }): Promise<...>; rejectRequest(requestId: number): Promise<...>; getPendingCount(): Promise<.....'.
+src/features/operational/ui/FarmInteractiveMap.tsx(17,3): error TS6133: 'IconMap' is declared but its value is never read.
+src/features/operational/ui/FarmInteractiveMap.tsx(19,3): error TS6133: 'IconMapPin' is declared but its value is never read.
+src/features/operational/ui/FarmInteractiveMap.tsx(20,3): error TS6133: 'IconUsers' is declared but its value is never read.
+src/features/operational/ui/GrazingRotation.tsx(5,3): error TS6133: 'IconMap2' is declared but its value is never read.
+src/features/operational/ui/GrazingRotation.tsx(6,3): error TS6133: 'IconAlertCircle' is declared but its value is never read.
+src/features/operational/ui/RationCalculator.tsx(4,3): error TS6133: 'IconChevronRight' is declared but its value is never read.
+src/features/operational/ui/RationCalculator.tsx(9,3): error TS6133: 'IconInfoCircle' is declared but its value is never read.
+src/features/operational/ui/RationCalculator.tsx(11,3): error TS6133: 'IconCircleCheck' is declared but its value is never read.
+src/features/operational/ui/RationCalculator.tsx(12,3): error TS6133: 'IconAlertTriangle' is declared but its value is never read.
+src/features/operational/ui/RationCalculator.tsx(13,3): error TS6133: 'IconBolt' is declared but its value is never read.
+src/features/operational/ui/RationCalculator.tsx(21,3): error TS6133: 'CardHeader' is declared but its value is never read.
+src/features/operational/ui/RationCalculator.tsx(22,3): error TS6133: 'CardTitle' is declared but its value is never read.
+src/features/operational/ui/RationCalculator.tsx(23,3): error TS6133: 'CardDescription' is declared but its value is never read.
+src/features/operational/ui/RationCalculator.tsx(35,10): error TS6133: 'loading' is declared but its value is never read.
+src/features/operational/ui/RationCalculator.tsx(35,19): error TS6133: 'setLoading' is declared but its value is never read.
+src/features/operational/ui/RationCalculator.tsx(39,10): error TS6133: 'selectedProduct' is declared but its value is never read.
+src/features/operational/ui/RationCalculator.tsx(39,27): error TS6133: 'setSelectedFieldId' is declared but its value is never read.
+src/features/production/ui/MilkControl.tsx(4,7): error TS2322: Type '() => void' is not assignable to type 'FC<{}>'.
+  Type 'void' is not assignable to type 'ReactNode'.
+src/features/production/ui/MilkControl.tsx(5,10): error TS6133: 'liters' is declared but its value is never read.
+src/features/production/ui/MilkControl.tsx(5,18): error TS6133: 'setLiters' is declared but its value is never read.
+src/features/production/ui/MilkControl.tsx(6,10): error TS6133: 'selectedAnimal' is declared but its value is never read.
+src/features/production/ui/MilkControl.tsx(6,26): error TS6133: 'setSelectedAnimal' is declared but its value is never read.
+src/features/reporting/index.ts(2,15): error TS2305: Module '"./model/analytics.types"' has no exported member 'AnalyticsData'.
+src/features/reporting/index.ts(2,30): error TS2305: Module '"./model/analytics.types"' has no exported member 'ModelStats'.
+src/features/reporting/index.ts(2,42): error TS2305: Module '"./model/analytics.types"' has no exported member 'AnalyticsFilters'.
+src/lib/events.ts(19,5): error TS6133: 'lastConnectionAttemptAt' is declared but its value is never read.
+src/pages/auth/register-user/fincas-publicas.tsx(12,3): error TS6133: 'ChevronRight' is declared but its value is never read.
+src/pages/auth/register-user/fincas-publicas.tsx(36,10): error TS6133: 'page' is declared but its value is never read.
+src/pages/auth/register-user/index.tsx(35,7): error TS6133: 'PASSWORD_RULES' is declared but its value is never read.
+src/pages/auth/register-user/index.tsx(71,9): error TS6133: 'mapBackendFieldToUI' is declared but its value is never read.
+src/pages/auth/register-user/index.tsx(88,9): error TS6133: 'labelForField' is declared but its value is never read.
+src/pages/auth/register-user/index.tsx(177,9): error TS6133: 'blockingReasons' is declared but its value is never read.
+src/pages/auth/register/index.tsx(11,3): error TS6133: 'MapPin' is declared but its value is never read.
+src/pages/auth/signup/hooks/useSignup.ts(19,9): error TS6133: 'showToast' is declared but its value is never read.
+src/pages/auth/signup/hooks/useSignup.ts(60,9): error TS6133: 'labelForField' is declared but its value is never read.
+src/pages/auth/signup/index.tsx(63,10): error TS6133: 'successMessage' is declared but its value is never read.
+src/pages/auth/signup/index.tsx(474,21): error TS2304: Cannot find name 'Info'.
+src/pages/cattle/CattleDashboard.tsx(3,3): error TS6133: 'BarChart' is declared but its value is never read.
+src/pages/cattle/CattleDashboard.tsx(3,13): error TS6133: 'Bar' is declared but its value is never read.
+src/pages/cattle/CattleDashboard.tsx(4,24): error TS6133: 'LineChart' is declared but its value is never read.
+src/pages/cattle/CattleDashboard.tsx(4,35): error TS6133: 'Line' is declared but its value is never read.
+src/pages/cattle/CattleDashboard.tsx(4,41): error TS6133: 'Legend' is declared but its value is never read.
+src/pages/cattle/CattleDashboard.tsx(8,3): error TS6133: 'IconFilter' is declared but its value is never read.
+src/pages/cattle/CattleDashboard.tsx(8,25): error TS6133: 'IconInfoCircle' is declared but its value is never read.
+src/pages/chat/ChatPage.backend.tsx(119,10): error TS6133: 'uploading' is declared but its value is never read.
+src/pages/chat/ChatPage.backend.tsx(328,19): error TS1117: An object literal cannot have multiple properties with the same name.
+src/pages/chat/ChatPage.backup.tsx(119,21): error TS6133: 'setUploading' is declared but its value is never read.
+src/pages/chat/ChatPage.backup.tsx(140,9): error TS6133: 'handleContactClick' is declared but its value is never read.
+src/pages/chat/ChatPage.backup.tsx(178,9): error TS6133: 'handleEmojiSelect' is declared but its value is never read.
+src/pages/chat/ChatPage.complex.tsx(36,10): error TS6133: 'uploading' is declared but its value is never read.
+src/pages/chat/ChatPage.complex.tsx(36,21): error TS6133: 'setUploading' is declared but its value is never read.
+src/pages/chat/ChatPage.original.tsx(119,21): error TS6133: 'setUploading' is declared but its value is never read.
+src/pages/chat/ChatPage.original.tsx(140,9): error TS6133: 'handleContactClick' is declared but its value is never read.
+src/pages/chat/ChatPage.original.tsx(178,9): error TS6133: 'handleEmojiSelect' is declared but its value is never read.
+src/pages/chat/ChatPage.tsx(91,10): error TS6133: 'uploading' is declared but its value is never read.
+src/pages/chat/ChatPageMinimal.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/chat/ChatPageSimple.tsx(36,10): error TS6133: 'uploading' is declared but its value is never read.
+src/pages/chat/ChatPageSimple.tsx(36,21): error TS6133: 'setUploading' is declared but its value is never read.
+src/pages/dashboard/admin/activity_log/index.tsx(26,7): error TS2353: Object literal may only specify known properties, and 'hiddenOnMobile' does not exist in type 'CRUDColumn<ActivityLog>'.
+src/pages/dashboard/admin/activity_log/index.tsx(53,7): error TS2353: Object literal may only specify known properties, and 'hiddenOnMobile' does not exist in type 'CRUDColumn<ActivityLog>'.
+src/pages/dashboard/admin/activity_log/index.tsx(67,7): error TS2353: Object literal may only specify known properties, and 'hiddenOnMobile' does not exist in type 'CRUDColumn<ActivityLog>'.
+src/pages/dashboard/admin/AdminDashboard.tsx(17,3): error TS6133: 'RefreshCw' is declared but its value is never read.
+src/pages/dashboard/admin/AdminDashboard.tsx(170,12): error TS6133: 'setSystemStats' is declared but its value is never read.
+src/pages/dashboard/admin/AdminDashboard.tsx(192,9): error TS6133: 'canReadSystem' is declared but its value is never read.
+src/pages/dashboard/admin/AdminDashboard.tsx(216,9): error TS6133: 'colorToClasses' is declared but its value is never read.
+src/pages/dashboard/admin/AdminDashboard.tsx(233,9): error TS6133: 'renderAlertIcon' is declared but its value is never read.
+src/pages/dashboard/admin/alerts/AlertConfigsPage.tsx(115,11): error TS2353: Object literal may only specify known properties, and 'loadOptions' does not exist in type 'CRUDFormField<AlertConfig>'.
+src/pages/dashboard/admin/alerts/AlertConfigsPage.tsx(121,71): error TS2353: Object literal may only specify known properties, and 'defaultValue' does not exist in type 'CRUDFormField<AlertConfig>'.
+src/pages/dashboard/admin/alerts/AlertConfigsPage.tsx(135,5): error TS2353: Object literal may only specify known properties, and 'enhancedHover' does not exist in type 'CRUDConfig<AlertConfig, any>'.
+src/pages/dashboard/admin/alerts/AlertConfigsPage.tsx(188,9): error TS2322: Type 'CRUDConfig<AlertConfig, any>' is not assignable to type 'CRUDConfig<{ id: number; }, { alert_type: string; priority: string; is_active: boolean; dimension: string; condition_value: string; message: string; }>'.
+  Type '{ id: number; }' is missing the following properties from type 'AlertConfig': alert_type, dimension, condition_value, message, and 3 more.
+src/pages/dashboard/admin/analytics/ICADashboard.tsx(352,32): error TS2322: Type '"ghost"' is not assignable to type 'BadgeVariant | undefined'.
+src/pages/dashboard/admin/analytics/MultiFincaAnalytics.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/dashboard/admin/animals/index.tsx(32,1): error TS6133: 'Sparkline' is declared but its value is never read.
+src/pages/dashboard/admin/animals/index.tsx(531,9): error TS6133: '_openBreedDetailModal' is declared but its value is never read.
+src/pages/dashboard/admin/animals/index.tsx(1053,11): error TS2322: Type '{ isOpen: true; onClose: () => void; animals: { id: any; record: any; breedLabel: any; gender: any; birthDate: string | undefined; }[]; onSuccess: () => void; }' is not assignable to type 'IntrinsicAttributes & BulkTagPrintModalProps'.
+  Property 'onSuccess' does not exist on type 'IntrinsicAttributes & BulkTagPrintModalProps'.
+src/pages/dashboard/admin/breeds/index.tsx(186,5): error TS2322: Type 'string' is not assignable to type 'string[]'.
+src/pages/dashboard/admin/data-overview/index.tsx(102,34): error TS6133: 'offspring' is declared but its value is never read.
+src/pages/dashboard/admin/data-overview/index.tsx(426,19): error TS6133: 'date' is declared but its value is never read.
+src/pages/dashboard/admin/diseases/index.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/dashboard/admin/fields/index.tsx(365,5): error TS2353: Object literal may only specify known properties, and 'customDetailContent' does not exist in type 'CRUDConfig<FieldResponse & { [k: string]: any; }, FieldFormInput>'.
+src/pages/dashboard/admin/food-types/index.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/dashboard/admin/medications/index.tsx(124,37): error TS2339: Property 'onEdit' does not exist on type '((item: MedicationResponse & { [k: string]: any; }) => void) | undefined'.
+src/pages/dashboard/admin/milk_production/index.tsx(52,7): error TS2353: Object literal may only specify known properties, and 'fkEntity' does not exist in type 'CRUDColumn<MilkProduction>'.
+src/pages/dashboard/admin/milk_production/index.tsx(59,16): error TS6133: 'val' is declared but its value is never read.
+src/pages/dashboard/admin/milk_production/index.tsx(178,5): error TS2353: Object literal may only specify known properties, and 'enableEdit' does not exist in type 'CRUDConfig<MilkProduction, Partial<MilkProduction>>'.
+src/pages/dashboard/admin/operational/index.tsx(110,5): error TS2353: Object literal may only specify known properties, and 'enableEdit' does not exist in type 'CRUDConfig<OperationalCost, Partial<OperationalCost>>'.
+src/pages/dashboard/admin/route_administration/index.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/dashboard/admin/species/index.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/dashboard/admin/species/index.tsx(106,3): error TS2322: Type 'string' is not assignable to type 'string[]'.
+src/pages/dashboard/admin/tasks/index.tsx(125,11): error TS2353: Object literal may only specify known properties, and 'loadOptions' does not exist in type 'CRUDFormField<Partial<Task>>'.
+src/pages/dashboard/admin/tasks/index.tsx(134,11): error TS2353: Object literal may only specify known properties, and 'loadOptions' does not exist in type 'CRUDFormField<Partial<Task>>'.
+src/pages/dashboard/admin/tasks/index.tsx(146,11): error TS2353: Object literal may only specify known properties, and 'loadOptions' does not exist in type 'CRUDFormField<Partial<Task>>'.
+src/pages/dashboard/admin/treatments/index.tsx(197,25): error TS2322: Type '() => TreatmentInput & { [k: string]: any; }' is not assignable to type 'TreatmentInput & { [k: string]: any; }'.
+  Type '() => TreatmentInput & { [k: string]: any; }' is not assignable to type 'TreatmentInput'.
+src/pages/dashboard/admin/users/index.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/dashboard/admin/vaccines/index.tsx(154,37): error TS2339: Property 'onEdit' does not exist on type '((item: VaccineResponse & { [k: string]: any; }) => void) | undefined'.
+src/pages/dashboard/apprentice/animals/index.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/dashboard/apprentice/ApprenticeDashboard.tsx(237,17): error TS2741: Property '$$typeof' is missing in type '({ className }: { className?: string; }) => JSX.Element' but required in type 'ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>'.
+src/pages/dashboard/apprentice/home.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/dashboard/apprentice/vaccinations/index.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/dashboard/campesino/ClimateAlertsPage.tsx(124,11): error TS2322: Type '"datetime-local"' is not assignable to type 'CRUDFieldType'.
+src/pages/dashboard/campesino/ClimateAlertsPage.tsx(129,11): error TS2322: Type '"datetime-local"' is not assignable to type 'CRUDFieldType'.
+src/pages/dashboard/campesino/ClimateAlertsPage.tsx(158,5): error TS2353: Object literal may only specify known properties, and 'enableEdit' does not exist in type 'CRUDConfig<ClimateRiskAlert, Partial<ClimateRiskAlert>>'.
+src/pages/dashboard/campesino/ClimateAlertsPage.tsx(163,20): error TS2322: Type 'CRUDConfig<ClimateRiskAlert, Partial<ClimateRiskAlert>>' is not assignable to type 'CRUDConfig<{ id: number; }, Partial<ClimateRiskAlert>>'.
+  Type '{ id: number; }' is missing the following properties from type 'ClimateRiskAlert': title, risk_type
+src/pages/dashboard/campesino/CropActivitiesPage.tsx(77,17): error TS2551: Property 'crop_plot' does not exist on type 'CropActivity'. Did you mean 'crop_plot_id'?
+src/pages/dashboard/campesino/CropActivitiesPage.tsx(77,41): error TS2551: Property 'crop_plot' does not exist on type 'CropActivity'. Did you mean 'crop_plot_id'?
+src/pages/dashboard/campesino/CropActivitiesPage.tsx(102,17): error TS2339: Property 'actor' does not exist on type 'CropActivity'.
+src/pages/dashboard/campesino/CropActivitiesPage.tsx(102,37): error TS2339: Property 'actor' does not exist on type 'CropActivity'.
+src/pages/dashboard/campesino/CropActivitiesPage.tsx(162,11): error TS2353: Object literal may only specify known properties, and 'min' does not exist in type 'CRUDFormField<Partial<CropActivity>>'.
+src/pages/dashboard/campesino/CropActivitiesPage.tsx(176,11): error TS2353: Object literal may only specify known properties, and 'min' does not exist in type 'CRUDFormField<Partial<CropActivity>>'.
+src/pages/dashboard/campesino/CropActivitiesPage.tsx(202,5): error TS2353: Object literal may only specify known properties, and 'enableEdit' does not exist in type 'CRUDConfig<CropActivity, Partial<CropActivity>>'.
+src/pages/dashboard/campesino/CropActivitiesPage.tsx(207,20): error TS2322: Type 'CRUDConfig<CropActivity, Partial<CropActivity>>' is not assignable to type 'CRUDConfig<{ id: number; }, Partial<CropActivity>>'.
+  Type '{ id: number; }' is missing the following properties from type 'CropActivity': crop_plot_id, activity_type, activity_date
+src/pages/dashboard/campesino/CropPlotsPage.tsx(143,11): error TS2353: Object literal may only specify known properties, and 'min' does not exist in type 'CRUDFormField<Partial<CropPlot>>'.
+src/pages/dashboard/campesino/CropPlotsPage.tsx(211,5): error TS2353: Object literal may only specify known properties, and 'enableEdit' does not exist in type 'CRUDConfig<CropPlot, Partial<CropPlot>>'.
+src/pages/dashboard/campesino/CropPlotsPage.tsx(216,20): error TS2322: Type 'CRUDConfig<CropPlot, Partial<CropPlot>>' is not assignable to type 'CRUDConfig<{ id: number; }, Partial<CropPlot>>'.
+  Type '{ id: number; }' is missing the following properties from type 'CropPlot': name, crop_name
+src/pages/dashboard/campesino/MarketOffersPage.tsx(115,11): error TS2353: Object literal may only specify known properties, and 'min' does not exist in type 'CRUDFormField<Partial<MarketOffer>>'.
+src/pages/dashboard/campesino/MarketOffersPage.tsx(134,11): error TS2353: Object literal may only specify known properties, and 'min' does not exist in type 'CRUDFormField<Partial<MarketOffer>>'.
+src/pages/dashboard/campesino/MarketOffersPage.tsx(172,11): error TS2322: Type '"tel"' is not assignable to type 'CRUDFieldType'.
+src/pages/dashboard/campesino/MarketOffersPage.tsx(207,5): error TS2353: Object literal may only specify known properties, and 'enableEdit' does not exist in type 'CRUDConfig<MarketOffer, Partial<MarketOffer>>'.
+src/pages/dashboard/campesino/MarketOffersPage.tsx(212,20): error TS2322: Type 'CRUDConfig<MarketOffer, Partial<MarketOffer>>' is not assignable to type 'CRUDConfig<{ id: number; }, Partial<MarketOffer>>'.
+  Property 'product_name' is missing in type '{ id: number; }' but required in type 'MarketOffer'.
+src/pages/dashboard/campesino/TechnicalAssistancePage.tsx(82,17): error TS2339: Property 'assignee' does not exist on type 'TechnicalAssistanceRequest'.
+src/pages/dashboard/campesino/TechnicalAssistancePage.tsx(82,40): error TS2339: Property 'assignee' does not exist on type 'TechnicalAssistanceRequest'.
+src/pages/dashboard/campesino/TechnicalAssistancePage.tsx(157,5): error TS2353: Object literal may only specify known properties, and 'enableEdit' does not exist in type 'CRUDConfig<TechnicalAssistanceRequest, Partial<TechnicalAssistanceRequest>>'.
+src/pages/dashboard/campesino/TechnicalAssistancePage.tsx(162,20): error TS2322: Type 'CRUDConfig<TechnicalAssistanceRequest, Partial<TechnicalAssistanceRequest>>' is not assignable to type 'CRUDConfig<{ id: number; }, Partial<TechnicalAssistanceRequest>>'.
+  Type '{ id: number; }' is missing the following properties from type 'TechnicalAssistanceRequest': title, category
+src/pages/dashboard/campesino/WaterSourcesPage.tsx(103,11): error TS2353: Object literal may only specify known properties, and 'min' does not exist in type 'CRUDFormField<Partial<WaterSource>>'.
+src/pages/dashboard/campesino/WaterSourcesPage.tsx(121,11): error TS2353: Object literal may only specify known properties, and 'step' does not exist in type 'CRUDFormField<Partial<WaterSource>>'.
+src/pages/dashboard/campesino/WaterSourcesPage.tsx(128,11): error TS2353: Object literal may only specify known properties, and 'step' does not exist in type 'CRUDFormField<Partial<WaterSource>>'.
+src/pages/dashboard/campesino/WaterSourcesPage.tsx(158,5): error TS2353: Object literal may only specify known properties, and 'enableEdit' does not exist in type 'CRUDConfig<WaterSource, Partial<WaterSource>>'.
+src/pages/dashboard/campesino/WaterSourcesPage.tsx(163,20): error TS2322: Type 'CRUDConfig<WaterSource, Partial<WaterSource>>' is not assignable to type 'CRUDConfig<{ id: number; }, Partial<WaterSource>>'.
+  Property 'name' is missing in type '{ id: number; }' but required in type 'WaterSource'.
+src/pages/dashboard/instructor/animals/index.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/dashboard/instructor/controls/components/ControlCard.tsx(72,21): error TS2339: Property 'weight' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/components/ControlCard.tsx(72,47): error TS2339: Property 'height' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/components/ControlCard.tsx(74,24): error TS2339: Property 'weight' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/components/ControlCard.tsx(77,61): error TS2339: Property 'weight' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/components/ControlCard.tsx(80,24): error TS2339: Property 'height' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/components/ControlCard.tsx(83,61): error TS2339: Property 'height' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/components/ControlDetailModal.tsx(71,31): error TS2339: Property 'weight' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/components/ControlDetailModal.tsx(71,65): error TS2339: Property 'height' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/components/ControlDetailModal.tsx(73,34): error TS2339: Property 'weight' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/components/ControlDetailModal.tsx(76,70): error TS2339: Property 'weight' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/components/ControlDetailModal.tsx(80,34): error TS2339: Property 'height' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/components/ControlDetailModal.tsx(83,70): error TS2339: Property 'height' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/components/CreateControlModal.tsx(71,33): error TS2339: Property 'weight' does not exist on type 'Partial<Control>'.
+src/pages/dashboard/instructor/controls/components/CreateControlModal.tsx(81,33): error TS2339: Property 'height' does not exist on type 'Partial<Control>'.
+src/pages/dashboard/instructor/controls/components/EditControlModal.tsx(73,33): error TS2339: Property 'weight' does not exist on type 'Partial<Control>'.
+src/pages/dashboard/instructor/controls/components/EditControlModal.tsx(83,33): error TS2339: Property 'height' does not exist on type 'Partial<Control>'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(61,21): error TS2345: Argument of type 'ControlResponse[]' is not assignable to parameter of type 'SetStateAction<Control[]>'.
+  Type 'ControlResponse[]' is not assignable to type 'Control[]'.
+    Type 'ControlResponse' is not assignable to type 'Control'.
+      Types of property 'checkup_date' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(75,32): error TS2339: Property 'data' does not exist on type 'AnimalResponse[]'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(76,29): error TS2339: Property 'data' does not exist on type 'AnimalResponse[]'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(155,42): error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(189,7): error TS2322: Type '"Sano"' is not assignable to type 'health_status | undefined'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(202,7): error TS2353: Object literal may only specify known properties, and 'weight' does not exist in type 'SetStateAction<Partial<Control>>'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(202,23): error TS2339: Property 'weight' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(203,23): error TS2339: Property 'height' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(415,29): error TS2339: Property 'weight' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(415,55): error TS2339: Property 'height' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(417,32): error TS2339: Property 'weight' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(420,69): error TS2339: Property 'weight' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(423,32): error TS2339: Property 'height' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(426,69): error TS2339: Property 'height' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(486,35): error TS2339: Property 'weight' does not exist on type 'Partial<Control>'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(496,35): error TS2339: Property 'height' does not exist on type 'Partial<Control>'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(590,35): error TS2339: Property 'weight' does not exist on type 'Partial<Control>'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(600,35): error TS2339: Property 'height' does not exist on type 'Partial<Control>'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(701,33): error TS2339: Property 'weight' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(701,67): error TS2339: Property 'height' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(703,36): error TS2339: Property 'weight' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(706,72): error TS2339: Property 'weight' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(710,36): error TS2339: Property 'height' does not exist on type 'Control'.
+src/pages/dashboard/instructor/controls/ControlsPage.tsx(713,72): error TS2339: Property 'height' does not exist on type 'Control'.
+src/pages/dashboard/instructor/home.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/dashboard/instructor/InstructorDashboard.tsx(71,28): error TS2304: Cannot find name 'Calendar'.
+src/pages/dashboard/instructor/InstructorDashboard.tsx(293,17): error TS2741: Property '$$typeof' is missing in type '({ className }: { className?: string; }) => JSX.Element' but required in type 'ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>'.
+src/pages/dashboard/instructor/treatments/index.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/dashboard/user/UserProfile.tsx(1071,11): error TS6133: 'activityHasNext' is declared but its value is never read.
+src/pages/dashboard/veterinario/VeterinarioDashboard.tsx(21,3): error TS6133: 'Calendar' is declared but its value is never read.
+src/pages/economy/FarmWallet.tsx(4,3): error TS6133: 'IconShoppingBag' is declared but its value is never read.
+src/pages/economy/FarmWallet.tsx(5,3): error TS6133: 'IconCalendar' is declared but its value is never read.
+src/pages/economy/FarmWallet.tsx(6,17): error TS6133: 'IconInfoCircle' is declared but its value is never read.
+src/pages/landing/LandingPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/learning/components/MaterialUploadDialog.tsx(56,46): error TS2345: Argument of type '{ title: string; category: string; content_type: string; summary: string; local_uri: string; reading_level: string; }' is not assignable to parameter of type 'Partial<OfflineLearningMaterial>'.
+  Types of property 'content_type' are incompatible.
+    Type 'string' is not assignable to type 'LearningContentType | undefined'.
+src/pages/learning/OfflineLearningView.tsx(57,24): error TS2538: Type 'undefined' cannot be used as an index type.
+src/pages/learning/OfflineLearningView.tsx(75,38): error TS2464: A computed property name must be of type 'string', 'number', 'symbol', or 'any'.
+src/pages/learning/OfflineLearningView.tsx(158,26): error TS2538: Type 'undefined' cannot be used as an index type.
+src/pages/learning/OfflineLearningView.tsx(185,28): error TS2538: Type 'undefined' cannot be used as an index type.
+src/pages/learning/OfflineLearningView.tsx(196,21): error TS2322: Type '"default"' is not assignable to type '"link" | "primary" | "secondary" | "outline" | "ghost" | "destructive" | undefined'.
+src/pages/quick/QuickControl.tsx(18,9): error TS6133: 'user' is declared but its value is never read.
+src/pages/quick/QuickTransfer.tsx(19,9): error TS6133: 'user' is declared but its value is never read.
+src/pages/quick/QuickTreatment.tsx(19,9): error TS6133: 'user' is declared but its value is never read.
+src/shared/api/client.ts(31,7): error TS6133: 'REALTIME_TRANSPORT' is declared but its value is never read.
+src/shared/api/client.ts(420,10): error TS6133: 'isTokenExpired' is declared but its value is never read.
+src/shared/api/client.ts(447,17): error TS6133: 'exceptionClass' is declared but its value is never read.
+src/shared/api/client.ts(1151,5): error TS6133: '__sseStarted' is declared but its value is never read.
+src/shared/api/client.ts(1152,5): error TS6133: '__sse' is declared but its value is never read.
+src/shared/api/client.ts(1153,5): error TS6133: '__sseUrl' is declared but its value is never read.
+src/shared/api/client.ts(1154,5): error TS6133: '__sseLastErrorAt' is declared but its value is never read.
+src/shared/api/client.ts(1155,5): error TS6133: '__sseReconnectTimer' is declared but its value is never read.
+src/shared/api/client.ts(1156,5): error TS6133: '__sseReconnecting' is declared but its value is never read.
+src/shared/api/client.ts(1157,5): error TS6133: '__sseRetryAttempt' is declared but its value is never read.
+src/shared/api/client.ts(1159,10): error TS6133: 'buildSseUrls' is declared but its value is never read.
+src/shared/api/client.ts(1167,10): error TS6133: 'parseSseData' is declared but its value is never read.
+src/shared/api/client.ts(1186,10): error TS6133: 'dispatchGlobalChange' is declared but its value is never read.
+src/shared/api/client.ts(1194,10): error TS6133: 'dispatchResourceChange' is declared but its value is never read.
+src/shared/api/mcpResilientClient.ts(235,13): error TS6133: 'duration' is declared but its value is never read.
+src/shared/api/mcpResilientClient.ts(260,5): error TS6133: 'params' is declared but its value is never read.
+src/shared/api/mcpResilientClient.ts(261,5): error TS6133: 'timeout' is declared but its value is never read.
+src/shared/api/offline/GeofenceService.ts(15,11): error TS6133: 'lastFencesFetch' is declared but its value is never read.
+src/shared/api/offline/ProximitySyncService.ts(102,11): error TS6133: 'heartbeatInterval' is declared but its value is never read.
+src/shared/api/offline/ruralSync.service.ts(33,26): error TS2339: Property 'operation_id' does not exist on type 'QueuedOperation'.
+src/shared/api/offline/ruralSync.service.ts(34,25): error TS2339: Property 'entity_type' does not exist on type 'QueuedOperation'.
+src/shared/api/offline/ruralSync.service.ts(35,23): error TS2339: Property 'entity_id' does not exist on type 'QueuedOperation'.
+src/shared/api/offline/ruralSync.service.ts(36,23): error TS2339: Property 'operation' does not exist on type 'QueuedOperation'.
+src/shared/api/offline/ruralSync.service.ts(38,26): error TS2339: Property 'base_version' does not exist on type 'QueuedOperation'.
+src/shared/components/charts/FinancialChart.tsx(25,7): error TS6133: 'COLORS' is declared but its value is never read.
+src/shared/components/charts/MilkProductionChart.tsx(37,22): error TS2339: Property 'session' does not exist on type 'MilkProduction'.
+src/shared/components/charts/MLPredictionChart.tsx(3,3): error TS6133: 'LineChart' is declared but its value is never read.
+src/shared/components/charts/ReproductionChart.tsx(37,7): error TS6133: 'EVENT_TYPE_LABELS' is declared but its value is never read.
+src/shared/components/SyncPulse.tsx(21,21): error TS2339: Property 'initialize' does not exist on type 'ProximitySyncService'.
+src/shared/components/SyncPulse.tsx(21,40): error TS7006: Parameter 'err' implicitly has an 'any' type.
+src/shared/components/SyncPulse.tsx(29,37): error TS2339: Property 'onSyncStateChange' does not exist on type 'ProximitySyncService'.
+src/shared/components/SyncPulse.tsx(29,56): error TS7006: Parameter 'state' implicitly has an 'any' type.
+src/shared/components/SyncPulse.tsx(43,39): error TS2339: Property 'onStatusUpdate' does not exist on type 'ProximitySyncService'.
+src/shared/components/SyncPulse.tsx(43,55): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/shared/components/SyncPulse.tsx(43,60): error TS7006: Parameter 'type' implicitly has an 'any' type.
+src/shared/hooks/resource/useResourceCrud.ts(7,3): error TS6133: 'data' is declared but its value is never read.
+src/shared/hooks/resource/useResourceCrud.ts(35,22): error TS2488: Type 'unknown' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/shared/hooks/resource/useResourceCrud.ts(145,24): error TS2488: Type 'unknown' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/shared/hooks/useGenericCRUD.tsx(194,18): error TS2339: Property 'logCacheHit' does not exist on type 'BaseService<T>'.
+src/shared/hooks/useGenericCRUD.tsx(266,18): error TS2339: Property 'logCacheHit' does not exist on type 'BaseService<T>'.
+src/shared/ui/common/GlobalAlertBanner.tsx(8,3): error TS6133: 'IconCircleCheck' is declared but its value is never read.
+src/shared/ui/DevLoginPanel.tsx(6,1): error TS6133: 'React' is declared but its value is never read.
+src/shared/utils/formValidation.ts(73,35): error TS2339: Property 'test' does not exist on type 'string'.
+src/shared/utils/formValidation.ts(78,25): error TS2339: Property 'custom' does not exist on type '{ min?: number | undefined; max?: number | undefined; pattern?: string | undefined; message?: string | undefined; }'.
+src/shared/utils/formValidation.ts(79,43): error TS2339: Property 'custom' does not exist on type '{ min?: number | undefined; max?: number | undefined; pattern?: string | undefined; message?: string | undefined; }'.
+src/shared/utils/formValidation.ts(124,25): error TS2731: Implicit conversion of a 'symbol' to a 'string' will fail at runtime. Consider wrapping this expression in 'String(...)'.
+src/shared/utils/performance.ts(336,20): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/shared/utils/stress-test.ts(2,21): error TS2307: Cannot find module './src/shared/api/base-client' or its corresponding type declarations.
+src/shared/utils/stress-test.ts(4,16): error TS6133: 'stressTest' is declared but its value is never read.
+src/test/setup.ts(70,1): error TS2322: Type 'typeof IntersectionObserverStub' is not assignable to type '{ new (callback: IntersectionObserverCallback, options?: IntersectionObserverInit | undefined): IntersectionObserver; prototype: IntersectionObserver; }'.
+  Types of property 'prototype' are incompatible.
+    Type 'IntersectionObserverStub' is missing the following properties from type 'IntersectionObserver': root, rootMargin, thresholds, takeRecords
+src/widgets/analytics/GlobalCalendarWidget.tsx(67,29): error TS2304: Cannot find name 'AlertCircle'.
+src/widgets/dashboard/AnimalActionsMenu.tsx(10,3): error TS6133: 'Eye' is declared but its value is never read.
+src/widgets/dashboard/AnimalActionsMenu.tsx(12,3): error TS6133: 'History' is declared but its value is never read.
+src/widgets/dashboard/AnimalActionsMenu.tsx(13,3): error TS6133: 'GitBranch' is declared but its value is never read.
+src/widgets/dashboard/AnimalActionsMenu.tsx(14,3): error TS6133: 'Baby' is declared but its value is never read.
+src/widgets/dashboard/AnimalActionsMenu.tsx(15,3): error TS6133: 'Edit2' is declared but its value is never read.
+src/widgets/dashboard/AnimalActionsMenu.tsx(16,3): error TS6133: 'Trash2' is declared but its value is never read.
+src/widgets/dashboard/AnimalActionsMenu.tsx(17,3): error TS6133: 'X' is declared but its value is never read.
+src/widgets/dashboard/AnimalActionsMenu.tsx(1003,17): error TS6133: 'depList' is declared but its value is never read.
+src/widgets/dashboard/AnimalActionsMenu.tsx(1007,17): error TS6133: 'detailedMsg' is declared but its value is never read.
+src/widgets/dashboard/animals/AnimalModalContent.tsx(26,1): error TS6133: 'analyticsService' is declared but its value is never read.
+src/widgets/dashboard/animals/AnimalModalContent.tsx(96,10): error TS6133: 'dataRefreshTrigger' is declared but its value is never read.
+src/widgets/dashboard/animals/AnimalModalContent.tsx(1383,23): error TS6133: 'barClasses' is declared but its value is never read.
+src/widgets/dashboard/animals/components/BasicInfoSection.tsx(39,51): error TS2339: Property 'sex' does not exist on type 'AnimalResponse'.
+src/widgets/dashboard/animals/components/BasicInfoSection.tsx(62,29): error TS2339: Property 'birth_weight' does not exist on type 'AnimalResponse'.
+src/widgets/dashboard/animals/components/BasicInfoSection.tsx(62,54): error TS2339: Property 'birth_weight' does not exist on type 'AnimalResponse'.
+src/widgets/dashboard/animals/components/HealthAndReproductionSection.tsx(58,38): error TS2339: Property 'health_status' does not exist on type 'AnimalResponse'.
+src/widgets/dashboard/animals/components/HealthAndReproductionSection.tsx(80,29): error TS2339: Property 'reproductive_status' does not exist on type 'AnimalResponse'.
+src/widgets/dashboard/animals/components/HealthAndReproductionSection.tsx(82,21): error TS2339: Property 'sex' does not exist on type 'AnimalResponse'.
+src/widgets/dashboard/ExecutiveIntelligence.tsx(11,34): error TS2307: Cannot find module '@/entities/finca/api/livestock.service' or its corresponding type declarations.
+src/widgets/dashboard/ExecutiveIntelligence.tsx(39,23): error TS2304: Cannot find name 'proximitySync'.
+src/widgets/dashboard/FastInventoryAction.tsx(44,9): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'InventoryMovementInput'.
+src/widgets/dashboard/FastInventoryAction.tsx(97,43): error TS2339: Property 'presentation' does not exist on type 'InventoryLotResponse'.
+src/widgets/dashboard/NodeCommunicationWidget.tsx(71,36): error TS2339: Property 'onMessageReceived' does not exist on type 'ProximitySyncService'.
+src/widgets/dashboard/NodeCommunicationWidget.tsx(71,55): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/widgets/dashboard/NodeCommunicationWidget.tsx(107,41): error TS2339: Property 'sendMessageToPeer' does not exist on type 'ProximitySyncService'.

@@ -8,7 +8,11 @@ import requests
 import sys
 from typing import Dict, List, Tuple
 
-BASE_URL = "http://127.0.0.1:8181/api/v1"
+import os
+from dotenv import load_dotenv
+load_dotenv()
+port = os.getenv("PORT", "8099")
+BASE_URL = f"http://localhost:{port}/api/v1"
 
 # Endpoints a probar (sin autenticación)
 PUBLIC_ENDPOINTS = [

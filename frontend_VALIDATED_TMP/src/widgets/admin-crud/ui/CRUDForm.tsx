@@ -54,8 +54,7 @@ const FormField = memo<{
 
   // Determinar si el campo es obligatorio y está vacío
   const isRequired = field.required === true;
-  const isEmpty = value == null || value === '';
-  const showWarning = Boolean(error) || (isRequired && isEmpty);
+  const showWarning = Boolean(error);
 
   // Manejar cambio de valor
   const handleChange = useCallback((newValue: any) => {
@@ -79,7 +78,7 @@ const FormField = memo<{
             className={cn(
               "w-full min-h-[80px] resize-none text-sm",
               showWarning
-                ? "border-amber-500 focus:border-amber-600 ring-1 ring-amber-500"
+                ? "border-rose-400 dark:border-rose-500/70 focus:border-rose-500 ring-1 ring-rose-500/30 bg-rose-50/10 dark:bg-rose-500/[0.02]"
                 : "border-border/50 focus:border-primary/50",
               isRequired && "border-l-4 border-l-red-500/40 dark:border-l-red-400/40",
               "bg-background/50 focus:bg-background/80",
@@ -121,7 +120,7 @@ const FormField = memo<{
                 "backdrop-blur-sm",
                 "cursor-pointer",
                 showWarning
-                  ? "border-amber-400/70 focus:border-amber-500 hover:border-amber-500/50 text-amber-900 dark:text-amber-200"
+                  ? "border-rose-400 dark:border-rose-500/70 focus:border-rose-500 ring-1 ring-rose-500/30 text-rose-900 dark:text-rose-200 bg-rose-50/10 dark:bg-rose-500/[0.02]"
                   : "border-border/50 focus:border-primary/50 text-foreground hover:border-primary/30",
                 isRequired && "border-l-4 border-l-red-500/40 dark:border-l-red-400/40"
               )}
@@ -158,7 +157,8 @@ const FormField = memo<{
 
           return (
             <div className={cn(
-              isRequired && "border-l-4 border-l-red-500/40 dark:border-l-red-400/40 rounded-l-sm"
+              isRequired && "border-l-4 border-l-red-500/40 dark:border-l-red-400/40 rounded-l-sm",
+              showWarning && "ring-1 ring-rose-500/30 rounded-lg border border-rose-400 dark:border-rose-500/70 bg-rose-50/10 dark:bg-rose-500/[0.02]"
             )}>
               <Combobox
                 options={opts.map((o: any) => ({ value: String(o.value), label: o.label }))}
@@ -218,7 +218,7 @@ const FormField = memo<{
             className={cn(
               "w-full min-h-[44px] text-sm",
               showWarning
-                ? "border-amber-500 focus:border-amber-600 ring-1 ring-amber-500"
+                ? "border-rose-400 dark:border-rose-500/70 focus:border-rose-500 ring-1 ring-rose-500/30 bg-rose-50/10 dark:bg-rose-500/[0.02]"
                 : "border-border/50 focus:border-primary/50",
               isRequired && "border-l-4 border-l-red-500/40 dark:border-l-red-400/40",
               "bg-background/50 focus:bg-background/80",
@@ -244,7 +244,7 @@ const FormField = memo<{
               className={cn(
                 "w-full min-h-[44px] text-sm",
                 showWarning
-                  ? "border-amber-500 focus:border-amber-600 ring-1 ring-amber-500"
+                  ? "border-rose-400 dark:border-rose-500/70 focus:border-rose-500 ring-1 ring-rose-500/30 bg-rose-50/10 dark:bg-rose-500/[0.02]"
                   : "border-border/50 focus:border-primary/50",
                 isRequired && "border-l-4 border-l-red-500/40 dark:border-l-red-400/40",
                 "bg-background/50 focus:bg-background/80",
@@ -269,7 +269,7 @@ const FormField = memo<{
             className={cn(
               "w-full min-h-[44px] text-sm",
               showWarning
-                ? "border-amber-500 focus:border-amber-600 ring-1 ring-amber-500"
+                ? "border-rose-400 dark:border-rose-500/70 focus:border-rose-500 ring-1 ring-rose-500/30 bg-rose-50/10 dark:bg-rose-500/[0.02]"
                 : "border-border/50 focus:border-primary/50",
               isRequired && "border-l-4 border-l-red-500/40 dark:border-l-red-400/40",
               "bg-background/50 focus:bg-background/80",
@@ -305,8 +305,9 @@ const FormField = memo<{
 
       <div className="min-h-[16px] flex flex-col gap-1 overflow-hidden">
         {showWarning && field.type !== 'checkbox' && (
-          <p className="text-[11px] font-bold text-rose-500 animate-in slide-in-from-top-1 duration-300">
-            {error || 'Este campo es obligatorio.'}
+          <p className="text-[11px] font-semibold text-rose-500 dark:text-rose-400 flex items-center gap-1.5 mt-1 animate-in slide-in-from-top-1 duration-200">
+            <span className="h-1.5 w-1.5 rounded-full bg-rose-500 dark:bg-rose-400 flex-shrink-0 animate-pulse" />
+            <span>{error || 'Este campo es obligatorio.'}</span>
           </p>
         )}
         
@@ -428,22 +429,7 @@ export function CRUDForm<T extends { id?: number }>({
       className="bg-card text-card-foreground border-border shadow-lg transition-all duration-200 ease-out max-h-[90vh]"
     >
       <form onSubmit={onSubmit} className="space-y-3 sm:space-y-4 h-full flex flex-col text-[13px] sm:text-sm">
-        {fieldErrors && Object.keys(fieldErrors).length > 0 && (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-            <div className="font-semibold">Faltan datos obligatorios</div>
-            <div>Revise los campos marcados en rojo y corrija lo siguiente:</div>
-            {errorMessages && errorMessages.length > 0 && (
-              <ul className="mt-1 list-disc pl-4">
-                {errorMessages.slice(0, 5).map((msg) => (
-                  <li key={msg}>{msg}</li>
-                ))}
-                {errorMessages.length > 5 && (
-                  <li>y {errorMessages.length - 5} mas...</li>
-                )}
-              </ul>
-            )}
-          </div>
-        )}
+        {/* Los errores de validación ahora se presentan exclusivamente de forma elegante e inline debajo de cada campo */}
         {renderFormSections}
         {additionalFormContent && additionalFormContent(formData, editingItem || null)}
 

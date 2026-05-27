@@ -1,11 +1,20 @@
 
+"""
+⚠️ SIMULACIÓN — NO USAR EN PRODUCCIÓN
+Genera datos masivos falsos para pruebas de estrés.
+Requiere ALLOW_SIMULATION_SCRIPTS=true.
+"""
 import os
 import sys
+
+_ALLOW_SIM = os.getenv('ALLOW_SIMULATION_SCRIPTS', '').lower() == 'true'
+if not _ALLOW_SIM:
+    print("⛔ Simulación deshabilitada. ALLOW_SIMULATION_SCRIPTS=true para permitir.")
+    sys.exit(0)
+
 import random
 from datetime import date, timedelta
 import string
-
-# Añadir ruta del backend al path
 backend_path = os.path.join(os.getcwd(), 'BackFinca')
 if backend_path not in sys.path:
     sys.path.insert(0, backend_path)
@@ -29,6 +38,7 @@ def run_massive_seed_and_audit():
     from app.models.treatments import Treatments
     from app.models.treatment_medications import TreatmentMedications
     from app.models.treatment_vaccines import TreatmentVaccines
+    from app.models.animalFields import AnimalFields
     from werkzeug.security import generate_password_hash
     
     app = create_app('development')
@@ -140,6 +150,25 @@ def run_massive_seed_and_audit():
                     idFather=f_id, idMother=m_id, finca_id=default_finca.id
                 ))
         db.session.commit()
+
+        # 6.5 Asignación de Animales a Potreros
+        print("🏞️ [SEED] Asignando Animales a Potreros (animal_fields)...")
+        all_fields = Fields.query.filter_by(finca_id=default_finca.id).all()
+        all_animals = Animals.query.filter_by(finca_id=default_finca.id).all()
+        if all_fields and all_animals:
+            for animal in all_animals:
+                existing_af = AnimalFields.query.filter_by(animal_id=animal.id, removal_date=None).first()
+                if not existing_af:
+                    target_field = random.choice(all_fields)
+                    db.session.add(AnimalFields(
+                        animal_id=animal.id,
+                        field_id=target_field.id,
+                        assignment_date=date.today() - timedelta(days=random.randint(1, 30)),
+                        removal_date=None,
+                        notes="Asignación inicial por seeder masivo",
+                        finca_id=default_finca.id
+                    ))
+            db.session.commit()
         
         # 7. Enfermedades, Medicamentos, Vacunas (20 c/u)
         print("💊 [SEED] Generando Enfermedades, Medicamentos y Vacunas...")
@@ -179,8 +208,10 @@ def run_massive_seed_and_audit():
             treatment = Treatments(
                 animal_id=target_animal.id,
                 finca_id=default_finca.id,
-                date=date.today() - timedelta(days=random.randint(1, 30)),
-                diagnosis="Diagnóstico preventivo",
+                treatment_date=date.today() - timedelta(days=random.randint(1, 30)),
+                description="Diagnóstico preventivo",
+                frequency="Diaria",
+                dosis="2ml",
                 observations="Generado por auditoría masiva"
             )
             db.session.add(treatment)

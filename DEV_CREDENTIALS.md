@@ -13,8 +13,9 @@ Puedes usar los botones de **"Acceso Rápido"** en la página de login o ingresa
 | Rol | Documento (ID) | Descripción |
 | :--- | :--- | :--- |
 | **Administrador** | `1098` | Acceso total al sistema y configuraciones. |
-| **Propietario** | `11111111` | Dueño de la finca, gestión administrativa. |
-| **Instructor** | `11111111` | (Dependiendo del seed) Gestión pedagógica SENA. |
+| **Propietario** | `55555555` | Dueño de la finca, gestión administrativa. |
+| **Capataz** | `66666666` | Supervisor de operaciones diarias. |
+| **Instructor** | `11111111` | Gestión pedagógica SENA. |
 | **Aprendiz** | `22222222` | Estudiante SENA, vista de consulta y tareas. |
 | **Operario** | `33333333` | Personal de campo, registro de actividades. |
 | **Veterinario** | `44444444` | Gestión de sanidad, pesajes y vacunación. |

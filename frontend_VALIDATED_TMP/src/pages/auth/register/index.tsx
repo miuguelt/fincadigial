@@ -5,11 +5,11 @@ import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Badge } from '@/shared/ui/badge';
-import { 
-  Building2, 
-  User, 
-  MapPin, 
-  ChevronRight, 
+import {
+  Building2,
+  User,
+  MapPin,
+  ChevronRight,
   ChevronLeft,
   Check,
   Loader2,
@@ -141,7 +141,7 @@ export default function RegisterPage() {
 
       if (response.data?.success) {
         showToast('¡Finca registrada exitosamente! Redirigiendo...', 'success');
-        
+
         // Guardar tokens si vienen en la respuesta
         const { access_token, refresh_token } = response.data.data || {};
         if (access_token) {
@@ -161,7 +161,7 @@ export default function RegisterPage() {
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Error al registrar la finca';
       const errorDetails = error.response?.data?.details;
-      
+
       if (errorDetails && typeof errorDetails === 'object') {
         const fieldErrors: Record<string, string> = {};
         Object.entries(errorDetails).forEach(([key, value]) => {
@@ -169,7 +169,7 @@ export default function RegisterPage() {
         });
         setErrors(fieldErrors);
       }
-      
+
       showToast(errorMessage, 'error');
     } finally {
       setIsSubmitting(false);
@@ -210,17 +210,15 @@ export default function RegisterPage() {
         <div className="flex items-center justify-center mb-8">
           {[1, 2, 3].map((s) => (
             <React.Fragment key={s}>
-              <div className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold ${
-                s <= step 
-                  ? 'bg-green-600 text-white' 
+              <div className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold ${s <= step
+                  ? 'bg-green-600 text-white'
                   : 'bg-gray-200 text-gray-500'
-              }`}>
+                }`}>
                 {s < step ? <Check className="h-5 w-5" /> : s}
               </div>
               {s < 3 && (
-                <div className={`w-16 h-1 mx-2 ${
-                  s < step ? 'bg-green-600' : 'bg-gray-200'
-                }`} />
+                <div className={`w-16 h-1 mx-2 ${s < step ? 'bg-green-600' : 'bg-gray-200'
+                  }`} />
               )}
             </React.Fragment>
           ))}
@@ -264,11 +262,10 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() => updateField('finca', 'type', 'Tradicional')}
-                      className={`p-4 border-2 rounded-lg text-left transition-colors ${
-                        formData.finca.type === 'Tradicional'
+                      className={`p-4 border-2 rounded-lg text-left transition-colors ${formData.finca.type === 'Tradicional'
                           ? 'border-green-600 bg-green-50'
                           : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                        }`}
                     >
                       <Building2 className="h-6 w-6 mb-2 text-green-600" />
                       <div className="font-medium">Tradicional</div>
@@ -277,11 +274,10 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() => updateField('finca', 'type', 'Educativa')}
-                      className={`p-4 border-2 rounded-lg text-left transition-colors ${
-                        formData.finca.type === 'Educativa'
+                      className={`p-4 border-2 rounded-lg text-left transition-colors ${formData.finca.type === 'Educativa'
                           ? 'border-blue-600 bg-blue-50'
                           : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                        }`}
                     >
                       <Building2 className="h-6 w-6 mb-2 text-blue-600" />
                       <div className="font-medium">Educativa</div>
@@ -295,7 +291,7 @@ export default function RegisterPage() {
                     <Label htmlFor="finca.department">Departamento</Label>
                     <Input
                       id="finca.department"
-                      placeholder="Ej: Antioquia"
+                      placeholder="Ej: Santander"
                       value={formData.finca.department}
                       onChange={(e) => updateField('finca', 'department', e.target.value)}
                     />
@@ -304,7 +300,7 @@ export default function RegisterPage() {
                     <Label htmlFor="finca.municipality">Municipio</Label>
                     <Input
                       id="finca.municipality"
-                      placeholder="Ej: Medellín"
+                      placeholder="Ej: Bucaramanga"
                       value={formData.finca.municipality}
                       onChange={(e) => updateField('finca', 'municipality', e.target.value)}
                     />
@@ -471,7 +467,7 @@ export default function RegisterPage() {
                   <ChevronRight className="h-4 w-4 ml-2" />
                 </Button>
               ) : (
-                <Button 
+                <Button
                   onClick={handleSubmit}
                   disabled={isSubmitting}
                   className="bg-green-600 hover:bg-green-700"

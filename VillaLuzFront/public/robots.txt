@@ -1,0 +1,15 @@
+User-agent: *
+# Bloquear acceso de bots al dashboard y rutas privadas
+Disallow: /dashboard/
+Disallow: /operario/
+Disallow: /admin/
+Disallow: /instructor/
+Disallow: /api/
+Disallow: /scanner/
+Disallow: /quick/
+Disallow: /chat/
+Disallow: /analytics/
+# Permitir solo la landing y login (si son públicas)
+Allow: /
+Allow: /auth/
+Sitemap: https://tudominio.com/sitemap.xml

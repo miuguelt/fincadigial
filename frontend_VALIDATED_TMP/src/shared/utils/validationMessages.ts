@@ -103,11 +103,11 @@ function attemptToMapMessageToField(
   return {};
 }
 
-export function formatValidationToastMessage(messages: string[], maxItems = 3): string {
-  if (!Array.isArray(messages) || messages.length === 0) return 'Errores de validacion. Revisa los campos.';
-  const preview = messages.slice(0, maxItems).join(' | ');
-  const suffix = messages.length > maxItems ? ` y ${messages.length - maxItems} mas` : '';
-  return `Faltan datos o hay errores. Corrija: ${preview}${suffix}`;
+export function formatValidationToastMessage(messages: string[], _maxItems = 3): string {
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return 'Errores de validación. Por favor, revise los campos.';
+  }
+  return 'Por favor, complete los campos obligatorios y corrija los errores marcados.';
 }
 
 export function formatRequiredHint(field: CRUDFormField<any>): string {

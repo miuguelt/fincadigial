@@ -43,6 +43,22 @@ def seed_e2e_users():
                 'password': 'Admin1234!'
             },
             {
+                'identification': 55555555,
+                'fullname': 'Propietario E2E',
+                'email': 'propietario@villaluz.com',
+                'phone': '3005555',
+                'role': 'Propietario',
+                'password': 'Propietario1234!'
+            },
+            {
+                'identification': 66666666,
+                'fullname': 'Capataz E2E',
+                'email': 'capataz@villaluz.com',
+                'phone': '3006666',
+                'role': 'Capataz',
+                'password': 'Capataz1234!'
+            },
+            {
                 'identification': 11111111,
                 'fullname': 'Instructor E2E',
                 'email': 'instructor@villaluz.com',
@@ -59,18 +75,18 @@ def seed_e2e_users():
                 'password': 'Aprendiz1234!'
             },
             {
-                'identification': 55555555,
+                'identification': 33333333,
                 'fullname': 'Operario E2E',
                 'email': 'operario@villaluz.com',
-                'phone': '3005555',
+                'phone': '3003333',
                 'role': 'Operario',
                 'password': 'Operario1234!'
             },
             {
-                'identification': 66666666,
+                'identification': 44444444,
                 'fullname': 'Veterinario E2E',
                 'email': 'veterinario@villaluz.com',
-                'phone': '3006666',
+                'phone': '3004444',
                 'role': 'Veterinario',
                 'password': 'Veterinario1234!'
             }

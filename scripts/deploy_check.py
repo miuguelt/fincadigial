@@ -105,7 +105,7 @@ compose_text2 = (ROOT / "docker-compose.coolify.yml").read_text() if compose_pat
 check("postgres" in compose_text2.lower(),
       "Compose usa PostgreSQL (óptimo para Contabo)",
       "Compose NO usa PostgreSQL — revisar configuración de DB")
-check("mysql" not in compose_text2.lower() and "mariadb" not in compose_text2.lower(),
+check("image: mysql" not in compose_text2.lower() and "image: mariadb" not in compose_text2.lower(),
       "Compose no depende de MySQL/MariaDB",
       "Compose tiene MySQL/MariaDB — se recomienda migrar a PostgreSQL", warn=True)
 
