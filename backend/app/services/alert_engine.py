@@ -7,14 +7,18 @@ Clase principal de orquestación. Las reglas de evaluación están separadas en:
   - alert_rules_growth.py   (peso, ADG, BCS, proyección, destete)
   - alert_rules_production.py (leche, métricas productivas)
 """
+from contextlib import contextmanager
 from datetime import date, datetime, timedelta, UTC
 import logging
 from app import db
-from app.models.alerts import AnimalAlert, AnimalAlertConfig, AlertType, AlertPriority
+from app.models.alerts import AnimalAlert, AnimalAlertConfig, AlertPriority
 from app.models.animals import Animals
 from app.models.control import Control
 from app.models.inventory import InventoryLot
 from app.models.activity_log import ActivityLog
+from app.models.vaccinations import Vaccinations
+from app.models.body_condition_scores import BodyConditionScore
+from app.models.animal_health_history import AnimalHealthHistory
 from app.services.push_notification_service import PushNotificationService
 
 
@@ -24,6 +28,70 @@ logger = logging.getLogger(__name__)
 class AlertEngine:
 
     _weather_cache = {}
+
+    # Buffer de notificaciones push agrupadas por finca. Mientras está activo
+    # (durante evaluate_all), _queue_push acumula en vez de enviar: un ciclo con
+    # 1679 alertas generaba 1679 × usuarios_de_la_finca × suscripciones envíos
+    # webpush. Al final se emite un único resumen por finca.
+    _push_batch: dict | None = None
+
+    @staticmethod
+    @contextmanager
+    def _batch_push():
+        """Agrupa los push emitidos dentro del bloque y los envía al salir."""
+        previous = AlertEngine._push_batch
+        AlertEngine._push_batch = {}
+        try:
+            yield
+        finally:
+            batch = AlertEngine._push_batch
+            AlertEngine._push_batch = previous
+            AlertEngine._flush_push_batch(batch)
+
+    @staticmethod
+    def _queue_push(finca_id: int, title: str, body: str, data: dict) -> None:
+        """Encolar un push si hay batch activo; si no, enviarlo de inmediato."""
+        if AlertEngine._push_batch is None:
+            PushNotificationService.send_to_finca(
+                finca_id=finca_id, title=title, body=body, data=data
+            )
+            return
+        AlertEngine._push_batch.setdefault(finca_id, []).append(
+            {'title': title, 'body': body, 'data': data}
+        )
+
+    @staticmethod
+    def _flush_push_batch(batch: dict | None) -> None:
+        """Emitir un push por finca: el detalle si es una sola alerta, si no un resumen."""
+        if not batch:
+            return
+        for finca_id, items in batch.items():
+            try:
+                if len(items) == 1:
+                    item = items[0]
+                    PushNotificationService.send_to_finca(
+                        finca_id=finca_id,
+                        title=item['title'],
+                        body=item['body'],
+                        data=item['data'],
+                        tag=f'alertas-finca-{finca_id}',
+                    )
+                    continue
+
+                criticas = sum(
+                    1 for i in items if str(i['data'].get('priority', '')).lower() == 'crítica'
+                )
+                detalle = f'{criticas} crítica(s) y {len(items) - criticas} de prioridad alta' \
+                    if criticas else f'{len(items)} de prioridad alta'
+                PushNotificationService.send_to_finca(
+                    finca_id=finca_id,
+                    title=f'{len(items)} alertas nuevas',
+                    body=f'Se registraron {detalle}. Abra el panel para revisarlas.',
+                    data={'type': 'alert_digest', 'count': len(items), 'url': '/alertas'},
+                    tag=f'alertas-finca-{finca_id}',
+                )
+            except Exception as e:
+                logger.error(f'Error enviando resumen push de finca {finca_id}: {e}')
 
     @staticmethod
     def _get_param(key: str) -> float | None:
@@ -49,6 +117,8 @@ class AlertEngine:
             'triggered': 0,
             'processed_animals': 0,
             'inventory_alerts': 0,
+            'infrastructure_alerts': 0,
+            'water_alerts': 0,
             'errors': 0,
         }
         try:
@@ -58,6 +128,17 @@ class AlertEngine:
             except RuntimeError:
                 pass
 
+            with AlertEngine._batch_push():
+                AlertEngine._evaluate_all_inner(results)
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error crítico en AlertEngine: {e}")
+            raise
+        return results
+
+    @staticmethod
+    def _evaluate_all_inner(results: dict) -> None:
+        try:
             animals = db.session.query(Animals).filter_by(status='Vivo').all()
             results['processed_animals'] = len(animals)
 
@@ -72,6 +153,7 @@ class AlertEngine:
                     results['triggered'] += AlertEngine._evaluate_custom(animal, finca_id)
                 except Exception as e:
                     logger.error(f"Error evaluando animal {animal.id}: {e}")
+                    db.session.rollback()
                     results['errors'] += 1
 
             from app.services.predictive_engine_service import PredictiveEngineService
@@ -82,35 +164,49 @@ class AlertEngine:
                     results['triggered'] += ai_result.get('alerts_created', 0)
                 except Exception as e:
                     logger.error(f"Error en análisis IA para finca {finca_id}: {e}")
+                    db.session.rollback()
                     results['errors'] += 1
 
             try:
                 results['inventory_alerts'] = AlertEngine._evaluate_inventory()
             except Exception as e:
                 logger.error(f"Error evaluando inventario: {e}")
+                db.session.rollback()
 
             try:
                 results['infrastructure_alerts'] = AlertEngine._evaluate_infrastructure_health()
             except Exception as e:
                 logger.error(f"Error evaluando salud de infraestructura: {e}")
+                db.session.rollback()
+
+            try:
+                results['water_alerts'] = AlertEngine._evaluate_water_sources(fincas_to_analyze)
+            except Exception as e:
+                logger.error(f"Error evaluando fuentes de agua: {e}")
+                db.session.rollback()
+
+            try:
+                results['farm_entity_alerts'] = AlertEngine._evaluate_farm_entities(fincas_to_analyze)
+            except Exception as e:
+                logger.error(f"Error evaluando alertas de entidades de finca: {e}")
+                db.session.rollback()
 
             try:
                 logger.info("Generando recomendaciones IA para alertas nuevas...")
                 AlertEngine.populate_ai_recommendations()
             except Exception as e:
                 logger.error(f"Error generando recomendaciones IA: {e}")
+                db.session.rollback()
 
             db.session.commit()
             logger.info(
                 f"Evaluación completada — animales: {results['processed_animals']}, "
                 f"alertas: {results['triggered']}, inventario: {results['inventory_alerts']}, "
-                f"errores: {results['errors']}"
+                f"agua: {results['water_alerts']}, errores: {results['errors']}"
             )
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            logger.error(f"Error crítico en AlertEngine: {e}")
             raise
-        return results
 
     @staticmethod
     def populate_ai_recommendations():
@@ -135,7 +231,15 @@ class AlertEngine:
             if entry:
                 alert.recommendation = entry.content
                 db.session.add(alert)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception as __db_err:
+            import logging
+            logging.getLogger(__name__).warning('DB Commit falló (infraestructura): %s', __db_err)
+            try:
+                if 'session' in globals() or 'session' in locals(): db.session.rollback()
+                else: db.rollback()
+            except: pass
 
     # ── METEOROLOGÍA ───────────────────────────────────────────────────
 
@@ -147,30 +251,49 @@ class AlertEngine:
         now = time.time()
         cb_key = f'circuit_breaker:open_meteo:{finca_id}'
         cb_fails_key = f'{cb_key}:fails'
-        if cache.get(cb_key):
-            return None
+        cache_available = True
+        try:
+            if cache.get(cb_key):
+                return None
+        except Exception as ce:
+            cache_available = False
+            logger.warning(f"Cache no disponible para circuit breaker del clima en Finca {finca_id}: {ce}")
+
         if finca_id in cls._weather_cache:
             data, timestamp = cls._weather_cache[finca_id]
             if now - timestamp < 3600:
                 return data
         from app.models.finca import Finca
         finca = Finca.query.get(finca_id) if finca_id else None
-        lat = finca.latitude if finca and getattr(finca, 'latitude', None) is not None else 4.6097
-        lon = finca.longitude if finca and getattr(finca, 'longitude', None) is not None else -74.0817
+        lat = finca.latitude if finca and getattr(finca, 'latitude', None) is not None else None
+        lon = finca.longitude if finca and getattr(finca, 'longitude', None) is not None else None
+        if lat is None or lon is None:
+            return None
         try:
             url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m"
             response = requests.get(url, timeout=5)
             response.raise_for_status()
             data = response.json()
-            cache.delete(cb_fails_key)
+            if cache_available:
+                try:
+                    cache.delete(cb_fails_key)
+                except Exception:
+                    pass
             result = {'temp': data['current']['temperature_2m'], 'humidity': data['current']['relative_humidity_2m']}
         except Exception as e:
-            fails = cache.get(cb_fails_key) or 0
-            fails += 1
-            cache.set(cb_fails_key, fails, timeout=3600)
-            if fails >= 3:
-                cache.set(cb_key, 'OPEN', timeout=1800)
-                logger.error(f"CIRCUIT BREAKER OPEN: Open-Meteo falló {fails} veces para Finca {finca_id}.")
+            fails = 0
+            if cache_available:
+                try:
+                    fails = cache.get(cb_fails_key) or 0
+                    fails += 1
+                    cache.set(cb_fails_key, fails, timeout=3600)
+                    if fails >= 3:
+                        cache.set(cb_key, 'OPEN', timeout=1800)
+                        logger.error(f"CIRCUIT BREAKER OPEN: Open-Meteo falló {fails} veces para Finca {finca_id}.")
+                except Exception as ce:
+                    logger.warning(f"Error actualizando circuit breaker en cache: {ce}")
+            else:
+                logger.warning(f"Error en Open-Meteo y cache no disponible para circuit breaker: {e}")
             logger.warning(f"Error Open-Meteo Finca {finca_id}: {e}")
             result = AlertEngine._get_weather_fallback(finca_id)
         cls._weather_cache[finca_id] = (result, now)
@@ -199,10 +322,12 @@ class AlertEngine:
 
         from app.services.alert_rules_growth import evaluate_growth_rules
         from app.services.alert_rules_health import evaluate_health_rules
+        from app.services.alert_rules_recommendations import evaluate_recommendation_rules
         from app.services.alert_rules_reproduction import evaluate_reproduction_rules
         from app.services.alert_rules_production import evaluate_production_rules
         evaluate_growth_rules(animal, finca_id, trig, today, age_months)
         evaluate_health_rules(animal, finca_id, trig, today, age_months)
+        evaluate_recommendation_rules(animal, finca_id, trig, today, age_months)
         evaluate_reproduction_rules(animal, finca_id, trig, today, age_months)
         evaluate_production_rules(animal, finca_id, trig, today, age_months)
 
@@ -235,6 +360,40 @@ class AlertEngine:
                 elif dim == 'days_since_control':
                     last_c = animal.controls.order_by(Control.checkup_date.desc()).first()
                     days = (today - last_c.checkup_date).days if last_c else 9999
+                    is_triggered = AlertEngine._check_condition(days, val)
+                elif dim == 'is_pregnant':
+                    is_triggered = (animal.is_pregnant == (val.lower() == 'true'))
+                elif dim == 'is_lactating':
+                    is_triggered = (animal.is_lactating == (val.lower() == 'true'))
+                elif dim == 'days_since_calving':
+                    if animal.last_calving_date:
+                        days = (today - animal.last_calving_date).days
+                        is_triggered = AlertEngine._check_condition(days, val)
+                    else:
+                        is_triggered = AlertEngine._check_condition(9999, val)
+                elif dim == 'days_since_vaccination':
+                    last_v = animal.vaccinations.order_by(Vaccinations.vaccination_date.desc()).first()
+                    days = (today - last_v.vaccination_date).days if last_v else 9999
+                    is_triggered = AlertEngine._check_condition(days, val)
+                elif dim == 'days_since_deworming':
+                    last_d = AnimalHealthHistory.query.filter_by(
+                        animal_id=animal.id, event_type='Deworming'
+                    ).order_by(AnimalHealthHistory.event_date.desc()).first()
+                    days = (today - last_d.event_date).days if last_d else 9999
+                    is_triggered = AlertEngine._check_condition(days, val)
+                elif dim == 'body_condition_score':
+                    last_bcs = animal.body_condition_scores.order_by(BodyConditionScore.score_date.desc()).first()
+                    if last_bcs:
+                        is_triggered = AlertEngine._check_condition(last_bcs.score, val)
+                elif dim == 'milk_production':
+                    from app.models.milk_production import MilkProduction
+                    last_milk = MilkProduction.query.filter_by(animal_id=animal.id).order_by(MilkProduction.date.desc()).first()
+                    if last_milk:
+                        is_triggered = AlertEngine._check_condition(last_milk.liters, val)
+                elif dim == 'days_since_milk_record':
+                    from app.models.milk_production import MilkProduction
+                    last_milk = MilkProduction.query.filter_by(animal_id=animal.id).order_by(MilkProduction.date.desc()).first()
+                    days = (today - last_milk.date).days if last_milk else 9999
                     is_triggered = AlertEngine._check_condition(days, val)
                 if is_triggered:
                     priority = getattr(cfg, 'priority', None) or AlertPriority.HIGH
@@ -297,13 +456,166 @@ class AlertEngine:
         return n
 
     @staticmethod
+    def _evaluate_water_sources(fincas) -> int:
+        n = 0
+        from app.models.campesino import WaterSource, WaterMeasurement
+        from app import db
+        import logging
+        from datetime import datetime, UTC, timedelta
+        
+        logger = logging.getLogger(__name__)
+        
+        for finca_id in fincas:
+            sources = WaterSource.query.filter_by(finca_id=finca_id).all()
+            for source in sources:
+                # Obtener la última medición
+                latest_measurement = WaterMeasurement.query.filter_by(
+                    water_source_id=source.id
+                ).order_by(WaterMeasurement.measured_at.desc()).first()
+                
+                if not latest_measurement:
+                    continue
+                
+                # Regla Crítica: Nivel bajo
+                if latest_measurement.level_percent is not None and latest_measurement.level_percent < 25:
+                    if AlertEngine._log_farm_alert(
+                        finca_id, 
+                        f"AGUA CRÍTICA: {source.name}", 
+                        f"El nivel de agua reportado es peligrosamente bajo ({latest_measurement.level_percent}%).", 
+                        'danger'
+                    ):
+                        n += 1
+                        
+                # Regla de Advertencia: pH Anormal (Rango ideal 6.5 a 8.5)
+                if latest_measurement.ph is not None:
+                    if latest_measurement.ph < 6.5 or latest_measurement.ph > 8.5:
+                        if AlertEngine._log_farm_alert(
+                            finca_id, 
+                            f"CALIDAD AGUA: {source.name}", 
+                            f"El pH registrado ({latest_measurement.ph}) está fuera del rango óptimo (6.5 - 8.5).", 
+                            'warning'
+                        ):
+                            n += 1
+                            
+        return n
+
+    @staticmethod
+    def _evaluate_farm_entities(fincas) -> int:
+        """Evalúa reglas personalizadas para entidades de finca (cultivos, agua)."""
+        n = 0
+        today = date.today()
+        from app.models.alerts import FarmEntityAlertConfig, FarmEntityAlert
+        from app.models.campesino import CropPlot, CropActivity, CropStatus, WaterSource, WaterMeasurement
+
+        for finca_id in fincas:
+            configs = FarmEntityAlertConfig.query.filter_by(finca_id=finca_id, is_active=True).all()
+            
+            for cfg in configs:
+                try:
+                    dim = cfg.dimension.lower()
+                    val = cfg.condition_value
+                    entities = []
+                    
+                    if cfg.entity_type == 'crop_plot':
+                        if cfg.entity_id:
+                            crop = CropPlot.query.filter_by(id=cfg.entity_id, finca_id=finca_id).first()
+                            entities = [crop] if crop else []
+                        else:
+                            # Native PG enum stores member NAMES (PLANNED/ACTIVE); raw
+                            # lowercase strings raise "invalid input value for enum".
+                            entities = CropPlot.query.filter_by(finca_id=finca_id).filter(CropPlot.status.in_([CropStatus.PLANNED, CropStatus.ACTIVE])).all()
+                    elif cfg.entity_type == 'water_source':
+                        if cfg.entity_id:
+                            source = WaterSource.query.filter_by(id=cfg.entity_id, finca_id=finca_id).first()
+                            entities = [source] if source else []
+                        else:
+                            entities = WaterSource.query.filter_by(finca_id=finca_id).all()
+                    
+                    for entity in entities:
+                        is_triggered = False
+                        entity_value = None
+                        
+                        if cfg.entity_type == 'crop_plot':
+                            if dim == 'days_since_sowing':
+                                if entity.sowing_date:
+                                    entity_value = (today - entity.sowing_date).days
+                                else:
+                                    entity_value = 9999
+                            elif dim == 'days_until_harvest':
+                                if entity.expected_harvest_date:
+                                    entity_value = (entity.expected_harvest_date - today).days
+                                else:
+                                    entity_value = 9999
+                            elif dim == 'days_since_last_activity':
+                                last_activity = CropActivity.query.filter_by(crop_plot_id=entity.id).order_by(CropActivity.activity_date.desc()).first()
+                                if last_activity:
+                                    entity_value = (today - last_activity.activity_date).days
+                                else:
+                                    entity_value = 9999
+                            elif dim == 'area':
+                                entity_value = entity.area or 0
+                        
+                        elif cfg.entity_type == 'water_source':
+                            last_measurement = WaterMeasurement.query.filter_by(water_source_id=entity.id).order_by(WaterMeasurement.measured_at.desc()).first()
+                            if dim == 'water_level':
+                                entity_value = last_measurement.level_percent if last_measurement else None
+                            elif dim == 'ph':
+                                entity_value = last_measurement.ph if last_measurement else None
+                            elif dim == 'turbidity':
+                                entity_value = last_measurement.turbidity if last_measurement else None
+                            elif dim == 'flow_rate':
+                                entity_value = last_measurement.flow_liters_minute if last_measurement else None
+                            elif dim == 'days_since_measurement':
+                                if last_measurement:
+                                    entity_value = (today - last_measurement.measured_at.date()).days
+                                else:
+                                    entity_value = 9999
+                        
+                        if entity_value is not None:
+                            is_triggered = AlertEngine._check_condition(entity_value, val)
+                        
+                        if is_triggered:
+                            entity_name = getattr(entity, 'name', getattr(entity, 'crop_name', f'ID {entity.id}'))
+                            message = cfg.message.replace('{entity_name}', entity_name)
+                            priority = cfg.priority or AlertPriority.MEDIUM
+                            
+                            existing = FarmEntityAlert.query.filter_by(
+                                entity_type=cfg.entity_type,
+                                entity_id=entity.id,
+                                config_id=cfg.id,
+                                is_read=False
+                            ).first()
+                            
+                            if not existing:
+                                alert = FarmEntityAlert(
+                                    entity_type=cfg.entity_type,
+                                    entity_id=entity.id,
+                                    config_id=cfg.id,
+                                    alert_type=cfg.entity_type.replace('_', ' ').title(),
+                                    message=message,
+                                    priority=priority,
+                                    finca_id=finca_id
+                                )
+                                db.session.add(alert)
+                                n += 1
+                except Exception as e:
+                    logger.error(f"Error evaluando config {cfg.id}: {e}")
+                    # Clear the aborted transaction so remaining configs can
+                    # still be evaluated (otherwise every later query fails
+                    # with "current transaction is aborted").
+                    db.session.rollback()
+                    continue
+        
+        return n
+
+    @staticmethod
     def _log_farm_alert(finca_id, title, description, severity):
         exists = ActivityLog.query.filter(ActivityLog.finca_id == finca_id, ActivityLog.title == title, ActivityLog.created_at >= date.today()).first()
         if not exists:
             ActivityLog.create(action='ALERTA', entity='Inventory', title=title, description=description, severity=severity, finca_id=finca_id)
             if severity in ['danger', 'warning'] and finca_id:
                 try:
-                    PushNotificationService.send_to_finca(finca_id=finca_id, title=f" {title}", body=description, data={'type': 'inventory_alert', 'severity': severity, 'url': '/inventario'})
+                    AlertEngine._queue_push(finca_id=finca_id, title=f" {title}", body=description, data={'type': 'inventory_alert', 'severity': severity, 'url': '/inventario'})
                 except Exception as e:
                     logger.error(f"Error enviando push notification para inventario: {e}")
             return True
@@ -355,16 +667,40 @@ class AlertEngine:
     @staticmethod
     def _trigger_if_not_exists(animal_id, alert_type, message, priority, config_id=None, finca_id=None) -> bool:
         cutoff = datetime.now(UTC) - timedelta(hours=24)
-        recent = AnimalAlert.query.filter(AnimalAlert.animal_id == animal_id, AnimalAlert.message == message, AnimalAlert.triggered_at >= cutoff).first()
+
+        # 1. De-duplicación estándar: si ya existe una alerta igual sin leer o en las últimas 24h, no duplicarla.
+        recent = AnimalAlert.query.filter(
+            AnimalAlert.animal_id == animal_id,
+            AnimalAlert.message == message,
+            db.or_(
+                AnimalAlert.triggered_at >= cutoff,
+                AnimalAlert.is_read == False
+            )
+        ).first()
         if recent:
             return False
+
+        # 2. De-duplicación especial para Estrés Térmico (Clima) para evitar inundar la DB
+        # cuando el valor del THI fluctúa levemente y cambia el string exacto.
+        if 'estrés térmico' in message.lower() or 'thi' in message.lower():
+            recent_weather = AnimalAlert.query.filter(
+                AnimalAlert.animal_id == animal_id,
+                AnimalAlert.is_read == False,
+                db.or_(
+                    AnimalAlert.message.ilike('%estrés térmico%'),
+                    AnimalAlert.message.ilike('%thi%')
+                )
+            ).first()
+            if recent_weather:
+                return False
+
         AnimalAlert.create(animal_id=animal_id, config_id=config_id, alert_type=alert_type, message=message, priority=priority, triggered_at=datetime.now(UTC), finca_id=finca_id)
         if finca_id:
             if priority in [AlertPriority.HIGH, AlertPriority.CRITICAL]:
                 try:
                     animal = Animals.query.get(animal_id)
                     animal_record = animal.record if animal else "Animal"
-                    PushNotificationService.send_to_finca(finca_id=finca_id, title=f" Alerta {priority.value}: {animal_record}", body=message, data={'type': 'alert', 'animal_id': animal_id, 'alert_type': alert_type.value if hasattr(alert_type, 'value') else str(alert_type), 'priority': priority.value.lower() if hasattr(priority, 'value') else str(priority).lower(), 'url': f'/animales/{animal_id}'})
+                    AlertEngine._queue_push(finca_id=finca_id, title=f" Alerta {priority.value}: {animal_record}", body=message, data={'type': 'alert', 'animal_id': animal_id, 'alert_type': alert_type.value if hasattr(alert_type, 'value') else str(alert_type), 'priority': priority.value.lower() if hasattr(priority, 'value') else str(priority).lower(), 'url': f'/animales/{animal_id}'})
                 except Exception as e:
                     logger.error(f"Error enviando push notification: {e}")
             try:
