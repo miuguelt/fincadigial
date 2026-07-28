@@ -262,6 +262,7 @@ class InventoryMovementList(Resource):
                 reference_id=data.get('reference_id'),
                 notes=data.get('notes'),
                 actor_id=actor_id,
+                finca_id=lot.finca_id,
             )
             db.session.add(movement)
             lot.save()
