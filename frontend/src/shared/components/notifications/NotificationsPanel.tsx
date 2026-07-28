@@ -7,6 +7,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { NotificationsBell } from './NotificationsBell';
 import { useNotifications, NotificationItem } from '@/shared/hooks/useNotifications';
+import { usePushSubscription } from '@/shared/hooks/usePushSubscription';
 import {
   Bell,
   BellOff,
@@ -36,6 +37,7 @@ const getNotificationIcon = (type: NotificationItem['type']): LucideIcon => {
 
 export const NotificationsPanel: React.FC = () => {
   const { notifications, approve, reject, markAsRead, totalPending } = useNotifications();
+  const push = usePushSubscription();
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -208,6 +210,28 @@ export const NotificationsPanel: React.FC = () => {
             )}
           </TabsContent>
         </Tabs>
+
+        {push.supported && (
+          <div className="px-4 py-3 border-t border-border/50 bg-muted/20 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-foreground">Avisos en este dispositivo</p>
+              <p className="text-[11px] text-muted-foreground">
+                {push.subscribed
+                  ? 'Recibirás alertas aunque la app esté cerrada'
+                  : 'Actívalos para recibir alertas con la app cerrada'}
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant={push.subscribed ? 'ghost' : 'primary'}
+              disabled={push.busy}
+              onClick={push.toggle}
+              className="h-8 text-xs px-3 font-bold rounded-md shrink-0"
+            >
+              {push.busy ? '...' : push.subscribed ? 'Desactivar' : 'Activar'}
+            </Button>
+          </div>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

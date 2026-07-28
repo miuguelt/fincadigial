@@ -1,8 +1,14 @@
 import { apiClient } from '@/shared/api/client';
 
-const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+/**
+ * Suscripción Web Push.
+ *
+ * La clave VAPID se pide al backend (`GET /push/vapid-public-key`) en lugar de
+ * leerla de una variable de compilación: el servidor ya la tiene y así no hay
+ * dos fuentes que se puedan desincronizar.
+ */
 
-function urlBase64ToUint8Array(base64String: string) {
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
   const rawData = window.atob(base64);
@@ -13,49 +19,65 @@ function urlBase64ToUint8Array(base64String: string) {
   return outputArray;
 }
 
-export async function subscribeUserToPush() {
-  if (!('serviceWorker' in navigator) || !VAPID_PUBLIC_KEY) return;
+export function isPushSupported(): boolean {
+  return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+}
 
+async function fetchVapidPublicKey(): Promise<string | null> {
   try {
-    const registration = await navigator.serviceWorker.ready;
-    
-    // Check if already subscribed
-    const existingSubscription = await registration.pushManager.getSubscription();
-    if (existingSubscription) {
-      return existingSubscription;
-    }
-
-    const subscribeOptions = {
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-    };
-
-    const subscription = await registration.pushManager.subscribe(subscribeOptions);
-    
-    // Send to backend
-    await apiClient.post('/api/v1/push/subscribe', subscription);
-    
-    return subscription;
-  } catch (error) {
-    console.error('Error al suscribir a notificaciones push:', error);
-    throw error;
+    const response = await apiClient.get('/push/vapid-public-key');
+    return response.data?.data?.public_key ?? null;
+  } catch {
+    // 503 cuando el servidor no tiene VAPID configurado.
+    return null;
   }
 }
 
-export async function unsubscribeUserFromPush() {
+export async function getPushSubscription(): Promise<PushSubscription | null> {
+  if (!isPushSupported()) return null;
+  const registration = await navigator.serviceWorker.ready;
+  return registration.pushManager.getSubscription();
+}
+
+export async function subscribeUserToPush(): Promise<PushSubscription | null> {
+  if (!isPushSupported()) return null;
+
+  if (Notification.permission === 'default') {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return null;
+  }
+  if (Notification.permission !== 'granted') return null;
+
+  const registration = await navigator.serviceWorker.ready;
+
+  const existing = await registration.pushManager.getSubscription();
+  if (existing) {
+    // Reenviar por si el servidor perdió la fila; /push/subscribe es idempotente.
+    await apiClient.post('/push/subscribe', existing.toJSON());
+    return existing;
+  }
+
+  const publicKey = await fetchVapidPublicKey();
+  if (!publicKey) return null;
+
+  const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(publicKey),
+  });
+
+  // toJSON() expone endpoint y keys; el objeto crudo no es serializable.
+  await apiClient.post('/push/subscribe', subscription.toJSON());
+  return subscription;
+}
+
+export async function unsubscribeUserFromPush(): Promise<void> {
+  if (!isPushSupported()) return;
+
   const registration = await navigator.serviceWorker.ready;
   const subscription = await registration.pushManager.getSubscription();
-  
-  if (subscription) {
-    await subscription.unsubscribe();
-    await apiClient.post('/api/v1/push/unsubscribe', {
-      endpoint: subscription.endpoint
-    });
-  }
-}
+  if (!subscription) return;
 
-export async function getPushSubscription() {
-  if (!('serviceWorker' in navigator)) return null;
-  const registration = await navigator.serviceWorker.ready;
-  return await registration.pushManager.getSubscription();
+  const { endpoint } = subscription;
+  await subscription.unsubscribe();
+  await apiClient.post('/push/unsubscribe', { endpoint });
 }

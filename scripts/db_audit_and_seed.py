@@ -788,37 +788,15 @@ def seed_membership_requests(app, db):
     return created
 
 def seed_push_subscriptions(app, db):
-    """Poblar tabla push_subscription"""
-    from app.models import User
-    from app.models.push_subscription import PushSubscription
-    
-    print("\n🔔 [Extra 4/5] Poblando push_subscription...")
-    
-    users = User.query.limit(4).all()
-    
-    browsers = ['chrome', 'firefox', 'edge']
-    platforms = ['desktop', 'mobile']
-    
-    created = 0
-    for user in users:
-        browser = choice(browsers)
-        platform = choice(platforms)
-        try:
-            PushSubscription.create(
-                user_id=user.id,
-                endpoint=f'https://fcm.googleapis.com/fake-endpoint-{user.id}-{randint(1000,9999)}',
-                p256dh='BIPUL' + 'A' * 50,
-                auth='aBCd' + 'E' * 20,
-                user_agent=f'Mozilla/5.0 ({platform}) {browser}/100.0',
-                platform=platform,
-                browser=browser
-            )
-            created += 1
-        except Exception as e:
-            print(f"  ⚠ Error: {e}")
-    
-    print(f"  ✅ Creadas {created} suscripciones push")
-    return created
+    """No siembra nada: una suscripcion push solo la puede emitir un navegador.
+
+    Esta funcion insertaba endpoints inventados (fake-endpoint-<id>) que el
+    servicio de envio no puede usar: cada intento de notificar termina en error
+    contra FCM. El flujo real es el usuario activando los avisos desde el panel
+    de notificaciones, que llama a POST /push/subscribe.
+    """
+    print("\n[Extra 4/5] push_subscription: omitido (requiere un navegador real)")
+    return 0
 
 def seed_user_locations(app, db):
     """Poblar tabla user_locations"""
