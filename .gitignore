@@ -96,3 +96,39 @@ frontend_logs*.txt
 frontend_ui_*.txt
 backend/static/uploads/
 nul
+frontend/errors.txt
+
+# --- Local dev environments (NO COMMIT) ---
+backend/venv_wsl/
+ecosystem.config.cjs
+docker-compose.override.yml
+
+# --- One-off scratch scripts (NO COMMIT) ---
+# Ad-hoc scripts kept on disk for local debugging only. Anything meant to
+# survive belongs in scripts/, maintenance/ or a proper test suite.
+/refactor.py
+/fix_ux.py
+/filter_ui.py
+/check.ps1
+/checkpoint.ps1
+/test_get_animal_fields.py
+/test_predictive.py
+backend/check_db.py
+backend/fix_tables.py
+backend/fix_tables_direct.py
+backend/inspect_animal_fields_scratch.py
+backend/kill_locks.py
+backend/p2p_stress_test.py
+backend/run_test.py
+backend/test_config.py
+backend/test_endpoints.py
+backend/test_endpoints_dev.py
+backend/test_enums.py
+backend/test_login_query.py
+backend/test_predictive.py
+backend/update_db_texts.py
+
+# --- Agent tooling, not part of the product ---
+GEMINI.md
+PROJECT_GENOME.md
+.cbmignore
