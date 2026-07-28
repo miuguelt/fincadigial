@@ -77,6 +77,16 @@ class OfflineChatServiceImpl {
     for (const listener of this.listeners) listener(this.messages);
   }
 
+  /**
+   * Vacía el buffer en memoria y relee el outbox persistido.
+   * Se usa al cerrar sesión, para que el siguiente usuario no herede mensajes
+   * del anterior, y entre casos de prueba.
+   */
+  reset(): void {
+    this.messages = readOutbox();
+    this.emit();
+  }
+
   /** Carga el historial con un usuario desde el servidor. */
   async loadHistory(recipientId: number): Promise<ChatMessage[]> {
     const response = await api.get<{ data: ApiChatMessage[] }>(`/chat/history/${recipientId}`);

@@ -34,6 +34,59 @@ const LessonPage: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
 
+  // Todos los hooks van antes del early return de "lección no encontrada":
+  // colgados detrás de él, React veía distinto número de hooks según existiera
+  // o no la lección y abortaba con "Rendered fewer hooks than expected".
+  const quiz = lesson?.quiz;
+
+  const handleStartQuiz = useCallback(() => {
+    setQuizStarted(true);
+    setCurrentQuestion(0);
+    setSelectedAnswers({});
+    setSubmitted(false);
+    setShowExplanation(false);
+  }, []);
+
+  const handleSelectAnswer = useCallback(
+    (questionIdx: number, answerIdx: number) => {
+      if (submitted) return;
+      setSelectedAnswers((prev) => ({ ...prev, [questionIdx]: answerIdx }));
+    },
+    [submitted]
+  );
+
+  const handleSubmitQuiz = useCallback(() => {
+    setSubmitted(true);
+    setShowExplanation(true);
+    if (!quiz || !course || !lesson) return;
+
+    let correct = 0;
+    quiz.questions.forEach((q, idx) => {
+      if (selectedAnswers[idx] === q.correctAnswer) correct++;
+    });
+
+    const score = Math.round((correct / quiz.questions.length) * 100);
+    saveQuizScore(course.id, lesson.id, score);
+
+    if (score >= quiz.passingScore) {
+      markComplete(course.id, lesson.id);
+    }
+  }, [quiz, selectedAnswers, course, lesson, saveQuizScore, markComplete]);
+
+  const handleCompleteWithoutQuiz = useCallback(() => {
+    if (!course || !lesson) return;
+    markComplete(course.id, lesson.id);
+  }, [course, lesson, markComplete]);
+
+  const quizScore = useMemo(() => {
+    if (!quiz || !submitted) return null;
+    let correct = 0;
+    quiz.questions.forEach((q, idx) => {
+      if (selectedAnswers[idx] === q.correctAnswer) correct++;
+    });
+    return { correct, total: quiz.questions.length, percentage: Math.round((correct / quiz.questions.length) * 100) };
+  }, [quiz, submitted, selectedAnswers]);
+
   if (!course || !lesson) {
     return (
       <div className="bg-background px-4 pt-4 pb-6">
@@ -57,57 +110,9 @@ const LessonPage: React.FC = () => {
   const hasNext = lessonIndex < course.lessons.length - 1;
   const prevLesson = hasPrev ? course.lessons[lessonIndex - 1] : null;
   const nextLesson = hasNext ? course.lessons[lessonIndex + 1] : null;
-  const quiz = lesson.quiz;
   const savedScore = progress.quizScores[lesson.id];
 
   const isLessonCompleted = progress.completedLessons.includes(lesson.id);
-
-  const handleStartQuiz = useCallback(() => {
-    setQuizStarted(true);
-    setCurrentQuestion(0);
-    setSelectedAnswers({});
-    setSubmitted(false);
-    setShowExplanation(false);
-  }, []);
-
-  const handleSelectAnswer = useCallback(
-    (questionIdx: number, answerIdx: number) => {
-      if (submitted) return;
-      setSelectedAnswers((prev) => ({ ...prev, [questionIdx]: answerIdx }));
-    },
-    [submitted]
-  );
-
-  const handleSubmitQuiz = useCallback(() => {
-    setSubmitted(true);
-    setShowExplanation(true);
-    if (!quiz) return;
-
-    let correct = 0;
-    quiz.questions.forEach((q, idx) => {
-      if (selectedAnswers[idx] === q.correctAnswer) correct++;
-    });
-
-    const score = Math.round((correct / quiz.questions.length) * 100);
-    saveQuizScore(course.id, lesson.id, score);
-
-    if (score >= quiz.passingScore) {
-      markComplete(course.id, lesson.id);
-    }
-  }, [quiz, selectedAnswers, course.id, lesson.id, saveQuizScore, markComplete]);
-
-  const handleCompleteWithoutQuiz = useCallback(() => {
-    markComplete(course.id, lesson.id);
-  }, [course.id, lesson.id, markComplete]);
-
-  const quizScore = useMemo(() => {
-    if (!quiz || !submitted) return null;
-    let correct = 0;
-    quiz.questions.forEach((q, idx) => {
-      if (selectedAnswers[idx] === q.correctAnswer) correct++;
-    });
-    return { correct, total: quiz.questions.length, percentage: Math.round((correct / quiz.questions.length) * 100) };
-  }, [quiz, submitted, selectedAnswers]);
 
   const passed = quizScore ? quizScore.percentage >= (quiz?.passingScore || 0) : false;
 

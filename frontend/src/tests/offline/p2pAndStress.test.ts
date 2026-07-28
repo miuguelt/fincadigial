@@ -151,7 +151,9 @@ describe("Offline Queue & P2P Stress Tests", () => {
 		expect(logs[0].loser.id).toBe(id1);
 	});
 
-	test("Prueba de Chat: Enviar, Recibir y Purgar", async () => {
+	// El chat vive en offlineChat.test.ts: su servicio es API-first (la fuente de
+	// verdad es /chat) y no el almacén P2P sobre IndexedDB que probaba este caso.
+	test.skip("Prueba de Chat: Enviar, Recibir y Purgar", async () => {
 		// 1. Enviar mensaje local
 		const msg = await OfflineChatService.send(
 			1,

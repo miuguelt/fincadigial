@@ -19,9 +19,9 @@ export const FincaSelector: React.FC = () => {
   const { switchFinca, switching } = useMultiFinca();
   const navigate = useNavigate();
 
-  if (!user?.finca_id) return null;
-
-  // Obtener el nombre de la finca activa con múltiples capas de seguridad
+  // El useMemo va antes de cualquier salida temprana: colocarlo después hacía
+  // que el número de hooks cambiara entre renders (usuario con finca / sin
+  // finca) y React abortaba con "Rendered fewer hooks than expected".
   const activeFincaName = React.useMemo(() => {
     if (user?.fincas && user.finca_id) {
       const active = user.fincas.find((f: any) => Number(f.finca_id) === Number(user.finca_id));
@@ -29,6 +29,8 @@ export const FincaSelector: React.FC = () => {
     }
     return user?.finca_name || "Villa Luz";
   }, [user]);
+
+  if (!user?.finca_id) return null;
 
   const hasMultipleFincas = user?.fincas && user.fincas.length > 1;
   const hasFincas = user?.fincas && user.fincas.length > 0;
