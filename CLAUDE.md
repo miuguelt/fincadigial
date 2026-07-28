@@ -98,7 +98,7 @@ widgets/MiWidget/
 ```
 
 ### Archivos legacy a NO crecer
-- `shared/ui/common/AdminCRUDPage.tsx` (2844L) — usar `widgets/admin-crud/` en cambio
+- `widgets/admin-crud/ui/AdminCRUDPage.tsx` (886L) — no crecer; extraer a subcomponentes
 - `src/components/` — no agregar, es pre-FSD
 - `shared/hooks/useResource.ts` — no agregar lógica, dividir cuando sea posible
 
@@ -121,9 +121,11 @@ widgets/MiWidget/
 ```
 
 ### Archivos legacy a NO crecer
-- `namespaces/finanzas/analytics_namespace.py` (1989L) — monolito en deprecación
-- `utils/namespace_helpers.py` (1776L) — dividir al modificar
-- `utils/analytics.py` (982L) — dividir al modificar
+- `utils/namespace_helpers/legacy.py` (1699L) — dividir al modificar
+
+Ya no existen: `namespaces/finanzas/analytics_namespace.py`, `utils/analytics.py` y
+`utils/namespace_helpers.py` (este último era un módulo muerto que el paquete del mismo
+nombre eclipsaba; se eliminó el 2026-07-28).
 
 ## Al modificar código existente
 
@@ -136,8 +138,9 @@ widgets/MiWidget/
 
 ## Bugs conocidos activos
 
-- `GET /api/v1/analytics/dashboard` retorna ceros — usar `/analytics/dashboard/complete`
-- `GET /api/v1/analytics/dashboard/simple` también retorna ceros
+Ninguno pendiente. Los dos que figuraban aquí ya no aplican (verificado 2026-07-28):
+`GET /api/v1/analytics/dashboard` devuelve los conteos reales y
+`/analytics/dashboard/simple` ya no está registrado como ruta.
 
 ## Motor de Alertas v2 — Nuevas capacidades
 

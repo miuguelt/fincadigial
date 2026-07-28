@@ -57,14 +57,22 @@ class DashboardService:
 
         summary = LivestockSummary.get_for_finca(finca_id)
         week_ago = datetime.now(UTC) - timedelta(days=7)
-        avg_weight = db.session.query(func.avg(Animals.weight)).filter_by(finca_id=finca_id, status=AnimalStatus.Vivo).scalar() or 0
-        health_rows = db.session.query(Control.health_status, func.count(Control.id)).filter_by(finca_id=finca_id).group_by(Control.health_status).all()
+        # LivestockSummary ya descuenta los borrados; estas tres consultas van
+        # directas a las tablas y deben hacer lo mismo para no contradecirlo.
+        avg_weight = db.session.query(func.avg(Animals.weight)).filter_by(
+            finca_id=finca_id, status=AnimalStatus.Vivo, is_deleted=False
+        ).scalar() or 0
+        health_rows = db.session.query(Control.health_status, func.count(Control.id)).filter_by(
+            finca_id=finca_id, is_deleted=False
+        ).group_by(Control.health_status).all()
 
         return {
             'total_animals': summary.total_animals,
             'active_animals': summary.active_animals,
             'average_weight': round(float(avg_weight), 2),
-            'total_treatments': db.session.query(func.count(Treatments.id)).filter_by(finca_id=finca_id).scalar() or 0,
+            'total_treatments': db.session.query(func.count(Treatments.id)).filter_by(
+                finca_id=finca_id, is_deleted=False
+            ).scalar() or 0,
             'health_summary': {(h.value if hasattr(h, 'value') else str(h)): c for h, c in health_rows},
             'last_summary_update': summary.last_recalculation.isoformat() if summary.last_recalculation else None
         }
