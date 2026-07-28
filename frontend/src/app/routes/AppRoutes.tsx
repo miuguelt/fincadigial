@@ -81,6 +81,7 @@ const CampesinoDashboard = lazy(() => import('@/pages/dashboard/campesino/Campes
 const GanaderiaOperativaPage = lazy(() => import('@/pages/dashboard/campesino/GanaderiaOperativaPage'));
 const CampesinoHealthDashboard = lazy(() => import('@/pages/dashboard/campesino/health/index'));
 const CropPlotsPage = lazy(() => import('@/pages/dashboard/campesino/CropPlotsPage'));
+const CropActivitiesPage = lazy(() => import('@/pages/dashboard/campesino/CropActivitiesPage'));
 const RegistroOperativoPage = lazy(() => import('@/pages/dashboard/campesino/RegistroOperativoPage'));
 const WaterSourcesPage = lazy(() => import('@/pages/dashboard/campesino/WaterSourcesPage'));
 const ClimateAlertsPage = lazy(() => import('@/pages/dashboard/campesino/ClimateAlertsPage'));
@@ -313,6 +314,7 @@ const AppRoutes = () => {
             <Route path="/campesino/ganaderia" element={<GanaderiaOperativaPage />} />
             <Route path="/campesino/health" element={<CampesinoHealthDashboard />} />
             <Route path="/campesino/crop-plots" element={<CropPlotsPage />} />
+            <Route path="/campesino/crop-activities" element={<CropActivitiesPage />} />
             <Route path="/campesino/water-sources" element={<WaterSourcesPage />} />
             <Route path="/campesino/climate-alerts" element={<ClimateAlertsPage />} />
             <Route path="/campesino/weather" element={<WeatherDashboardPage />} />

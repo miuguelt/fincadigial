@@ -20,7 +20,7 @@ export const WaterAnalyticsWidget: React.FC<WaterAnalyticsWidgetProps> = ({
 			try {
 				// Fetch recent measurements. A proper analytics endpoint would be better,
 				// but since we are using standard namespaces, we fetch the latest.
-				const resp = await api.get("/campesino/water-measurements", {
+				const resp = await api.get("/water-measurements", {
 					params: { limit: 50, sort_by: "measured_at", sort_order: "desc" },
 				});
 				const data = Array.isArray(resp) ? resp : resp.data || [];

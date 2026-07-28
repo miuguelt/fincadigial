@@ -21,6 +21,7 @@ import { ExecutiveHeader } from './components/ExecutiveHeader';
 import { ExecutiveDemographics } from './components/ExecutiveDemographics';
 import { ExecutiveHealth } from './components/ExecutiveHealth';
 import { ExecutiveProduction } from './components/ExecutiveProduction';
+import { WaterAnalyticsWidget } from './components/WaterAnalyticsWidget';
 
 const KPI_ORDER = [
   'health_index',
@@ -217,6 +218,15 @@ const DashboardExecutive: React.FC = () => {
             productionStats={productionStats}
             dashboard={dashboard}
           />
+        </section>
+
+        {/* Calidad y nivel de las fuentes de agua */}
+        <section>
+          <div className="flex items-center gap-3 mb-4">
+            <h2 className="text-xl font-black text-foreground">Fuentes de Agua</h2>
+            <div className="h-px flex-1 bg-border/50"></div>
+          </div>
+          <WaterAnalyticsWidget />
         </section>
       </div>
     </div>

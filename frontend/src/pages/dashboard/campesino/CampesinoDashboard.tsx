@@ -33,6 +33,8 @@ import {
   IconTag,
 } from '@/shared/icons/cattle';
 
+import { MiJornadaSection } from './components/MiJornadaSection';
+
 const OFFLINE_STORAGE_KEY = 'campesino:pending_sync';
 
 // Acciones rápidas — lo que el campesino hace TODOS LOS DÍAS
@@ -89,6 +91,7 @@ const TOOL_GROUPS = [
     border: 'border-green-200 dark:border-green-800/40',
     tools: [
       { id: 'plots', title: 'Parcelas y Cultivos', description: 'Manejar lotes de cultivo', icon: Sprout, path: '/campesino/crop-plots', bg: 'bg-gradient-to-br from-green-50/70 to-green-100/30 dark:from-green-950/20 dark:to-green-900/10 border-green-200/60 dark:border-green-800/40 hover:border-green-300 dark:hover:border-green-700', emoji: '', requiresOnline: false },
+      { id: 'crop-activities', title: 'Labores de Cultivo', description: 'Siembra, riego, cosecha y plagas', icon: Leaf, path: '/campesino/crop-activities', bg: 'bg-gradient-to-br from-lime-50/70 to-lime-100/30 dark:from-lime-950/20 dark:to-lime-900/10 border-lime-200/60 dark:border-lime-800/40 hover:border-lime-300 dark:hover:border-lime-700', emoji: '', requiresOnline: false },
       { id: 'water', title: 'Fuentes de Agua', description: 'Quebradas, pozos, reservorios', icon: Droplet, path: '/campesino/water-sources', bg: 'bg-gradient-to-br from-cyan-50/70 to-cyan-100/30 dark:from-cyan-950/20 dark:to-cyan-900/10 border-cyan-200/60 dark:border-cyan-800/40 hover:border-cyan-300 dark:hover:border-cyan-700', emoji: '💧', requiresOnline: false },
     ]
   },
@@ -287,6 +290,9 @@ const CampesinoDashboard = () => {
             )}
           </div>
         </motion.div>
+
+        {/* ── MI JORNADA: alertas críticas y altas del día ── */}
+        {searchTerm.trim() === '' && <MiJornadaSection />}
 
         {/* ── ACCIONES RÁPIDAS (Solo se muestran si no hay búsqueda activa) ── */}
         {searchTerm.trim() === '' && (
