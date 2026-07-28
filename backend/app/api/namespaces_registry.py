@@ -63,6 +63,9 @@ def register_namespaces(api):
     from ..namespaces.farm.fincas_namespace import fincas_ns
     from ..namespaces.users.membership_namespace import membership_ns
     from ..namespaces.users.invitations_namespace import invitations_ns
+    from ..namespaces.users.notifications_namespace import (
+        user_notifications_ns, notifications_ns,
+    )
     from ..namespaces.core.location_namespace import location_ns
     from ..namespaces.core.client_errors_namespace import client_errors_ns
     from ..namespaces.core.chat_namespace import chat_ns
@@ -159,6 +162,8 @@ def register_namespaces(api):
     api.add_namespace(fincas_ns)
     api.add_namespace(membership_ns, path='/membership')
     api.add_namespace(invitations_ns, path='/invitations')
+    api.add_namespace(user_notifications_ns, path='/users')
+    api.add_namespace(notifications_ns, path='/notifications')
     api.add_namespace(location_ns, path='/location')
     api.add_namespace(chat_ns, path='/chat')
     api.add_namespace(sync_ns, path='/sync')
