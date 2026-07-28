@@ -34,12 +34,13 @@ function uvLevel(uv: number | null): { label: string; color: string } {
 
 function formatTime(timeStr: string | null): string | null {
 	if (!timeStr) return null;
-	try {
-		const date = new Date(timeStr);
-		return date.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
-	} catch {
-		return timeStr;
-	}
+	// El backend envía la hora suelta ("06:12:00"), que `new Date` no acepta.
+	const bareTime = /^(\d{2}):(\d{2})/.exec(timeStr);
+	if (bareTime) return `${bareTime[1]}:${bareTime[2]}`;
+
+	const date = new Date(timeStr);
+	if (Number.isNaN(date.getTime())) return timeStr;
+	return date.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
 }
 
 export function CurrentWeatherCards({ current }: Props) {

@@ -326,19 +326,32 @@ class WeatherDataService:
             WeatherRecord.recorded_at >= start_date,
         ).order_by(WeatherRecord.recorded_at.asc()).all()
 
-        return [
-            {
-                "id": r.id,
-                "recorded_at": r.recorded_at.isoformat(),
-                "temperature_celsius": r.temperature_celsius,
-                "humidity_percent": r.humidity_percent,
-                "wind_speed_kmh": r.wind_speed_kmh,
-                "precipitation_mm": r.precipitation_mm,
-                "weather_condition": r.weather_condition.value if r.weather_condition else None,
-                "uv_index": r.uv_index,
-            }
-            for r in records
-        ]
+        return [WeatherDataService.serialize_record(r) for r in records]
+
+    @staticmethod
+    def serialize_record(record: WeatherRecord) -> dict[str, Any]:
+        """Serializa un registro completo: la UI muestra presión, UV, viento y orto/ocaso."""
+        return {
+            "id": record.id,
+            "finca_id": record.finca_id,
+            "recorded_at": record.recorded_at.isoformat() if record.recorded_at else None,
+            "temperature_celsius": record.temperature_celsius,
+            "feels_like_celsius": record.feels_like_celsius,
+            "humidity_percent": record.humidity_percent,
+            "wind_speed_kmh": record.wind_speed_kmh,
+            "wind_direction_degrees": record.wind_direction_degrees,
+            "precipitation_mm": record.precipitation_mm,
+            "pressure_hpa": record.pressure_hpa,
+            "uv_index": record.uv_index,
+            "cloud_cover_percent": record.cloud_cover_percent,
+            "weather_code": record.weather_code,
+            "weather_condition": record.weather_condition.value if record.weather_condition else None,
+            "sunrise_time": record.sunrise_time.isoformat() if record.sunrise_time else None,
+            "sunset_time": record.sunset_time.isoformat() if record.sunset_time else None,
+            "latitude": record.latitude,
+            "longitude": record.longitude,
+            "source": record.source,
+        }
 
     @staticmethod
     def get_active_alerts(finca_id: int) -> list[dict[str, Any]]:

@@ -49,6 +49,8 @@ export interface WeatherDashboard {
   alerts: WeatherAlert[];
   history: WeatherRecord[];
   finca_id: number;
+  /** Coordenadas de la finca; sin ellas no hay datos climáticos. */
+  location: FincaLocation | null;
 }
 
 /** Día del pronóstico diario (bloque `daily` de Open-Meteo). */
