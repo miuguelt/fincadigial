@@ -106,8 +106,8 @@ def init_rate_limiter(app):
 
     if _RATE_LIMITER_STORAGE_OK is None:
         try:
-            from redis import Redis
-            redis_client = Redis.from_url(storage_uri)
+            from .redis_client import make_redis_client
+            redis_client = make_redis_client(storage_uri)
             redis_client.ping()
             _RATE_LIMITER_STORAGE_OK = True
         except Exception as e:

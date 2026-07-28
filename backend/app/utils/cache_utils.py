@@ -33,13 +33,13 @@ def _get_cache():
 
 def _get_redis_client():
     try:
-        from redis import Redis
+        from .redis_client import make_redis_client
         url = None
         if flask.current_app:
             url = flask.current_app.config.get("CACHE_REDIS_URL") or flask.current_app.config.get("REDIS_URL")
         if not url:
             return None
-        client = Redis.from_url(url)
+        client = make_redis_client(url)
         client.ping()
         return client
     except Exception:

@@ -26,22 +26,56 @@ class RedisEventBus:
         logger.info("Redis EventBus inicializado y escuchando...")
 
     def _listen_to_redis(self):
-        pubsub = self.redis.pubsub()
-        pubsub.subscribe(self.channel)
+        """Listen forever, reconnecting on any Redis failure.
 
-        for message in pubsub.listen():
-            if message['type'] == 'message':
-                payload = message['data'].decode('utf-8')
-                with self.lock:
-                    for q in list(self.local_subscribers):
-                        try:
-                            q.put_nowait(payload)
-                        except queue.Full:
-                            try:
-                                q.get_nowait()
-                                q.put_nowait(payload)
-                            except Exception:
-                                pass
+        Without this loop a single dropped connection (server restart, socket
+        reaped mid-handshake) killed the daemon thread and silently disabled
+        every SSE stream until the backend was restarted.
+        """
+        backoff = 1
+        last_warning = 0.0
+
+        while True:
+            pubsub = None
+            try:
+                pubsub = self.redis.pubsub()
+                pubsub.subscribe(self.channel)
+                backoff = 1
+                logger.info("Redis EventBus suscrito al canal '%s'", self.channel)
+
+                for message in pubsub.listen():
+                    if message['type'] == 'message':
+                        self._dispatch_local(message['data'].decode('utf-8'))
+            except Exception as exc:
+                now = time.time()
+                # Rule: at most one warning per minute for repeating errors.
+                if now - last_warning >= 60:
+                    logger.warning(
+                        "Redis EventBus desconectado (%s). Reintentando en %ss",
+                        exc, backoff
+                    )
+                    last_warning = now
+            finally:
+                if pubsub is not None:
+                    try:
+                        pubsub.close()
+                    except Exception:
+                        pass
+
+            time.sleep(backoff)
+            backoff = min(backoff * 2, 30)
+
+    def _dispatch_local(self, payload: str):
+        with self.lock:
+            for q in list(self.local_subscribers):
+                try:
+                    q.put_nowait(payload)
+                except queue.Full:
+                    try:
+                        q.get_nowait()
+                        q.put_nowait(payload)
+                    except Exception:
+                        pass
 
     def subscribe(self):
         q = queue.Queue(maxsize=1000)

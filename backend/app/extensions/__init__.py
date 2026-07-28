@@ -32,8 +32,8 @@ def init_extensions(app):
     redis_url = app.config.get('REDIS_URL')
     if redis_url:
         try:
-            from redis import Redis
-            redis_client = Redis.from_url(redis_url)
+            from ..utils.redis_client import make_redis_client
+            redis_client = make_redis_client(redis_url)
             redis_client.ping()
             app.extensions['redis'] = redis_client
             logger.info('Redis native client inicializado y registrado en app.extensions')
