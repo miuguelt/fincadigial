@@ -7,20 +7,30 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { NotificationsBell } from './NotificationsBell';
 import { useNotifications, NotificationItem } from '@/shared/hooks/useNotifications';
-import Icon from '@/shared/ui/Icon';
+import {
+  Bell,
+  BellOff,
+  CircleCheck,
+  CircleX,
+  History,
+  Mail,
+  Tractor,
+  UserPlus,
+  type LucideIcon,
+} from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 
-const getNotificationIcon = (type: NotificationItem['type']) => {
+const getNotificationIcon = (type: NotificationItem['type']): LucideIcon => {
   switch (type) {
-    case 'JOIN_REQUEST': return 'user-plus';
-    case 'INVITATION_RECEIVED': return 'mail';
-    case 'INVITATION_ACCEPTED': return 'circle-check';
-    case 'INVITATION_REJECTED': return 'circle-x';
-    case 'JOIN_APPROVED': return 'building-farm';
-    default: return 'bell';
+    case 'JOIN_REQUEST': return UserPlus;
+    case 'INVITATION_RECEIVED': return Mail;
+    case 'INVITATION_ACCEPTED': return CircleCheck;
+    case 'INVITATION_REJECTED': return CircleX;
+    case 'JOIN_APPROVED': return Tractor;
+    default: return Bell;
   }
 };
 
@@ -56,11 +66,13 @@ export const NotificationsPanel: React.FC = () => {
         text = `Notificación de ${notif.finca_name}`;
     }
 
+    const NotificationIcon = getNotificationIcon(notif.type);
+
     return (
       <div key={notif.id} className="p-4 border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors">
         <div className="flex items-start gap-3">
           <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
-            <Icon name={getNotificationIcon(notif.type)} size={20} className="text-primary" />
+            <NotificationIcon size={20} className="text-primary" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
@@ -144,7 +156,7 @@ export const NotificationsPanel: React.FC = () => {
       >
         <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between bg-muted/20">
           <h3 className="font-black text-sm uppercase tracking-widest text-foreground flex items-center gap-2">
-            <Icon name="bell" size={16} className="text-primary" />
+            <Bell size={16} className="text-primary" />
             Notificaciones
           </h3>
           {totalPending > 0 && (
@@ -173,7 +185,7 @@ export const NotificationsPanel: React.FC = () => {
           <TabsContent value="pendientes" className="m-0 p-0 max-h-[400px] overflow-y-auto">
             {pendingNotifs.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
-                <Icon name="bell-off" size={32} className="mx-auto mb-2 opacity-50" />
+                <BellOff size={32} className="mx-auto mb-2 opacity-50" />
                 <p className="text-sm font-bold">No hay notificaciones pendientes</p>
               </div>
             ) : (
@@ -186,7 +198,7 @@ export const NotificationsPanel: React.FC = () => {
           <TabsContent value="historial" className="m-0 p-0 max-h-[400px] overflow-y-auto">
             {historyNotifs.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
-                <Icon name="history" size={32} className="mx-auto mb-2 opacity-50" />
+                <History size={32} className="mx-auto mb-2 opacity-50" />
                 <p className="text-sm font-bold">No hay historial reciente</p>
               </div>
             ) : (

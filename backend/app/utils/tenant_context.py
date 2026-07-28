@@ -10,7 +10,7 @@ Uso:
     finca_type = get_current_finca_type()  # str | None
 """
 
-from flask_jwt_extended import get_jwt
+from flask_jwt_extended import get_jwt, get_jwt_identity
 import logging
 
 logger = logging.getLogger(__name__)
@@ -69,6 +69,23 @@ def get_current_user_role() -> str | None:
     try:
         jwt_data = get_jwt()
         return jwt_data.get('role')
+    except Exception:
+        return None
+
+
+def get_current_user_id() -> int | None:
+    """
+    Obtiene el ID del usuario actual desde la identidad del JWT.
+
+    Returns:
+        int: ID del usuario autenticado
+        None: Si no hay JWT o la identidad no es numérica
+    """
+    try:
+        identity = get_jwt_identity()
+        return int(identity) if identity is not None else None
+    except (TypeError, ValueError):
+        return None
     except Exception:
         return None
 

@@ -14,17 +14,16 @@ _ROOT_ENV_FILE = _PROJECT_ROOT / '.env'
 load_dotenv(dotenv_path=_ROOT_ENV_FILE, override=False)
 
 def _get_wsl_ip():
-    """Detect dynamic WSL IP on Windows host to bypass buggy localhost port-forwarding."""
-    if os.name == 'nt':
-        try:
-            import subprocess
-            out = subprocess.check_output(["wsl", "hostname", "-I"], text=True, timeout=2)
-            ips = out.strip().split()
-            if ips:
-                return ips[0]
-        except Exception:
-            pass
-    return None
+    """Return the WSL host IP when explicitly configured via WSL_HOST_IP.
+
+    Auto-detection used to shell out to `wsl hostname -I` on every import. On a
+    native Windows host without WSL that call fails in a locale-encoded (cp1252)
+    error message, which crashed subprocess' reader thread with UnicodeDecodeError
+    on every app start. It also silently rewrote the PostgreSQL and Redis hosts,
+    which must stay on 127.0.0.1 in this deployment.
+    """
+    ip = os.getenv('WSL_HOST_IP', '').strip()
+    return ip or None
 
 _WSL_IP = _get_wsl_ip()
 

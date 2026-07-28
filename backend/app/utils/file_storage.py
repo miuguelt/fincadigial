@@ -134,6 +134,47 @@ def save_animal_image(file, animal_id, generate_thumbnail=True, skip_pillow=Fals
     Returns:
         dict con filename, filepath, thumb_path, file_size, mime_type
     """
+    return _save_image(
+        file,
+        upload_dir=get_animal_upload_path(animal_id),
+        relative_dir=f"static/uploads/animals/{animal_id}",
+        generate_thumbnail=generate_thumbnail,
+        skip_pillow=skip_pillow,
+        filename=filename,
+        owner_label=f"animal {animal_id}",
+    )
+
+
+def get_finca_upload_path(finca_id):
+    """
+    Genera la ruta de almacenamiento para las imágenes de una finca.
+    Formato: static/uploads/fincas/{finca_id}/
+    """
+    upload_folder = flask.current_app.config.get('UPLOAD_FOLDER', 'static/uploads')
+    return os.path.join(upload_folder, 'fincas', str(finca_id))
+
+
+def save_finca_image(file, finca_id, generate_thumbnail=True, skip_pillow=False, filename=None):
+    """Guarda una imagen de finca. Misma semántica que save_animal_image."""
+    return _save_image(
+        file,
+        upload_dir=get_finca_upload_path(finca_id),
+        relative_dir=f"static/uploads/fincas/{finca_id}",
+        generate_thumbnail=generate_thumbnail,
+        skip_pillow=skip_pillow,
+        filename=filename,
+        owner_label=f"finca {finca_id}",
+    )
+
+
+def delete_finca_image(filepath):
+    """Elimina físicamente una imagen de finca (y su miniatura si existe)."""
+    return delete_animal_image(filepath)
+
+
+def _save_image(file, upload_dir, relative_dir, generate_thumbnail=True,
+                skip_pillow=False, filename=None, owner_label=""):
+    """Shared image pipeline used by the animal and finca savers."""
     try:
         import io
 
@@ -157,7 +198,6 @@ def save_animal_image(file, animal_id, generate_thumbnail=True, skip_pillow=Fals
         # Generar nombres
         unique_filename = generate_unique_filename(original_filename)
         thumb_filename = f"thumb_{unique_filename}"
-        upload_dir = get_animal_upload_path(animal_id)
 
         if not ensure_upload_directory(upload_dir):
             raise OSError("No se pudo crear el directorio de uploads")
@@ -167,7 +207,7 @@ def save_animal_image(file, animal_id, generate_thumbnail=True, skip_pillow=Fals
             full_path = os.path.join(upload_dir, unique_filename)
             with open(full_path, 'wb') as f:
                 f.write(img_data)
-            relative_path = f"static/uploads/animals/{animal_id}/{unique_filename}"
+            relative_path = f"{relative_dir}/{unique_filename}"
             mime = get_mime_type(unique_filename)
             return {
                 'filename': unique_filename,
@@ -207,9 +247,9 @@ def save_animal_image(file, animal_id, generate_thumbnail=True, skip_pillow=Fals
             thumb_img.thumbnail((400, 400), Image.Resampling.LANCZOS)
             thumb_full_path = os.path.join(upload_dir, thumb_filename)
             thumb_img.save(thumb_full_path, "JPEG", quality=70, optimize=True)
-            thumb_relative_path = f"static/uploads/animals/{animal_id}/{thumb_filename}"
+            thumb_relative_path = f"{relative_dir}/{thumb_filename}"
 
-        relative_path = f"static/uploads/animals/{animal_id}/{unique_filename}"
+        relative_path = f"{relative_dir}/{unique_filename}"
 
         return {
             'filename': unique_filename,
@@ -220,7 +260,7 @@ def save_animal_image(file, animal_id, generate_thumbnail=True, skip_pillow=Fals
         }
 
     except Exception as e:
-        logger.error(f"Error procesando imagen para animal {animal_id}: {str(e)}")
+        logger.error(f"Error procesando imagen para {owner_label}: {str(e)}")
         raise
 
 

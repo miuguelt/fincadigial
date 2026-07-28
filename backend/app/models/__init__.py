@@ -24,6 +24,13 @@ from .activity_log import ActivityLog
 from .activity_daily_agg import ActivityDailyAgg
 from .alerts import AnimalAlertConfig, AnimalAlert
 from .inventory import InventoryLot, InventoryMovement
+from .animal_movements import AnimalMovement, MovementType
+from .finca_images import FincaImages
+from .membership_request import MembershipRequest, RequestStatus
+from .system_content import SystemContent
+from .treatment_recommendations import TreatmentRecommendations, TreatmentRecommendationStatus
+from .treatment_recommendation_controls import TreatmentRecommendationControls
+from .user_favorite import UserFavorite
 from .reproduction import ReproductiveEvent, Offspring
 from .milk_production import MilkProduction
 from .lactation_cycle import LactationCycle, LactationStatus
@@ -119,6 +126,16 @@ __all__ = [
     'AnimalAlert',
     'InventoryLot',
     'InventoryMovement',
+    'AnimalMovement',
+    'MovementType',
+    'FincaImages',
+    'MembershipRequest',
+    'RequestStatus',
+    'SystemContent',
+    'TreatmentRecommendations',
+    'TreatmentRecommendationStatus',
+    'TreatmentRecommendationControls',
+    'UserFavorite',
     'ReproductiveEvent',
     'Offspring',
     'MilkProduction',

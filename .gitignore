@@ -85,3 +85,14 @@ backend/scratch/
 !package-lock.json
 !IDENTITY.json
 !.devbrain/config/IDENTITY.json
+
+# --- Runtime artifacts (NO COMMIT) ---
+*.pid
+*.db
+celerybeat-schedule*
+flask_monitoringdashboard.db
+playwright-report/
+frontend_logs*.txt
+frontend_ui_*.txt
+backend/static/uploads/
+nul

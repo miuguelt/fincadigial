@@ -1,0 +1,30 @@
+target-version = "py311"
+line-length = 100
+
+[lint]
+select = [
+    "E",
+    "W",
+    "F",
+    "N",
+    "UP",
+    "B",
+    "SIM",
+]
+ignore = [
+    "E402",
+    "E501",
+    "E711",
+    "E712",
+    "E722",
+    "B008",
+    "N803",
+    "N806",
+    "UP007",
+]
+
+[lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/*" = ["B", "SIM"]
+"scripts/*" = ["B", "SIM"]
+"migrations/*" = ["E", "F", "B", "SIM", "N"]

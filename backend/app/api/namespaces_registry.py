@@ -50,6 +50,12 @@ def register_namespaces(api):
     from ..namespaces.finanzas.exports_namespace import exports_ns
     from ..namespaces.animals.growth_namespace import growth_ns
     from ..namespaces.core.public_namespace import public_ns
+    from ..namespaces.animals.animal_movements_namespace import animal_movements_ns
+    from ..namespaces.farm.finca_images_namespace import finca_images_ns
+    from ..namespaces.health.treatment_recommendations_namespace import treatment_recommendations_ns
+    from ..namespaces.core.p2p_signal_namespace import p2p_signal_ns
+    from ..namespaces.system.monitor_namespace import monitor_ns
+    from ..namespaces.system.projects_namespace import projects_ns
     from ..namespaces.finanzas.multi_finca_namespace import multi_finca_ns
     from ..namespaces.finanzas.regulatory_reports_namespace import regulatory_ns
     from ..namespaces.users.push_notifications_namespace import push_ns
@@ -136,6 +142,12 @@ def register_namespaces(api):
     # api.add_namespace(activity_ns, path='/activity-log')
     api.add_namespace(alerts_ns)
     api.add_namespace(inventory_ns)
+    api.add_namespace(animal_movements_ns)
+    api.add_namespace(finca_images_ns)
+    api.add_namespace(treatment_recommendations_ns)
+    api.add_namespace(p2p_signal_ns)
+    api.add_namespace(monitor_ns)
+    api.add_namespace(projects_ns)
     api.add_namespace(reproduction_ns)
     api.add_namespace(exports_ns)
     api.add_namespace(growth_ns)
