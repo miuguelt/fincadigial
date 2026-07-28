@@ -102,6 +102,64 @@ def calculate_live_kpis(finca_id=None) -> dict:
         return {'timestamp': datetime.now().isoformat(), 'kpis': {}, 'error': str(e)}
 
 
+def _close_pubsub(pubsub) -> None:
+    """Best-effort cleanup: the socket may already be closed by the server."""
+    if pubsub is None:
+        return
+    try:
+        pubsub.close()
+    except Exception:
+        pass
+
+
+def _stream_from_redis(redis_client, channel: str, finca_id):
+    """Yield SSE frames from Redis Pub/Sub, reconnecting on connection loss.
+
+    A dropped socket (idle reap, Memurai restart, CLIENT KILL) used to end the
+    stream: the ConnectionError was logged and the generator returned. Now the
+    subscription is rebuilt with exponential backoff (1s -> 30s), mirroring
+    RedisEventBus._listen_to_redis.
+    """
+    backoff = 1
+    last_warning = 0.0
+    initial_sent = False
+
+    while True:
+        pubsub = None
+        try:
+            pubsub = redis_client.pubsub()
+            pubsub.subscribe(channel)
+            backoff = 1
+            if not initial_sent:
+                # Enviar un primer paquete inmediato para no dejar la UI vacía
+                yield f'data: {json.dumps(calculate_live_kpis(finca_id))}\n\n'
+                initial_sent = True
+
+            for message in pubsub.listen():
+                if message['type'] == 'message':
+                    # El cliente no usa decode_responses: el payload llega en bytes.
+                    data = message['data']
+                    if isinstance(data, bytes):
+                        data = data.decode('utf-8')
+                    yield f'data: {data}\n\n'
+        except Exception as exc:
+            now = time.time()
+            # Rule: at most one warning per minute for repeating errors.
+            if now - last_warning >= 60:
+                logger.warning(
+                    'SSE PubSub desconectado (%s). Reintentando en %ss', exc, backoff
+                )
+                last_warning = now
+        finally:
+            _close_pubsub(pubsub)
+
+        # Comentario SSE: mantiene viva la conexión y detecta al cliente ido
+        # (si se desconectó, este yield rompe el generador en vez de dormir).
+        yield ': reconnecting\n\n'
+        time.sleep(backoff)
+        backoff = min(backoff * 2, 30)
+
+
 @live_ns.route('/stream')
 class LiveAnalyticsStream(Resource):
     @live_ns.doc(
@@ -119,21 +177,7 @@ class LiveAnalyticsStream(Resource):
 
             from app.extensions import redis_client
             if redis_client:
-                pubsub = redis_client.pubsub()
-                try:
-                    pubsub.subscribe(channel)
-                    # Enviar un primer paquete inmediato para no dejar la UI vacía
-                    initial_data = calculate_live_kpis(finca_id)
-                    yield f'data: {json.dumps(initial_data)}\n\n'
-
-                    for message in pubsub.listen():
-                        if message['type'] == 'message':
-                            yield f'data: {message["data"]}\n\n'
-                except Exception as e:
-                    logger.error(f"Error en PubSub SSE: {e}")
-                finally:
-                    pubsub.unsubscribe()
-                    pubsub.close()
+                yield from _stream_from_redis(redis_client, channel, finca_id)
             else:
                 # Fallback sin Redis (antiguo comportamiento pesado)
                 while True:
