@@ -34,7 +34,7 @@ class AnimalFieldTransferResource(Resource):
             if not field_id:
                 return APIResponse.validation_error({'field_id': 'Se requiere ID del potrero de destino'})
 
-            results = AnimalFields.batch_transfer(animal_ids, field_id, date_val, notes)
+            outcome = AnimalFields.batch_transfer(animal_ids, field_id, date_val, notes)
 
             db.session.commit()
 
@@ -43,9 +43,25 @@ class AnimalFieldTransferResource(Resource):
             _cache_clear('Animals')
             _cache_clear('Fields')
 
+            moved = outcome['assignments'] + outcome['reactivated']
+            skipped = outcome['skipped_animal_ids']
+
+            # El desglose evita el reporte engañoso de antes: trasladar 20
+            # animales de los que 8 ya estaban en el destino respondía
+            # "12 animales trasladados" sin decir qué pasó con los otros 8.
+            message = f'{len(moved)} animales trasladados exitosamente'
+            if skipped:
+                message += f' ({len(skipped)} ya estaban en el potrero de destino)'
+
             return APIResponse.success(
-                data=[r.to_namespace_dict() for r in results],
-                message=f'{len(results)} animales trasladados exitosamente'
+                data=[r.to_namespace_dict() for r in moved],
+                message=message,
+                meta={
+                    'total_requested': outcome['total_requested'],
+                    'transferred_count': len(moved),
+                    'skipped_count': len(skipped),
+                    'skipped_animal_ids': skipped,
+                },
             )
         except Exception as e:
             db.session.rollback()

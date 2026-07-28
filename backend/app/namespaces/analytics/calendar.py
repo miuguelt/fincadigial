@@ -11,6 +11,7 @@ from app.models.treatments import Treatments
 from app.models.vaccinations import Vaccinations
 from app.models.control import Control
 from app.models.alerts import AnimalAlert, AlertPriority
+from app.services.calendar_future_events import build_future_events
 from app.utils.response_handler import APIResponse
 from app.utils.tenant_context import apply_tenant_filter
 
@@ -90,7 +91,7 @@ class GlobalCalendar(Resource):
             for t in treatments:
                 all_events.append({
                     'id': f'treatment_{t.id}',
-                    'title': f"TX: {t.description[:20]}... - {t.animal.record if t.animal else '???'}",
+                    'title': f"TX: {t.description[:20]}... - {t.animals.record if t.animals else '???'}",
                     'start': str(t.treatment_date),
                     'type': 'health',
                     'color': '#ef4444', # red
@@ -107,12 +108,12 @@ class GlobalCalendar(Resource):
             for v in vaccinations:
                 all_events.append({
                     'id': f'vacc_{v.id}',
-                    'title': f"VAC: {v.vaccine.name if v.vaccine else 'Vacuna'} - {v.animal.record if v.animal else '???'}",
+                    'title': f"VAC: {v.vaccines.name if v.vaccines else 'Vacuna'} - {v.animals.record if v.animals else '???'}",
                     'start': str(v.vaccination_date),
                     'type': 'vaccination',
                     'color': '#8b5cf6', # violet
                     'animal_id': v.animal_id,
-                    'description': f"Vacunación: {v.vaccine.name if v.vaccine else ''}"
+                    'description': f"Vacunación: {v.vaccines.name if v.vaccines else ''}"
                 })
 
             # 4. Controles Veterinarios
@@ -124,7 +125,7 @@ class GlobalCalendar(Resource):
             for c in controls:
                 all_events.append({
                     'id': f'control_{c.id}',
-                    'title': f"CTRL: {c.animal.record if c.animal else '???'}",
+                    'title': f"CTRL: {c.animals.record if c.animals else '???'}",
                     'start': str(c.checkup_date),
                     'type': 'control',
                     'color': '#f59e0b', # amber
@@ -149,6 +150,9 @@ class GlobalCalendar(Resource):
                     'animal_id': a.animal_id,
                     'description': a.message
                 })
+
+            # 6. Pendientes: próximas vacunas, fin de retiro y tareas
+            all_events.extend(build_future_events(_tf, start_date, end_date))
 
             return APIResponse.success(data={
                 'events': all_events,

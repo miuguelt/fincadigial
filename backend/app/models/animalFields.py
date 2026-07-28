@@ -105,18 +105,27 @@ class AnimalFields(BaseModel):
 
         animals_to_transfer = [a_id for a_id in owned_ids if a_id not in animals_already_in_field]
 
-        existing_on_target = db.session.query(AnimalFields.animal_id).filter(
+        # Un animal que ya pasó por este potrero hoy conserva la fila de esa
+        # asignación (con removal_date puesto al salir). Reabrirla en vez de
+        # saltarla: de lo contrario el animal se quedaba sin potrero activo.
+        existing_on_target = AnimalFields.query.filter(
             AnimalFields.animal_id.in_(animals_to_transfer),
             AnimalFields.field_id == field_id,
             AnimalFields.assignment_date == assignment_date_obj,
             AnimalFields.is_deleted == False
         ).all()
 
-        already_assigned_today = {a[0] for a in existing_on_target}
+        reactivated_ids = set()
+        for assignment in existing_on_target:
+            assignment.removal_date = None
+            if notes:
+                assignment.notes = notes
+            db.session.add(assignment)
+            reactivated_ids.add(assignment.animal_id)
 
         new_assignments = []
         for a_id in animals_to_transfer:
-            if a_id in already_assigned_today:
+            if a_id in reactivated_ids:
                 continue
 
             new_assignments.append({
@@ -127,12 +136,19 @@ class AnimalFields(BaseModel):
                 'finca_id': finca_id
             })
 
+        created = []
         if new_assignments:
             logger.info(f"Creadas {len(new_assignments)} nuevas asignaciones para el potrero {field_id}")
-            return cls.bulk_create(new_assignments)
+            created = cls.bulk_create(new_assignments)
         else:
             logger.info("No se requirieron nuevas asignaciones (ya existían en esta fecha)")
-            return []
+
+        return {
+            'assignments': created,
+            'reactivated': [a for a in existing_on_target],
+            'skipped_animal_ids': sorted(animals_already_in_field),
+            'total_requested': len(animal_ids),
+        }
 
     @classmethod
     def batch_remove(cls, animal_ids: list[int], removal_date: str):

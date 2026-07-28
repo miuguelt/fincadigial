@@ -44,8 +44,9 @@ def _seed_calendar_data(finca_id: int) -> None:
         name="Fiebre Aftosa Test",
         symptoms="Fiebre, vesículas",
         details="Enfermedad de declaración obligatoria ICA",
+        finca_id=finca_id,
     )
-    route = RouteAdministration.create(name="Subcutánea Test")
+    route = RouteAdministration.create(name="Subcutánea Test", finca_id=finca_id)
     vaccine = Vaccines.create(
         name="Aftosa Test Calendar",
         dosis="2ml",
