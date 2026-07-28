@@ -55,6 +55,7 @@ class MilkProduction(BaseModel):
         'control': {'fields': ['id', 'health_status']}
     }
     _filterable_fields = ['animal_id', 'finca_id', 'control_id', 'date', 'milking_session']
+    _range_filter_fields = {'date_from': 'date', 'date_to': 'date'}
     _sortable_fields = ['id', 'date', 'liters', 'created_at']
     _required_fields = ['animal_id', 'liters', 'milking_session']
     _enum_fields = {'milking_session': MilkSession}

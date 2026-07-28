@@ -1,7 +1,7 @@
 import enum as _enum
 from datetime import date
 from app import db
-from app.models.base_model import BaseModel
+from app.models.base_model import BaseModel, ValidationError
 from sqlalchemy import Index
 
 
@@ -64,6 +64,38 @@ class InventoryLot(BaseModel):
     _unique_fields = []
     _enum_fields = {'product_type': ProductType}
     _allowed_input_fields = []
+
+    _PRODUCT_FK = {
+        ProductType.Medicamento: 'medication_id',
+        ProductType.Vacuna: 'vaccine_id',
+    }
+
+    @classmethod
+    def _validate_and_normalize(cls, data, is_update=False, instance_id=None):
+        """Exige que el lote apunte al producto que declara su product_type.
+
+        Sin esto se podían crear lotes sin FK alguna (product_name quedaba en
+        None) o con la FK del tipo contrario (un lote de medicamento apuntando
+        a una vacuna).
+        """
+        normalized = super()._validate_and_normalize(data, is_update, instance_id)
+
+        product_type = normalized.get('product_type')
+        if product_type is None:
+            return normalized
+
+        expected = cls._PRODUCT_FK[product_type]
+        wrong = next(fk for fk in cls._PRODUCT_FK.values() if fk != expected)
+
+        errors = []
+        if not is_update and not normalized.get(expected):
+            errors.append(f"'{expected}' es requerido para product_type '{product_type.value}'")
+        if normalized.get(wrong):
+            errors.append(f"'{wrong}' no aplica a product_type '{product_type.value}'")
+
+        if errors:
+            raise ValidationError('; '.join(errors), code="validation_error", errors=errors)
+        return normalized
 
     @property
     def is_expired(self):

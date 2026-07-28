@@ -1,6 +1,20 @@
 from app import db
 from app.models.base_model import BaseModel
 from datetime import datetime, UTC
+from decimal import Decimal
+
+
+def _as_decimal(value) -> Decimal:
+    """Normaliza a Decimal los acumuladores Numeric.
+
+    Los defaults de columna son floats de Python y los importes entran como
+    float desde el payload JSON, así que sumarlos contra el Decimal que
+    devuelve la base de datos lanzaba
+    TypeError: unsupported operand type(s) for +=: 'float' and 'decimal.Decimal'.
+    """
+    if isinstance(value, Decimal):
+        return value
+    return Decimal(str(value or 0))
 
 class FinancialSummary(BaseModel):
     """Resumen incremental para finanzas."""
@@ -32,8 +46,8 @@ class FinancialSummary(BaseModel):
         expenses = db.session.query(db.func.sum(Transaction.amount)).filter_by(
             finca_id=self.finca_id, transaction_type=TransactionType.Expense, is_deleted=False).scalar() or 0
 
-        self.total_income = incomes
-        self.total_expense = expenses
+        self.total_income = _as_decimal(incomes)
+        self.total_expense = _as_decimal(expenses)
         self.balance = self.total_income - self.total_expense
         self.last_update = datetime.now(UTC)
         db.session.commit()
@@ -41,14 +55,16 @@ class FinancialSummary(BaseModel):
     def apply_transaction(self, tx_type, amount, is_reversion=False):
         """Aplica un cambio incremental a las finanzas."""
         from app.models.financial import TransactionType
-        delta = -amount if is_reversion else amount
+        delta = _as_decimal(amount)
+        if is_reversion:
+            delta = -delta
 
         if tx_type == TransactionType.Income:
-            self.total_income += delta
+            self.total_income = _as_decimal(self.total_income) + delta
         else:
-            self.total_expense += delta
+            self.total_expense = _as_decimal(self.total_expense) + delta
 
-        self.balance = self.total_income - self.total_expense
+        self.balance = _as_decimal(self.total_income) - _as_decimal(self.total_expense)
         self.last_update = datetime.now(UTC)
 
 class MilkSummary(BaseModel):

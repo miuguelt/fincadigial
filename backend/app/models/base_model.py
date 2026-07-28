@@ -436,6 +436,7 @@ class BaseModel(db.Model):
         # Aplicar filtros
         if filters:
             filter_conditions = []
+            range_filter_fields = getattr(cls, '_range_filter_fields', {})
             for key, value in filters.items():
                 # Filtro especial para delta sync (sincronización incremental)
                 if key == '_since':
@@ -443,6 +444,20 @@ class BaseModel(db.Model):
                     if hasattr(cls, 'updated_at'):
                         filter_conditions.append(cls.updated_at >= value)
                         logger.debug(f"Delta sync filter: {cls.__name__}.updated_at >= {value}")
+                    continue
+
+                # Filtros de rango declarados por el modelo: '<param>': '<columna>'.
+                # El sufijo del parámetro decide el operador (_from -> >=, _to -> <=).
+                source_field = range_filter_fields.get(key)
+                if source_field and hasattr(cls, source_field):
+                    column = getattr(cls, source_field)
+                    if key.endswith('_from'):
+                        filter_conditions.append(column >= value)
+                    elif key.endswith('_to'):
+                        filter_conditions.append(column <= value)
+                    else:
+                        filter_conditions.append(column == value)
+                    logger.debug(f"Filtro de rango aplicado: {cls.__name__}.{key}={value}")
                     continue
 
                 if key in cls._filterable_fields and hasattr(cls, key):
@@ -619,10 +634,17 @@ class BaseModel(db.Model):
         return inspect(self).transient
 
     @classmethod
-    def get_by_id(cls, record_id, include_relations=False):
-        """Obtener instancia por ID con multi-tenant."""
+    def get_by_id(cls, record_id, include_relations=False, include_deleted=False):
+        """Obtener instancia por ID con multi-tenant.
+
+        Igual que el listado, omite los registros con soft delete: de lo
+        contrario un GET por ID seguía devolviendo 200 sobre filas ya
+        eliminadas. Usar include_deleted=True sólo para restaurarlas.
+        """
         from app.utils.tenant_context import apply_tenant_filter
         query = apply_tenant_filter(cls.query, cls)
+        if not include_deleted and hasattr(cls, 'is_deleted'):
+            query = query.filter(cls.is_deleted == False)
         if include_relations:
             for relation_name in cls._namespace_relations.keys():
                 if hasattr(cls, relation_name):

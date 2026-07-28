@@ -15,6 +15,19 @@ class MilkProductionService:
     """Servicio para operaciones de producción láctea"""
 
     @staticmethod
+    def _period_totals(*conditions) -> dict:
+        """Totales de registros y animales distintos para un periodo.
+
+        `animal_count` no se puede derivar sumando los desgloses diarios: un
+        mismo animal aparece en varios días y quedaría contado por duplicado.
+        """
+        row = db.session.query(
+            func.count(MilkProduction.id),
+            func.count(func.distinct(MilkProduction.animal_id)),
+        ).filter(*conditions, MilkProduction.is_deleted == False).one()
+        return {'record_count': row[0] or 0, 'animal_count': row[1] or 0}
+
+    @staticmethod
     def get_daily_summary(finca_id: int, target_date: Optional[date] = None) -> dict:
         """Obtiene resumen diario de producción por finca"""
         if target_date is None:
@@ -22,7 +35,8 @@ class MilkProductionService:
 
         production = MilkProduction.query.filter_by(
             finca_id=finca_id,
-            date=target_date
+            date=target_date,
+            is_deleted=False,
         ).all()
 
         total_liters = sum(m.liters for m in production)
@@ -35,7 +49,11 @@ class MilkProductionService:
             'date': target_date.isoformat(),
             'total_liters': total_liters,
             'by_session': by_session,
-            'count': len(production)
+            # 'record_count' es el nombre que usan el resumen semanal y el
+            # dashboard; 'count' se mantiene para clientes ya publicados.
+            'record_count': len(production),
+            'count': len(production),
+            'animal_count': len({m.animal_id for m in production}),
         }
 
     @staticmethod
@@ -56,6 +74,7 @@ class MilkProductionService:
             MilkProduction.finca_id == finca_id,
             MilkProduction.date >= start_date,
             MilkProduction.date <= end_date,
+            MilkProduction.is_deleted == False,
         ).group_by(MilkProduction.date).order_by(MilkProduction.date).all()
 
         session_stats = db.session.query(
@@ -66,10 +85,17 @@ class MilkProductionService:
             MilkProduction.finca_id == finca_id,
             MilkProduction.date >= start_date,
             MilkProduction.date <= end_date,
+            MilkProduction.is_deleted == False,
         ).group_by(MilkProduction.milking_session).all()
 
         week_total = sum(row.total_liters for row in daily_stats) if daily_stats else 0
         week_avg = week_total / len(daily_stats) if daily_stats else 0
+
+        totals = MilkProductionService._period_totals(
+            MilkProduction.finca_id == finca_id,
+            MilkProduction.date >= start_date,
+            MilkProduction.date <= end_date,
+        )
 
         return {
             'period': {
@@ -79,6 +105,7 @@ class MilkProductionService:
             'total_liters': week_total,
             'avg_daily_liters': round(week_avg, 2),
             'days_with_records': len(daily_stats),
+            **totals,
             'daily_breakdown': [
                 {
                     'date': row.date.isoformat(),
@@ -114,6 +141,7 @@ class MilkProductionService:
             MilkProduction.finca_id == finca_id,
             extract('year', MilkProduction.date) == year,
             extract('month', MilkProduction.date) == month,
+            MilkProduction.is_deleted == False,
         ).group_by(MilkProduction.date).order_by(MilkProduction.date).all()
 
         weekly_stats = db.session.query(
@@ -124,6 +152,7 @@ class MilkProductionService:
             MilkProduction.finca_id == finca_id,
             extract('year', MilkProduction.date) == year,
             extract('month', MilkProduction.date) == month,
+            MilkProduction.is_deleted == False,
         ).group_by(func.extract('week', MilkProduction.date)).order_by(func.extract('week', MilkProduction.date)).all()
 
         month_total = sum(row.total_liters for row in daily_stats) if daily_stats else 0
@@ -138,11 +167,18 @@ class MilkProductionService:
             MilkProduction.finca_id == finca_id,
             extract('year', MilkProduction.date) == prev_year,
             extract('month', MilkProduction.date) == prev_month,
+            MilkProduction.is_deleted == False,
         ).scalar() or 0
 
         trend_pct = 0
         if prev_month_total > 0:
             trend_pct = ((month_total - prev_month_total) / prev_month_total) * 100
+
+        totals = MilkProductionService._period_totals(
+            MilkProduction.finca_id == finca_id,
+            extract('year', MilkProduction.date) == year,
+            extract('month', MilkProduction.date) == month,
+        )
 
         return {
             'period': {
@@ -152,6 +188,7 @@ class MilkProductionService:
             'total_liters': month_total,
             'avg_daily_liters': round(month_avg, 2),
             'days_with_records': len(daily_stats),
+            **totals,
             'trend_vs_previous_month': {
                 'previous_month_liters': float(prev_month_total),
                 'change_percentage': round(trend_pct, 2),
@@ -191,6 +228,7 @@ class MilkProductionService:
             MilkProduction.finca_id == finca_id,
             MilkProduction.date >= start_date,
             MilkProduction.date <= end_date,
+            MilkProduction.is_deleted == False,
         ).group_by(MilkProduction.date).order_by(MilkProduction.date).all()
 
         session_stats = db.session.query(
@@ -202,6 +240,7 @@ class MilkProductionService:
             MilkProduction.finca_id == finca_id,
             MilkProduction.date >= start_date,
             MilkProduction.date <= end_date,
+            MilkProduction.is_deleted == False,
         ).group_by(MilkProduction.milking_session).all()
 
         total_liters = sum(row.total_liters for row in daily_stats) if daily_stats else 0
@@ -249,6 +288,7 @@ class MilkProductionService:
             MilkProduction.finca_id == finca_id,
             extract('year', MilkProduction.date) == year,
             extract('month', MilkProduction.date) == month,
+            MilkProduction.is_deleted == False,
         ).scalar() or 0
 
         estimated_revenue = float(total_liters) * price_per_liter
@@ -260,6 +300,7 @@ class MilkProductionService:
             MilkProduction.finca_id == finca_id,
             extract('year', MilkProduction.date) == year,
             extract('month', MilkProduction.date) == month,
+            MilkProduction.is_deleted == False,
         ).group_by(MilkProduction.milking_session).all()
 
         return {
