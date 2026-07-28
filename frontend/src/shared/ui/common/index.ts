@@ -1,4 +1,4 @@
 export * from './PaginationBar';
 export * from './PageSizeSelect';
 export * from './ResultInfo';
-export * from './Breadcrumbs';
+export * from './Breadcrumbs';export * from "./EmptyStateSimple";

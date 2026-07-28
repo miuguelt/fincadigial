@@ -1,0 +1,81 @@
+# Lean docker-compose.yml for Villaluz local development
+# Reduced from 4 containers to 1 (optional Celery worker)
+# Uses shared PostgreSQL (postgres_prod_central_v18) and Redis (devbrain-redis)
+# For full Windows-native mode, use start-windows.ps1 instead (0 containers)
+
+services:
+  villaluz-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: villaluz-backend:latest
+    container_name: villaluz_backend
+    command: >
+      gunicorn --preload --worker-class gthread
+      --workers 2 --threads 2 --timeout 120
+      --bind 0.0.0.0:8081 wsgi:app
+    ports:
+      - "${PORT:-8092}:8081"
+    restart: unless-stopped
+    mem_limit: 512m
+    mem_reservation: 256m
+    environment:
+      - FLASK_ENV=production
+      - DB_ENGINE=${DB_ENGINE:-postgresql+psycopg2}
+      - DB_HOST=postgres_prod_central_v18
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-villaluz}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
+      - DB_NAME=${DB_NAME:-finca_db}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_COOKIE_DOMAIN=localhost
+      - JWT_COOKIE_SECURE=false
+      - JWT_COOKIE_SAMESITE=Lax
+      - CORS_ORIGINS=http://localhost:3003,http://localhost:3005,http://127.0.0.1:3005
+      - REDIS_URL=redis://devbrain-redis:6379/0
+      - CELERY_BROKER_URL=redis://devbrain-redis:6379/1
+    networks:
+      - devbrain-network
+    volumes:
+      - ./backend:/app
+      - dev_uploads_data:/app/static/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8081/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 45s
+
+  # Optional: Celery worker (commented out by default for Windows-native mode)
+  # Uncomment if you need async tasks and aren't using start-windows.ps1
+  #villaluz-celery:
+  #  image: villaluz-backend:latest
+  #  container_name: villaluz_celery
+  #  entrypoint: []
+  #  command: celery -A celery_worker.celery worker --loglevel=info --concurrency=2 --max-memory-per-child=200000 --max-tasks-per-child=1000
+  #  restart: unless-stopped
+  #  mem_limit: 512m
+  #  environment:
+  #    - FLASK_ENV=production
+  #    - DB_ENGINE=${DB_ENGINE:-postgresql+psycopg2}
+  #    - DB_HOST=postgres_prod_central_v18
+  #    - DB_PORT=5432
+  #    - DB_USER=${DB_USER:-villaluz}
+  #    - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
+  #    - DB_NAME=${DB_NAME:-finca_db}
+  #    - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+  #    - REDIS_URL=redis://devbrain-redis:6379/0
+  #    - CELERY_BROKER_URL=redis://devbrain-redis:6379/1
+  #  networks:
+  #    - devbrain-network
+  #  volumes:
+  #    - ./backend:/app
+
+networks:
+  devbrain-network:
+    external: true
+
+volumes:
+  dev_uploads_data:
+    driver: local

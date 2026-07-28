@@ -1,6 +1,5 @@
 import type React from "react";
 import type {
-	Finca,
 	FincaDetail,
 	LivestockSummary,
 } from "@/entities/finca/api/finca.service";
@@ -25,7 +24,7 @@ import {
 import FincaMetricInsights from "./FincaMetricInsights";
 
 interface FincaDetailContentProps {
-	finca: Finca;
+	finca: FincaDetail;
 	detail: FincaDetail | null;
 	membersCount?: number;
 	animalsCount?: number;

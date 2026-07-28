@@ -1,6 +1,9 @@
 import { BaseService } from '@/shared/api/base-service';
 import { InventoryLotResponse, PaginatedResponse, InventoryMovementResponse, InventoryMovementInput } from '@/shared/api/generated/swaggerTypes';
 
+/** Estado derivado de un lote, tal como lo clasifican los filtros y alertas. */
+export type InventoryLotStatus = 'expired' | 'expiring_soon' | 'low_stock' | 'ok';
+
 export interface InventorySummary {
   total_lots: number;
   medication_lots: number;

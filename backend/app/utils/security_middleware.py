@@ -25,6 +25,11 @@ def init_security_middlewares(app):
             '/api/v1/public/',
             '/api/v1/push/vapid-public-key',
             '/api/v1/users/public',
+            # Public finca directory: browsable before joining a finca.
+            # Each resource still declares its own @jwt_required; only the
+            # listing endpoints use jwt_required(optional=True).
+            '/api/v1/fincas/public',
+            '/api/v1/finca-images',
             '/api/v1/knowledge_base/test',
             '/api/test-exceptions',
         ]

@@ -23,12 +23,16 @@ Puedes usar los botones de **"Acceso Rápido"** en la página de login o ingresa
 ---
 
 ## 🛠️ Comandos Útiles
-Si las credenciales no funcionan, reinicia la base de datos local con este comando desde la carpeta `backend`:
+Si el login devuelve `401 Credenciales inválidas`, los hashes en PostgreSQL se
+desincronizaron de la contraseña universal. Resincronízalos desde la carpeta `backend`:
 
 ```powershell
-# Windows
-.\venv_win\Scripts\python.exe seed_test_users.py
+.\venv_win\Scripts\python.exe sync_test_users.py
 ```
+
+El script es idempotente: crea los usuarios que falten y, para los existentes,
+reescribe contraseña, rol, email, `status=True` y `approval_status=Approved`.
+La lista de usuarios vive en el propio `sync_test_users.py` (fuente de verdad).
 
 ## 🚀 Acceso Automático
 La interfaz de Login incluye botones de colores en la parte inferior que:

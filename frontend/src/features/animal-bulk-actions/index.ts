@@ -9,4 +9,5 @@ export { BatchVaccinationModal } from './BatchVaccinationModal';
 export { BatchFieldTransferModal } from './BatchFieldTransferModal';
 export { BulkTagPrintModal } from './BulkTagPrintModal';
 export { BatchReproductionModal } from './BatchReproductionModal';
-
+export { QuickAnimalTransferForm } from './QuickAnimalTransferForm';
+export { BatchTransferFromFieldModal } from './BatchTransferFromFieldModal';

@@ -70,6 +70,8 @@ interface SyncMessage {
 interface DiscoveredPeer {
   id: string;
   name: string;
+  /** Usuario de la app tras el dispositivo; ausente si aún no se identificó. */
+  userId?: number;
   deviceId: string;
   lastSeen: Date;
   connectionType: 'bluetooth' | 'webrtc' | 'mdns';
@@ -263,6 +265,18 @@ export class ProximitySyncService {
    */
   getDiscoveredPeers(): DiscoveredPeer[] {
     return Array.from(this.discoveredPeers.values());
+  }
+
+  /**
+   * Presencia por usuario: sólo peers con userId identificado.
+   */
+  getPresenceMap(): Map<number, { name: string; isNearby: boolean }> {
+    const presence = new Map<number, { name: string; isNearby: boolean }>();
+    for (const peer of this.discoveredPeers.values()) {
+      if (!peer.userId) continue;
+      presence.set(peer.userId, { name: peer.name, isNearby: peer.isConnected });
+    }
+    return presence;
   }
 
   /**

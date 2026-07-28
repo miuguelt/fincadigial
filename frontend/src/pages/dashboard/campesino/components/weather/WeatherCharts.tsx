@@ -23,10 +23,8 @@ export function WeatherCharts({ history }: Props) {
 		time: formatHour(r.recorded_at),
 		day: formatDay(r.recorded_at),
 		temperature: r.temperature_celsius,
-		dewPoint: r.dew_point_celsius,
 		humidity: r.humidity_percent,
 		wind: r.wind_speed_kmh,
-		gusts: r.wind_gusts_kmh,
 		precipitation: r.precipitation_mm,
 		pressure: r.pressure_hpa,
 		cloudCover: r.cloud_cover_percent,
@@ -62,16 +60,6 @@ export function WeatherCharts({ history }: Props) {
 							fillOpacity={0.2}
 							name="Temp °C"
 						/>
-						<Line
-							yAxisId="temp"
-							type="monotone"
-							dataKey="dewPoint"
-							stroke="#8b5cf6"
-							strokeWidth={1.5}
-							strokeDasharray="4 2"
-							dot={false}
-							name="Rocío °C"
-						/>
 						<Area
 							yAxisId="humidity"
 							type="monotone"
@@ -101,15 +89,6 @@ export function WeatherCharts({ history }: Props) {
 								strokeWidth={2}
 								dot={false}
 								name="Viento km/h"
-							/>
-							<Line
-								type="monotone"
-								dataKey="gusts"
-								stroke="#f97316"
-								strokeWidth={1.5}
-								strokeDasharray="4 2"
-								dot={false}
-								name="Ráfagas km/h"
 							/>
 						</LineChart>
 					</ResponsiveContainer>

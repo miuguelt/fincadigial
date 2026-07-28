@@ -83,7 +83,11 @@ class WeatherDataService:
             current = data.get("current", {})
             daily = data.get("daily", {})
 
-            weather_code = current.get("weathercode")
+            # Open-Meteo returns "weather_code" for the current block; older
+            # responses (and the hourly block) use "weathercode".
+            weather_code = current.get("weather_code")
+            if weather_code is None:
+                weather_code = current.get("weathercode")
             if weather_code is None:
                 logger.warning("Open-Meteo response sin weathercode")
                 return None

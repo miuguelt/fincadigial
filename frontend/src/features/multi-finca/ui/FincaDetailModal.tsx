@@ -2,7 +2,6 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import {
 	fincaService,
-	type Finca,
 	type FincaDetail,
 } from "@/entities/finca/api/finca.service";
 import { Button } from "@/shared/ui/button";
@@ -21,7 +20,7 @@ import FincaDetailContent from "./FincaDetailContent";
 interface FincaDetailModalProps {
 	isOpen: boolean;
 	onClose: () => void;
-	finca: Finca | null;
+	finca: FincaDetail | null;
 	onRequestJoin: (fincaId: number) => void;
 	requestingId: number | null;
 }

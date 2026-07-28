@@ -3,7 +3,6 @@ import {
 	CloudRain,
 	Compass,
 	Droplets,
-	Eye,
 	Gauge,
 	Sun,
 	Sunrise,
@@ -76,11 +75,6 @@ export function CurrentWeatherCards({ current }: Props) {
 					<p className="text-xl font-bold">
 						{current.humidity_percent?.toFixed(0) || "--"}%
 					</p>
-					{current.dew_point_celsius != null && (
-						<p className="text-[10px] text-muted-foreground">
-							Rocío: {current.dew_point_celsius.toFixed(1)}°C
-						</p>
-					)}
 				</div>
 
 				<div className="bg-card rounded-lg p-3 border border-border">
@@ -107,11 +101,6 @@ export function CurrentWeatherCards({ current }: Props) {
 					<p className="text-xl font-bold">
 						{current.precipitation_mm?.toFixed(1) || "0"} <span className="text-xs font-normal">mm</span>
 					</p>
-					{current.precipitation_probability != null && (
-						<p className="text-[10px] text-muted-foreground">
-							Prob: {current.precipitation_probability.toFixed(0)}%
-						</p>
-					)}
 				</div>
 
 				<div className="bg-card rounded-lg p-3 border border-border">
@@ -122,14 +111,6 @@ export function CurrentWeatherCards({ current }: Props) {
 					<p className="text-xl font-bold">
 						{current.pressure_hpa?.toFixed(0) || "--"} <span className="text-xs font-normal">hPa</span>
 					</p>
-					{current.visibility_km != null && (
-						<p className="text-[10px] text-muted-foreground flex items-center gap-1">
-							<Eye className="w-3 h-3" />
-							{current.visibility_km >= 1000
-								? `${(current.visibility_km / 1000).toFixed(1)} km`
-								: `${current.visibility_km.toFixed(0)} m`}
-						</p>
-					)}
 				</div>
 
 				<div className="bg-card rounded-lg p-3 border border-border">
@@ -154,16 +135,6 @@ export function CurrentWeatherCards({ current }: Props) {
 					</div>
 					<p className="text-lg font-bold">
 						{current.cloud_cover_percent?.toFixed(0) || "--"}%
-					</p>
-				</div>
-
-				<div className="bg-card rounded-lg p-3 border border-border">
-					<div className="flex items-center gap-1.5 mb-1">
-						<Wind className="w-4 h-4 text-teal-500" />
-						<span className="text-[10px] text-muted-foreground">Ráfagas</span>
-					</div>
-					<p className="text-lg font-bold">
-						{current.wind_gusts_kmh?.toFixed(1) || "--"} <span className="text-xs font-normal">km/h</span>
 					</p>
 				</div>
 

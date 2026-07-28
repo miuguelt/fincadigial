@@ -818,7 +818,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
 
       {/* Batch actions bar */}
       {config.enableSelection && selectedIds.length > 0 && config.batchActions && (
-        config.batchActions(selectedIds, filteredItems, clearSelection)
+        config.batchActions(selectedIds, filteredItems, clearSelection, { openCreate })
       )}
       
       {/* Create/Edit Modal */}

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import type React from "react";
-import type { Finca } from "@/entities/finca/api/finca.service";
+import type { FincaDetail } from "@/entities/finca/api/finca.service";
 import { FincaImageCarousel } from "@/entities/finca/ui/FincaImageCarousel";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -20,7 +20,7 @@ import {
 } from "@/shared/ui/icons";
 
 interface PublicFincaCardProps {
-	finca: Finca;
+	finca: FincaDetail;
 	index: number;
 	requestingId: number | null;
 	onOpenDetail: () => void;

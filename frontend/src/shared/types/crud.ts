@@ -42,6 +42,17 @@ export interface CRUDFormField<T = any> {
   };
   colSpan?: number;
   helperText?: string;
+  /**
+   * Campo del que depende éste; se reevalúa `showIf` cuando cambia.
+   * NOTA: declarativo — ningún renderer lo consume todavía.
+   */
+  dependsOn?: keyof T | string;
+  /** Devuelve un parche del formulario cuando cambia el valor del campo. */
+  onChange?: (value: any, data: T) => Partial<T> | void;
+  /** Oculta el campo cuando devuelve false. */
+  showIf?: (data: T) => boolean;
+  /** Carga las opciones de forma asíncrona (selects dependientes). */
+  loadOptions?: () => Promise<CRUDFieldOption[]>;
 }
 
 export interface CRUDColumn<T = any> {
@@ -82,7 +93,15 @@ export interface CRUDConfig<T = any, TInput = any> {
   enableDelete?: boolean;
   customHeader?: ReactNode;
   customToolbar?: ReactNode;
-  customActions?: (item: T) => ReactNode;
+  customActions?: (
+    item: T,
+    options?: { openCreate?: () => void },
+  ) => ReactNode;
+  /** Acciones extra dentro del modal de detalle. */
+  detailActions?: (
+    item: T,
+    handlers: { openCreate?: () => void; close?: () => void },
+  ) => ReactNode;
   viewMode?: 'table' | 'cards';
   autoHeight?: boolean;
   renderCard?: (item: T) => ReactNode;
@@ -90,7 +109,12 @@ export interface CRUDConfig<T = any, TInput = any> {
   renderGrouped?: (items: T[]) => ReactNode;
   // Selección masiva y acciones por lote
   enableSelection?: boolean;
-  batchActions?: (selectedIds: number[], items: T[], clearSelection: () => void) => ReactNode;
+  batchActions?: (
+    selectedIds: number[],
+    items: T[],
+    clearSelection: () => void,
+    handlers?: { openCreate?: () => void },
+  ) => ReactNode;
   // Propiedades adicionales detectadas en la auditoría
   defaultFields?: string[];
   defaultLimit?: number;

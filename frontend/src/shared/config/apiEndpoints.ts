@@ -20,6 +20,21 @@ export const ANIMAL_IMAGES_ENDPOINTS = {
   SET_PRIMARY: (imageId: number | string) => `/animal-images/image/${imageId}/set-primary`,
 } as const;
 
+/** Endpoints de imágenes de finca (namespace `finca-images`). */
+export const FINCA_IMAGES_ENDPOINTS = {
+  /** Subir imágenes de una finca */
+  UPLOAD: '/finca-images/upload',
+
+  /** Listar las imágenes de una finca */
+  GET_BY_FINCA: (fincaId: number | string) => `/finca-images/${fincaId}`,
+
+  /** Eliminar una imagen */
+  DELETE: (imageId: number | string) => `/finca-images/image/${imageId}`,
+
+  /** Marcar una imagen como principal */
+  SET_PRIMARY: (imageId: number | string) => `/finca-images/image/${imageId}/set-primary`,
+} as const;
+
 /**
  * Configuración de API
  */
@@ -32,6 +47,9 @@ export const API_CONFIG = {
 
   /** Endpoints de imágenes de animales */
   ANIMAL_IMAGES: ANIMAL_IMAGES_ENDPOINTS,
+
+  /** Endpoints de imágenes de finca */
+  FINCA_IMAGES: FINCA_IMAGES_ENDPOINTS,
 } as const;
 
 /**

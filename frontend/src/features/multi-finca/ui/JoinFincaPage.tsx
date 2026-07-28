@@ -7,10 +7,7 @@ import {
   IconBuilding,
   IconUserPlus,
   IconArrowRight,
-  IconSparkles,
-  IconShieldCheck,
   IconCircleX,
-  IconCircleCheck,
   IconBuildingFarm,
   IconClock,
   IconMail
@@ -26,18 +23,12 @@ import {
 import { fincaService } from "@/entities/finca/api/finca.service";
 import { useNavigate } from "react-router-dom";
 
-interface MembershipGestions {
-  requests_to_approve: any[];
-  invitations_received: any[];
-}
 import { useToast } from "@/app/providers/ToastContext";
 import { cn } from "@/shared/ui/cn";
-import { useAuth } from "@/features/auth/model/useAuth";
 import { useNotifications } from "@/shared/hooks/useNotifications";
 export const JoinFincaPage: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { refreshUserData } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [fincas, setFincas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

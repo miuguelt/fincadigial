@@ -1,0 +1,18 @@
+from app import db
+from app.models.base_model import BaseModel
+
+
+class {{ModelName}}(BaseModel):
+    __tablename__ = '{{table_name}}'
+
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+
+    # ── Configuración de namespace (CRUD automático) ──────────────────
+    _namespace_fields = ['id', 'name', 'description', 'created_at', 'updated_at']
+    _searchable_fields = ['name', 'description']
+    _filterable_fields = ['created_at']
+    _sortable_fields = ['id', 'name', 'created_at']
+    _required_fields = ['name']
+    _unique_fields = ['name']

@@ -4,6 +4,12 @@ import { AnimalLink, AnimalGrowthLink } from '@/entities/animal/ui';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
 import { ControlDetailExpanded } from './components/ControlDetailExpanded';
 
+/** Fila de la tabla de controles (respuesta cruda del API). */
+export type ControlRow = ControlResponse;
+
+/** Acceso del usuario al CRUD: true cuando es campesino (permisos reducidos). */
+export type ControlCrudAccess = boolean;
+
 export type ControlForm = {
   animal_id: number;
   checkup_date: string;

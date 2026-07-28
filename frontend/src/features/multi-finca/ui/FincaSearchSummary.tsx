@@ -1,7 +1,7 @@
 import type React from "react";
-import type { Finca } from "@/entities/finca/api/finca.service";
+import type { FincaDetail } from "@/entities/finca/api/finca.service";
 
-const FincaSearchSummary: React.FC<{ fincas: Finca[] }> = ({ fincas }) => {
+const FincaSearchSummary: React.FC<{ fincas: FincaDetail[] }> = ({ fincas }) => {
 	const summary = [
 		{ label: "Resultados", value: fincas.length },
 		{

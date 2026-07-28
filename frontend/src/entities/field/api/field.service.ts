@@ -20,7 +20,7 @@ export class FieldService extends BaseService<FieldResponse> {
    * @param {number} [options.limit=10] - The number of items per page.
    * @returns {Promise<PaginatedResponse<FieldResponse>>} A promise that resolves to the paginated list of fields.
    */
-  public async getFields(options: { page?: number; limit?: number } = {}): Promise<PaginatedResponse<FieldResponse>> {
+  public async getFields(options: { page?: number; limit?: number; [key: string]: any } = {}): Promise<PaginatedResponse<FieldResponse>> {
     return this.getPaginated(options);
   }
 

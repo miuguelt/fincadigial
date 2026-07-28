@@ -23,6 +23,7 @@ export interface ComboboxOption {
 }
 
 interface ComboboxProps {
+  id?: string
   options: ComboboxOption[]
   value?: string
   onValueChange: (value: string) => void

@@ -201,14 +201,15 @@ export const FieldChatPanel = memo(function FieldChatPanel({
 			const otherId =
 				msg.senderId === myUserId ? msg.recipientId : msg.senderId;
 			const otherName =
-				msg.senderId === myUserId ? "Destinatario" : msg.senderName;
+				msg.senderId === myUserId ? "Destinatario" : (msg.senderName ?? "Usuario");
 			if (!seen.has(otherId)) {
 				seen.set(otherId, { name: otherName, lastMsg: null, unread: 0 });
 			}
 			const entry = seen.get(otherId)!;
 			if (!entry.lastMsg || msg.createdAt > entry.lastMsg.createdAt) {
 				entry.lastMsg = msg;
-				entry.name = msg.senderId !== myUserId ? msg.senderName : entry.name;
+				entry.name =
+					msg.senderId !== myUserId ? (msg.senderName ?? entry.name) : entry.name;
 			}
 			if (msg.recipientId === myUserId && msg.status === "delivered") {
 				entry.unread++;

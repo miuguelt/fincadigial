@@ -4,48 +4,19 @@ from app.models.finca import Finca, FarmType
 
 app = create_app('development')
 
-import os
-import json
+# Single source of truth for local test users. Keep in sync with DEV_CREDENTIALS.md
+# and with the quick-access buttons in frontend/src/pages/auth/login/index.tsx.
+DEV_PASSWORD = 'Villaluz2024!'
 
-# Intentar cargar desde el Single Source of Truth (devbrain IDENTITY.json)
-identity_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "devbrain", "config", "IDENTITY.json"))
-if not os.path.exists(identity_path):
-    # Intentar ruta alternativa de proyectos adyacentes
-    identity_path = "c:\\Users\\Miguel\\Documents\\Aplicaciones\\_projects\\devbrain\\config\\IDENTITY.json"
-
-loaded_users = None
-if os.path.exists(identity_path):
-    try:
-        with open(identity_path, encoding="utf-8") as f:
-            data = json.load(f)
-            loaded_users = data.get("test_users", [])
-            print(f"📖 Cargados {len(loaded_users)} usuarios de prueba desde IDENTITY.json (SSOT)")
-    except Exception as e:
-        print(f"⚠️ Error al cargar IDENTITY.json: {e}")
-
-if loaded_users:
-    # Mapear las llaves del json al formato esperado
-    USUARIOS = []
-    for u in loaded_users:
-        USUARIOS.append({
-            'identification': str(u['identificacion']),
-            'fullname': u['fullname'],
-            'email': u['email'],
-            'role': u['role'],
-            'password': u.get('password', 'Villaluz2024!')
-        })
-else:
-    # Fallback predeterminado si no se encuentra devbrain
-    print("⚠️ Usando lista de usuarios fallback (devbrain no disponible)")
-    USUARIOS = [
-        {'identification': '1098',     'fullname': 'Admin VillaLuz',     'email': 'test_admin@villaluz.com',  'role': 'Administrador', 'password': 'Villaluz2024!'},
-        {'identification': '55555555', 'fullname': 'Don Carlos Dueño',   'email': 'propietario@villaluz.co',  'role': 'Propietario',   'password': 'Villaluz2024!'},
-        {'identification': '66666666', 'fullname': 'Capataz Pedro',      'email': 'capataz@villaluz.co',      'role': 'Capataz',       'password': 'Villaluz2024!'},
-        {'identification': '11111111', 'fullname': 'Instructor Jefe',    'email': 'instructor@sena.edu.co',    'role': 'Instructor',    'password': 'Villaluz2024!'},
-        {'identification': '22222222', 'fullname': 'Aprendiz SENA 1',    'email': 'aprendiz@sena.edu.co',      'role': 'Aprendiz',      'password': 'Villaluz2024!'},
-        {'identification': '33333333', 'fullname': 'María Operaria',     'email': 'operario@villaluz.co',      'role': 'Operario',      'password': 'Villaluz2024!'},
-        {'identification': '44444444', 'fullname': 'Dr. Martínez Vet',   'email': 'veterinario@villaluz.co',   'role': 'Veterinario',   'password': 'Villaluz2024!'},
-    ]
+USUARIOS = [
+    {'identification': '1098',     'fullname': 'Admin VillaLuz',     'email': 'test_admin@villaluz.com',  'role': 'Administrador', 'password': DEV_PASSWORD},
+    {'identification': '55555555', 'fullname': 'Don Carlos Dueño',   'email': 'propietario@villaluz.co',  'role': 'Propietario',   'password': DEV_PASSWORD},
+    {'identification': '66666666', 'fullname': 'Capataz Pedro',      'email': 'capataz@villaluz.co',      'role': 'Capataz',       'password': DEV_PASSWORD},
+    {'identification': '11111111', 'fullname': 'Instructor Jefe',    'email': 'instructor@sena.edu.co',   'role': 'Instructor',    'password': DEV_PASSWORD},
+    {'identification': '22222222', 'fullname': 'Aprendiz SENA 1',    'email': 'aprendiz@sena.edu.co',     'role': 'Aprendiz',      'password': DEV_PASSWORD},
+    {'identification': '33333333', 'fullname': 'María Operaria',     'email': 'operario@villaluz.co',     'role': 'Operario',      'password': DEV_PASSWORD},
+    {'identification': '44444444', 'fullname': 'Dr. Martínez Vet',   'email': 'veterinario@villaluz.co',  'role': 'Veterinario',   'password': DEV_PASSWORD},
+]
 
 def sync():
     with app.app_context():
@@ -85,7 +56,7 @@ def sync():
                 print("   ✅ Creado")
 
         db.session.commit()
-        print("\n🚀 Todos los usuarios de prueba han sido sincronizados con el SSOT / Fallback exitosamente.")
+        print(f"\n🚀 {len(USUARIOS)} usuarios de prueba sincronizados (password: {DEV_PASSWORD}).")
 
 if __name__ == "__main__":
     sync()

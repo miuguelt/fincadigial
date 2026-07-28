@@ -57,14 +57,21 @@ export const modalStyles = {
 
   // Tabla en modal
   tableContainer: 'overflow-x-auto -mx-1 sm:-mx-0 rounded-lg border border-border/30',
+
+  // Pie de modal
+  footer: 'flex flex-col gap-2 border-t border-border/40 pt-3 sm:flex-row sm:items-center sm:justify-between',
+  footerInfo: 'text-[11px] sm:text-xs text-foreground/60',
 };
 
 /**
  * Componente para el título de una sección
  */
-export const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+export const SectionTitle: React.FC<{
+  children: React.ReactNode;
+  icon?: React.ReactNode;
+}> = ({ children, icon }) => (
   <h3 className={modalStyles.sectionTitle}>
-    <div className={modalStyles.sectionIndicator}></div>
+    {icon ?? <div className={modalStyles.sectionIndicator}></div>}
     {children}
   </h3>
 );
@@ -76,10 +83,82 @@ export const SectionCard: React.FC<{
   children: React.ReactNode;
   title?: string;
   className?: string;
-}> = ({ children, title, className = '' }) => (
-  <div className={`${modalStyles.card.base} ${className}`}>
-    {title && <SectionTitle>{title}</SectionTitle>}
-    {children}
+  variant?: 'base' | 'hover' | 'muted';
+}> = ({ children, title, className = '', variant = 'base' }) => {
+  const base = variant === 'hover' ? modalStyles.card.hover : modalStyles.card.base;
+  const muted = variant === 'muted' ? ' bg-muted/20' : '';
+  return (
+    <div className={`${base}${muted} ${className}`}>
+      {title && <SectionTitle>{title}</SectionTitle>}
+      {children}
+    </div>
+  );
+};
+
+/**
+ * Fila de progreso: etiqueta, conteo y barra proporcional al total.
+ */
+export const ProgressRow: React.FC<{
+  label: string;
+  count: number;
+  total: number;
+  variant?: 'success' | 'info' | 'danger' | 'warning';
+}> = ({ label, count, total, variant = 'info' }) => {
+  const pct = total > 0 ? Math.min(100, Math.round((count / total) * 100)) : 0;
+  const barColor = {
+    success: 'bg-emerald-500',
+    info: 'bg-sky-500',
+    danger: 'bg-rose-500',
+    warning: 'bg-amber-500',
+  }[variant];
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-[11px] sm:text-xs text-foreground/80">
+        <span>{label}</span>
+        <span className="font-semibold text-foreground">{count}</span>
+      </div>
+      <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+        <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Tarjeta compacta de métrica con icono.
+ */
+export const StatCard: React.FC<{
+  icon: React.ReactNode;
+  value: React.ReactNode;
+  label: string;
+  accent?: 'blue' | 'emerald' | 'amber' | 'rose';
+}> = ({ icon, value, label, accent = 'blue' }) => {
+  const accentColor = {
+    blue: 'text-sky-500',
+    emerald: 'text-emerald-500',
+    amber: 'text-amber-500',
+    rose: 'text-rose-500',
+  }[accent];
+
+  return (
+    <div className={`${modalStyles.card.base} flex flex-col items-center gap-1 text-center`}>
+      <span className={accentColor}>{icon}</span>
+      <span className={modalStyles.fieldValue.large}>{value}</span>
+      <span className={modalStyles.fieldLabel}>{label}</span>
+    </div>
+  );
+};
+
+/**
+ * Estado de carga estándar dentro de un modal.
+ */
+export const ModalLoadingState: React.FC<{ message?: string }> = ({
+  message = 'Cargando...',
+}) => (
+  <div className="flex flex-col items-center justify-center gap-2 py-8 text-foreground/70">
+    <div className="h-6 w-6 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground/70" />
+    <p className="text-xs sm:text-sm">{message}</p>
   </div>
 );
 

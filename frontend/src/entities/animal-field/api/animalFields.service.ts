@@ -52,7 +52,7 @@ export class AnimalFieldsService extends BaseService<AnimalFieldResponse> {
     return this.customRequest('bulk', 'POST', data);
   }
 
-  async bulkTransfer(data: BulkTransferRequest): Promise<{ success: boolean; message: string; data: AnimalFieldResponse[] }> {
+  async bulkTransfer(data: BulkTransferRequest): Promise<{ success: boolean; message: string; data: AnimalFieldResponse[]; meta?: Record<string, any> }> {
     try {
       const res = await this.customRequest<AnimalFieldResponse[]>('transfer', 'POST', data);
       await this.clearCache();
@@ -70,7 +70,7 @@ export class AnimalFieldsService extends BaseService<AnimalFieldResponse> {
     }
   }
 
-  async bulkRemove(data: { animal_ids: number[]; date?: string }): Promise<{ success: boolean; message: string; data: AnimalFieldResponse[] }> {
+  async bulkRemove(data: { animal_ids: number[]; date?: string }): Promise<{ success: boolean; message: string; data: AnimalFieldResponse[]; meta?: Record<string, any> }> {
     try {
       const res = await this.customRequest<AnimalFieldResponse[]>('bulk-remove', 'POST', data);
       await this.clearCache();

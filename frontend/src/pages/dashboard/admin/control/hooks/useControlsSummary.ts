@@ -1,8 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { milkService } from '@/entities/milk/api/milk.service';
 import { controlService } from '@/entities/control/api/control.service';
+import {
+  extractControlRows,
+  summarizeControls,
+  summarizeDailyMilk,
+  summarizeWeeklyMilk,
+} from './controlSummary.utils';
 
-interface ControlsSummary {
+export interface ControlsSummary {
   dailyLiters: number;
   weeklyAverage: number;
   animalsMilked: number;
@@ -12,66 +18,89 @@ interface ControlsSummary {
   totalControls: number;
   healthyPercentage: number;
   loading: boolean;
+  /** Registros de ordeño del día (equivale a animalsMilked). */
+  milkRecords: number;
+  /** Controles registrados en el mes en curso. */
+  monthlyControls: number;
+  /** Animales cuyo último control indica estado de alerta. */
+  animalsNeedingAttention: number;
+  /** true cuando la fuente falló: la UI muestra "sin datos", no un cero inventado. */
+  milkUnavailable: boolean;
+  controlsUnavailable: boolean;
+  refresh: () => void;
 }
 
+const INITIAL = {
+  dailyLiters: 0,
+  weeklyAverage: 0,
+  animalsMilked: 0,
+  trendPercentage: 0,
+  sickAnimals: 0,
+  recentTreatments: 0,
+  totalControls: 0,
+  healthyPercentage: 100,
+  milkRecords: 0,
+  monthlyControls: 0,
+  animalsNeedingAttention: 0,
+  milkUnavailable: false,
+  controlsUnavailable: false,
+  loading: true,
+};
+
 export function useControlsSummary(fincaId: number): ControlsSummary {
-  const [dailyLiters, setDailyLiters] = useState(0);
-  const [weeklyAverage, setWeeklyAverage] = useState(0);
-  const [animalsMilked, setAnimalsMilked] = useState(0);
-  const [trendPercentage, setTrendPercentage] = useState(0);
-  const [sickAnimals, setSickAnimals] = useState(0);
-  const [recentTreatments, setRecentTreatments] = useState(0);
-  const [totalControls, setTotalControls] = useState(0);
-  const [healthyPercentage, setHealthyPercentage] = useState(100);
-  const [loading, setLoading] = useState(true);
+  const [state, setState] = useState(INITIAL);
+  const [reloadToken, setReloadToken] = useState(0);
+
+  const refresh = useCallback(() => setReloadToken((token) => token + 1), []);
 
   useEffect(() => {
     let mounted = true;
+
     const load = async () => {
-      setLoading(true);
+      setState((prev) => ({ ...prev, loading: true }));
+
       const [daily, weekly, controlData] = await Promise.all([
         milkService.getDailySummary(fincaId).catch(() => null),
         milkService.getWeeklySummary(fincaId).catch(() => null),
-        controlService.getPaginated({ page: 1, limit: 1000, finca_id: fincaId } as any).catch(() => null),
+        controlService
+          .getPaginated({ page: 1, limit: 1000, finca_id: fincaId } as any)
+          .catch(() => null),
       ]);
       if (!mounted) return;
 
-      if (daily) {
-        const d = daily?.data || daily || {};
-        setDailyLiters(d.total_liters || 0);
-        setAnimalsMilked(d.count || 0);
-      }
-      if (weekly) {
-        const w = weekly?.data || weekly || {};
-        setWeeklyAverage(w.avg_daily_liters || 0);
-        setTrendPercentage(w.trend_vs_previous_month?.change_percentage || 0);
-      }
-      if (controlData) {
-        const arr: any[] = (controlData as any)?.items || controlData?.data || (controlData as any)?.results || [];
-        const sick = arr.filter((a: any) =>
-          a.health_status?.toLowerCase().includes('malo') ||
-          a.health_status?.toLowerCase().includes('enfermo') ||
-          a.healt_status?.toLowerCase().includes('malo') ||
-          a.healt_status?.toLowerCase().includes('enfermo')
-        ).length;
-        const treatments = arr.filter((a: any) =>
-          a.health_status?.toLowerCase().includes('tratamiento') ||
-          a.healt_status?.toLowerCase().includes('tratamiento') ||
-          (a.description?.toLowerCase() || '').includes('tratamiento')
-        ).length;
-        setTotalControls(arr.length);
-        setSickAnimals(sick);
-        setRecentTreatments(treatments);
-        setHealthyPercentage(arr.length ? ((arr.length - sick) / arr.length) * 100 : 100);
-      }
-      setLoading(false);
-    };
-    load();
-    return () => { mounted = false; };
-  }, [fincaId]);
+      const milk = daily ? summarizeDailyMilk(daily) : null;
+      const rows = controlData ? extractControlRows(controlData) : [];
+      const controls = controlData
+        ? summarizeControls(rows, new Date().toISOString().slice(0, 10))
+        : null;
 
-  return {
-    dailyLiters, weeklyAverage, animalsMilked, trendPercentage,
-    sickAnimals, recentTreatments, totalControls, healthyPercentage, loading,
-  };
+      const treatments = rows.filter((row) =>
+        String(row.description ?? '').toLowerCase().includes('tratamiento'),
+      ).length;
+
+      setState({
+        dailyLiters: milk?.dailyLiters ?? 0,
+        milkRecords: milk?.milkRecords ?? 0,
+        animalsMilked: milk?.milkRecords ?? 0,
+        weeklyAverage: weekly ? summarizeWeeklyMilk(weekly) : 0,
+        trendPercentage: 0,
+        totalControls: rows.length,
+        monthlyControls: controls?.monthlyControls ?? 0,
+        animalsNeedingAttention: controls?.animalsNeedingAttention ?? 0,
+        sickAnimals: controls?.animalsNeedingAttention ?? 0,
+        recentTreatments: treatments,
+        healthyPercentage: controls?.healthyPercentage ?? 100,
+        milkUnavailable: daily === null,
+        controlsUnavailable: controlData === null,
+        loading: false,
+      });
+    };
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, [fincaId, reloadToken]);
+
+  return { ...state, refresh };
 }

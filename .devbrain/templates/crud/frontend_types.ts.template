@@ -1,0 +1,25 @@
+// Interfaz que debe coincidir 100% con _namespace_fields del modelo SQLAlchemy
+export interface {{ModelName}} {
+  id: number;
+  name: string;
+  description?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface {{ModelName}}FormData {
+  name: string;
+  description?: string;
+}
+
+// Estructura de respuesta del API (APIResponse.success)
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message: string;
+  meta?: {
+    page: number;
+    limit: number;
+    total_items: number;
+  };
+}

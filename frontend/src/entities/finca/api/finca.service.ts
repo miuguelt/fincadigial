@@ -1,5 +1,6 @@
 import api from '@/shared/api/client';
 import { ApiResponse, PaginatedResponse } from '@/shared/api/generated/swaggerTypes';
+import type { FincaImage } from "@/entities/finca/api/fincaImage.service";
 
 export interface Finca {
   id: number;
@@ -12,6 +13,35 @@ export interface Finca {
   address?: string;
   nit?: string;
   created_at?: string;
+}
+
+/**
+ * Live livestock counters exposed by GET /fincas/public/{id} when the finca
+ * sets its public visibility to "full".
+ */
+export interface LivestockSummary {
+  total_animals: number;
+  active_animals: number;
+  male_count: number;
+  female_count: number;
+  sick_animals: number;
+}
+
+/**
+ * Public finca detail. Stats are optional: fincas with "minimal" visibility
+ * omit them entirely, and membership flags are only present for authenticated
+ * callers.
+ */
+export interface FincaDetail extends Finca {
+  animals_count?: number;
+  livestock_summary?: LivestockSummary;
+  members_count?: number;
+  total_fields?: number;
+  is_member?: boolean;
+  already_requested?: boolean;
+  /** Galería pública; se sirve desde /finca-images/{id}. */
+  images?: FincaImage[];
+  last_activity?: string;
 }
 
 export interface FincaSearchFilters {

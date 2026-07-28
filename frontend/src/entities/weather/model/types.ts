@@ -51,6 +51,28 @@ export interface WeatherDashboard {
   finca_id: number;
 }
 
+/** Día del pronóstico diario (bloque `daily` de Open-Meteo). */
+export interface WeatherForecastDay {
+  date: string;
+  temp_max: number | null;
+  temp_min: number | null;
+  precipitation_mm: number | null;
+  wind_max: number | null;
+  weather_code: number | null;
+  humidity_avg?: number | null;
+  uv_index?: number | null;
+  sunrise?: string | null;
+  sunset?: string | null;
+}
+
+/** Ubicación de la finca usada para consultar el clima. */
+export interface FincaLocation {
+  latitude: number | null;
+  longitude: number | null;
+  department: string | null;
+  municipality: string | null;
+}
+
 export interface WeatherUpdateResult {
   total: number;
   success: number;

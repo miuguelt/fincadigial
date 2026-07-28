@@ -173,6 +173,49 @@ class PublicFincasList(Resource):
             return APIResponse.error('Error interno del servidor', status_code=500)
 
 
+def _public_livestock_stats(finca_id: int) -> dict:
+    """Live livestock counters for a finca, computed from the animals table."""
+    from app.models.animalDiseases import AnimalDiseases
+    from app.models.animals import AnimalStatus, Animals, Sex
+
+    rows = db.session.query(
+        Animals.sex, Animals.status, func.count(Animals.id)
+    ).filter(
+        Animals.finca_id == finca_id
+    ).group_by(Animals.sex, Animals.status).all()
+
+    active = males = females = 0
+    for sex, status, count in rows:
+        if status != AnimalStatus.Vivo:
+            continue
+        active += count
+        if sex == Sex.Macho:
+            males += count
+        elif sex == Sex.Hembra:
+            females += count
+
+    sick = db.session.query(func.count(func.distinct(AnimalDiseases.animal_id))).filter(
+        AnimalDiseases.animal_id.in_(
+            db.session.query(Animals.id).filter(
+                Animals.finca_id == finca_id,
+                Animals.status == AnimalStatus.Vivo,
+            )
+        ),
+        AnimalDiseases.status == 'Activo',
+    ).scalar() or 0
+
+    return {
+        'animals_count': active,
+        'livestock_summary': {
+            'total_animals': active,
+            'active_animals': active,
+            'male_count': males,
+            'female_count': females,
+            'sick_animals': sick,
+        },
+    }
+
+
 @fincas_ns.route('/public/<int:finca_id>', endpoint='public_finca_detail')
 class PublicFincaDetail(Resource):
     @fincas_ns.doc('public_finca_detail', description='Obtener detalles públicos de una finca específica')
@@ -198,6 +241,13 @@ class PublicFincaDetail(Resource):
                 'logo_url': finca.logo_url,
                 'created_at': finca.created_at.isoformat() if finca.created_at else None,
             }
+
+            # Livestock stats are opt-in per finca: only 'full' visibility
+            # exposes them publicly.
+            from app.services.finca_visibility_service import get_finca_visibility
+
+            if get_finca_visibility(finca_id) == 'full':
+                data.update(_public_livestock_stats(finca_id))
 
             return APIResponse.success(data=data, message='Información de la finca')
 

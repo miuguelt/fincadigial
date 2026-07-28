@@ -1,0 +1,20 @@
+from app.models.{{module_name}} import {{ModelName}}
+from app.utils.namespace_helpers import create_optimized_namespace
+
+{{module_name}}_ns = create_optimized_namespace(
+    name='{{module_name}}',
+    description='CRUD de {{ModelName}}s',
+    model_class={{ModelName}},
+    path='/{{module_name}}',
+)
+
+# ── Endpoints personalizados (si se necesitan más allá del CRUD factory) ──
+# from flask_restx import Resource
+# from flask_jwt_extended import jwt_required
+# from app.utils.response_handler import APIResponse
+#
+# @{{module_name}}_ns.route('/custom')
+# class {{ModelName}}Custom(Resource):
+#     @jwt_required()
+#     def get(self):
+#         return APIResponse.success(data=[], message='Ejemplo')
