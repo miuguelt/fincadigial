@@ -114,11 +114,14 @@ def test_controls_are_placeholders_and_alert_rules_are_reused(
 
         alerts: list[str] = []
         monkeypatch.setattr(AlertEngine, "_get_param_int", staticmethod(lambda key: 3))
+        # La recomendación empezó hace 5 días con controles cada 3, así que
+        # evaluando hoy hay uno vencido. Una fecha fija haría que el resultado
+        # dependiera del día en que se corra la suite.
         evaluate_recommendation_rules(
             animal,
             finca_id,
             lambda _kind, message, _priority: alerts.append(message),
-            date(2026, 7, 25),
+            date.today(),
             48,
         )
         assert any("Control atrasado" in message for message in alerts)

@@ -28,7 +28,20 @@ def seed_territories():
     db.session.commit()
 
 def seed_vaccines():
+    """Catálogo sanitario base. Requiere que ya exista al menos una finca.
+
+    Diseases, RouteAdministration y Vaccines llevan finca_id NOT NULL, así que
+    sembrarlos antes de crear las fincas abortaba el master seed entero con
+    `NOT NULL constraint failed: route_administrations.finca_id` y la instancia
+    quedaba sin catálogo de vacunas.
+    """
     logger.info("💉 Poblando vacunas maestras y enfermedades...")
+
+    finca = Finca.query.order_by(Finca.id).first()
+    if not finca:
+        logger.warning("Sin fincas: se omite el catálogo sanitario")
+        return
+
     enfermedades = [
         ("Aftosa", "Llagas boca/patas", "Resolución ICA Aftosa"),
         ("Brucelosis", "Abortos", "Resolución ICA Brucelosis"),
@@ -38,7 +51,12 @@ def seed_vaccines():
     ]
     for name, sym, det in enfermedades:
         if not Diseases.query.filter_by(name=name).first():
-            Diseases.create(name=name, symptoms=sym, details=det)
+            Diseases.create(name=name, symptoms=sym, details=det, finca_id=finca.id)
+    db.session.commit()
+
+    for route_name in ("Intramuscular", "Subcutánea"):
+        if not RouteAdministration.query.filter_by(name=route_name).first():
+            RouteAdministration.create(name=route_name, finca_id=finca.id)
     db.session.commit()
 
     im = RouteAdministration.query.filter(RouteAdministration.name.ilike('%muscul%')).first()
@@ -55,7 +73,7 @@ def seed_vaccines():
     ]
     for name, vtype, route, interval, plan, d_name, dosis in vacunas:
         if not Vaccines.query.filter_by(name=name).first():
-            Vaccines.create(name=name, dosis=dosis, route_administration_id=route.id, vaccination_interval=interval, type=vtype, national_plan=plan, target_disease_id=get_d(d_name).id)
+            Vaccines.create(name=name, dosis=dosis, route_administration_id=route.id, vaccination_interval=interval, type=vtype, national_plan=plan, target_disease_id=get_d(d_name).id, finca_id=finca.id)
     db.session.commit()
 
 def seed_fincas_and_users():
@@ -166,8 +184,10 @@ def run_master_seed():
         from app.utils.seed_knowledge_base import seed_knowledge_base
         seed_knowledge_base()
         seed_territories()
-        seed_vaccines()
+        # Las fincas van antes del catálogo sanitario: Diseases, Vaccines y
+        # RouteAdministration son tenant-scoped (finca_id NOT NULL).
         seed_fincas_and_users()
+        seed_vaccines()
         seed_feeding_infrastructure()
         seed_learning_materials()
         logger.info("✅ DEPLOYMENT MASTER SEED COMPLETADO CON ÉXITO.")

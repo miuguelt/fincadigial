@@ -112,10 +112,8 @@ class TestSeedMaster:
             RouteAdministration.query.delete()
             db.session.commit()
 
-            # Crear RouteAdministration preliminar para que seed_vaccines no retorne temprano
-            db.session.add(RouteAdministration(name="Intramuscular"))
-            db.session.add(RouteAdministration(name="Subcutánea"))
-            db.session.commit()
+            # seed_vaccines crea sus propias rutas de administración una vez
+            # que existen fincas a las que asociarlas.
 
             # Ejecutar master seed completo
             run_master_seed()

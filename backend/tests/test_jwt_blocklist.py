@@ -183,10 +183,11 @@ def test_token_blocklist_operations():
     with patch('app.utils.token_blocklist._get_cache', return_value=mock_cache_fail):
         assert mark_token_revoked(token) is False
 
-    # Verify is_token_revoked handles exception
+    # Verify is_token_revoked handles exception: with the cache unreachable we
+    # cannot prove the token is still valid, so it must be treated as revoked.
     mock_cache_fail.get.side_effect = Exception("Redis error")
     with patch('app.utils.token_blocklist._get_cache', return_value=mock_cache_fail):
-        assert is_token_revoked(token) is False
+        assert is_token_revoked(token) is True
 
 
 @pytest.mark.unit

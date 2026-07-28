@@ -554,7 +554,9 @@ class FertilityDashboard(Resource):
 
         # Obtener nombres de las hembras de una sola vez
         animal_ids = list(female_fertility.keys())
-        females_db = Animals.query.filter(Animals.id.in_(animal_ids)).all() if animal_ids else []
+        females_db = apply_tenant_filter(Animals.query, Animals).filter(
+            Animals.id.in_(animal_ids)
+        ).all() if animal_ids else []
         females_dict = {f.id: f for f in females_db}
 
         # Calcular tasa por hembra y ordenar
@@ -577,6 +579,8 @@ class FertilityDashboard(Resource):
 
         return APIResponse.success(data={
             'period_months': months,
+            'total_inseminations': len(inseminations_period),
+            'successful_inseminations': len(successful_inseminations),
             'conception_rate_pct': conception_rate,
             'conception_by_technique': {
                 'natural': natural_rate,
