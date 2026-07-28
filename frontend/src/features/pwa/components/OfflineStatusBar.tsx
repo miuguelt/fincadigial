@@ -290,7 +290,7 @@ export const OfflineStatusBar = React.memo(function OfflineStatusBar() {
 												className="flex items-center gap-3 bg-zinc-800/40 border border-zinc-700/30 rounded-xl px-3 py-2.5"
 											>
 												<div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-													{peer.connectionType === "wifi" ? <Wifi className="w-4 h-4" /> : <Radio className="w-4 h-4" />}
+													{peer.connectionType === "bluetooth" ? <Radio className="w-4 h-4" /> : <Wifi className="w-4 h-4" />}
 												</div>
 												<span className="text-sm text-zinc-200 flex-1 truncate font-medium">{peer.name}</span>
 												<button

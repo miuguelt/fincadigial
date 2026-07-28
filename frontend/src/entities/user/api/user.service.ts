@@ -16,6 +16,29 @@ class UsersService extends BaseService<UserResponse> {
     return this.getById(id);
   }
 
+  /**
+   * Feed de actividad de un usuario (GET /users/<id>/activity).
+   * Devuelve la envoltura completa porque el panel de detalle necesita tanto
+   * las filas como el total para paginar.
+   */
+  async getUserActivity(
+    id: number,
+    params?: Record<string, any>,
+  ): Promise<{ data: any[]; total_items?: number; page?: number; limit?: number }> {
+    const response = await apiFetch({
+      url: `${this.endpoint}/${id}/activity`,
+      method: 'GET',
+      params,
+    } as any);
+    const body = (response as any).data ?? response;
+    return {
+      data: body?.data ?? [],
+      total_items: body?.total_items ?? body?.meta?.total_items,
+      page: body?.page ?? body?.meta?.page,
+      limit: body?.limit ?? body?.meta?.limit,
+    };
+  }
+
   async createUser(userData: UserInput): Promise<UserResponse> {
     return this.create(userData);
   }

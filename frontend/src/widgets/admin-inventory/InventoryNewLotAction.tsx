@@ -67,7 +67,8 @@ export function InventoryNewLotDetailButton({
 }: {
 	lot: InventoryLotResponse;
 	openCreate?: OpenCreate;
-	close: () => void;
+	/** Opcional: AdminCRUDPage no siempre expone el cierre del detalle. */
+	close?: () => void;
 }) {
 	if (!openCreate) return null;
 
@@ -76,7 +77,7 @@ export function InventoryNewLotDetailButton({
 			size="sm"
 			type="button"
 			onClick={() => {
-				close();
+				close?.();
 				// El modal de detalle debe desmontarse antes de abrir el de creación.
 				setTimeout(() => openCreate(buildReplenishPrefill(lot)), 100);
 			}}

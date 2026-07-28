@@ -12,6 +12,7 @@ import { useToast } from '@/app/providers/ToastContext';
 import { useAnimals } from '@/entities/animal/model/useAnimals';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
 import { Loader2 } from 'lucide-react';
+import type { ControlEntryFormWidgetProps } from './ControlEntryForm.types';
 
 const controlEntrySchema = z.object({
   animal_id: z.number().min(1, 'Selecciona un animal'),
@@ -24,13 +25,11 @@ const controlEntrySchema = z.object({
 
 type ControlEntryForm = z.infer<typeof controlEntrySchema>;
 
-interface ControlEntryFormWidgetProps {
-  onSuccess?: () => void;
-  defaultDate?: string;
-  onCancel?: () => void;
-}
-
-export function ControlEntryFormWidget({ onSuccess, defaultDate, onCancel }: ControlEntryFormWidgetProps) {
+export function ControlEntryFormWidget({ onSuccess, defaultDate, onCancel, mode = 'full' }: ControlEntryFormWidgetProps) {
+  // Cada modal anuncia un alcance concreto ("Registrar peso", "Reportar animal
+  // enfermo"); mostrar siempre el formulario completo contradecía ese título.
+  const showWeight = mode !== 'health';
+  const showHealth = mode !== 'weight';
   const { showToast } = useToast();
   const { animals, loading: loadingAnimals } = useAnimals({
     limit: 500,
@@ -113,6 +112,7 @@ export function ControlEntryFormWidget({ onSuccess, defaultDate, onCancel }: Con
               <Input id="checkup_date" type="date" className="h-12" {...register('checkup_date')} />
             </div>
 
+            {showHealth && (
             <div className="space-y-2">
               <Label htmlFor="health_status">Estado de Salud</Label>
               <Select
@@ -130,7 +130,9 @@ export function ControlEntryFormWidget({ onSuccess, defaultDate, onCancel }: Con
                 </SelectContent>
               </Select>
             </div>
+            )}
 
+            {showWeight && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="weight">Peso (Kg)</Label>
@@ -158,8 +160,10 @@ export function ControlEntryFormWidget({ onSuccess, defaultDate, onCancel }: Con
                 />
               </div>
             </div>
+            )}
           </div>
 
+          {showHealth && (
           <div className="space-y-2">
             <Label htmlFor="description">Tratamientos u Observaciones</Label>
             <Textarea
@@ -171,6 +175,7 @@ export function ControlEntryFormWidget({ onSuccess, defaultDate, onCancel }: Con
               maxLength={500}
             />
           </div>
+          )}
 
           <div className="flex gap-4 pt-2">
             {onCancel && (

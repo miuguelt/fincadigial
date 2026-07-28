@@ -1,5 +1,6 @@
 import { controlService } from '@/entities/control/api/control.service';
 import type { ControlResponse } from '@/shared/api/generated/swaggerTypes';
+import type { CRUDConfig, CRUDFormSection } from '@/shared/types/crud';
 import { AnimalLink, AnimalGrowthLink } from '@/entities/animal/ui';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
 import { ControlDetailExpanded } from './components/ControlDetailExpanded';
@@ -58,11 +59,13 @@ function renderControlCard(animalOptions: { value: number; label: string }[]) {
 export function buildCrudConfig(
   animalOptions: { value: number; label: string }[],
   columns: any[],
-  viewMode: string,
+  viewMode: 'table' | 'cards',
   setViewMode: (mode: 'table' | 'cards') => void,
   isCampesino?: boolean,
-) {
-  const formSections = [
+): CRUDConfig<ControlResponse, ControlForm> {
+  // Anotar el retorno hace que TypeScript verifique que cada `name` existe en
+  // ControlForm; sin ello un campo mal escrito llegaba silencioso al formulario.
+  const formSections: CRUDFormSection<ControlForm>[] = [
     {
       title: 'Información Básica', gridCols: 2,
       fields: [

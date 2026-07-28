@@ -117,5 +117,14 @@ export const fincaService = {
       message: string;
     }>>('/multi-finca/create', data);
     return response.data;
+  },
+
+  /** Guarda las coordenadas GPS de una finca. */
+  async updateLocation(
+    fincaId: number,
+    coords: { latitude: number; longitude: number },
+  ) {
+    const response = await api.patch<ApiResponse<Finca>>(`/fincas/${fincaId}`, coords);
+    return response.data;
   }
 };

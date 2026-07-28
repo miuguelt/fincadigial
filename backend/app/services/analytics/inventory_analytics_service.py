@@ -2,6 +2,10 @@ from app import db
 from datetime import datetime, timedelta
 from app.models.inventory import InventoryLot, InventoryMovement, MovementType
 
+#: Ventana de consumo con la que se promedia la salida diaria.
+WINDOW_DAYS = 30
+
+
 class InventoryAnalyticsService:
     @staticmethod
     def get_inventory_autonomy(finca_id):
@@ -9,7 +13,7 @@ class InventoryAnalyticsService:
         Calcula la autonomía de inventario (días restantes) basándose en el consumo promedio.
         """
         today = datetime.now()
-        thirty_days_ago = today - timedelta(days=30)
+        thirty_days_ago = today - timedelta(days=WINDOW_DAYS)
 
         # 1. Fetch lots and movements to calculate in Python since product_name is a property
         lots = db.session.query(InventoryLot).filter(
@@ -47,21 +51,24 @@ class InventoryAnalyticsService:
         results = []
         for name, stock in stock_map.items():
             consumed = consumption_map.get(name, 0)
-            daily_avg = float(consumed) / 30.0
+            daily_avg = float(consumed) / float(WINDOW_DAYS)
             stock_float = float(stock)
 
             days_left = None
             if daily_avg > 0:
                 days_left = round(stock_float / daily_avg)
 
-            # Determinar nivel de alerta
-            status = 'stable'
-            if days_left is not None:
-                if days_left < 7: status = 'critical'
-                elif days_left < 15: status = 'warning'
-            elif stock_float == 0:
-                status = 'critical'
+            # Determinar nivel de alerta. 'depleted' se distingue de 'critical'
+            # porque no queda nada que administrar, no es que se acabe pronto.
+            if stock_float == 0:
+                status = 'depleted'
                 days_left = 0
+            elif days_left is not None and days_left < 7:
+                status = 'critical'
+            elif days_left is not None and days_left < 15:
+                status = 'warning'
+            else:
+                status = 'stable'
 
             results.append({
                 'product': name,
@@ -72,4 +79,11 @@ class InventoryAnalyticsService:
                 'status': status
             })
 
-        return results
+        # Los más urgentes primero: agotados, luego los de menor autonomía.
+        results.sort(key=lambda r: (r['days_left'] is None, r['days_left'] or 0))
+
+        return {
+            'items': results,
+            'total_groups': len(results),
+            'window_days': WINDOW_DAYS,
+        }

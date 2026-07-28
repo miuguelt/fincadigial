@@ -312,6 +312,15 @@ class InventorySummary(Resource):
         
         total_value = total_value_q.filter(InventoryLot.unit_cost.isnot(None)).scalar() or 0
 
+        # Parte de ese valor que ya está inmovilizada en lotes vencidos.
+        expired_value_q = apply_tenant_filter(db.session.query(
+            func.sum(InventoryLot.current_quantity * InventoryLot.unit_cost)
+        ), InventoryLot)
+        expired_value = expired_value_q.filter(
+            InventoryLot.unit_cost.isnot(None),
+            InventoryLot.expiry_date < today,
+        ).scalar() or 0
+
         movement_q = apply_tenant_filter(InventoryMovement.query, InventoryMovement)
         recent_movements = movement_q.order_by(
             InventoryMovement.created_at.desc()
@@ -325,6 +334,7 @@ class InventorySummary(Resource):
             'expiring_soon_lots': expiring_soon,
             'low_stock_lots': len(low_stock_lots),
             'total_estimated_value': round(float(total_value), 2),
+            'expired_value': round(float(expired_value), 2),
             'recent_movements': [m.to_namespace_dict(include_relations=True) for m in recent_movements],
         }, message='Resumen de inventario')
 
@@ -334,12 +344,14 @@ class InventoryAlerts(Resource):
     @jwt_required()
     @inventory_ns.doc('inventory_alerts', params={
         'expiry_days': 'Días para alerta de vencimiento (default: 30)',
+        'limit': 'Máximo de lotes por grupo; los contadores siguen siendo totales',
     })
     def get(self):
         """Lotes con vencimiento próximo o stock bajo."""
         from app.utils.tenant_context import apply_tenant_filter
         today = date.today()
         expiry_days = flask.request.args.get('expiry_days', default=30, type=int)
+        limit = flask.request.args.get('limit', type=int)
         expiry_threshold = today + timedelta(days=max(1, expiry_days))
 
         lot_q = apply_tenant_filter(InventoryLot.query, InventoryLot)
@@ -354,10 +366,15 @@ class InventoryAlerts(Resource):
 
         low_stock = [lot for lot in lot_q.all() if lot.is_low_stock and not lot.is_expired]
 
+        # El recorte es sólo de presentación: los contadores de summary siguen
+        # reflejando el total real de lotes afectados.
+        def _shown(lots):
+            return lots[:limit] if limit and limit > 0 else lots
+
         return APIResponse.success(data={
-            'expired': [lot.to_namespace_dict(include_relations=True) for lot in expired],
-            'expiring_soon': [lot.to_namespace_dict(include_relations=True) for lot in expiring],
-            'low_stock': [lot.to_namespace_dict(include_relations=True) for lot in low_stock],
+            'expired': [lot.to_namespace_dict(include_relations=True) for lot in _shown(expired)],
+            'expiring_soon': [lot.to_namespace_dict(include_relations=True) for lot in _shown(expiring)],
+            'low_stock': [lot.to_namespace_dict(include_relations=True) for lot in _shown(low_stock)],
             'summary': {
                 'expired_count': len(expired),
                 'expiring_soon_count': len(expiring),

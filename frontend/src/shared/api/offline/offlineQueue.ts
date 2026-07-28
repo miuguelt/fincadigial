@@ -29,6 +29,15 @@ const DB_NAME = 'VillaLuzQueue';
 const DB_VERSION = 1;
 const QUEUE_STORE = 'offlineQueue';
 const MAX_RETRIES = 3;
+/** Último cursor recibido de /sync/pull, para pedir sólo lo nuevo. */
+const PULL_CURSOR_KEY = 'villaluz_sync_pull_cursor';
+/** Operación del protocolo sync v2 -> verbo HTTP con el que se reencola. */
+const OPERATION_METHODS: Record<string, QueuedOperation['method']> = {
+  create: 'POST',
+  update: 'PUT',
+  patch: 'PATCH',
+  delete: 'DELETE',
+};
 
 // ─────────────────────────────────────────────────────────────
 // Helpers de mapeo de URL a Entidad
@@ -347,6 +356,61 @@ class OfflineQueue {
     // Intentar sincronizar si estamos online
     if (typeof navigator !== 'undefined' && navigator.onLine && !this.isSyncing) {
       setTimeout(() => this.syncQueue().catch(() => {}), 500);
+    }
+  }
+
+  /**
+   * Baja del servidor las operaciones que otros dispositivos de la misma finca
+   * han sincronizado (POST /sync/pull) y las encola localmente.
+   *
+   * El cursor se guarda en localStorage para que cada llamada pida sólo lo
+   * nuevo. Sin red devuelve 0 en lugar de propagar el error: quien llama es el
+   * ciclo de sincronización en segundo plano.
+   */
+  async pullFromServer(limit = 100): Promise<{ received: number; hasMore: boolean }> {
+    const fincaId = parseInt(localStorage.getItem('villaluz_finca_id') || '0', 10);
+    const deviceId = GET_DEVICE_ID();
+    if (!fincaId || !deviceId) {
+      return { received: 0, hasMore: false };
+    }
+
+    const lastCursor = parseInt(localStorage.getItem(PULL_CURSOR_KEY) || '0', 10);
+
+    try {
+      const response = await apiFetch({
+        url: '/sync/pull',
+        method: 'POST',
+        data: { finca_id: fincaId, device_id: deviceId, last_cursor: lastCursor, limit },
+      } as any);
+
+      const body = (response as any).data?.data ?? (response as any).data ?? {};
+      const operations: any[] = body.operations ?? [];
+
+      for (const op of operations) {
+        await this.addOperation({
+          id: op.operation_id,
+          timestamp: Date.parse(op.created_at_device || op.created_at || '') || Date.now(),
+          method: OPERATION_METHODS[op.operation] || 'POST',
+          url: op.entity_type ? `/${op.entity_type}` : '',
+          data: op.payload,
+          retries: 0,
+          maxRetries: MAX_RETRIES,
+          status: 'pending',
+          entityType: op.entity_type,
+          entityId: op.entity_id,
+          originDeviceId: op.origin_device_id,
+          syncVersion: op.logical_clock,
+          receivedFrom: op.origin_device_id,
+        } as QueuedOperation & { receivedFrom?: string });
+      }
+
+      if (body.next_cursor) {
+        localStorage.setItem(PULL_CURSOR_KEY, String(body.next_cursor));
+      }
+
+      return { received: operations.length, hasMore: Boolean(body.has_more) };
+    } catch {
+      return { received: 0, hasMore: false };
     }
   }
 

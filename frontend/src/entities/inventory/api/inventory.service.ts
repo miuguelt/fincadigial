@@ -12,6 +12,8 @@ export interface InventorySummary {
   expiring_soon_lots: number;
   low_stock_lots: number;
   total_estimated_value: number;
+  /** Parte del valor total que está inmovilizada en lotes ya vencidos. */
+  expired_value: number;
   recent_movements: InventoryMovementResponse[];
 }
 
@@ -57,9 +59,9 @@ class InventoryService extends BaseService<InventoryLotResponse> {
     return this.customRequest<InventorySummary>('../summary', 'GET');
   }
 
-  async getAlerts(expiryDays: number = 30): Promise<InventoryAlerts> {
+  async getAlerts(expiryDays: number = 30, limit?: number): Promise<InventoryAlerts> {
     return this.customRequest<InventoryAlerts>('../alerts', 'GET', undefined, {
-      params: { expiry_days: expiryDays }
+      params: { expiry_days: expiryDays, ...(limit ? { limit } : {}) }
     });
   }
 }

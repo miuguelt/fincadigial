@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { inventoryService } from '../api/inventory.service';
+import { inventoryAnalyticsService } from '../api/inventory-analytics.service';
 import type { InventoryLotInput, InventoryMovementInput } from '@/shared/api/generated/swaggerTypes';
 
 export const useInventory = () => {
@@ -17,10 +18,16 @@ export const useInventory = () => {
       queryFn: () => inventoryService.getSummary(),
     });
 
-  const useAlerts = (expiryDays?: number) =>
+  const useAlerts = (expiryDays?: number, lowStockThreshold?: number) =>
     useQuery({
-      queryKey: ['inventory', 'alerts', expiryDays],
-      queryFn: () => inventoryService.getAlerts(expiryDays),
+      queryKey: ['inventory', 'alerts', expiryDays, lowStockThreshold],
+      queryFn: () => inventoryService.getAlerts(expiryDays, lowStockThreshold),
+    });
+
+  const useAutonomy = (limit?: number) =>
+    useQuery({
+      queryKey: ['inventory', 'autonomy', limit],
+      queryFn: () => inventoryAnalyticsService.getAutonomy(limit),
     });
 
   const useMovements = (params?: Record<string, any>) =>
@@ -47,6 +54,7 @@ export const useInventory = () => {
     useLots,
     useSummary,
     useAlerts,
+    useAutonomy,
     useMovements,
     createLot,
     createMovement,

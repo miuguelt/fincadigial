@@ -17,6 +17,10 @@ interface GenericModalProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   title: React.ReactNode;
+  /** Línea secundaria bajo el título (ubicación, periodo, contexto). */
+  subtitle?: React.ReactNode;
+  /** Contenido extra en la cabecera, a la derecha del título. */
+  headerExtra?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
   size?: ModalSize;
@@ -78,6 +82,8 @@ export const GenericModal: React.FC<GenericModalProps> = ({
   isOpen,
   onOpenChange,
   title,
+  subtitle,
+  headerExtra,
   children,
   className,
   size = 'full',
@@ -278,6 +284,11 @@ export const GenericModal: React.FC<GenericModalProps> = ({
                 )}
               >
                 <span className="flex-1 min-w-0 truncate drop-shadow-md">{title}</span>
+                {subtitle && (
+                  <span className="mt-0.5 truncate text-xs font-normal text-white/80 drop-shadow-sm">
+                    {subtitle}
+                  </span>
+                )}
               </DialogTitle>
             ) : (
               <DialogTitle id={titleId} className="sr-only">
@@ -286,6 +297,7 @@ export const GenericModal: React.FC<GenericModalProps> = ({
             )}
 
             <div className="flex-shrink-0 flex items-center gap-1.5 ml-auto mr-9 sm:mr-10">
+              {headerExtra}
               {allowFullScreenToggle && (
                 <button
                   type="button"

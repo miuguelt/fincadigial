@@ -83,12 +83,14 @@ export const SectionCard: React.FC<{
   children: React.ReactNode;
   title?: string;
   className?: string;
-  variant?: 'base' | 'hover' | 'muted';
+  /** 'accent' destaca la tarjeta con el color primario sin perder contraste. */
+  variant?: 'base' | 'hover' | 'muted' | 'accent';
 }> = ({ children, title, className = '', variant = 'base' }) => {
   const base = variant === 'hover' ? modalStyles.card.hover : modalStyles.card.base;
   const muted = variant === 'muted' ? ' bg-muted/20' : '';
+  const accent = variant === 'accent' ? ' border-primary/40 bg-primary/5' : '';
   return (
-    <div className={`${base}${muted} ${className}`}>
+    <div className={`${base}${muted}${accent} ${className}`}>
       {title && <SectionTitle>{title}</SectionTitle>}
       {children}
     </div>

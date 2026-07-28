@@ -68,7 +68,6 @@ export function ControlHistorySection({
 					realtime
 					enhancedHover
 					refetchOnReconnect
-					embedded
 				/>
 			</div>
 		</section>

@@ -9,6 +9,10 @@ interface CollapsibleCardProps {
     defaultCollapsed?: boolean;
     className?: string;
     accent?: 'blue' | 'cyan' | 'teal' | 'emerald' | 'purple' | 'indigo' | 'red' | 'amber' | 'slate';
+    /** Contador que acompaña al título, p. ej. el número de filas de la sección. */
+    badgeCount?: number;
+    /** Controles alineados a la derecha de la cabecera (exportar, filtrar…). */
+    headerActions?: React.ReactNode;
 }
 
 export function CollapsibleCard({
@@ -16,7 +20,9 @@ export function CollapsibleCard({
     children,
     defaultCollapsed = false,
     className,
-    accent = 'slate'
+    accent = 'slate',
+    badgeCount,
+    headerActions
 }: CollapsibleCardProps) {
     const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
 
@@ -56,14 +62,22 @@ export function CollapsibleCard({
                     )}>
                         {title}
                     </h3>
+                    {badgeCount != null && (
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-foreground/80">
+                            {badgeCount}
+                        </span>
+                    )}
                 </div>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 rounded-full hover:bg-black/5 dark:hover:bg-card/10"
-                >
-                    {isCollapsed ? <ChevronDown className="h-5 w-5 opacity-70" /> : <ChevronUp className="h-5 w-5 opacity-70" />}
-                </Button>
+                <div className="flex items-center gap-2">
+                    {headerActions}
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 rounded-full hover:bg-black/5 dark:hover:bg-card/10"
+                    >
+                        {isCollapsed ? <ChevronDown className="h-5 w-5 opacity-70" /> : <ChevronUp className="h-5 w-5 opacity-70" />}
+                    </Button>
+                </div>
             </div>
             <div className={cn(
                 "transition-all duration-300 ease-in-out",
