@@ -3,7 +3,7 @@
     "guardian": "pwsh -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\Miguel\\Documents\\Aplicaciones\\_infrastructure\\devbraind\\scripts\\DEVBRAIN_GUARDIAN.ps1 -Mode Audit -DevPort 3005",
     "guardian:repair": "pwsh -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\Miguel\\Documents\\Aplicaciones\\_infrastructure\\devbraind\\scripts\\DEVBRAIN_GUARDIAN.ps1 -Mode Audit -DevPort 3005 -Repair",
     "dev": "npm run dev --prefix frontend",
-    "health": "npm run guardian",
+    "health": "pwsh -NoProfile -ExecutionPolicy Bypass -File start-windows.ps1 -Status",
     "checkpoint": "git add -A && git commit -m \"checkpoint: $(date +%Y-%m-%d %H:%M)\"",
     "test:coverage": "npm run test:coverage --prefix frontend",
 
