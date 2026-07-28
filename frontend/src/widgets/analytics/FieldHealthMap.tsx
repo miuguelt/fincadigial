@@ -26,7 +26,8 @@ interface FieldNode {
   occupation: number;
   capacity: number;
   sensors?: SensorData;
-  coords: { x: number; y: number }; // Simulated coords for the grid
+  /** Posición en la rejilla del mapa, no coordenadas geográficas. */
+  coords: { x: number; y: number };
 }
 
 export const FieldHealthMap = () => {

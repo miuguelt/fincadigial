@@ -97,6 +97,7 @@ frontend_ui_*.txt
 backend/static/uploads/
 nul
 frontend/errors.txt
+frontend/eslint_report.json
 
 # --- Local dev environments (NO COMMIT) ---
 backend/venv_wsl/

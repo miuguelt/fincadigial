@@ -131,13 +131,29 @@ const CampesinoHealthDashboard: React.FC = () => {
                       </p>
                     )}
                     
-                    {/* Visual badges for what was done (simulated since we don't have associations in standard query, but we can imply from generic fields) */}
-                    <div className="flex gap-2 mt-4 pt-4 border-t">
-                      <div className="flex items-center gap-1.5 text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-1 rounded-md">
-                        <Syringe className="w-3 h-3" />
-                        Registro Activo
+                    {/* Periodo de retiro: hasta esa fecha la leche y la carne
+                        del animal no se pueden comercializar. Antes había aquí
+                        una etiqueta fija "Registro Activo" que no comprobaba
+                        nada y se mostraba igual en tratamientos ya cerrados. */}
+                    {t.withdrawal_end_date && (
+                      <div className="flex gap-2 mt-4 pt-4 border-t">
+                        {new Date(t.withdrawal_end_date) >= new Date() ? (
+                          <div className="flex items-center gap-1.5 text-xs font-medium bg-amber-50 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200 px-2 py-1 rounded-md">
+                            <Syringe className="w-3 h-3" />
+                            En retiro hasta el{' '}
+                            {new Date(t.withdrawal_end_date).toLocaleDateString('es-ES', {
+                              day: 'numeric',
+                              month: 'short',
+                            })}
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5 text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 px-2 py-1 rounded-md">
+                            <Syringe className="w-3 h-3" />
+                            Retiro cumplido
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    )}
                   </div>
                 );
               })}

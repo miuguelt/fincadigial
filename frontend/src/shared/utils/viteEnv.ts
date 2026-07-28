@@ -23,7 +23,7 @@ export const VITE_ENV: Record<string, any> = (() => {
   const fromDefine = resolveImportMetaEnv();
   if (fromDefine) return fromDefine;
 
-  // Jest polyfill support (setupTests asigna globalThis.import.meta.env)
+  // Polyfill que puede inyectar el entorno de pruebas en globalThis.
   const poly = (globalThis as any)?.import?.meta?.env;
   if (poly) return poly;
 
