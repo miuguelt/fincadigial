@@ -3,6 +3,9 @@ from app.models.base_model import BaseModel
 
 
 class ActivityLog(BaseModel):
+    # Entity used by system-wide events (self-healing, schedulers) that own no finca
+    SYSTEM_ENTITY = 'System'
+
     __tablename__ = 'activity_log'
     __table_args__ = (
         db.Index('ix_activity_log_created_at', 'created_at'),
@@ -47,6 +50,15 @@ class ActivityLog(BaseModel):
     _searchable_fields = ['title', 'description']
     _sortable_fields = ['created_at', 'id']
     _required_fields = ['action', 'entity']
+
+    @classmethod
+    def allows_global_scope(cls, data: dict) -> bool:
+        """System events are not owned by a finca, so finca_id stays NULL.
+
+        Only visible to global administrators, since the tenant filter excludes
+        NULL finca_id rows for every other role.
+        """
+        return (data or {}).get('entity') == cls.SYSTEM_ENTITY
 
     def __repr__(self):
         return f'<ActivityLog {self.id}: {self.entity}:{self.action}>'

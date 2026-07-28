@@ -85,6 +85,16 @@ class BaseModel(db.Model):
     }
 
     @classmethod
+    def allows_global_scope(cls, data: dict) -> bool:
+        """Whether a row of this tenant model may be stored with a NULL finca_id.
+
+        Tenant models are isolated by finca, but a few of them also record
+        system-wide events that belong to no finca (self-healing, schedulers).
+        Subclasses opt in by overriding this hook for those rows only.
+        """
+        return False
+
+    @classmethod
     def _validate_and_normalize(cls, data, is_update=False, instance_id=None):
         """
         Valida y normaliza los datos del payload. Centraliza la lógica de requeridos,
@@ -215,13 +225,16 @@ class BaseModel(db.Model):
                 or not flask.has_request_context()
             )
 
+            # Registros de alcance global (eventos de sistema) no pertenecen a ninguna finca
+            allows_global = cls.allows_global_scope(data)
+
             if is_admin:
                 # El administrador global puede elegir la finca. Si no la envía, se usa la del contexto.
                 if data.get('finca_id') is None:
                     f_id = get_current_finca_id()
                     if f_id:
                         data['finca_id'] = f_id
-                    elif not is_update:
+                    elif not is_update and not allows_global:
                         errors.append("El campo 'finca_id' es requerido para garantizar el aislamiento de datos (Multi-Tenant)")
             else:
                 # Para roles no administrativos, se FUERZA siempre su finca_id de JWT para evitar inyección cross-tenant
@@ -231,7 +244,7 @@ class BaseModel(db.Model):
                 elif data.get('finca_id') is not None:
                     # Permitir finca_id explícito si no hay sesión JWT (petición pública / registro inicial)
                     pass
-                elif not is_update:
+                elif not is_update and not allows_global:
                     errors.append("El campo 'finca_id' es requerido para garantizar el aislamiento de datos (Multi-Tenant)")
 
         if errors:
