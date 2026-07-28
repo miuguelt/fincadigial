@@ -8,6 +8,7 @@ import { useUnreadMessages } from '@/features/chat/hooks/useUnreadMessages';
 import { NotificationsPanel } from '@/shared/components/notifications';
 import { SyncStatus } from '@/widgets/dashboard/SyncStatus';
 import { Breadcrumbs } from '@/shared/ui/common';
+import HeaderCalendarDropdown from './HeaderCalendarDropdown';
 
 import { 
   DropdownMenu, 
@@ -108,6 +109,9 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar }) => {
               <SyncStatus />
             </div>
           )}
+
+          {/* Agenda de la finca */}
+          {user?.finca_id && <HeaderCalendarDropdown />}
 
           {/* Atajos rápidos */}
           <div className="flex items-center gap-0.5">
