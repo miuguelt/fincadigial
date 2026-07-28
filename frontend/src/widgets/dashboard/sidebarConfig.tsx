@@ -22,6 +22,7 @@ import {
   IconClipboardList,
   IconShoppingBag,
   IconWorld,
+  IconCalendar,
 } from "@/shared/ui/icons";
 
 export type Role =
@@ -55,6 +56,12 @@ export const sidebarItems: SidebarItemConfig[] = [
     title: "Mi Finca",
     icon: <IconHome2 size={24} />,
     path: "dashboard",
+    roles: AllRoles,
+  },
+  {
+    title: "Calendario",
+    icon: <IconCalendar size={24} />,
+    path: "calendar",
     roles: AllRoles,
   },
   {

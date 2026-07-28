@@ -67,6 +67,7 @@ const RegulatoryReportsPage = lazy(() => import('@/pages/dashboard/admin/regulat
 // Páginas cableadas pendientes
 const AdminMilkProductionPage = lazy(() => import('@/pages/dashboard/admin/milk_production/index.tsx'));
 const AdminTasksPage = lazy(() => import('@/pages/dashboard/admin/tasks/index.tsx'));
+const CalendarPage = lazy(() => import('@/pages/dashboard/calendar/CalendarPage'));
 const AdminActivityLogPage = lazy(() => import('@/pages/dashboard/admin/activity_log/index.tsx'));
 const AdminDataOverviewPage = lazy(() => import('@/pages/dashboard/admin/data-overview/index.tsx'));
 const AdminDiagnosticsPage = lazy(() => import('@/pages/dashboard/admin/diagnostics/index.tsx'));
@@ -148,6 +149,7 @@ const renderRoleRoutes = (prefix: string) => (
     <Route path={`${prefix}/reports`} element={<ReportsPage />} />
     <Route path={`${prefix}/milk-production`} element={<AdminMilkProductionPage />} />
     <Route path={`${prefix}/tasks`} element={<AdminTasksPage />} />
+    <Route path={`${prefix}/calendar`} element={<CalendarPage />} />
     <Route path={`${prefix}/tools/frame-calculator`} element={<FrameScoreCalculator />} />
     <Route path={`${prefix}/tools/ration-calculator`} element={<RationCalculator />} />
   </>
@@ -264,6 +266,7 @@ const AppRoutes = () => {
             <Route path="/admin/reports" element={<ReportsPage />} />
             <Route path="/admin/milk-production" element={<AdminMilkProductionPage />} />
             <Route path="/admin/tasks" element={<AdminTasksPage />} />
+            <Route path="/admin/calendar" element={<CalendarPage />} />
             <Route path="/admin/activity-log" element={<AdminActivityLogPage />} />
             <Route path="/admin/data-overview" element={<AdminDataOverviewPage />} />
             <Route path="/admin/diagnostics" element={<AdminDiagnosticsPage />} />
