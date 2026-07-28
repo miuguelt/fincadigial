@@ -1,22 +1,15 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   IconSearch,
-  IconMapPin,
   IconInfoCircle,
   IconLoader2,
   IconBuilding,
-  IconUserPlus,
   IconArrowRight,
   IconCircleX,
-  IconBuildingFarm,
-  IconClock,
-  IconMail
 } from "@/shared/ui/icons";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
-import { Badge } from "@/shared/ui/badge";
 import {
   membershipService,
 } from "@/entities/user/api/membership.service";
@@ -24,8 +17,9 @@ import { fincaService } from "@/entities/finca/api/finca.service";
 import { useNavigate } from "react-router-dom";
 
 import { useToast } from "@/app/providers/ToastContext";
-import { cn } from "@/shared/ui/cn";
 import { useNotifications } from "@/shared/hooks/useNotifications";
+import { PublicFincaCard } from "./PublicFincaCard";
+import FincaDetailModal from "./FincaDetailModal";
 export const JoinFincaPage: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -33,7 +27,8 @@ export const JoinFincaPage: React.FC = () => {
   const [fincas, setFincas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [requestingId, setRequestingId] = useState<number | null>(null);
-  const { notifications, refresh } = useNotifications();
+  const [detailFinca, setDetailFinca] = useState<any | null>(null);
+  const { refresh } = useNotifications();
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
@@ -137,114 +132,16 @@ export const JoinFincaPage: React.FC = () => {
               {" "}
               <AnimatePresence>
                 {" "}
-                {filteredFincas.map((finca) => {
-                  const joinRequest = notifications.find(n => n.finca_id === finca.id && n.type === 'JOIN_REQUEST' && n.status === 'pending');
-                  const invitation = notifications.find(n => n.finca_id === finca.id && n.type === 'INVITATION_RECEIVED' && n.status === 'pending');
-                  const isManaged = finca.is_member || false; // Assuming API might return this. If not, fallback.
-                  return (
-                    <motion.div
-                      key={finca.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      whileHover={{ y: -8 }}
-                      className="group"
-                    >
-                      {" "}
-                      <Card className="rounded-[2.5rem] border border-border bg-card overflow-hidden hover:border-primary/50 transition-all duration-500 shadow-sm hover:shadow-md">
-                        {" "}
-                        <div className="h-40 bg-muted /30 relative flex items-center justify-center overflow-hidden">
-                          {" "}
-                          {finca.logo_url ? (
-                            <img
-                              src={finca.logo_url}
-                              alt={finca.name}
-                              className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
-                            />
-                          ) : (
-                            <IconBuildingFarm className="h-16 w-16 text-foreground/50 group-hover:scale-110 transition-transform duration-500" />
-                          )}{" "}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />{" "}
-                          <Badge className="absolute top-4 right-4 bg-card/90 /90 text-foreground border-none text-[8px] font-semibold text-sm px-3 py-1 rounded-[var(--radius-full)] backdrop-blur-md">
-                            {" "}
-                            {finca.type || "Tradicional"}{" "}
-                          </Badge>{" "}
-                        </div>{" "}
-                        <CardContent className="p-8 space-y-6">
-                          {" "}
-                          <div className="space-y-2">
-                            {" "}
-                            <h3 className="text-2xl font-black text-foreground leading-tight tracking-tight group-hover:text-primary transition-colors">
-                              {finca.name}
-                            </h3>{" "}
-                            <div className="flex items-center gap-2 text-muted-foreground font-bold text-[10px] uppercase tracking-[0.1em]">
-                              {" "}
-                              <IconMapPin className="h-3.5 w-3.5 text-primary" />{" "}
-                              {finca.municipality || "Boyacá, COL"}{" "}
-                            </div>{" "}
-                          </div>{" "}
-                          <div className="pt-6 border-t border-border flex items-center justify-between">
-                            {" "}
-                            <div className="flex flex-col">
-                              {" "}
-                              <span className="text-[10px] font-medium text-muted-foreground mb-1">
-                                Población
-                              </span>{" "}
-                              <div className="flex items-center gap-1.5">
-                                {" "}
-                                <span className="text-lg font-bold text-foreground tabular-nums">
-                                  {finca.animal_count || 0}
-                                </span>{" "}
-                                <span className="text-[10px] text-muted-foreground">
-                                  cabezas
-                                </span>{" "}
-                              </div>{" "}
-                            </div>{" "}
-                            <motion.div
-                              initial={{ opacity: 0, scale: 0.9 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ duration: 0.3, delay: 0.1, ease: "easeOut" }}
-                            >
-                            <Button
-                              onClick={() => {
-                                if (isManaged) navigate('/dashboard');
-                                else if (invitation) {/* open panel maybe? or do nothing */}
-                                else handleRequestJoin(finca.id);
-                              }}
-                              disabled={
-                                requestingId === finca.id || !!joinRequest
-                              }
-                              className={cn(
-                                "rounded-lg h-10 px-6 font-black text-[10px] uppercase tracking-widest gap-2 shadow-sm active:scale-95 transition-all",
-                                isManaged
-                                  ? "bg-surface-raised border border-border text-foreground hover:bg-muted"
-                                  : joinRequest
-                                  ? "bg-warning/20 text-warning border border-warning/30"
-                                  : invitation
-                                  ? "bg-info/10 text-info border border-info/30 hover:bg-info/20"
-                                  : "bg-primary text-white hover:bg-primary/90 shadow-primary/20"
-                              )}
-                            >
-                              {" "}
-                              {requestingId === finca.id ? (
-                                <IconLoader2 className="h-4 w-4 animate-spin" />
-                              ) : isManaged ? (
-                                <>Ir a la finca <IconArrowRight className="h-4 w-4" /></>
-                              ) : joinRequest ? (
-                                <>Solicitud enviada <IconClock className="h-4 w-4" /></>
-                              ) : invitation ? (
-                                <>Ver invitación <IconMail className="h-4 w-4" /></>
-                              ) : (
-                                <>Unirme <IconUserPlus className="h-4 w-4" /></>
-                              )}{" "}
-                            </Button>{" "}
-                            </motion.div>
-                          </div>{" "}
-                        </CardContent>{" "}
-                      </Card>{" "}
-                    </motion.div>
-                  );
-                })}{" "}
+                {filteredFincas.map((finca, index) => (
+                  <PublicFincaCard
+                    key={finca.id}
+                    finca={finca}
+                    index={index}
+                    requestingId={requestingId}
+                    onOpenDetail={() => setDetailFinca(finca)}
+                    onRequestJoin={() => handleRequestJoin(finca.id)}
+                  />
+                ))}{" "}
               </AnimatePresence>{" "}
             </div>
           )}{" "}
@@ -327,6 +224,14 @@ export const JoinFincaPage: React.FC = () => {
           </div>{" "}
         </section>{" "}
       </div>{" "}
+
+      <FincaDetailModal
+        isOpen={Boolean(detailFinca)}
+        onClose={() => setDetailFinca(null)}
+        finca={detailFinca}
+        onRequestJoin={handleRequestJoin}
+        requestingId={requestingId}
+      />
     </div>
   );
 };

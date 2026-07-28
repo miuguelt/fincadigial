@@ -91,6 +91,13 @@ export function AnimalCard({
   const father = fatherLabel || animal.father?.record || 'N/A';
   const mother = motherLabel || animal.mother?.record || 'N/A';
 
+  // El listado devuelve el padre/madre unas veces anidado y otras como id
+  // plano; sin este fallback el click sobre el progenitor no hacía nada.
+  const fatherId = animal.father?.id ?? animal.idFather;
+  const motherId = animal.mother?.id ?? animal.idMother;
+
+  const sexSymbol = animal.sex === 'Hembra' ? '♀' : animal.sex === 'Macho' ? '♂' : null;
+
   const field = fieldName || animal.current_field_name || null;
   const potreroColor = field ? getFieldColor(field) : 'transparent';
 
@@ -175,7 +182,7 @@ export function AnimalCard({
           
           {alertCount > 0 && (
             <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-[var(--color-warning)] text-white shadow-lg animate-pulse">
-              <span className="text-[10px] font-black">{alertCount}</span>
+              <span className="text-[10px] font-black">{alertCount}!</span>
             </div>
           )}
         </div>
@@ -187,6 +194,17 @@ export function AnimalCard({
           <div className="flex items-start justify-between gap-2">
             <h3 className="text-sm font-bold leading-tight truncate tracking-tight text-[var(--color-text)]">
               {animal.record || `#${animal.id}`}
+              {sexSymbol && (
+                <span
+                  aria-label={animal.sex}
+                  className={cn(
+                    "ml-1 font-black",
+                    animal.sex === 'Hembra' ? "text-pink-500" : "text-blue-500",
+                  )}
+                >
+                  {sexSymbol}
+                </span>
+              )}
             </h3>
             {/* Menú de acciones legacy si es necesario */}
             {!hideFooterActions && (
@@ -238,9 +256,9 @@ export function AnimalCard({
           <div 
             className={cn("flex flex-col gap-0.5 overflow-hidden", onFatherClick && "cursor-pointer hover:opacity-70")}
             onClick={(e) => {
-                if (onFatherClick && animal.father?.id) {
+                if (onFatherClick && fatherId) {
                     e.stopPropagation();
-                    onFatherClick(animal.father.id);
+                    onFatherClick(fatherId);
                 }
             }}
           >
@@ -253,9 +271,9 @@ export function AnimalCard({
           <div 
             className={cn("flex flex-col gap-0.5 overflow-hidden", onMotherClick && "cursor-pointer hover:opacity-70")}
             onClick={(e) => {
-                if (onMotherClick && animal.mother?.id) {
+                if (onMotherClick && motherId) {
                     e.stopPropagation();
-                    onMotherClick(animal.mother.id);
+                    onMotherClick(motherId);
                 }
             }}
           >

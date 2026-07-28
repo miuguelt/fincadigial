@@ -1,5 +1,6 @@
 import { getCookie } from '@/shared/utils/cookieUtils';
 import { apiFetch } from '@/shared/api/apiFetch';
+import { ConflictResolver } from './ConflictResolver';
 
 export interface QueuedOperation {
   id: string;
@@ -78,15 +79,37 @@ function inferOperation(method: string): string {
 
 // ─────────────────────────────────────────────────────────────
 
+/**
+ * Conexión única a la cola. Antes cada lectura o escritura abría una conexión
+ * nueva y no la cerraba: en una sesión larga sin cobertura se acumulaban
+ * cientos de conexiones vivas, y cualquier `deleteDatabase` o cambio de versión
+ * del esquema quedaba bloqueado indefinidamente por ellas.
+ */
+let queueDbPromise: Promise<IDBDatabase> | null = null;
+
 function openQueueDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
+  if (queueDbPromise) return queueDbPromise;
+
+  queueDbPromise = new Promise<IDBDatabase>((resolve, reject) => {
     if (typeof indexedDB === 'undefined') {
       reject(new Error('IndexedDB not available'));
       return;
     }
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onerror = () => reject(req.error);
-    req.onsuccess = () => resolve(req.result);
+    req.onsuccess = () => {
+      const db = req.result;
+      // Si otra pestaña pide borrar o migrar la base, soltamos la conexión en
+      // vez de bloquearla, y la siguiente operación la reabre.
+      db.onversionchange = () => {
+        db.close();
+        queueDbPromise = null;
+      };
+      db.onclose = () => {
+        queueDbPromise = null;
+      };
+      resolve(db);
+    };
     req.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
       if (!db.objectStoreNames.contains(QUEUE_STORE)) {
@@ -95,7 +118,12 @@ function openQueueDB(): Promise<IDBDatabase> {
         store.createIndex('timestamp', 'timestamp', { unique: false });
       }
     };
+  }).catch((error) => {
+    queueDbPromise = null;
+    throw error;
   });
+
+  return queueDbPromise;
 }
 
 async function dbGetAll(): Promise<QueuedOperation[]> {
@@ -139,6 +167,48 @@ async function dbDelete(id: string): Promise<void> {
 // ─────────────────────────────────────────────────────────────
 // OfflineQueue
 // ─────────────────────────────────────────────────────────────
+
+/**
+ * Aplica Last Write Wins sobre las operaciones que mutan el mismo recurso.
+ *
+ * Dos dispositivos sin cobertura pueden editar el mismo animal; al reconectar,
+ * enviar ambas ediciones en orden de cola hacía que la más vieja sobrescribiera
+ * a la más reciente. Sólo sobrevive la de mayor syncVersion, y el descarte
+ * queda registrado en ConflictResolver para que el administrador lo audite.
+ *
+ * Los POST quedan fuera: crean recursos distintos aunque compartan URL.
+ */
+export function resolveQueueConflicts(operations: QueuedOperation[]): {
+  survivors: QueuedOperation[];
+  discarded: QueuedOperation[];
+} {
+  const byResource = new Map<string, QueuedOperation>();
+  const survivors: QueuedOperation[] = [];
+  const discarded: QueuedOperation[] = [];
+
+  for (const op of operations) {
+    if (op.method === 'POST') {
+      survivors.push(op);
+      continue;
+    }
+
+    const key = `${op.method}:${op.url}`;
+    const existing = byResource.get(key);
+    if (!existing) {
+      byResource.set(key, op);
+      continue;
+    }
+
+    const { winner, loser } = ConflictResolver.resolve(existing, op);
+    byResource.set(key, winner);
+    discarded.push(loser);
+  }
+
+  survivors.push(...byResource.values());
+  // Conservar el orden de encolado original entre las supervivientes.
+  survivors.sort((a, b) => operations.indexOf(a) - operations.indexOf(b));
+  return { survivors, discarded };
+}
 
 const GET_DEVICE_ID = () => {
   let id = localStorage.getItem('villaluz_device_id');
@@ -214,7 +284,13 @@ class OfflineQueue {
 
     this.isSyncing = true;
 
-    for (const operation of pending) {
+    const { survivors, discarded } = resolveQueueConflicts(pending);
+    for (const loser of discarded) {
+      await dbDelete(loser.id);
+      this.notifyCallbacks(true, { ...loser, status: 'completed' });
+    }
+
+    for (const operation of survivors) {
       if (operation.status === 'syncing') continue;
 
       operation.status = 'syncing';

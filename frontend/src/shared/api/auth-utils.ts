@@ -20,9 +20,15 @@ export const showToastOnce = (key: string, options: Parameters<typeof toast>[0])
 };
 
 export const hasClientSession = (): boolean => {
+  // La marca de sesión activa sólo la escribe un login correcto y el logout la
+  // borra. Con cookies HttpOnly es la única evidencia que el JS puede ver: la
+  // cookie de sesión no es legible, así que exigir además una clave en storage
+  // hacía que la app tratase como anónima a una sesión perfectamente válida.
+  // Sigue siendo una señal de UI; quien autoriza de verdad es el backend.
   try {
     if (typeof sessionStorage !== 'undefined') {
-      if (sessionStorage.getItem(AUTH_SESSION_ACTIVE_KEY) !== '1') return false;
+      if (sessionStorage.getItem(AUTH_SESSION_ACTIVE_KEY) === '1') return true;
+      return false;
     }
   } catch { /* noop */ }
 
