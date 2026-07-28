@@ -73,7 +73,6 @@ def rate_limit_handler(request_limit):
             "retry_after_seconds": 60,
         },
     )
-    import flask
     resp = flask.make_response(flask.jsonify(payload), status)
     resp.headers['Retry-After'] = '60'
     resp.headers['RateLimit-Reset'] = '60'

@@ -3,6 +3,7 @@ from typing import Any
 from app.models.animals import Animals, Sex
 from app.models.reproduction import ReproductiveEvent, EventType, DiagnosisResult
 from app.models.treatments import Treatments
+from app.models.system_content import SystemContent
 from app.services.push_notification_service import PushNotificationService
 
 def _get_farming_param(key: str) -> float | None:

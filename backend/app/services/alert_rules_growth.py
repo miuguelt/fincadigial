@@ -4,7 +4,7 @@ Reglas de alertas de crecimiento (peso, ADG, BCS, proyección).
 from datetime import date, timedelta
 import logging
 from app import db
-from app.models.animals import Animals, Sex
+from app.models.animals import Animals, AnimalStatus, Sex
 from app.models.control import Control
 from app.models.treatments import Treatments
 from app.models.reproduction import ReproductiveEvent, EventType

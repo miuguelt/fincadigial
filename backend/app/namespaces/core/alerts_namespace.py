@@ -1,5 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 import flask
+import logging
 from flask_jwt_extended import jwt_required
 from app.models.alerts import AnimalAlertConfig, AnimalAlert, AlertType
 from app.utils.response_handler import APIResponse

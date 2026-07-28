@@ -87,12 +87,12 @@ class MilkProduction(BaseModel):
         # Validar porcentaje de grasa
         if 'fat_percentage' in data and data['fat_percentage'] is not None:
             if data['fat_percentage'] < 0 or data['fat_percentage'] > 100:
-                errors.append(f"Porcentaje de grasa debe estar entre 0 y 100")
+                errors.append("Porcentaje de grasa debe estar entre 0 y 100")
 
         # Validar porcentaje de proteína
         if 'protein_percentage' in data and data['protein_percentage'] is not None:
             if data['protein_percentage'] < 0 or data['protein_percentage'] > 100:
-                errors.append(f"Porcentaje de proteína debe estar entre 0 y 100")
+                errors.append("Porcentaje de proteína debe estar entre 0 y 100")
 
         if errors:
             raise ValidationError('; '.join(errors), code="validation_error", errors=errors)

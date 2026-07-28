@@ -4,6 +4,8 @@ from flask_jwt_extended import jwt_required
 from datetime import datetime, timedelta, date
 import logging
 
+from sqlalchemy import func
+
 from app.models.reproduction import ReproductiveEvent
 from app.models.treatments import Treatments
 from app.models.vaccinations import Vaccinations

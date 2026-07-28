@@ -1,5 +1,6 @@
 """Seed: Alert engine thresholds in system_contents."""
-import os, sys
+import os
+import sys
 sys.path.append(os.getcwd())
 
 from app import create_app, db

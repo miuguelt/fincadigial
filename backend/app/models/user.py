@@ -26,10 +26,6 @@ class ApprovalStatus(enum.Enum):
     def get_choices(cls):
         return [(c.value, c.value) for c in cls]
 
-    @classmethod
-    def get_choices(cls):
-        return [(c.value, c.value) for c in cls]
-
     def __str__(self):
         return str(self.value)
 
