@@ -55,6 +55,7 @@ import AlertsPanel from '@/widgets/analytics/AlertsPanel';
 const RegulatoryReportsWidget = React.lazy(() => import('@/widgets/dashboard/RegulatoryReportsWidget'));
 const FieldHealthMap = React.lazy(() => import('@/widgets/analytics/FieldHealthMap'));
 import { ExternalLink } from 'lucide-react';
+import { FincaHeroBanner } from '@/widgets/finca/hero';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 
 const KPI_ORDER = [
@@ -716,6 +717,9 @@ const AdminDashboard: React.FC = () => {
   // Renderizar contenido de la pestaña de resumen
   const renderOverviewTab = () => (
     <div className="space-y-6">
+      {/* Banner de finca: identidad, ubicación y clima real de la vereda */}
+      <FincaHeroBanner />
+
       {renderDashboardHero()}
 
       {/* Tarjetas de estadísticas con skeleton screen mejorado */}

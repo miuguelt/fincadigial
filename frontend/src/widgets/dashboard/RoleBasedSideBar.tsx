@@ -6,14 +6,11 @@ import {
   sidebarItems,
   type Role as SidebarRole,
 } from "@/widgets/dashboard/sidebarConfig";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Loader } from "@/shared/ui/Loader";
 import { normalizeRole } from "@/features/auth/api/auth.service";
-import { ChevronDown, ChevronUp, X, LogOut, Settings, User as UserIcon } from "lucide-react";
-import ThemeToggle from "./ThemeToggle";
+import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { subscribeSSE } from "@/lib/events";
-import { FincaSelector } from "@/features/multi-finca/ui/FincaSelector";
-import { GlobalSearchBar } from "@/features/search/ui/GlobalSearchBar";
 import { useNotifications } from "@/shared/hooks/useNotifications";
 
 const getRolePrefix = (r: string): string => {
@@ -46,16 +43,8 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
   setIsSidebarOpen,
   isCollapsed = false,
 }) => {
-  const {
-    user,
-    role,
-    loading,
-    isAuthenticated,
-    checkAuthStatus,
-    logout: signOut,
-  } = useAuth() as any;
+  const { user, role, loading, isAuthenticated, checkAuthStatus } = useAuth() as any;
   const location = useLocation();
-  const navigate = useNavigate();
   const { farmPending } = useNotifications();
   
   const [pendingMemberships, setPendingMemberships] = useState(0);
@@ -285,22 +274,22 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
         aria-hidden={!isSidebarOpen ? "true" : "false"}
         role="navigation"
       >
-        {/* Selector de Finca y Búsqueda (Top) */}
+        {/* Cabecera mínima: el menú es solo la lista de secciones. Cuenta, tema,
+            cambio de finca y salida viven en el menú de la foto de perfil. */}
         {!isCollapsed && (
-          <div className="p-4 space-y-4 border-b border-border/20 bg-gradient-to-b from-primary/5 to-transparent">
-             <div className="flex justify-between items-center lg:block">
-                <FincaSelector />
-                <button
-                    type="button"
-                    ref={closeBtnRef}
-                    className="lg:hidden p-2 rounded-xl hover:bg-primary/10 text-muted-foreground hover:text-primary transition-all duration-300"
-                    onClick={() => setIsSidebarOpen(false)}
-                    aria-label="Cerrar menú lateral"
-                >
-                    <X className="h-5 w-5" />
-                </button>
-             </div>
-             <GlobalSearchBar placeholder="Buscar en la finca..." className="w-full" />
+          <div className="flex items-center justify-between gap-2 border-b border-border/20 px-4 py-3">
+            <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+              Menú de la finca
+            </span>
+            <button
+              type="button"
+              ref={closeBtnRef}
+              className="lg:hidden flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+              onClick={() => setIsSidebarOpen(false)}
+              aria-label="Cerrar menú lateral"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
         )}
 
@@ -571,59 +560,6 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
               );
             })}
         </nav>
-
-        {/* Perfil del usuario y Salir (Footer) */}
-        <div className="mt-auto border-t border-border/30 bg-gradient-to-t from-primary/5 to-transparent p-4">
-          {isCollapsed ? (
-            <div className="flex flex-col items-center gap-4">
-              <ThemeToggle />
-              <button
-                onClick={() => signOut?.()}
-                className="p-2 rounded-xl bg-muted text-muted-foreground hover:bg-destructive hover:text-white transition-all"
-                title="Salir"
-              >
-                <LogOut className="h-5 w-5" />
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold overflow-hidden shadow-sm">
-                   {user?.avatar_url ? (
-                     <img src={user.avatar_url} alt={user.fullname} className="w-full h-full object-cover" />
-                   ) : (
-                     user?.fullname?.[0] || <UserIcon className="h-5 w-5" />
-                   )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-foreground truncate">Don {user?.fullname?.split(' ')[0]}</p>
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest truncate">{user?.role}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between pt-2 border-t border-border/10">
-                <div className="flex items-center gap-1">
-                  <ThemeToggle />
-                  <button 
-                    onClick={() => navigate('/profile')}
-                    className="p-2 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
-                    title="Mi perfil"
-                  >
-                    <Settings className="h-4 w-4" />
-                  </button>
-                </div>
-                <button
-                    type="button"
-                    onClick={() => signOut?.()}
-                    className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-muted-foreground hover:bg-destructive hover:text-white transition-all duration-300"
-                >
-                    <LogOut className="h-4 w-4" />
-                    Salir
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
       </aside>
     </>
   );

@@ -56,37 +56,9 @@ export const WEATHER_ICONS: Record<string, React.ReactNode> = {
 	fog: <Cloud className="w-5 h-5 text-gray-400" />,
 };
 
-export const WMO_DESCRIPTIONS: Record<number, string> = {
-	0: "Despejado",
-	1: "Mayormente despejado",
-	2: "Parcialmente nublado",
-	3: "Nublado",
-	45: "Niebla",
-	48: "Niebla con escarcha",
-	51: "Llovizna ligera",
-	53: "Llovizna moderada",
-	55: "Llovizna densa",
-	61: "Lluvia ligera",
-	63: "Lluvia moderada",
-	65: "Lluvia intensa",
-	71: "Nieve ligera",
-	73: "Nieve moderada",
-	75: "Nieve intensa",
-	77: "Granizo",
-	80: "Chubascos ligeros",
-	81: "Chubascos moderados",
-	82: "Chubascos violentos",
-	85: "Chubascos de nieve",
-	86: "Chubascos de nieve intensos",
-	95: "Tormenta",
-	96: "Tormenta con granizo",
-	99: "Tormenta con granizo intenso",
-};
-
-export function getWmoDescription(code: number | null): string {
-	if (code === null || code === undefined) return "--";
-	return WMO_DESCRIPTIONS[code] || "N/A";
-}
+// La traducción de códigos WMO vive en `entities/weather` para que el dashboard
+// y esta página describan igual la misma condición.
+export { WMO_DESCRIPTIONS, getWmoDescription } from "@/entities/weather";
 
 export function formatHour(dateStr: string): string {
 	const date = new Date(dateStr);
