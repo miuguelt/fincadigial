@@ -1,5 +1,6 @@
 import { getCookie } from '@/shared/utils/cookieUtils';
 import { apiFetch } from '@/shared/api/apiFetch';
+import { toRelativeApiPath } from '@/shared/api/urlUtils';
 import { ConflictResolver } from './ConflictResolver';
 
 export interface QueuedOperation {
@@ -237,12 +238,13 @@ class OfflineQueue {
     data?: any,
     headers?: Record<string, string>
   ): Promise<string> {
-    const { entityType, entityId } = inferEntityFromUrl(url);
+    const canonicalUrl = toRelativeApiPath(url);
+    const { entityType, entityId } = inferEntityFromUrl(canonicalUrl);
     const operation: QueuedOperation = {
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
       method,
-      url,
+      url: canonicalUrl,
       data,
       headers,
       retries: 0,
@@ -310,12 +312,14 @@ class OfflineQueue {
         }
 
         const res = await apiFetch({
-          url: operation.url,
+          url: toRelativeApiPath(operation.url),
           method: operation.method,
           data: operation.data,
           headers,
           withCredentials: true,
           validateStatus: () => true,
+          // Avoid re-enqueue loops if replay still fails
+          skipOffline: true,
         } as any);
 
         if (res.status >= 200 && res.status < 300) {

@@ -12,6 +12,7 @@ import {
   readStandardErrorPayload,
   formatMessageFromCode
 } from './error-parser';
+import { toRelativeApiPath, normalizeApiPath } from './urlUtils';
 
 const envStr = (key: string, fallback = ''): string => String(getEnvVar(key, fallback) ?? fallback);
 
@@ -186,21 +187,7 @@ let authGatePromise: Promise<void> | null = null;
 
 // Normaliza URL relativa y la pasa a minúsculas sin barra inicial
 function normalizePath(url?: string): string {
-  if (!url) return '';
-  try {
-    let u = String(url).trim();
-    // Quitar querystring y hash si vienen incrustados
-    const q = u.indexOf('?');
-    if (q >= 0) u = u.slice(0, q);
-    const h = u.indexOf('#');
-    if (h >= 0) u = u.slice(0, h);
-    // Quitar base /api/vX si el caller la incluye
-    u = u.replace(/^https?:\/\/.+?(\/api\/v\d+\/)/i, '');
-    u = u.replace(/^\/?/, '');
-    return u.toLowerCase();
-  } catch {
-    return '';
-  }
+  return normalizeApiPath(url);
 }
 
 // Determina si el endpoint es público y no requiere gate
@@ -290,12 +277,9 @@ async function ensureAuthReady(): Promise<void> {
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     try {
-      // Normalizar URL para evitar duplicación de /api/v1 si el baseURL ya lo incluye
-      if (config.url && config.baseURL?.endsWith('/api/v1')) {
-        config.url = config.url.replace(/^(?:\/?api\/v1)+/i, '');
-        if (!config.url.startsWith('/')) {
-          config.url = '/' + config.url;
-        }
+      // Canonical relative path (strips nested absolute bases /api/v1/http://...)
+      if (config.url) {
+        config.url = toRelativeApiPath(config.url);
       }
 
       // Gate global: si el endpoint requiere autenticación, esperar a /auth/me
@@ -372,12 +356,8 @@ api.interceptors.request.use(
 refreshClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     try {
-      // Normalizar URL para evitar duplicación de /api/v1 si el baseURL ya lo incluye
-      if (config.url && config.baseURL?.endsWith('/api/v1')) {
-        config.url = config.url.replace(/^(?:\/?api\/v1)+/i, '');
-        if (!config.url.startsWith('/')) {
-          config.url = '/' + config.url;
-        }
+      if (config.url) {
+        config.url = toRelativeApiPath(config.url);
       }
 
       const path = normalizePath(config.url as any);
@@ -874,15 +854,15 @@ api.interceptors.response.use(
 
       if (isOfflineLike && method !== 'get' && !skipOffline) {
         if (DEBUG_LOG) console.log(`[api][offline] Automically enqueuing ${method} ${path}`);
-        
-        // Convert relative URL back to absolute for the queue
-        const fullUrl = (originalRequest.url?.startsWith('http') 
-          ? originalRequest.url 
-          : `${baseURL}/${path}`).replace(/\/+/g, '/').replace(':/', '://');
+
+        // Store ONLY a canonical relative path — never absolute URLs.
+        // Absolute + baseURL re-join caused nested 404s like:
+        // /api/v1/http://localhost:8092/api/v1/location/report
+        const queueUrl = toRelativeApiPath(originalRequest.url || path);
 
         offlineQueue.enqueue(
           method.toUpperCase() as any,
-          fullUrl,
+          queueUrl,
           originalRequest.data,
           originalRequest.headers as Record<string, string>
         );

@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { API_CONFIG } from './config';
+import { normalizeApiPath } from './urlUtils';
 
 // Asegurar credenciales en todas las llamadas axios (cookies/CSRF)
 axios.defaults.withCredentials = true;
@@ -54,19 +55,7 @@ export const setAuthHeader = (headers: MutableHeaders, shouldAttach: boolean, to
 };
 
 export function normalizePath(url?: string): string {
-  if (!url) return '';
-  try {
-    let u = String(url).trim();
-    const q = u.indexOf('?');
-    if (q >= 0) u = u.slice(0, q);
-    const h = u.indexOf('#');
-    if (h >= 0) u = u.slice(0, h);
-    u = u.replace(/^https?:\/\/.+?(\/api\/v\d+\/)/i, '');
-    u = u.replace(/^\/?/, '');
-    return u.toLowerCase();
-  } catch {
-    return '';
-  }
+  return normalizeApiPath(url);
 }
 
 export function isPublicEndpoint(path: string): boolean {

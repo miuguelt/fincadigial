@@ -9,12 +9,30 @@ logger = logging.getLogger(__name__)
 # ConnectionError("Connection closed by server") on the next command.
 # No socket_timeout by default: the same pool backs the blocking pubsub
 # listener, where a read timeout would force a needless reconnect loop.
+# max_connections prevents unbounded pool growth — 20 is ample for dev
+# (native client + cache + limiter each get their own pool).
 DEFAULT_OPTIONS = {
     "socket_connect_timeout": 5,
     "socket_keepalive": True,
     "retry_on_timeout": True,
     "health_check_interval": 30,
+    "max_connections": 20,
 }
+
+
+def make_redis_ops_client(url: str, **overrides):
+    """Build a Redis client for short-lived operations (not pubsub).
+
+    Adds a socket_timeout so callers don't hang indefinitely if the server
+    becomes unresponsive.  Uses ``max_connections=10`` by default since
+    ops clients don't need the same headroom as the main pool.
+    """
+    ops_defaults = {
+        "socket_timeout": 10,
+        "max_connections": 10,
+    }
+    merged = {**DEFAULT_OPTIONS, **ops_defaults, **overrides}
+    return make_redis_client(url, **merged)
 
 
 def make_redis_client(url: str, **overrides):

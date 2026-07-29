@@ -487,7 +487,7 @@ if ($Stop) {
 }
 if ($Status) { Show-Status; return }
 
-if (Test-VillaluzAdministrator) {
+if (-not $env:DEVBRAIN_DASHBOARD -and (Test-VillaluzAdministrator)) {
     Write-Log "ERROR: Villaluz no debe iniciarse desde una terminal elevada." "Red"
     Write-Log "Abra una terminal normal. -Stop solicitará elevación solo para la limpieza." "Yellow"
     exit 1

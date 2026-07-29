@@ -9,6 +9,7 @@ import { readStoredToken, hasClientSession, forceClientLogout, showToastOnce } f
 import { shouldSkipGate, ensureAuthReady } from './gate';
 import { performRefresh, refreshPromise } from './refresh';
 import { isCsrfError, shouldForceLogout } from './auth-error-handler';
+import { toRelativeApiPath } from './urlUtils';
 // import { readCache } from './cache-manager';
 
 export const rateLimitBackoff = new Map<string, number>();
@@ -17,13 +18,8 @@ export const setupInterceptors = (instance: typeof api) => {
   instance.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     try {
-      // Normalizar URL para evitar duplicación de /api/v1 si el baseURL ya lo incluye
-      if (config.url && config.baseURL?.endsWith('/api/v1')) {
-        if (config.url.startsWith('/api/v1/')) {
-          config.url = config.url.replace('/api/v1/', '/');
-        } else if (config.url.startsWith('api/v1/')) {
-          config.url = config.url.replace('api/v1/', '');
-        }
+      if (config.url) {
+        config.url = toRelativeApiPath(config.url);
       }
 
       if (!shouldSkipGate(config)) {
@@ -88,13 +84,8 @@ export const setupInterceptors = (instance: typeof api) => {
   refreshClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     try {
-      // Normalizar URL para evitar duplicación de /api/v1 si el baseURL ya lo incluye
-      if (config.url && config.baseURL?.endsWith('/api/v1')) {
-        if (config.url.startsWith('/api/v1/')) {
-          config.url = config.url.replace('/api/v1/', '/');
-        } else if (config.url.startsWith('api/v1/')) {
-          config.url = config.url.replace('api/v1/', '');
-        }
+      if (config.url) {
+        config.url = toRelativeApiPath(config.url);
       }
 
       const path = normalizePath(config.url as any);
@@ -248,13 +239,11 @@ export const setupInterceptors = (instance: typeof api) => {
       const skipOffline = (originalRequest as any)?.skipOffline === true;
 
       if (isOfflineLike && method !== 'get' && !skipOffline) {
-        const fullUrl = (originalRequest.url?.startsWith('http') 
-          ? originalRequest.url 
-          : `${API_CONFIG.baseURL}/${path}`).replace(/\/+/g, '/').replace(':/', '://');
+        const queueUrl = toRelativeApiPath(originalRequest.url || path);
 
         offlineQueue.enqueue(
           method.toUpperCase() as any,
-          fullUrl,
+          queueUrl,
           originalRequest.data,
           originalRequest.headers as Record<string, string>
         );

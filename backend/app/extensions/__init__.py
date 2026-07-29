@@ -43,7 +43,7 @@ def init_extensions(app):
     else:
         app.extensions['redis'] = None
 
-    # Cache setup
+    # Cache setup — shares the native redis_client pool when possible
     try:
         cache_config = {
             'CACHE_TYPE': app.config.get('CACHE_TYPE', 'redis'),
@@ -61,6 +61,17 @@ def init_extensions(app):
                 cache.set(_k, 'ok', timeout=5)
                 if cache.get(_k) != 'ok':
                     raise RuntimeError('Redis check failed')
+
+                # Reuse the native client's connection pool
+                _rc = app.extensions.get('redis')
+                if _rc is not None:
+                    from flask_caching.backends.rediscache import RedisCache
+                    app.extensions['cache'][cache] = RedisCache(
+                        redis_client=_rc,
+                        default_timeout=cache_config['CACHE_DEFAULT_TIMEOUT'],
+                    )
+                    logger.info('Redis cache comparte pool con native client')
+
                 logger.info('Redis cache inicializado')
             except Exception:
                 logger.warning('Redis no disponible, usando SimpleCache fallback')

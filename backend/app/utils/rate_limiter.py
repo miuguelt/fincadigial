@@ -105,9 +105,10 @@ def init_rate_limiter(app):
 
     if _RATE_LIMITER_STORAGE_OK is None:
         try:
-            from .redis_client import make_redis_client
-            redis_client = make_redis_client(storage_uri)
-            redis_client.ping()
+            from .redis_client import make_redis_ops_client
+            _test_client = make_redis_ops_client(storage_uri)
+            if _test_client:
+                _test_client.ping()
             _RATE_LIMITER_STORAGE_OK = True
         except Exception as e:
             app.logger.warning("Rate limiter Redis '%s' falló: %s. Reintentando con memory://", storage_uri, e)

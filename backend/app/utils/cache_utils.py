@@ -33,6 +33,13 @@ def _get_cache():
 
 def _get_redis_client():
     try:
+        if flask.current_app:
+            client = flask.current_app.extensions.get("redis")
+            if client is not None:
+                return client
+    except Exception:
+        pass
+    try:
         from .redis_client import make_redis_client
         url = None
         if flask.current_app:
@@ -40,7 +47,8 @@ def _get_redis_client():
         if not url:
             return None
         client = make_redis_client(url)
-        client.ping()
+        if client:
+            client.ping()
         return client
     except Exception:
         return None
