@@ -133,3 +133,8 @@ backend/update_db_texts.py
 GEMINI.md
 PROJECT_GENOME.md
 .cbmignore
+
+# --- Copia temporal de validacion del frontend (no es parte del producto) ---
+# Se dejo de versionar el 2026-07-30; los archivos siguen en disco y en el
+# historial hasta ese commit: git checkout f4201c0 -- frontend_VALIDATED_TMP
+frontend_VALIDATED_TMP/
