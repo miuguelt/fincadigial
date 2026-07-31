@@ -130,7 +130,7 @@ function AdminAnimalFieldsPage() {
   ];
 
   const crudConfig: CRUDConfig<AnimalFieldResponse & { [k: string]: any }, AnimalFieldInput & { [k: string]: any }> = {
-    title: 'Asignación de Animales a Campos',
+    title: 'Asignación de Animales a Potreros',
     entityName: 'Asignación de animal',
     columns,
     formSections,

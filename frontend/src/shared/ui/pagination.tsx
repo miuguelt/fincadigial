@@ -185,20 +185,16 @@ export function PaginationBar({
   if (!fixedBottom) return content;
 
   return (
-    <>
-      {/* Espaciador fantasma solo en sm+ para que el contenido no quede tapado */}
-      <div className="hidden sm:block sm:h-16" aria-hidden />
-      <div
-        className={cn(
-          "sm:fixed sm:bottom-0 sm:left-0 sm:right-0 z-50 bg-background/70 dark:bg-background/60 backdrop-blur-xl border-t border-white/10 shadow-sm",
-          containerClassName
-        )}
-      >
-        <div className={cn("max-w-7xl mx-auto px-3 py-2.5 sm:px-6 sm:py-3", innerClassName)}>
-          {content}
-        </div>
+    <div
+      className={cn(
+        "fixed bottom-3 left-1/2 -translate-x-1/2 z-[100] max-w-[95vw] opacity-65 hover:opacity-100 transition-all duration-300 pointer-events-auto",
+        containerClassName
+      )}
+    >
+      <div className={cn("w-auto", innerClassName)}>
+        {content}
       </div>
-    </>
+    </div>
   );
 }
 

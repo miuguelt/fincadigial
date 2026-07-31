@@ -80,6 +80,86 @@ class LRUCache:
 _LIST_CACHE: dict[str, LRUCache] = {}
 _DETAIL_CACHE: dict[str, LRUCache] = {}
 
+# Mapa endpoint (nombre del namespace) -> nombre del modelo.
+# Los eventos del bus viajan con el nombre del endpoint ('animals'), mientras
+# que la caché se indexa por el nombre de la clase ('Animals'). Sin este mapa
+# un worker no sabría qué caché local invalidar al recibir el evento de otro.
+_ENDPOINT_TO_MODEL: dict[str, str] = {}
+
+# Acción dedicada para invalidaciones que no nacen de un CRUD del namespace
+# (servicios que limpian modelos relacionados). Los clientes SSE la ignoran.
+_INVALIDATION_ACTION = 'cache_invalidate'
+
+
+def register_cache_endpoint(endpoint: str, model_name: str) -> None:
+    """Registra la correspondencia endpoint -> modelo para invalidación remota."""
+    if endpoint and model_name:
+        _ENDPOINT_TO_MODEL[str(endpoint).lower()] = model_name
+
+
+def resolve_model_name(endpoint: str) -> str | None:
+    """Devuelve el nombre del modelo asociado a un endpoint del bus de eventos."""
+    if not endpoint:
+        return None
+    key = str(endpoint).lower()
+    if key in _ENDPOINT_TO_MODEL:
+        return _ENDPOINT_TO_MODEL[key]
+    # Fallback: el emisor pudo publicar directamente el nombre del modelo.
+    for model_name in list(_LIST_CACHE.keys()) + list(_DETAIL_CACHE.keys()):
+        if model_name.lower() == key:
+            return model_name
+    return None
+
+
+def _broadcast_invalidation(model_name: str) -> None:
+    """Avisa al resto de workers que deben limpiar la caché de un modelo.
+
+    Best-effort: sin app context, sin bus o sin Redis simplemente no se emite
+    (con un solo proceso la limpieza local ya es suficiente).
+    """
+    try:
+        if not flask.has_app_context():
+            return
+        bus = flask.current_app.extensions.get("event_bus")
+        if not bus:
+            return
+        bus.publish_payload({
+            'endpoint': model_name,
+            'action': _INVALIDATION_ACTION,
+            'model': model_name,
+            'timestamp': time.time(),
+        })
+    except Exception:
+        logger.debug("No se pudo propagar la invalidación de caché", exc_info=True)
+
+
+def invalidate_from_event(payload: Any) -> bool:
+    """Invalida la caché local a partir de un evento del bus (otro worker).
+
+    Se ejecuta en el hilo listener del bus, sin contexto de aplicación: sólo
+    toca diccionarios en memoria. Devuelve True si invalidó algo.
+    """
+    try:
+        if isinstance(payload, bytes):
+            payload = payload.decode('utf-8')
+        if isinstance(payload, str):
+            import json
+            payload = json.loads(payload)
+        if not isinstance(payload, dict):
+            return False
+        action = payload.get('action')
+        if action not in ('create', 'update', 'delete', _INVALIDATION_ACTION):
+            return False
+        model_name = payload.get('model') or resolve_model_name(payload.get('endpoint'))
+        if not model_name:
+            return False
+        # Limpieza local únicamente: reemitir aquí provocaría un bucle de eventos.
+        _cache_clear_local(model_name)
+        return True
+    except Exception:
+        logger.debug("No se pudo invalidar caché desde evento del bus", exc_info=True)
+        return False
+
 
 def _get_cache_key_with_user(model_name: str, base_key: str, model_class) -> str:
     """Genera una cache key incluyendo user_id si el modelo es privado."""
@@ -149,8 +229,15 @@ def _cache_clear(model_name: str):
     - Cache pública
 
     Esto garantiza que TODOS los usuarios vean datos actualizados
-    después de CREATE/UPDATE/DELETE.
+    después de CREATE/UPDATE/DELETE, también cuando la escritura la atendió
+    otro worker de gunicorn (la invalidación viaja por el bus de eventos).
     """
+    _cache_clear_local(model_name)
+    _broadcast_invalidation(model_name)
+
+
+def _cache_clear_local(model_name: str):
+    """Limpia la caché de este proceso, sin propagar el evento."""
     if model_name in _LIST_CACHE:
         lru_cache = _LIST_CACHE[model_name]
         num_entries = lru_cache.size()

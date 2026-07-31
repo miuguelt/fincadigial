@@ -44,7 +44,7 @@ export interface SidebarItemConfig {
 }
 
 const AllRoles: Role[] = ["Administrador", "Propietario", "Capataz", "Instructor", "Veterinario", "Aprendiz", "Operario"];
-const AdminRoles: Role[] = ["Administrador", "Propietario", "Capataz"];
+const AdminRoles: Role[] = ["Administrador", "Propietario", "Capataz", "Instructor"];
 const TechnicalRoles: Role[] = ["Administrador", "Propietario", "Capataz", "Instructor", "Veterinario"];
 const AdminAndInstructorRoles: Role[] = ["Administrador", "Propietario", "Capataz", "Instructor"];
 
@@ -210,4 +210,3 @@ export const sidebarItems: SidebarItemConfig[] = [
     ],
   },
 ];
-

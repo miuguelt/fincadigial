@@ -13,6 +13,11 @@ export interface Field {
 	state: string;
 	capacity: string;
 	animal_count: number;
+	last_grazing_date?: string | null;
+	rest_days?: number;
+	grazing_days?: number;
+	is_grazing_ready?: boolean;
+	rest_days_remaining?: number;
 }
 
 const getItemsFromResponse = <T>(response: any): T[] => {
@@ -26,6 +31,61 @@ const getItemsFromResponse = <T>(response: any): T[] => {
 const parseCapacity = (value: unknown) => {
 	const parsed = Number.parseInt(String(value ?? ""), 10);
 	return Number.isFinite(parsed) ? parsed : null;
+};
+
+export type RotationStatus = 'ready' | 'resting' | 'grazing' | 'critical' | 'unknown';
+
+export interface RotationInfo {
+	status: RotationStatus;
+	daysRemaining: number;
+	lastGrazingDate: string | null;
+	restDays: number;
+	grazingDays: number;
+	overdueDays: number;
+}
+
+export const getRotationInfo = (field: Field): RotationInfo => {
+	const restDays = field.rest_days ?? 30;
+	const grazingDays = field.grazing_days ?? 3;
+	const lastGrazing = field.last_grazing_date ?? null;
+
+	if (!lastGrazing) {
+		return {
+			status: 'ready',
+			daysRemaining: restDays,
+			lastGrazingDate: null,
+			restDays,
+			grazingDays,
+			overdueDays: 0,
+		};
+	}
+
+	const lastDate = new Date(lastGrazing + 'T00:00:00');
+	const today = new Date();
+	today.setHours(0, 0, 0, 0);
+	const daysPassed = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+	const daysRemaining = Math.max(0, restDays - daysPassed);
+	const overdueDays = Math.max(0, daysPassed - restDays);
+
+	let status: RotationStatus;
+	if (daysPassed >= restDays) {
+		status = 'ready';
+	} else if (field.is_grazing_ready === false && daysRemaining <= Math.floor(restDays * 0.25)) {
+		status = 'critical';
+	} else if (daysPassed < grazingDays) {
+		status = 'grazing';
+	} else {
+		status = 'resting';
+	}
+
+	return {
+		status,
+		daysRemaining,
+		lastGrazingDate: lastGrazing,
+		restDays,
+		grazingDays,
+		overdueDays,
+	};
 };
 
 export interface SuccessData {
@@ -156,6 +216,11 @@ export const useBatchFieldTransfer = (
 			projectedOccupancy > selectedFieldCapacity
 		);
 	}, [selectedFieldCapacity, projectedOccupancy]);
+
+	const selectedFieldRotation = useMemo(() => {
+		if (!selectedField || selectedField.id === -1) return null;
+		return getRotationInfo(selectedField);
+	}, [selectedField]);
 
 	const handleTransfer = async () => {
 		if (selectedFieldId === null || selectedAnimalIds.length === 0) return;
@@ -293,6 +358,7 @@ export const useBatchFieldTransfer = (
 		selectedFieldCapacity,
 		projectedOccupancy,
 		isOverCapacity,
+		selectedFieldRotation,
 		handleTransfer,
 		successData,
 		clearSuccess,

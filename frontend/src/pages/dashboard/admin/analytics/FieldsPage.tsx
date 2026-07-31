@@ -66,7 +66,7 @@ const FieldsPage: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-black tracking-tighter text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
               Gestión de <span className="text-success-500">Potreros</span>
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground font-medium mt-1">Administra y monitorea la ocupación de tus campos</p>
+            <p className="text-sm sm:text-base text-muted-foreground font-medium mt-1">Administra y monitorea la ocupación de tus potreros</p>
           </div>
         </div>
       </motion.div>
@@ -157,7 +157,7 @@ const FieldsPage: React.FC = () => {
 
       {/* Grid de Potreros */}
       <div>
-        <h2 className="text-xl font-black text-foreground mb-6">Detalle de Campos</h2>
+        <h2 className="text-xl font-black text-foreground mb-6">Detalle de Potreros</h2>
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (

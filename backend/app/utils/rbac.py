@@ -72,6 +72,8 @@ ROLE_PERMISSIONS = {
     },
     'Aprendiz': {
         'animals': ['read'],
+        'animal-fields': ['read'],
+        'fields': ['read'],
         'breeds': ['read'],
         'species': ['read'],
         'vaccinations': ['read'],

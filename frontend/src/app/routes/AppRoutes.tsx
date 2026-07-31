@@ -119,14 +119,26 @@ const renderRoleRoutes = (prefix: string) => (
     <Route path={`${prefix}/analytics/fields`} element={<FieldsPage />} />
     <Route path={`${prefix}/analytics/reports`} element={<CustomReports />} />
     <Route path={`${prefix}/analytics/ica-compliance`} element={<ICADashboard />} />
+    <Route path={`${prefix}/users`} element={<AdminUsersPage />} />
+    <Route path={`${prefix}/users/global`} element={<AdminGlobalUsersPage />} />
+    <Route path={`${prefix}/membership`} element={<AdminMembershipPage />} />
+    <Route path={`${prefix}/fincas`} element={<FincasAdminPage />} />
+    <Route path={`${prefix}/user-approval`} element={<AdminUserApprovalPage />} />
+    <Route path={`${prefix}/data-overview`} element={<AdminDataOverviewPage />} />
     <Route path={`${prefix}/animals`} element={<AdminAnimalsPage />} />
+    <Route path={`${prefix}/animals/:id`} element={<AdminAnimalsPage />} />
     <Route path={`${prefix}/fields`} element={<AdminFieldsPage />} />
     <Route path={`${prefix}/vaccines`} element={<AdminVaccinesPage />} />
     <Route path={`${prefix}/vaccinations`} element={<AdminVaccinationsPage />} />
     <Route path={`${prefix}/medications`} element={<AdminMedicationsPage />} />
     <Route path={`${prefix}/diseases`} element={<AdminDiseasesPage />} />
+    <Route path={`${prefix}/treatment_medications`} element={<AdminTreatmentMedicationsPage />} />
+    <Route path={`${prefix}/treatment_vaccines`} element={<AdminTreatmentVaccinesPage />} />
     <Route path={`${prefix}/treatments/analytics`} element={<AdminTreatmentAnalyticsPage />} />
     <Route path={`${prefix}/treatments`} element={<AdminTreatmentsPage />} />
+    <Route path={`${prefix}/treatments/form`} element={<AdminTreatmentFormPage />} />
+    <Route path={`${prefix}/treatments/form/:id`} element={<AdminTreatmentFormPage />} />
+    <Route path={`${prefix}/treatments/detail/:id`} element={<AdminTreatmentDetailPage />} />
     <Route path={`${prefix}/controls`} element={<AdminControlPage />} />
     <Route path={`${prefix}/animal-fields`} element={<AdminAnimalFieldsPage />} />
     <Route path={`${prefix}/disease-animals`} element={<AdminAnimalDiseasesPage />} />
@@ -136,6 +148,8 @@ const renderRoleRoutes = (prefix: string) => (
     <Route path={`${prefix}/food-types`} element={<AdminFoodTypesPage />} />
     <Route path={`${prefix}/inventory`} element={<AdminInventoryPage />} />
     <Route path={`${prefix}/reproduction`} element={<AdminReproductionPage />} />
+    <Route path={`${prefix}/reproduction/fertility`} element={<FertilityDashboard />} />
+    <Route path={`${prefix}/reproduction/sire-performance`} element={<SirePerformance />} />
     <Route path={`${prefix}/growth`} element={<AdminGrowthPage />} />
     <Route path={`${prefix}/regulatory-reports`} element={<RegulatoryReportsPage />} />
     <Route path={`${prefix}/reports`} element={<ReportsPage />} />

@@ -73,7 +73,7 @@ const DashboardLayout: React.FC = () => {
         />
         <main 
           className={cn(
-            "flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-transparent px-2 sm:px-4 lg:px-6 py-2 sm:py-4 pb-0 transition-all duration-500 ease-out",
+            "flex-1 min-h-0 overflow-hidden bg-transparent px-2 sm:px-4 lg:px-6 py-2 sm:py-3 pb-0 transition-all duration-500 ease-out flex flex-col",
             isSidebarOpen ? "lg:pl-[312px]" : "lg:pl-0"
           )}
         >

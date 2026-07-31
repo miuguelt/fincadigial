@@ -352,6 +352,13 @@ class BaseModel(db.Model):
         else:
             target_fields = [f for f in fields if f not in SENSITIVE_FIELDS]
 
+        # version_id viaja en la serialización completa: el cliente lo reenvía al
+        # editar y así el API puede rechazar (409) una escritura basada en datos
+        # ya desactualizados porque otro usuario guardó primero. Las proyecciones
+        # explícitas (relaciones anidadas) conservan exactamente sus campos.
+        if fields is None and 'version_id' not in target_fields and 'version_id' in self.__table__.columns:
+            target_fields = [*target_fields, 'version_id']
+
         data = {field: JSONEncoder.serialize(getattr(self, field, None)) for field in target_fields}
 
         # Relaciones (solo si se solicita y depth>0)

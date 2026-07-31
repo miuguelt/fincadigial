@@ -59,7 +59,7 @@ export function AppLayout({
     )}>
       <main
         className={cn(
-          "w-full max-w-[80rem] mx-auto px-3 sm:px-4 lg:px-6 pt-4 pb-6 sm:pb-8",
+          "w-full max-w-full mx-auto px-3 sm:px-4 lg:px-6 pt-4 pb-6 sm:pb-8",
           className
         )}
       >

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useResource } from '@/shared/hooks/useResource';
 import { usersService, getUserRolesWithRetry } from '@/entities/user/api/user.service';
 import { UserResponse } from '@/shared/api/generated/swaggerTypes';
+import { canAccessUsersModule } from '@/app/providers/auth/auth.utils';
 // import { userStatsToChartData } from '@/shared/utils/dataUtils';
 
 
@@ -24,8 +25,9 @@ interface UserRolesData extends RolesResponse {
 }
 
 export const useUsers = (options?: { autoFetch?: boolean }) => {
+  const allowed = canAccessUsersModule();
   const resource = useResource<UserResponse, any>(usersService as any, {
-    autoFetch: options?.autoFetch !== false,
+    autoFetch: allowed && (options?.autoFetch !== false),
   });
 
   // Custom state for roles and status

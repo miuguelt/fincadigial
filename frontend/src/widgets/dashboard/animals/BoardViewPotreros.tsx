@@ -466,7 +466,7 @@ export function BoardViewPotreros({
 
   return (
     <div
-      className="flex min-h-0 flex-col gap-3"
+      className="flex h-full min-h-0 flex-col gap-3"
       onPointerMove={handlePointerMove}
       onPointerUp={finishPointerDrag}
       onPointerCancel={finishPointerDrag}
@@ -497,7 +497,8 @@ export function BoardViewPotreros({
         </div>
       )}
 
-      <div className="grid min-h-0 grid-cols-[repeat(auto-fit,minmax(280px,1fr))] items-start gap-3 overflow-y-auto pr-1 lg:h-[calc(100dvh-17rem)]">
+      {/* flex-1 en vez de una altura calculada: el tablero ocupa lo que le deje el contenedor */}
+      <div className="grid min-h-[20rem] flex-1 grid-cols-[repeat(auto-fit,minmax(300px,1fr))] items-start gap-3 overflow-y-auto pr-1">
         {renderColumn('Sin potrero asignado', grouped.unassigned, 'unassigned', true)}
         {sortedFields.length > 0 ? (
           sortedFields.map((field) => renderColumn(field.name, grouped.groups.get(Number(field.id)) || [], Number(field.id), false, field))

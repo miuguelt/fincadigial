@@ -119,6 +119,10 @@ export interface CRUDConfig<T = any, TInput = any> {
   // Propiedades adicionales detectadas en la auditoría
   defaultFields?: string[];
   defaultLimit?: number;
+  /** Opciones del selector de registros por página. `null` oculta el selector. */
+  pageSizeOptions?: number[] | null;
+  /** Oculta la barra de paginación (vistas que traen sus propios datos, p. ej. tableros). */
+  hidePagination?: boolean;
   additionalFilters?: Record<string, any>;
   showEditTimestamps?: boolean;
   showIdInDetailTitle?: boolean;

@@ -48,7 +48,7 @@ export const ExecutiveProduction: React.FC<ExecutiveProductionProps> = ({ produc
 
           <div className="grid grid-cols-2 gap-4 mt-6">
             <div className="bg-surface-secondary/50 p-4 rounded-lg">
-              <p className="text-xs text-muted-foreground mb-1 font-medium">Campos Activos</p>
+              <p className="text-xs text-muted-foreground mb-1 font-medium">Potreros Activos</p>
               <p className="text-xl font-black text-foreground">{productionStats?.total_fields ?? dashboard?.campos_registrados?.valor ?? 0}</p>
             </div>
             <div className="bg-surface-secondary/50 p-4 rounded-lg">

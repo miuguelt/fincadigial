@@ -168,7 +168,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     error,
     meta,
     setPage,
-    setLimit: _setLimit,
+    setLimit,
     createItem,
     updateItem,
     deleteItem,
@@ -208,7 +208,16 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   const pageSize = meta?.limit || 10;
   const totalItems = meta?.total || 0;
   const totalPages = meta?.totalPages || Math.ceil(totalItems / pageSize);
-  
+
+  // Selector de registros por página (null en la config lo desactiva)
+  const pageSizeOptions = config.pageSizeOptions === null
+    ? undefined
+    : (config.pageSizeOptions || [12, 24, 48, 96]);
+  const handlePageSizeChange = useCallback((size: number) => {
+    setLimit?.(size);
+    setPage?.(1);
+  }, [setLimit, setPage]);
+
   // Filtrar items para excluir tombstones
   const filteredItems = useMemo(() => {
     const tombstoneIds = getTombstoneIds(entityKey);
@@ -347,7 +356,13 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     
     try {
       if (editingItem?.id) {
-        const result = await updateItem(editingItem.id, formData as any);
+        // version_id del registro que se abrió a editar: el backend responde 409
+        // si otro usuario guardó cambios mientras este formulario estaba abierto.
+        const editingVersion = (editingItem as any)?.version_id;
+        const payload = editingVersion !== undefined && editingVersion !== null
+          ? { ...(formData as any), version_id: editingVersion }
+          : (formData as any);
+        const result = await updateItem(editingItem.id, payload);
         showToast(`✅ ${config.entityName} actualizado correctamente`, 'success');
         if (config.onAfterUpdate) {
           try {
@@ -686,11 +701,12 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       header={header}
       className={cn(
         "px-2 sm:px-3 lg:px-4 pt-0 pb-0 max-w-full min-h-0 flex flex-col",
-        (config.viewMode === 'cards' || config.autoHeight) ? "h-auto" : "h-full"
+        // renderGrouped (tableros) gestiona su propio scroll: necesita la altura completa.
+        (config.viewMode === 'cards' || config.autoHeight) && !config.renderGrouped ? "h-auto" : "h-full"
       )}
       contentClassName={cn(
         "space-y-0 flex flex-col",
-        (config.viewMode === 'cards' || config.autoHeight) ? "h-auto" : "flex-1 min-h-0"
+        (config.viewMode === 'cards' || config.autoHeight) && !config.renderGrouped ? "h-auto" : "flex-1 min-h-0"
       )}
     >
       {config.customHeader && (
@@ -713,7 +729,12 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
         />
       ) : config.viewMode === 'cards' ? (
         <div className="flex flex-col flex-1 min-h-0 mt-1">
-          <div className="overflow-y-auto flex-1 rounded-xl p-2 sm:p-3 lg:p-4 pb-6">
+          <div className={cn(
+            "flex-1 min-h-0 rounded-xl",
+            config.renderGrouped
+              ? "flex flex-col overflow-hidden"
+              : "overflow-y-auto p-2 sm:p-3 lg:p-4 pb-6"
+          )}>
             {config.renderGrouped ? (
               config.renderGrouped(filteredItems)
             ) : (
@@ -783,15 +804,20 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
             )}
           </div>
 
-          <CRUDPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            onPageChange={setPage || ((_page: number) => {})}
-            loading={loading}
-            hasSelection={selectedIds.length > 0}
-            floating={false}
-          />
+          {!config.hidePagination && (
+            <CRUDPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              onPageChange={setPage || ((_page: number) => {})}
+              loading={loading}
+              hasSelection={selectedIds.length > 0}
+              floating={false}
+              pageSize={pageSize}
+              pageSizeOptions={pageSizeOptions}
+              onPageSizeChange={handlePageSizeChange}
+            />
+          )}
         </div>
       ) : (
         <>
@@ -812,14 +838,20 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
             />
           </div>
 
-          <CRUDPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            onPageChange={setPage || ((_page: number) => {})}
-            loading={loading}
-            hasSelection={selectedIds.length > 0}
-          />
+          {!config.hidePagination && (
+            <CRUDPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              onPageChange={setPage || ((_page: number) => {})}
+              loading={loading}
+              hasSelection={selectedIds.length > 0}
+              floating={false}
+              pageSize={pageSize}
+              pageSizeOptions={pageSizeOptions}
+              onPageSizeChange={handlePageSizeChange}
+            />
+          )}
         </>
       )}
 

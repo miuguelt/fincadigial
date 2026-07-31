@@ -51,13 +51,13 @@ const AdminDashboardOverview: React.FC = () => {
     },
     {
       title: 'Análisis de Potreros',
-      description: 'Ocupación, capacidad y distribución de animales en campos',
+      description: 'Ocupación, capacidad y distribución de animales en potreros',
       icon: Map,
       path: '/admin/analytics/fields',
       color: 'bg-gradient-to-br from-success to-teal-700 shadow-success-500/10',
       hoverColor: 'hover:shadow-success/30',
       stats: dashboardStats ? {
-        primary: `${dashboardStats.campos_registrados?.valor || 0} Campos`,
+        primary: `${dashboardStats.campos_registrados?.valor || 0} Potreros`,
         secondary: 'Ver distribución'
       } : null
     },

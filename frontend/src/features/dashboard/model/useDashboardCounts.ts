@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 // Métricas basadas 100% en servicios que leen de BD
 import { usersService } from '@/entities/user/api/user.service'
+import { canAccessUsersModule } from '@/app/providers/auth/auth.utils'
 import { animalsService } from '@/entities/animal/api/animal.service'
 import { controlService } from '@/entities/control/api/control.service'
 import { fieldService } from '@/entities/field/api/field.service'
@@ -101,7 +102,7 @@ export function useDashboardCounts() {
           (await import('@/entities/treatment/api/treatments.service')).treatmentsService.getTreatmentsStats().catch(() => ({ } as any)),
           vaccinationsService.getVaccinationsStats().catch(() => ({ } as any)),
           treatmentVaccinesService.getTreatmentVaccinesStats().catch(() => ({ } as any)),
-          usersService.getUserStats().catch(() => ({ } as any)),
+          canAccessUsersModule() ? usersService.getUserStats().catch(() => ({ } as any)) : Promise.resolve({} as any),
           animalsService.getAnimalStats().catch(() => ({ } as any)),
           controlService.getControlsStats().catch(() => ({ } as any)),
           fieldService.getFieldsStats().catch(() => ({ } as any)),

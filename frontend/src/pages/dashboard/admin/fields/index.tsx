@@ -121,6 +121,20 @@ const getStateSemaphore = (state: string) => {
   }
 };
 
+/**
+ * Separa el área en número y unidad. El campo `area` es texto libre y a veces ya
+ * trae la unidad ("71 hectáreas"), así que no podemos concatenar "ha" a ciegas.
+ */
+const parseArea = (raw?: string | null): { value: string; unit: string } | null => {
+  const text = String(raw ?? '').trim();
+  if (!text) return null;
+  const match = text.match(/^([\d.,]+)\s*(.*)$/);
+  if (!match) return { value: text, unit: '' };
+  const [, value, rest] = match;
+  const unit = rest.trim() ? (/^hect/i.test(rest.trim()) ? 'ha' : rest.trim()) : 'ha';
+  return { value, unit };
+};
+
 // ─── Barra de progreso de ocupación (vista tabla) ─────────────────────────────
 const FieldOccupancyBar: React.FC<{ animalCount: number; capacity: string; area?: string }> = ({
   animalCount,
@@ -169,6 +183,7 @@ interface PotreroCardProps {
 
 const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVerAnimales, onOpenDetail }) => {
   const actual = potrero.animal_count ?? 0;
+  const area = parseArea(potrero.area);
   const manualCapacity = parseInt(potrero.capacity || '0') || 0;
   const areaNum = potrero.area ? parseFloat(String(potrero.area).replace(',', '.')) : 0;
   const estimatedCapacity = areaNum > 0 ? Math.max(1, Math.round(areaNum * 2)) : 0;
@@ -215,46 +230,45 @@ const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVer
         {/* Glow effect on hover */}
         <div className="absolute -inset-x-20 -top-20 h-40 bg-gradient-to-b from-white/5 to-transparent opacity-0 group-hover/potrero:opacity-100 transition-opacity duration-700 pointer-events-none" />
         
-        <div className="flex items-center justify-between gap-2 relative z-10">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
+        <div className="flex items-start justify-between gap-2 relative z-10">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 min-w-0">
               <span className={cn("w-2.5 h-2.5 rounded-full shrink-0 animate-pulse", getStateSemaphore(potrero.state).dot)} />
-              <h3 className="font-black text-xl text-foreground tracking-tighter truncate group-hover/potrero:text-primary transition-colors">
+              <h3
+                className="font-black text-lg text-foreground tracking-tight truncate group-hover/potrero:text-primary transition-colors"
+                title={potrero.name || 'Sin nombre'}
+              >
                 {potrero.name || 'Sin nombre'}
               </h3>
             </div>
-            <div className="flex items-center gap-1.5 mt-1.5 text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">
-              <MapPin className="h-3 w-3" />
+            <div className="flex items-center gap-1.5 mt-1.5 text-[10px] font-black text-muted-foreground uppercase tracking-wider opacity-60 min-w-0">
+              <MapPin className="h-3 w-3 shrink-0" />
               <span className="truncate">{potrero.ubication || potrero.location || 'Sin ubicación'}</span>
             </div>
           </div>
-          <div className="flex flex-col items-end gap-1">
-            <Badge variant="secondary" className="font-mono font-black text-[10px] px-2 bg-white/5 border-white/10 text-muted-foreground/60 shrink-0">
-              #{potrero.id}
-            </Badge>
-          </div>
+          <Badge variant="secondary" className="font-mono font-black text-[10px] px-2 bg-white/5 border-white/10 text-muted-foreground/60 shrink-0 whitespace-nowrap">
+            #{potrero.id}
+          </Badge>
         </div>
 
         <div className="bg-white/5 backdrop-blur-md rounded-[2rem] p-5 border border-white/5 group-hover/potrero:border-white/10 group-hover/potrero:bg-white/10 transition-all duration-500 relative z-10">
-          <div className="flex justify-between items-end mb-4">
-             <div>
-               <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest block mb-1 opacity-70">Carga Biológica</span>
-               <div className="flex items-baseline gap-1.5">
-                 <span className={cn("text-4xl font-black tracking-tighter drop-shadow-sm", actual > 0 ? palette.text : "text-foreground/30")}>
+          <div className="flex justify-between items-end gap-3 mb-4">
+             <div className="min-w-0">
+               <span className="text-[9px] font-black text-muted-foreground uppercase tracking-wider block mb-1 opacity-70 whitespace-nowrap">Carga Biológica</span>
+               <div className="flex items-baseline gap-1.5 whitespace-nowrap">
+                 <span className={cn("text-4xl font-black tracking-tight drop-shadow-sm tabular-nums", actual > 0 ? palette.text : "text-foreground/30")}>
                    {actual}
                  </span>
-                 <span className="text-sm font-bold text-muted-foreground/30">/ {capacidad || '∞'}</span>
+                 <span className="text-sm font-bold text-muted-foreground/40 tabular-nums">/ {capacidad || '∞'}</span>
                </div>
              </div>
-             <div className="pb-1">
-                <span className={cn(
-                  "text-[9px] font-black uppercase px-2.5 py-1 rounded-lg border transition-all duration-500",
-                  palette.badge,
-                  "shadow-lg group-hover/potrero:scale-110"
-                )}>
-                  {palette.label}
-                </span>
-             </div>
+             <span className={cn(
+               "text-[9px] font-black uppercase px-2.5 py-1 rounded-lg border transition-all duration-500 shrink-0 whitespace-nowrap mb-1",
+               palette.badge,
+               "shadow-lg group-hover/potrero:scale-105"
+             )}>
+               {palette.label}
+             </span>
           </div>
           
           <div className={cn("h-3 rounded-full overflow-hidden p-0.5 bg-black/30 ring-1 ring-white/5 shadow-inner", palette.track)}>
@@ -266,21 +280,24 @@ const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVer
             />
           </div>
           
-          <p className="mt-4 text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest flex items-center gap-2 group-hover/potrero:text-muted-foreground transition-colors">
-             <Info className={cn("h-3.5 w-3.5", palette.text)} />
-             {remainingText} {isEstimated && <span className="text-[8px] opacity-40 font-bold">(Estimado por área)</span>}
+          <p className="mt-4 text-[10px] font-black text-muted-foreground/50 uppercase tracking-wider flex items-center gap-2 min-w-0 group-hover/potrero:text-muted-foreground transition-colors">
+             <Info className={cn("h-3.5 w-3.5 shrink-0", palette.text)} />
+             <span className="truncate">
+               {remainingText} {isEstimated && <span className="text-[8px] opacity-40 font-bold">(Estimado por área)</span>}
+             </span>
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3 relative z-10">
-          <div className="bg-white/5 rounded-lg p-3.5 border border-white/5 group-hover/potrero:bg-white/10 transition-colors">
-            <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest block mb-1.5 opacity-60">Extensión</span>
-            <span className="text-sm font-black text-foreground flex items-baseline gap-1">
-              {potrero.area ? potrero.area : '—'} <span className="text-[10px] opacity-40">ha</span>
+          <div className="bg-white/5 rounded-lg p-3.5 border border-white/5 group-hover/potrero:bg-white/10 transition-colors min-w-0">
+            <span className="text-[8px] font-black text-muted-foreground uppercase tracking-wider block mb-1.5 opacity-60 whitespace-nowrap">Extensión</span>
+            <span className="text-sm font-black text-foreground flex items-baseline gap-1 whitespace-nowrap overflow-hidden">
+              <span className="truncate">{area ? area.value : '—'}</span>
+              {area?.unit && <span className="text-[10px] opacity-40 shrink-0">{area.unit}</span>}
             </span>
           </div>
-          <div className="bg-white/5 rounded-lg p-3.5 border border-white/5 group-hover/potrero:bg-white/10 transition-colors">
-            <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest block mb-1.5 opacity-60">Suministro</span>
+          <div className="bg-white/5 rounded-lg p-3.5 border border-white/5 group-hover/potrero:bg-white/10 transition-colors min-w-0">
+            <span className="text-[8px] font-black text-muted-foreground uppercase tracking-wider block mb-1.5 opacity-60 whitespace-nowrap">Suministro</span>
             <span className="text-sm font-black text-foreground truncate block" title={foodTypeLabel}>{foodTypeLabel || '—'}</span>
           </div>
         </div>
@@ -309,7 +326,11 @@ const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVer
   );
 };
 // ─── Componente PremiumHeader ────────────────────────────────────────────────
-const PremiumFieldsHeader: React.FC<{ items: Array<FieldResponse & { [k: string]: any }> }> = ({ items }) => {
+const PremiumFieldsHeader: React.FC<{
+  items: Array<FieldResponse & { [k: string]: any }>;
+  /** En tabla y rotación el hero roba ~340px de alto útil: se colapsa a una sola franja. */
+  compact?: boolean;
+}> = ({ items, compact = false }) => {
   const metrics = useMemo(() => {
     let totalCapacity = 0;
     let totalAnimals = 0;
@@ -362,6 +383,33 @@ const PremiumFieldsHeader: React.FC<{ items: Array<FieldResponse & { [k: string]
       overCapacityCount: distribution.filter(d => d.overCapacity).length,
     };
   }, [items]);
+
+  if (compact) {
+    return (
+      <div className="mb-2 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-2xl border border-border/50 bg-card/40 px-4 py-2.5 backdrop-blur-xl">
+        <div className="flex items-center gap-2.5 mr-auto">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-success-500 to-success-600 shadow-md shadow-success-500/20">
+            <MapIcon className="h-4 w-4 text-white" />
+          </div>
+          <h1 className="text-base font-black tracking-tight text-foreground whitespace-nowrap">
+            Gestión de <span className="text-success-500">Potreros</span>
+          </h1>
+        </div>
+        {[
+          { label: 'Potreros', value: metrics.totalFields },
+          { label: 'Capacidad', value: metrics.totalCapacity },
+          { label: 'Animales', value: metrics.totalAnimals },
+          { label: 'Ocupación', value: `${metrics.averageOccupation}%` },
+          { label: 'Disponibles', value: metrics.availableSpots },
+        ].map((kpi) => (
+          <div key={kpi.label} className="flex items-baseline gap-1.5 whitespace-nowrap">
+            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/70">{kpi.label}</span>
+            <span className="text-sm font-black tabular-nums text-foreground">{kpi.value}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="mb-6 space-y-6">
@@ -444,7 +492,7 @@ function AdminFieldsPage() {
   // ─── Renderizado del Tablero de Rotación ──────────────────────────────────
   const renderRotationBoard = () => {
     return (
-      <div className="mt-4 px-2">
+      <div className="flex min-h-0 flex-1 flex-col">
         <BoardViewPotreros
           animals={allAnimals}
           breedOptions={[]}
@@ -568,12 +616,18 @@ function AdminFieldsPage() {
     enableCreateModal: !isCampesino,
     enableEditModal: !isCampesino,
     enableDelete: !isCampesino,
-    defaultLimit: 12,
+    defaultLimit: 24,
+    pageSizeOptions: [12, 24, 48, 96],
     additionalFilters: {
       sort_by: 'animal_count', // Backend sorts by count, which correlates with occupancy rate
       sort_order: 'desc',
     },
-    customHeader: <PremiumFieldsHeader items={currentItems} />,
+    customHeader: (
+      <PremiumFieldsHeader
+        items={currentItems}
+        compact={isRotationView || effectiveViewMode === 'table'}
+      />
+    ),
     themeColor: 'emerald',
   };
 
@@ -699,7 +753,11 @@ function AdminFieldsPage() {
     viewMode: effectiveViewMode,
     renderCard: renderFieldCard,
     renderGrouped: isRotationView ? renderRotationBoard : undefined,
-    cardGridClassName: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6',
+    // El tablero de rotación trae sus propios datos (2000 animales): paginar no aplica.
+    hidePagination: isRotationView,
+    // Tres tarjetas por fila en escritorio: por debajo de ~320px de ancho la tarjeta
+    // parte el nombre y las métricas; por encima de 3 columnas se queda en ese umbral.
+    cardGridClassName: 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 lg:gap-6',
     customToolbar: (
       <div className="flex items-center gap-1">
         <Button

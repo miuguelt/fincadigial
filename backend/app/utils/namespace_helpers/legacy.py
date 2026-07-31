@@ -39,6 +39,7 @@ from app.utils.cache_helpers import (
     _cache_get, _cache_set, _cache_clear,
     _detail_cache_get, _detail_cache_set, _detail_cache_clear,
     _generate_cache_headers, _check_conditional_request,
+    register_cache_endpoint,
 )
 
 # Versión de la API para headers
@@ -206,6 +207,10 @@ def create_optimized_namespace(
     ns = Namespace(name=name, description=description, path=path or f'/{name}')
     entity = rbac_entity or name
 
+    # El bus publica eventos con el nombre del endpoint; el resto de workers
+    # necesita traducirlo al modelo para invalidar su caché local.
+    register_cache_endpoint(name, model_class.__name__)
+
     input_model, response_model, list_model = _build_models(ns, model_class)
     validation_error_status = getattr(model_class, '_validation_error_status', None)
     is_public_create = public_create or getattr(model_class, '_public_create', False)
@@ -229,6 +234,48 @@ def create_optimized_namespace(
         """Construye la respuesta de validación respetando overrides por modelo."""
         status_code = validation_error_status if validation_error_status else (400 if is_public_create else 422)
         return APIResponse.validation_error(errors, status_code=status_code)
+
+    def _pop_expected_version(payload: dict) -> int | None:
+        """Extrae la versión que el cliente cree estar editando.
+
+        Se acepta en el cuerpo (`version_id`) o en la cabecera `If-Match`.
+        Siempre se retira del payload: `version_id` lo administra SQLAlchemy y
+        escribirlo a mano rompería el bloqueo optimista.
+        """
+        raw = payload.pop('version_id', None)
+        if raw is None:
+            raw = flask.request.headers.get('If-Match')
+            if raw:
+                raw = raw.strip().strip('"').lstrip('W/').strip('"')
+        if raw is None or raw == '':
+            return None
+        try:
+            return int(raw)
+        except (TypeError, ValueError):
+            return None
+
+    def _version_conflict_response(instance, expected: int):
+        """409 cuando otro usuario ya modificó el registro que se está editando."""
+        current = getattr(instance, 'version_id', None)
+        logger.info(
+            "Conflicto de edición en %s id=%s: cliente v%s, servidor v%s",
+            model_class.__name__, getattr(instance, 'id', None), expected, current,
+        )
+        try:
+            current_data = instance.to_namespace_dict()
+        except Exception:
+            current_data = None
+        return APIResponse.error(
+            message='El registro fue modificado por otro usuario. Recarga los datos antes de guardar.',
+            status_code=409,
+            error_code='EDIT_CONFLICT',
+            details={
+                'conflict_type': 'optimistic_locking',
+                'expected_version': expected,
+                'current_version': current,
+                'current': current_data,
+            },
+        )
 
     def _handle_integrity_error(ie: IntegrityError, action_name: str, record_id: int | None = None):
         db.session.rollback()
@@ -1025,6 +1072,10 @@ def create_optimized_namespace(
                 if not payload or not isinstance(payload, dict):
                     return APIResponse.validation_error({'payload': 'Se requiere un objeto JSON válido y no vacío.'})
 
+                expected_version = _pop_expected_version(payload)
+                if expected_version is not None and expected_version != getattr(instance, 'version_id', None):
+                    return _version_conflict_response(instance, expected_version)
+
                 # Normalizar payload para PUT/PATCH (paridad con POST): fechas ISO y aliases de entrada
                 try:
                     from sqlalchemy import Date, DateTime
@@ -1137,6 +1188,10 @@ def create_optimized_namespace(
                     payload = flask.request.get_json(force=True, silent=True) or {}
                     if not isinstance(payload, dict):
                         return APIResponse.validation_error({'payload': 'Se requiere un objeto JSON.'})
+
+                    expected_version = _pop_expected_version(payload)
+                    if expected_version is not None and expected_version != getattr(instance, 'version_id', None):
+                        return _version_conflict_response(instance, expected_version)
 
                     # Normalizar payload para PUT/PATCH (paridad con POST): fechas ISO y aliases de entrada
                     try:

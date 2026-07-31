@@ -102,7 +102,7 @@ const AdminControlPage = () => {
       {/* Header global: visible en todas las pestañas */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Registro del Hato</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Registro de la Finca</h1>
           <p className="text-xs sm:text-sm text-gray-500 mt-0.5 capitalize">{todayFormatted}</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
@@ -152,7 +152,7 @@ const AdminControlPage = () => {
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5">
             <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
               <Heart className="h-5 w-5 text-emerald-500" />
-              🏥 Salud del hato
+              🏥 Salud de la finca
             </h2>
             <ControlStats totalControls={summary.totalControls} sickAnimals={summary.sickAnimals} recentTreatments={summary.recentTreatments} healthyPercentage={summary.healthyPercentage} isLoading={summary.loading} simple />
           </div>

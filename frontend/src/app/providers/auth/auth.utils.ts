@@ -125,3 +125,14 @@ export const prefetchRoleRoutes = (role?: string | Role | null) => {
   } catch { /* ignore */ }
 }
 
+export const canAccessUsersModule = (): boolean => {
+  try {
+    const user = readPersistedUser() || getCachedUser()
+    if (!user || !user.role) return false
+    return user.role === Role.Administrador || user.role === Role.Propietario
+  } catch {
+    return false
+  }
+}
+
+

@@ -15,6 +15,7 @@ import { animalDiseasesService } from '@/entities/animal-disease/api/animalDisea
 import { geneticImprovementsService } from '@/entities/genetic-improvement/api/geneticImprovements.service';
 import { treatmentMedicationService } from '@/entities/treatment-medication/api/treatmentMedication.service';
 import { treatmentVaccinesService } from '@/entities/treatment-vaccine/api/treatmentVaccines.service';
+import { canAccessUsersModule } from '@/app/providers/auth/auth.utils';
 
 /**
  * Interfaz para los datos críticos del dashboard
@@ -257,7 +258,7 @@ class DataPreloadService {
         treatmentsService.getTreatmentsStats().catch(() => ({ } as any)),
         vaccinationsService.getVaccinationsStats().catch(() => ({ } as any)),
         treatmentVaccinesService.getTreatmentVaccinesStats().catch(() => ({ } as any)),
-        usersService.getUserStats().catch(() => ({ } as any)),
+        canAccessUsersModule() ? usersService.getUserStats().catch(() => ({ } as any)) : Promise.resolve({} as any),
         animalsService.getAnimalStats().catch(() => ({ } as any)),
         controlService.getControlsStats().catch(() => ({ } as any)),
         fieldService.getFieldsStats().catch(() => ({ } as any)),
@@ -436,6 +437,14 @@ class DataPreloadService {
    */
   private async fetchUserModuleData(): Promise<UserModuleData> {
     try {
+      if (!canAccessUsersModule()) {
+        return {
+          users: [],
+          userRoles: { roles: {}, total_users: 0 },
+          timestamp: Date.now()
+        };
+      }
+
       console.log('[DataPreloadService] Iniciando carga de datos del módulo Usuario...');
       
       // Ejecutar todas las llamadas en paralelo

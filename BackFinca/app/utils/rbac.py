@@ -43,15 +43,7 @@ ROLE_PERMISSIONS = {
         'fincas': ['read'],
         'inventory': ['read', 'create', 'update'],
     },
-    'Instructor': {
-        'animals': ['read'],
-        'vaccinations': ['read', 'create'],
-        'treatments': ['read', 'create'],
-        'controls': ['read', 'create'],
-        'breeds': ['read'],
-        'species': ['read'],
-        'fincas': ['read'],
-    },
+    'Instructor': '*', # Máximo rol por finca educativa
     'Operario': {
         'animals': ['read'],
         'controls': ['read', 'create'],

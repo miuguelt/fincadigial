@@ -193,12 +193,12 @@ const AdminDashboard: React.FC = () => {
           <PulseTile
             label="Potreros"
             value={totals.potreros}
-            hint="Campos registrados"
+            hint="Potreros registrados"
             icon={MapPinned}
             onClick={() => navigate('/admin/fields')}
           />
           <PulseTile
-            label="Salud del hato"
+            label="Salud de la finca"
             value={healthIndex ?? '—'}
             unit={healthIndex !== null ? '%' : undefined}
             hint="Índice general"

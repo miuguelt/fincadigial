@@ -25,8 +25,11 @@ import {
   IconBolt,
   IconCircleCheck,
   IconMap2,
+  IconRotate,
+  IconLeaf,
 } from '@/shared/ui/icons';
-import { useBatchFieldTransfer } from './useBatchFieldTransfer';
+import { useBatchFieldTransfer, getRotationInfo } from './useBatchFieldTransfer';
+import type { RotationInfo } from './useBatchFieldTransfer';
 import { Badge } from '@/shared/ui/badge';
 import { ScrollArea } from '@/shared/ui/scroll-area';
 import { cn } from '@/shared/ui/cn';
@@ -93,6 +96,49 @@ const getColorClasses = (color: string) => {
   }
 };
 
+const getRotationBadge = (rotation: RotationInfo) => {
+  switch (rotation.status) {
+    case 'ready':
+      return {
+        text: 'Listo para pastoreo',
+        icon: <IconRotate className="h-3 w-3" />,
+        className: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
+        pulse: false,
+      };
+    case 'critical':
+      return {
+        text: rotation.daysRemaining > 0
+          ? `Descanso crítico (${rotation.daysRemaining}d restantes)`
+          : 'Requiere rotación urgente',
+        icon: <IconAlertTriangle className="h-3 w-3" />,
+        className: 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800 animate-pulse',
+        pulse: true,
+      };
+    case 'resting':
+      return {
+        text: `Descansando (${rotation.daysRemaining}d)`,
+        icon: <IconRotate className="h-3 w-3" />,
+        className: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800',
+        pulse: false,
+      };
+    case 'grazing':
+      return {
+        text: 'En pastoreo activo',
+        icon: <IconLeaf className="h-3 w-3" />,
+        className: 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800',
+        pulse: false,
+      };
+    case 'unknown':
+    default:
+      return {
+        text: 'Sin datos de rotación',
+        icon: <IconRotate className="h-3 w-3 opacity-50" />,
+        className: 'bg-muted text-muted-foreground border-border',
+        pulse: false,
+      };
+  }
+};
+
 // ─── Componente principal ──────────────────────────────────────────────────────
 
 export const BatchFieldTransferModal: React.FC<BatchFieldTransferModalProps> = ({
@@ -117,6 +163,7 @@ export const BatchFieldTransferModal: React.FC<BatchFieldTransferModalProps> = (
     selectedFieldCapacity,
     projectedOccupancy,
     isOverCapacity,
+    selectedFieldRotation,
     handleTransfer,
   } = useBatchFieldTransfer(isOpen, selectedAnimalIds, onClose, onSuccess);
 
@@ -320,6 +367,98 @@ export const BatchFieldTransferModal: React.FC<BatchFieldTransferModalProps> = (
                   </AnimatePresence>
                 </section>
 
+                {/* Alerta de rotación de potreros */}
+                <AnimatePresence>
+                  {selectedFieldRotation && selectedFieldRotation.status !== 'ready' && selectedField && selectedField.id !== -1 && (
+                    <motion.section
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="space-y-3"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          'h-8 w-8 rounded-lg flex items-center justify-center border',
+                          selectedFieldRotation.status === 'critical'
+                            ? 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800'
+                            : selectedFieldRotation.status === 'resting'
+                            ? 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800'
+                            : 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800'
+                        )}>
+                          <IconRotate className="h-4 w-4" />
+                        </div>
+                        <h4 className="font-bold text-[12px] uppercase tracking-wider text-muted-foreground/80">
+                          Estado de Rotación
+                        </h4>
+                      </div>
+
+                      <div className={cn(
+                        'rounded-xl p-4 border space-y-3 shadow-sm',
+                        selectedFieldRotation.status === 'critical'
+                          ? 'bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
+                          : selectedFieldRotation.status === 'resting'
+                          ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800'
+                          : 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800'
+                      )}>
+                        <div className="flex items-start gap-3">
+                          {selectedFieldRotation.status === 'critical' ? (
+                            <IconAlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5 animate-pulse" />
+                          ) : (
+                            <IconLeaf className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className={cn(
+                              'text-sm font-bold',
+                              selectedFieldRotation.status === 'critical'
+                                ? 'text-red-700 dark:text-red-400'
+                                : selectedFieldRotation.status === 'resting'
+                                ? 'text-amber-700 dark:text-amber-400'
+                                : 'text-blue-700 dark:text-blue-400'
+                            )}>
+                              {selectedFieldRotation.status === 'critical'
+                                ? 'Potrero requiere rotación urgente'
+                                : selectedFieldRotation.status === 'resting'
+                                ? 'Potrero en período de descanso'
+                                : 'Potrero en pastoreo activo'}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground mt-1">
+                              {selectedFieldRotation.status === 'critical'
+                                ? `Han pasado más de ${selectedFieldRotation.restDays} días desde el último pastoreo. Se recomienda rotar el ganado para evitar sobrepastoreo.`
+                                : selectedFieldRotation.status === 'resting'
+                                ? `Faltan ${selectedFieldRotation.daysRemaining} días para completar el descanso de ${selectedFieldRotation.restDays} días.`
+                                : `El potrero lleva ${selectedFieldRotation.grazingDays - selectedFieldRotation.daysRemaining} días en pastoreo de un máximo de ${selectedFieldRotation.grazingDays} días recomendados.`}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/50">
+                          <div className="text-center">
+                            <p className="text-[9px] font-bold uppercase text-muted-foreground/40 tracking-wider">Último pastoreo</p>
+                            <p className="text-xs font-bold text-foreground mt-0.5">
+                              {selectedFieldRotation.lastGrazingDate
+                                ? new Date(selectedFieldRotation.lastGrazingDate + 'T00:00:00').toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })
+                                : 'Sin registro'}
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-[9px] font-bold uppercase text-muted-foreground/40 tracking-wider">Días restantes</p>
+                            <p className={cn(
+                              'text-xs font-bold mt-0.5',
+                              selectedFieldRotation.status === 'critical'
+                                ? 'text-red-600 dark:text-red-400'
+                                : 'text-foreground'
+                            )}>
+                              {selectedFieldRotation.daysRemaining > 0
+                                ? `${selectedFieldRotation.daysRemaining} días`
+                                : 'Listo para pastoreo'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.section>
+                  )}
+                </AnimatePresence>
+
               </div>
             </ScrollArea>
           </div>
@@ -400,6 +539,8 @@ export const BatchFieldTransferModal: React.FC<BatchFieldTransferModalProps> = (
 
                       const colorClasses = getColorClasses(statusColor);
 
+                      const rotation = field.id !== -1 ? getRotationInfo(field) : null;
+                      const rotationBadge = rotation ? getRotationBadge(rotation) : null;
 
                       const textColor = overCap
                         ? 'text-destructive animate-pulse font-black'
@@ -447,6 +588,17 @@ export const BatchFieldTransferModal: React.FC<BatchFieldTransferModalProps> = (
                               {statusText} {capacity && `${currentPercent}%`}
                             </span>
                           </div>
+
+                          {/* Badge de rotación de potrero */}
+                          {rotationBadge && (
+                            <div className={cn(
+                              'flex items-center gap-1.5 text-[9px] font-bold px-2 py-0.5 rounded-full border w-fit',
+                              rotationBadge.className
+                            )}>
+                              {rotationBadge.icon}
+                              <span>{rotationBadge.text}</span>
+                            </div>
+                          )}
 
                           {/* Nombre y ubicación */}
                           <div className="relative z-10 min-w-0">
@@ -507,7 +659,8 @@ export const BatchFieldTransferModal: React.FC<BatchFieldTransferModalProps> = (
                                   initial={{ width: 0 }}
                                   animate={{ width: `${projectedPercent}%` }}
                                   className={cn(
-                                    'absolute inset-0 rounded-full opacity-35 bg-primary animate-pulse'
+                                    'absolute inset-0 rounded-full opacity-35 animate-pulse',
+                                    overCap ? 'bg-red-500' : 'bg-primary'
                                   )}
                                 />
                               )}

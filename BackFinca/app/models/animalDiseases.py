@@ -48,5 +48,25 @@ class AnimalDiseases(BaseModel):
             from app.models.base_model import ValidationError
             raise ValidationError('; '.join(errors), code="validation_error")
 
+    @classmethod
+    def create(cls, commit=True, **kwargs):
+        record = super().create(commit=commit, **kwargs)
+        if record and record.finca_id:
+            try:
+                from app.services.push_notification_service import PushNotificationService
+                animal_code = record.animal.record if record and record.animal else f"Animal #{kwargs.get('animal_id')}"
+                disease_name = record.disease.name if record and record.disease else "Enfermedad"
+                PushNotificationService.send_to_finca(
+                    finca_id=record.finca_id,
+                    title=f"🏥 Nuevo Diagnóstico: {animal_code}",
+                    body=f"Se ha diagnosticado {disease_name}. Revisa la ficha médica.",
+                    roles=['Veterinario', 'Instructor', 'Propietario', 'Administrador', 'Capataz'],
+                    data={'type': 'disease', 'animal_id': record.animal_id, 'url': '/admin/disease-animals'}
+                )
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f"Error enviando notificacion sanitaria: {e}")
+        return record
+
     def __repr__(self):
         return f'<AnimalDisease {self.id}: Animal {self.animal_id} - Disease {self.disease_id}>'

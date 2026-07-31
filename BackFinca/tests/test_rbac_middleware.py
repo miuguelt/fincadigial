@@ -167,29 +167,25 @@ class TestInstructor:
         resp = client.get(f"{BASE}/animals", headers=token_for(self.ROLE))
         assert_rbac_allowed(resp)
 
-    def test_put_animal_bloqueado(self, client, token_for):
+    def test_put_animal_permitido(self, client, token_for):
         resp = client.put(f"{BASE}/animals/1", json={}, headers=token_for(self.ROLE))
-        assert_rbac_blocked(resp, "INSTRUCTOR_NO_MODIFY")
+        assert_rbac_allowed(resp)
 
-    def test_patch_animal_bloqueado(self, client, token_for):
+    def test_patch_animal_permitido(self, client, token_for):
         resp = client.patch(f"{BASE}/animals/1", json={}, headers=token_for(self.ROLE))
-        assert_rbac_blocked(resp, "INSTRUCTOR_NO_MODIFY")
+        assert_rbac_allowed(resp)
 
-    def test_delete_animal_bloqueado(self, client, token_for):
+    def test_delete_animal_permitido(self, client, token_for):
         resp = client.delete(f"{BASE}/animals/1", headers=token_for(self.ROLE))
-        assert_rbac_blocked(resp, "INSTRUCTOR_NO_MODIFY")
+        assert_rbac_allowed(resp)
 
-    def test_post_animal_bloqueado(self, client, token_for):
-        """POST /animals no es ruta de salud → bloqueado para Instructor."""
+    def test_post_animal_permitido(self, client, token_for):
         resp = client.post(f"{BASE}/animals", json={}, headers=token_for(self.ROLE))
-        assert_rbac_blocked(resp, "INSTRUCTOR_HEALTH_ONLY")
+        assert_rbac_allowed(resp)
 
     def test_post_vaccination_permitido(self, client, token_for):
-        """/vaccinations es HEALTH_PATH → Instructor puede POST (pasa RBAC)."""
         resp = client.post(f"{BASE}/vaccinations", json={}, headers=token_for(self.ROLE))
         assert_rbac_allowed(resp)
-        # Puede ser 400/422 por body vacío, pero no 403
-        assert resp.status_code in (400, 422)
 
     def test_post_treatment_permitido(self, client, token_for):
         resp = client.post(f"{BASE}/treatments", json={}, headers=token_for(self.ROLE))
@@ -199,9 +195,9 @@ class TestInstructor:
         resp = client.post(f"{BASE}/controls", json={}, headers=token_for(self.ROLE))
         assert_rbac_allowed(resp)
 
-    def test_get_users_bloqueado(self, client, token_for):
+    def test_get_users_permitido(self, client, token_for):
         resp = client.get(f"{BASE}/users", headers=token_for(self.ROLE))
-        assert_rbac_blocked(resp, "INSTRUCTOR_NO_USERS")
+        assert_rbac_allowed(resp)
 
 
 # ---------------------------------------------------------------------------

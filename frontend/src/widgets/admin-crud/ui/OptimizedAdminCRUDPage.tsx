@@ -323,7 +323,15 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
     
     try {
       if (editingItem?.id) {
-        await updateItem(editingItem.id, formData as any);
+        // Ver AdminCRUDPage: version_id permite al backend detectar (409) que
+        // otro usuario guardó el registro mientras el formulario estaba abierto.
+        const editingVersion = (editingItem as any)?.version_id;
+        await updateItem(
+          editingItem.id,
+          (editingVersion !== undefined && editingVersion !== null
+            ? { ...(formData as any), version_id: editingVersion }
+            : (formData as any)),
+        );
         showToast(`✅ ${config.entityName} actualizado correctamente`, 'success');
       } else {
         await createItem(formData as any);

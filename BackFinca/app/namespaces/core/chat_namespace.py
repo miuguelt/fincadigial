@@ -208,6 +208,21 @@ class ChatSendResource(Resource):
             # Emitir evento SSE
             EventService.emit_chat_message(chat_message.to_dict())
 
+            # Enviar notificación Push al destinatario
+            try:
+                from app.models.user import User
+                from app.services.push_notification_service import PushNotificationService
+                sender = User.query.get(user_id)
+                sender_name = sender.fullname if sender else "Un usuario"
+                PushNotificationService.send_to_user(
+                    user_id=recipient_id,
+                    title=f"Nuevo mensaje de {sender_name}",
+                    body=message[:100],
+                    data={'type': 'chat', 'sender_id': user_id, 'url': '/chat'}
+                )
+            except Exception as push_err:
+                logger.error(f"Error sending chat push notification: {push_err}")
+
             return APIResponse.success(data=chat_message.to_dict(), message='Mensaje enviado')
 
         except Exception as e:

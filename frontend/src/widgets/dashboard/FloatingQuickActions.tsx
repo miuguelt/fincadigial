@@ -29,6 +29,26 @@ import {
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/shared/ui/cn";
+import { useAuth } from "@/features/auth/model/useAuth";
+
+const getRolePrefix = (r?: string | null): string => {
+  switch (r) {
+    case "Administrador":
+    case "Propietario":
+    case "Capataz":
+      return "/admin";
+    case "Instructor":
+      return "/instructor";
+    case "Veterinario":
+      return "/veterinario";
+    case "Aprendiz":
+      return "/apprentice";
+    case "Operario":
+      return "/operario";
+    default:
+      return "/admin";
+  }
+};
 
 // ─── Tipos ────────────────────────────────────────────────────
 interface QuickAction {
@@ -276,6 +296,10 @@ export const FloatingQuickActions: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const sheetRef = useRef<HTMLDivElement>(null);
 
+  const { user, role } = useAuth() as any;
+  const currentRole = role ?? user?.role ?? null;
+  const rolePrefix = getRolePrefix(currentRole);
+
   const [favIds, setFavIds] = useState<string[]>(() => {
     try {
       const raw = localStorage.getItem(LS_KEY);
@@ -356,10 +380,13 @@ export const FloatingQuickActions: React.FC = () => {
         newSearchParams.set('quick', action);
         setSearchParams(newSearchParams, { replace: true });
       } else {
-        navigate(path);
+        const targetPath = path.startsWith('/admin/')
+          ? `${rolePrefix}${path.replace('/admin', '')}`
+          : path;
+        navigate(targetPath);
       }
     },
-    [close, navigate, searchParams, setSearchParams]
+    [close, navigate, rolePrefix, searchParams, setSearchParams]
   );
 
   return (
@@ -414,21 +441,20 @@ export const FloatingQuickActions: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* ── FAB ───────────────────────────────────────────────── */}
+      {/* ── FAB principal (Bottom Right) ────────────────────────── */}
       <motion.button
         id="fqa-fab"
         whileTap={{ scale: 0.88 }}
+        whileHover={{ scale: 1.08 }}
         onClick={() => { setIsOpen((v) => !v); setEditMode(false); }}
         className={cn(
-          "fixed bottom-4 right-4 z-[9999]",
-          "h-12 w-12 rounded-full",
-          "flex items-center justify-center",
-          "border-2",
-          "shadow-[0_6px_22px_rgba(0,0,0,0.35)]",
-          "transition-all duration-300",
+          "fixed bottom-3 right-3 sm:bottom-4 sm:right-4 z-[9999]",
+          "h-10 w-10 sm:h-11 sm:w-11 rounded-full",
+          "flex items-center justify-center backdrop-blur-md",
+          "transition-all duration-300 shadow-lg cursor-pointer",
           isOpen
-            ? "bg-card text-foreground border-border/60 opacity-100"
-            : "bg-primary text-white border-primary/30 opacity-45 hover:opacity-100 focus:opacity-100 active:opacity-100"
+            ? "bg-card/90 text-foreground border border-border/50 opacity-100 scale-105"
+            : "bg-emerald-600/70 hover:bg-emerald-500/90 text-white border border-emerald-400/30 opacity-75 hover:opacity-100 shadow-[0_4px_15px_rgba(16,185,129,0.3)]"
         )}
         aria-label={isOpen ? "Cerrar menú rápido" : "Abrir menú rápido"}
         aria-expanded={isOpen}
@@ -438,7 +464,7 @@ export const FloatingQuickActions: React.FC = () => {
           transition={{ type: "spring", stiffness: 320, damping: 22 }}
           className="flex items-center justify-center"
         >
-          {isOpen ? <IconX size="md" /> : <Zap className="h-5 w-5" />}
+          {isOpen ? <IconX size="md" /> : <Zap className="h-6 w-6 fill-white" />}
         </motion.div>
 
         {chatUnreadCount > 0 && !isOpen && (

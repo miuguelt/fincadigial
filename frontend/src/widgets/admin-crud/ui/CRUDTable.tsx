@@ -634,7 +634,7 @@ export function CRUDTable<T extends { id: number }>({
       )}
       
       <div className={cn(
-        "flex-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent pb-36",
+        "flex-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent pb-16 md:pb-20",
         isMobile ? "overflow-y-auto" : "overflow-x-auto overflow-y-auto",
         refreshing && "opacity-70"
       )}>

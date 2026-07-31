@@ -123,6 +123,13 @@ export function buildConflictMessage(
   sections: CRUDFormSection<any>[]
 ): { message: string; field?: string } {
   const labelMap = buildFieldLabelMap(sections);
+  // Conflicto de edición simultánea: no es un choque de unicidad, sino que otro
+  // usuario guardó el mismo registro mientras este formulario estaba abierto.
+  if (details?.conflict_type === 'optimistic_locking') {
+    return {
+      message: 'Otro usuario modificó este registro mientras lo editabas. Cierra el formulario, recarga los datos y vuelve a aplicar tus cambios.',
+    };
+  }
   const valErrors =
     details?.validation_errors ||
     details?.errors ||

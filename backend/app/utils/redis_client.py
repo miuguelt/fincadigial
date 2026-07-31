@@ -3,19 +3,23 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+from redis.retry import Retry
+from redis.backoff import ExponentialBackoff
+from redis.exceptions import ConnectionError, TimeoutError, BusyLoadingError
+
 # Defaults applied to every client created by this module.
 # health_check_interval revalidates pooled sockets before reuse, so a socket
 # reaped by the server is replaced transparently instead of raising
 # ConnectionError("Connection closed by server") on the next command.
-# No socket_timeout by default: the same pool backs the blocking pubsub
-# listener, where a read timeout would force a needless reconnect loop.
-# max_connections prevents unbounded pool growth — 20 is ample for dev
-# (native client + cache + limiter each get their own pool).
+# retry and retry_on_error automatically reconnect and retry command execution
+# if Memurai closes an idle socket or drops the TCP session.
 DEFAULT_OPTIONS = {
     "socket_connect_timeout": 5,
     "socket_keepalive": True,
     "retry_on_timeout": True,
-    "health_check_interval": 30,
+    "retry_on_error": [ConnectionError, TimeoutError, BusyLoadingError],
+    "retry": Retry(ExponentialBackoff(cap=5, base=1), 3),
+    "health_check_interval": 15,
     "max_connections": 20,
 }
 

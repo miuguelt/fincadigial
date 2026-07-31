@@ -62,3 +62,37 @@ class Tasks(BaseModel):
         if errors:
             from app.models.base_model import ValidationError
             raise ValidationError('; '.join(errors), code="security_violation")
+
+    @classmethod
+    def create(cls, commit=True, **kwargs):
+        task = super().create(commit=commit, **kwargs)
+        if task and task.assigned_to:
+            try:
+                from app.services.push_notification_service import PushNotificationService
+                PushNotificationService.send_to_user(
+                    user_id=task.assigned_to,
+                    title="Nueva Tarea Asignada",
+                    body=f"Se te ha asignado la tarea: {task.title}",
+                    data={'type': 'task', 'task_id': task.id, 'url': '/admin/tasks'}
+                )
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f"Error enviando notificacion de tarea: {e}")
+        return task
+
+    def update(self, commit=True, **kwargs):
+        old_assigned = self.assigned_to
+        task = super().update(commit=commit, **kwargs)
+        if task and task.assigned_to and task.assigned_to != old_assigned:
+            try:
+                from app.services.push_notification_service import PushNotificationService
+                PushNotificationService.send_to_user(
+                    user_id=task.assigned_to,
+                    title="Nueva Tarea Asignada",
+                    body=f"Se te ha asignado la tarea: {task.title}",
+                    data={'type': 'task', 'task_id': task.id, 'url': '/admin/tasks'}
+                )
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f"Error enviando notificacion de tarea: {e}")
+        return task

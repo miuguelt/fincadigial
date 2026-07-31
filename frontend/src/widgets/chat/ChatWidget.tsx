@@ -212,7 +212,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
   if (!user) return null;
 
   return (
-    <div className="fixed bottom-4 right-[68px] sm:right-[76px] z-[9998] flex flex-col items-end pointer-events-none transition-all duration-300">
+    <div className="fixed bottom-16 right-4 sm:right-6 z-[9998] flex flex-col items-end pointer-events-none transition-all duration-300">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -225,7 +225,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
               "bg-card/95 backdrop-blur-3xl",
               "border border-white/10 rounded-xl",
               "shadow-[0_20px_60px_rgba(0,0,0,0.4)]",
-              "mb-4 overflow-hidden flex flex-col pointer-events-auto h-[500px]"
+              "mb-2 overflow-hidden flex flex-col pointer-events-auto h-[500px]"
             )}
           >
             {/* Header */}
@@ -422,21 +422,19 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
         )}
       </AnimatePresence>
 
-      {/* Toggle Button del Chat Flotante Único */}
+      {/* Toggle Button del Chat Flotante Único Estandarizado */}
       {!hideToggleButton && (
         <motion.button
-          whileTap={{ scale: 0.88 }}
+          whileTap={{ scale: 0.90 }}
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
-            "fixed bottom-4 right-4 z-[9999]",
-            "h-12 w-12 sm:h-13 sm:w-13 rounded-full",
+            "fixed bottom-3 right-[3.75rem] sm:bottom-4 sm:right-[4.5rem] z-[9998]",
+            "h-10 w-10 sm:h-11 sm:w-11 rounded-full",
             "flex items-center justify-center relative",
-            "border-2 border-white/30",
-            "shadow-[0_8px_25px_rgba(57,169,0,0.35)]",
-            "transition-all duration-300",
+            "backdrop-blur-md transition-all duration-300 shadow-sm hover:shadow-md",
             isOpen
-              ? "bg-card text-foreground border-border/60 opacity-100 scale-100"
-              : "bg-primary text-white opacity-100 hover:scale-105 active:scale-95 shadow-lg"
+              ? "bg-card/90 text-foreground border border-border/50 opacity-100 scale-105"
+              : "bg-card/70 dark:bg-card/60 text-foreground/70 hover:text-foreground border border-border/40 hover:border-primary/50 opacity-75 hover:opacity-100 hover:scale-105"
           )}
           aria-label={isOpen ? "Cerrar chat" : "Abrir chat"}
         >
@@ -444,11 +442,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
             animate={{ rotate: isOpen ? 45 : 0 }}
             transition={{ type: "spring", stiffness: 320, damping: 22 }}
           >
-            {isOpen ? <X size={22} /> : <MessageCircle size={22} />}
+            {isOpen ? <X size={20} /> : <MessageCircle size={20} />}
           </motion.div>
 
           {unreadCount > 0 && !isOpen && (
-            <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[11px] font-black h-5.5 w-5.5 px-1.5 rounded-full flex items-center justify-center border-2 border-background shadow-md animate-bounce z-10">
+            <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center border-2 border-card shadow-sm animate-pulse z-10">
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}

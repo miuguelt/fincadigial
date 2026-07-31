@@ -26,6 +26,9 @@ class RedisEventBus:
         import os as _os
         self.channel = _os.getenv('REDIS_CHANNEL_NAME', 'villaluz:events')
         self.local_subscribers = []
+        # Callbacks invocados con cada payload recibido del canal, además de las
+        # colas SSE. Los usa la invalidación de caché entre workers.
+        self.event_hooks = []
         self.lock = threading.Lock()
         self._consecutive_failures = 0
         self._circuit_open_until = 0.0
@@ -95,7 +98,22 @@ class RedisEventBus:
         delay = self.MIN_BACKOFF_SECONDS * (2 ** (self._consecutive_failures - 1))
         return min(delay, self.MAX_BACKOFF_SECONDS)
 
+    def add_event_hook(self, callback):
+        """Registra un callback que recibe cada payload entrante del canal."""
+        with self.lock:
+            self.event_hooks.append(callback)
+
+    def _run_hooks(self, payload: str):
+        with self.lock:
+            hooks = list(self.event_hooks)
+        for hook in hooks:
+            try:
+                hook(payload)
+            except Exception:
+                logger.debug("Hook de evento falló", exc_info=True)
+
     def _dispatch_local(self, payload: str):
+        self._run_hooks(payload)
         with self.lock:
             for q in list(self.local_subscribers):
                 try:
@@ -156,7 +174,17 @@ class InMemoryEventBus:
     """Fallback para cuando Redis no está disponible."""
     def __init__(self):
         self.subscribers = []
+        self.event_hooks = []
         self.lock = threading.Lock()
+
+    def add_event_hook(self, callback):
+        """Paridad de API con RedisEventBus.
+
+        Un bus en memoria implica un único proceso, donde la invalidación de
+        caché ya ocurre en línea tras cada escritura, así que no se invoca.
+        """
+        with self.lock:
+            self.event_hooks.append(callback)
 
     def subscribe(self):
         q = queue.Queue(maxsize=1000)

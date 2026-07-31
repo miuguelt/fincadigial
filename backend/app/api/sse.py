@@ -29,12 +29,34 @@ def init_sse_bus(app):
             else:
                 logger.info("SSE Bus: Utilizando Memoria (dev - sin Redis)")
 
+        # Invalidación de caché entre workers: cada escritura publica en el bus y
+        # todos los procesos suscritos limpian su LRU local. Sin esto, con varios
+        # workers de gunicorn un usuario seguía viendo la lista cacheada (hasta el
+        # TTL del modelo) después de que otro usuario creara o editara un registro.
+        bus = app.extensions.get("event_bus")
+        if bus is not None and hasattr(bus, "add_event_hook"):
+            from ..utils.cache_helpers import invalidate_from_event
+            bus.add_event_hook(invalidate_from_event)
+
         # Estructuras de control de conexiones SSE por IP
         app.extensions["sse_ip_lock"] = threading.Lock()
         app.extensions["sse_ip_counts"] = {}    # { ip: count }
         app.extensions["sse_ip_cooldowns"] = {}  # { ip: timestamp_hasta }
     except Exception:
         logging.getLogger(__name__).exception('No se pudo inicializar event_bus')
+
+
+def _is_internal_event(payload) -> bool:
+    """Eventos de coordinación entre workers que el navegador no debe recibir."""
+    from ..utils.cache_helpers import _INVALIDATION_ACTION
+    try:
+        if isinstance(payload, bytes):
+            payload = payload.decode('utf-8')
+        if isinstance(payload, str):
+            payload = json.loads(payload)
+        return isinstance(payload, dict) and payload.get('action') == _INVALIDATION_ACTION
+    except Exception:
+        return False
 
 
 def _get_client_ip() -> str:
@@ -45,9 +67,20 @@ def _get_client_ip() -> str:
     return flask.request.remote_addr or '0.0.0.0'
 
 
-def _acquire_sse_slot(app, ip: str) -> tuple[bool, str]:
+def _sse_slot_key(user_identity, ip: str) -> str:
+    """Clave de cupo SSE: por usuario autenticado, con la IP como respaldo.
+
+    Contar por IP dejaba sin eventos en vivo al cuarto administrador conectado
+    desde la misma red (NAT de la finca): todos compartían el mismo cupo.
     """
-    Verifica y registra una conexión SSE para la IP dada.
+    if user_identity is not None and str(user_identity) != '':
+        return f"user:{user_identity}"
+    return f"ip:{ip}"
+
+
+def _acquire_sse_slot(app, key: str) -> tuple[bool, str]:
+    """
+    Verifica y registra una conexión SSE para la clave dada (usuario o IP).
     Retorna (ok, motivo) — si ok=False, motivo contiene el mensaje de error.
     """
     lock = app.extensions.get("sse_ip_lock")
@@ -69,26 +102,26 @@ def _acquire_sse_slot(app, ip: str) -> tuple[bool, str]:
         now = time.time()
 
         # Verificar cooldown activo (reconexión demasiado rápida)
-        cooldown_until = ip_cooldowns.get(ip, 0)
+        cooldown_until = ip_cooldowns.get(key, 0)
         if now < cooldown_until:
             wait_s = int(cooldown_until - now)
             return False, f"Demasiadas reconexiones. Espera {wait_s}s."
 
         # Verificar límite de conexiones simultáneas
-        current = ip_counts.get(ip, 0)
+        current = ip_counts.get(key, 0)
         if current >= max_conn:
             # Activar cooldown para evitar spam de reconexiones
-            ip_cooldowns[ip] = now + cooldown_s
-            return False, f"Límite de {max_conn} conexiones simultáneas por IP alcanzado."
+            ip_cooldowns[key] = now + cooldown_s
+            return False, f"Límite de {max_conn} conexiones simultáneas alcanzado."
 
         # Registrar conexión
-        ip_counts[ip] = current + 1
+        ip_counts[key] = current + 1
 
     return True, ""
 
 
-def _release_sse_slot(app, ip: str):
-    """Libera una conexión SSE registrada para la IP dada."""
+def _release_sse_slot(app, key: str):
+    """Libera una conexión SSE registrada para la clave dada."""
     lock = app.extensions.get("sse_ip_lock")
     ip_counts = app.extensions.get("sse_ip_counts", {})
 
@@ -96,11 +129,11 @@ def _release_sse_slot(app, ip: str):
         return
 
     with lock:
-        current = ip_counts.get(ip, 0)
+        current = ip_counts.get(key, 0)
         if current > 0:
-            ip_counts[ip] = current - 1
+            ip_counts[key] = current - 1
         else:
-            ip_counts.pop(ip, None)
+            ip_counts.pop(key, None)
 
 
 def sse_events_handler():
@@ -126,7 +159,8 @@ def sse_events_handler():
 
         # ── Límite de conexiones simultáneas por IP ────────────────────────────
         client_ip = _get_client_ip()
-        allowed, reason = _acquire_sse_slot(flask.current_app._get_current_object(), client_ip)
+        slot_key = _sse_slot_key(user_identity, client_ip)
+        allowed, reason = _acquire_sse_slot(flask.current_app._get_current_object(), slot_key)
         if not allowed:
             logger.warning(f"[SSE] Conexión rechazada para {client_ip}: {reason}")
             return flask.Response(
@@ -139,7 +173,7 @@ def sse_events_handler():
         # ── Event bus ─────────────────────────────────────────────────────────
         bus = flask.current_app.extensions.get("event_bus")
         if not bus:
-            _release_sse_slot(flask.current_app._get_current_object(), client_ip)
+            _release_sse_slot(flask.current_app._get_current_object(), slot_key)
             logger.warning("Intento de conexión SSE sin event_bus inicializado")
             return flask.Response(
                 json.dumps({'success': False, 'message': 'Eventos no disponibles'}),
@@ -174,7 +208,7 @@ def sse_events_handler():
                 while True:
                     try:
                         payload = q.get(timeout=ping_interval)
-                        if payload:
+                        if payload and not _is_internal_event(payload):
                             yield f"data: {payload}\n\n"
                             last_ping = time.time()
 
@@ -192,8 +226,8 @@ def sse_events_handler():
             finally:
                 # SIEMPRE liberar el slot al desconectar
                 bus.unsubscribe(q)
-                _release_sse_slot(app_ref, client_ip)
-                logger.debug(f"[SSE] Slot liberado para ip={client_ip}")
+                _release_sse_slot(app_ref, slot_key)
+                logger.debug(f"[SSE] Slot liberado para {slot_key} (ip={client_ip})")
 
         logger.info(f"[SSE] Stream iniciado — usuario={user_identity} ip={client_ip}")
         return flask.Response(

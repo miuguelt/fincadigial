@@ -626,7 +626,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
         />
       ) : (
         <>
-          <div className="bg-card/95 backdrop-blur-sm border-2 border-border/50 rounded-xl shadow-2xl shadow-primary/10 mt-1">
+          <div className="bg-card/95 backdrop-blur-sm border-2 border-border/50 rounded-xl shadow-2xl shadow-primary/10 flex-1 flex flex-col min-h-0 mt-1 mb-2 overflow-hidden">
             <CRUDTable
               items={filteredItems}
               columns={config.columns}

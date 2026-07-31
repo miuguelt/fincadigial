@@ -96,7 +96,7 @@ export function AnimalBentoStats({
 				)}
 				{daysInCurrentField !== null && (
 					<StatCard
-						label="Estancia Actual"
+						label="Días en Potrero"
 						value={daysInCurrentField}
 						unit="días"
 						sub={`En potrero actual. Rotado ${totalRotations} ${totalRotations === 1 ? "vez" : "veces"} en total.`}
