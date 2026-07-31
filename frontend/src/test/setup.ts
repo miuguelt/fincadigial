@@ -38,7 +38,6 @@ vi.mock('@/app/providers/CacheContext', () => {
       invalidateByEndpoint: () => {},
       clearCache: () => {},
       preloadData: async (_key: string, fetchFn: any) => await fetchFn(),
-      preloadCriticalRoutes: () => {},
     }),
     useCacheKey: () => ({
       generateKey: (endpoint: string) => endpoint,

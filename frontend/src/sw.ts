@@ -7,8 +7,13 @@ import { Queue } from 'workbox-background-sync';
 
 declare const self: ServiceWorkerGlobalScope;
 
-// Precache de assets generados en el build
-precacheAndRoute(self.__WB_MANIFEST);
+// Precache only the shell and critical chunks. Pre-caching every lazy route
+// makes first install download several megabytes on rural networks.
+const criticalPrecache = self.__WB_MANIFEST.filter((entry) => {
+  const url = typeof entry === 'string' ? entry : entry.url;
+  return /(?:^|\/)(?:index\.html|offline\.html|manifest\.webmanifest|pwa-[^/]+\.png)$/.test(url);
+});
+precacheAndRoute(criticalPrecache);
 
 // ─────────────────────────────────────────────────────────────
 // BackgroundSync — cola de escrituras para modo sin señal
@@ -33,25 +38,24 @@ const offlineQueue = new Queue('finca-offline-writes', {
   },
 });
 
-// Interceptar mutaciones a la API para BackgroundSync
-registerRoute(
-  ({ url, request }) =>
-    url.pathname.startsWith('/api/v1/') &&
-    ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method),
-  async ({ event }) => {
-    const fetchEvent = event as FetchEvent;
-    try {
-      return await fetch(fetchEvent.request.clone());
-    } catch {
-      await offlineQueue.pushRequest(fetchEvent);
-      return new Response(
-        JSON.stringify({ queued: true, message: 'Operación guardada. Se enviará cuando haya señal.' }),
-        { status: 202, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-  },
-  'POST'
-);
+// Intercept API mutations for BackgroundSync. Workbox accepts one method per
+// route, so register each mutation explicitly.
+const queueMutation = async ({ event }: { event: ExtendableEvent }) => {
+  const fetchEvent = event as FetchEvent;
+  try {
+    return await fetch(fetchEvent.request.clone());
+  } catch {
+    await offlineQueue.pushRequest(fetchEvent);
+    return new Response(
+      JSON.stringify({ queued: true, message: 'Operación guardada. Se enviará cuando haya señal.' }),
+      { status: 202, headers: { 'Content-Type': 'application/json' } },
+    );
+  }
+};
+
+for (const method of ['POST', 'PUT', 'PATCH', 'DELETE'] as const) {
+  registerRoute(({ url }) => url.pathname.startsWith('/api/v1/'), queueMutation, method);
+}
 
 // ─────────────────────────────────────────────────────────────
 // Caché de imágenes (30 días, CacheFirst)
@@ -85,9 +89,18 @@ registerRoute(
   })
 );
 
+// Lazy-loaded JavaScript and CSS are cached after their first successful load.
+registerRoute(
+  ({ request }) => request.destination === 'script' || request.destination === 'style',
+  new CacheFirst({
+    cacheName: 'static-assets',
+    plugins: [new ExpirationPlugin({ maxEntries: 120, maxAgeSeconds: 30 * 24 * 60 * 60 })],
+  }),
+);
+
 // ─────────────────────────────────────────────────────────────
-// Datos maestros (catálogos globales que cambian poco)
-// StaleWhileRevalidate: sirve de caché inmediatamente, revalida en background
+// Global catalogs only. User/finca-scoped responses stay in the scoped
+// IndexedDB cache managed by the API client.
 // ─────────────────────────────────────────────────────────────
 registerRoute(
   ({ url }) =>
@@ -98,58 +111,13 @@ registerRoute(
     url.pathname.includes('/api/v1/vaccines') ||
     url.pathname.includes('/api/v1/medications') ||
     url.pathname.includes('/api/v1/route-administrations') ||
-    url.pathname.includes('/api/v1/diseases') ||
-    url.pathname.includes('/api/v1/fincas') ||
-    url.pathname.includes('/api/v1/auth/me'),
+    url.pathname.includes('/api/v1/diseases'),
   new StaleWhileRevalidate({
     cacheName: 'master-data-cache',
     plugins: [
       new ExpirationPlugin({
         maxEntries: 150,
         maxAgeSeconds: 24 * 60 * 60,
-      }),
-    ],
-  })
-);
-
-// ─────────────────────────────────────────────────────────────
-// Datos de campo (lo que el campesino consulta en el potrero)
-// NetworkFirst con fallback a caché — hasta 12h de antigüedad
-// ─────────────────────────────────────────────────────────────
-registerRoute(
-  ({ url }) =>
-    url.pathname.includes('/api/v1/animals') ||
-    url.pathname.includes('/api/v1/animal_fields') ||
-    url.pathname.includes('/api/v1/animal-diseases') ||
-    url.pathname.includes('/api/v1/treatments') ||
-    url.pathname.includes('/api/v1/vaccinations') ||
-    url.pathname.includes('/api/v1/control') ||
-    url.pathname.includes('/api/v1/fields'),
-  new NetworkFirst({
-    cacheName: 'field-data-cache',
-    networkTimeoutSeconds: 4,
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 300,
-        maxAgeSeconds: 12 * 60 * 60,
-      }),
-    ],
-  })
-);
-
-// ─────────────────────────────────────────────────────────────
-// Analytics y reportes (StaleWhileRevalidate, 1 hora)
-// ─────────────────────────────────────────────────────────────
-registerRoute(
-  ({ url }) =>
-    url.pathname.includes('/api/v1/analytics') ||
-    url.pathname.includes('/api/v1/reports'),
-  new StaleWhileRevalidate({
-    cacheName: 'analytics-cache',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 30,
-        maxAgeSeconds: 60 * 60,
       }),
     ],
   })

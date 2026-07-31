@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Plus, Save, PlusCircle, AlertCircle, XCircle, Dna, Activity, Syringe, Pill, MapPin, ClipboardList, Milk, Heart, Bell, CalendarCheck } from "lucide-react";
 import { useToast } from "@/app/providers/ToastContext";
 import { Button } from "@/shared/ui/button";
@@ -21,6 +21,7 @@ import { clearAnimalDependencyCache, checkTreatmentDependencies } from "@/featur
 import { TreatmentSuppliesModal } from "@/widgets/dashboard/treatments/TreatmentSuppliesModal";
 import { ItemDetailModal } from "./animals/ItemDetailModal";
 import { ApiFetchError } from "@/shared/api/apiFetch";
+import { formatMessageFromCode, readStandardErrorPayload } from "@/shared/api/error-parser";
 import { IconEdit, IconTrash } from "@/shared/ui/icons";
 import { FormRenderer } from "./FormRenderer";
 import type { ModalType, ModalMode } from "./AnimalActionsMenu.types";
@@ -75,6 +76,7 @@ export const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps>
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | number | null>(null);
   const [suppliesModalOpen, setSuppliesModalOpen] = useState(false);
   const [selectedTreatmentForSupplies, setSelectedTreatmentForSupplies] = useState<any>(null);
+  const submitInFlightRef = useRef(false);
   const modalStateId = useMemo(() => Math.random().toString(36).substring(2, 9), []);
 
   const loadListData = useCallback(async (forceRefresh = false) => {
@@ -128,6 +130,8 @@ export const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps>
   }, [modalMode, loadListData]);
 
   const handleSubmit = async (stayInCreateMode: boolean = false) => {
+    if (submitInFlightRef.current) return;
+    submitInFlightRef.current = true;
     setLoading(true); setError(null);
     try {
       const isEditing = !!editingItem;
@@ -168,11 +172,18 @@ export const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps>
       setTimeout(() => onRefreshParent?.(type || undefined), 600);
     } catch (err: any) {
       console.error("[AnimalActionModalInstance] Error saving:", err);
-      let msg = err?.response?.data?.message || err.message || "Error al guardar";
+      const parsedError = readStandardErrorPayload(err);
+      let msg = formatMessageFromCode(parsedError);
+      if (type === "animal_disease" && parsedError.status === 409) {
+        msg = "Esta enfermedad ya está registrada para el animal en esa fecha.";
+      }
       setValidationErrors(null);
       if (err instanceof ApiFetchError && err.validationErrors) { setValidationErrors(err.validationErrors); msg = "Por favor, corrige los siguientes errores:"; }
       setError(msg);
-    } finally { setLoading(false); }
+    } finally {
+      submitInFlightRef.current = false;
+      setLoading(false);
+    }
   };
 
   const handleEdit = (item: any) => { setEditingItem(item); setFormData(item); setModalMode("create"); };

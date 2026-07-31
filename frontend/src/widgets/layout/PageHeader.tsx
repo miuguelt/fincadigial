@@ -43,7 +43,7 @@ export function PageHeader({
 }: PageHeaderProps) {
   const headerBase = dense
     ? "mb-0 bg-transparent rounded-none p-0 sm:p-1 shadow-none border-none"
-    : "mb-4 sm:mb-6 bg-card/40 dark:bg-card/5 backdrop-blur-sm rounded-lg p-4 sm:p-5 shadow-none border border-white/30 dark:border-white/10 transition-all duration-300";
+    : "mb-4 sm:mb-6 bg-card rounded-lg p-4 sm:p-5 shadow-sm border border-border transition-colors duration-200";
   const wrapperClasses = dense
     ? "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
     : "flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between";

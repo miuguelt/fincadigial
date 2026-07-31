@@ -58,15 +58,32 @@ export const getUserFincas = (user: UserWithProfile) => {
 export const getAccessStatus = (status?: UserWithProfile["approval_status"]) =>
 	status ? accessStatusMap[status] : undefined;
 
-export const canMessageUser = (target: UserWithProfile, currentUser?: any) => {
-	if (!currentUser?.id || !currentUser?.finca_id || !target?.id) return false;
+/**
+ * ¿Se le puede escribir a este usuario?
+ *
+ * `chatContactIds` viene de `/chat/contacts`, que es la regla real del backend
+ * (misma finca activa + usuario habilitado). Cuando está disponible manda; si
+ * aún no cargó se cae a la heurística local para no bloquear la interfaz.
+ */
+export const canMessageUser = (
+	target: UserWithProfile,
+	currentUser?: any,
+	chatContactIds?: Set<number> | null,
+) => {
+	if (!currentUser?.id || !target?.id) return false;
 	if (Number(target.id) === Number(currentUser.id)) return false;
+
+	if (chatContactIds) return chatContactIds.has(Number(target.id));
+
+	if (!currentUser?.finca_id) return false;
 
 	const isActive =
 		typeof target.status === "boolean" ? target.status : target.status === "1";
 	if (!isActive) return false;
 
 	const activeFincaId = Number(currentUser.finca_id);
+	if (Number(target.finca_id) === activeFincaId) return true;
+
 	return getUserFincas(target).some(
 		(finca) =>
 			Number(finca.finca_id ?? finca.id) === activeFincaId &&

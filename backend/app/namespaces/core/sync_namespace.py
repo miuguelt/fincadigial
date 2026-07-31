@@ -17,6 +17,8 @@ from app.utils.tenant_context import get_current_finca_id
 
 sync_ns = Namespace("sync", description="Sincronizacion rural offline-first")
 
+_ROUTED_PAYLOAD_MARKER = "__villaluz_routed_operation__"
+
 
 def _finca_id_from_request(payload=None):
     payload = payload or {}
@@ -35,13 +37,22 @@ def _parse_dt(value):
 
 
 def _operation_dict(op: SyncOperation):
+    payload = op.payload
+    route = None
+    method = None
+    if isinstance(payload, dict) and payload.get(_ROUTED_PAYLOAD_MARKER):
+        route = payload.get("url")
+        method = payload.get("method")
+        payload = payload.get("data")
     return {
         "cursor": op.id,
         "operation_id": op.operation_id,
         "entity_type": op.entity_type,
         "entity_id": op.entity_id,
         "operation": op.operation,
-        "payload": op.payload,
+        "payload": payload,
+        "url": route,
+        "method": method,
         "base_version": op.base_version,
         "logical_clock": op.logical_clock,
         "priority": op.priority,
@@ -95,27 +106,50 @@ class SyncPushResource(Resource):
         duplicates = []
         conflicts = []
 
+        normalized_operations = []
         for item in operations:
             if not isinstance(item, dict):
                 continue
             operation_id = item.get("operation_id") or item.get("id") or str(uuid.uuid4())
-            
-            existing_q = apply_tenant_filter(SyncOperation.query, SyncOperation)
-            existing = existing_q.filter_by(operation_id=operation_id).first()
+            normalized_operations.append((item, operation_id))
+
+        operation_ids = [operation_id for _, operation_id in normalized_operations]
+        existing_operations = {}
+        existing_receipts = set()
+        if operation_ids:
+            existing_query = apply_tenant_filter(SyncOperation.query, SyncOperation, finca_id)
+            existing_operations = {
+                op.operation_id: op
+                for op in existing_query.filter(SyncOperation.operation_id.in_(operation_ids)).all()
+            }
+            receipt_query = apply_tenant_filter(SyncOperationReceipt.query, SyncOperationReceipt, finca_id)
+            existing_receipts = {
+                receipt.operation_id
+                for receipt in receipt_query.filter(
+                    SyncOperationReceipt.operation_id.in_(operation_ids),
+                    SyncOperationReceipt.device_id == device_id,
+                ).all()
+            }
+
+        request_seen = set()
+
+        for item, operation_id in normalized_operations:
+            if operation_id in request_seen:
+                duplicates.append(operation_id)
+                continue
+            request_seen.add(operation_id)
+
+            existing = existing_operations.get(operation_id)
             if existing:
                 duplicates.append(operation_id)
-                receipt_q = apply_tenant_filter(SyncOperationReceipt.query, SyncOperationReceipt)
-                receipt = receipt_q.filter_by(
-                    operation_id=operation_id,
-                    device_id=device_id
-                ).first()
-                if not receipt:
+                if operation_id not in existing_receipts:
                     db.session.add(SyncOperationReceipt(
                         operation_id=operation_id,
                         device_id=device_id,
                         finca_id=finca_id,
                         applied=existing.status == SyncOperationStatus.APPLIED,
                     ))
+                    existing_receipts.add(operation_id)
                 continue
 
             entity_type = item.get("entity_type")
@@ -127,12 +161,23 @@ class SyncPushResource(Resource):
                 })
                 continue
 
+            raw_payload = item.get("payload")
+            operation_url = item.get("url")
+            operation_method = item.get("method")
+            if operation_url:
+                raw_payload = {
+                    _ROUTED_PAYLOAD_MARKER: True,
+                    "url": str(operation_url),
+                    "method": str(operation_method or "").upper() or None,
+                    "data": raw_payload,
+                }
+
             op = SyncOperation(
                 operation_id=operation_id,
                 entity_type=entity_type,
                 entity_id=str(item.get("entity_id")) if item.get("entity_id") is not None else None,
                 operation=str(operation).lower(),
-                payload=item.get("payload"),
+                payload=raw_payload,
                 base_version=item.get("base_version"),
                 logical_clock=item.get("logical_clock"),
                 priority=int(item.get("priority") or 100),
@@ -150,6 +195,8 @@ class SyncPushResource(Resource):
                 finca_id=finca_id,
                 applied=False,
             ))
+            existing_operations[operation_id] = op
+            existing_receipts.add(operation_id)
             accepted.append(operation_id)
 
         db.session.commit()
@@ -182,13 +229,20 @@ class SyncPullResource(Resource):
         )
         operations = query.all()
 
+        operation_ids = [op.operation_id for op in operations]
+        existing_receipts = set()
+        if operation_ids:
+            existing_receipts = {
+                receipt.operation_id
+                for receipt in SyncOperationReceipt.query.filter(
+                    SyncOperationReceipt.operation_id.in_(operation_ids),
+                    SyncOperationReceipt.device_id == device_id,
+                    SyncOperationReceipt.finca_id == finca_id,
+                ).all()
+            }
+
         for op in operations:
-            receipt = SyncOperationReceipt.query.filter_by(
-                operation_id=op.operation_id,
-                device_id=device_id,
-                finca_id=finca_id,
-            ).first()
-            if not receipt:
+            if op.operation_id not in existing_receipts:
                 db.session.add(SyncOperationReceipt(
                     operation_id=op.operation_id,
                     device_id=device_id,

@@ -15,10 +15,10 @@ export function LivestockTab({ onOpenModal }: LivestockTabProps) {
   const { isOnline } = useOnlineStatus();
 
   const actions = [
-    { type: 'milk', label: 'Registrar Ordeño', sub: 'Producción diaria', icon: IconMilk, gradient: 'from-amber-500 to-orange-500' },
-    { type: 'transfer', label: 'Trasladar Ganado', sub: 'Rotación de potreros', icon: IconRouteCattle, gradient: 'from-emerald-500 to-teal-600' },
-    { type: 'disease', label: 'Reportar Enfermedad', sub: 'Diagnosticar síntomas', icon: IconHealthAlert, gradient: 'from-rose-500 to-red-600' },
-    { type: 'treatment', label: 'Aplicar Tratamiento', sub: 'Vacunas y medicinas', icon: IconHealthCheck, gradient: 'from-purple-500 to-indigo-600' },
+    { type: 'milk', label: 'Registrar Ordeño', sub: 'Producción diaria', icon: IconMilk, tone: 'bg-warning text-warning-foreground border-warning' },
+    { type: 'transfer', label: 'Trasladar Ganado', sub: 'Rotación de potreros', icon: IconRouteCattle, tone: 'bg-primary text-primary-foreground border-primary' },
+    { type: 'disease', label: 'Reportar Enfermedad', sub: 'Diagnosticar síntomas', icon: IconHealthAlert, tone: 'bg-danger text-danger-foreground border-danger' },
+    { type: 'treatment', label: 'Aplicar Tratamiento', sub: 'Vacunas y medicinas', icon: IconHealthCheck, tone: 'bg-info text-info-foreground border-info' },
   ];
 
   return (
@@ -28,10 +28,10 @@ export function LivestockTab({ onOpenModal }: LivestockTabProps) {
           const Icon = action.icon;
           return (
             <motion.button key={action.type} whileTap={{ scale: 0.96 }} onClick={() => onOpenModal(action.type)}
-              className={`p-4 rounded-lg bg-gradient-to-br ${action.gradient} text-white shadow-md text-left flex flex-col gap-2 border-0 cursor-pointer`}>
-              <div className="bg-white/20 p-2 rounded-xl w-fit"><Icon className="w-5 h-5" /></div>
+              className={`p-4 rounded-lg ${action.tone} shadow-sm text-left flex flex-col gap-2 border cursor-pointer hover:shadow-md`}>
+              <div className="bg-black/10 p-2 rounded-lg w-fit"><Icon className="w-5 h-5" /></div>
               <span className="font-bold text-sm">{action.label}</span>
-              <span className="text-[11px] text-white/80">{action.sub}</span>
+              <span className="text-[11px] text-current/80">{action.sub}</span>
             </motion.button>
           );
         })}

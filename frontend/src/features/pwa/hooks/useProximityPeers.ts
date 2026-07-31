@@ -42,7 +42,7 @@ export function useProximityPeers(): UseProximityPeersResult {
 		scanActiveRef.current = true;
 		setIsModeActive(true);
 		await proximitySync.initialize();
-		await proximitySync.startPassiveScanning();
+		await proximitySync.startAutomaticDiscovery();
 		await proximitySync.startAdvertising();
 	}, []);
 

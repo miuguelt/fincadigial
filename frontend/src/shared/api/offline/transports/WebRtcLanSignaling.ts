@@ -17,6 +17,7 @@
  */
 
 import { API_CONFIG } from "@/shared/api/config";
+import { FieldNodeService } from "../FieldNodeService";
 
 export interface LanPeer {
 	device_id: string;
@@ -41,7 +42,17 @@ export class WebRtcLanSignaling {
 	}
 
 	private getBase(): string {
-		return API_CONFIG.baseURL.replace(/\/$/, "");
+		return (FieldNodeService.getUrl() || API_CONFIG.baseURL).replace(/\/$/, "");
+	}
+
+	private authHeaders(): Record<string, string> {
+		try {
+			const token = localStorage.getItem(API_CONFIG.authStorageKey)
+				|| localStorage.getItem("access_token");
+			return token ? { Authorization: `Bearer ${token}` } : {};
+		} catch {
+			return {};
+		}
 	}
 
 	/**
@@ -59,7 +70,7 @@ export class WebRtcLanSignaling {
 			const res = await fetch(`${this.getBase()}/p2p/heartbeat`, {
 				method: "POST",
 				credentials: "include",
-				headers: { "Content-Type": "application/json" },
+				headers: { "Content-Type": "application/json", ...this.authHeaders() },
 				body: JSON.stringify({
 					device_id: deviceId,
 					device_name: deviceName,
@@ -83,7 +94,11 @@ export class WebRtcLanSignaling {
 		try {
 			const res = await fetch(
 				`${this.getBase()}/p2p/peers?finca_id=${fincaId}&device_id=${encodeURIComponent(myDeviceId)}`,
-				{ credentials: "include", signal: AbortSignal.timeout(3000) },
+				{
+					credentials: "include",
+					headers: { Accept: "application/json", ...this.authHeaders() },
+					signal: AbortSignal.timeout(3000),
+				},
 			);
 			if (!res.ok) return [];
 			const json = await res.json();
@@ -107,7 +122,7 @@ export class WebRtcLanSignaling {
 			const res = await fetch(`${this.getBase()}/p2p/signal/post`, {
 				method: "POST",
 				credentials: "include",
-				headers: { "Content-Type": "application/json" },
+				headers: { "Content-Type": "application/json", ...this.authHeaders() },
 				body: JSON.stringify({
 					from_device: fromDevice,
 					to_device: toDevice,
@@ -130,7 +145,11 @@ export class WebRtcLanSignaling {
 		try {
 			const res = await fetch(
 				`${this.getBase()}/p2p/signal/poll?device_id=${encodeURIComponent(myDeviceId)}`,
-				{ credentials: "include", signal: AbortSignal.timeout(3000) },
+				{
+					credentials: "include",
+					headers: { Accept: "application/json", ...this.authHeaders() },
+					signal: AbortSignal.timeout(3000),
+				},
 			);
 			if (!res.ok) return [];
 			const json = await res.json();
@@ -184,6 +203,7 @@ export class WebRtcLanSignaling {
 	async checkHealth(): Promise<boolean> {
 		try {
 			const res = await fetch(`${this.getBase()}/p2p/health`, {
+				headers: { Accept: "application/json", ...this.authHeaders() },
 				signal: AbortSignal.timeout(2000),
 			});
 			this._lanAvailable = res.ok;

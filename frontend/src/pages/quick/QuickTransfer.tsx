@@ -14,6 +14,7 @@ import { animalsService } from '@/entities/animal/api/animal.service';
 import { fieldService } from '@/entities/field/api/field.service';
 import { animalFieldsService } from '@/entities/animal-field/api/animalFields.service';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
+import { emitDataRefresh } from '@/shared/utils/dataRefresh';
 
 export default function QuickTransfer() {
   useAuth();
@@ -96,6 +97,7 @@ export default function QuickTransfer() {
         await animalFieldsService.createAnimalField(payload);
         showToast('Traslado registrado exitosamente', 'success');
       }
+      emitDataRefresh('animal-fields');
       handleClose();
     } catch (error) {
       console.error('Error creating transfer:', error);

@@ -861,6 +861,7 @@ export function useResource<T extends { id?: number | string }, P extends Record
       pollTimerRef.current = null;
     }
     pollTimerRef.current = setInterval(() => {
+      if (document.visibilityState === 'hidden' || navigator.onLine === false) return;
       // NO hacer polling si hay CRUD en progreso (evita sobrescribir actualizaciones optimistas)
       if (crudInProgress.current) {
         return;
@@ -922,16 +923,9 @@ export function useResource<T extends { id?: number | string }, P extends Record
       skipCacheUntil.current = Date.now() + 5000;
       void refetch().catch(() => {});
     };
-    const onGlobalChange = () => {
-      if (crudInProgress.current) return;
-      skipCacheUntil.current = Date.now() + 5000;
-      void refetch().catch(() => {});
-    };
     window.addEventListener('server-resource-changed', onResourceChanged as EventListener);
-    window.addEventListener('server-global-change', onGlobalChange as EventListener);
     return () => {
       window.removeEventListener('server-resource-changed', onResourceChanged as EventListener);
-      window.removeEventListener('server-global-change', onGlobalChange as EventListener);
     };
   }, [realtimeEnabled, refetch]);
 

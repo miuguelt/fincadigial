@@ -2,14 +2,18 @@ import {
 	Activity,
 	AlertTriangle,
 	BarChart2,
+	BadgeCheck,
 	Building2,
+	CalendarClock,
 	Clock,
 	Edit3,
 	ExternalLink,
 	FileText,
 	Heart,
 	History,
+	Hash,
 	IdCard,
+	Layers,
 	Loader2,
 	Mail,
 	MapPin,
@@ -41,6 +45,7 @@ import { cn } from "@/shared/ui/cn";
 import { UserAvatarUpload } from "@/widgets/dashboard/users/UserAvatarUpload";
 import type { UserWithProfile } from "../types";
 import { canMessageUser } from "../utils/user.utils";
+import { UserFincaGallery } from "./UserFincaGallery";
 import { useUserDetailPanel } from "./useUserDetailPanel";
 
 const localFormatDateTime = (dateStr?: string | null) => {
@@ -123,7 +128,16 @@ interface UserDetailPanelProps {
 	currentUser: any;
 	navigate: ReturnType<typeof useNavigate>;
 	onClose?: () => void;
-	onPreviewAvatar?: (url: string, name: string) => void;
+	/** Abre el visor de imágenes a pantalla completa (avatar o foto de finca). */
+	onPreviewImage?: (url: string, title: string) => void;
+	/** Abre el chat rápido; si no se pasa, se navega a /chat. */
+	onStartChat?: (user: UserWithProfile) => void;
+	/** Contactos válidos según `/chat/contacts`; null mientras carga. */
+	chatContactIds?: Set<number> | null;
+	/** Fincas donde el usuario autenticado puede administrar fotos. */
+	manageableFincaIds?: Set<number>;
+	/** Notifica la nueva URL de avatar para refrescar la lista. */
+	onAvatarUpdated?: (userId: number, avatarUrl: string | null) => void;
 }
 
 export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
@@ -131,7 +145,11 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 	currentUser,
 	navigate,
 	onClose,
-	onPreviewAvatar,
+	onPreviewImage,
+	onStartChat,
+	chatContactIds,
+	manageableFincaIds,
+	onAvatarUpdated,
 }) => {
 	const {
 		loadingActivities,
@@ -167,13 +185,14 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 								firstName={item.fullname?.split(" ")[0]}
 								lastName={item.fullname?.split(" ")[1]}
 								size="xl"
+								onUpdate={(url) => onAvatarUpdated?.(Number(item.id), url)}
 							/>
-							{item.avatar_url && (
+							{item.avatar_url && onPreviewImage && (
 								<button
 									type="button"
 									onClick={(e) => {
 										e.stopPropagation();
-										onPreviewAvatar?.(
+										onPreviewImage(
 											item.avatar_url!,
 											item.fullname || "Usuario",
 										);
@@ -220,13 +239,14 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 						</div>
 					</div>
 					<div className="flex flex-wrap gap-2 shrink-0">
-						{canMessageUser(item, currentUser) && (
+						{canMessageUser(item, currentUser, chatContactIds) && (
 							<Button
 								size="sm"
 								variant="outline"
 								onClick={(e) => {
 									e.stopPropagation();
-									navigate(`?chat=open&contactId=${item.id}`);
+									if (onStartChat) onStartChat(item);
+									else navigate(`/chat?contactId=${item.id}`);
 								}}
 								className="h-10 rounded-2xl font-bold bg-primary/5 text-primary border-primary/20 hover:bg-primary/10 transition-all duration-300"
 							>
@@ -247,8 +267,8 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 					},
 					{
 						id: "fincas",
-						label: "🐄 Fincas y Roles",
-						desc: "Predios Vinculados",
+						label: "🐄 Fincas y Fotos",
+						desc: "Predios y Galería",
 					},
 					{ id: "contact", label: "📞 Contacto", desc: "Información Personal" },
 				].map((tab) => {
@@ -664,86 +684,12 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 				)}
 
 				{activeTab === "fincas" && (
-					<div className="bg-card border border-border/40 p-6 rounded-[2.5rem] shadow-sm space-y-4">
-						<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-4 border-b border-border/30 pb-3">
-							<Building2 size={16} className="text-primary" /> Fincas y Roles
-							Asignados
-						</h3>
-
-						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-							{fincas.length > 0 ? (
-								fincas.map((finca, index) => {
-									const name =
-										finca.finca_name || finca.name || `Finca ${index + 1}`;
-									const type = finca.finca_type || finca.type || "Sin tipo";
-									const isFincaActive = finca.is_active !== false;
-
-									return (
-										<div
-											key={`${finca.finca_id || finca.id || name}-${index}`}
-											className={cn(
-												"rounded-2xl border p-4 bg-background/50 transition-all duration-200 hover:border-border/80 flex flex-col justify-between gap-3",
-												finca.is_primary
-													? "border-primary/40 bg-primary/5 shadow-sm shadow-primary/5"
-													: "border-border/40",
-											)}
-										>
-											<div className="min-w-0 space-y-1">
-												<div className="flex items-center gap-2">
-													<p className="font-black text-sm text-foreground truncate">
-														{name}
-													</p>
-													{finca.is_primary && (
-														<Badge
-															variant="outline"
-															className="text-[8px] font-black uppercase border-primary/40 text-primary bg-primary/10 rounded-full px-1.5 py-0"
-														>
-															Principal
-														</Badge>
-													)}
-												</div>
-												<p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
-													{type}
-												</p>
-											</div>
-
-											<div className="flex items-center justify-between gap-2 border-t border-border/20 pt-2.5 mt-1">
-												<Badge
-													variant="secondary"
-													className="text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full"
-												>
-													{finca.role || item.role}
-												</Badge>
-												<div
-													className={cn(
-														"flex items-center gap-1 px-2 py-0.5 rounded-full border text-[8px] font-bold uppercase",
-														isFincaActive
-															? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-															: "bg-slate-500/10 text-slate-500 border-slate-500/20",
-													)}
-												>
-													<div
-														className={cn(
-															"h-1 w-1 rounded-full",
-															isFincaActive ? "bg-emerald-500" : "bg-slate-400",
-														)}
-													/>
-													{isFincaActive ? "Activo" : "Inactivo"}
-												</div>
-											</div>
-										</div>
-									);
-								})
-							) : (
-								<div className="col-span-2 text-center py-8">
-									<Building2 className="h-10 w-10 text-muted-foreground/30 mx-auto mb-2" />
-									<p className="text-sm font-semibold text-muted-foreground">
-										Este usuario todavía no tiene fincas asociadas.
-									</p>
-								</div>
-							)}
-						</div>
-					</div>
+					<UserFincaGallery
+						fincas={fincas}
+						fallbackRole={item.role}
+						manageableFincaIds={manageableFincaIds ?? new Set()}
+						onPreviewImage={onPreviewImage}
+					/>
 				)}
 
 				{activeTab === "contact" && (
@@ -807,6 +753,65 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 									{item.address || "No registrada"}
 								</p>
 							</div>
+
+							<div className="rounded-2xl border border-border/40 bg-muted/20 p-4 hover:bg-muted/30 hover:border-border/60 transition-all duration-200 group">
+								<div className="flex items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
+									<Building2 size={14} />
+									<span className="text-[10px] font-black uppercase tracking-widest">
+										Finca Principal
+									</span>
+								</div>
+								<p
+									className="text-sm font-bold text-foreground mt-2 truncate"
+									title={item.finca_name || "Sin finca asignada"}
+								>
+									{item.finca_name || "Sin finca asignada"}
+								</p>
+								<p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mt-0.5">
+									{item.finca_type || "Sin tipo"}
+								</p>
+							</div>
+
+							<div className="rounded-2xl border border-border/40 bg-muted/20 p-4 hover:bg-muted/30 hover:border-border/60 transition-all duration-200 group">
+								<div className="flex items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
+									<Layers size={14} />
+									<span className="text-[10px] font-black uppercase tracking-widest">
+										Predios Vinculados
+									</span>
+								</div>
+								<p className="text-base font-black text-foreground mt-2">
+									{fincas.length}
+									{item.is_multi_finca && (
+										<span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary">
+											Multi-finca
+										</span>
+									)}
+								</p>
+							</div>
+
+							<div className="rounded-2xl border border-border/40 bg-muted/20 p-4 hover:bg-muted/30 hover:border-border/60 transition-all duration-200 group">
+								<div className="flex items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
+									<CalendarClock size={14} />
+									<span className="text-[10px] font-black uppercase tracking-widest">
+										Última Actualización
+									</span>
+								</div>
+								<p className="text-sm font-bold text-foreground mt-2">
+									{localFormatDateTime(item.updated_at)}
+								</p>
+							</div>
+
+							<div className="rounded-2xl border border-border/40 bg-muted/20 p-4 hover:bg-muted/30 hover:border-border/60 transition-all duration-200 group">
+								<div className="flex items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
+									<Hash size={14} />
+									<span className="text-[10px] font-black uppercase tracking-widest">
+										Identificador Interno
+									</span>
+								</div>
+								<p className="text-sm font-mono font-bold text-foreground mt-2">
+									#{item.id}
+								</p>
+							</div>
 						</div>
 
 						<div className="rounded-2xl border border-border/40 bg-muted/20 p-4 mt-2">
@@ -833,6 +838,26 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 								>
 									Creado: {localFormatDateTime(item.created_at).split(",")[0]}
 								</Badge>
+								<Badge
+									variant="outline"
+									className={cn(
+										"font-black uppercase py-0.5 px-3 rounded-full border text-[10px] gap-1",
+										isActive
+											? "bg-emerald-500/10 text-emerald-700 border-emerald-500/25"
+											: "bg-slate-500/10 text-slate-600 border-slate-500/25",
+									)}
+								>
+									<BadgeCheck size={11} />
+									{isActive ? "Trabajando en finca" : "Fuera de servicio"}
+								</Badge>
+								{linkedDays !== null && (
+									<Badge
+										variant="secondary"
+										className="font-black uppercase py-0.5 px-3 rounded-full text-[10px]"
+									>
+										{linkedDays} días vinculado
+									</Badge>
+								)}
 							</div>
 						</div>
 					</div>

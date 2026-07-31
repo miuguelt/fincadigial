@@ -99,6 +99,14 @@ def is_token_revoked(decoded_token: dict) -> bool:
             _cleanup_fallback()
             return jti in _fallback_blocklist
         return bool(cache.get(_build_cache_key(jti)))
-    except Exception:
-        logger.exception("Error verificando si el token fue revocado")
-        return True  # Fail secure: rechazar token si no se puede verificar
+    except Exception as exc:
+        err_msg = str(exc)
+        err_type = type(exc).__name__
+        is_network = ("timeout" in err_type.lower() or "connection" in err_type.lower() or "10061" in err_msg)
+        if is_network:
+            logger.warning("Error de conexion al verificar token revocado (%s: %s). Permitiendo acceso por fail-safe.", err_type, err_msg)
+        else:
+            logger.exception("Error inesperado verificando si el token fue revocado")
+        # Regla Global / SSoT: Fail-safe para operacion de seguridad.
+        # Es mejor permitir un token potencialmente revocado que tumbar a todos si Redis cae.
+        return False

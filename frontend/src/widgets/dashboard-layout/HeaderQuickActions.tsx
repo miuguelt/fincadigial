@@ -1,7 +1,7 @@
 import React from 'react';
 import { Activity, Droplet, Heart, Plus, QrCode, Sprout } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/features/auth/model/useAuth';
 import {
   DropdownMenu,
@@ -49,8 +49,20 @@ function buildActions(prefix: string): Action[] {
 const HeaderQuickActions: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [, setSearchParams] = useSearchParams();
   const prefix = ROLE_PREFIX[user?.role as string] || '/admin';
   const actions = buildActions(prefix);
+
+  const openAction = (path: string) => {
+    if (!path.startsWith('/quick/')) {
+      navigate(path);
+      return;
+    }
+
+    const nextParams = new URLSearchParams(window.location.search);
+    nextParams.set('quick', path.replace('/quick/', ''));
+    setSearchParams(nextParams, { replace: true });
+  };
 
   return (
     <DropdownMenu>
@@ -76,7 +88,7 @@ const HeaderQuickActions: React.FC = () => {
           <React.Fragment key={action.path}>
             {index > 0 && actions[index - 1].group !== action.group && <DropdownMenuSeparator />}
             <DropdownMenuItem
-              onClick={() => navigate(action.path)}
+              onClick={() => openAction(action.path)}
               className="flex min-h-[44px] cursor-pointer items-center rounded-lg text-sm font-medium"
             >
               <action.icon className={`mr-2 h-4 w-4 ${action.color}`} />

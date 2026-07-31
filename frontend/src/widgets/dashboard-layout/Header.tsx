@@ -2,11 +2,10 @@ import React, { useMemo } from 'react';
 import { Menu, Plus } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/features/auth/model/useAuth';
-import { cn } from '@/shared/ui/cn.ts';
+import { cn } from '@/shared/ui/cn';
 import { SyncStatus } from '@/widgets/dashboard/SyncStatus';
 import { Breadcrumbs } from '@/shared/ui/common';
 import HeaderActions from './HeaderActions';
-import HeaderCalendarDropdown from './HeaderCalendarDropdown';
 import HeaderSearch from './HeaderSearch';
 import ProfileMenu from './profile-menu/ProfileMenu';
 
@@ -37,7 +36,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar }) => {
 
   return (
     <header
-      className="sticky top-0 z-[1000] h-14 w-full border-b border-border/30 bg-background/80 shadow-sm backdrop-blur-xl sm:h-16"
+      className="sticky top-0 z-[1000] h-14 w-full border-b border-border bg-card shadow-sm sm:h-16"
       role="banner"
     >
       <div className="relative flex h-14 items-center gap-2 px-2 sm:h-16 sm:px-3 lg:px-4">
@@ -47,8 +46,8 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar }) => {
               type="button"
               onClick={onToggleSidebar}
               className={cn(
-                'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-border/40 bg-surface text-foreground shadow-sm transition-all duration-300 hover:bg-primary/10',
-                isSidebarOpen && 'border-primary/20 bg-primary/10 text-primary',
+                'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-foreground shadow-sm transition-colors duration-200 hover:border-primary hover:bg-primary hover:text-primary-foreground',
+                isSidebarOpen && 'border-primary bg-primary text-primary-foreground',
               )}
               aria-label={isSidebarOpen ? 'Ocultar menú' : 'Mostrar menú'}
               aria-controls="dashboard-sidebar"
@@ -83,7 +82,6 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar }) => {
               <div className="mr-2 hidden xl:block">
                 <SyncStatus />
               </div>
-              <HeaderCalendarDropdown />
               <HeaderActions />
             </>
           )}

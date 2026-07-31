@@ -15,6 +15,24 @@ def init_celery(app):
     celery.conf.update(
         broker_url=app.config['CELERY_BROKER_URL'],
         result_backend=app.config['CELERY_RESULT_BACKEND'],
+        # Memurai is the native Windows broker. These options make stale
+        # pooled sockets recoverable instead of surfacing as a task failure.
+        broker_transport_options={
+            'socket_connect_timeout': 5,
+            'socket_timeout': 30,
+            'retry_on_timeout': True,
+            'health_check_interval': 30,
+            'visibility_timeout': 3600,
+        },
+        result_backend_transport_options={
+            'socket_connect_timeout': 5,
+            'socket_timeout': 30,
+            'retry_on_timeout': True,
+            'health_check_interval': 30,
+        },
+        broker_connection_retry=True,
+        broker_connection_retry_on_startup=True,
+        broker_pool_limit=10,
     )
 
     class ContextTask(celery.Task):

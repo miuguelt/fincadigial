@@ -1,4 +1,6 @@
 import { offlineQueue, type QueuedOperation } from './offlineQueue';
+import { OfflineChatService } from './OfflineChatService';
+import { lanSignaling } from './transports/WebRtcLanSignaling';
 
 // =============================================================================
 // VILLA LUZ MESH SYNC PROTOCOL (VLMSP) v1.0.1
@@ -78,6 +80,7 @@ interface DiscoveredPeer {
   signalStrength?: number;
   isConnected: boolean;
   pendingSync: number;
+  endpoint?: string;
   rssi?: number;
 }
 
@@ -112,6 +115,7 @@ export class ProximitySyncService {
   private onMessageReceivedCallbacks: Set<(msg: { from: string, content: string, type: 'chat' | 'alert' }) => void> = new Set();
   private discoveryChannel: BroadcastChannel | null = null;
   private signalChannel: BroadcastChannel | null = null;
+  private passiveScanTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     // Generar ID único de dispositivo basado en timestamp + random
@@ -127,9 +131,6 @@ export class ProximitySyncService {
     
     // Iniciar heartbeat automático
     this.startHeartbeat();
-    
-    // Limpiar peers inactivos periódicamente
-    setInterval(() => this.cleanupStalePeers(), 30000);
     
     console.log(`[VLMSP] Servicio inicializado - Device: ${this.deviceName} (${this.deviceId})`);
   }
@@ -223,6 +224,29 @@ export class ProximitySyncService {
 
     console.log(`[VLMSP] Enviando mensaje a ${peer.name}: ${content}`);
 
+    // Presence is useful for choosing a recipient, but delivery must use the
+    // durable chat outbox. That way a nearby phone/node can relay the message
+    // and it is still uploaded by the first device that regains a route.
+    if (peer.userId) {
+      try {
+        const storedUser = localStorage.getItem('auth:user');
+        const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+        const senderId = Number(parsedUser?.user?.id ?? 0);
+        const senderName = parsedUser?.user?.fullname || this.deviceName;
+        if (senderId > 0) {
+          await OfflineChatService.send(
+            senderId,
+            senderName,
+            peer.userId,
+            type === 'alert' ? `[🚨 ALERTA] ${content}` : content,
+          );
+          return true;
+        }
+      } catch {
+        // Keep the legacy local signal fallback below when auth is unavailable.
+      }
+    }
+
     if (this.signalChannel) {
       this.signalChannel.postMessage({
         type: 'MESH_MESSAGE',
@@ -287,9 +311,22 @@ export class ProximitySyncService {
   }
 
   /**
-   * Escanear continuamente dispositivos cercanos (scanning pasivo)
+   * Descubrimiento automático silencioso. No abre selectores Bluetooth ni
+   * pide interacción: busca nodos LAN y presencia Wi-Fi en segundo plano.
+   */
+  async startAutomaticDiscovery(): Promise<void> {
+    await this.startDiscoveryLoop(false);
+  }
+
+  /**
+   * Escanear continuamente dispositivos cercanos (scanning pasivo). El
+   * Bluetooth queda reservado para una acción explícita del usuario.
    */
   async startPassiveScanning(): Promise<void> {
+    await this.startDiscoveryLoop(true);
+  }
+
+  private async startDiscoveryLoop(includeBluetooth: boolean): Promise<void> {
     if (this.isScanning) return;
     
     this.isScanning = true;
@@ -298,11 +335,18 @@ export class ProximitySyncService {
     // 1. Intentar descubrir nodos LAN (Nodos Villa Luz / Raspberry Pi)
     await this.scanLanNodes();
 
-    // 2. Intentar Web Bluetooth
-    await this.scanBluetooth();
+    // 2. Bluetooth sólo cuando el usuario activa el modo campo explícito.
+    if (includeBluetooth) await this.scanBluetooth();
     
     // 3. Fallback: WebRTC para redes WiFi
     await this.scanWebRTC();
+
+    // Mantener descubrimiento y entrega en segundo plano durante jornadas
+    // largas, aunque el dashboard no esté montado.
+    this.passiveScanTimer = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+      this.scanLanNodes().catch(() => {});
+    }, 30_000);
   }
 
   private async scanLanNodes(): Promise<void> {
@@ -320,15 +364,52 @@ export class ProximitySyncService {
             lastSeen: new Date(peer.lastSeenAt || Date.now()),
             connectionType: 'mdns',
             isConnected: false,
-            pendingSync: 0
+            pendingSync: 0,
+            endpoint: peer.endpoint,
           };
           this.discoveredPeers.set(peer.id, discoveredPeer);
           this.notifyPeerDiscovered(discoveredPeer);
           this.notifyStatusUpdate(`Nodo LAN detectado: ${peer.name}`, 'success');
         }
+        const knownPeer = this.discoveredPeers.get(peer.id);
+        if (knownPeer && !knownPeer.isConnected) {
+          knownPeer.lastSeen = new Date();
+          void this.syncWithPeer(knownPeer.id);
+        }
       }
+      await this.scanNearbyAppDevices();
     } catch (error) {
       console.warn('[VLMSP] Error escaneando nodos LAN:', error);
+    }
+  }
+
+  /** Descubre otros teléfonos/PC que tienen la app abierta en la misma finca. */
+  private async scanNearbyAppDevices(): Promise<void> {
+    const fincaId = Number(localStorage.getItem('villaluz_finca_id')) || 0;
+    if (!fincaId) return;
+    const peers = await lanSignaling.getPeers(fincaId, this.deviceId);
+    for (const peer of peers) {
+      const id = `device-${peer.device_id}`;
+      const existing = this.discoveredPeers.get(id);
+      if (existing) {
+        existing.lastSeen = new Date(Date.now() - Math.max(0, peer.seconds_ago) * 1000);
+        existing.userId = peer.user_id ?? undefined;
+        continue;
+      }
+      const discovered: DiscoveredPeer = {
+        id,
+        name: peer.name || 'Equipo cercano',
+        userId: peer.user_id ?? undefined,
+        deviceId: peer.device_id,
+        lastSeen: new Date(Date.now() - Math.max(0, peer.seconds_ago) * 1000),
+        connectionType: 'mdns',
+        isConnected: false,
+        pendingSync: 0,
+      };
+      this.discoveredPeers.set(id, discovered);
+      this.notifyPeerDiscovered(discovered);
+      this.notifyStatusUpdate(`Equipo cercano detectado: ${discovered.name}`, 'success');
+      void this.syncWithPeer(id);
     }
   }
 
@@ -337,6 +418,10 @@ export class ProximitySyncService {
    */
   stopPassiveScanning(): void {
     this.isScanning = false;
+    if (this.passiveScanTimer) {
+      clearInterval(this.passiveScanTimer);
+      this.passiveScanTimer = null;
+    }
     console.log('[VLMSP] Escaneo pasivo detenido');
   }
 
@@ -369,9 +454,84 @@ export class ProximitySyncService {
       return this.syncWithBluetoothPeer(peer);
     } else if (peer.connectionType === 'webrtc') {
       return this.syncWithWebRTCPeer(peer);
+    } else if (peer.connectionType === 'mdns') {
+      return this.syncWithLanPeer(peer);
     }
 
     return false;
+  }
+
+  private async syncWithLanPeer(peer: DiscoveredPeer): Promise<boolean> {
+    try {
+      const { LanNodeTransport } = await import('./transports/LanNodeTransport');
+      const { ruralSyncService } = await import('./ruralSync.service');
+      const transport = new LanNodeTransport(peer.endpoint);
+      const fincaId = Number(localStorage.getItem('villaluz_finca_id')) || undefined;
+      const packet = await ruralSyncService.buildPacket(fincaId);
+      const result = await transport.send({
+        id: peer.id,
+        name: peer.name,
+        kind: 'lan',
+        endpoint: peer.endpoint,
+      }, packet);
+
+      // LAN nodes are store-and-forward relays. Push our outbox and then pull
+      // operations from other devices so this device can become the gateway
+      // as soon as it gets internet access.
+      const cursorKey = `villaluz_lan_cursor:${peer.endpoint || peer.id}:${fincaId || 0}:${packet.deviceId}`;
+      const lastCursor = Number(localStorage.getItem(cursorKey) || 0);
+      const pullPayload = await transport.pull(
+        { id: peer.id, name: peer.name, kind: 'lan', endpoint: peer.endpoint },
+        packet.deviceId,
+        fincaId,
+        lastCursor,
+      ) as any;
+      const pullBody = pullPayload?.data ?? pullPayload ?? {};
+      const pulledOperations: any[] = Array.isArray(pullBody.operations) ? pullBody.operations : [];
+      for (const operation of pulledOperations) {
+        await offlineQueue.addOperation({
+          id: String(operation.operation_id || operation.id),
+          timestamp: Date.parse(operation.created_at_device || operation.created_at || '') || Date.now(),
+          method: ({ create: 'POST', update: 'PUT', patch: 'PATCH', delete: 'DELETE' } as Record<string, QueuedOperation['method']>)[operation.operation] || 'POST',
+          url: operation.url || `/${String(operation.entity_type || '').replace(/_/g, '-')}`,
+          data: operation.payload,
+          retries: 0,
+          maxRetries: 3,
+          status: 'pending',
+          entityType: operation.entity_type,
+          entityId: operation.entity_id,
+          operation: operation.operation,
+          payload: operation.payload,
+          baseVersion: operation.base_version,
+          logicalClock: operation.logical_clock,
+          priority: operation.priority,
+          originDeviceId: operation.origin_device_id,
+          receivedFrom: peer.id,
+        } as QueuedOperation & { receivedFrom?: string });
+      }
+      if (pullBody.next_cursor !== undefined) {
+        localStorage.setItem(cursorKey, String(pullBody.next_cursor));
+      }
+
+      // If this device has a usable route, immediately replay both its own
+      // queue and data just received from the relay to the domain API.
+      await offlineQueue.syncQueue();
+      if (result.accepted) {
+        peer.lastSeen = new Date();
+        peer.isConnected = true;
+        peer.pendingSync = 0;
+        this.syncState.lastSyncAt = new Date();
+        this.syncState.messagesSent += packet.operations.length;
+        this.syncState.messagesReceived += pulledOperations.length;
+        this.notifySyncComplete({ peerId: peer.id, opsSynced: packet.operations.length + pulledOperations.length });
+      }
+      peer.isConnected = false;
+      return result.accepted;
+    } catch (error) {
+      console.warn('[VLMSP] LAN sync failed:', error);
+      peer.isConnected = false;
+      return false;
+    }
   }
 
   /**
@@ -778,11 +938,20 @@ export class ProximitySyncService {
   // ============================================================================
 
   private generateDeviceId(): string {
-    return `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`;
+    try {
+      const existing = localStorage.getItem('villaluz_device_id');
+      if (existing) return existing;
+      const generated = `dev-${crypto.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`}`;
+      localStorage.setItem('villaluz_device_id', generated);
+      return generated;
+    } catch {
+      return `dev-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`;
+    }
   }
 
   private startHeartbeat(): void {
     setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
       // Limpiar peers que no han sido vistos en 2 minutos
       const now = Date.now();
       this.discoveredPeers.forEach((peer, id) => {
@@ -791,6 +960,7 @@ export class ProximitySyncService {
           this.notifyPeerLost(id);
         }
       });
+      this.cleanupStalePeers();
     }, 30000);
   }
 

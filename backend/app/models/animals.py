@@ -335,6 +335,8 @@ class Animals(BaseModel):
     @property
     def pending_alerts_count(self):
         """Devuelve el número de alertas no leídas para este animal."""
+        if hasattr(self, '_prefetched_alert_count'):
+            return self._prefetched_alert_count
         if hasattr(self, '_prefetched_alerts'):
             return len(self._prefetched_alerts)
         from app.models.alerts import AnimalAlert
@@ -343,6 +345,8 @@ class Animals(BaseModel):
     @property
     def max_pending_priority(self):
         """Devuelve la prioridad más alta de las alertas no leídas."""
+        if hasattr(self, '_prefetched_max_priority'):
+            return self._prefetched_max_priority
         if hasattr(self, '_prefetched_alerts'):
             if not self._prefetched_alerts:
                 return None
@@ -546,73 +550,141 @@ class Animals(BaseModel):
 
     @classmethod
     def get_paginated_response(cls, query_result, include_relations=False, depth=1):
-        """Convertir resultado paginado a respuesta de namespace pre-recuperando datos para evitar N+1 queries."""
+        """Serialize animal pages while prefetching only requested computed fields."""
         animals = query_result.items if hasattr(query_result, 'items') else query_result
+
+        requested_fields = None
+        try:
+            from flask import has_request_context, request
+            if has_request_context():
+                fields_param = request.args.get('fields')
+                if fields_param:
+                    requested_fields = {
+                        field.strip() for field in fields_param.split(',') if field.strip()
+                    }
+        except Exception:
+            requested_fields = None
+
+        needs_all = requested_fields is None
+        needs_controls = needs_all or bool({'frame_score', 'health_indicator', 'last_height'} & requested_fields)
+        needs_vaccinations = needs_all or 'health_indicator' in requested_fields
+        needs_active_field = needs_all or 'current_field_name' in requested_fields
+        needs_alert_count = needs_all or 'pending_alerts_count' in requested_fields
+        needs_alert_priority = needs_all or 'max_pending_priority' in requested_fields
 
         # Pre-recuperar datos por lotes (batch) si hay animales
         if animals:
             animal_ids = [a.id for a in animals]
 
-            # 1. Controles de salud más recientes
-            from app.models.control import Control
-            controls = db.session.query(Control).filter(
-                Control.animal_id.in_(animal_ids)
-            ).order_by(Control.animal_id, Control.checkup_date.desc()).all()
-
             latest_controls = {}
-            for c in controls:
-                if c.animal_id not in latest_controls:
-                    latest_controls[c.animal_id] = c
+            latest_vaccs = {}
+            active_fields_map = {}
+            alert_counts = {}
+            alerts_map = {}
+
+            # 1. Controles de salud más recientes
+            if needs_controls:
+                from app.models.control import Control
+                controls = db.session.query(Control).filter(
+                    Control.animal_id.in_(animal_ids)
+                ).order_by(Control.animal_id, Control.checkup_date.desc()).all()
+
+                for c in controls:
+                    if c.animal_id not in latest_controls:
+                        latest_controls[c.animal_id] = c
 
             # 2. Vacunaciones más recientes
-            from app.models.vaccinations import Vaccinations
-            vaccs = db.session.query(Vaccinations).filter(
-                Vaccinations.animal_id.in_(animal_ids)
-            ).order_by(Vaccinations.animal_id, Vaccinations.vaccination_date.desc()).all()
+            if needs_vaccinations:
+                from app.models.vaccinations import Vaccinations
+                vaccs = db.session.query(Vaccinations).filter(
+                    Vaccinations.animal_id.in_(animal_ids)
+                ).order_by(Vaccinations.animal_id, Vaccinations.vaccination_date.desc()).all()
 
-            latest_vaccs = {}
-            for v in vaccs:
-                if v.animal_id not in latest_vaccs:
-                    latest_vaccs[v.animal_id] = v
+                for v in vaccs:
+                    if v.animal_id not in latest_vaccs:
+                        latest_vaccs[v.animal_id] = v
 
             # 3. Potreros activos (animal_fields)
-            from app.models.animalFields import AnimalFields
-            active_fields = db.session.query(AnimalFields).filter(
-                AnimalFields.animal_id.in_(animal_ids),
-                AnimalFields.removal_date == None,
-                AnimalFields.is_deleted == False
-            ).all()
+            if needs_active_field:
+                from sqlalchemy.orm import joinedload
+                from app.models.animalFields import AnimalFields
+                active_fields = db.session.query(AnimalFields).options(
+                    joinedload(AnimalFields.field)
+                ).filter(
+                    AnimalFields.animal_id.in_(animal_ids),
+                    AnimalFields.removal_date.is_(None),
+                    AnimalFields.is_deleted.is_(False)
+                ).all()
 
-            active_fields_map = {}
-            for af in active_fields:
-                try:
+                for af in active_fields:
                     if af.field:
                         active_fields_map[af.animal_id] = af
-                except Exception:
-                    pass
 
-            # 4. Alertas pendientes (no leídas)
+            # 4. Alertas pendientes: count in SQL instead of materializing thousands
+            # of alert objects when the UI only requested the counter.
             from app.models.alerts import AnimalAlert
-            unread_alerts = db.session.query(AnimalAlert).filter(
-                AnimalAlert.animal_id.in_(animal_ids),
-                AnimalAlert.is_read == False
-            ).all()
-
-            alerts_map = {}
-            for alert in unread_alerts:
-                if alert.animal_id not in alerts_map:
-                    alerts_map[alert.animal_id] = []
-                alerts_map[alert.animal_id].append(alert)
+            if needs_alert_priority:
+                unread_alerts = db.session.query(AnimalAlert).filter(
+                    AnimalAlert.animal_id.in_(animal_ids),
+                    AnimalAlert.is_read.is_(False)
+                ).all()
+                for alert in unread_alerts:
+                    alerts_map.setdefault(alert.animal_id, []).append(alert)
+                    alert_counts[alert.animal_id] = alert_counts.get(alert.animal_id, 0) + 1
+            elif needs_alert_count:
+                count_rows = db.session.query(
+                    AnimalAlert.animal_id,
+                    db.func.count(AnimalAlert.id)
+                ).filter(
+                    AnimalAlert.animal_id.in_(animal_ids),
+                    AnimalAlert.is_read.is_(False)
+                ).group_by(AnimalAlert.animal_id).all()
+                alert_counts = {animal_id: count for animal_id, count in count_rows}
 
             # Asignar los datos pre-recuperados a las instancias como atributos privados
             for a in animals:
-                a._prefetched_control = latest_controls.get(a.id)
-                a._prefetched_vacc = latest_vaccs.get(a.id)
-                a._prefetched_active_field = active_fields_map.get(a.id)
-                a._prefetched_alerts = alerts_map.get(a.id, [])
+                if needs_controls:
+                    a._prefetched_control = latest_controls.get(a.id)
+                if needs_vaccinations:
+                    a._prefetched_vacc = latest_vaccs.get(a.id)
+                if needs_active_field:
+                    a._prefetched_active_field = active_fields_map.get(a.id)
+                if needs_alert_count:
+                    a._prefetched_alert_count = alert_counts.get(a.id, 0)
+                if needs_alert_priority:
+                    a._prefetched_alerts = alerts_map.get(a.id, [])
 
-        # Llamar a la implementación base para realizar la serialización
-        return super().get_paginated_response(query_result, include_relations, depth)
+        serialized = [
+            animal.to_namespace_dict(
+                include_relations=include_relations,
+                depth=depth,
+                fields=list(requested_fields) if requested_fields is not None else None,
+            )
+            for animal in animals
+        ]
+
+        if hasattr(query_result, 'items'):
+            return {
+                'items': serialized,
+                'total_items': query_result.total,
+                'limit': query_result.per_page,
+                'per_page': query_result.per_page,
+                'page': query_result.page,
+                'total_pages': query_result.pages,
+                'has_next_page': query_result.has_next,
+                'has_previous_page': query_result.has_prev,
+            }
+
+        return {
+            'items': serialized,
+            'total_items': len(serialized),
+            'limit': len(serialized),
+            'per_page': len(serialized),
+            'page': 1,
+            'total_pages': 1,
+            'has_next_page': False,
+            'has_previous_page': False,
+        }
 
     def to_ai_context(self, include_relations=True, depth=1):
         """Genera un resumen textual enriquecido del animal para procesamiento por IA."""

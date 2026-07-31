@@ -307,6 +307,19 @@ class UserFinca(db.Model):
         Returns:
             True si tiene acceso activo
         """
+        if not user_id or not finca_id:
+            return False
+
+        from app.models.user import User
+        user = db.session.get(User, user_id)
+        if not user:
+            return False
+
+        # 1. Finca principal vinculada directamente en el modelo User
+        if user.finca_id == finca_id:
+            return True
+
+        # 2. Membresía activa en la tabla de unión user_finca
         return cls.query.filter_by(
             user_id=user_id,
             finca_id=finca_id,

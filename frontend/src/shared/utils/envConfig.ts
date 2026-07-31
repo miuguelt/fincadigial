@@ -64,9 +64,15 @@ export const getBackendBaseURL = (): string => {
 
 // URL completa de la API (backend + /api/v1)
 export const getApiBaseURL = (): string => {
-  // Para dominios reales en producción (*.enlinea.sbs) usamos siempre
-  // el backend público HTTPS, evitando depender de heurísticas de entorno
-  // que pueden marcar erróneamente como "development" en el build final.
+  // An explicit build-time URL is authoritative. This is useful for local
+  // development and for deployments where the frontend and API are separate.
+  if (ENV.VITE_API_BASE_URL) {
+    const backendUrl = String(ENV.VITE_API_BASE_URL).replace(/\/$/, '');
+    return backendUrl.endsWith('/api/v1') ? backendUrl : `${backendUrl}/api/v1`;
+  }
+
+  // In production, prefer the same-origin reverse proxy. This keeps cookies,
+  // API calls and SSE on one host and avoids a second DNS/TLS round trip.
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname || '';
     const isLocalHost =
@@ -74,11 +80,8 @@ export const getApiBaseURL = (): string => {
       hostname === '127.0.0.1' ||
       hostname === '::1';
 
-    // Cualquier frontend servido bajo *.enlinea.sbs (p.ej. villaluz.enlinea.sbs)
-    // debe hablar con el backend público en finca.enlinea.sbs para evitar
-    // que /api/v1 apunte al propio frontend estático.
-    if (!isLocalHost && hostname.endsWith('.enlinea.sbs')) {
-      return 'https://finca.enlinea.sbs/api/v1';
+    if (!isLocalHost) {
+      return '/api/v1';
     }
   }
 

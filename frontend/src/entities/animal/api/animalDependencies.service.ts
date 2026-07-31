@@ -1,4 +1,3 @@
-import { animalService } from '@/entities/animal/api/animal.service';
 import { apiFetch } from '@/shared/api/apiFetch';
 
 /**
@@ -51,8 +50,8 @@ export class AnimalDependenciesService {
       console.error(`[AnimalDependenciesService] Error verificando dependencias del animal ${animalId}:`, error);
 
       if (status === 401) {
-        console.warn('[AnimalDependenciesService] 401 al consultar dependencias. Intentando verificación manual.');
-        return await this.verifyDependenciesManually(animalId);
+        console.warn('[AnimalDependenciesService] Sesión no autorizada para consultar dependencias.');
+        return this.getDefaultDependencies();
       }
 
       if (status === 404) {
@@ -61,38 +60,9 @@ export class AnimalDependenciesService {
 
       // Fallback por mensajes legacy
       if (String(error?.message || '').includes('404') || String(error?.message || '').includes('No encontrado')) {
-        return await this.verifyDependenciesManually(animalId);
+        return this.getDefaultDependencies();
       }
 
-      return this.getDefaultDependencies();
-    }
-  }
-
-  /**
-   * Verificación manual de dependencias cuando el endpoint no está disponible.
-   */
-  private async verifyDependenciesManually(animalId: number): Promise<AnimalDependencies> {
-    try {
-      const animal = await animalService.getById(animalId);
-
-      const allAnimals = await animalService.getAnimals({ limit: 10000 });
-      const children = allAnimals.filter((a) => a.idFather === animalId || a.idMother === animalId);
-
-      const childrenAsFather = children.filter((a) => a.idFather === animalId);
-      const childrenAsMother = children.filter((a) => a.idMother === animalId);
-
-      return {
-        father_id: animal?.idFather || 0,
-        mother_id: animal?.idMother || 0,
-        children_as_father: childrenAsFather.length,
-        children_as_mother: childrenAsMother.length,
-        total_children: children.length,
-        has_parents: !!(animal?.idFather || animal?.idMother),
-        has_children: children.length > 0,
-        has_any_relations: !!(animal?.idFather || animal?.idMother || children.length > 0),
-      };
-    } catch (error) {
-      console.error(`[AnimalDependenciesService] Error en verificación manual para animal ${animalId}:`, error);
       return this.getDefaultDependencies();
     }
   }

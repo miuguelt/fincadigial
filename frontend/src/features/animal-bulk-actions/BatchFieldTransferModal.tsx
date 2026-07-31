@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Dialog,
@@ -26,24 +26,12 @@ import {
   IconCircleCheck,
   IconMap2,
 } from '@/shared/ui/icons';
-import { animalFieldsService } from '@/entities/animal-field/api/animalFields.service';
-import { animalsService } from '@/entities/animal/api/animal.service';
-import { fieldService } from '@/entities/field/api/field.service';
-import { useToast } from '@/app/providers/ToastContext';
+import { useBatchFieldTransfer } from './useBatchFieldTransfer';
 import { Badge } from '@/shared/ui/badge';
 import { ScrollArea } from '@/shared/ui/scroll-area';
 import { cn } from '@/shared/ui/cn';
 
 // ─── Tipos locales ─────────────────────────────────────────────────────────────
-
-interface Field {
-  id: number;
-  name: string;
-  ubication: string;
-  state: string;
-  capacity: string;
-  animal_count: number;
-}
 
 interface BatchFieldTransferModalProps {
   isOpen: boolean;
@@ -53,17 +41,6 @@ interface BatchFieldTransferModalProps {
 }
 
 // ─── Utilidades ────────────────────────────────────────────────────────────────
-
-const getToday = () => new Date().toISOString().split('T')[0];
-
-/** Extrae el array de items de cualquier forma de respuesta de la API */
-const getItemsFromResponse = <T,>(response: any): T[] => {
-  if (Array.isArray(response)) return response as T[];
-  if (Array.isArray(response?.data)) return response.data as T[];
-  if (Array.isArray(response?.items)) return response.items as T[];
-  if (Array.isArray(response?.results)) return response.results as T[];
-  return [];
-};
 
 const parseCapacity = (value: unknown) => {
   const parsed = Number.parseInt(String(value ?? ''), 10);
@@ -124,121 +101,24 @@ export const BatchFieldTransferModal: React.FC<BatchFieldTransferModalProps> = (
   selectedAnimalIds,
   onSuccess,
 }) => {
-  const { showToast } = useToast();
-
-  const [fields, setFields] = useState<Field[]>([]);
-  const [selectedAnimals, setSelectedAnimals] = useState<any[]>([]);
-  const [selectedFieldId, setSelectedFieldId] = useState<number | null>(null);
-  const [transferDate, setTransferDate] = useState(getToday());
-  const [notes, setNotes] = useState('');
-  const [transferring, setTransferring] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  // ── Carga de datos ──────────────────────────────────────────────────────────
-
-  const fetchFields = useCallback(async () => {
-    try {
-      const resp = await fieldService.getFields({ limit: 100 });
-      setFields(getItemsFromResponse<Field>(resp));
-    } catch {
-      showToast('Error al cargar potreros', 'error');
-    }
-  }, [showToast]);
-
-  const fetchSelectedAnimals = useCallback(async () => {
-    if (selectedAnimalIds.length === 0) return;
-    try {
-      const resp = await animalsService.getAnimals({
-        id: selectedAnimalIds.join(','),
-        limit: selectedAnimalIds.length,
-      });
-      setSelectedAnimals(resp);
-    } catch (error) {
-      console.error('Error fetching animals:', error);
-      showToast('Error al cargar datos de los animales', 'error');
-    }
-  }, [selectedAnimalIds]);
-
-  useEffect(() => {
-    if (isOpen) {
-      setSelectedFieldId(null);
-      setTransferDate(getToday());
-      setNotes('');
-      setSearchQuery('');
-      fetchFields();
-      fetchSelectedAnimals();
-    }
-  }, [isOpen, fetchFields, fetchSelectedAnimals]);
-
-  // ── Cálculos derivados ──────────────────────────────────────────────────────
-
-  const filteredFields = [
-    ...(searchQuery === '' || 'quitar'.includes(searchQuery.toLowerCase()) || 'potrero'.includes(searchQuery.toLowerCase()) ? [{
-      id: -1,
-      name: 'Quitar del Potrero (Dejar Libre)',
-      ubication: 'Sin asignación física',
-      state: 'Activo',
-      capacity: null as unknown as string,
-      animal_count: 0
-    }] : []),
-    ...fields.filter(
-      (f) =>
-        f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        f.ubication?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  ];
-
-  const selectedField = selectedFieldId === -1 ? {
-    id: -1,
-    name: 'Quitar del Potrero (Dejar Libre)',
-    ubication: 'Sin asignación física',
-    state: 'Activo',
-    capacity: null as unknown as string,
-    animal_count: 0
-  } : fields.find((field) => field.id === selectedFieldId) || null;
-  const selectedFieldCapacity = selectedField ? parseCapacity(selectedField.capacity) : null;
-  const projectedOccupancy = (selectedField?.animal_count ?? 0) + selectedAnimalIds.length;
-  const isOverCapacity =
-    selectedFieldCapacity !== null && projectedOccupancy > selectedFieldCapacity;
-
-  // ── Traslado ────────────────────────────────────────────────────────────────
-
-  const handleTransfer = async () => {
-    if (!selectedFieldId) return;
-    setTransferring(true);
-    try {
-      let response;
-      if (selectedFieldId === -1) {
-        // Opción especial para retirar del potrero (dejar sin asignación)
-        response = await animalFieldsService.bulkRemove({
-          animal_ids: selectedAnimalIds,
-          date: transferDate,
-        });
-      } else {
-        response = await animalFieldsService.bulkTransfer({
-          animal_ids: selectedAnimalIds,
-          field_id: selectedFieldId,
-          date: transferDate,
-          notes: notes || `Traslado masivo de ${selectedAnimalIds.length} animales`,
-        });
-      }
-
-      if (response.success) {
-        showToast(
-          `Operación exitosa: ${selectedAnimalIds.length} animales ${selectedFieldId === -1 ? 'retirados' : 'trasladados'}`,
-          'success'
-        );
-        onSuccess();
-        onClose();
-      } else {
-        showToast(response.message || 'Error en la operación', 'error');
-      }
-    } catch (error: any) {
-      showToast(error.message || 'Error de conexión', 'error');
-    } finally {
-      setTransferring(false);
-    }
-  };
+  const {
+    selectedAnimals,
+    selectedFieldId,
+    setSelectedFieldId,
+    transferDate,
+    setTransferDate,
+    notes,
+    setNotes,
+    transferring,
+    searchQuery,
+    setSearchQuery,
+    filteredFields,
+    selectedField,
+    selectedFieldCapacity,
+    projectedOccupancy,
+    isOverCapacity,
+    handleTransfer,
+  } = useBatchFieldTransfer(isOpen, selectedAnimalIds, onClose, onSuccess);
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
@@ -532,6 +412,7 @@ export const BatchFieldTransferModal: React.FC<BatchFieldTransferModalProps> = (
                       return (
                         <button
                           key={field.id}
+                          type="button"
                           onClick={() => setSelectedFieldId(field.id)}
                           className={cn(
                             'group relative p-4 pl-6 rounded-xl border transition-all duration-300 flex flex-col gap-3 text-left overflow-hidden',
@@ -717,7 +598,7 @@ export const BatchFieldTransferModal: React.FC<BatchFieldTransferModalProps> = (
             {/* Botón principal */}
             <Button
               onClick={handleTransfer}
-              disabled={!selectedFieldId || transferring}
+              disabled={selectedFieldId === null || transferring}
               className={cn(
                 'h-9 px-5 rounded-lg font-medium text-sm gap-2 transition-all active:scale-95 shadow-sm',
                 selectedField

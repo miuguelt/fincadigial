@@ -74,11 +74,13 @@ Load-EnvFile -Path "$BackendDir\.env"
 # Inyectar credenciales desde WCM (sobrescribe .env si existe)
 $wcmInjector = "$PSScriptRoot\..\..\_infrastructure\devbraind\scripts\Import-ProjectCredentials.ps1"
 if (Test-Path $wcmInjector) { . $wcmInjector -Project villaluz }
+# No heredar alias localhost ni endpoints históricos: este launcher es
+# exclusivamente Windows-native y Memurai escucha en IPv4:6380.
+$env:REDIS_URL = "redis://127.0.0.1:6380/0"
+$env:CELERY_BROKER_URL = "redis://127.0.0.1:6380/1"
+$env:CELERY_RESULT_BACKEND = "redis://127.0.0.1:6380/1"
 if ([string]::IsNullOrWhiteSpace($env:DB_PASSWORD)) {
     Write-Warning "DB_PASSWORD no está definido. Configure backend/.env antes de iniciar Villaluz."
-}
-if (-not $env:CELERY_BROKER_URL) {
-    [System.Environment]::SetEnvironmentVariable("CELERY_BROKER_URL", "redis://127.0.0.1:6380/1", [System.EnvironmentVariableTarget]::Process)
 }
 
 function Backup-Database {
@@ -516,8 +518,16 @@ $env:DB_USER = "villaluz"
 $env:REDIS_URL = "$rdUrl0"
 $env:CELERY_BROKER_URL = "$rdUrl1"
 $env:CELERY_RESULT_BACKEND = "$rdUrl1"
-$env:CORS_ORIGINS = "http://localhost:${fePort},http://127.0.0.1:${fePort},http://localhost:3003"
-$env:VITE_API_BASE_URL = "http://localhost:${bePort}/api/v1"
+$fieldNodeAddresses = @(
+    Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
+        Where-Object { $_.IPAddress -notlike '127.*' -and $_.AddressState -eq 'Preferred' } |
+        Select-Object -ExpandProperty IPAddress -Unique
+)
+$fieldNodeOrigins = @($fieldNodeAddresses | ForEach-Object { "http://${_}:${fePort}" })
+$env:CORS_ORIGINS = (@("http://localhost:${fePort}", "http://127.0.0.1:${fePort}", "http://localhost:3003") + $fieldNodeOrigins) -join ','
+# Relative API URL is essential for field devices: an absolute localhost URL
+# makes every phone call its own loopback instead of the farm node.
+$env:VITE_API_BASE_URL = "/api/v1"
 $env:VITE_PROXY_TARGET = "http://127.0.0.1:${bePort}"
 $env:VITE_FRONTEND_URL = "http://localhost:${fePort}"
 
@@ -583,6 +593,9 @@ if ($Daemon -or -not $MonitorLogs) {
     Write-Log "`n=== Villaluz Windows-Native Ready ===" "Green"
     Write-Log "Frontend: http://localhost:${fePort}" "Cyan"
     Write-Log "Backend:  http://localhost:${bePort}/api/v1/health" "Cyan"
+    foreach ($fieldNodeAddress in $fieldNodeAddresses) {
+        Write-Log "Nodo campo: http://${fieldNodeAddress}:${fePort}" "Green"
+    }
     Write-Log "Logs:     npx pm2 logs" "DarkGray"
     
     # Lanzar visor de logs

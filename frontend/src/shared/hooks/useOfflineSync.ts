@@ -28,6 +28,7 @@ export function useOfflineSync(): OfflineSyncResult {
   });
 
   const refresh = useCallback(async () => {
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
     const [count, status] = await Promise.all([
       offlineQueue.getPendingCount(),
       offlineQueue.getStatusCounts(),
@@ -61,7 +62,7 @@ export function useOfflineSync(): OfflineSyncResult {
     window.addEventListener('offline', handleOffline);
     window.addEventListener('offline-queue-synced', handleSynced);
 
-    const interval = setInterval(refresh, 3000);
+    const interval = setInterval(refresh, 15000);
     const unsub = offlineQueue.onSyncResult(() => refresh());
 
     return () => {

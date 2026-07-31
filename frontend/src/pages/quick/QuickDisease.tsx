@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { useToast } from '@/app/providers/ToastContext';
@@ -14,6 +14,8 @@ import { animalsService } from '@/entities/animal/api/animal.service';
 import { diseaseService } from '@/entities/disease/api/disease.service';
 import { animalDiseasesService } from '@/entities/animal-disease/api/animalDiseases.service';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
+import { emitDataRefresh } from '@/shared/utils/dataRefresh';
+import { formatMessageFromCode, readStandardErrorPayload } from '@/shared/api/error-parser';
 
 export default function QuickDisease() {
   const { user } = useAuth();
@@ -34,6 +36,7 @@ export default function QuickDisease() {
   const [loading, setLoading] = useState(false);
   const [animalOptions, setAnimalOptions] = useState<{ value: number; label: string }[]>([]);
   const [diseaseOptions, setDiseaseOptions] = useState<{ value: number; label: string }[]>([]);
+  const submitInFlightRef = useRef(false);
 
   // Cargar animales activos
   React.useEffect(() => {
@@ -75,11 +78,13 @@ export default function QuickDisease() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitInFlightRef.current) return;
     if (!animalId || !diseaseId) {
       showToast('Por favor seleccione animal y enfermedad', 'error');
       return;
     }
 
+    submitInFlightRef.current = true;
     setLoading(true);
     const payload = {
       animal_id: animalId,
@@ -99,11 +104,17 @@ export default function QuickDisease() {
         await animalDiseasesService.createAnimalDisease(payload);
         showToast('Enfermedad registrada exitosamente', 'success');
       }
+      emitDataRefresh('animal-diseases');
       handleClose();
     } catch (error) {
       console.error('Error creating disease:', error);
-      showToast('Error al registrar enfermedad', 'error');
+      const parsedError = readStandardErrorPayload(error);
+      const message = parsedError.status === 409
+        ? 'Esta enfermedad ya está registrada para el animal en esa fecha.'
+        : formatMessageFromCode(parsedError);
+      showToast(message, 'error');
     } finally {
+      submitInFlightRef.current = false;
       setLoading(false);
     }
   };

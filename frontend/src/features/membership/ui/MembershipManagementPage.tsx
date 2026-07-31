@@ -5,6 +5,8 @@ import { InviteForm } from '@/features/invitations/ui/InviteForm';
 import { PendingRequests } from '@/features/invitations/ui/PendingRequests';
 import { JoinFincaForm } from '@/features/membership';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
+import { Button } from '@/shared/ui/button';
+import { GenericModal } from '@/shared/ui/common/GenericModal';
 import { FaUserPlus, FaInbox, FaSignInAlt } from 'react-icons/fa';
 
 export const MembershipManagementPage = () => {
@@ -12,6 +14,7 @@ export const MembershipManagementPage = () => {
   const user = auth?.user;
   const activeFincaId = user?.finca_id;
   const [refreshKey, setRefreshKey] = useState(0);
+  const [activeForm, setActiveForm] = useState<'invite' | 'join' | null>(null);
 
   const handleActionComplete = () => {
     setRefreshKey((k) => k + 1);
@@ -36,7 +39,19 @@ export const MembershipManagementPage = () => {
 
         <TabsContent value="invite" className="mt-4">
           {activeFincaId ? (
-            <InviteForm fincaId={activeFincaId} onSuccess={handleActionComplete} />
+            <>
+              <p className="mb-3 text-sm text-muted-foreground">Invita a un miembro sin salir de la gestión de equipo.</p>
+              <Button type="button" onClick={() => setActiveForm('invite')}>Invitar miembro</Button>
+              <GenericModal
+                isOpen={activeForm === 'invite'}
+                onOpenChange={(open) => !open && setActiveForm(null)}
+                title="Invitar miembro al equipo"
+                description="Busca un usuario o genera un enlace de invitación."
+                size="2xl"
+              >
+                <InviteForm fincaId={activeFincaId} onSuccess={() => { handleActionComplete(); setActiveForm(null); }} />
+              </GenericModal>
+            </>
           ) : (
             <p className="text-muted-foreground text-center py-8">
               No tienes una finca activa. Crea o únete a una finca primero.
@@ -49,7 +64,17 @@ export const MembershipManagementPage = () => {
         </TabsContent>
 
         <TabsContent value="join" className="mt-4">
-          <JoinFincaForm />
+          <p className="mb-3 text-sm text-muted-foreground">Solicita acceso a otra finca desde un formulario flotante.</p>
+          <Button type="button" onClick={() => setActiveForm('join')}>Solicitar acceso</Button>
+          <GenericModal
+            isOpen={activeForm === 'join'}
+            onOpenChange={(open) => !open && setActiveForm(null)}
+            title="Unirse a otra finca"
+            description="Selecciona la finca, el rol y un mensaje opcional."
+            size="lg"
+          >
+            <JoinFincaForm />
+          </GenericModal>
         </TabsContent>
       </Tabs>
     </div>

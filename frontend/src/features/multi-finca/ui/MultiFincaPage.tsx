@@ -16,9 +16,11 @@ import { useAuth } from "@/features/auth/model/useAuth";
 import { membershipService } from "@/entities/user/api/membership.service";
 import { useToast } from "@/app/providers/ToastContext";
 import { cn } from "@/shared/ui/cn";
+import { useNavigate } from "react-router-dom";
 export const MultiFincaPage: React.FC = () => {
   const { user, refreshUserData } = useAuth();
   const { showToast } = useToast();
+  const navigate = useNavigate();
   const [switchingId, setSwitchingId] = useState<number | null>(null);
   /* El usuario tiene finca_memberships inyectados por el AuthContext o cargados */   const fincas =
     (user as any)?.finca_memberships || [];
@@ -43,6 +45,11 @@ export const MultiFincaPage: React.FC = () => {
       setSwitchingId(null);
     }
   };
+  const openCreateFinca = () => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("modal", "create-finca");
+    navigate(`${window.location.pathname}?${params.toString()}`);
+  };
   return (
     <div className="p-6 sm:p-10 space-y-10 max-w-5xl mx-auto">
       {" "}
@@ -60,9 +67,7 @@ export const MultiFincaPage: React.FC = () => {
         <div className="flex gap-3">
           <Button
             variant="outline"
-            onClick={() =>
-              (window.location.href = "/fincas/crear")
-            }
+            onClick={openCreateFinca}
             className="rounded-lg h-10 px-8 font-black uppercase text-xs tracking-widest gap-3 border-2"
           >
             <IconPlus className="h-5 w-5" /> Crear Nueva Finca{" "}

@@ -5,8 +5,8 @@ import RoleBasedSideBar from '@/widgets/dashboard/RoleBasedSideBar';
 import Header from './Header';
 import LoadingScreen from '@/shared/ui/common/LoadingScreen';
 import { ChatWidget } from '@/widgets/chat/ChatWidget';
-import { FloatingQuickActions } from '@/widgets/dashboard/FloatingQuickActions';
 import { QuickActionsModal } from '@/widgets/dashboard-layout/QuickActionsModal';
+import { CrearFincaPage } from '@/features/multi-finca/ui/CrearFincaPage';
 import { cn } from '@/shared/lib/utils';
 
 const DashboardLayout: React.FC = () => {
@@ -41,7 +41,7 @@ const DashboardLayout: React.FC = () => {
           className={cn(
             'fixed z-[1050] transition-all duration-500 ease-out',
             // Posicionamiento flotante con gaps elegantes
-            'top-[64px] sm:top-[72px] bottom-4 left-2 sm:left-4 rounded-lg border border-white/20 dark:border-white/5 bg-white/40 dark:bg-black/40 backdrop-blur-3xl shadow-2xl overflow-hidden',
+            'top-[64px] sm:top-[72px] bottom-4 left-2 sm:left-4 rounded-xl border border-border bg-card shadow-xl overflow-hidden',
             // Estado abierto/cerrado deslizándose y desvaneciéndose suavemente
             isSidebarOpen
               ? 'w-[min(280px,calc(100vw-1rem))] translate-x-0 opacity-100 visible'
@@ -73,7 +73,7 @@ const DashboardLayout: React.FC = () => {
         />
         <main 
           className={cn(
-            "flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-transparent px-2 sm:px-4 lg:px-6 py-2 sm:py-4 pb-0 transition-all duration-500 ease-out",
+            "flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-background px-2 sm:px-4 lg:px-6 py-2 sm:py-4 pb-0 transition-all duration-500 ease-out",
             isSidebarOpen ? "lg:pl-[312px]" : "lg:pl-0"
           )}
         >
@@ -82,8 +82,8 @@ const DashboardLayout: React.FC = () => {
       </div>
 
       {showSidebar && <ChatWidget />}
-      {showSidebar && <FloatingQuickActions />}
       {showSidebar && <QuickActionsModal />}
+      {isAuthenticated && <CrearFincaPage modal />}
     </div>
   );
 };

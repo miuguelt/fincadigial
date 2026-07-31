@@ -4,7 +4,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-@shared_task(name='app.tasks.system_tasks.run_self_healing')
+@shared_task(name='app.tasks.system_tasks.run_self_healing', ignore_result=True)
 def run_self_healing():
     """Tarea periódica para diagnosticar y reparar el sistema."""
     logger.info("Iniciando ciclo de autorreparación (Self-Healing)...")

@@ -25,6 +25,7 @@ import {
   BarChart3,
   Zap,
   Droplets,
+  MessageCircle,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/shared/ui/cn";
@@ -197,6 +198,16 @@ const CATALOG: QuickAction[] = [
   },
   // Categoría: Navegación
   {
+    id: "chat",
+    icon: <MessageCircle className="h-[20px] w-[20px]" />,
+    label: "Chat",
+    sub: "Mensajes y soporte",
+    path: "/chat",
+    bg: "bg-emerald-600",
+    ring: "ring-emerald-400",
+    category: 'navegacion',
+  },
+  {
     id: "home",
     icon: <Home className="h-[20px] w-[20px]" />,
     label: "Inicio",
@@ -239,6 +250,7 @@ const CATALOG: QuickAction[] = [
 ];
 
 const DEFAULT_FAV: string[] = [
+  "chat",        // Chat y mensajes en 1ª posición
   "weight",      // Control de peso - lo más usado en campo
   "transfer",    // Traslado entre potreros
   "health",      // Reportar enfermedad
@@ -318,10 +330,27 @@ export const FloatingQuickActions: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [isOpen, close]);
 
+  const [chatUnreadCount, setChatUnreadCount] = useState<number>(0);
+
+  // Suscribirse al contador de mensajes no leídos del Chat
+  useEffect(() => {
+    const handleUnreadCount = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (typeof detail?.unreadCount === 'number') {
+        setChatUnreadCount(detail.unreadCount);
+      }
+    };
+    window.addEventListener('chat-unread-count-updated', handleUnreadCount as EventListener);
+    return () => window.removeEventListener('chat-unread-count-updated', handleUnreadCount as EventListener);
+  }, []);
+
   const go = useCallback(
     (path: string) => {
       close();
-      if (path.startsWith('/quick/')) {
+      if (path === '/chat') {
+        // Abrir modal flotante del chat
+        window.dispatchEvent(new CustomEvent('open-chat-modal'));
+      } else if (path.startsWith('/quick/')) {
         const action = path.replace('/quick/', '');
         const newSearchParams = new URLSearchParams(searchParams);
         newSearchParams.set('quick', action);
@@ -411,6 +440,12 @@ export const FloatingQuickActions: React.FC = () => {
         >
           {isOpen ? <IconX size="md" /> : <Zap className="h-5 w-5" />}
         </motion.div>
+
+        {chatUnreadCount > 0 && !isOpen && (
+          <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-black h-5 w-5 rounded-full flex items-center justify-center border-2 border-card shadow-sm animate-bounce">
+            {chatUnreadCount > 9 ? '9+' : chatUnreadCount}
+          </span>
+        )}
       </motion.button>
     </>
   );

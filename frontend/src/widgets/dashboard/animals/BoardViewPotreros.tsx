@@ -1,28 +1,30 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/shared/ui/cn';
 import { animalFieldsService } from '@/entities/animal-field/api/animalFields.service';
 import { fieldService } from '@/entities/field/api/field.service';
 import { useToast } from '@/app/providers/ToastContext';
-import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
-import { MapPin, User, ChevronDown, ChevronUp, Sprout, LayoutDashboard } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/shared/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { AnimalCard } from './AnimalCard';
-import { motion, AnimatePresence } from 'framer-motion';
+import {
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  CircleAlert,
+  GripVertical,
+  MapPin,
+  Sprout,
+  Users,
+} from 'lucide-react';
 
 interface FieldInfo {
   id: number;
   name: string;
-  capacity?: number;
+  capacity?: number | string;
+  capacity_num?: number;
   area?: string;
   animal_count?: number;
   state?: string;
-}
-
-interface AnimalAssignment {
-  animal_id: number;
-  field_id: number;
-  removal_date?: string | null;
 }
 
 interface BoardViewPotrerosProps {
@@ -33,6 +35,40 @@ interface BoardViewPotrerosProps {
   motherOptions: { value: number | string; label: string }[];
 }
 
+type DropTarget = number | 'unassigned' | null;
+type PointerDragState = {
+  animalId: number;
+  pointerId: number;
+  startX: number;
+  startY: number;
+  started: boolean;
+};
+
+const toId = (value: unknown): number | null => {
+  const id = Number(value);
+  return Number.isFinite(id) && id > 0 ? id : null;
+};
+
+const compareAnimals = (a: any, b: any) =>
+  String(a.record || a.code || a.id).localeCompare(String(b.record || b.code || b.id), 'es', {
+    numeric: true,
+    sensitivity: 'base',
+  });
+
+const getCapacity = (field?: FieldInfo) => {
+  if (!field) return null;
+  const capacity = Number(field.capacity_num ?? field.capacity);
+  return Number.isFinite(capacity) && capacity > 0 ? capacity : null;
+};
+
+const getOccupancyTone = (count: number, capacity: number | null) => {
+  if (!capacity) return 'bg-slate-700 text-white';
+  const ratio = count / capacity;
+  if (ratio >= 1) return 'bg-red-600 text-white';
+  if (ratio >= 0.8) return 'bg-amber-400 text-slate-950';
+  return 'bg-emerald-600 text-white';
+};
+
 export function BoardViewPotreros({
   animals,
   onAnimalClick,
@@ -42,128 +78,219 @@ export function BoardViewPotreros({
 }: BoardViewPotrerosProps) {
   const { showToast } = useToast();
   const [fields, setFields] = useState<FieldInfo[]>([]);
-  const [assignments, setAssignments] = useState<AnimalAssignment[]>([]);
+  const [fieldOverrides, setFieldOverrides] = useState<Map<number, number | null>>(new Map());
   const [loading, setLoading] = useState(true);
-  const [dragOverField, setDragOverField] = useState<number | 'unassigned' | null>(null);
+  const [dragOverField, setDragOverField] = useState<DropTarget>(null);
   const [draggingAnimalId, setDraggingAnimalId] = useState<number | null>(null);
+  const [pressingAnimalId, setPressingAnimalId] = useState<number | null>(null);
+  const [movingAnimalId, setMovingAnimalId] = useState<number | null>(null);
   const [collapsedFields, setCollapsedFields] = useState<Set<number | string>>(new Set());
+  const pointerDragRef = useRef<PointerDragState | null>(null);
+  const dragOverFieldRef = useRef<DropTarget>(null);
+  const suppressClickRef = useRef(false);
+  const collapseInitializedRef = useRef(false);
+
+  const setActiveDropTarget = useCallback((target: DropTarget) => {
+    dragOverFieldRef.current = target;
+    setDragOverField(target);
+  }, []);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [fieldsRes, assignRes] = await Promise.all([
-        fieldService.getPaginated({ page: 1, limit: 1000 }),
-        animalFieldsService.getAnimalFields({ removal_date: undefined }),
-      ]);
-      const fData = (fieldsRes as any)?.data || fieldsRes || [];
-      const aData = (assignRes as any)?.data || assignRes || [];
-      setFields(Array.isArray(fData) ? fData : []);
-      setAssignments(Array.isArray(aData) ? aData : []);
-    } catch (e) {
-      console.error('[BoardViewPotreros] Error loading data', e);
+      const fieldsRes = await fieldService.getPaginated({ page: 1, limit: 200 });
+      const fieldData = (fieldsRes as any)?.data || fieldsRes || [];
+      setFields(Array.isArray(fieldData) ? fieldData : []);
+      setFieldOverrides(new Map());
+    } catch (error) {
+      console.error('[BoardViewPotreros] Error loading data', error);
+      showToast('No se pudieron cargar los potreros. Intenta actualizar la vista.', 'error');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
-    loadData();
+    void loadData();
   }, [loadData]);
 
   useEffect(() => {
-    const handler = () => {
-      loadData();
-    };
+    const handler = () => void loadData();
     window.addEventListener('animal-fields:updated', handler);
     return () => window.removeEventListener('animal-fields:updated', handler);
   }, [loadData]);
 
+  useEffect(() => () => {
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+  }, []);
+
   const animalFieldMap = useMemo(() => {
     const map = new Map<number, number>();
-    assignments.forEach((a) => {
-      if (!a.removal_date) {
-        map.set(Number(a.animal_id), Number(a.field_id));
-      }
+    // Animals already expose their current field. Loading the complete
+    // assignment history made this board grow linearly with the whole farm.
+    animals.forEach((animal: any) => {
+      const animalId = toId(animal.id);
+      const fieldId = toId(
+        animal.current_field_id ?? animal.field_id ?? animal.current_field?.id,
+      );
+      if (animalId && fieldId && !map.has(animalId)) map.set(animalId, fieldId);
     });
-    animals.forEach((a: any) => {
-      if (!map.has(a.id) && a.current_field_id) {
-        map.set(Number(a.id), Number(a.current_field_id));
-      }
+
+    fieldOverrides.forEach((fieldId, animalId) => {
+      if (fieldId == null) map.delete(animalId);
+      else map.set(animalId, fieldId);
     });
     return map;
-  }, [assignments, animals]);
+  }, [animals, fieldOverrides]);
 
   const grouped = useMemo(() => {
     const groups = new Map<number, any[]>();
     const unassigned: any[] = [];
-    fields.forEach((f) => groups.set(f.id, []));
-    animals.forEach((a: any) => {
-      const fieldId = animalFieldMap.get(a.id);
-      if (fieldId !== undefined && groups.has(fieldId)) {
-        groups.get(fieldId)!.push(a);
-      } else {
-        unassigned.push(a);
-      }
+    fields.forEach((field) => groups.set(Number(field.id), []));
+
+    animals.forEach((animal: any) => {
+      const animalId = toId(animal.id);
+      const fieldId = animalId ? animalFieldMap.get(animalId) : undefined;
+      if (fieldId !== undefined && groups.has(fieldId)) groups.get(fieldId)!.push(animal);
+      else unassigned.push(animal);
     });
-    return { grouped: groups, unassigned };
+
+    groups.forEach((items) => items.sort(compareAnimals));
+    unassigned.sort(compareAnimals);
+    return { groups, unassigned };
   }, [animals, fields, animalFieldMap]);
 
-  const sortedFields = useMemo(() => {
-    return [...fields].sort((a, b) => {
-      const countA = grouped.grouped.get(a.id)?.length || 0;
-      const countB = grouped.grouped.get(b.id)?.length || 0;
-      return countB - countA;
-    });
-  }, [fields, grouped.grouped]);
+  const sortedFields = useMemo(
+    () => [...fields].sort((a, b) => String(a.name).localeCompare(String(b.name), 'es', { numeric: true })),
+    [fields],
+  );
 
-  const handleDragStart = (e: React.DragEvent, animalId: number) => {
-    e.dataTransfer.setData('text/plain', String(animalId));
-    e.dataTransfer.effectAllowed = 'move';
-    setDraggingAnimalId(animalId);
-  };
+  const totals = useMemo(() => {
+    const capacity = fields.reduce((sum, field) => sum + (getCapacity(field) || 0), 0);
+    const assigned = animals.length - grouped.unassigned.length;
+    return {
+      capacity,
+      assigned,
+      unassigned: grouped.unassigned.length,
+      available: Math.max(0, capacity - assigned),
+      occupation: capacity ? Math.round((assigned / capacity) * 100) : 0,
+    };
+  }, [animals.length, fields, grouped.unassigned.length]);
 
-  const handleDragEnd = () => {
-    setDragOverField(null);
-    setDraggingAnimalId(null);
-  };
+  useEffect(() => {
+    if (loading || collapseInitializedRef.current || fields.length === 0) return;
+    const initiallyCollapsed = fields
+      .filter((field) => (grouped.groups.get(Number(field.id))?.length || 0) > 30)
+      .map((field) => Number(field.id));
+    setCollapsedFields(new Set(initiallyCollapsed));
+    collapseInitializedRef.current = true;
+  }, [fields, grouped.groups, loading]);
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleDrop = async (e: React.DragEvent, targetFieldId: number | null) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragOverField(null);
-    setDraggingAnimalId(null);
-
-    const animalId = parseInt(e.dataTransfer.getData('text/plain'), 10);
-    if (!animalId || isNaN(animalId)) return;
-
+  const handleAnimalDrop = useCallback(async (animalId: number, targetFieldId: number | null) => {
     const currentFieldId = animalFieldMap.get(animalId) ?? null;
-    if (currentFieldId === targetFieldId) return;
+    if (currentFieldId === targetFieldId || movingAnimalId !== null) return;
 
+    setMovingAnimalId(animalId);
+    setFieldOverrides((previous) => new Map(previous).set(animalId, targetFieldId));
     try {
       if (targetFieldId === null) {
         await animalFieldsService.removeFromField(animalId);
       } else {
-        const res = await animalFieldsService.bulkTransfer({
+        const result = await animalFieldsService.bulkTransfer({
           animal_ids: [animalId],
           field_id: targetFieldId,
         });
-        if (!res.success) throw new Error(res.message);
+        if (!result.success) throw new Error(result.message);
       }
-      showToast('Animal trasladado exitosamente', 'success');
+      const destination = targetFieldId === null
+        ? 'sin potrero'
+        : fields.find((field) => field.id === targetFieldId)?.name || 'el potrero seleccionado';
+      showToast(`Animal trasladado a ${destination}`, 'success');
       window.dispatchEvent(new CustomEvent('animal-fields:updated'));
-    } catch (err: any) {
-      showToast(err?.message || 'Error al trasladar animal', 'error');
+    } catch (error: any) {
+      setFieldOverrides((previous) => {
+        const next = new Map(previous);
+        next.delete(animalId);
+        return next;
+      });
+      showToast(error?.message || 'No se pudo trasladar el animal', 'error');
+    } finally {
+      setMovingAnimalId(null);
+    }
+  }, [animalFieldMap, fields, movingAnimalId, showToast]);
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>, animalId: number) => {
+    if (movingAnimalId !== null || (event.pointerType === 'mouse' && event.button !== 0)) return;
+    const target = event.target as HTMLElement;
+    if (target.closest('button, a, input, textarea, select, [data-no-drag]')) return;
+
+    pointerDragRef.current = {
+      animalId,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      started: false,
+    };
+    setPressingAnimalId(animalId);
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // Pointer capture is not available in a few embedded browsers.
     }
   };
 
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = pointerDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+
+    if (!drag.started) {
+      const distance = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY);
+      if (distance < 6) return;
+      drag.started = true;
+      suppressClickRef.current = true;
+      document.body.style.userSelect = 'none';
+      document.body.style.cursor = 'grabbing';
+      setPressingAnimalId(null);
+      setDraggingAnimalId(drag.animalId);
+    }
+
+    event.preventDefault();
+    const hovered = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-drop-field]');
+    if (!hovered) {
+      setActiveDropTarget(null);
+      return;
+    }
+    const value = hovered.dataset.dropField;
+    setActiveDropTarget(value === 'unassigned' ? 'unassigned' : toId(value));
+  };
+
+  const finishPointerDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = pointerDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const wasDragging = drag.started;
+    const target = dragOverFieldRef.current;
+    pointerDragRef.current = null;
+    setPressingAnimalId(null);
+    setDraggingAnimalId(null);
+    setActiveDropTarget(null);
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+    if (wasDragging && (target === 'unassigned' || typeof target === 'number')) {
+      void handleAnimalDrop(drag.animalId, target === 'unassigned' ? null : target);
+    }
+  };
+
+  const handleCardClickCapture = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!suppressClickRef.current) return;
+    event.preventDefault();
+    event.stopPropagation();
+    suppressClickRef.current = false;
+  };
+
   const toggleCollapse = (key: number | string) => {
-    setCollapsedFields((prev) => {
-      const next = new Set(prev);
+    setCollapsedFields((previous) => {
+      const next = new Set(previous);
       if (next.has(key)) next.delete(key);
       else next.add(key);
       return next;
@@ -171,36 +298,53 @@ export function BoardViewPotreros({
   };
 
   const renderAnimalCard = (animal: any) => {
+    const animalId = toId(animal.id) || 0;
     const breedId = animal.breeds_id || animal.breed_id;
     const breedLabel = breedId
-      ? (breedOptions.find((b) => Number(b.value) === Number(breedId))?.label || (animal.breed?.name) || `Código ${breedId}`)
+      ? (breedOptions.find((option) => Number(option.value) === Number(breedId))?.label || animal.breed?.name || `Código ${breedId}`)
       : '-';
-
     const fatherId = animal.idFather || animal.father_id;
     const fatherLabel = fatherId
-      ? (fatherOptions.find((o) => Number(o.value) === Number(fatherId))?.label || `Código ${fatherId}`)
+      ? (fatherOptions.find((option) => Number(option.value) === Number(fatherId))?.label || `Código ${fatherId}`)
       : '-';
-
     const motherId = animal.idMother || animal.mother_id;
     const motherLabel = motherId
-      ? (motherOptions.find((o) => Number(o.value) === Number(motherId))?.label || `Código ${motherId}`)
+      ? (motherOptions.find((option) => Number(option.value) === Number(motherId))?.label || `Código ${motherId}`)
       : '-';
+    const isDragging = draggingAnimalId === animalId;
+    const isPressing = pressingAnimalId === animalId;
+    const isMoving = movingAnimalId === animalId;
 
     return (
-      <motion.div
-        key={animal.id}
-        layout
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        draggable
-        onDragStart={(e: any) => handleDragStart(e, animal.id)}
-        onDragEnd={(e: any) => { e.preventDefault(); handleDragEnd(); }}
+      <div
+        key={animalId}
+        role="button"
+        tabIndex={0}
+        aria-label={`Animal ${animal.record || animalId}. Sostén y arrastra para cambiar de potrero.`}
+        aria-grabbed={isDragging}
+        onPointerDown={(event) => handlePointerDown(event, animalId)}
+        onPointerMove={handlePointerMove}
+        onPointerUp={finishPointerDrag}
+        onPointerCancel={finishPointerDrag}
+        onClickCapture={handleCardClickCapture}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onAnimalClick?.(animal);
+          }
+        }}
+        title="Sostén el clic y arrastra este animal al potrero deseado"
         className={cn(
-          "cursor-grab active:cursor-grabbing transition-transform",
-          draggingAnimalId === animal.id && "opacity-40 scale-[0.98]"
+          'relative touch-none rounded-2xl outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+          isDragging && 'z-20 scale-[0.98] opacity-45',
+          isPressing && 'scale-[0.99] ring-2 ring-primary/30',
+          isMoving && 'pointer-events-none opacity-60',
         )}
       >
+        <div className="flex items-center justify-between gap-2 rounded-t-2xl border border-b-0 border-border/70 bg-muted/80 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-foreground">
+          <span className="flex items-center gap-1.5"><GripVertical size={14} aria-hidden="true" /> Arrastra para mover</span>
+          {isMoving && <span className="text-primary">Guardando…</span>}
+        </div>
         <AnimalCard
           animal={animal}
           breedLabel={breedLabel}
@@ -208,154 +352,160 @@ export function BoardViewPotreros({
           motherLabel={motherLabel}
           onCardClick={() => onAnimalClick?.(animal)}
           hideFooterActions
+          compact
           embedded
         />
-      </motion.div>
+      </div>
     );
   };
 
   const renderColumn = (
     label: string,
-    animalsList: any[],
+    animalList: any[],
     fieldId: number | 'unassigned',
-    isUnassigned?: boolean,
-    fieldInfo?: FieldInfo
+    isUnassigned = false,
+    fieldInfo?: FieldInfo,
   ) => {
     const isDragOver = dragOverField === fieldId;
     const isCollapsed = collapsedFields.has(fieldId);
-    const count = animalsList.length;
-    const capacity = fieldInfo?.capacity ? parseInt(String(fieldInfo.capacity)) : null;
+    const count = animalList.length;
+    const capacity = getCapacity(fieldInfo);
+    const occupancy = capacity ? Math.round((count / capacity) * 100) : null;
+    const dropValue = isUnassigned ? 'unassigned' : String(fieldId);
 
     return (
       <Card
-        key={String(fieldId)}
-        selected={isDragOver}
-        premium={true}
+        key={dropValue}
+        data-drop-field={dropValue}
+        premium={false}
         hoverable={false}
-        onDragOver={handleDragOver}
-        onDragEnter={() => setDragOverField(fieldId)}
-        onDragLeave={(e) => {
-          if (e.currentTarget === e.target || !e.currentTarget.contains(e.relatedTarget as Node)) {
-            setDragOverField((prev) => prev === fieldId ? null : prev);
+        onPointerMove={(event) => {
+          if (draggingAnimalId !== null) {
+            event.preventDefault();
+            setActiveDropTarget(fieldId);
           }
         }}
-        onDrop={(e) => handleDrop(e, isUnassigned ? null : (fieldId as number))}
+        onPointerEnter={() => draggingAnimalId !== null && setActiveDropTarget(fieldId)}
         className={cn(
-          "flex flex-col min-h-[300px] transition-all duration-300",
-          isDragOver && "ring-4 ring-primary/30"
+          'flex min-h-0 flex-col rounded-2xl border bg-card shadow-sm transition-all duration-200 lg:h-[calc(100dvh-17rem)]',
+          isDragOver ? 'border-primary bg-primary/5 shadow-xl shadow-primary/15' : 'border-border/70',
         )}
       >
         <CardHeader
           onClick={() => toggleCollapse(fieldId)}
           className={cn(
-            "flex flex-row items-center justify-between p-4 cursor-pointer select-none border-b border-white/5",
-            isUnassigned ? "bg-muted/10" : "bg-primary/5"
+            'flex cursor-pointer flex-row items-center justify-between gap-2 border-b border-border/70 px-3 py-2.5',
+            isUnassigned ? 'bg-slate-100 dark:bg-slate-900/60' : 'bg-primary/5',
           )}
         >
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex min-w-0 items-center gap-2">
             <div className={cn(
-              "p-2 rounded-xl shrink-0 shadow-lg",
-              isUnassigned ? "bg-muted/20 text-muted-foreground" : "bg-primary/20 text-primary"
+              'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg',
+              isUnassigned ? 'bg-slate-700 text-white' : 'bg-primary text-primary-foreground',
             )}>
-              {isUnassigned ? <User size={18} /> : <MapPin size={18} />}
+              {isUnassigned ? <Users size={16} /> : <MapPin size={16} />}
             </div>
             <div className="min-w-0">
-              <CardTitle className="text-base font-black truncate">{label}</CardTitle>
-              {!isUnassigned && fieldInfo && (
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-0.5">
-                  {capacity ? `Capacidad: ${count}/${capacity}` : `${count} animales`}
-                </p>
-              )}
+              <CardTitle className="truncate text-sm font-extrabold text-foreground">{label}</CardTitle>
+              <p className="mt-0.5 truncate text-[10px] font-semibold text-muted-foreground">
+                {isUnassigned ? 'Requieren ubicación' : capacity ? `${count} de ${capacity} animales · ${occupancy}% ocupado` : `${count} animales asignados`}
+              </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="font-black text-xs px-2 h-6">
-              {count}
-            </Badge>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full hover:bg-white/10">
+          <div className="flex shrink-0 items-center gap-2">
+            <span className={cn('rounded-full px-2 py-1 text-[11px] font-black', getOccupancyTone(count, capacity))}>{count}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 rounded-lg p-0"
+              aria-label={isCollapsed ? `Expandir ${label}` : `Contraer ${label}`}
+              onClick={(event) => {
+                event.stopPropagation();
+                toggleCollapse(fieldId);
+              }}
+            >
               {isCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
             </Button>
           </div>
         </CardHeader>
 
-        <AnimatePresence mode="popLayout">
-          {!isCollapsed && (
-            <CardContent className="flex-1 p-3 overflow-y-auto max-h-[800px] scrollbar-thin scrollbar-thumb-white/10">
-              <div className={cn(
-                "grid gap-4 auto-rows-fr",
-                isUnassigned 
-                  ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6" 
-                  : "grid-cols-1"
-              )}>
-                {animalsList.length === 0 ? (
-                  <div className={cn(
-                    "flex flex-col items-center justify-center py-12 text-muted-foreground/40 italic",
-                    isUnassigned ? "col-span-full" : ""
-                  )}>
-                    <Sprout size={48} className="mb-3 opacity-20" />
-                    <p className="text-xs font-bold uppercase tracking-widest">
-                      {isUnassigned ? 'Hato Completo' : 'Potrero Vacío'}
-                    </p>
-                    <p className="text-[10px] mt-1">Arrastra animales aquí</p>
-                  </div>
-                ) : (
-                  animalsList.map(renderAnimalCard)
-                )}
-              </div>
-            </CardContent>
-          )}
-        </AnimatePresence>
+        {!isCollapsed && (
+          <CardContent className={cn(
+            'min-h-0 flex-1 overflow-y-auto overscroll-contain p-2',
+            isUnassigned ? 'max-h-[420px]' : 'max-h-[640px]',
+          )}>
+            <div className="min-h-[120px] space-y-2">
+              {animalList.length === 0 ? (
+                <div className={cn(
+                  'flex min-h-[120px] flex-col items-center justify-center rounded-xl border border-dashed px-3 text-center',
+                  isDragOver ? 'border-primary bg-primary/10 text-primary' : 'border-border/70 text-muted-foreground',
+                )}>
+                  {isUnassigned ? <CheckCircle2 size={26} className="mb-1.5 text-emerald-600" /> : <Sprout size={26} className="mb-1.5 opacity-60" />}
+                  <p className="text-[11px] font-extrabold uppercase tracking-wider">{isUnassigned ? 'Todo organizado' : 'Potrero vacío'}</p>
+                  <p className="mt-1 text-[11px]">Arrastra un animal aquí</p>
+                </div>
+              ) : (
+                animalList.map(renderAnimalCard)
+              )}
+            </div>
+          </CardContent>
+        )}
       </Card>
     );
   };
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 space-y-4">
-        <div className="relative h-12 w-12">
-          <div className="absolute inset-0 rounded-full border-4 border-primary/20" />
-          <div className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin" />
-        </div>
-        <p className="text-xs font-black uppercase tracking-widest text-muted-foreground animate-pulse">Cargando Tablero...</p>
+      <div className="flex flex-col items-center justify-center py-24" aria-live="polite">
+        <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+        <p className="text-sm font-bold text-foreground">Cargando animales y potreros…</p>
+        <p className="mt-1 text-xs text-muted-foreground">Estamos organizando cada animal en su ubicación actual.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header Info */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-2">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-lg bg-accent/20 text-accent shadow-xl shadow-accent/10">
-            <LayoutDashboard size={20} />
+    <div
+      className="flex min-h-0 flex-col gap-3"
+      onPointerMove={handlePointerMove}
+      onPointerUp={finishPointerDrag}
+      onPointerCancel={finishPointerDrag}
+    >
+      <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-card p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:py-3">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-extrabold text-foreground sm:text-sm">
+            <GripVertical size={16} className="text-primary" />
+            Tablero de potreros
           </div>
+          <p className="mt-1 text-[11px] text-muted-foreground">Arrastra un animal desde su franja superior y suéltalo en otro potrero.</p>
+        </div>
+        <div className="flex flex-wrap gap-1.5 text-[11px] font-bold">
+          <span className="rounded-full bg-slate-700 px-2.5 py-1 text-white">{fields.length} potreros</span>
+          <span className="rounded-full bg-emerald-600 px-2.5 py-1 text-white">{totals.assigned} ubicados</span>
+          {totals.unassigned > 0 && <span className="rounded-full bg-amber-400 px-2.5 py-1 text-slate-950">{totals.unassigned} sin ubicar</span>}
+          {totals.capacity > 0 && <span className="rounded-full bg-primary px-2.5 py-1 text-primary-foreground">{totals.available} cupos libres</span>}
+        </div>
+      </div>
+
+      {totals.unassigned > 0 && (
+        <div className="flex items-start gap-2.5 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2.5 text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100" role="status">
+          <CircleAlert size={18} className="mt-0.5 shrink-0" />
           <div>
-            <h2 className="text-xl font-black tracking-tight">Tablero de Rotación</h2>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Gestión visual de traslados entre potreros</p>
+            <p className="text-xs font-extrabold">Hay animales pendientes de ubicación</p>
+            <p className="mt-0.5 text-[11px]">Arrástralos desde “Sin potrero asignado” para mantener el inventario ordenado.</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground bg-white/5 border border-white/10 px-4 py-2 rounded-full">
-          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          ARRASTRA PARA TRASLADAR
-        </div>
-      </div>
+      )}
 
-      {/* Unassigned column - Full width for visibility */}
-      <div className="px-1">
-        {renderColumn('Animales sin Potrero Asignado', grouped.unassigned, 'unassigned', true)}
-      </div>
-
-      {/* Fields columns - Horizontal scrolling layout */}
-      <div className="flex gap-4 overflow-x-auto pb-4 px-1 snap-x snap-mandatory">
-        {sortedFields.map((field) =>
-          <div key={field.id} className="min-w-[280px] max-w-[320px] flex-shrink-0 snap-start">
-            {renderColumn(
-              field.name,
-              grouped.grouped.get(field.id) || [],
-              field.id,
-              false,
-              field
-            )}
+      <div className="grid min-h-0 grid-cols-[repeat(auto-fit,minmax(280px,1fr))] items-start gap-3 overflow-y-auto pr-1 lg:h-[calc(100dvh-17rem)]">
+        {renderColumn('Sin potrero asignado', grouped.unassigned, 'unassigned', true)}
+        {sortedFields.length > 0 ? (
+          sortedFields.map((field) => renderColumn(field.name, grouped.groups.get(Number(field.id)) || [], Number(field.id), false, field))
+        ) : (
+          <div className="rounded-2xl border border-dashed border-border p-6 text-center">
+            <MapPin className="mx-auto mb-2 text-muted-foreground" size={24} />
+            <p className="text-sm font-bold text-foreground">Aún no hay potreros registrados</p>
+            <p className="mt-1 text-xs text-muted-foreground">Crea un potrero para empezar a organizar el ganado.</p>
           </div>
         )}
       </div>

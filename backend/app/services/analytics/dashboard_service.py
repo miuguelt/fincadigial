@@ -1,4 +1,4 @@
-from sqlalchemy import func, and_
+from sqlalchemy import case, func, and_, select
 from datetime import datetime, timedelta, date, UTC
 from app import db
 from app.models.animals import Animals, AnimalStatus
@@ -146,6 +146,7 @@ class DashboardService:
         """Genera el reporte de tareas críticas para el día de hoy"""
         from app.services.operational_service import OperationalService
         from app.models.tasks import Tasks, TaskStatus
+        from app.models.operational import PastureAforo
 
         today = date.today()
 
@@ -157,38 +158,59 @@ class DashboardService:
 
         critical_rotations = []
         fields = Fields.query.filter_by(finca_id=finca_id).all()
-        for f in fields:
-            status = OperationalService.calculate_field_status(f.id)
-            if status:
-                # Lógica local para determinar si el potrero está en estado crítico (red)
-                # entry_height >= 20 es óptimo, exit_height <= 5 es recuperación (yellow)
-                # Si no se cumple lo anterior, se considera sobrepastoreo o crítico (red)
-                entry_height = status.get('entry_height')
-                exit_height = status.get('exit_height')
-                
-                is_red = False
-                if entry_height and entry_height >= 20:
-                    pass # Óptimo (green)
-                elif exit_height and exit_height <= 5:
-                    pass # Recuperación (yellow)
-                else:
-                    is_red = True # Crítico (red)
-                
-                if is_red:
-                    from app.models.animals import Animals, AnimalStatus
-                    animal_count = AnimalFields.query.join(Animals).filter(
-                        AnimalFields.field_id == f.id,
-                        AnimalFields.removal_date == None,
-                        AnimalFields.is_deleted == False,
-                        Animals.is_deleted == False,
-                        Animals.status == AnimalStatus.Vivo
-                    ).count()
-                    if animal_count > 0:
-                        critical_rotations.append({
-                            "field_name": f.name,
-                            "animal_count": animal_count,
-                            "reason": "Sobrepastoreo detectado"
-                        })
+        field_by_id = {field.id: field for field in fields}
+        field_ids = list(field_by_id)
+
+        latest_aforo_dates = (
+            db.session.query(
+                PastureAforo.field_id,
+                func.max(PastureAforo.created_at).label('latest_at'),
+            )
+            .filter(PastureAforo.finca_id == finca_id)
+            .group_by(PastureAforo.field_id)
+            .subquery()
+        )
+        latest_aforos = (
+            db.session.query(PastureAforo)
+            .join(
+                latest_aforo_dates,
+                and_(
+                    PastureAforo.field_id == latest_aforo_dates.c.field_id,
+                    PastureAforo.created_at == latest_aforo_dates.c.latest_at,
+                ),
+            )
+            .all()
+        ) if field_ids else []
+
+        critical_field_ids = []
+        for aforo in latest_aforos:
+            if not (aforo.entry_height and aforo.entry_height >= 20) and not (
+                aforo.exit_height and aforo.exit_height <= 5
+            ):
+                critical_field_ids.append(aforo.field_id)
+
+        if critical_field_ids:
+            occupancy_rows = (
+                db.session.query(AnimalFields.field_id, func.count(AnimalFields.id))
+                .join(Animals, Animals.id == AnimalFields.animal_id)
+                .filter(
+                    AnimalFields.field_id.in_(critical_field_ids),
+                    AnimalFields.removal_date == None,
+                    AnimalFields.is_deleted == False,
+                    Animals.is_deleted == False,
+                    Animals.status == AnimalStatus.Vivo,
+                )
+                .group_by(AnimalFields.field_id)
+                .all()
+            )
+            for field_id, animal_count in occupancy_rows:
+                field = field_by_id.get(field_id)
+                if field and animal_count:
+                    critical_rotations.append({
+                        "field_name": field.name,
+                        "animal_count": int(animal_count),
+                        "reason": "Sobrepastoreo detectado",
+                    })
 
         # 3. Tareas Pendientes del sistema de Agenda
         pending_tasks = Tasks.query.filter(
@@ -233,13 +255,20 @@ class DashboardService:
                     }
                 }
 
-            # Conteos de Catálogos (raramente cambian)
-            num_vaccines = int(db.session.query(func.count(Vaccines.id)).scalar() or 0)
-            num_meds = int(db.session.query(func.count(Medications.id)).scalar() or 0)
-            num_diseases = int(db.session.query(func.count(Diseases.id)).scalar() or 0)
-            num_species = int(db.session.query(func.count(Species.id)).scalar() or 0)
-            num_breeds = int(db.session.query(func.count(Breeds.id)).scalar() or 0)
-            num_food = int(db.session.query(func.count(FoodTypes.id)).scalar() or 0)
+            # One database round-trip for catalogs that rarely change.
+            catalog_counts = db.session.execute(
+                select(
+                    select(func.count(Vaccines.id)).scalar_subquery(),
+                    select(func.count(Medications.id)).scalar_subquery(),
+                    select(func.count(Diseases.id)).scalar_subquery(),
+                    select(func.count(Species.id)).scalar_subquery(),
+                    select(func.count(Breeds.id)).scalar_subquery(),
+                    select(func.count(FoodTypes.id)).scalar_subquery(),
+                )
+            ).one()
+            num_vaccines, num_meds, num_diseases, num_species, num_breeds, num_food = (
+                int(value or 0) for value in catalog_counts
+            )
 
             # Conteos Reales para el dashboard
             if finca_id:
@@ -252,13 +281,13 @@ class DashboardService:
 
             # Tratamientos activos (ej: no terminados o de los últimos 30 días)
             if finca_id:
-                num_active_treatments = db.session.query(func.count(Treatments.id)).filter_by(finca_id=finca_id).scalar() or 0
                 num_total_treatments = db.session.query(func.count(Treatments.id)).filter_by(finca_id=finca_id).scalar() or 0
+                num_active_treatments = num_total_treatments
                 num_vaccinations = db.session.query(func.count(Vaccinations.id)).filter_by(finca_id=finca_id).scalar() or 0
                 num_controls = db.session.query(func.count(Control.id)).filter_by(finca_id=finca_id).scalar() or 0
             else:
-                num_active_treatments = db.session.query(func.count(Treatments.id)).scalar() or 0
                 num_total_treatments = db.session.query(func.count(Treatments.id)).scalar() or 0
+                num_active_treatments = num_total_treatments
                 num_vaccinations = db.session.query(func.count(Vaccinations.id)).scalar() or 0
                 num_controls = db.session.query(func.count(Control.id)).scalar() or 0
 
@@ -397,35 +426,38 @@ class DashboardService:
                 ).scalar() or 0
                 herd_growth_value = round((recent_additions / total_active) * 100, 1)
 
-            # Tendencia de Salud (últimas 4 semanas)
+            # Calculate all four health buckets in a single SQL statement.
+            health_periods = [
+                (
+                    (current_date - timedelta(days=(4 - i) * 7)).date(),
+                    (current_date - timedelta(days=(3 - i) * 7)).date(),
+                )
+                for i in range(4)
+            ]
+            health_expressions = []
+            for week_start, week_end in health_periods:
+                in_period = and_(
+                    Control.checkup_date >= week_start,
+                    Control.checkup_date < week_end,
+                )
+                health_expressions.extend([
+                    func.sum(case((in_period, 1), else_=0)),
+                    func.sum(case((and_(in_period, Control.health_status == HealthStatus.Malo), 1), else_=0)),
+                ])
+            health_query = db.session.query(*health_expressions).filter(Control.is_deleted == False)
+            if finca_id:
+                health_query = health_query.filter(Control.finca_id == finca_id)
+            health_counts = health_query.one()
+
             health_trend = []
             for i in range(4):
-                week_start = current_date - timedelta(days=(4-i)*7)
-                week_end = current_date - timedelta(days=(3-i)*7)
-                
-                base_query_sick = db.session.query(func.count(Control.id)).filter(
-                    Control.health_status == HealthStatus.Malo,
-                    Control.checkup_date.between(week_start.date(), week_end.date())
-                )
-                base_query_total = db.session.query(func.count(Control.id)).filter(
-                    Control.checkup_date.between(week_start.date(), week_end.date())
-                )
-                
-                if finca_id:
-                    base_query_sick = base_query_sick.filter(Control.finca_id == finca_id)
-                    base_query_total = base_query_total.filter(Control.finca_id == finca_id)
-                    
-                count_sick = base_query_sick.scalar() or 0
-                count_total = base_query_total.scalar() or 0
-                
-                # Invertir para que sea "salud"
+                count_total = int(health_counts[i * 2] or 0)
+                count_sick = int(health_counts[i * 2 + 1] or 0)
                 if count_total > 0:
                     val = max(0, 100 - ((count_sick / count_total) * 100))
                 else:
-                    # Si no hay controles y no hay animales, la salud es 0 (no hay datos)
-                    val = 100 if (summary.active_animals and summary.active_animals > 0) else 0
-                    
-                health_trend.append({"name": f"Sem {i+1}", "value": round(val, 1)})
+                    val = 100 if summary.active_animals else 0
+                health_trend.append({"name": f"Sem {i + 1}", "value": round(val, 1)})
 
             # Role-based filtering: roles with full access vs restricted
             current_role = get_current_user_role()

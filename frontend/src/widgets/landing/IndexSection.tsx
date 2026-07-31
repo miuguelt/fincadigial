@@ -1,5 +1,6 @@
 ﻿import { Button } from "@/shared/ui/button";
-import landingBackground from "@/shared/assets/landing-background.webp";
+import landingBackground from "@/shared/assets/landing-background-1280.webp";
+import landingBackgroundLarge from "@/shared/assets/landing-background-1920.webp";
 import { ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -12,10 +13,17 @@ const IndexSection = () => {
       className="relative h-[620px] flex items-center justify-center text-white"
     >
       <div className="absolute inset-0 bg-black opacity-70 z-10"></div>
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${landingBackground})` }}
-      ></div>
+      <img
+        src={landingBackground}
+        srcSet={`${landingBackground} 1280w, ${landingBackgroundLarge} 1920w`}
+        sizes="100vw"
+        width="1920"
+        height="1280"
+        alt=""
+        aria-hidden="true"
+        decoding="async"
+        className="absolute inset-0 h-full w-full object-cover object-center"
+      />
       <div className="relative z-10 text-center px-4">
         <h2 className="text-4xl font-bold mb-4 text-white">
           Sistema de Gestión Finca Villa Luz

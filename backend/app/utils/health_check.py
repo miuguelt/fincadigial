@@ -155,7 +155,11 @@ class HealthChecker:
 
             # Intentar obtener workers activos y sus estadísticas
             # timeout muy corto para no bloquear el health check
-            inspector = celery_app.control.inspect(timeout=0.2)
+            # A 200 ms reply window is too aggressive for a worker sharing a
+            # local Memurai instance with cache, SSE and the result backend.
+            # It turns healthy workers into false warnings during brief Redis
+            # contention and makes the scheduled self-healing task noisy.
+            inspector = celery_app.control.inspect(timeout=1.0)
             ping_res = inspector.ping()
             stats_res = inspector.stats()
 

@@ -1,4 +1,6 @@
 import { BaseService } from '@/shared/api/base-service';
+import api from '@/shared/api/client';
+import { readStandardErrorPayload } from '@/shared/api/error-parser';
 import type { AnimalFieldInput, PaginatedResponse, AnimalFieldResponse } from '@/shared/api/generated/swaggerTypes';
 
 export interface BulkTransferRequest {
@@ -7,6 +9,39 @@ export interface BulkTransferRequest {
   date?: string;
   notes?: string;
 }
+
+export interface BulkOperationResponse {
+  success: boolean;
+  message: string;
+  data: AnimalFieldResponse[];
+  meta?: Record<string, any>;
+}
+
+export function normalizeBulkOperationResponse(
+  body: any,
+  fallbackMessage: string,
+): BulkOperationResponse {
+  const rows = Array.isArray(body?.data)
+    ? body.data
+    : Array.isArray(body)
+      ? body
+      : [];
+
+  return {
+    success: body?.success !== false,
+    data: rows,
+    message: body?.message || fallbackMessage,
+    meta: body?.meta,
+  };
+}
+
+const getBulkOperationErrorMessage = (error: any, fallback: string): string => {
+  try {
+    return readStandardErrorPayload(error).message || fallback;
+  } catch {
+    return error?.message || fallback;
+  }
+};
 
 /**
  * Servicio consolidado para operaciones de asignación animal-potrero.
@@ -52,38 +87,40 @@ export class AnimalFieldsService extends BaseService<AnimalFieldResponse> {
     return this.customRequest('bulk', 'POST', data);
   }
 
-  async bulkTransfer(data: BulkTransferRequest): Promise<{ success: boolean; message: string; data: AnimalFieldResponse[]; meta?: Record<string, any> }> {
+  async bulkTransfer(data: BulkTransferRequest): Promise<BulkOperationResponse> {
     try {
-      const res = await this.customRequest<AnimalFieldResponse[]>('transfer', 'POST', data);
+      // customRequest intentionally unwraps `data`; this endpoint also returns
+      // `meta` with skipped animals, so keep the complete response envelope.
+      const response = await api.post(`${this.endpoint}/transfer`, data);
+      const result = normalizeBulkOperationResponse(
+        response.data,
+        `${data.animal_ids.length} animales trasladados exitosamente`,
+      );
       await this.clearCache();
-      return {
-        success: true,
-        data: res,
-        message: `${Array.isArray(res) ? res.length : 0} animales trasladados exitosamente`,
-      };
+      return result;
     } catch (e: any) {
       return {
         success: false,
         data: [],
-        message: e?.message || 'Error en traslado masivo',
+        message: getBulkOperationErrorMessage(e, 'Error en traslado masivo'),
       };
     }
   }
 
-  async bulkRemove(data: { animal_ids: number[]; date?: string }): Promise<{ success: boolean; message: string; data: AnimalFieldResponse[]; meta?: Record<string, any> }> {
+  async bulkRemove(data: { animal_ids: number[]; date?: string }): Promise<BulkOperationResponse> {
     try {
-      const res = await this.customRequest<AnimalFieldResponse[]>('bulk-remove', 'POST', data);
+      const response = await api.post(`${this.endpoint}/bulk-remove`, data);
+      const result = normalizeBulkOperationResponse(
+        response.data,
+        `${data.animal_ids.length} animales retirados exitosamente`,
+      );
       await this.clearCache();
-      return {
-        success: true,
-        data: res,
-        message: `${Array.isArray(res) ? res.length : 0} animales retirados exitosamente`,
-      };
+      return result;
     } catch (e: any) {
       return {
         success: false,
         data: [],
-        message: e?.message || 'Error en retiro masivo',
+        message: getBulkOperationErrorMessage(e, 'Error en retiro masivo'),
       };
     }
   }

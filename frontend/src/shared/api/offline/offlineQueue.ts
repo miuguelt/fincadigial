@@ -1,7 +1,9 @@
 import { getCookie } from '@/shared/utils/cookieUtils';
 import { apiFetch } from '@/shared/api/apiFetch';
 import { toRelativeApiPath } from '@/shared/api/urlUtils';
+import { API_CONFIG } from '@/shared/api/config';
 import { ConflictResolver } from './ConflictResolver';
+import { FieldNodeService } from './FieldNodeService';
 
 export interface QueuedOperation {
   id: string;
@@ -12,6 +14,7 @@ export interface QueuedOperation {
   headers?: Record<string, string>;
   retries: number;
   maxRetries: number;
+  nextAttemptAt?: number;
   status: 'pending' | 'syncing' | 'failed' | 'completed';
   error?: string;
   originDeviceId?: string; // ID del dispositivo que generó el cambio
@@ -30,9 +33,12 @@ export interface QueuedOperation {
 const DB_NAME = 'VillaLuzQueue';
 const DB_VERSION = 1;
 const QUEUE_STORE = 'offlineQueue';
-const MAX_RETRIES = 3;
+// La falta de cobertura no es un fallo permanente. La operación permanece
+// pendiente durante días y sólo se elimina después de una respuesta exitosa.
+// El backoff de la aplicación evita reintentos agresivos mientras no haya ruta.
+const MAX_RETRIES = Number.MAX_SAFE_INTEGER;
 /** Último cursor recibido de /sync/pull, para pedir sólo lo nuevo. */
-const PULL_CURSOR_KEY = 'villaluz_sync_pull_cursor';
+const PULL_CURSOR_KEY_PREFIX = 'villaluz_sync_pull_cursor';
 /** Operación del protocolo sync v2 -> verbo HTTP con el que se reencola. */
 const OPERATION_METHODS: Record<string, QueuedOperation['method']> = {
   create: 'POST',
@@ -220,6 +226,18 @@ const GET_DEVICE_ID = () => {
   return id;
 };
 
+function getFincaId(): number {
+  try {
+    return parseInt(localStorage.getItem('villaluz_finca_id') || '0', 10) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function getPullCursorKey(fincaId: number, deviceId: string): string {
+  return `${PULL_CURSOR_KEY_PREFIX}:${fincaId}:${deviceId}`;
+}
+
 class OfflineQueue {
   private isSyncing = false;
   private syncCallbacks: Array<(success: boolean, operation: QueuedOperation) => void> = [];
@@ -260,7 +278,7 @@ class OfflineQueue {
 
     await dbPut(operation);
 
-    if (typeof navigator !== 'undefined' && navigator.onLine && !this.isSyncing) {
+    if (typeof navigator !== 'undefined' && (navigator.onLine || FieldNodeService.getUrl()) && !this.isSyncing) {
       setTimeout(() => this.syncQueue().catch(() => {}), 500);
     }
 
@@ -279,7 +297,12 @@ class OfflineQueue {
 
   async syncQueue(): Promise<void> {
     const isOnline = typeof navigator === 'undefined' || navigator.onLine;
-    if (this.isSyncing || !isOnline) return;
+    const hasFieldNode = Boolean(FieldNodeService.getUrl());
+    const hasSameOriginApi = API_CONFIG.baseURL.startsWith('/');
+    // navigator.onLine only describes internet reachability imperfectly. A
+    // configured farm node is a valid route even when the browser reports no
+    // internet, so do not abandon the queue in that case.
+    if (this.isSyncing || (!isOnline && !hasFieldNode && !hasSameOriginApi)) return;
 
     const pending = await this.getPendingOperations();
     if (pending.length === 0) return;
@@ -294,6 +317,7 @@ class OfflineQueue {
 
     for (const operation of survivors) {
       if (operation.status === 'syncing') continue;
+      if (operation.nextAttemptAt && operation.nextAttemptAt > Date.now()) continue;
 
       operation.status = 'syncing';
       await dbPut(operation);
@@ -311,18 +335,35 @@ class OfflineQueue {
           headers['X-CSRF-TOKEN'] = headers['X-CSRF-TOKEN'] || csrfToken;
         }
 
-        const res = await apiFetch({
-          url: toRelativeApiPath(operation.url),
-          method: operation.method,
-          data: operation.data,
-          headers,
-          withCredentials: true,
-          validateStatus: () => true,
-          // Avoid re-enqueue loops if replay still fails
-          skipOffline: true,
-        } as any);
+        let res: { status: number };
+        try {
+          const primary = await apiFetch({
+            url: toRelativeApiPath(operation.url),
+            method: operation.method,
+            data: operation.data,
+            headers,
+            withCredentials: true,
+            validateStatus: () => true,
+            // Avoid re-enqueue loops if replay still fails
+            skipOffline: true,
+          } as any);
+          res = primary;
+        } catch (primaryError) {
+          if (!hasFieldNode) throw primaryError;
+
+          // A device may have LAN reachability but no internet. Replay the
+          // original domain mutation through the node, preserving method and
+          // endpoint instead of only depositing an unapplied oplog record.
+          await FieldNodeService.mutate(
+            operation.method,
+            toRelativeApiPath(operation.url),
+            operation.data,
+          );
+          res = { status: 200 };
+        }
 
         if (res.status >= 200 && res.status < 300) {
+          operation.nextAttemptAt = undefined;
           await dbDelete(operation.id);
           this.notifyCallbacks(true, { ...operation, status: 'completed' });
         } else {
@@ -337,6 +378,10 @@ class OfflineQueue {
           await dbPut(operation);
           this.notifyCallbacks(false, operation);
         } else {
+          // Backoff hasta 15 minutos: no quema batería durante una jornada
+          // sin señal, pero la operación sigue pendiente y nunca se pierde.
+          const backoffMs = Math.min(15 * 60 * 1000, 1000 * (2 ** Math.min(operation.retries, 10)));
+          operation.nextAttemptAt = Date.now() + backoffMs;
           operation.status = 'pending';
           await dbPut(operation);
         }
@@ -385,6 +430,7 @@ class OfflineQueue {
         op.status = 'pending';
         op.retries = 0;
         op.error = undefined;
+        op.nextAttemptAt = undefined;
         await dbPut(op);
       }
     }
@@ -448,30 +494,43 @@ class OfflineQueue {
    * ciclo de sincronización en segundo plano.
    */
   async pullFromServer(limit = 100): Promise<{ received: number; hasMore: boolean }> {
-    const fincaId = parseInt(localStorage.getItem('villaluz_finca_id') || '0', 10);
+    const fincaId = getFincaId();
     const deviceId = GET_DEVICE_ID();
     if (!fincaId || !deviceId) {
       return { received: 0, hasMore: false };
     }
 
-    const lastCursor = parseInt(localStorage.getItem(PULL_CURSOR_KEY) || '0', 10);
+    const cursorKey = getPullCursorKey(fincaId, deviceId);
+    const lastCursor = parseInt(localStorage.getItem(cursorKey) || '0', 10);
 
     try {
-      const response = await apiFetch({
-        url: '/sync/pull',
-        method: 'POST',
-        data: { finca_id: fincaId, device_id: deviceId, last_cursor: lastCursor, limit },
-      } as any);
+      let responseBody: any;
+      try {
+        const response = await apiFetch({
+          url: '/sync/pull',
+          method: 'POST',
+          data: { finca_id: fincaId, device_id: deviceId, last_cursor: lastCursor, limit },
+        } as any);
+        responseBody = (response as any).data;
+      } catch (primaryError) {
+        if (!FieldNodeService.getUrl()) throw primaryError;
+        responseBody = await FieldNodeService.post('/sync/pull', {
+          finca_id: fincaId,
+          device_id: deviceId,
+          last_cursor: lastCursor,
+          limit,
+        });
+      }
 
-      const body = (response as any).data?.data ?? (response as any).data ?? {};
+      const body = responseBody?.data ?? responseBody ?? {};
       const operations: any[] = body.operations ?? [];
 
       for (const op of operations) {
         await this.addOperation({
           id: op.operation_id,
           timestamp: Date.parse(op.created_at_device || op.created_at || '') || Date.now(),
-          method: OPERATION_METHODS[op.operation] || 'POST',
-          url: op.entity_type ? `/${op.entity_type}` : '',
+          method: OPERATION_METHODS[op.operation] || op.method || 'POST',
+          url: op.url || (op.entity_type ? `/${String(op.entity_type).replace(/_/g, '-')}` : ''),
           data: op.payload,
           retries: 0,
           maxRetries: MAX_RETRIES,
@@ -485,7 +544,7 @@ class OfflineQueue {
       }
 
       if (body.next_cursor) {
-        localStorage.setItem(PULL_CURSOR_KEY, String(body.next_cursor));
+        localStorage.setItem(cursorKey, String(body.next_cursor));
       }
 
       return { received: operations.length, hasMore: Boolean(body.has_more) };

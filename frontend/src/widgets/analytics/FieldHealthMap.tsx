@@ -56,7 +56,9 @@ export const FieldHealthMap = () => {
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 30000); // Poll every 30s for IoT updates
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') void loadData();
+    }, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -72,7 +74,7 @@ export const FieldHealthMap = () => {
 
   if (loading && fields.length === 0) {
     return (
-      <Card className="h-[500px] flex flex-col items-center justify-center border-none bg-card/40 backdrop-blur-xl">
+      <Card className="h-[500px] flex flex-col items-center justify-center border border-border bg-card">
         <RefreshCw className="h-10 w-10 text-primary animate-spin mb-4" />
         <p className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground animate-pulse">Sincronizando Potreros...</p>
       </Card>
@@ -80,7 +82,7 @@ export const FieldHealthMap = () => {
   }
 
   return (
-    <Card className="border-none shadow-2xl shadow-primary/5 bg-card/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden flex flex-col h-[600px]">
+    <Card className="h-[600px] overflow-hidden rounded-xl border border-border bg-card shadow-sm flex flex-col">
       <CardHeader className="p-8 border-b border-white/5 bg-gradient-to-r from-primary/5 to-transparent flex flex-row items-center justify-between shrink-0">
         <div className="flex items-center gap-4">
           <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
@@ -97,19 +99,14 @@ export const FieldHealthMap = () => {
         {/* Map Canvas */}
         <div className="absolute inset-0 p-10 overflow-auto scrollbar-hide">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 min-w-max">
-            <AnimatePresence mode="popLayout">
               {fields.map((field) => (
-                <motion.div
+                <button
+                  type="button"
                   key={field.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  whileHover={{ scale: 1.05, translateY: -5 }}
                   onClick={() => setSelectedField(field)}
                   className={cn(
-                    "relative w-48 h-48 rounded-xl border transition-all duration-500 cursor-pointer p-5 flex flex-col justify-between group",
-                    "bg-gradient-to-br shadow-xl backdrop-blur-xl",
+                    "relative w-48 h-48 rounded-xl border transition-[border-color,box-shadow] duration-150 cursor-pointer p-5 flex flex-col justify-between group text-left",
+                    "bg-gradient-to-br shadow-sm hover:shadow-md",
                     getStatusColor(field.status)
                   )}
                 >
@@ -132,20 +129,17 @@ export const FieldHealthMap = () => {
                         <span>{Math.round((field.occupation/field.capacity)*100)}%</span>
                       </div>
                       <div className="h-1.5 w-full bg-card/10 rounded-full overflow-hidden">
-                        <motion.div 
-                          initial={{ width: 0 }}
-                          animate={{ width: `${(field.occupation/field.capacity)*100}%` }}
-                          className="h-full bg-current" 
+                        <div
+                          className="h-full bg-current"
+                          style={{ width: `${(field.occupation/field.capacity)*100}%` }}
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* Decorative background circle */}
-                  <div className="absolute -z-10 bottom-0 right-0 h-24 w-24 bg-card/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 group-hover:scale-150 transition-transform duration-700" />
-                </motion.div>
+                </button>
               ))}
-            </AnimatePresence>
           </div>
         </div>
 

@@ -354,43 +354,23 @@
     padding: 0;
     overflow-x: hidden;
     min-width: 320px;
-    background-image:
-      radial-gradient(1400px 600px at 10% -15%, rgba(16, 185, 129, 0.04), transparent 55%),
-      radial-gradient(1000px 500px at 90% -8%, rgba(56, 189, 248, 0.03), transparent 55%),
-      linear-gradient(180deg, hsl(210 25% 97%), hsl(214 22% 94%));
-    background-attachment: fixed;
+    background: hsl(210 25% 97%);
   }
 
   #root {
     min-height: 100vh;
-    background-color: hsla(212, 40%, 98%, 0.72);
+    background-color: hsl(212 40% 98%);
   }
 
-  @supports (backdrop-filter: blur(8px)) {
-    #root {
-      -webkit-backdrop-filter: blur(6px) saturate(120%);
-      backdrop-filter: blur(6px) saturate(120%);
-    }
-  }
-
-  /* Transiciones globales suaves para todos los elementos, EXCEPTO skeletons */
-  *:not(.skeleton-loading) {
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Transiciones específicas para interacciones comunes */
+  /* Keep interactions responsive: never animate layout-affecting properties. */
   button,
   a,
   input,
   select,
   textarea {
-    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Transiciones para elementos hover */
-  button:hover,
-  a:hover {
-    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition-property: color, background-color, border-color, opacity, box-shadow, transform;
+    transition-duration: 120ms;
+    transition-timing-function: ease-out;
   }
 
   /* ── prefers-reduced-motion ──────────────────────────────────────────────────
@@ -413,7 +393,7 @@
      con la paleta primary para todos los elementos interactivos.
   ─────────────────────────────────────────────────────────────────────────── */
   :focus-visible {
-    outline: 2px solid hsl(var(--color-primary));
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
 
@@ -520,21 +500,21 @@
     font-weight: 500;
     line-height: 1.25;
     letter-spacing: -0.025em;
-    color: hsl(var(--foreground));
+    color: var(--foreground);
   }
 
   h2 {
     font-size: 1.25rem;
     font-weight: 500;
     line-height: 1.3;
-    color: hsl(var(--foreground));
+    color: var(--foreground);
   }
 
   h3 {
     font-size: 1rem;
     font-weight: 500;
     line-height: 1.4;
-    color: hsl(var(--foreground));
+    color: var(--foreground);
   }
 
   body {
@@ -995,9 +975,9 @@
 
   /* Modal overlay: oscurece + difumina el fondo con saturación para dar profundidad */
   .vl-modal-overlay {
-    background: rgba(0, 0, 0, 0.45);
-    -webkit-backdrop-filter: blur(12px) saturate(140%);
-    backdrop-filter: blur(12px) saturate(140%);
+    background: hsl(223 47% 11% / 0.68);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
   }
 
   .dark .vl-modal-overlay {
@@ -1005,27 +985,15 @@
   }
 
   .vl-modal-surface {
-    /* Semi-transparent background with full browser support */
-    background: hsla(0, 0%, 100%, 0.75);
-    /* Semi-transparent border */
-    border: 1px solid hsla(214, 32%, 91%, 0.5);
-    box-shadow:
-      0 24px 64px rgba(0, 0, 0, 0.2),
-      0 8px 18px rgba(0, 0, 0, 0.1),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-    -webkit-backdrop-filter: blur(24px) saturate(160%);
-    backdrop-filter: blur(24px) saturate(160%);
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 24px 64px hsl(223 47% 11% / 0.22), 0 8px 18px hsl(223 47% 11% / 0.1);
   }
 
   .dark .vl-modal-surface {
-    /* Semi-transparent dark background with full browser support */
-    background: hsla(222, 84%, 5%, 0.65);
-    /* Semi-transparent border */
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow:
-      0 32px 80px rgba(0, 0, 0, 0.6),
-      0 12px 24px rgba(0, 0, 0, 0.4),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    background: var(--color-card);
+    border-color: var(--color-border);
+    box-shadow: 0 32px 80px hsl(0 0% 0% / 0.6), 0 12px 24px hsl(0 0% 0% / 0.4);
   }
 
   /* Premium WOW utilities */
@@ -1048,20 +1016,7 @@
   }
 
   /* Borde interior sutil (highlight) */
-  .vl-modal-surface::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.12), transparent 60%);
-    opacity: 0.65;
-  }
-
-  .dark .vl-modal-surface::before {
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.06), transparent 60%);
-    opacity: 0.55;
-  }
+  .vl-modal-surface::before { display: none; }
   /* ── Glass Surface — utilidad unificada de glassmorphism ─────────────────
      Usar en paneles, cards y toolbars que flotan sobre contenido.
   ─────────────────────────────────────────────────────────────────────────── */
@@ -1170,7 +1125,7 @@
   width: 40px;
   height: 40px;
   border: 4px solid hsl(var(--primary-ghost));
-  border-top-color: hsl(var(--color-primary));
+    border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 800ms linear infinite;
 }
@@ -1213,7 +1168,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: hsl(var(--color-primary));
+    background-color: var(--color-primary);
   animation: bounce 1.4s infinite ease-in-out both;
 }
 
@@ -1245,7 +1200,7 @@
   align-items: center;
   gap: 16px;
   padding: 32px;
-  background: hsl(var(--color-card));
+    background: var(--color-card);
   border-radius: calc(var(--radius) * 2);
   box-shadow: var(--shadow-2xl);
   animation: scaleIn 300ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -1254,7 +1209,7 @@
 /* Progress bar animations */
 .progress-bar {
   height: 4px;
-  background-color: hsl(var(--color-muted));
+    background-color: var(--color-muted);
   border-radius: 2px;
   overflow: hidden;
   position: relative;
@@ -1262,7 +1217,7 @@
 
 .progress-bar-fill {
   height: 100%;
-  background-color: hsl(var(--color-primary));
+    background-color: var(--color-primary);
   transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1270,7 +1225,7 @@
   position: absolute;
   width: 30%;
   height: 100%;
-  background-color: hsl(var(--color-primary));
+    background-color: var(--color-primary);
   animation: progressIndeterminate 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
@@ -1363,7 +1318,7 @@
   }
 
   ::-webkit-scrollbar-thumb:active {
-    background-color: hsl(var(--color-primary) / 0.75);
+    background-color: color-mix(in srgb, var(--color-primary) 75%, transparent);
   }
 
   ::-webkit-scrollbar-corner {
@@ -1405,4 +1360,110 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ── Villa Luz UI system ────────────────────────────────────────────────────
+   Shared primitives keep every view aligned without forcing page-specific
+   markup to know about the palette or spacing implementation.
+*/
+@layer components {
+  .vl-deferred-section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 420px;
+  }
+
+  .vl-page {
+    min-height: 100%;
+    background: var(--color-background);
+    color: var(--color-foreground);
+  }
+
+  .vl-page-container {
+    width: 100%;
+    max-width: 80rem;
+    margin-inline: auto;
+    padding: var(--space-page-y) var(--space-page-x);
+  }
+
+  .vl-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .vl-page-title {
+    margin: 0;
+    font-size: clamp(1.5rem, 2vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+
+  .vl-page-description {
+    margin-top: 0.375rem;
+    max-width: 48rem;
+    color: var(--color-text-secondary);
+  }
+
+  .vl-section-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+  }
+
+  .vl-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-card);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .vl-tabs {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-secondary);
+  }
+
+  .vl-tab {
+    min-height: 2.5rem;
+    flex: 1;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-primary);
+    color: var(--color-text-secondary);
+    font-weight: 600;
+  }
+
+  .vl-tab:hover { border-color: var(--color-border-strong); color: var(--color-foreground); }
+  .vl-tab[data-active="true"] { border-color: var(--color-primary); background: var(--color-primary); color: var(--color-primary-foreground); }
+
+  .vl-status-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.5rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .vl-status-success { background: var(--color-success); color: var(--color-success-foreground); }
+  .vl-status-warning { background: var(--color-warning); color: var(--color-warning-foreground); }
+  .vl-status-danger { background: var(--color-danger); color: var(--color-danger-foreground); }
+  .vl-status-info { background: var(--color-info); color: var(--color-info-foreground); }
+}
+
+@media (max-width: 767px) {
+  .vl-page-container { padding: var(--space-page-y) var(--space-page-x); }
+  .vl-page-header { flex-direction: column; }
+  .vl-tabs { overflow-x: auto; }
+  .vl-tab { flex: 0 0 auto; min-width: 7rem; padding-inline: 0.75rem; }
 }

@@ -50,11 +50,11 @@ export function QuickActionsModal() {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent 
-        className="p-0 border-0 overflow-hidden bg-background max-w-lg w-full sm:rounded-lg"
+        className="w-[min(640px,calc(100vw-1rem))] max-w-[640px] max-h-[min(90dvh,760px)] p-0 border border-border overflow-hidden bg-background sm:rounded-xl"
         // Le damos un z-index alto para asegurarnos de que quede encima de todo
         zIndex={1200}
       >
-        <div className="max-h-[90vh] overflow-y-auto">
+        <div className="max-h-[min(90dvh,760px)] overflow-y-auto">
           <Suspense fallback={<LoadingScreen message="Cargando formulario..." />}>
             {renderActionContent()}
           </Suspense>

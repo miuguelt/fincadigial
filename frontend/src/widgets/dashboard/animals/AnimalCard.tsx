@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { AnimalResponse } from '@/shared/api/generated/swaggerTypes';
 import { Button } from '@/shared/ui/button';
 import { 
@@ -8,7 +8,6 @@ import {
   IconGenderMale, 
   IconGenderFemale, 
   IconMapPin, 
-  IconPhotoOff,
 } from '@/shared/ui/icons';
 import { AnimalActionsMenu } from '@/widgets/dashboard/AnimalActionsMenu';
 import { AnimalImageBanner } from './AnimalImageBanner';
@@ -35,6 +34,7 @@ interface AnimalCardProps {
   currentUserId?: number;
   hideFooterActions?: boolean;
   embedded?: boolean;
+  compact?: boolean;
   actions?: React.ReactNode;
 }
 
@@ -70,10 +70,14 @@ export function AnimalCard({
   currentUserId,
   hideFooterActions,
   embedded,
+  compact,
   actions,
 }: AnimalCardProps) {
   const navigate = useNavigate();
   const [hasImages, setHasImages] = useState(false);
+  const handleImagesChange = useCallback((images: unknown[]) => {
+    setHasImages(images.length > 0);
+  }, []);
 
   const status = animal.status || 'VIVO';
   const statusColor = {
@@ -113,82 +117,109 @@ export function AnimalCard({
     }
   };
 
+  const handleCardClickEvent = (event: React.MouseEvent<HTMLDivElement>) => {
+    // Custom card handlers own the interaction when this card is embedded in
+    // another clickable card (for example, the admin CRUD cards view).
+    if (onCardClick) event.stopPropagation();
+    handleCardClick();
+  };
+
+  const handleCardKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleCardClick();
+    }
+  };
+
   return (
     <Card
       className={cn(
-        "group relative flex flex-col overflow-hidden transition-all duration-200 cursor-pointer",
-        "hover:-translate-y-0.5 hover:shadow-xl",
+        "group relative flex h-full flex-col overflow-hidden transition-all duration-200 cursor-pointer",
+        "hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
         isSelected && "ring-2 ring-primary shadow-lg shadow-primary/20",
-        embedded && "shadow-none border-none hover:translate-y-0"
+        embedded && "shadow-none border-none hover:translate-y-0",
+        compact && "hover:shadow-md"
       )}
-      onClick={handleCardClick}
+      onClick={handleCardClickEvent}
+      onKeyDown={handleCardKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label={`Abrir ficha de ${animal.record || `animal ${animal.id}`}`}
     >
       {/* Header: Imagen y Badges */}
-      <div className="relative aspect-video w-full overflow-hidden bg-[var(--color-surface-raised)]">
+      <div className={cn(
+        "relative aspect-video w-full overflow-hidden bg-[var(--color-surface-raised)]",
+        compact && "aspect-[2/1]"
+      )}>
         <AnimalImageBanner
           animalId={animal.id!}
           height="100%"
           showControls={false}
           objectFit="cover"
-          onImagesChange={(imgs) => setHasImages(imgs.length > 0)}
+          onImagesChange={handleImagesChange}
           initialImages={(animal as any).images}
+          deferLoad
+          deferRootMargin="100px"
         />
         
-        {!hasImages && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-[var(--color-text-muted)]">
-            <IconPhotoOff size={32} strokeWidth={1.2} />
-            <span className="text-[10px] font-medium uppercase tracking-wider">Sin imágenes</span>
-          </div>
-        )}
-
         {/* Chip Estado (Top-Left) */}
-        <div className="absolute top-2 left-2 flex items-center gap-1.5 px-2 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10">
+        <div className="absolute top-2 left-2 flex items-center gap-1.5 rounded-full border border-white/10 bg-black/70 px-2 py-1">
           <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: statusColor }} />
           <span className="text-[9px] font-bold text-white uppercase tracking-widest">{status}</span>
         </div>
 
-        {/* Botón Detalle (Top-Right) */}
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button
-            size="icon"
-            variant="secondary"
-            className="w-7 h-7 rounded-lg shadow-lg"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleCardClick();
-            }}
-          >
-            <IconEye size={14} />
-          </Button>
-        </div>
-
-        {/* Badge Potrero y Alertas (Bottom) */}
-        <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between gap-2">
+        {/* Badge Potrero y Alertas (Bottom, solo sobre imágenes reales) */}
+        {hasImages && <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between gap-2">
           {field && field !== 'Sin potrero' && (
             <div 
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border shadow-lg max-w-[70%] transition-transform group-hover:scale-105"
+              className="flex min-w-0 items-center gap-1.5 px-2.5 py-1 rounded-lg border shadow-lg max-w-[70%] transition-transform group-hover:scale-105"
               style={{ 
-                backgroundColor: `${potreroColor}20`, 
-                borderColor: `${potreroColor}40`,
-                backdropFilter: 'blur(8px)'
+                backgroundColor: potreroColor,
+                borderColor: potreroColor,
               }}
             >
-              <IconMapPin size={10} style={{ color: potreroColor }} />
-              <span className="text-[10px] font-bold uppercase tracking-tight truncate" style={{ color: potreroColor }}>
+              <IconMapPin size={10} className="shrink-0 text-white" />
+              <span className="truncate text-[10px] font-bold uppercase tracking-tight text-white">
                 {field}
               </span>
             </div>
           )}
           
           {alertCount > 0 && (
-            <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-[var(--color-warning)] text-white shadow-lg animate-pulse">
+            <div className="mr-12 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[var(--color-warning)] text-slate-950 shadow-lg animate-pulse">
               <span className="text-[10px] font-black">{alertCount}!</span>
             </div>
           )}
-        </div>
+        </div>}
       </div>
 
-      <CardContent className="p-4 flex flex-col gap-3">
+      <CardContent className={cn("flex flex-col gap-3 p-4", compact && "gap-2.5 p-3")}>
+        {/* En tarjetas sin imagen, el potrero vive fuera del banner para no tapar el estado vacío. */}
+        {!hasImages && (field || alertCount > 0) && (
+          <div className="-mt-1 flex items-center justify-between gap-2 pb-1">
+            {field && field !== 'Sin potrero' ? (
+              <div
+                className="flex min-w-0 max-w-[calc(100%-2rem)] items-center gap-1.5 rounded-lg border px-2 py-1 shadow-sm"
+                style={{
+                  backgroundColor: potreroColor,
+                  borderColor: potreroColor,
+                }}
+              >
+                <IconMapPin size={10} className="shrink-0 text-white" />
+                <span className="truncate text-[10px] font-bold uppercase tracking-tight text-white">
+                  {field}
+                </span>
+              </div>
+            ) : <span />}
+
+            {alertCount > 0 && (
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[var(--color-warning)] text-slate-950 shadow-sm">
+                <span className="text-[10px] font-black">{alertCount}!</span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Identidad */}
         <div>
           <div className="flex items-start justify-between gap-2">
@@ -232,7 +263,7 @@ export function AnimalCard({
         <div className="h-px bg-[var(--color-border)] opacity-50" />
 
         {/* Grid Peso y Edad */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <div className="flex flex-col gap-0.5">
             <div className="flex items-center gap-1.5 text-[var(--color-text-muted)]">
               <IconScale size={12} />
@@ -249,10 +280,10 @@ export function AnimalCard({
           </div>
         </div>
 
-        <div className="h-px bg-[var(--color-border)] opacity-50" />
+        {!compact && <div className="h-px bg-[var(--color-border)] opacity-50" />}
 
         {/* Grid Padres */}
-        <div className="grid grid-cols-2 gap-4">
+        {!compact && <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <div 
             className={cn("flex flex-col gap-0.5 overflow-hidden", onFatherClick && "cursor-pointer hover:opacity-70")}
             onClick={(e) => {
@@ -283,6 +314,24 @@ export function AnimalCard({
             </div>
             <p className="text-[10px] font-medium text-[var(--color-text)] truncate">{mother}</p>
           </div>
+        </div>}
+
+        {/* Acción principal visible: el resto de la tarjeta también es clicable. */}
+        <div className="mt-auto border-t border-[var(--color-border)] pt-3">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-10 w-full justify-center gap-2 text-xs font-bold"
+            onClick={(event) => {
+              event.stopPropagation();
+              handleCardClick();
+            }}
+            aria-label={`Abrir ficha de ${animal.record || `animal ${animal.id}`}`}
+          >
+            <IconEye size={16} />
+            <span>{compact ? 'Abrir ficha' : 'Ver ficha completa'}</span>
+          </Button>
         </div>
       </CardContent>
     </Card>

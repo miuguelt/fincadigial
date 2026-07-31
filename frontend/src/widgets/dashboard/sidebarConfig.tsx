@@ -1,7 +1,5 @@
 import { ReactNode } from "react";
 import {
-  IconHome2,
-  IconBuildingFarm,
   IconCow,
   IconMap2,
   IconCirclePlus,
@@ -22,7 +20,6 @@ import {
   IconClipboardList,
   IconShoppingBag,
   IconWorld,
-  IconCalendar,
 } from "@/shared/ui/icons";
 
 export type Role =
@@ -52,39 +49,6 @@ const TechnicalRoles: Role[] = ["Administrador", "Propietario", "Capataz", "Inst
 const AdminAndInstructorRoles: Role[] = ["Administrador", "Propietario", "Capataz", "Instructor"];
 
 export const sidebarItems: SidebarItemConfig[] = [
-  {
-    title: "Mi Finca",
-    icon: <IconHome2 size={24} />,
-    path: "dashboard",
-    roles: AllRoles,
-  },
-  {
-    title: "Calendario",
-    icon: <IconCalendar size={24} />,
-    path: "calendar",
-    roles: AllRoles,
-  },
-  {
-    title: "Cambiar de Finca",
-    icon: <IconBuildingFarm size={24} />,
-    roles: AllRoles,
-    children: [
-      {
-        title: "Mis Fincas",
-        icon: <IconBuildingFarm size={20} />,
-        path: "/select-finca",
-        activePaths: ["fincas/crear"],
-        roles: AllRoles,
-        badge: "farmNotificationsCount",
-      },
-      {
-        title: "Agregar Finca",
-        icon: <IconCirclePlus size={20} />,
-        path: "/fincas/crear",
-        roles: AllRoles,
-      },
-    ],
-  },
   {
     title: "Ganadería",
     icon: <IconCow size={24} />,

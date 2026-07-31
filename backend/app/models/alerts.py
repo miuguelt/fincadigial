@@ -66,6 +66,12 @@ class AnimalAlert(BaseModel):
     __table_args__ = (
         db.Index('ix_animal_alerts_animal_read', 'animal_id', 'is_read'),
         db.Index('ix_animal_alerts_finca_id', 'finca_id'),
+        db.Index(
+            'ix_animal_alerts_finca_unread_triggered',
+            'finca_id',
+            'triggered_at',
+            postgresql_where=db.text('is_read = false'),
+        ),
     )
 
     id           = db.Column(db.Integer, primary_key=True)

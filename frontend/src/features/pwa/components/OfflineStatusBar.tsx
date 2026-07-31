@@ -46,9 +46,9 @@ const ICONS: Record<ConnectivityLevel, React.ElementType> = {
 };
 
 const LABELS: Record<ConnectivityLevel, string> = {
-	online: "En línea",
-	p2p: "Modo Local (P2P)",
-	isolated: "Sin Conexión",
+	online: "Conectado automáticamente",
+	p2p: "Compartiendo cerca",
+	isolated: "Guardado en este equipo",
 };
 
 const COLORS: Record<ConnectivityLevel, string> = {
@@ -68,10 +68,8 @@ export const OfflineStatusBar = React.memo(function OfflineStatusBar() {
 	const { pendingCount, isSyncing, isOnline, syncNow } = useOfflineSync();
 	const {
 		peers,
-		isModeActive,
 		activateModeField,
 		deactivateModeField,
-		syncWithPeer,
 	} = useProximityPeers();
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [prefetchProgress, setPrefetchProgress] =
@@ -201,7 +199,14 @@ export const OfflineStatusBar = React.memo(function OfflineStatusBar() {
 					<div className="flex-1 min-w-0">
 						<p className="font-semibold text-sm text-zinc-100">{LABELS[level]}</p>
 						<p className="text-[11px] text-zinc-400 truncate">
-							{!isOnline ? "Trabajando en modo local" : "Conexión estable"}
+							{isOnline
+								? peers.length > 0
+									? "La app comparte con equipos cercanos"
+									: "La app enviará los datos automáticamente"
+									: peers.length > 0
+										? "La app está pasando datos sin internet"
+										: "La app seguirá buscando una conexión"
+							}
 						</p>
 					</div>
 
@@ -293,16 +298,9 @@ export const OfflineStatusBar = React.memo(function OfflineStatusBar() {
 													{peer.connectionType === "bluetooth" ? <Radio className="w-4 h-4" /> : <Wifi className="w-4 h-4" />}
 												</div>
 												<span className="text-sm text-zinc-200 flex-1 truncate font-medium">{peer.name}</span>
-												<button
-													onClick={(e) => {
-														e.stopPropagation();
-														syncWithPeer(peer.id);
-													}}
-													className="text-xs bg-emerald-600/90 hover:bg-emerald-500 text-white active:scale-95 px-3 py-1.5 rounded-full font-medium transition-all"
-													aria-label={`Sincronizar con ${peer.name}`}
-												>
-													Sincronizar
-												</button>
+														<span className="text-xs text-emerald-400 font-medium">
+															{peer.isConnected ? "Compartiendo" : "Buscando ruta"}
+														</span>
 											</div>
 										))}
 									</div>
@@ -354,23 +352,6 @@ export const OfflineStatusBar = React.memo(function OfflineStatusBar() {
 									</button>
 								)}
 
-								{/* Modo P2P Toggle */}
-								<button
-									onClick={(e) => {
-										e.stopPropagation();
-										isModeActive ? deactivateModeField() : activateModeField();
-									}}
-									className={cn(
-										"flex items-center justify-center gap-1.5 border text-xs font-semibold px-3 py-2.5 rounded-xl transition-all active:scale-95",
-										isModeActive
-											? "bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20"
-											: "bg-zinc-800 border-zinc-700/50 text-zinc-200 hover:bg-zinc-700",
-										(!isOnline && pendingCount === 0) ? "col-span-2" : ""
-									)}
-								>
-									<Radio className="w-3.5 h-3.5" />
-									{isModeActive ? "P2P Activo" : "Activar P2P"}
-								</button>
 							</div>
 
 							{/* Pie de Info */}

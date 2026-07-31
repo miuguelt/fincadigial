@@ -163,19 +163,8 @@ export default defineConfig(({ command, mode }) => {
       target: 'esnext',
       sourcemap: !isProd,
       chunkSizeWarningLimit: 800,
-      rollupOptions: {
-        output: {
-          manualChunks(id) {
-            if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/react-router')) return 'vendor-core';
-            if (id.includes('node_modules/@tanstack/react-query')) return 'vendor-state';
-            if (id.includes('node_modules/recharts') || id.includes('node_modules/chart.js') || id.includes('node_modules/react-chartjs-2')) return 'vendor-charts';
-            if (id.includes('node_modules/lucide-react') || id.includes('node_modules/react-icons') || id.includes('node_modules/@radix-ui') || id.includes('node_modules/@heroui')) return 'vendor-ui-icons';
-            if (id.includes('node_modules/react-hook-form') || id.includes('node_modules/zod') || id.includes('node_modules/axios')) return 'vendor-utils';
-            if (id.includes('node_modules/date-fns') || id.includes('node_modules/framer-motion')) return 'vendor-ux';
-            if (id.includes('node_modules/leaflet')) return 'vendor-maps';
-          },
-        },
-      },
+      // Let Rollup preserve lazy-route boundaries. Coarse vendor chunks made
+      // login preload charts, maps and animation libraries it never renders.
     },
     server: {
       https: httpsConfig,

@@ -77,16 +77,17 @@ export const MeshMonitor: React.FC = () => {
     window.addEventListener("offline", handleStatus);
 
     const updateQueue = async () => {
+      if (document.visibilityState === "hidden") return;
       const count = await offlineQueue.getPendingCount();
       setPendingCount(count);
     };
 
-    const interval = setInterval(updateQueue, 3000);
+    const interval = setInterval(updateQueue, 15000);
     updateQueue();
     updateSyncState();
 
     // Sincronización Invisible: Iniciar escaneo pasivo automático al montar
-    proximitySync.startPassiveScanning().catch((err) => 
+    proximitySync.startAutomaticDiscovery().catch((err) =>
       console.error("[MeshMonitor] Error en escaneado invisible inicial:", err)
     );
 

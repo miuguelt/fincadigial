@@ -1,5 +1,5 @@
 import { Check, LayoutDashboard, Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { DropdownMenuItem, DropdownMenuLabel } from '@/shared/ui/dropdown-menu';
 import { useMultiFinca } from '@/features/multi-finca/model/useMultiFinca';
 import { cn } from '@/shared/ui/cn';
@@ -15,7 +15,7 @@ interface Props {
  * se movió aquí para que la hamburguesa sea únicamente la lista de secciones.
  */
 export function ProfileFincaItems({ fincas, activeFincaId, onNavigate }: Props) {
-  const navigate = useNavigate();
+  const [, setSearchParams] = useSearchParams();
   const { switchFinca, switching } = useMultiFinca();
 
   return (
@@ -55,7 +55,9 @@ export function ProfileFincaItems({ fincas, activeFincaId, onNavigate }: Props) 
 
       <DropdownMenuItem
         onClick={() => {
-          navigate('/fincas/crear');
+          const nextParams = new URLSearchParams(window.location.search);
+          nextParams.set('modal', 'create-finca');
+          setSearchParams(nextParams, { replace: true });
           onNavigate?.();
         }}
         className="flex min-h-[44px] cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-bold text-primary"

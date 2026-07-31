@@ -70,11 +70,13 @@ class RedisEventBus:
                 backoff = self._backoff_seconds()
                 self._circuit_open_until = time.time() + backoff
                 now = time.time()
-                # Rule: at most one warning per minute for repeating errors.
+                # Rule: at most one warning per minute for repeating errors without traceback.
                 if now - last_warning >= self.WARNING_THROTTLE_SECONDS:
+                    err_msg = str(exc)
+                    err_type = type(exc).__name__
                     logger.warning(
-                        "Redis EventBus desconectado (%s). Reintentando en %ss",
-                        exc, backoff
+                        "Redis EventBus desconectado (%s: %s). Reintentando en %ss (throttled)",
+                        err_type, err_msg, backoff
                     )
                     last_warning = now
             finally:

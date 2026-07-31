@@ -212,9 +212,9 @@ const AnimalsPotrerosHeader: React.FC = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <KPICard title="Capacidad Total" value={metrics.totalCapacity} icon={<Users className="text-primary" />} />
-        <KPICard title="Animales en Campo" value={metrics.totalAnimals} icon={<Activity className="text-rose-500" />} />
-        <KPICard title="Ocupación" value={`${metrics.occupation}%`} icon={<ClipboardCheck className="text-amber-500" />} />
-        <KPICard title="Cupos Libres" value={metrics.available} icon={<CheckCircle2 className="text-emerald-500" />} />
+        <KPICard title="Animales vivos en campo" value={metrics.totalAnimals} icon={<Activity className="text-rose-500" />} />
+        <KPICard title="Ocupación de animales vivos" value={`${metrics.occupation}%`} icon={<ClipboardCheck className="text-amber-500" />} />
+        <KPICard title="Cupos libres (vivos)" value={metrics.available} icon={<CheckCircle2 className="text-emerald-500" />} />
       </div>
     </div>
   );
@@ -244,52 +244,56 @@ function AdminAnimalsPage() {
 
   // Preferencia global ya persistida en el hook
 
-  // Hook para razas - usar getPaginated con límite alto para obtener todas
+  // Los selectores cargan una muestra pequeña y delegan la búsqueda al backend.
   const {
     options: breedOptions,
     loading: _loadingBreeds,
     handleSearch: _handleSearchBreeds,
   } = useForeignKeySelect(
-    (params) => breedsService.getPaginated({ ...params, limit: 1000 }),
+    (params) => breedsService.getPaginated({ ...params, limit: 100 }),
     (b: { id: number; name: string }) => ({ value: b.id, label: b.name }),
     undefined,
-    1000
+    100
   );
 
-  // Hook para padres (solo machos) - cargar todos con límite alto
+  // Filtrar en PostgreSQL evita descargar y serializar todo el hato dos veces.
   const {
     options: fatherOptions,
     loading: _loadingFathers,
     refresh: refreshFathers,
   } = useForeignKeySelect(
-    (params) => animalsService.getAnimalsPaginated({ ...params, limit: 1000 }),
+    (params) => animalsService.getAnimalsPaginated({
+      ...params,
+      sex: 'Macho',
+      fields: 'id,record,sex',
+      limit: 50,
+    }),
     (a: { id: number; record: string; sex?: string; gender?: string }) => ({
       value: a.id,
       label: a.record ? `${a.record}` : `ID ${a.id}`
     }),
-    (a: { sex?: string; gender?: string }) => {
-      const gender = a.sex || a.gender;
-      return String(gender).toLowerCase() === 'macho';
-    },
-    1000
+    undefined,
+    50
   );
 
-  // Hook para madres (solo hembras) - cargar todas con límite alto
+  // Las búsquedas posteriores mantienen el filtro de sexo y un payload mínimo.
   const {
     options: motherOptions,
     loading: _loadingMothers,
     refresh: refreshMothers,
   } = useForeignKeySelect(
-    (params) => animalsService.getAnimalsPaginated({ ...params, limit: 1000 }),
+    (params) => animalsService.getAnimalsPaginated({
+      ...params,
+      sex: 'Hembra',
+      fields: 'id,record,sex',
+      limit: 50,
+    }),
     (a: { id: number; record: string; sex?: string; gender?: string }) => ({
       value: a.id,
       label: a.record ? `${a.record}` : `ID ${a.id}`
     }),
-    (a: { sex?: string; gender?: string }) => {
-      const gender = a.sex || a.gender;
-      return String(gender).toLowerCase() === 'hembra';
-    },
-    1000
+    undefined,
+    50
   );
 
   // Estados para modales
@@ -619,6 +623,7 @@ function AdminAnimalsPage() {
         alertCount={alertCount}
         onFatherClick={openAnimalDetailModal}
         onMotherClick={openAnimalDetailModal}
+        onCardClick={() => openAnimalDetailModal(Number(item.id))}
         hideFooterActions
         embedded
       />
@@ -730,6 +735,9 @@ function AdminAnimalsPage() {
     renderGrouped: vista === 'potreros' ? renderGroupedAnimals : undefined,
     cardGridClassName: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6',
     customHeader: vista === 'potreros' ? <AnimalsPotrerosHeader /> : undefined,
+    // Mantener la vista agrupada paginada: montar decenas de tarjetas complejas
+    // a la vez bloquea React y la GPU en equipos modestos.
+    defaultLimit: 25,
     customToolbar: (
       <div className="flex items-center gap-1">
         <Button
@@ -1067,7 +1075,6 @@ function AdminAnimalsPage() {
           onSuccess={() => {
             setBulkModal(null);
             clearSelectionRef.current?.();
-            showToast('Traslado masivo completado', 'success');
           }}
         />
       )}

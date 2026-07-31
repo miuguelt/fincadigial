@@ -13,6 +13,7 @@ import { offlineQueue } from '@/shared/api/offline/offlineQueue';
 import { animalsService } from '@/entities/animal/api/animal.service';
 import { controlService } from '@/entities/control/api/control.service';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
+import { emitDataRefresh } from '@/shared/utils/dataRefresh';
 
 export default function QuickControl() {
   useAuth();
@@ -77,6 +78,7 @@ export default function QuickControl() {
         await controlService.createControl(payload);
         showToast('Control registrado exitosamente', 'success');
       }
+      emitDataRefresh('controls');
       handleClose();
     } catch (error) {
       console.error('Error creating control:', error);

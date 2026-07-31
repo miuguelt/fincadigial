@@ -6,6 +6,7 @@
  * `pending` y se reintenta al volver online. No se fabrica ningún mensaje.
  */
 import api from '@/shared/api/client';
+import { FieldNodeService } from './FieldNodeService';
 
 export interface ChatMessage {
   id: number | string;
@@ -14,6 +15,9 @@ export interface ChatMessage {
   recipientId: number;
   content: string;
   createdAt: string;
+  attachmentUrl?: string;
+  attachmentType?: 'image' | 'file';
+  attachmentName?: string;
   /** pending: sólo en el buffer local · delivered: en servidor sin leer · synced: leído. */
   status: 'pending' | 'delivered' | 'synced';
 }
@@ -27,6 +31,9 @@ interface ApiChatMessage {
   message: string;
   created_at: string;
   is_read?: boolean;
+  attachment_url?: string;
+  attachment_type?: 'image' | 'file';
+  attachment_name?: string;
 }
 
 function fromApi(raw: ApiChatMessage): ChatMessage {
@@ -37,11 +44,15 @@ function fromApi(raw: ApiChatMessage): ChatMessage {
     recipientId: raw.recipient_id,
     content: raw.message,
     createdAt: raw.created_at,
+    attachmentUrl: raw.attachment_url,
+    attachmentType: raw.attachment_type,
+    attachmentName: raw.attachment_name,
     status: raw.is_read ? 'synced' : 'delivered',
   };
 }
 
 const STORAGE_KEY = 'villaluz.chat.outbox';
+const CACHE_KEY = 'villaluz.chat.cache';
 
 type Listener = (messages: ChatMessage[]) => void;
 
@@ -62,9 +73,39 @@ function writeOutbox(messages: ChatMessage[]): void {
   }
 }
 
+function readCache(): ChatMessage[] {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    return raw ? (JSON.parse(raw) as ChatMessage[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function mergeMessages(...groups: ChatMessage[][]): ChatMessage[] {
+  const merged = new Map<string, ChatMessage>();
+  for (const message of groups.flat()) {
+    const key = String(message.id);
+    const previous = merged.get(key);
+    if (!previous || (previous.status === 'pending' && message.status !== 'pending')) {
+      merged.set(key, message);
+    }
+  }
+  return [...merged.values()].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+}
+
+function writeCache(messages: ChatMessage[]): void {
+  try {
+    // Text chat is deliberately bounded so it cannot exhaust storage on low-end phones.
+    localStorage.setItem(CACHE_KEY, JSON.stringify(messages.slice(-500)));
+  } catch {
+    /* Cache is an optimization; the pending outbox remains the durable priority. */
+  }
+}
+
 class OfflineChatServiceImpl {
   private listeners = new Set<Listener>();
-  private messages: ChatMessage[] = readOutbox();
+  private messages: ChatMessage[] = mergeMessages(readCache(), readOutbox());
 
   subscribe(listener: Listener): () => void {
     this.listeners.add(listener);
@@ -74,6 +115,7 @@ class OfflineChatServiceImpl {
 
   private emit(): void {
     writeOutbox(this.messages.filter((m) => m.status === 'pending'));
+    writeCache(this.messages);
     for (const listener of this.listeners) listener(this.messages);
   }
 
@@ -83,18 +125,53 @@ class OfflineChatServiceImpl {
    * del anterior, y entre casos de prueba.
    */
   reset(): void {
-    this.messages = readOutbox();
+    this.messages = mergeMessages(readCache(), readOutbox());
     this.emit();
   }
 
+  getConversation(recipientId: number, senderId?: number): ChatMessage[] {
+    if (senderId === undefined) {
+      return this.messages.filter((message) =>
+        message.recipientId === recipientId || message.senderId === recipientId,
+      );
+    }
+    return this.messages.filter((message) =>
+      (message.senderId === senderId && message.recipientId === recipientId) ||
+      (message.senderId === recipientId && message.recipientId === senderId),
+    );
+  }
+
   /** Carga el historial con un usuario desde el servidor. */
-  async loadHistory(recipientId: number): Promise<ChatMessage[]> {
-    const response = await api.get<{ data: ApiChatMessage[] }>(`/chat/history/${recipientId}`);
-    const history = (response.data?.data ?? []).map(fromApi);
-    const pending = this.messages.filter((m) => m.status === 'pending');
-    this.messages = [...history, ...pending];
-    this.emit();
-    return history;
+  async loadHistory(recipientId: number, senderId?: number): Promise<ChatMessage[]> {
+    try {
+      // Chat history must not use the generic GET cache: a cached empty result
+      // can hide a message that was just confirmed by the server or field node.
+      const response = await api.get<{ data: ApiChatMessage[] }>(
+        `/chat/history/${recipientId}`,
+        { skipCache: true } as never,
+      );
+      const history = (response.data?.data ?? []).map(fromApi);
+      const pending = this.messages.filter(
+        (message) => message.status === 'pending' && message.recipientId === recipientId,
+      );
+      this.messages = mergeMessages(this.messages, history, pending);
+      this.emit();
+      // The endpoint already scopes the result to this conversation. Returning
+      // it directly avoids a transient auth-shape mismatch hiding valid rows.
+      return mergeMessages(history, pending);
+    } catch (primaryError) {
+      try {
+        const response = await FieldNodeService.get<{ data?: ApiChatMessage[] }>(`/chat/history/${recipientId}`);
+        const history = (response.data ?? []).map(fromApi);
+        this.messages = mergeMessages(this.messages, history);
+        this.emit();
+      } catch {
+        // Local cache is the final fallback. The primary error is intentionally
+        // swallowed so opening a conversation never crashes in the field.
+        void primaryError;
+      }
+      return this.getConversation(recipientId, senderId);
+    }
   }
 
   /**
@@ -120,18 +197,33 @@ class OfflineChatServiceImpl {
     this.emit();
 
     try {
-      const response = await api.post<{ data: ApiChatMessage }>('/chat/send', {
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        throw new Error('OFFLINE_MESSAGE_QUEUED');
+      }
+      const response = await api.post<{ data?: ApiChatMessage; __offlineQueued?: boolean }>('/chat/send', {
         recipient_id: recipientId,
         message: text,
-      });
+      }, { skipOffline: true } as never);
+      if (response.status === 202 || response.data?.__offlineQueued) throw new Error('PRIMARY_MESSAGE_QUEUED');
       const raw = response.data?.data;
       const saved: ChatMessage = raw ? fromApi(raw) : { ...optimistic, status: 'delivered' };
       this.messages = this.messages.map((m) => (m.id === optimistic.id ? saved : m));
       this.emit();
       return saved;
-    } catch (error) {
-      this.emit();
-      throw error;
+    } catch (primaryError) {
+      try {
+        const response = await FieldNodeService.post<{ data?: ApiChatMessage }>('/chat/send', {
+          recipient_id: recipientId,
+          message: text,
+        });
+        const saved = response.data ? fromApi(response.data) : { ...optimistic, status: 'delivered' as const };
+        this.messages = this.messages.map((m) => (m.id === optimistic.id ? saved : m));
+        this.emit();
+        return saved;
+      } catch {
+        this.emit();
+        throw primaryError;
+      }
     }
   }
 
@@ -140,11 +232,21 @@ class OfflineChatServiceImpl {
     const pending = this.messages.filter((m) => m.status === 'pending');
     for (const message of pending) {
       try {
-        const response = await api.post<{ data: ApiChatMessage }>('/chat/send', {
-          recipient_id: message.recipientId,
-          message: message.content,
-        });
-        const raw = response.data?.data;
+        let raw: ApiChatMessage | undefined;
+        try {
+          const response = await api.post<{ data?: ApiChatMessage; __offlineQueued?: boolean }>('/chat/send', {
+            recipient_id: message.recipientId,
+            message: message.content,
+          }, { skipOffline: true } as never);
+          if (response.status === 202 || response.data?.__offlineQueued) throw new Error('PRIMARY_MESSAGE_QUEUED');
+          raw = response.data?.data;
+        } catch {
+          const response = await FieldNodeService.post<{ data?: ApiChatMessage }>('/chat/send', {
+            recipient_id: message.recipientId,
+            message: message.content,
+          });
+          raw = response.data;
+        }
         this.messages = this.messages.map((m) =>
           m.id === message.id ? (raw ? fromApi(raw) : { ...m, status: 'delivered' as const }) : m,
         );
@@ -170,7 +272,12 @@ class OfflineChatServiceImpl {
       const response = await api.get<{ data: { unread_count?: number } }>('/chat/unread-count');
       return response.data?.data?.unread_count ?? 0;
     } catch {
-      return 0;
+      try {
+        const response = await FieldNodeService.get<{ data?: { unread_count?: number } }>('/chat/unread-count');
+        return response.data?.unread_count ?? 0;
+      } catch {
+        return 0;
+      }
     }
   }
 

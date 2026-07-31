@@ -49,7 +49,7 @@ export function WeatherLocationBanner({ fincaName, location, hasCoordinates, las
 				</span>
 			)}
 			<span className="text-sky-600 dark:text-sky-400 font-medium">
-				Datos: Open-Meteo
+				Fuente: Open-Meteo · modelo meteorológico
 			</span>
 		</div>
 	);

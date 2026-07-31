@@ -39,11 +39,19 @@ export const useNotifications = () => {
   }, []);
 
   useEffect(() => {
-    fetchNotifications();
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible' && navigator.onLine) {
+        void fetchNotifications();
+      }
+    };
+    refreshWhenVisible();
     
-    // Polling opcional cada 1 minuto
-    const interval = setInterval(fetchNotifications, 60000);
-    return () => clearInterval(interval);
+    const interval = setInterval(refreshWhenVisible, 120000);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+    };
   }, [fetchNotifications]);
 
   const totalPending = useMemo(() => {

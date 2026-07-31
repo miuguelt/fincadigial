@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { analyticsService } from '@/features/reporting/api/analytics.service';
 
 export interface StatTrend {
@@ -106,36 +106,59 @@ export function useCompleteDashboardStats(
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const hasStatsRef = useRef(false);
 
   const fetchStats = useCallback(async () => {
     try {
-      setLoading(true);
+      // Keep stale data visible while reconnecting; only show the spinner on
+      // the first load of a device.
+      setLoading(!hasStatsRef.current);
       setError(null);
 
       const data = await analyticsService.getCompleteDashboardStats();
 
       setStats(data);
+      hasStatsRef.current = true;
       setLastUpdated(new Date());
     } catch (err) {
-      console.error('Error fetching complete dashboard stats:', err);
-      setError(err instanceof Error ? err : new Error('Error desconocido'));
+      const nextError = err instanceof Error ? err : new Error('Error desconocido');
+      if (typeof navigator === 'undefined' || navigator.onLine !== false) {
+        console.error('Error fetching complete dashboard stats:', nextError);
+      }
+      setError(nextError);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    // Cargar datos iniciales
-    fetchStats();
+    const refreshWhenVisible = () => {
+      if (typeof document === 'undefined' || document.visibilityState !== 'hidden') {
+        void fetchStats();
+      }
+    };
 
-    // Configurar auto-refresh si está habilitado
+    // Load immediately. The API client serves IndexedDB when offline and
+    // fails fast when no local snapshot exists.
+    refreshWhenVisible();
+
+    const handleOnline = () => refreshWhenVisible();
+    window.addEventListener('online', handleOnline);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+
+    // Refresh only while the tab is visible to avoid wasting rural data.
+    let intervalId: ReturnType<typeof setInterval> | undefined;
     if (autoRefresh) {
-      const intervalId = setInterval(() => {
-        fetchStats();
+      intervalId = setInterval(() => {
+        refreshWhenVisible();
       }, refreshInterval);
-
-      return () => clearInterval(intervalId);
     }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+      window.removeEventListener('online', handleOnline);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+    };
   }, [fetchStats, autoRefresh, refreshInterval]);
 
   return {

@@ -27,6 +27,7 @@ class MilkProduction(BaseModel):
         db.Index('ix_milk_production_animal_id', 'animal_id'),
         db.Index('ix_milk_production_finca_id', 'finca_id'),
         db.Index('ix_milk_production_date', 'date'),
+        db.Index('ix_milk_production_finca_date', 'finca_id', 'date'),
         db.UniqueConstraint('animal_id', 'date', 'milking_session', name='uq_milk_production_animal_date_session'),
     )
 

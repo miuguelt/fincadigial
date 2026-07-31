@@ -60,14 +60,15 @@ services:
     image: villaluz-backend:${APP_VERSION:-latest}
     container_name: villaluz_backend
     restart: unless-stopped
-    # Workers = 2 × CPU_CORES + 1 (VPS de 2 vCPU = 5 workers óptimos)
+    # Keep the process count conservative on a small VPS. Gevent handles
+    # concurrent I/O without multiplying PostgreSQL connections unnecessarily.
     command: >
       gunicorn
       --preload
       --worker-class gevent
-      --workers ${GUNICORN_WORKERS:-5}
-      --worker-connections ${GUNICORN_CONNECTIONS:-200}
-      --timeout ${GUNICORN_TIMEOUT:-120}
+      --workers ${GUNICORN_WORKERS:-2}
+      --worker-connections ${GUNICORN_CONNECTIONS:-100}
+      --timeout ${GUNICORN_TIMEOUT:-60}
       --graceful-timeout 30
       --max-requests 1000
       --max-requests-jitter 100
@@ -90,6 +91,9 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME:-villaluz}
       SQLALCHEMY_DATABASE_URI: "postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@villaluz-db:5432/${DB_NAME}"
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-4}
+      DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-1}
+      DB_POOL_TIMEOUT: ${DB_POOL_TIMEOUT:-20}
       # ── Seguridad ──
       FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}

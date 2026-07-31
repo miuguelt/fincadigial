@@ -1,7 +1,7 @@
 from flask_restx import Namespace, Resource
 import flask
 from flask_jwt_extended import jwt_required
-from sqlalchemy import func
+from sqlalchemy import case, func
 from datetime import datetime, timedelta
 import json
 import logging
@@ -26,77 +26,123 @@ def _tf(query, model_class):
     return apply_tenant_filter(query, model_class)
 
 
-def calculate_live_kpis(finca_id=None) -> dict:
-    """Calcula KPIs en tiempo real para el dashboard live."""
-    try:
-        animals_q = _tf(Animals.query, Animals).filter(Animals.is_deleted == False)
-        total_animals = animals_q.count()
-        active_animals = animals_q.filter(Animals.status == AnimalStatus.Vivo).count()
+def calculate_live_kpis_by_finca(finca_ids) -> dict[int, dict]:
+    """Calculate all requested farms with five grouped SQL queries."""
+    from app.models.animalDiseases import AnimalDiseases
 
-        from app.models.animalDiseases import AnimalDiseases
-        sick_count = (
-            _tf(db.session.query(func.count(func.distinct(AnimalDiseases.animal_id))), AnimalDiseases)
-            .join(Animals, Animals.id == AnimalDiseases.animal_id)
-            .filter(
-                AnimalDiseases.status.in_(['Activo', 'En Tratamiento', 'Recurrente']),
-                AnimalDiseases.is_deleted == False,
-                Animals.is_deleted == False
-            )
-            .scalar() or 0
-        )
+    ids = sorted({int(value) for value in finca_ids if value is not None})
+    if not ids:
+        return {}
 
-        thirty_days_ago = datetime.now() - timedelta(days=30)
-        vaccinations_30d = (
-            _tf(Vaccinations.query, Vaccinations)
-            .join(Animals, Animals.id == Vaccinations.animal_id)
-            .filter(
-                Vaccinations.vaccination_date >= thirty_days_ago,
-                Vaccinations.is_deleted == False,
-                Animals.is_deleted == False
-            )
-            .count()
-        )
-
-        active_treatments = (
-            _tf(Treatments.query, Treatments)
-            .join(Animals, Animals.id == Treatments.animal_id)
-            .filter(
-                Treatments.treatment_date >= thirty_days_ago,
-                Treatments.is_deleted == False,
-                Animals.is_deleted == False
-            )
-            .count()
-        )
-
-        seven_days_ago = datetime.now() - timedelta(days=7)
-        controls_7d = (
-            _tf(Control.query, Control)
-            .join(Animals, Animals.id == Control.animal_id)
-            .filter(
-                Control.checkup_date >= seven_days_ago,
-                Control.is_deleted == False,
-                Animals.is_deleted == False
-            )
-            .count()
-        )
-
-        health_rate = (
-            round(((active_animals - sick_count) / active_animals * 100), 1)
-            if active_animals > 0 else 100
-        )
-
-        return {
-            'timestamp': datetime.now().isoformat(),
-            'kpis': {
-                'total_animals': total_animals,
-                'active_animals': active_animals,
-                'sick_animals': sick_count,
-                'health_rate': health_rate,
-                'vaccinations_30d': vaccinations_30d,
-                'active_treatments': active_treatments,
-                'controls_7d': controls_7d,
-            },
+    timestamp = datetime.now().isoformat()
+    metrics = {
+        finca_id: {
+            'total_animals': 0,
+            'active_animals': 0,
+            'sick_animals': 0,
+            'vaccinations_30d': 0,
+            'active_treatments': 0,
+            'controls_7d': 0,
         }
+        for finca_id in ids
+    }
+
+    animal_rows = (
+        db.session.query(
+            Animals.finca_id,
+            func.count(Animals.id),
+            func.sum(case((Animals.status == AnimalStatus.Vivo, 1), else_=0)),
+        )
+        .filter(Animals.finca_id.in_(ids), Animals.is_deleted == False)
+        .group_by(Animals.finca_id)
+        .all()
+    )
+    for finca_id, total, active in animal_rows:
+        metrics[finca_id]['total_animals'] = int(total or 0)
+        metrics[finca_id]['active_animals'] = int(active or 0)
+
+    sick_rows = (
+        db.session.query(
+            AnimalDiseases.finca_id,
+            func.count(func.distinct(AnimalDiseases.animal_id)),
+        )
+        .join(Animals, Animals.id == AnimalDiseases.animal_id)
+        .filter(
+            AnimalDiseases.finca_id.in_(ids),
+            AnimalDiseases.status.in_(['Activo', 'En Tratamiento', 'Recurrente']),
+            AnimalDiseases.is_deleted == False,
+            Animals.is_deleted == False,
+        )
+        .group_by(AnimalDiseases.finca_id)
+        .all()
+    )
+    for finca_id, count in sick_rows:
+        metrics[finca_id]['sick_animals'] = int(count or 0)
+
+    thirty_days_ago = datetime.now() - timedelta(days=30)
+    seven_days_ago = datetime.now() - timedelta(days=7)
+    grouped_queries = (
+        ('vaccinations_30d', Vaccinations, Vaccinations.vaccination_date, thirty_days_ago),
+        ('active_treatments', Treatments, Treatments.treatment_date, thirty_days_ago),
+        ('controls_7d', Control, Control.checkup_date, seven_days_ago),
+    )
+    for key, model, date_column, cutoff in grouped_queries:
+        rows = (
+            db.session.query(model.finca_id, func.count(model.id))
+            .join(Animals, Animals.id == model.animal_id)
+            .filter(
+                model.finca_id.in_(ids),
+                date_column >= cutoff,
+                model.is_deleted == False,
+                Animals.is_deleted == False,
+            )
+            .group_by(model.finca_id)
+            .all()
+        )
+        for finca_id, count in rows:
+            metrics[finca_id][key] = int(count or 0)
+
+    result = {}
+    for finca_id, values in metrics.items():
+        active = values['active_animals']
+        sick = values['sick_animals']
+        values['health_rate'] = round(((active - sick) / active * 100), 1) if active else 100
+        result[finca_id] = {'timestamp': timestamp, 'kpis': values}
+    return result
+
+
+def combine_live_kpis(items) -> dict:
+    """Combine per-farm results into a global payload without more SQL."""
+    totals = {
+        'total_animals': 0,
+        'active_animals': 0,
+        'sick_animals': 0,
+        'vaccinations_30d': 0,
+        'active_treatments': 0,
+        'controls_7d': 0,
+    }
+    payloads = list(items)
+    for payload in payloads:
+        for key in totals:
+            totals[key] += int(payload.get('kpis', {}).get(key, 0) or 0)
+    active = totals['active_animals']
+    totals['health_rate'] = round(((active - totals['sick_animals']) / active * 100), 1) if active else 100
+    return {'timestamp': datetime.now().isoformat(), 'kpis': totals}
+
+
+def calculate_live_kpis(finca_id=None) -> dict:
+    """Calculate live KPIs for the explicit farm or current tenant."""
+    try:
+        effective_finca_id = finca_id or get_current_finca_id()
+        if effective_finca_id:
+            return calculate_live_kpis_by_finca([effective_finca_id]).get(
+                int(effective_finca_id),
+                combine_live_kpis([]),
+            )
+
+        from app.models.finca import Finca
+        finca_ids = [row[0] for row in db.session.query(Finca.id).all()]
+        return combine_live_kpis(calculate_live_kpis_by_finca(finca_ids).values())
     except Exception as e:
         logger.error('Error calculando KPIs live: %s', e)
         return {'timestamp': datetime.now().isoformat(), 'kpis': {}, 'error': str(e)}

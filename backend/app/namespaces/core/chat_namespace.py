@@ -84,7 +84,7 @@ class ChatHistoryResource(Resource):
             return APIResponse.error('No se ha detectado el contexto de la finca', status_code=400)
 
         # Cache key para historial (corta duración por ser datos dinámicos)
-        cache_key = f"chat_history_{user_id}_{recipient_id}_{page}_{per_page}"
+        cache_key = f"chat_history_{finca_id}_{user_id}_{recipient_id}_{page}_{per_page}"
 
         # Para polling reciente, usar cache muy corto
         cache_timeout = 30 if page == 1 else 300  # 30s para primera página, 5min para antiguas
@@ -196,10 +196,10 @@ class ChatSendResource(Resource):
 
             # Invalidar caches relevantes
             cache_keys_to_clear = [
-                f"chat_history_{user_id}_{recipient_id}_1_50",
-                f"chat_history_{recipient_id}_{user_id}_1_50",
-                f"chat_unread_{recipient_id}",
-                f"chat_unread_{user_id}"
+                f"chat_history_{finca_id}_{user_id}_{recipient_id}_1_50",
+                f"chat_history_{finca_id}_{recipient_id}_{user_id}_1_50",
+                f"chat_unread_{finca_id}_{recipient_id}",
+                f"chat_unread_{finca_id}_{user_id}"
             ]
 
             for key in cache_keys_to_clear:
@@ -224,7 +224,7 @@ class ChatUnreadResource(Resource):
         finca_id = get_current_finca_id()
 
         # Cache muy corto para unread count (datos muy dinámicos)
-        cache_key = f"chat_unread_{user_id}"
+        cache_key = f"chat_unread_{finca_id}_{user_id}"
         cached_count = cache.get(cache_key)
 
         if cached_count is not None:

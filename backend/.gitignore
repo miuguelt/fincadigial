@@ -188,9 +188,10 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
-# Migraciones: ignorar versiones generadas (se recrean con flask db migrate)
-# pero permitir archivos de configuración: alembic.ini, env.py, script.py.mako, README
-/migrations/versions/
+# Migraciones: ignorar versiones generadas (se recrean con flask db migrate),
+# excepto las migraciones manuales que deben viajar con el despliegue.
+/migrations/versions/*
+!/migrations/versions/perf001_runtime_query_indexes.py
 /migrations/__pycache__/
 
 /scripts

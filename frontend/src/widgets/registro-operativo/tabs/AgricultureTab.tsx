@@ -5,11 +5,11 @@ import { CropActivity } from '@/entities/campesino';
 import type { ActivityConfig } from '../types';
 
 const ACTIVITY_TYPES: ActivityConfig[] = [
-  { value: 'sowing', label: 'Siembra', emoji: '', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', border: 'border-green-300 dark:border-green-700' },
+  { value: 'sowing', label: 'Siembra', emoji: '🌱', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', border: 'border-green-300 dark:border-green-700' },
   { value: 'irrigation', label: 'Riego', emoji: '💧', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', border: 'border-blue-300 dark:border-blue-700' },
   { value: 'fertilization', label: 'Fertilización', emoji: '🧪', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300', border: 'border-amber-300 dark:border-amber-700' },
   { value: 'pest_control', label: 'Control Plagas', emoji: '🐛', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', border: 'border-red-300 dark:border-red-700' },
-  { value: 'harvest', label: 'Cosecha', emoji: '', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300', border: 'border-yellow-300 dark:border-yellow-700' },
+  { value: 'harvest', label: 'Cosecha', emoji: '🌾', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300', border: 'border-yellow-300 dark:border-yellow-700' },
   { value: 'note', label: 'Nota/Observación', emoji: '📋', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300', border: 'border-gray-300 dark:border-gray-700' },
 ];
 
@@ -64,7 +64,7 @@ export function AgricultureTab({ activities, loading, onQuickAction, onDelete }:
   return (
     <div className="space-y-5">
       <div className="space-y-2">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">¿Qué hizo hoy?</p>
+        <p className="vl-section-title">¿Qué hizo hoy?</p>
         <div className="grid grid-cols-3 gap-2">
           {ACTIVITY_TYPES.map(type => (
             <motion.button key={type.value} whileTap={{ scale: 0.94 }} onClick={() => onQuickAction(type.value)}
@@ -78,18 +78,18 @@ export function AgricultureTab({ activities, loading, onQuickAction, onDelete }:
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <input type="text" placeholder="Buscar por descripción o insumo..." value={search} onChange={e => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-3 rounded-xl border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30" />
+        <input type="search" placeholder="Buscar por descripción o insumo..." value={search} onChange={e => setSearch(e.target.value)}
+          className="w-full min-h-10 pl-9 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" />
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
         <button onClick={() => setFilterType('all')}
-          className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border transition-all ${filterType === 'all' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-card text-muted-foreground border-border'}`}>
+          className={`min-h-9 px-3 rounded-lg text-xs font-semibold whitespace-nowrap border transition-colors ${filterType === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-muted-foreground border-border hover:border-primary hover:text-primary'}`}>
           📋 Todas
         </button>
         {ACTIVITY_TYPES.map(t => (
           <button key={t.value} onClick={() => setFilterType(t.value)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border transition-all ${filterType === t.value ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-card text-muted-foreground border-border'}`}>
+            className={`min-h-9 px-3 rounded-lg text-xs font-semibold whitespace-nowrap border transition-colors ${filterType === t.value ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-muted-foreground border-border hover:border-primary hover:text-primary'}`}>
             {t.emoji} {t.label}
           </button>
         ))}

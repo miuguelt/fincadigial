@@ -8,6 +8,7 @@
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { OfflineChatService } from "@/shared/api/offline/OfflineChatService";
+import { FieldNodeService } from "@/shared/api/offline/FieldNodeService";
 import api from "@/shared/api/client";
 
 vi.mock("@/shared/api/client", () => ({
@@ -17,7 +18,15 @@ vi.mock("@/shared/api/client", () => ({
 	},
 }));
 
+vi.mock("@/shared/api/offline/FieldNodeService", () => ({
+	FieldNodeService: {
+		post: vi.fn(),
+		get: vi.fn(),
+	},
+}));
+
 const mockApi = api as unknown as { get: any; post: any };
+const mockFieldNode = FieldNodeService as unknown as { get: any; post: any };
 
 const OUTBOX_KEY = "villaluz.chat.outbox";
 
@@ -39,6 +48,7 @@ describe("OfflineChatService", () => {
 	beforeEach(() => {
 		localStorage.clear();
 		vi.clearAllMocks();
+		mockFieldNode.post.mockRejectedValue(new Error("Node unavailable"));
 		OfflineChatService.reset();
 	});
 
@@ -57,7 +67,7 @@ describe("OfflineChatService", () => {
 		expect(mockApi.post).toHaveBeenCalledWith("/chat/send", {
 			recipient_id: 2,
 			message: "Hola desde el potrero 5",
-		});
+		}, { skipOffline: true });
 	});
 
 	it("conserva el mensaje como pendiente cuando no hay red", async () => {
@@ -73,6 +83,26 @@ describe("OfflineChatService", () => {
 		expect(outbox).toHaveLength(1);
 		expect(outbox[0].content).toBe("Vaca 021 coja");
 		expect(outbox[0].status).toBe("pending");
+	});
+
+	it("entrega por el nodo de finca cuando falla internet", async () => {
+		mockApi.post.mockRejectedValue(new Error("Network Error"));
+		mockFieldNode.post.mockResolvedValue(apiMessage(41, "Mensaje por la red local").data);
+
+		const msg = await OfflineChatService.send(
+			1,
+			"Campesino A",
+			2,
+			"Mensaje por la red local",
+		);
+
+		expect(msg.id).toBe(41);
+		expect(msg.status).toBe("delivered");
+		expect(mockFieldNode.post).toHaveBeenCalledWith("/chat/send", {
+			recipient_id: 2,
+			message: "Mensaje por la red local",
+		});
+		expect(JSON.parse(localStorage.getItem(OUTBOX_KEY) ?? "[]")).toHaveLength(0);
 	});
 
 	it("entrega los pendientes al recuperar la conexión", async () => {

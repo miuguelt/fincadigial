@@ -11,14 +11,15 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import type { WeatherRecord } from "@/entities/weather";
+import type { WeatherForecast, WeatherRecord } from "@/entities/weather";
 import { formatDay, formatHour } from "./weather-config";
 
 interface Props {
 	history: WeatherRecord[];
+	forecast?: WeatherForecast | null;
 }
 
-export function WeatherCharts({ history }: Props) {
+export function WeatherCharts({ history, forecast }: Props) {
 	const chartData = history.map((r) => ({
 		time: formatHour(r.recorded_at),
 		day: formatDay(r.recorded_at),
@@ -29,8 +30,16 @@ export function WeatherCharts({ history }: Props) {
 		pressure: r.pressure_hpa,
 		cloudCover: r.cloud_cover_percent,
 	}));
+	const forecastChartData = (forecast?.hourly || []).slice(0, 24).map((point) => ({
+		time: formatHour(point.time),
+		temperature: point.temperature,
+		precipitation: point.precipitation_mm,
+		precipitationProbability: point.precipitation_probability,
+		humidity: point.humidity,
+		wind: point.wind_speed,
+	}));
 
-	if (chartData.length === 0) return null;
+	if (chartData.length === 0 && forecastChartData.length === 0) return null;
 
 	const tooltipStyle = {
 		backgroundColor: "hsl(var(--card))",
@@ -40,6 +49,30 @@ export function WeatherCharts({ history }: Props) {
 
 	return (
 		<div className="space-y-4">
+			{forecastChartData.length > 0 && (
+				<div className="bg-card rounded-lg p-4 border border-sky-200 dark:border-sky-800">
+					<div className="flex items-start justify-between gap-3 mb-4">
+						<div>
+							<h3 className="font-bold text-sm">Próximas 24 horas</h3>
+							<p className="text-xs text-muted-foreground mt-0.5">Tendencia para planear riego, fumigación y labores</p>
+						</div>
+						<span className="text-[10px] rounded-full bg-sky-600 text-white font-bold px-2 py-1">Pronóstico</span>
+					</div>
+					<ResponsiveContainer width="100%" height={240}>
+						<LineChart data={forecastChartData}>
+							<CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+							<XAxis dataKey="time" tick={{ fontSize: 10 }} />
+							<YAxis yAxisId="temp" tick={{ fontSize: 10 }} domain={["auto", "auto"]} />
+							<YAxis yAxisId="rain" orientation="right" tick={{ fontSize: 10 }} domain={[0, 100]} />
+							<Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "hsl(var(--foreground))" }} />
+							<Line yAxisId="temp" type="monotone" dataKey="temperature" stroke="#ef4444" strokeWidth={2.5} dot={false} name="Temperatura °C" />
+							<Line yAxisId="rain" type="monotone" dataKey="precipitationProbability" stroke="#2563eb" strokeWidth={2} dot={false} name="Prob. lluvia %" />
+						</LineChart>
+					</ResponsiveContainer>
+				</div>
+			)}
+
+			{chartData.length > 0 && <>
 			<div className="bg-card rounded-lg p-4 border border-border">
 				<h3 className="font-bold text-sm mb-4">
 					Temperatura, Rocío y Humedad
@@ -143,6 +176,7 @@ export function WeatherCharts({ history }: Props) {
 					</LineChart>
 				</ResponsiveContainer>
 			</div>
+			</>}
 		</div>
 	);
 }

@@ -29,6 +29,7 @@ import { changePassword } from '@/features/auth/api/auth.service';
 import { User, Mail, Phone, MapPin, UserCircle, Activity, Shield, CheckCircle2, Info, AlertTriangle, ClipboardList, CalendarClock, ExternalLink } from 'lucide-react';
 import { useDerivedActivity, ActivityEntity, ActivityAction, ActivitySeverity, ActivityItem } from '@/features/activity/model/useDerivedActivity';
 import { CollapsibleCard } from '@/shared/ui/common/CollapsibleCard';
+import { GenericModal } from '@/shared/ui/common/GenericModal';
 import { JoinFincaForm } from '@/features/membership/ui/JoinFincaForm';
 
 const profileSchema = z.object({
@@ -139,6 +140,9 @@ const UserProfile = () => {
     const [updatingPassword, setUpdatingPassword] = useState(false);
     const [passwordStatus, setPasswordStatus] = useState<PasswordStatus | null>(null);
     const [logoutCountdown, setLogoutCountdown] = useState<number | null>(null);
+    const [profileModalOpen, setProfileModalOpen] = useState(false);
+    const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+    const [joinFincaModalOpen, setJoinFincaModalOpen] = useState(false);
 
     const profileForm = useForm<ProfileFormValues>({
         resolver: zodResolver(profileSchema),
@@ -1665,6 +1669,17 @@ const UserProfile = () => {
                                 <AlertDescription>{profileStatus.message}</AlertDescription>
                             </Alert>
                         )}
+                        <p className="text-sm text-muted-foreground">Actualiza tu información de contacto sin abandonar tu perfil.</p>
+                        <Button type="button" onClick={() => setProfileModalOpen(true)} className="w-full sm:w-auto">
+                            Editar datos personales
+                        </Button>
+                        <GenericModal
+                            isOpen={profileModalOpen}
+                            onOpenChange={setProfileModalOpen}
+                            title="Actualizar datos personales"
+                            description="Los cambios se reflejarán en tu perfil al guardar."
+                            size="2xl"
+                        >
                         <form onSubmit={profileForm.handleSubmit(handleProfileSubmit)} className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="fullname">Nombre completo</Label>
@@ -1724,6 +1739,7 @@ const UserProfile = () => {
                                 </Button>
                             </div>
                         </form>
+                        </GenericModal>
                     </div>
                 </CollapsibleCard>
 
@@ -1772,6 +1788,17 @@ const UserProfile = () => {
                                 </AlertDescription>
                             </Alert>
                         )}
+                        <p className="text-sm text-muted-foreground">Cambia tu contraseña desde un formulario seguro y enfocado.</p>
+                        <Button type="button" onClick={() => setPasswordModalOpen(true)} className="w-full sm:w-auto">
+                            Actualizar contraseña
+                        </Button>
+                        <GenericModal
+                            isOpen={passwordModalOpen}
+                            onOpenChange={setPasswordModalOpen}
+                            title="Seguridad y contraseña"
+                            description="Completa los requisitos antes de confirmar el cambio."
+                            size="2xl"
+                        >
                         <form
                             onSubmit={passwordForm.handleSubmit(handlePasswordSubmit, () =>
                                 showToast('Revisa los campos antes de continuar.', 'warning', 6000)
@@ -1855,6 +1882,7 @@ const UserProfile = () => {
                                 </Button>
                             </div>
                         </form>
+                        </GenericModal>
                     </div>
                 </CollapsibleCard>
 
@@ -1873,7 +1901,19 @@ const UserProfile = () => {
                             </AlertDescription>
                         </Alert>
                         
-                        <JoinFincaForm />
+                        <p className="text-sm text-muted-foreground">Envía una solicitud para trabajar en otra finca y conserva esta vista abierta.</p>
+                        <Button type="button" onClick={() => setJoinFincaModalOpen(true)} className="w-full sm:w-auto">
+                            Solicitar acceso a otra finca
+                        </Button>
+                        <GenericModal
+                            isOpen={joinFincaModalOpen}
+                            onOpenChange={setJoinFincaModalOpen}
+                            title="Unirse a otra finca"
+                            description="Selecciona la finca y el rol que deseas solicitar."
+                            size="lg"
+                        >
+                            <JoinFincaForm />
+                        </GenericModal>
                     </div>
                 </CollapsibleCard>
             </div>

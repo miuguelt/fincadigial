@@ -385,6 +385,12 @@ def create_optimized_namespace(
                         'message': 'limit debe ser >= 1'
                     }, 400
 
+                # Interactive lists must never become accidental full-table
+                # exports. Dedicated export endpoints can stream large data.
+                max_page_size = int(flask.current_app.config.get('API_MAX_PAGE_SIZE', 500))
+                if per_page is not None:
+                    per_page = min(per_page, max_page_size)
+
                 # Defaults seguros para evitar full scans
                 if page is None:
                     page = 1

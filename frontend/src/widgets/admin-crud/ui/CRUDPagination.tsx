@@ -18,6 +18,8 @@ interface CRUDPaginationProps {
   onPageChange: (page: number) => void;
   loading?: boolean;
   hasSelection?: boolean;
+  /** Mantiene la variante flotante para tablas; las tarjetas pueden reservar su propio espacio. */
+  floating?: boolean;
 }
 
 export const CRUDPagination = memo<CRUDPaginationProps>(({
@@ -27,6 +29,7 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
   onPageChange,
   loading = false,
   hasSelection = false,
+  floating = true,
 }) => {
   const t = useT();
   
@@ -81,10 +84,15 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
   
   return (
     <div className={cn(
-      "fixed left-1/2 -translate-x-1/2 z-30 transition-all duration-500 ease-out max-w-[95vw] pointer-events-auto",
-      hasSelection 
-        ? "bottom-20 sm:bottom-24 scale-95 opacity-55 hover:scale-100 hover:opacity-100 focus-within:opacity-100 shadow-xl" 
-        : "bottom-4 scale-100 opacity-50 hover:opacity-100 focus-within:opacity-100 shadow-xl",
+      floating
+        ? "fixed left-1/2 -translate-x-1/2 max-w-[95vw]"
+        : "relative z-20 mx-auto my-3 w-fit max-w-[calc(100%-1rem)] shrink-0",
+      "pointer-events-auto transition-all duration-500 ease-out",
+      floating
+        ? hasSelection
+          ? "bottom-20 sm:bottom-24 scale-95 opacity-55 hover:scale-100 hover:opacity-100 focus-within:opacity-100 shadow-xl"
+          : "bottom-4 scale-100 opacity-50 hover:opacity-100 focus-within:opacity-100 shadow-xl"
+        : "scale-100 opacity-100 shadow-lg",
       "bg-slate-900/70 dark:bg-slate-900/80 text-white backdrop-blur-xl border border-white/10 ring-1 ring-white/10 rounded-lg"
     )}>
       <div className="px-3 py-1.5 sm:px-4 sm:py-2">

@@ -38,7 +38,7 @@ def broadcast_live_kpis():
         return "No Redis Client"
 
     import json
-    from app.namespaces.analytics.live import calculate_live_kpis
+    from app.namespaces.analytics.live import calculate_live_kpis_by_finca, combine_live_kpis
     from app.models.finca import Finca
 
     # Fake admin to bypass filters internally
@@ -48,17 +48,43 @@ def broadcast_live_kpis():
         pass
 
     try:
-        # Finca agnostic (global)
-        global_kpis = calculate_live_kpis(None)
-        redis_client.publish('live_kpis_global', json.dumps(global_kpis))
+        finca_ids = [row[0] for row in Finca.query.with_entities(Finca.id).all()]
+        channels = ['live_kpis_global', *(f'live_kpis_{finca_id}' for finca_id in finca_ids)]
 
-        # Por finca (Multi-Tenant)
-        fincas = Finca.query.all()
-        for f in fincas:
-            finca_data = calculate_live_kpis(f.id)
-            redis_client.publish(f'live_kpis_{f.id}', json.dumps(finca_data))
+        try:
+            subscriber_rows = redis_client.pubsub_numsub(*channels)
+            subscribers = {
+                key.decode('utf-8') if isinstance(key, bytes) else str(key): int(count)
+                for key, count in subscriber_rows
+            }
+            global_active = subscribers.get('live_kpis_global', 0) > 0
+            active_ids = [
+                finca_id for finca_id in finca_ids
+                if subscribers.get(f'live_kpis_{finca_id}', 0) > 0
+            ]
+        except Exception:
+            # Older Redis-compatible servers may not expose PUBSUB NUMSUB.
+            global_active = True
+            active_ids = finca_ids
 
-        logger.info(f"Broadcast de KPIs live completado para {len(fincas)} fincas.")
+        if not global_active and not active_ids:
+            return "No active KPI subscribers"
+
+        requested_ids = finca_ids if global_active else active_ids
+        per_finca = calculate_live_kpis_by_finca(requested_ids)
+
+        if global_active:
+            redis_client.publish(
+                'live_kpis_global',
+                json.dumps(combine_live_kpis(per_finca.values())),
+            )
+
+        for finca_id in active_ids:
+            payload = per_finca.get(finca_id)
+            if payload:
+                redis_client.publish(f'live_kpis_{finca_id}', json.dumps(payload))
+
+        logger.debug("Broadcast de KPIs live completado para %s fincas activas.", len(active_ids))
         return True
     except Exception as e:
         logger.error(f"Error emitiendo KPIs a Redis: {e}")

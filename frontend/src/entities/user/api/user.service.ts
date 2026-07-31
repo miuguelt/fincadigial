@@ -31,11 +31,14 @@ class UsersService extends BaseService<UserResponse> {
       params,
     } as any);
     const body = (response as any).data ?? response;
+    // El backend pagina en meta.pagination; se conservan las variantes planas
+    // por compatibilidad con respuestas antiguas.
+    const pagination = body?.meta?.pagination ?? body?.meta ?? {};
     return {
       data: body?.data ?? [],
-      total_items: body?.total_items ?? body?.meta?.total_items,
-      page: body?.page ?? body?.meta?.page,
-      limit: body?.limit ?? body?.meta?.limit,
+      total_items: body?.total_items ?? pagination?.total_items,
+      page: body?.page ?? pagination?.page,
+      limit: body?.limit ?? pagination?.limit ?? pagination?.per_page,
     };
   }
 

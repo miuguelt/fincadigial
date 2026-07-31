@@ -11,6 +11,7 @@ import {
   QInput, QSelect, QChipGroup, QSubmitButton,
 } from './QuickFormShell';
 import { api } from '@/shared/api/base-client';
+import { emitDataRefresh } from '@/shared/utils/dataRefresh';
 
 type Turno = 'Mañana' | 'Tarde' | 'Total';
 
@@ -88,6 +89,7 @@ export default function QuickMilk() {
         await api.post('/milk-production', payload);
         showToast('Producción de leche registrada correctamente.', 'success');
       }
+      emitDataRefresh('milk-production');
       handleClose();
     } catch {
       showToast('No se pudo guardar. Intenta de nuevo.', 'error');

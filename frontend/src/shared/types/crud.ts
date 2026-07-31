@@ -104,7 +104,8 @@ export interface CRUDConfig<T = any, TInput = any> {
   ) => ReactNode;
   viewMode?: 'table' | 'cards';
   autoHeight?: boolean;
-  renderCard?: (item: T) => ReactNode;
+  /** `openDetail` abre el modal de detalle; útil para tarjetas personalizadas. */
+  renderCard?: (item: T, openDetail?: (item: T) => void) => ReactNode;
   /** Si se provee, reemplaza el grid de cards por un layout agrupado personalizado */
   renderGrouped?: (items: T[]) => ReactNode;
   // Selección masiva y acciones por lote

@@ -963,9 +963,32 @@ const stableStringify = (obj: any) => {
 };
 const buildGetKey = (url: string, config?: any) => {
   const base = api.defaults.baseURL || '';
-  const full = url.startsWith('/') ? `${base}${url}` : `${base}/${url}`;
-  const paramsStr = stableStringify(config?.params);
-  return `GET ${full}?${paramsStr}`;
+  let full = url;
+  if (!/^https?:\/\//i.test(url)) {
+    let cleanUrl = url;
+    if (base.endsWith('/api/v1') && cleanUrl.startsWith('/api/v1/')) {
+      cleanUrl = cleanUrl.slice('/api/v1'.length);
+    }
+    full = cleanUrl.startsWith('/') ? `${base}${cleanUrl}` : `${base}/${cleanUrl}`;
+  }
+
+  let paramsPart = '';
+  if (config?.params) {
+    if (typeof config.params === 'string') {
+      paramsPart = config.params;
+    } else if (typeof config.params === 'object') {
+      const keys = Object.keys(config.params).filter((k) => config.params[k] !== undefined && config.params[k] !== null).sort();
+      if (keys.length > 0) {
+        paramsPart = keys.map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(String(config.params[k]))}`).join('&');
+      }
+    }
+  }
+
+  if (!paramsPart) {
+    return `GET ${full}`;
+  }
+  const sep = full.includes('?') ? '&' : '?';
+  return `GET ${full}${sep}${paramsPart}`;
 };
 
 // Iniciar limpieza automática de cache IndexedDB al importar este módulo

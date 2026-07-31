@@ -9,6 +9,7 @@ export const PendingSyncList: React.FC = () => {
   const [pendingItems, setPendingItems] = useState<any[]>([]);
 
   const refreshList = async () => {
+    if (document.visibilityState === "hidden") return;
     try {
       const operations = await offlineQueue.getPendingOperations();
       const items = operations.map((op) => ({
@@ -32,14 +33,14 @@ export const PendingSyncList: React.FC = () => {
 
   useEffect(() => {
     refreshList();
-    const interval = setInterval(refreshList, 5000);
+    const interval = setInterval(refreshList, 15000);
     return () => clearInterval(interval);
   }, []);
 
   if (pendingItems.length === 0) return null;
 
   return (
-    <Card className="rounded-xl border-0 bg-card/50 backdrop-blur-sm shadow-md overflow-hidden border-2 border-emerald-100">
+    <Card className="rounded-xl bg-card shadow-md overflow-hidden border-2 border-emerald-100">
       <CardHeader className="bg-emerald-900 text-white p-5">
         <CardTitle className="text-xl font-black flex items-center gap-2">
           <IconDatabase size="md" className="text-emerald-300" /> Cola de

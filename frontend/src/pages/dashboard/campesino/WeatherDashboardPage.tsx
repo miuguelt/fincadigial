@@ -7,6 +7,8 @@ import { CurrentWeatherCards } from './components/weather/CurrentWeatherCards';
 import { WeatherAlertsSection } from './components/weather/WeatherAlertsSection';
 import { WeatherCharts } from './components/weather/WeatherCharts';
 import { WeatherLocationBanner } from './components/weather/WeatherLocationBanner';
+import { WeatherForecast } from './components/weather/WeatherForecast';
+import { WeatherDecisionPanel } from './components/weather/WeatherDecisionPanel';
 
 const WeatherDashboardPage: React.FC = () => {
   const {
@@ -19,9 +21,9 @@ const WeatherDashboardPage: React.FC = () => {
     current,
     alerts,
     history,
+    forecast,
     location,
     hasCoordinates,
-    loadData,
     refreshNow,
     dismissAlert,
   } = useWeatherDashboard();
@@ -83,7 +85,11 @@ const WeatherDashboardPage: React.FC = () => {
 
         <CurrentWeatherCards current={current} />
 
-        <WeatherCharts history={history} />
+        <WeatherDecisionPanel current={current} forecast={forecast} />
+
+        {forecast?.daily?.length ? <WeatherForecast forecast={forecast.daily} /> : null}
+
+        <WeatherCharts history={history} forecast={forecast} />
 
         <WeatherAlertsSection
           alerts={alerts}
@@ -99,7 +105,12 @@ const WeatherDashboardPage: React.FC = () => {
           onClose={() => setGpsModalOpen(false)}
           fincaId={fincaId}
           fincaName={fincaName}
-          onLocationUpdated={() => loadData()}
+          initialCoordinates={location ?? undefined}
+          onLocationUpdated={async () => {
+            // Saving coordinates does not invalidate the old weather record by
+            // itself; force a new provider request before closing the modal.
+            await refreshNow();
+          }}
         />
       )}
     </div>

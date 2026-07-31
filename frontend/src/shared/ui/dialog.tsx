@@ -248,7 +248,7 @@ const DialogContent = React.forwardRef<
         // Estética premium
         "vl-modal-surface",
         "ring-1 ring-black/5 dark:ring-white/10",
-        "rounded-lg",
+        "rounded-xl",
         "shadow-2xl shadow-black/20 dark:shadow-black/40",
         "p-0 sm:p-0 gap-0 overflow-hidden",
 

@@ -54,12 +54,12 @@ export function AppLayout({
   const isHFull = className?.includes("h-full");
   return (
     <div className={cn(
-      "min-h-0 bg-background/90 text-foreground transition-colors duration-300",
+      "min-h-0 bg-background text-foreground transition-colors duration-300",
       isHFull ? "h-full" : "h-auto"
     )}>
       <main
         className={cn(
-          "w-full px-3 sm:px-4 lg:px-6 pt-0 pb-6 sm:pb-8",
+          "w-full max-w-[80rem] mx-auto px-3 sm:px-4 lg:px-6 pt-4 pb-6 sm:pb-8",
           className
         )}
       >

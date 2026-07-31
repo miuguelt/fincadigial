@@ -17,9 +17,9 @@ celery.conf.beat_schedule = {
         'task': 'app.tasks.alert_tasks.evaluate_all_alerts',
         'schedule': 3600.0,  # 1 hora en segundos
     },
-    'broadcast-live-kpis-every-30-seconds': {
+    'broadcast-live-kpis-every-60-seconds': {
         'task': 'app.tasks.alert_tasks.broadcast_live_kpis',
-        'schedule': 30.0,
+        'schedule': float(os.getenv('LIVE_KPI_INTERVAL_SECONDS', '60')),
     },
     'run-self-healing-every-15-minutes': {
         'task': 'app.tasks.system_tasks.run_self_healing',

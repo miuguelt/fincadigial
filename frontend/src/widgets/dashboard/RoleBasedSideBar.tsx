@@ -268,7 +268,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
         ref={sidebarRef}
         id="dashboard-sidebar"
         className={cn(
-          "h-full bg-transparent flex flex-col overflow-hidden transition-all duration-300",
+          "h-full bg-card flex flex-col overflow-hidden transition-all duration-300",
           isCollapsed ? "w-[64px]" : "w-full"
         )}
         aria-hidden={!isSidebarOpen ? "true" : "false"}

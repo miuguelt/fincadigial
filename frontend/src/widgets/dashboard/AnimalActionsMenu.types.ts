@@ -30,9 +30,6 @@ export interface AnimalActionsMenuProps {
   onOpenAncestorsTree?: () => void;
   onOpenDescendantsTree?: () => void;
   onRefresh?: (type?: string) => void;
-  externalOpenModal?: ModalType;
-  externalModalMode?: ModalMode;
-  externalEditingItem?: any;
   onModalClose?: () => void;
   onEditAnimal?: () => void;
   onDeleteAnimal?: () => void;

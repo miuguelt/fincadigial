@@ -10,19 +10,19 @@ export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const base =
-  "inline-flex items-center justify-center rounded-full font-medium transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background select-none relative overflow-hidden min-w-0 max-w-full whitespace-normal break-words";
+  "inline-flex items-center justify-center rounded-lg font-semibold transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background select-none min-w-0 max-w-full whitespace-normal break-words";
 
 const variants: Record<NonNullable<ButtonProps["variant"]>, string> = {
   primary:
-    "bg-gradient-to-r from-primary to-primary/90 text-primary-foreground shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-transform",
+    "bg-primary text-primary-foreground border border-primary shadow-sm hover:bg-primary-600 hover:border-primary-600 active:bg-primary-700",
   secondary:
-    "bg-card text-card-foreground border border-border/40 shadow-sm hover:-translate-y-0.5 hover:shadow-md rounded-full",
+    "bg-surface text-foreground border border-border shadow-sm hover:bg-surface-secondary hover:border-border-strong",
   outline:
-    "border border-border/50 text-foreground bg-transparent hover:bg-primary/5 hover:text-primary hover:-translate-y-0.5 rounded-full",
+    "border border-border text-foreground bg-surface hover:bg-surface-secondary hover:border-primary hover:text-primary",
   ghost:
-    "text-muted-foreground hover:text-foreground bg-transparent hover:bg-primary/5 rounded-full",
+    "text-foreground border border-transparent bg-surface hover:bg-surface-secondary hover:border-border",
   destructive:
-    "bg-destructive text-destructive-foreground shadow-md hover:bg-destructive/90 hover:-translate-y-0.5 rounded-full",
+    "bg-destructive text-destructive-foreground border border-destructive shadow-sm hover:bg-danger-600 hover:border-danger-600",
   link:
     "bg-transparent underline-offset-4 hover:underline text-primary hover:text-primary/80",
 };

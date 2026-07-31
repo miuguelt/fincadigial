@@ -1,0 +1,69 @@
+.chat-node-button {
+  margin-left: auto;
+  min-height: 36px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  background: #334155;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.chat-node-button--available { background: #047857; border-color: #065f46; }
+.chat-node-button--unavailable { background: #b45309; border-color: #92400e; }
+
+.chat-node-panel {
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #fff;
+  color: #0f172a;
+}
+
+.chat-node-title { display: flex; gap: 8px; align-items: flex-start; }
+.chat-node-title strong { font-size: 13px; }
+.chat-node-title p { margin: 2px 0 10px; color: #475569; font-size: 11px; line-height: 1.35; }
+.chat-node-panel label { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 700; }
+.chat-node-form { display: flex; gap: 6px; }
+.chat-node-form input {
+  min-width: 0;
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #94a3b8;
+  border-radius: 7px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 12px;
+}
+.chat-node-form button {
+  min-width: 62px;
+  border: 0;
+  border-radius: 7px;
+  background: #1d4ed8;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.chat-node-result { display: flex; align-items: center; gap: 5px; margin: 8px 0 0; font-size: 11px; }
+.chat-node-result--available { color: #047857; font-weight: 700; }
+.chat-node-result--unavailable { color: #b45309; font-weight: 700; }
+.chat-node-result--disabled { color: #475569; }
+.chat-spin { animation: chat-spin 1s linear infinite; }
+.chat-mobile-back { display: none; min-width: 40px; min-height: 40px; align-items: center; justify-content: center; border: 0; border-radius: 8px; background: #334155; color: #fff; }
+
+@keyframes chat-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 720px) {
+  .chat-page-shell { height: calc(100dvh - 4rem) !important; }
+  .chat-sidebar { width: 100% !important; border-right: 0 !important; }
+  .chat-sidebar--conversation-open { display: none !important; }
+  .chat-conversation { width: 100%; min-width: 0; }
+  .chat-mobile-back { display: inline-flex; }
+  .chat-empty-state { display: none !important; }
+}

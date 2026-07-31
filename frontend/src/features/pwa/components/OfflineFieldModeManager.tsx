@@ -18,6 +18,7 @@ import { useAuth } from "@/features/auth/model/useAuth";
 import { OfflineChatService } from "@/shared/api/offline/OfflineChatService";
 import { offlineQueue } from "@/shared/api/offline/offlineQueue";
 import { proximitySync } from "@/shared/api/offline/ProximitySyncService";
+import { meshGateway } from "@/shared/api/offline/MeshGatewayService";
 import { devLogger } from "@/shared/utils/devLogger";
 
 /** Delays de activación para no saturar el startup */
@@ -36,14 +37,21 @@ export function OfflineFieldModeManager() {
 
 		const timer = setTimeout(async () => {
 			try {
+				// Solicitar almacenamiento persistente para que Android no purgue la
+				// cola ni los catálogos durante varios días sin cobertura.
+				if (navigator.storage?.persist) {
+					await navigator.storage.persist().catch(() => false);
+				}
 				// Inicializar el servicio P2P
 				await proximitySync.initialize();
+				// Buscar automáticamente nodos y equipos cercanos, incluso antes
+				// de perder señal. No requiere botones ni permisos Bluetooth.
+				await proximitySync.startAutomaticDiscovery();
+				await proximitySync.startAdvertising();
 
 				// Si ya estamos offline, activar escaneo inmediatamente
 				if (!navigator.onLine) {
 					scanStartedRef.current = true;
-					await proximitySync.startPassiveScanning();
-					await proximitySync.startAdvertising();
 				} else if (!prefetchDoneRef.current) {
 					// Si estamos online, hacer prefetch inteligente de datos de campo en background
 					prefetchDoneRef.current = true;
@@ -79,6 +87,25 @@ export function OfflineFieldModeManager() {
 		return () => clearTimeout(timer);
 	}, [isAuthenticated]);
 
+	/* ── 3. Gateway oportunista: cualquier equipo con ruta disponible ──────── */
+	useEffect(() => {
+		if (!isAuthenticated) return;
+
+		const runGateway = () => {
+			if (document.visibilityState === "hidden") return;
+			meshGateway.runGatewayCycle().catch((err) =>
+				devLogger.warn("[FieldMode] Error en ciclo gateway:", err),
+			);
+		};
+
+		const startup = window.setTimeout(runGateway, 2500);
+		const interval = window.setInterval(runGateway, 20_000);
+		return () => {
+			window.clearTimeout(startup);
+			window.clearInterval(interval);
+		};
+	}, [isAuthenticated]);
+
 	/* ── 2. Reaccionar a cambios de conectividad ─────────────────────────────── */
 	useEffect(() => {
 		if (!isAuthenticated) return;
@@ -87,7 +114,7 @@ export function OfflineFieldModeManager() {
 			if (scanStartedRef.current) return;
 			scanStartedRef.current = true;
 			try {
-				await proximitySync.startPassiveScanning();
+				await proximitySync.startAutomaticDiscovery();
 				await proximitySync.startAdvertising();
 				devLogger.log(
 					"[FieldMode] Modo campo activado automáticamente (sin señal)",

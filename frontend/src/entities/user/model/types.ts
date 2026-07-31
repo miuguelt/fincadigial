@@ -22,6 +22,10 @@ export interface User {
   address?: string;
   finca_id?: number;
   finca_name?: string;
+  /** Active farm aliases returned by older and newer session payloads. */
+  active_finca_id?: number;
+  current_finca_id?: number;
+  finca?: { id: number; name?: string };
   fincas?: Array<{ id: number; name: string; role: string }>;
   avatar_url?: string | null;
 }

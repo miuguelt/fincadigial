@@ -9,6 +9,7 @@ import { apiClient } from '@/shared/api/client';
 import { ImageManager } from '@/shared/ui/common/ImageManager';
 import { AnimalImageBanner } from './AnimalImageBanner';
 import { AnimalActionsMenu } from '@/widgets/dashboard/AnimalActionsMenu';
+import { AnimalActionModalInstance } from '@/widgets/dashboard/AnimalActionModalInstance';
 import { ParentMiniCard } from './ParentMiniCard';
 import { geneticImprovementsService } from '@/entities/genetic-improvement/api/geneticImprovements.service';
 import { animalDiseasesService } from '@/entities/animal-disease/api/animalDiseases.service';
@@ -834,7 +835,14 @@ export function AnimalModalContent({
 
   return (
     <>
-      <div ref={scrollContainerRef} className="space-y-4 pb-6 h-full overflow-y-auto pr-2" onKeyDown={(e) => e.stopPropagation()}>
+      <div
+        ref={scrollContainerRef}
+        data-testid="animal-detail"
+        role="region"
+        aria-label={`Detalle del animal ${animal.record || animal.id}`}
+        className="space-y-4 pb-6 h-full overflow-y-auto pr-2"
+        onKeyDown={(e) => e.stopPropagation()}
+      >
         <section className={cn(
           "grid grid-cols-1 gap-4 -mt-4",
           hasAnimalImages && "xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.9fr)]"
@@ -1670,17 +1678,18 @@ export function AnimalModalContent({
           )
         }
 
-        {/* AnimalActionsMenu controlado externamente para CREAR/EDITAR/LISTAR */}
+        {/* Use the canonical action modal directly; do not mount a second action menu. */}
         {
           actionModalType && (actionModalMode === 'create' || actionModalMode === 'list' || actionModalMode === 'edit') && (
-            <AnimalActionsMenu
+            <AnimalActionModalInstance
               animal={animal as AnimalResponse}
+              type={actionModalType}
+              mode={actionModalMode === 'edit' ? 'create' : actionModalMode}
               currentUserId={currentUserId}
-              externalOpenModal={actionModalType}
-              externalModalMode={actionModalMode === 'edit' ? 'create' : actionModalMode}
-              externalEditingItem={selectedItem}
-              onRefresh={handleRefresh}
-              onModalClose={closeActionModal}
+              editingItem={selectedItem}
+              zIndex={2000}
+              onRefreshParent={handleRefresh}
+              onClose={closeActionModal}
             />
           )
         }

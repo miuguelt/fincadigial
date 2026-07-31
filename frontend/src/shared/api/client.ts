@@ -933,19 +933,53 @@ api.interceptors.response.use(
 const inflightGet = new Map<string, Promise<any>>();
 const rateLimitBackoff = new Map<string, number>();
 const lastRequestAt = new Map<string, number>();
-const REQUEST_MIN_INTERVAL_MS = Number(getEnvVar('VITE_REQUEST_MIN_INTERVAL_MS', '500'));
-const stableStringify = (obj: any) => {
-  if (!obj || typeof obj !== 'object') return '';
-  const keys = Object.keys(obj).sort();
-  const normalized: Record<string, any> = {};
-  for (const k of keys) normalized[k] = obj[k];
-  return JSON.stringify(normalized);
-};
+// Disabled by default: coalescing and endpoint backoff already control bursts.
+// A global delay here made repeated user actions feel artificially sluggish.
+const REQUEST_MIN_INTERVAL_MS = Number(getEnvVar('VITE_REQUEST_MIN_INTERVAL_MS', '0'));
+
+function getCacheScope(): string {
+  try {
+    const fincaId = localStorage.getItem('villaluz_finca_id') || 'default-finca';
+    const rawUser = localStorage.getItem('auth:user');
+    if (!rawUser) return `anonymous:${fincaId}`;
+    const user = JSON.parse(rawUser) as { id?: number | string; user_id?: number | string };
+    const userId = user.id ?? user.user_id ?? 'anonymous';
+    return `${String(userId)}:${fincaId}`;
+  } catch {
+    return 'anonymous:unknown';
+  }
+}
+
 const buildGetKey = (url: string, config?: any) => {
   const base = api.defaults.baseURL || '';
-  const full = url.startsWith('/') ? `${base}${url}` : `${base}/${url}`;
-  const paramsStr = stableStringify(config?.params);
-  return `GET ${full}?${paramsStr}`;
+  let full = url;
+  if (!/^https?:\/\//i.test(url)) {
+    let cleanUrl = url;
+    if (base.endsWith('/api/v1') && cleanUrl.startsWith('/api/v1/')) {
+      cleanUrl = cleanUrl.slice('/api/v1'.length);
+    }
+    full = cleanUrl.startsWith('/') ? `${base}${cleanUrl}` : `${base}/${cleanUrl}`;
+  }
+
+  let paramsPart = '';
+  if (config?.params) {
+    if (typeof config.params === 'string') {
+      paramsPart = config.params;
+    } else if (typeof config.params === 'object') {
+      const keys = Object.keys(config.params).filter((k) => config.params[k] !== undefined && config.params[k] !== null).sort();
+      if (keys.length > 0) {
+        paramsPart = keys.map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(String(config.params[k]))}`).join('&');
+      }
+    }
+  }
+
+  const requestKey = !paramsPart
+    ? `GET ${full}`
+    : `GET ${full}${full.includes('?') ? '&' : '?'}${paramsPart}`;
+
+  // Protected endpoints must never reuse data from another user or finca.
+  // The scope contains identifiers only; tokens are deliberately excluded.
+  return `${getCacheScope()} ${requestKey}`;
 };
 
 // Iniciar limpieza automática de cache IndexedDB al importar este módulo
@@ -1101,6 +1135,15 @@ const originalGet = api.get.bind(api);
     if (cached) {
       if (DEBUG_LOG) console.log('[api] Cache HIT:', key);
       return { data: cached, status: 200, statusText: 'OK', headers: {}, config } as AxiosResponse;
+    }
+
+    // En una zona rural, fallar rápido permite que la UI muestre el dato
+    // pendiente/offline sin esperar el timeout completo de Axios.
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      throw new ApiFetchError('Sin conexión y sin datos guardados para esta consulta.', {
+        code: 'OFFLINE_NO_CACHE',
+        status: 0,
+      });
     }
   }
 

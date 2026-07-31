@@ -51,6 +51,27 @@ export interface WeatherDashboard {
   finca_id: number;
   /** Coordenadas de la finca; sin ellas no hay datos climáticos. */
   location: FincaLocation | null;
+  forecast?: WeatherForecast | null;
+}
+
+export interface WeatherHourlyPoint {
+  time: string;
+  temperature: number | null;
+  feels_like?: number | null;
+  humidity?: number | null;
+  dew_point?: number | null;
+  precipitation_mm?: number | null;
+  precipitation_probability?: number | null;
+  weather_code: number | null;
+  wind_speed?: number | null;
+  wind_gusts?: number | null;
+  wind_direction?: number | null;
+  cloud_cover?: number | null;
+  visibility_m?: number | null;
+  uv_index?: number | null;
+  soil_moisture?: number | null;
+  soil_temperature?: number | null;
+  et0_mm?: number | null;
 }
 
 /** Día del pronóstico diario (bloque `daily` de Open-Meteo). */
@@ -65,6 +86,20 @@ export interface WeatherForecastDay {
   uv_index?: number | null;
   sunrise?: string | null;
   sunset?: string | null;
+  apparent_temp_max?: number | null;
+  rain_mm?: number | null;
+  showers_mm?: number | null;
+  precipitation_probability_max?: number | null;
+  wind_gusts_max?: number | null;
+  sunshine_duration_seconds?: number | null;
+  et0_mm?: number | null;
+}
+
+export interface WeatherForecast {
+  timezone: string | null;
+  timezone_abbreviation?: string | null;
+  daily: WeatherForecastDay[];
+  hourly: WeatherHourlyPoint[];
 }
 
 /** Ubicación de la finca usada para consultar el clima. */

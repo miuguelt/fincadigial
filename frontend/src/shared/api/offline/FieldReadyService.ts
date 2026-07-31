@@ -169,10 +169,15 @@ export class FieldReadyService {
     const meta = await dbGet<{ completedAt: number; hasError: boolean }>('__field_ready_meta');
     const all  = await dbGetAll();
     // Excluir la meta entry del conteo
-    const dataEntries = all.filter(e => e.key !== '__field_ready_meta' && Date.now() < e.expiresAt);
+    // Durante una jornada sin señal los catálogos vencidos siguen siendo la
+    // mejor fuente disponible; no se deben ocultar sólo por TTL.
+    const isOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
+    const dataEntries = all.filter(e =>
+      e.key !== '__field_ready_meta' && (isOffline || Date.now() < e.expiresAt),
+    );
 
     return {
-      isReady:     !!meta && Date.now() < (meta.completedAt + TTL_MS),
+      isReady:     !!meta && (isOffline || Date.now() < (meta.completedAt + TTL_MS)),
       cachedAt:    meta?.completedAt ?? null,
       itemsCached: dataEntries.length,
       pendingSync: 0, // Se llena desde el hook que lee offlineQueue

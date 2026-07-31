@@ -25,6 +25,16 @@ def _parse_activity_datetime(value):
             return None
 
 
+def _serialize_activity_datetime(value):
+    """flask-restx serializa con json.dumps estándar: los datetime crudos rompen
+    la respuesta con 'Object of type datetime is not JSON serializable'."""
+    if isinstance(value, datetime):
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=UTC)
+        return value.isoformat()
+    return value
+
+
 def _format_activity_item(item):
     actor = None
     if item.actor:
@@ -40,7 +50,8 @@ def _format_activity_item(item):
         'title': item.title,
         'description': item.description,
         'severity': item.severity,
-        'created_at': item.created_at,
+        'created_at': _serialize_activity_datetime(item.created_at),
+        'updated_at': _serialize_activity_datetime(item.updated_at),
         'actor': actor,
         'relations': item.relations or {},
         'animal_id': item.animal_id,

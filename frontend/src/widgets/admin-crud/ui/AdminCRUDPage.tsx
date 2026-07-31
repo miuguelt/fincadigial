@@ -713,7 +713,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
         />
       ) : config.viewMode === 'cards' ? (
         <div className="flex flex-col flex-1 min-h-0 mt-1">
-          <div className="overflow-y-auto flex-1 rounded-xl p-2 sm:p-3 lg:p-4 pb-28">
+          <div className="overflow-y-auto flex-1 rounded-xl p-2 sm:p-3 lg:p-4 pb-6">
             {config.renderGrouped ? (
               config.renderGrouped(filteredItems)
             ) : (
@@ -725,11 +725,14 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
                   return (
                     <Card
                       key={item.id}
-                      className="cursor-pointer transition-all duration-200 flex flex-col overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm hover:shadow-md relative"
-                      onClick={() => { config.enableDetailModal !== false && openDetail(item); }}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
+                      className={cn(
+                        "relative flex flex-col overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm transition-all duration-200 hover:shadow-md",
+                        selectedIds.includes((item as any).id) && "ring-2 ring-primary/70 shadow-primary/10"
+                      )}
+                      onClick={config.renderCard ? undefined : () => { config.enableDetailModal !== false && openDetail(item); }}
+                      role={config.renderCard ? undefined : "button"}
+                      tabIndex={config.renderCard ? undefined : 0}
+                      onKeyDown={config.renderCard ? undefined : (e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
                           config.enableDetailModal !== false && openDetail(item);
@@ -738,13 +741,14 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
                     >
                       {config.enableSelection && (
                         <div
-                          className="absolute top-1.5 right-1.5 z-10"
+                          className="absolute right-3 top-3 z-30 rounded-xl border border-border/80 bg-card p-2 shadow-sm"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <Checkbox
                              checked={selectedIds.includes((item as any).id)}
                             onCheckedChange={() => toggleSelect((item as any).id)}
                             aria-label={`Seleccionar ${config.entityName} ${(item as any).id}`}
+                            title="Seleccionar para acciones de traslado"
                           />
                         </div>
                       )}
@@ -755,7 +759,9 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
                       )}
                       <CardContent className={config.renderCard ? 'p-0 flex-1 flex flex-col min-h-0 overflow-hidden' : 'py-2.5 px-3 flex-1 flex flex-col min-h-0 overflow-hidden'}>
                         {config.renderCard ? (
-                          config.renderCard(item)
+                          config.renderCard(item, (target) => {
+                            if (config.enableDetailModal !== false) openDetail(target);
+                          })
                         ) : (
                           <div className="grid grid-cols-2 gap-3 text-xs">
                             {config.columns.map((col: any) => {
@@ -784,6 +790,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
             onPageChange={setPage || ((_page: number) => {})}
             loading={loading}
             hasSelection={selectedIds.length > 0}
+            floating={false}
           />
         </div>
       ) : (

@@ -23,6 +23,9 @@ class AnimalGroupMembership(db.Model):
 class PastureAforo(BaseModel):
     """Registro de altura y calidad del pasto por potrero"""
     __tablename__ = 'pasture_aforos'
+    __table_args__ = (
+        db.Index('ix_pasture_aforos_finca_field_created', 'finca_id', 'field_id', 'created_at'),
+    )
     id = db.Column(db.Integer, primary_key=True)
     field_id = db.Column(db.Integer, db.ForeignKey('fields.id'), nullable=False)
     entry_height = db.Column(db.Float, nullable=True) # cm al entrar

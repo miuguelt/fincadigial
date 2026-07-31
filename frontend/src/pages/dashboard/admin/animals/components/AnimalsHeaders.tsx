@@ -162,17 +162,17 @@ export const AnimalsPotrerosHeader: React.FC = () => {
 					icon={<Users className="text-primary" />}
 				/>
 				<KPICard
-					title="Animales en Campo"
+					title="Animales vivos en campo"
 					value={metrics.totalAnimals}
 					icon={<Activity className="text-rose-500" />}
 				/>
 				<KPICard
-					title="Ocupación"
+					title="Ocupación de animales vivos"
 					value={`${metrics.occupation}%`}
 					icon={<ClipboardCheck className="text-amber-500" />}
 				/>
 				<KPICard
-					title="Cupos Libres"
+					title="Cupos libres (vivos)"
 					value={metrics.available}
 					icon={<CheckCircle2 className="text-emerald-500" />}
 				/>

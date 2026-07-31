@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, MessageCircle, Wifi, WifiOff, Search, X, Smile, Paperclip, FileImage, Download } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Send, MessageCircle, Wifi, WifiOff, Search, X, Smile, Paperclip, FileImage, Download, Server, CheckCircle2, RefreshCw } from 'lucide-react';
 import api from '@/shared/api/client';
 import { useAuth } from '@/features/auth/model/useAuth';
+import { OfflineChatService, type ChatMessage as OfflineChatMessage } from '@/shared/api/offline/OfflineChatService';
+import { FieldNodeService, type FieldNodeProbe } from '@/shared/api/offline/FieldNodeService';
+import './ChatPage.css';
 
 // Tipos simples para evitar dependencias complejas
 interface ChatContact {
@@ -13,7 +16,7 @@ interface ChatContact {
 }
 
 interface ChatMessage {
-  id: number;
+  id: number | string;
   sender_id: number;
   recipient_id: number;
   message: string;
@@ -21,7 +24,34 @@ interface ChatMessage {
   attachment_type?: 'image' | 'file';
   attachment_name?: string;
   created_at: string;
+  status?: OfflineChatMessage['status'];
 }
+
+const toPageMessage = (message: OfflineChatMessage): ChatMessage => ({
+  id: message.id,
+  sender_id: message.senderId,
+  recipient_id: message.recipientId,
+  message: message.content,
+  attachment_url: message.attachmentUrl,
+  attachment_type: message.attachmentType,
+  attachment_name: message.attachmentName,
+  created_at: message.createdAt,
+  status: message.status,
+});
+
+const CONTACTS_CACHE_KEY = 'villaluz.chat.contacts';
+
+const readCachedContacts = (): ChatContact[] => {
+  try {
+    return JSON.parse(localStorage.getItem(CONTACTS_CACHE_KEY) || '[]') as ChatContact[];
+  } catch {
+    return [];
+  }
+};
+
+const writeCachedContacts = (contacts: ChatContact[]) => {
+  try { localStorage.setItem(CONTACTS_CACHE_KEY, JSON.stringify(contacts)); } catch { /* cache opcional */ }
+};
 
 // Función simple para formatear tiempo relativo
 const formatTimeAgo = (dateString: string): string => {
@@ -43,13 +73,28 @@ const formatTimeAgo = (dateString: string): string => {
 // Servicios de chat — usan el cliente axios compartido (JWT automático)
 const chatService = {
   async getContacts(): Promise<ChatContact[]> {
-    const { data } = await api.get<{ success: boolean; data: ChatContact[] }>('/chat/contacts');
-    return data.data ?? [];
+    try {
+      const { data } = await api.get<{ success: boolean; data: ChatContact[] }>('/chat/contacts');
+      const contacts = data.data ?? [];
+      writeCachedContacts(contacts);
+      return contacts;
+    } catch {
+      try {
+        const data = await FieldNodeService.get<{ data?: ChatContact[] }>('/chat/contacts');
+        const contacts = data.data ?? [];
+        writeCachedContacts(contacts);
+        return contacts;
+      } catch {
+        const cached = readCachedContacts();
+        if (cached.length > 0) return cached;
+        throw new Error('CONTACTS_UNAVAILABLE');
+      }
+    }
   },
 
-  async getHistory(recipientId: number): Promise<ChatMessage[]> {
-    const { data } = await api.get<{ success: boolean; data: ChatMessage[] }>(`/chat/history/${recipientId}`);
-    return data.data ?? [];
+  async getHistory(recipientId: number, senderId?: number): Promise<ChatMessage[]> {
+    const history = await OfflineChatService.loadHistory(recipientId, senderId);
+    return history.map(toPageMessage);
   },
 
   async sendMessage(recipientId: number, message: string, attachment?: Record<string, unknown>): Promise<ChatMessage> {
@@ -75,6 +120,7 @@ const chatService = {
 
 export default function ChatPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
 
   const [contacts, setContacts] = useState<ChatContact[]>([]);
@@ -89,6 +135,12 @@ export default function ChatPage() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [, setUploading] = useState(false);
+  const [showNodeSettings, setShowNodeSettings] = useState(false);
+  const [nodeUrl, setNodeUrl] = useState(() => FieldNodeService.getUrl());
+  const [nodeProbe, setNodeProbe] = useState<FieldNodeProbe>({
+    status: FieldNodeService.getUrl() ? 'checking' : 'disabled',
+    url: FieldNodeService.getUrl(),
+  });
 
   // Emojis comunes para el picker
   const commonEmojis = ['😀', '😂', '😍', '🤔', '👍', '👎', '❤️', '🎉', '🔥', '✅', '⚠️', '❓', '👋', '🙏', '👏', '💪'];
@@ -115,6 +167,18 @@ export default function ChatPage() {
     };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    FieldNodeService.probe().then((probe) => { if (active) setNodeProbe(probe); });
+    const unsubscribe = FieldNodeService.subscribe(() => {
+      const value = FieldNodeService.getUrl();
+      setNodeUrl(value);
+      setNodeProbe({ status: value ? 'checking' : 'disabled', url: value });
+      FieldNodeService.probe().then((probe) => { if (active) setNodeProbe(probe); });
+    });
+    return () => { active = false; unsubscribe(); };
+  }, []);
+
   // Cargar contactos al inicio
   useEffect(() => {
     const loadContacts = async () => {
@@ -133,13 +197,21 @@ export default function ChatPage() {
     loadContacts();
   }, []);
 
+  // Permitir abrir el chat directamente sobre la persona elegida desde usuarios.
+  useEffect(() => {
+    const contactId = Number(searchParams.get('contactId'));
+    if (!contactId || selectedContact || contacts.length === 0) return;
+    const contact = contacts.find((item) => item.id === contactId);
+    if (contact) setSelectedContact(contact);
+  }, [contacts, searchParams, selectedContact]);
+
   // Cargar mensajes cuando se selecciona un contacto
   useEffect(() => {
     if (!selectedContact) return;
 
     const loadMessages = async () => {
       try {
-        const messagesData = await chatService.getHistory(selectedContact.id);
+        const messagesData = await chatService.getHistory(selectedContact.id, Number(user?.id));
         setMessages(messagesData);
       } catch (error) {
         console.error('Error loading messages:', error);
@@ -147,23 +219,37 @@ export default function ChatPage() {
     };
 
     loadMessages();
-  }, [selectedContact]);
+  }, [selectedContact, user?.id]);
 
-  // Polling para nuevos mensajes
   useEffect(() => {
-    if (!selectedContact || !isOnline) return;
+    if (!selectedContact) return;
+    return OfflineChatService.subscribe(() => {
+      const currentUserId = Number(user?.id);
+      const conversation = OfflineChatService.getConversation(
+        selectedContact.id,
+        Number.isFinite(currentUserId) ? currentUserId : undefined,
+      );
+      setMessages(conversation.map(toPageMessage));
+    });
+  }, [selectedContact, user?.id]);
+
+  // Polling ligero para nuevos mensajes; no consume datos cuando la pestaña
+  // está en segundo plano o la finca perdió señal.
+  useEffect(() => {
+    if (!selectedContact) return;
 
     const interval = setInterval(async () => {
+      if (document.visibilityState === 'hidden') return;
       try {
-        const messagesData = await chatService.getHistory(selectedContact.id);
+        const messagesData = await chatService.getHistory(selectedContact.id, Number(user?.id));
         setMessages(messagesData);
       } catch (error) {
         console.error('Error polling messages:', error);
       }
-    }, 5000);
+    }, 30000);
 
     return () => clearInterval(interval);
-  }, [selectedContact, isOnline]);
+  }, [selectedContact, isOnline, user?.id]);
 
   // Cerrar emoji picker al hacer clic fuera
   useEffect(() => {
@@ -177,11 +263,29 @@ export default function ChatPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const saveAndProbeNode = async () => {
+    try {
+      const normalized = FieldNodeService.setUrl(nodeUrl);
+      setNodeUrl(normalized);
+      setNodeProbe({ status: normalized ? 'checking' : 'disabled', url: normalized });
+      const probe = await FieldNodeService.probe();
+      setNodeProbe(probe);
+      if (probe.status === 'available') {
+        const contactsData = await chatService.getContacts();
+        setContacts(contactsData);
+        await OfflineChatService.flushPending();
+      }
+    } catch {
+      setNodeProbe({ status: 'unavailable', url: nodeUrl });
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!newMessage.trim() && !selectedFile) return;
     if (!selectedContact) return;
 
     setSending(true);
+    const textOnly = !selectedFile;
     try {
       let attachmentData = null;
       
@@ -192,12 +296,21 @@ export default function ChatPage() {
         setUploading(false);
       }
 
-      // Enviar mensaje
-      const messageData = await chatService.sendMessage(
-        selectedContact.id,
-        newMessage.trim(),
-        attachmentData || undefined
-      );
+      // Text messages use the offline outbox; attachments still require a
+      // connection because the binary upload cannot be queued safely here.
+      const messageData = textOnly
+        ? await (async () => {
+          const senderId = Number(user?.id);
+          if (!Number.isFinite(senderId)) throw new Error('AUTH_USER_REQUIRED');
+          return OfflineChatService.send(
+            senderId,
+            String((user as { fullname?: string; name?: string } | null)?.fullname ||
+              (user as { fullname?: string; name?: string } | null)?.name || 'Usuario'),
+            selectedContact.id,
+            newMessage.trim(),
+          ).then(toPageMessage)
+        })()
+        : await chatService.sendMessage(selectedContact.id, newMessage.trim(), attachmentData || undefined);
 
       if (messageData) {
         setMessages(prev => [...prev, messageData]);
@@ -205,7 +318,17 @@ export default function ChatPage() {
         setSelectedFile(null);
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      if (textOnly && selectedContact) {
+        const currentUserId = Number(user?.id);
+        const pending = OfflineChatService.getConversation(
+          selectedContact.id,
+          Number.isFinite(currentUserId) ? currentUserId : undefined,
+        );
+        setMessages(pending.map(toPageMessage));
+        setNewMessage('');
+      } else {
+        console.error('Error sending message:', error);
+      }
     } finally {
       setSending(false);
       setUploading(false);
@@ -236,9 +359,9 @@ export default function ChatPage() {
   }
 
   return (
-    <div style={{ height: 'calc(100vh - 4rem)', display: 'flex', backgroundColor: '#fff' }}>
+    <div className="chat-page-shell" style={{ height: 'calc(100vh - 4rem)', display: 'flex', backgroundColor: '#fff' }}>
       {/* Sidebar - Lista de contactos */}
-      <div style={{ width: '320px', borderRight: '1px solid #e5e7eb', backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column' }}>
+      <div className={`chat-sidebar ${selectedContact ? 'chat-sidebar--conversation-open' : ''}`} style={{ width: '320px', borderRight: '1px solid #e5e7eb', backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
             <button
@@ -253,7 +376,46 @@ export default function ChatPage() {
             ) : (
               <WifiOff style={{ height: '16px', width: '16px', color: '#ef4444' }} />
             )}
+            <button
+              type="button"
+              onClick={() => setShowNodeSettings((value) => !value)}
+              className={`chat-node-button chat-node-button--${nodeProbe.status}`}
+              aria-label="Configurar nodo de finca"
+              title="Configurar nodo de finca"
+            >
+              <Server style={{ height: '17px', width: '17px' }} />
+              <span>{nodeProbe.status === 'available' ? 'Nodo listo' : 'Nodo'}</span>
+            </button>
           </div>
+          {showNodeSettings && (
+            <div className="chat-node-panel">
+              <div className="chat-node-title">
+                <Server size={18} />
+                <div>
+                  <strong>Nodo local de la finca</strong>
+                  <p>Conecta los equipos por el Wi-Fi o hotspot local, aunque no haya internet.</p>
+                </div>
+              </div>
+              <label htmlFor="field-node-url">Dirección del nodo</label>
+              <div className="chat-node-form">
+                <input
+                  id="field-node-url"
+                  value={nodeUrl}
+                  onChange={(event) => setNodeUrl(event.target.value)}
+                  placeholder="192.168.1.20:5000"
+                  inputMode="url"
+                />
+                <button type="button" onClick={saveAndProbeNode} disabled={nodeProbe.status === 'checking'}>
+                  {nodeProbe.status === 'checking' ? <RefreshCw className="chat-spin" size={17} /> : 'Probar'}
+                </button>
+              </div>
+              <p className={`chat-node-result chat-node-result--${nodeProbe.status}`}>
+                {nodeProbe.status === 'available' && <><CheckCircle2 size={15} /> Nodo disponible{nodeProbe.latencyMs ? ` · ${nodeProbe.latencyMs} ms` : ''}</>}
+                {nodeProbe.status === 'unavailable' && <>No se pudo alcanzar el nodo. Verifica la misma red y la dirección.</>}
+                {nodeProbe.status === 'disabled' && <>Opcional: los mensajes seguirán guardándose en este equipo.</>}
+              </p>
+            </div>
+          )}
           
           {/* Búsqueda */}
           <div style={{ position: 'relative' }}>
@@ -330,10 +492,13 @@ export default function ChatPage() {
 
       {/* Área de chat */}
       {selectedContact ? (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div className="chat-conversation" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           {/* Header del chat */}
           <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button type="button" className="chat-mobile-back" onClick={() => setSelectedContact(null)} aria-label="Volver a contactos">
+                <ArrowLeft size={20} />
+              </button>
               <div style={{ height: '40px', width: '40px', borderRadius: '50%', backgroundColor: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{ fontSize: '14px', fontWeight: '500', color: '#3b82f6' }}>
                   {selectedContact.fullname.charAt(0).toUpperCase()}
@@ -397,6 +562,7 @@ export default function ChatPage() {
                       color: message.sender_id === user?.id ? 'rgba(255,255,255,0.7)' : '#666'
                     }}>
                       {formatTimeAgo(message.created_at)}
+                      {message.sender_id === user?.id && message.status === 'pending' ? ' · pendiente' : ''}
                     </p>
                   </div>
                 </div>
@@ -407,9 +573,11 @@ export default function ChatPage() {
           {/* Input de mensaje */}
           <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} style={{ padding: '16px', borderTop: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}>
             {!isOnline && (
-              <div style={{ marginBottom: '8px', padding: '6px 12px', backgroundColor: '#fef2f2', color: '#dc2626', fontSize: '12px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ marginBottom: '8px', padding: '8px 12px', backgroundColor: nodeProbe.status === 'available' ? '#d1fae5' : '#fef3c7', color: nodeProbe.status === 'available' ? '#065f46' : '#78350f', fontSize: '12px', fontWeight: 700, borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <WifiOff style={{ height: '12px', width: '12px' }} />
-                Sin conexión a internet. Los mensajes se enviarán cuando vuelvas a estar en línea.
+                {nodeProbe.status === 'available'
+                  ? 'Sin internet · enviando por el nodo local de la finca.'
+                  : 'Sin internet ni nodo local · el mensaje quedará pendiente en este equipo.'}
               </div>
             )}
             {selectedFile && (
@@ -452,7 +620,7 @@ export default function ChatPage() {
                   fontSize: '14px',
                   outline: 'none'
                 }}
-                disabled={!isOnline}
+                disabled={false}
               />
               
               {/* Emoji picker */}
@@ -461,7 +629,7 @@ export default function ChatPage() {
                   type="button"
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                   style={{ padding: '8px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', color: '#666', borderRadius: '6px' }}
-                  disabled={!isOnline}
+                  disabled={false}
                 >
                   <Smile style={{ height: '20px', width: '20px' }} />
                 </button>
@@ -497,14 +665,14 @@ export default function ChatPage() {
               {/* Botón de enviar */}
               <button
                 type="submit"
-                disabled={!newMessage.trim() && !selectedFile || sending || !isOnline}
+                disabled={!newMessage.trim() && !selectedFile || sending}
                 style={{
                   padding: '8px',
-                  backgroundColor: (!newMessage.trim() && !selectedFile) || sending || !isOnline ? '#9ca3af' : '#3b82f6',
+                  backgroundColor: (!newMessage.trim() && !selectedFile) || sending ? '#9ca3af' : '#3b82f6',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '8px',
-                  cursor: (!newMessage.trim() && !selectedFile) || sending || !isOnline ? 'not-allowed' : 'pointer'
+                  cursor: (!newMessage.trim() && !selectedFile) || sending ? 'not-allowed' : 'pointer'
                 }}
               >
                 <Send style={{ height: '20px', width: '20px' }} />
@@ -522,7 +690,7 @@ export default function ChatPage() {
         </div>
       ) : (
         /* Vista vacía */
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' }}>
+        <div className="chat-empty-state" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' }}>
           <div style={{ textAlign: 'center' }}>
             <MessageCircle style={{ height: '64px', width: '64px', margin: '0 auto 16px', color: '#666', opacity: 0.4 }} />
             <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>Selecciona un contacto</h2>

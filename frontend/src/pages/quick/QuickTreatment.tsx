@@ -14,6 +14,7 @@ import { animalsService } from '@/entities/animal/api/animal.service';
 import { medicationsService } from '@/entities/medication/api/medications.service';
 import { treatmentsService } from '@/entities/treatment/api/treatments.service';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
+import { emitDataRefresh } from '@/shared/utils/dataRefresh';
 
 export default function QuickTreatment() {
   useAuth();
@@ -99,6 +100,7 @@ export default function QuickTreatment() {
         await treatmentsService.createTreatment(payload);
         showToast('Tratamiento registrado exitosamente', 'success');
       }
+      emitDataRefresh('treatments');
       handleClose();
     } catch (error) {
       console.error('Error creating treatment:', error);

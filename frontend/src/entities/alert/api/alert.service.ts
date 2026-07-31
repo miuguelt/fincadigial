@@ -43,6 +43,26 @@ export interface EvaluateResult {
   errors?: string[];
 }
 
+/** Normalizes both the analytics envelope and the legacy flat stats shape. */
+export function normalizeAlertStats(payload: any, fallbackTotal = 0): AlertStats {
+  const envelope = payload?.data && typeof payload.data === 'object' && !Array.isArray(payload.data)
+    ? payload.data
+    : payload;
+  const source = envelope?.statistics ?? envelope?.stats ?? envelope ?? {};
+  const byPriority = source.by_priority ?? source.byPriority ?? {};
+  const alerts = Array.isArray(envelope?.alerts) ? envelope.alerts : [];
+
+  return {
+    total: Number(source.total ?? alerts.length ?? fallbackTotal),
+    unread: Number(source.unread ?? alerts.filter((alert: any) => !alert.is_read).length ?? 0),
+    critical: Number(source.critical ?? byPriority.critica ?? byPriority.crítica ?? 0),
+    high: Number(source.high ?? byPriority.alta ?? 0),
+    medium: Number(source.medium ?? byPriority.media ?? 0),
+    low: Number(source.low ?? byPriority.baja ?? 0),
+    by_type: source.by_type ?? source.byType ?? {},
+  };
+}
+
 class AlertService extends BaseService<Alert> {
   constructor() {
     super('alerts', {
@@ -65,15 +85,7 @@ class AlertService extends BaseService<Alert> {
   async getAlertStats(): Promise<AlertStats> {
     const response = await apiClient.get('/analytics/alerts/');
     const data = (response as any)?.data || response;
-    return {
-      total: data?.total || 0,
-      unread: data?.unread || 0,
-      critical: data?.critical || 0,
-      high: data?.high || 0,
-      medium: data?.medium || 0,
-      low: data?.low || 0,
-      by_type: data?.by_type || {},
-    };
+    return normalizeAlertStats(data);
   }
 
   async markAsRead(id: number): Promise<boolean> {

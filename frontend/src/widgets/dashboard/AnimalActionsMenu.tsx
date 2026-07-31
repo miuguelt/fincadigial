@@ -20,10 +20,10 @@ const ActionButton: React.FC<{ label: string; icon: React.ReactNode; onClick?: (
   </button>
 );
 
-const ModuleActions: React.FC<{ type: Exclude<ModalType, null>; onOpen: (t: ModalType) => void }> = ({ type, onOpen }) => (
+const ModuleActions: React.FC<{ type: Exclude<ModalType, null>; onOpen: (t: ModalType, mode: ModalMode) => void }> = ({ type, onOpen }) => (
   <div className="grid grid-cols-2 gap-1.5 px-1">
-    <ActionButton label="Registrar" icon={<IconPlus className="h-4 w-4 text-muted-foreground" />} onClick={() => onOpen(type)} />
-    <ActionButton label="Ver" icon={<IconEye className="h-4 w-4 text-muted-foreground" />} onClick={() => onOpen(type)} />
+    <ActionButton label="Registrar" icon={<IconPlus className="h-4 w-4 text-muted-foreground" />} onClick={() => onOpen(type, "create")} />
+    <ActionButton label="Ver" icon={<IconEye className="h-4 w-4 text-muted-foreground" />} onClick={() => onOpen(type, "list")} />
   </div>
 );
 
@@ -46,7 +46,8 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({ animal, cu
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleOpenModal = useCallback((type: ModalType, mode: ModalMode = "create", item: any = null) => {
-    setModalStack(prev => [...prev, { id: Math.random().toString(36).substring(2, 9), type, mode: mode === "edit" ? "create" : mode, editingItem: item }]);
+    // One action at a time prevents duplicate forms and duplicate POSTs.
+    setModalStack([{ id: Math.random().toString(36).substring(2, 9), type, mode: mode === "edit" ? "create" : mode, editingItem: item }]);
     setMenuOpen(false);
   }, []);
 
@@ -79,27 +80,27 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({ animal, cu
           </div>
           <MenuSection title="Salud y bienestar" defaultOpen>
             <ModuleHeader icon={<IconActivity className="h-4 w-4 text-rose-500" />} label="Enfermedades" />
-            <ModuleActions type="animal_disease" onOpen={(t) => handleOpenModal(t)} />
+            <ModuleActions type="animal_disease" onOpen={(t, mode) => handleOpenModal(t, mode)} />
             <ModuleHeader icon={<IconSyringe className="h-4 w-4 text-blue-500" />} label="Vacunación" />
-            <ModuleActions type="vaccination" onOpen={(t) => handleOpenModal(t)} />
+            <ModuleActions type="vaccination" onOpen={(t, mode) => handleOpenModal(t, mode)} />
             <ModuleHeader icon={<IconPill className="h-4 w-4 text-purple-500" />} label="Tratamientos" />
-            <ModuleActions type="treatment" onOpen={(t) => handleOpenModal(t)} />
+            <ModuleActions type="treatment" onOpen={(t, mode) => handleOpenModal(t, mode)} />
             <ModuleHeader icon={<IconClipboardList className="h-4 w-4 text-orange-500" />} label="Controles y Pesajes" />
-            <ModuleActions type="control" onOpen={(t) => handleOpenModal(t)} />
+            <ModuleActions type="control" onOpen={(t, mode) => handleOpenModal(t, mode)} />
           </MenuSection>
           <MenuSection title="Producción" defaultOpen>
             <ModuleHeader icon={<IconMilk className="h-4 w-4 text-cyan-500" />} label="Producción Lechera" />
-            <ModuleActions type="milk_production" onOpen={(t) => handleOpenModal(t)} />
+            <ModuleActions type="milk_production" onOpen={(t, mode) => handleOpenModal(t, mode)} />
             <ModuleHeader icon={<IconHeart className="h-4 w-4 text-pink-500" />} label="Reproducción" />
-            <ModuleActions type="reproduction_event" onOpen={(t) => handleOpenModal(t)} />
+            <ModuleActions type="reproduction_event" onOpen={(t, mode) => handleOpenModal(t, mode)} />
           </MenuSection>
           <MenuSection title="Ubicación y movimientos" defaultOpen={false}>
             <ModuleHeader icon={<IconMapPin className="h-4 w-4 text-amber-500" />} label="Asignación de Campo" />
-            <ModuleActions type="animal_field" onOpen={(t) => handleOpenModal(t)} />
+            <ModuleActions type="animal_field" onOpen={(t, mode) => handleOpenModal(t, mode)} />
           </MenuSection>
           <MenuSection title="Genética y linaje" defaultOpen={false}>
             <ModuleHeader icon={<IconDna className="h-4 w-4 text-emerald-500" />} label="Mejora Genética" />
-            <ModuleActions type="genetic_improvement" onOpen={(t) => handleOpenModal(t)} />
+            <ModuleActions type="genetic_improvement" onOpen={(t, mode) => handleOpenModal(t, mode)} />
             <div className="grid grid-cols-2 gap-1.5 px-1">
               <ActionButton label="Árbol Antepasados" icon={<IconGitBranch className="h-4 w-4 text-violet-500" />} onClick={onOpenAncestorsTree} />
               <ActionButton label="Árbol Descendientes" icon={<IconBabyCarriage className="h-4 w-4 text-indigo-500" />} onClick={onOpenDescendantsTree} />
@@ -107,9 +108,9 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({ animal, cu
           </MenuSection>
           <MenuSection title="Alertas y tareas" defaultOpen={false}>
             <ModuleHeader icon={<IconBell className="h-4 w-4 text-yellow-500" />} label="Alertas del Animal" />
-            <ModuleActions type="alert" onOpen={(t) => handleOpenModal(t)} />
+            <ModuleActions type="alert" onOpen={(t, mode) => handleOpenModal(t, mode)} />
             <ModuleHeader icon={<CalendarCheck className="h-4 w-4 text-teal-500" />} label="Tareas Programadas" />
-            <ModuleActions type="task" onOpen={(t) => handleOpenModal(t)} />
+            <ModuleActions type="task" onOpen={(t, mode) => handleOpenModal(t, mode)} />
           </MenuSection>
         </DropdownMenuContent>
       </DropdownMenu>

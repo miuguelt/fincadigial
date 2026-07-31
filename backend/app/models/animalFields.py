@@ -17,6 +17,7 @@ class AnimalFields(BaseModel):
         db.Index('ix_animal_fields_finca_id', 'finca_id'),
         db.Index('ix_animal_fields_field_id', 'field_id'),
         db.Index('ix_animal_fields_active', 'animal_id', 'removal_date'),
+        db.Index('ix_animal_fields_field_active', 'field_id', 'removal_date'),
     )
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)

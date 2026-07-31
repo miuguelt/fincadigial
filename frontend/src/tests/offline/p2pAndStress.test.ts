@@ -10,6 +10,7 @@ import {
 	offlineQueue,
 	QueuedOperation,
 } from "../../shared/api/offline/offlineQueue";
+import { FieldNodeService } from "../../shared/api/offline/FieldNodeService";
 
 // Mock de apiFetch
 vi.mock("../../shared/api/apiFetch", () => {
@@ -17,6 +18,14 @@ vi.mock("../../shared/api/apiFetch", () => {
 		apiFetch: vi.fn(),
 	};
 });
+
+vi.mock("../../shared/api/offline/FieldNodeService", () => ({
+	FieldNodeService: {
+		getUrl: vi.fn(() => ""),
+		mutate: vi.fn(),
+		post: vi.fn(),
+	},
+}));
 
 describe("Offline Queue & P2P Stress Tests", () => {
 	beforeEach(async () => {
@@ -41,6 +50,7 @@ describe("Offline Queue & P2P Stress Tests", () => {
 		});
 
 		vi.clearAllMocks();
+		(FieldNodeService.getUrl as any).mockReturnValue("");
 	});
 
 	afterEach(() => {
@@ -149,6 +159,37 @@ describe("Offline Queue & P2P Stress Tests", () => {
 		expect(logs).toHaveLength(1);
 		expect(logs[0].winner.id).toBe(id2);
 		expect(logs[0].loser.id).toBe(id1);
+	});
+
+	test("El primer dispositivo con señal LAN drena su cola al nodo", async () => {
+		vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+		const apiFetchMock = apiFetchModule.apiFetch as any;
+		apiFetchMock.mockRejectedValue(new Error("Internet unavailable"));
+		(FieldNodeService.getUrl as any).mockReturnValue("http://192.168.1.20:8092/api/v1");
+		(FieldNodeService.mutate as any).mockResolvedValue({ success: true });
+
+		await offlineQueue.enqueue("POST", "/api/v1/milk-production", { liters: 12 });
+		await offlineQueue.syncQueue();
+
+		expect(FieldNodeService.mutate).toHaveBeenCalledWith(
+			"POST",
+			"/milk-production",
+			{ liters: 12 },
+		);
+		expect(await offlineQueue.getPendingCount()).toBe(0);
+	});
+
+	test("Una operación no se pierde después de una ausencia prolongada de señal", async () => {
+		vi.spyOn(navigator, "onLine", "get").mockReturnValue(true);
+		(apiFetchModule.apiFetch as any).mockRejectedValue(new Error("SIN_RUTA"));
+
+		await offlineQueue.enqueue("POST", "/api/v1/animals", { record: "VL-001" });
+		await offlineQueue.syncQueue();
+
+		const pending = await offlineQueue.getPendingOperations();
+		expect(pending).toHaveLength(1);
+		expect(pending[0].status).toBe("pending");
+		expect(pending[0].retries).toBe(1);
 	});
 
 	// El chat vive en offlineChat.test.ts: su servicio es API-first (la fuente de

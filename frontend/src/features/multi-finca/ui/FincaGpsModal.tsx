@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
 	Dialog,
 	DialogContent,
@@ -28,7 +28,8 @@ interface FincaGpsModalProps {
 	onClose: () => void;
 	fincaId: number;
 	fincaName?: string;
-	onLocationUpdated?: (coords: { latitude: number; longitude: number }) => void;
+	initialCoordinates?: { latitude?: number | null; longitude?: number | null };
+	onLocationUpdated?: (coords: { latitude: number; longitude: number }) => void | Promise<void>;
 }
 
 export const FincaGpsModal: React.FC<FincaGpsModalProps> = ({
@@ -36,6 +37,7 @@ export const FincaGpsModal: React.FC<FincaGpsModalProps> = ({
 	onClose,
 	fincaId,
 	fincaName,
+	initialCoordinates,
 	onLocationUpdated,
 }) => {
 	const { showToast } = useToast();
@@ -46,6 +48,28 @@ export const FincaGpsModal: React.FC<FincaGpsModalProps> = ({
 	const [isSaving, setIsSaving] = useState(false);
 	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 	const [capturedSuccess, setCapturedSuccess] = useState(false);
+
+	useEffect(() => {
+		if (!isOpen) return;
+		setLatitude(
+			initialCoordinates?.latitude == null
+				? ""
+				: String(initialCoordinates.latitude),
+		);
+		setLongitude(
+			initialCoordinates?.longitude == null
+				? ""
+				: String(initialCoordinates.longitude),
+		);
+		setAccuracy(null);
+		setErrorMsg(null);
+		setCapturedSuccess(false);
+	}, [
+		isOpen,
+		fincaId,
+		initialCoordinates?.latitude,
+		initialCoordinates?.longitude,
+	]);
 
 	const handleCaptureGps = () => {
 		setErrorMsg(null);
@@ -121,7 +145,7 @@ export const FincaGpsModal: React.FC<FincaGpsModalProps> = ({
 			});
 
 			showToast("Ubicación GPS de la finca guardada correctamente", "success");
-			onLocationUpdated?.({ latitude: latNum, longitude: lonNum });
+			await onLocationUpdated?.({ latitude: latNum, longitude: lonNum });
 			onClose();
 		} catch (err: any) {
 			devLogger.error("[GPS Modal] Error guardando ubicación:", err);

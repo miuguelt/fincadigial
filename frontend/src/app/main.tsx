@@ -13,14 +13,12 @@ import { ToastProvider } from '@/app/providers/ToastContext'
 import { I18nProvider } from '@/shared/i18n'
 import { InventoryProvider } from '@/app/providers/InventoryContext'
 import { useToast } from '@/app/providers/ToastContext'
-import { useCache } from '@/app/providers/CacheContext'
 import { useAuth } from '@/features/auth/model/useAuth'
 import { hasSessionCookies } from '@/shared/utils/cookieUtils'
 import { refetchAllResources } from '@/shared/hooks/useResource'
 import { PWAUpdateHandler } from '@/shared/ui/common/PWAUpdateHandler'
 import { ErrorBoundary } from '@/app/ErrorBoundary'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { PrefetchManager } from '@/shared/ui/common/PrefetchManager'
 import { OnlineStatusIndicator } from '@/shared/ui/common/OnlineStatusIndicator'
 import sse, { connectSSE, closeSSE } from '@/lib/events'
 import { publishEvent, subscribeBridge, claimLeadership } from '@/lib/eventsBridge'
@@ -133,6 +131,8 @@ const queryClient = new QueryClient({
 (function legacyLocalStorageCleanup() {
   try {
     if (typeof window === 'undefined' || !('localStorage' in window)) return;
+    const cleanupMarker = 'villaluz:legacy-storage-cleanup:v2';
+    if (window.localStorage.getItem(cleanupMarker) === 'done') return;
     const knownKeys = [
       'finca_access_token',
       'dev_user_data',
@@ -142,9 +142,6 @@ const queryClient = new QueryClient({
       'auth:user:cache',
       'auth:auto_login_block',
       'auth:session_active',
-      'offline_queue_v1',
-      'sidebar-width',
-      'theme',
       'finca_auth_login_path',
     ];
     for (const k of knownKeys) {
@@ -160,6 +157,7 @@ const queryClient = new QueryClient({
         }
       }
     } catch { /* noop */ }
+    window.localStorage.setItem(cleanupMarker, 'done');
   } catch { /* noop */ }
 })();
 
@@ -267,9 +265,7 @@ if (ENABLE_PWA && 'serviceWorker' in navigator) {
 // Puente React para notificaciones y sincronización al cambiar estado de red
 function GlobalNetworkHandlers() {
   const { showToast } = useToast();
-  const { preloadCriticalRoutes } = useCache();
   const { isAuthenticated } = useAuth();
-  const preloadStartedRef = useRef(false);
   const lastRateLimitAtRef = useRef<number>(0);
   const cookiesReadyRef = useRef(false);
 
@@ -398,38 +394,6 @@ function GlobalNetworkHandlers() {
     };
   }, [isAuthenticated]);
 
-  // Precarga inteligente SÓLO cuando la autenticación está lista y DESPUÉS de que cargue el dashboard
-  useEffect(() => {
-    if (preloadStartedRef.current) return;
-    if (!isAuthenticated) return; // Gate por auth: sin sesión no se precargan endpoints protegidos
-    // Gate adicional: requerir cookies de sesión visibles
-    if (!cookiesReadyRef.current && !hasSessionCookies()) {
-      // Reintentar en breve para dar tiempo a que el navegador persista las cookies HttpOnly
-      setTimeout(() => {
-        cookiesReadyRef.current = hasSessionCookies();
-        if (cookiesReadyRef.current && !preloadStartedRef.current) {
-          preloadStartedRef.current = true;
-          preloadCriticalRoutes();
-          console.log('[Cache] Precarga inteligente activada tras detectar cookies de sesión');
-        }
-      }, 1500);
-      return;
-    }
-    preloadStartedRef.current = true;
-
-    // OPTIMIZACIÓN: Reducir delay para precarga más rápida (1s vs 5s)
-    const timer = setTimeout(() => {
-      try {
-        preloadCriticalRoutes();
-        console.log('[Cache] Precarga inteligente de rutas críticas activada (post-auth)');
-      } catch (error) {
-        console.warn('[Cache] Error en precarga inteligente:', error);
-      }
-    }, 1000); // 1s tras estar autenticado (optimizado para velocidad)
-
-    return () => clearTimeout(timer);
-  }, [preloadCriticalRoutes, isAuthenticated]);
-
   return null;
 }
 
@@ -471,8 +435,6 @@ createRoot(document.getElementById('root')!).render(
                     <InventoryProvider>
                       {/* Bridge para toasts y refetch al recuperar red y precargas post-auth */}
                       <GlobalNetworkHandlers />
-                      {/* Sistema inteligente de prefetching para máxima fluidez */}
-                      <PrefetchManager />
                       <AppRoutes />
                       <OnlineStatusIndicator />
                       <PWAUpdateHandler />

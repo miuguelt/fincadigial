@@ -11,6 +11,7 @@ import {
   QInput, QSelect, QSubmitButton,
 } from './QuickFormShell';
 import { api } from '@/shared/api/base-client';
+import { emitDataRefresh } from '@/shared/utils/dataRefresh';
 
 export default function QuickWater() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -70,6 +71,7 @@ export default function QuickWater() {
         await api.post('/water-measurements', payload);
         showToast('Medición de agua registrada correctamente.', 'success');
       }
+      emitDataRefresh('water-measurements');
       handleClose();
     } catch {
       showToast('No se pudo guardar el registro.', 'error');

@@ -238,19 +238,10 @@ export const FieldChatPanel = memo(function FieldChatPanel({
 				: inputText.trim();
 			setInputText("");
 			try {
-				// Buscar peerId en peers descubiertos
-				const peers = proximitySync.getDiscoveredPeers();
-				const peer = peers.find((p) => p.userId === selectedUserId);
-
-				if (peer) {
-					await proximitySync.sendMessageToPeer(
-						peer.id,
-						text,
-						isAlert ? "alert" : "chat",
-					);
-				} else {
-					await OfflineChatService.send(myUserId, myName, selectedUserId, text);
-				}
+				// El chat siempre pasa por el outbox durable. Si el dispositivo está
+				// cerca, el gateway LAN lo entrega al nodo; si no, queda pendiente
+				// hasta que cualquier dispositivo con ruta pueda subirlo.
+				await OfflineChatService.send(myUserId, myName, selectedUserId, text);
 			} catch (err) {
 				devLogger.warn("[FieldChat] Error enviando:", err);
 			} finally {

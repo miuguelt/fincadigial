@@ -63,9 +63,9 @@ class WeatherDataService:
             params = {
                 "latitude": lat,
                 "longitude": lon,
-                "current": "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m,surface_pressure,cloud_cover",
-                "hourly": "temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m",
-                "daily": "sunrise,sunset,uv_index_max,precipitation_sum",
+                "current": "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,surface_pressure,cloud_cover,dew_point_2m,visibility",
+                "hourly": "temperature_2m,relative_humidity_2m,apparent_temperature,dew_point_2m,precipitation,precipitation_probability,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,cloud_cover,visibility,uv_index,soil_moisture_0_to_1cm,soil_temperature_0cm,et0_fao_evapotranspiration",
+                "daily": "temperature_2m_max,temperature_2m_min,apparent_temperature_max,precipitation_sum,rain_sum,showers_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,relative_humidity_2m_mean,uv_index_max,sunrise,sunset,sunshine_duration,et0_fao_evapotranspiration,weather_code",
                 "timezone": "auto",
                 "forecast_days": 7,
             }
@@ -76,6 +76,72 @@ class WeatherDataService:
         except Exception as e:
             logger.error(f"Error fetching weather data from Open-Meteo: {e}")
             return None
+
+    @staticmethod
+    def serialize_forecast(data: dict[str, Any] | None) -> dict[str, Any]:
+        """Reduce la respuesta de Open-Meteo a datos útiles para decisiones de campo."""
+        if not data:
+            return {"timezone": None, "daily": [], "hourly": []}
+
+        daily = data.get("daily") or {}
+        hourly = data.get("hourly") or {}
+
+        def value(block: dict[str, Any], key: str, index: int) -> Any:
+            values = block.get(key) or []
+            return values[index] if index < len(values) else None
+
+        daily_keys = {
+            "date": "time",
+            "temp_max": "temperature_2m_max",
+            "temp_min": "temperature_2m_min",
+            "apparent_temp_max": "apparent_temperature_max",
+            "precipitation_mm": "precipitation_sum",
+            "rain_mm": "rain_sum",
+            "showers_mm": "showers_sum",
+            "precipitation_probability_max": "precipitation_probability_max",
+            "wind_max": "wind_speed_10m_max",
+            "wind_gusts_max": "wind_gusts_10m_max",
+            "humidity_avg": "relative_humidity_2m_mean",
+            "uv_index": "uv_index_max",
+            "sunshine_duration_seconds": "sunshine_duration",
+            "et0_mm": "et0_fao_evapotranspiration",
+            "sunrise": "sunrise",
+            "sunset": "sunset",
+            "weather_code": "weather_code",
+        }
+        daily_rows = []
+        for index in range(len(daily.get("time") or [])):
+            daily_rows.append({key: value(daily, source_key, index) for key, source_key in daily_keys.items()})
+
+        hourly_keys = {
+            "time": "time",
+            "temperature": "temperature_2m",
+            "feels_like": "apparent_temperature",
+            "humidity": "relative_humidity_2m",
+            "dew_point": "dew_point_2m",
+            "precipitation_mm": "precipitation",
+            "precipitation_probability": "precipitation_probability",
+            "weather_code": "weather_code",
+            "wind_speed": "wind_speed_10m",
+            "wind_gusts": "wind_gusts_10m",
+            "wind_direction": "wind_direction_10m",
+            "cloud_cover": "cloud_cover",
+            "visibility_m": "visibility",
+            "uv_index": "uv_index",
+            "soil_moisture": "soil_moisture_0_to_1cm",
+            "soil_temperature": "soil_temperature_0cm",
+            "et0_mm": "et0_fao_evapotranspiration",
+        }
+        hourly_rows = []
+        for index in range(min(len(hourly.get("time") or []), 48)):
+            hourly_rows.append({key: value(hourly, source_key, index) for key, source_key in hourly_keys.items()})
+
+        return {
+            "timezone": data.get("timezone"),
+            "timezone_abbreviation": data.get("timezone_abbreviation"),
+            "daily": daily_rows,
+            "hourly": hourly_rows,
+        }
 
     @staticmethod
     def save_weather_record(finca_id: int, lat: float, lon: float, data: dict[str, Any]) -> WeatherRecord | None:
@@ -266,7 +332,7 @@ class WeatherDataService:
     @staticmethod
     def update_finca_weather(finca_id: int) -> dict[str, Any]:
         finca = Finca.query.get(finca_id)
-        if not finca or not finca.latitude or not finca.longitude:
+        if not finca or finca.latitude is None or finca.longitude is None:
             logger.warning(f"Finca {finca_id} no tiene coordenadas configuradas")
             return {"success": False, "error": "Finca sin coordenadas"}
 
@@ -295,6 +361,7 @@ class WeatherDataService:
             "record_id": record.id,
             "alerts_generated": len(new_alerts),
             "alert_ids": [a.id for a in new_alerts],
+            "forecast": WeatherDataService.serialize_forecast(data),
         }
 
     @staticmethod

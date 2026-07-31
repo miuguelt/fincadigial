@@ -56,39 +56,42 @@ const RegistroOperativoPage: React.FC = () => {
   };
 
   const tabs = [
-    { key: 'crop' as TabType, label: ' Agricultura', icon: Leaf },
-    { key: 'livestock' as TabType, label: ' Ganadería', icon: IconMilk },
-    { key: 'history' as TabType, label: ' Historial', icon: ClipboardList },
+    { key: 'crop' as TabType, label: 'Agricultura', icon: Leaf },
+    { key: 'livestock' as TabType, label: 'Ganadería', icon: IconMilk },
+    { key: 'history' as TabType, label: 'Historial', icon: ClipboardList },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50/30 to-background dark:from-emerald-950/10 dark:to-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 space-y-8 md:space-y-12">
+    <div className="vl-page">
+      <div className="vl-page-container space-y-8 md:space-y-10">
 
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-gradient-to-r from-emerald-600 to-teal-500 p-6 md:p-8 rounded-[2rem] text-white shadow-xl shadow-emerald-500/20 relative overflow-hidden">
-          <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-20 translate-x-20 pointer-events-none" />
-          <div className="relative z-10">
-            <h1 className="text-2xl md:text-3xl font-extrabold flex items-center gap-3 drop-shadow-md">
-              <span className="bg-white/20 p-2 rounded-xl backdrop-blur-md shadow-inner">
-                <ClipboardList className="w-6 h-6 md:w-8 md:h-8" />
+        <div className="vl-page-header">
+          <div>
+            <h1 className="vl-page-title flex items-center gap-3">
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <ClipboardList className="w-5 h-5" />
               </span>
               Registro Operativo
             </h1>
-            <p className="text-emerald-50 mt-2 font-medium max-w-xl opacity-90">
+            <p className="vl-page-description">
               Controla y centraliza todas las labores de agricultura, ganadería y el historial de tu finca en un solo lugar.
             </p>
           </div>
-          <Button onClick={() => navigate('/campesino')} variant="secondary" className="relative z-10 rounded-xl gap-2 font-bold bg-white text-emerald-700 hover:bg-emerald-50 border-0 shadow-md">
+          <Button onClick={() => navigate('/campesino')} variant="secondary" className="gap-2">
             ← Volver al Menú
           </Button>
         </div>
 
-        <div className="flex gap-1 bg-muted/50 p-1 rounded-lg">
+        <div className="vl-tabs" role="tablist" aria-label="Secciones del registro operativo">
           {tabs.map(tab => {
             const Icon = tab.icon;
             return (
               <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === tab.key ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+                type="button"
+                role="tab"
+                aria-selected={activeTab === tab.key}
+                data-active={activeTab === tab.key}
+                className="vl-tab flex items-center justify-center gap-2 py-2.5 text-sm">
                 <Icon className="w-4 h-4" />
                 <span className="hidden sm:inline">{tab.label}</span>
               </button>
@@ -103,7 +106,7 @@ const RegistroOperativoPage: React.FC = () => {
         {activeTab === 'history' && <HistoryTab records={historyRecords} loading={loadingHistory} />}
 
         {!loadingCrops && !loadingHistory && (
-          <button onClick={() => { loadCropData(); loadHistoryRecords(); }} className="w-full flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <button type="button" onClick={() => { loadCropData(); loadHistoryRecords(); }} className="w-full flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground hover:text-primary transition-colors">
             <RefreshCw className="w-4 h-4" /> Actualizar todo
           </button>
         )}

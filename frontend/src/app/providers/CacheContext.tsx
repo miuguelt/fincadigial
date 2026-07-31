@@ -25,7 +25,6 @@ interface CacheContextType {
   invalidateByEndpoint: (endpoint: string) => void;
   clearCache: () => void;
   preloadData: <T>(key: string, fetchFn: () => Promise<T>, ttl?: number) => Promise<T>;
-  preloadCriticalRoutes: () => void;
 }
 
 const CacheContext = createContext<CacheContextType | undefined>(undefined);
@@ -281,7 +280,6 @@ export const CacheProvider: React.FC<CacheProviderProps> = ({
     invalidateByEndpoint,
     clearCache,
     preloadData,
-    preloadCriticalRoutes: () => {} // No-op: precarga requiere contexto de auth
   };
 
   return (

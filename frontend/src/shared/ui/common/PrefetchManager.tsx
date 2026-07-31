@@ -245,8 +245,14 @@ export const PrefetchManager: React.FC = () => {
    */
   useEffect(() => {
     const cleanup = () => {
-      // Limpiar queries inactivas más antiguas de 30 minutos
-      queryClient.clear();
+      const cutoff = Date.now() - 30 * 60 * 1000;
+      // Never evict active screens or unrelated application data.
+      queryClient.removeQueries({
+        predicate: (query) =>
+          query.getObserversCount() === 0 &&
+          query.state.dataUpdatedAt > 0 &&
+          query.state.dataUpdatedAt < cutoff,
+      });
       prefetchedRoutes.current.clear();
       prefetchedQueries.current.clear();
     };

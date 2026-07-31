@@ -24,6 +24,8 @@ import { OfflineChatService } from "./OfflineChatService";
 import { offlineQueue } from "./offlineQueue";
 import { proximitySync } from "./ProximitySyncService";
 import { lanSignaling } from "./transports/WebRtcLanSignaling";
+import { FieldNodeService } from "./FieldNodeService";
+import { API_CONFIG } from "@/shared/api/config";
 
 const BC_NEW_DATA = "vlmsp-new-server-data";
 
@@ -119,7 +121,11 @@ class MeshGatewayService {
 		pulledMsgs: number;
 		peersNotified: number;
 	}> {
-		if (this.isProcessing || !navigator.onLine) {
+		const hasSameOriginApi = API_CONFIG.baseURL.startsWith("/");
+		const hasRoute = (typeof navigator === "undefined" || navigator.onLine)
+			|| Boolean(FieldNodeService.getUrl())
+			|| hasSameOriginApi;
+		if (this.isProcessing || !hasRoute) {
 			return { pushed: 0, pulledOps: 0, pulledMsgs: 0, peersNotified: 0 };
 		}
 		this.isProcessing = true;
@@ -142,6 +148,10 @@ class MeshGatewayService {
 			devLogger.log(
 				`[MeshGateway] PULL ops: ${pulledOps} operaciones nuevas del servidor`,
 			);
+
+			// PULL can enqueue operations received from a relay. Replay once more
+			// in the same cycle so the first connected device drains them now.
+			await offlineQueue.syncQueue();
 
 			// ── 3. PULL: bajar mensajes de chat nuevos del servidor ──
 			const pulledMsgs = await OfflineChatService.pullFromServer();

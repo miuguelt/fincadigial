@@ -83,6 +83,7 @@ class WeatherCurrent(Resource):
             return APIResponse.success({
                 "record": WeatherDataService.serialize_record(record) if record else None,
                 "alerts_generated": result.get("alerts_generated", 0),
+                "forecast": result.get("forecast", {"timezone": None, "daily": [], "hourly": []}),
             })
         except Exception as e:
             logger.error(f"Error getting current weather: {e}")

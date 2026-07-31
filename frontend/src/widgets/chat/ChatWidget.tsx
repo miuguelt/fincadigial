@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { chatService, ChatMessage, ChatContact } from '@/entities/user/api/chat.service';
+import api from '@/shared/api/client';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { subscribeSSE } from '@/lib/events';
 import { proximitySync } from '@/shared/api/offline/ProximitySyncService';
@@ -21,7 +22,11 @@ import {
 import { format } from 'date-fns';
 import { useToast } from '@/app/providers/ToastContext';
 
-export const ChatWidget: React.FC = () => {
+export interface ChatWidgetProps {
+  hideToggleButton?: boolean;
+}
+
+export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<ChatContact | null>(null);
   const [contacts, setContacts] = useState<ChatContact[]>([]);
@@ -35,21 +40,68 @@ export const ChatWidget: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // Cargar contactos y conteo inicial
+  // Escuchar evento global para abrir el chat desde acciones rápidas
+  useEffect(() => {
+    const handleOpenChat = () => setIsOpen(true);
+    window.addEventListener('open-chat-modal', handleOpenChat);
+    return () => window.removeEventListener('open-chat-modal', handleOpenChat);
+  }, []);
+
+  // Notificar cambios en unreadCount a la aplicación/botón flotante único
+  useEffect(() => {
+    try {
+      window.dispatchEvent(new CustomEvent('chat-unread-count-updated', { detail: { unreadCount } }));
+    } catch (e) {
+      console.warn('Error publicando unreadCount:', e);
+    }
+  }, [unreadCount]);
+
+  // Cargar contactos y conteo inicial con soporte de fallback
   useEffect(() => {
     if (!user) return;
     
     const initChat = async () => {
       try {
-        // Temporalmente deshabilitado
-        // const [contactsRes, unreadRes] = await Promise.all([
-        //   chatService.getContacts(),
-        //   chatService.getUnreadCount()
-        // ]);
-        // setContacts(contactsRes.data || []);
-        // setUnreadCount(unreadRes.data?.unread_count || 0);
+        setLoading(true);
+        const [contactsRes, unreadRes] = await Promise.allSettled([
+          chatService.getContacts(),
+          chatService.getUnreadCount()
+        ]);
+
+        let loadedContacts: ChatContact[] = [];
+        if (contactsRes.status === 'fulfilled' && Array.isArray(contactsRes.value?.data)) {
+          loadedContacts = contactsRes.value.data;
+        }
+
+        // Si la API de chat no retorna contactos, cargar usuarios del sistema/finca como fallback
+        if (loadedContacts.length === 0) {
+          try {
+            const fallbackRes = await api.get<any>('/users?limit=50');
+            const rawData = fallbackRes.data;
+            const userList = rawData?.items || rawData?.data || (Array.isArray(rawData) ? rawData : []);
+            loadedContacts = userList
+              .filter((u: any) => u.id !== user.id)
+              .map((u: any) => ({
+                id: u.id,
+                fullname: u.full_name || u.fullname || u.nombre || u.email || `Usuario #${u.id}`,
+                role: u.role || u.rol || 'Miembro',
+                email: u.email || '',
+                unread_count: 0
+              }));
+          } catch (err) {
+            console.warn('Fallback de contactos:', err);
+          }
+        }
+
+        setContacts(loadedContacts);
+
+        if (unreadRes.status === 'fulfilled' && unreadRes.value?.data?.unread_count) {
+          setUnreadCount(unreadRes.value.data.unread_count);
+        }
       } catch (error) {
         console.error('Error al inicializar chat:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -370,35 +422,38 @@ export const ChatWidget: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Toggle Button */}
-      <motion.button
-        whileTap={{ scale: 0.88 }}
-        onClick={() => setIsOpen(!isOpen)}
-        className={cn(
-          "pointer-events-auto h-11 w-11 sm:h-12 sm:w-12 rounded-full",
-          "flex items-center justify-center relative",
-          "border border-white/25",
-          "shadow-[0_5px_20px_rgba(0,0,0,0.3)]",
-          "transition-all duration-300",
-          isOpen
-            ? "bg-card/95 text-foreground opacity-100"
-            : "bg-primary text-white opacity-45 hover:opacity-100 focus:opacity-100 active:opacity-100"
-        )}
-        aria-label={isOpen ? "Cerrar chat" : "Abrir chat"}
-      >
-        <motion.div
-          animate={{ rotate: isOpen ? 45 : 0 }}
-          transition={{ type: "spring", stiffness: 320, damping: 22 }}
+      {/* Toggle Button del Chat Flotante Único */}
+      {!hideToggleButton && (
+        <motion.button
+          whileTap={{ scale: 0.88 }}
+          onClick={() => setIsOpen(!isOpen)}
+          className={cn(
+            "fixed bottom-4 right-4 z-[9999]",
+            "h-12 w-12 sm:h-13 sm:w-13 rounded-full",
+            "flex items-center justify-center relative",
+            "border-2 border-white/30",
+            "shadow-[0_8px_25px_rgba(57,169,0,0.35)]",
+            "transition-all duration-300",
+            isOpen
+              ? "bg-card text-foreground border-border/60 opacity-100 scale-100"
+              : "bg-primary text-white opacity-100 hover:scale-105 active:scale-95 shadow-lg"
+          )}
+          aria-label={isOpen ? "Cerrar chat" : "Abrir chat"}
         >
-          {isOpen ? <X size={22} /> : <MessageCircle size={22} />}
-        </motion.div>
+          <motion.div
+            animate={{ rotate: isOpen ? 45 : 0 }}
+            transition={{ type: "spring", stiffness: 320, damping: 22 }}
+          >
+            {isOpen ? <X size={22} /> : <MessageCircle size={22} />}
+          </motion.div>
 
-        {unreadCount > 0 && !isOpen && (
-          <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-black h-5 w-5 rounded-full flex items-center justify-center border-2 border-card shadow-sm animate-bounce">
-            {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
-        )}
-      </motion.button>
+          {unreadCount > 0 && !isOpen && (
+            <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[11px] font-black h-5.5 w-5.5 px-1.5 rounded-full flex items-center justify-center border-2 border-background shadow-md animate-bounce z-10">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </motion.button>
+      )}
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { IconBuilding, IconLoader2, IconCircleCheck, IconArrowLeft } from "@/shared/ui/icons";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
@@ -15,10 +16,13 @@ import { apiClient } from "@/shared/api/client";
 import { useAuth } from "@/features/auth/model/useAuth";
 import { fincaService } from "@/entities/finca/api/finca.service";
 import { useToast } from "@/app/providers/ToastContext";
+import { GenericModal } from "@/shared/ui/common/GenericModal";
 
-export const CrearFincaPage: React.FC = () => {
+export const CrearFincaPage: React.FC<{ modal?: boolean }> = ({ modal = false }) => {
   const { refreshUserData } = useAuth();
   const { showToast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isModalOpen = modal && searchParams.get('modal') === 'create-finca';
 
   const [name, setName] = useState("");
   const [type, setType] = useState<"Educativa" | "Tradicional" | "">("");
@@ -98,11 +102,26 @@ export const CrearFincaPage: React.FC = () => {
   };
 
   const handleGoBack = () => {
+    if (modal) {
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete('modal');
+      setSearchParams(nextParams, { replace: true });
+      setCreated(null);
+      setName("");
+      setType("");
+      setNit("");
+      setDepartment("");
+      setMunicipality("");
+      setAddress("");
+      return;
+    }
     window.history.back();
   };
 
+  if (modal && !isModalOpen) return null;
+
   if (created) {
-    return (
+    const content = (
       <div className="p-6 sm:p-10 max-w-lg mx-auto">
         <Card className="rounded-[2.5rem] border-4 border-emerald-500 shadow-emerald-500/20 overflow-hidden">
           <CardContent className="p-10 text-center space-y-6">
@@ -136,11 +155,23 @@ export const CrearFincaPage: React.FC = () => {
         </Card>
       </div>
     );
+
+    return modal ? (
+      <GenericModal
+        isOpen={isModalOpen}
+        onOpenChange={(open) => !open && handleGoBack()}
+        title="Finca creada"
+        description="La nueva finca se registró correctamente."
+        size="lg"
+      >
+        {content}
+      </GenericModal>
+    ) : content;
   }
 
-  return (
-    <div className="p-6 sm:p-10 max-w-2xl mx-auto space-y-8">
-      <div className="flex items-center gap-4">
+  const content = (
+    <div className={`p-6 sm:p-10 max-w-2xl mx-auto space-y-8 ${modal ? 'sm:p-6' : ''}`}>
+      <div className={modal ? 'hidden' : 'flex items-center gap-4'}>
         <Button variant="ghost" onClick={handleGoBack} className="rounded-lg h-10 w-10 p-0">
           <IconArrowLeft className="h-5 w-5" />
         </Button>
@@ -268,6 +299,18 @@ export const CrearFincaPage: React.FC = () => {
       </Card>
     </div>
   );
+
+  return modal ? (
+    <GenericModal
+      isOpen={isModalOpen}
+      onOpenChange={(open) => !open && handleGoBack()}
+      title="Crear nueva finca"
+      description="Registra un nuevo predio sin salir de la vista actual."
+      size="2xl"
+    >
+      {content}
+    </GenericModal>
+  ) : content;
 };
 
 export default CrearFincaPage;

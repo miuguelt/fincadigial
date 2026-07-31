@@ -28,6 +28,7 @@ export const SyncProgressIndicator: React.FC = () => {
 
     // Monitorear cola offline
     const updateCount = () => {
+      if (document.visibilityState === "hidden") return;
       offlineQueue
         .getPendingCount()
         .then((count) => setPendingCount(count))
@@ -35,7 +36,7 @@ export const SyncProgressIndicator: React.FC = () => {
     };
 
     updateCount();
-    const interval = setInterval(updateCount, 3000);
+    const interval = setInterval(updateCount, 15000);
 
     // Escuchar mensajes del Service Worker
     const handleMessage = (event: MessageEvent) => {
@@ -73,7 +74,7 @@ export const SyncProgressIndicator: React.FC = () => {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 20, scale: 0.95 }}
         className={cn(
-          "fixed bottom-20 right-4 z-40 flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-lg border px-3 py-2 shadow-2xl backdrop-blur-xl transition-all duration-500 sm:bottom-24 sm:right-6 sm:gap-3 sm:px-4 sm:py-3",
+          "fixed bottom-20 right-4 z-40 flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-lg border px-3 py-2 shadow-2xl transition-colors duration-150 sm:bottom-24 sm:right-6 sm:gap-3 sm:px-4 sm:py-3",
           !isOnline
             ? "bg-warning/90 border-amber-400 text-white"
             : lastSyncStatus === "success"

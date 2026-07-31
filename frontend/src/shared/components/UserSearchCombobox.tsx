@@ -48,7 +48,7 @@ export function UserSearchCombobox({
 
     setLoading(true);
     try {
-      const response = await apiClient.get(`/api/users/search?q=${q}&limit=10`);
+      const response = await apiClient.get(`/users/search?q=${encodeURIComponent(q)}&limit=10`);
       setResults(response.data.data);
     } catch (error) {
       console.error("Error searching users", error);

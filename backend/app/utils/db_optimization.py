@@ -191,21 +191,23 @@ class DBInsights:
 
     @staticmethod
     def get_table_stats(table_name: str) -> dict[str, Any]:
-        """Obtener estadísticas de una tabla"""
+        """Return PostgreSQL size and planner statistics for a table."""
         from app import db
 
         try:
-            # Consulta para obtener estadísticas de la tabla
             result = db.session.execute(text("""
-                SELECT 
-                    table_name,
-                    table_rows,
-                    data_length,
-                    index_length,
-                    (data_length + index_length) as total_size
-                FROM information_schema.tables 
-                WHERE table_schema = DATABASE() 
-                AND table_name = :table_name
+                SELECT
+                    c.relname,
+                    COALESCE(s.n_live_tup, 0),
+                    pg_relation_size(c.oid),
+                    pg_indexes_size(c.oid),
+                    pg_total_relation_size(c.oid)
+                FROM pg_class c
+                JOIN pg_namespace n ON n.oid = c.relnamespace
+                LEFT JOIN pg_stat_user_tables s ON s.relid = c.oid
+                WHERE n.nspname = current_schema()
+                  AND c.relname = :table_name
+                  AND c.relkind IN ('r', 'p')
             """), {'table_name': table_name}).fetchone()
 
             if result:
@@ -224,20 +226,25 @@ class DBInsights:
 
     @staticmethod
     def analyze_slow_queries() -> list:
-        """Analizar consultas lentas desde el log de MySQL"""
+        """Return the most expensive statements when pg_stat_statements is enabled."""
         from app import db
 
         try:
-            # Obtener consultas lentas del performance schema
+            extension_enabled = db.session.execute(text(
+                "SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_stat_statements')"
+            )).scalar()
+            if not extension_enabled:
+                return []
+
             result = db.session.execute(text("""
-                SELECT 
-                    digest_text,
-                    count_star,
-                    avg_timer_wait/1000000000 as avg_time_seconds,
-                    max_timer_wait/1000000000 as max_time_seconds
-                FROM performance_schema.events_statements_summary_by_digest 
-                WHERE avg_timer_wait > 1000000000  -- Más de 1 segundo
-                ORDER BY avg_timer_wait DESC 
+                SELECT
+                    query,
+                    calls,
+                    mean_exec_time / 1000.0 AS avg_time_seconds,
+                    max_exec_time / 1000.0 AS max_time_seconds
+                FROM pg_stat_statements
+                WHERE mean_exec_time >= 1000
+                ORDER BY total_exec_time DESC
                 LIMIT 10
             """)).fetchall()
 
@@ -254,27 +261,25 @@ class DBInsights:
 
     @staticmethod
     def get_index_usage() -> list:
-        """Obtener estadísticas de uso de índices"""
+        """Return PostgreSQL index scans and physical sizes."""
         from app import db
 
         try:
             result = db.session.execute(text("""
-                SELECT 
-                    table_name,
-                    index_name,
-                    cardinality,
-                    nullable
-                FROM information_schema.statistics 
-                WHERE table_schema = DATABASE()
-                AND index_name != 'PRIMARY'
-                ORDER BY table_name, cardinality DESC
+                SELECT
+                    relname,
+                    indexrelname,
+                    idx_scan,
+                    pg_relation_size(indexrelid)
+                FROM pg_stat_user_indexes
+                ORDER BY relname, idx_scan DESC
             """)).fetchall()
 
             return [{
                 'table': row[0],
                 'index': row[1],
-                'cardinality': row[2],
-                'nullable': row[3]
+                'scans': int(row[2] or 0),
+                'size': int(row[3] or 0)
             } for row in result]
 
         except Exception as e:

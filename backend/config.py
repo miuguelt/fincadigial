@@ -14,16 +14,13 @@ _ROOT_ENV_FILE = _PROJECT_ROOT / '.env'
 load_dotenv(dotenv_path=_ROOT_ENV_FILE, override=False)
 
 def _get_wsl_ip():
-    """Return the WSL host IP when explicitly configured via WSL_HOST_IP.
+    """Keep the local runtime strictly Windows-native.
 
-    Auto-detection used to shell out to `wsl hostname -I` on every import. On a
-    native Windows host without WSL that call fails in a locale-encoded (cp1252)
-    error message, which crashed subprocess' reader thread with UnicodeDecodeError
-    on every app start. It also silently rewrote the PostgreSQL and Redis hosts,
-    which must stay on 127.0.0.1 in this deployment.
+    WSL support was removed from the development topology. Keeping this helper
+    as a no-op preserves compatibility with older imports without allowing an
+    inherited ``WSL_HOST_IP`` to rewrite native loopback URLs.
     """
-    ip = os.getenv('WSL_HOST_IP', '').strip()
-    return ip or None
+    return None
 
 _WSL_IP = _get_wsl_ip()
 
@@ -119,6 +116,7 @@ def _env_bool(name: str, default: bool = False) -> bool:
 
 
 class Config:
+    API_MAX_PAGE_SIZE = int(os.getenv('API_MAX_PAGE_SIZE', '500'))
     """Configuración base de la aplicación. Aplica a todos los entornos."""
 
     # -----------------------
@@ -148,9 +146,9 @@ class Config:
 
     # Serializador JSON de alto rendimiento si está disponible
     try:
-        import orjson
-        SQLALCHEMY_ENGINE_OPTIONS['json_serializer'] = lambda obj: orjson.dumps(obj).decode()
-        SQLALCHEMY_ENGINE_OPTIONS['json_deserializer'] = orjson.loads
+        import orjson as _orjson
+        SQLALCHEMY_ENGINE_OPTIONS['json_serializer'] = lambda obj, _json_module=_orjson: _json_module.dumps(obj).decode()
+        SQLALCHEMY_ENGINE_OPTIONS['json_deserializer'] = _orjson.loads
     except ImportError:
         try:
             import ujson
@@ -194,12 +192,19 @@ class Config:
     # sino la construye desde REDIS_HOST/PORT/PASSWORD/DB.
     REDIS_URL = os.getenv('REDIS_URL')
     if not REDIS_URL:
-        _r_host = os.getenv('REDIS_HOST', 'localhost')
-        _r_port = os.getenv('REDIS_PORT', '6379')
+        _r_host = os.getenv('REDIS_HOST', '127.0.0.1')
+        _r_port = os.getenv('REDIS_PORT', '6380')
         _r_pass = os.getenv('REDIS_PASSWORD', '')
         _r_db   = os.getenv('REDIS_DB', '0')
         _r_auth = f':{_r_pass}@' if _r_pass else ''
         REDIS_URL = f'redis://{_r_auth}{_r_host}:{_r_port}/{_r_db}'
+
+    # Local development is Windows-native. Normalize the loopback alias so a
+    # machine resolving ``localhost`` to IPv6 cannot bypass Memurai's IPv4
+    # listener on 127.0.0.1:6380.
+    if (os.getenv('FLASK_ENV', 'development').strip().lower() in {'development', 'testing'}
+            and REDIS_URL):
+        REDIS_URL = REDIS_URL.replace('://localhost:', '://127.0.0.1:')
         
     if _WSL_IP and REDIS_URL:
         REDIS_URL = REDIS_URL.replace('localhost', _WSL_IP).replace('127.0.0.1', _WSL_IP)
@@ -296,8 +301,9 @@ class Config:
     # -----------------------
     # Celery
     # -----------------------
-    CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL') or REDIS_URL
-    CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND') or REDIS_URL
+    _CELERY_REDIS_URL = REDIS_URL.rsplit('/', 1)[0] + '/1' if REDIS_URL else REDIS_URL
+    CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL') or _CELERY_REDIS_URL
+    CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND') or _CELERY_REDIS_URL
 
     # -----------------------
     # Rate Limiting
@@ -422,12 +428,12 @@ class ProductionConfig(Config):
     CORS_ORIGINS = _parse_cors_origins_env() or []
 
     # Pool de PostgreSQL: cada worker obtiene su propia copia (preload).
-    # Con 5 workers y max_connections=50 en PG → 50/5 = 10 por worker.
-    # pool_size=8 + max_overflow=2 = 10 por worker, justo en el límite.
+    # The Coolify profile uses two gevent workers and a small PostgreSQL
+    # max_connections budget. Keep headroom for migrations, backups and jobs.
     SQLALCHEMY_ENGINE_OPTIONS = {
-        'pool_size': int(os.getenv('DB_POOL_SIZE', '8')),
-        'max_overflow': int(os.getenv('DB_MAX_OVERFLOW', '2')),
-        'pool_timeout': 45,
+        'pool_size': int(os.getenv('DB_POOL_SIZE', '4')),
+        'max_overflow': int(os.getenv('DB_MAX_OVERFLOW', '1')),
+        'pool_timeout': int(os.getenv('DB_POOL_TIMEOUT', '20')),
         'pool_recycle': 900,
         'pool_pre_ping': True
     }

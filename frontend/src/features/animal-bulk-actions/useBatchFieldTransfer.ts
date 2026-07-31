@@ -4,6 +4,7 @@ import { animalsService } from "@/entities/animal/api/animal.service";
 import { animalFieldsService } from "@/entities/animal-field/api/animalFields.service";
 import { fieldService } from "@/entities/field/api/field.service";
 import { devLogger } from "@/shared/utils/devLogger";
+import { getTodayColombia } from "@/shared/utils/dateUtils";
 
 export interface Field {
 	id: number;
@@ -13,8 +14,6 @@ export interface Field {
 	capacity: string;
 	animal_count: number;
 }
-
-const getToday = () => new Date().toISOString().split("T")[0];
 
 const getItemsFromResponse = <T>(response: any): T[] => {
 	if (Array.isArray(response)) return response as T[];
@@ -50,7 +49,7 @@ export const useBatchFieldTransfer = (
 	const [fields, setFields] = useState<Field[]>([]);
 	const [selectedAnimals, setSelectedAnimals] = useState<any[]>([]);
 	const [selectedFieldId, setSelectedFieldId] = useState<number | null>(null);
-	const [transferDate, setTransferDate] = useState(getToday());
+	const [transferDate, setTransferDate] = useState(getTodayColombia());
 	const [notes, setNotes] = useState("");
 	const [transferring, setTransferring] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -95,7 +94,7 @@ export const useBatchFieldTransfer = (
 	useEffect(() => {
 		if (isOpen) {
 			setSelectedFieldId(null);
-			setTransferDate(getToday());
+			setTransferDate(getTodayColombia());
 			setNotes("");
 			setSearchQuery("");
 			fetchFields();
@@ -159,7 +158,7 @@ export const useBatchFieldTransfer = (
 	}, [selectedFieldCapacity, projectedOccupancy]);
 
 	const handleTransfer = async () => {
-		if (!selectedFieldId) return;
+		if (selectedFieldId === null || selectedAnimalIds.length === 0) return;
 		setTransferring(true);
 		try {
 			let response;
@@ -271,7 +270,7 @@ export const useBatchFieldTransfer = (
 	const clearSuccess = useCallback(() => {
 		setSuccessData(null);
 		setSelectedFieldId(null);
-		setTransferDate(getToday());
+		setTransferDate(getTodayColombia());
 		setNotes("");
 		setSearchQuery("");
 		setSelectedAnimals([]);

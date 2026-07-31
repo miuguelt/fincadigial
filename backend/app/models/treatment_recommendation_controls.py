@@ -21,6 +21,7 @@ class TreatmentRecommendationControls(BaseModel):
             "completed",
         ),
         db.Index("ix_recommendation_controls_treatment", "treatment_recommendation_id"),
+        db.Index("ix_recommendation_controls_recorded_by", "recorded_by"),
     )
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

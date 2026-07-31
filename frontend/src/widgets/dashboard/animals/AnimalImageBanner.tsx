@@ -475,19 +475,23 @@ export function AnimalImageBanner({
           ))}
         </div>
 
-        {/* Botón de zoom - visible en hover/touch - SOLO este botón abre el carrusel */}
-        <div className="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-100 scale-90 pointer-events-auto">
+        {/* Botón de zoom separado del selector de tarjetas del CRUD */}
+        <div className="absolute bottom-3 right-3 z-20 opacity-0 group-hover:opacity-100 active:opacity-100 transition-all duration-300 transform group-hover:scale-100 scale-95 pointer-events-auto">
           <Button
             type="button"
             variant="secondary"
-            size="icon"
+            size="sm"
             onClick={(e) => {
               e.stopPropagation();
               setSelectedImage(currentImage);
             }}
-            className="shadow-xl backdrop-blur-md bg-card/95 dark:bg-black/95 hover:bg-card dark:hover:bg-black border border-white/20 dark:border-white/10 h-9 w-9 sm:h-10 sm:w-10 md:h-11 md:w-11"
+            className="h-9 gap-1.5 rounded-full border-white/20 bg-card px-3 text-xs shadow-md hover:bg-card dark:border-white/10 dark:bg-black dark:hover:bg-black sm:h-10 sm:px-3.5"
+            aria-label="Abrir foto del animal"
+            title="Abrir foto"
           >
             <ZoomIn className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="sm:hidden">Foto</span>
+            <span className="hidden sm:inline">Ver foto</span>
           </Button>
         </div>
 
@@ -507,7 +511,7 @@ export function AnimalImageBanner({
                 p-2 sm:p-2.5 md:p-3
                 rounded-full
                 bg-black/60 hover:bg-black/80 active:bg-black/90
-                text-white backdrop-blur-md
+                text-white
                 shadow-xl border border-white/10
                 disabled:opacity-50 disabled:cursor-not-allowed
                 transform hover:scale-110 active:scale-95
@@ -530,7 +534,7 @@ export function AnimalImageBanner({
                 p-2 sm:p-2.5 md:p-3
                 rounded-full
                 bg-black/60 hover:bg-black/80 active:bg-black/90
-                text-white backdrop-blur-md
+                text-white
                 shadow-xl border border-white/10
                 disabled:opacity-50 disabled:cursor-not-allowed
                 transform hover:scale-110 active:scale-95
@@ -545,7 +549,7 @@ export function AnimalImageBanner({
         {/* Indicadores de puntos - responsivos - CON pointer-events-auto */}
         {images.length > 1 && (
           <div className="absolute bottom-3 sm:bottom-4 md:bottom-5 left-0 right-0 flex justify-center gap-1.5 sm:gap-2 z-20 px-2 pointer-events-auto">
-            <div className="flex gap-1.5 sm:gap-2 bg-black/30 backdrop-blur-md rounded-full px-2.5 py-1.5 sm:px-3 sm:py-2 border border-white/10">
+            <div className="flex gap-1.5 sm:gap-2 rounded-full border border-white/10 bg-black/70 px-2.5 py-1.5 sm:px-3 sm:py-2">
               {images.map((_, index) => (
                 <button
                   key={index}
@@ -570,7 +574,7 @@ export function AnimalImageBanner({
         {/* Contador de imágenes - solo en pantallas grandes */}
         {images.length > 1 && (
           <div className="hidden md:block absolute top-3 left-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="bg-black/60 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-xs font-medium shadow-xl border border-white/10">
+            <div className="rounded-full border border-white/10 bg-black/70 px-3 py-1.5 text-xs font-medium text-white shadow-md">
               {currentIndex + 1} / {images.length}
             </div>
           </div>

@@ -13,12 +13,18 @@ import {
   LineChart,
   Layers,
 } from 'lucide-react';
-import gallery1 from '@/shared/assets/landingimg1.jpg';
-import gallery2 from '@/shared/assets/landingimg2.jpg';
-import gallery3 from '@/shared/assets/landingimg3.jpg';
-import gallery4 from '@/shared/assets/landingimg4.jpg';
-import gallery5 from '@/shared/assets/landingimg5.webp';
-import gallery6 from '@/shared/assets/landingimg6.webp';
+import gallery1Small from '@/shared/assets/landing-gallery-1-640.webp';
+import gallery1Large from '@/shared/assets/landing-gallery-1-1280.webp';
+import gallery2Small from '@/shared/assets/landing-gallery-2-640.webp';
+import gallery2Large from '@/shared/assets/landing-gallery-2-1280.webp';
+import gallery3Small from '@/shared/assets/landing-gallery-3-640.webp';
+import gallery3Large from '@/shared/assets/landing-gallery-3-1280.webp';
+import gallery4Small from '@/shared/assets/landing-gallery-4-640.webp';
+import gallery4Large from '@/shared/assets/landing-gallery-4-1280.webp';
+import gallery5Small from '@/shared/assets/landing-gallery-5-640.webp';
+import gallery5Large from '@/shared/assets/landing-gallery-5-1280.webp';
+import gallery6Small from '@/shared/assets/landing-gallery-6-640.webp';
+import gallery6Large from '@/shared/assets/landing-gallery-6-1280.webp';
 
 const featureList = [
   {
@@ -53,7 +59,14 @@ const featureList = [
   },
 ];
 
-const galleryImages = [gallery1, gallery2, gallery3, gallery4, gallery5, gallery6];
+const galleryImages = [
+  { src: gallery1Small, srcSet: `${gallery1Small} 640w, ${gallery1Large} 867w`, width: 867, height: 1156 },
+  { src: gallery2Small, srcSet: `${gallery2Small} 640w, ${gallery2Large} 867w`, width: 867, height: 1156 },
+  { src: gallery3Small, srcSet: `${gallery3Small} 640w, ${gallery3Large} 651w`, width: 651, height: 1156 },
+  { src: gallery4Small, srcSet: `${gallery4Small} 640w, ${gallery4Large} 867w`, width: 867, height: 1156 },
+  { src: gallery5Small, srcSet: `${gallery5Small} 640w, ${gallery5Large} 1280w`, width: 1280, height: 853 },
+  { src: gallery6Small, srcSet: `${gallery6Small} 640w, ${gallery6Large} 1280w`, width: 1280, height: 853 },
+];
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -88,7 +101,7 @@ const LandingPage = () => {
               La información que ya registras en el sistema se muestra aquí como vitrina: estadísticas, calendario sanitario y estado de cada potrero.
             </p>
           </div>
-          <div className="w-full max-w-sm bg-card/10 backdrop-blur rounded-lg p-8 border border-white/20">
+          <div className="w-full max-w-sm bg-black/25 rounded-lg p-8 border border-white/20">
             <p className="text-sm uppercase tracking-wide text-green-100">¿Listo para continuar?</p>
             <h4 className="text-2xl font-semibold mt-2">Ingresa al panel administrativo</h4>
             <p className="text-white/70 mt-3 text-sm">

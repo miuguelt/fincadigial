@@ -27,7 +27,6 @@ const AdminMembershipPage = lazy(() => import('@/pages/dashboard/admin/membershi
 const AdminUserApprovalPage = lazy(() => import('@/pages/dashboard/admin/user-approval/index.tsx'));
 const FincasAdminPage = lazy(() => import('@/pages/dashboard/admin/fincas/FincasAdminPage.tsx'));
 const JoinFincaPage = lazy(() => import('@/features/multi-finca/ui/JoinFincaPage.tsx'));
-const CrearFincaPage = lazy(() => import('@/features/multi-finca/ui/CrearFincaPage.tsx'));
 
 const AdminDiseasesPage = lazy(() => import('@/pages/dashboard/admin/diseases/index.tsx'));
 const AdminMedicationsPage = lazy(() => import('@/pages/dashboard/admin/medications/index.tsx'));
@@ -100,14 +99,6 @@ const ChatPage = lazy(() => import('@/pages/chat/ChatPage'));
 const CourseListPage = lazy(() => import('@/pages/dashboard/instructor/courses/CourseListPage'));
 const CourseDetailPage = lazy(() => import('@/pages/dashboard/instructor/courses/CourseDetailPage'));
 const LessonPage = lazy(() => import('@/pages/dashboard/instructor/courses/LessonPage'));
-
-// Quick-add forms
-const QuickControl = lazy(() => import('@/pages/quick/QuickControl'));
-const QuickTransfer = lazy(() => import('@/pages/quick/QuickTransfer'));
-const QuickDisease = lazy(() => import('@/pages/quick/QuickDisease'));
-const QuickTreatment = lazy(() => import('@/pages/quick/QuickTreatment'));
-const QuickMilk = lazy(() => import('@/pages/quick/QuickMilk'));
-const QuickWater = lazy(() => import('@/pages/quick/QuickWater'));
 
 // Analytics Pages
 const DashboardExecutive = lazy(() => import('@/pages/dashboard/admin/analytics/DashboardExecutive'));
@@ -201,7 +192,8 @@ const AppRoutes = () => {
             <Route path="/dashboard" element={<RoleDashboardRedirect />} />
             <Route path="/profile" element={<UserProfilePage />} />
             <Route path="/select-finca" element={<JoinFincaPage />} />
-            <Route path="/fincas/crear" element={<CrearFincaPage />} />
+            {/* Compatibilidad con enlaces antiguos: la creación real se abre en el modal global. */}
+            <Route path="/fincas/crear" element={<Navigate to="/dashboard?modal=create-finca" replace />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/alerts" element={<AlertsPage />} />
           </Route>
@@ -285,12 +277,13 @@ const AppRoutes = () => {
           </Route>
           {/* Quick-add forms accesibles para todos los roles de la finca */}
           <Route element={<ProtectedRoute allowedRoles={['Administrador', 'Propietario', 'Capataz', 'Instructor', 'Veterinario', 'Aprendiz', 'Operario']} />}>
-            <Route path="/quick/control" element={<QuickControl />} />
-            <Route path="/quick/transfer" element={<QuickTransfer />} />
-            <Route path="/quick/disease" element={<QuickDisease />} />
-            <Route path="/quick/treatment" element={<QuickTreatment />} />
-            <Route path="/quick/milk" element={<QuickMilk />} />
-            <Route path="/quick/water" element={<QuickWater />} />
+            {/* Los formularios rápidos viven en el modal global para conservar la vista activa. */}
+            <Route path="/quick/control" element={<Navigate to="/dashboard?quick=control" replace />} />
+            <Route path="/quick/transfer" element={<Navigate to="/dashboard?quick=transfer" replace />} />
+            <Route path="/quick/disease" element={<Navigate to="/dashboard?quick=disease" replace />} />
+            <Route path="/quick/treatment" element={<Navigate to="/dashboard?quick=treatment" replace />} />
+            <Route path="/quick/milk" element={<Navigate to="/dashboard?quick=milk" replace />} />
+            <Route path="/quick/water" element={<Navigate to="/dashboard?quick=water" replace />} />
           </Route>
           <Route element={<ProtectedRoute allowedRoles={['Instructor', 'Veterinario', 'Administrador']} />}>
             <Route path="/instructor/dashboard" element={<InstructorDashboard />} />

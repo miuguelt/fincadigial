@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Share2,
@@ -6,25 +6,19 @@ import {
   QrCode,
   Globe,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/shared/ui/button";
 
 /**
- * AppSharePortal: Permite compartir la aplicación sin internet.
- * Implementa la lógica de 'App Seeding' vía Wi-Fi local.
+ * AppSharePortal: guía para compartir el acceso por una red local existente.
+ * El navegador no puede convertir un celular en servidor HTTP por sí solo.
  */
 export const AppSharePortal: React.FC = () => {
   const [isSeeding, setIsSeeding] = useState(false);
-  const [localIp, setLocalIp] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Intentar detectar la IP local (Requiere WebRTC hack o bridge nativo)
-    const detectIp = async () => {
-      // Nota: En navegadores modernos, esto está restringido por privacidad.
-      // Se recomienda que el usuario la ingrese manualmente o usar Capacitor ZeroConf.
-      setLocalIp("192.168.1.15"); // Ejemplo de IP detectada
-    };
-    detectIp();
-  }, []);
+  const accessUrl = useMemo(
+    () => (typeof window === "undefined" ? "" : window.location.href),
+    [],
+  );
 
   const toggleSeeding = () => {
     setIsSeeding(!isSeeding);
@@ -43,10 +37,10 @@ export const AppSharePortal: React.FC = () => {
           </div>
           <div>
             <h3 className="text-xl font-bold text-foreground">
-              Compartir App (Sin Internet)
+              Conectar equipos de la finca
             </h3>
             <p className="text-sm text-muted-foreground">
-              Convierte tu celular en un servidor para la finca
+              Usa un portátil o el equipo que ya ejecuta Villa Luz como punto de encuentro
             </p>
           </div>
         </div>
@@ -54,8 +48,8 @@ export const AppSharePortal: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground leading-relaxed">
-              ¿Un compañero no tiene la aplicación y no hay señal? Puedes
-              pasarle la "semilla" directamente desde tu celular.
+              Sin internet, conecta los celulares al mismo hotspot o Wi‑Fi local.
+              La app buscará el equipo coordinador y compartirá los datos en segundo plano.
             </p>
 
             <div className="space-y-3">
@@ -72,7 +66,7 @@ export const AppSharePortal: React.FC = () => {
                   2
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Pídele que se conecte a tu red Wi-Fi.
+                  Pídele que se conecte a la misma red local.
                 </p>
               </div>
               <div className="flex items-start gap-3">
@@ -80,7 +74,7 @@ export const AppSharePortal: React.FC = () => {
                   3
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Muéstrale el **Código QR** generado abajo.
+                  Muéstrale el código QR del enlace local.
                 </p>
               </div>
             </div>
@@ -93,7 +87,7 @@ export const AppSharePortal: React.FC = () => {
                   : "bg-success hover:bg-green-700"
               }`}
             >
-              {isSeeding ? "Detener Servidor" : "Iniciar Modo Semilla"}
+              {isSeeding ? "Ocultar enlace" : "Mostrar enlace local"}
             </Button>
           </div>
 
@@ -106,18 +100,14 @@ export const AppSharePortal: React.FC = () => {
                 className="flex flex-col items-center justify-center p-6 bg-muted/50 rounded-xl border-2 border-dashed border-success/30"
               >
                 <div className="bg-card p-4 rounded-lg shadow-lg mb-4">
-                  {/* Simulacro de QR - En producción usaría una librería de QR */}
-                  <div className="w-32 h-32 bg-foreground rounded-lg flex items-center justify-center relative overflow-hidden">
-                    <QrCode className="text-white" size={64} />
-                    <div className="absolute inset-0 bg-gradient-to-tr from-green-500/20 to-transparent" />
-                  </div>
+                  {accessUrl ? <QRCodeSVG value={accessUrl} size={128} includeMargin /> : <QrCode size={64} />}
                 </div>
                 <div className="text-center">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">
-                    Escanea para acceder
+                    Escanea para abrir este enlace
                   </p>
                   <code className="text-xs font-mono bg-card px-3 py-1 rounded-full border border-border/50 text-success">
-                    http://{localIp || "detectando..."}:5173
+                    {accessUrl || "Enlace no disponible"}
                   </code>
                 </div>
               </motion.div>
