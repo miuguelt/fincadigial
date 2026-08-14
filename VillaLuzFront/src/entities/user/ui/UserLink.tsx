@@ -26,7 +26,7 @@ export const UserLink: React.FC<{ id: number | string; label: string; role?: str
       {
         key: 'created_at',
         label: 'Creado',
-        render: (value) => (value ? new Date(value).toLocaleDateString('es-ES') : '-'),
+        render: (value) => (value ? new Date(value).toLocaleDateString('es-CO') : '-'),
       },
     ]}
   />

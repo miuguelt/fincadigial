@@ -7,12 +7,13 @@ import {
   IconAward,
 } from "@/shared/ui/icons";
 import { motion, AnimatePresence } from "framer-motion";
+import { useCallback } from "react";
 const FrameScoreCalculator: React.FC = () => {
   const [sex, setSex] = useState<"Macho" | "Hembra">("Hembra");
   const [height, setHeight] = useState<string>("");
   const [ageMonths, setAgeMonths] = useState<string>("");
   const [result, setResult] = useState<number | null>(null);
-  const calculateFS = () => {
+  const calculateFS = useCallback(() => {
     const h = parseFloat(height);
     const ageDays = parseFloat(ageMonths) * 30.44;
     if (isNaN(h) || isNaN(ageDays) || h <= 0 || ageDays <= 0) {
@@ -37,10 +38,10 @@ const FrameScoreCalculator: React.FC = () => {
         0.0000759 * (hInches * ageDays);
     }
     setResult(Math.max(1, Math.min(10, Math.round(fs * 10) / 10)));
-  };
+  }, [ageMonths, height, sex]);
   useEffect(() => {
     calculateFS();
-  }, [sex, height, ageMonths]);
+  }, [calculateFS]);
   const getCategory = (score: number) => {
     if (score < 4)
       return {

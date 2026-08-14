@@ -71,7 +71,7 @@ export function validateField(
 
   if (field.validation?.pattern && typeof value === 'string') {
     if (!(field.validation.pattern as unknown as RegExp).test(value)) {
-      return field.helperText || 'Formato invalido.';
+      return field.helperText || 'Formato inválido.';
     }
   }
 

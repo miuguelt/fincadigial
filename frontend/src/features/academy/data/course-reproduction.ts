@@ -462,13 +462,13 @@ El parto es el evento más crítico en la vida productiva de la vaca. Un manejo 
       duration: '25 min',
       content: `## Examen de Aptitud Reproductiva del Toro
 
-"El toro es la mitad del hato". Un toro subfértil o infértil causa pérdidas económicas enormes al dejar vacas vacías.
+"El toro es la mitad del ganado". Un toro subfértil o infértil causa pérdidas económicas enormes al dejar vacas vacías.
 
 ### ¿Por qué evaluar a los toros?
 - El 90% de las vacas pueden ser servidas por un solo toro en la temporada
 - Un toro infértil = pérdida de toda una temporada de cría
 - Muchos toros son subfértiles sin mostrar signos externos
-- La evaluación es un seguro de fertilidad del hato
+- La evaluación es un seguro de fertilidad del ganado
 
 ### Componentes de la evaluación
 

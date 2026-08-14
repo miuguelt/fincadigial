@@ -16,7 +16,7 @@ import {
 const ActionButton: React.FC<{ label: string; icon: React.ReactNode; onClick?: () => void; className?: string }> = ({ label, icon, onClick, className }) => (
   <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClick?.(); }}
     className={`flex h-10 w-full items-center gap-2 rounded-lg px-3 text-left text-sm transition-colors hover:bg-accent focus:bg-accent focus:outline-none ${className || ""}`}>
-    {icon}<span className="min-w-0 flex-1 truncate">{label}</span>
+    {icon}<span className="min-w-0 flex-1 fit-clamp">{label}</span>
   </button>
 );
 
@@ -38,7 +38,7 @@ const MenuSection: React.FC<{ title: string; defaultOpen: boolean; children: Rea
 );
 
 const ModuleHeader: React.FC<{ icon: React.ReactNode; label: string }> = ({ icon, label }) => (
-  <div className="flex h-8 items-center gap-2 px-3 text-sm font-medium text-foreground">{icon}<span className="min-w-0 truncate">{label}</span></div>
+  <div className="flex h-8 items-center gap-2 px-3 text-sm font-medium text-foreground">{icon}<span className="min-w-0 fit-clamp">{label}</span></div>
 );
 
 export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({ animal, currentUserId, onOpenHistory, onOpenAncestorsTree, onOpenDescendantsTree, onRefresh, onModalClose, onEditAnimal, onDeleteAnimal }) => {
@@ -68,8 +68,8 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({ animal, cu
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"><Beef className="h-4 w-4 text-primary" /></div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-foreground truncate">{animal.record || `#${animal.id}`}</p>
-                <p className="text-xs text-muted-foreground truncate">{(typeof animal.breed === 'string' ? animal.breed : animal.breed?.name) || "Sin raza"} • {animal.sex || "N/A"}</p>
+                <p className="text-sm font-bold text-foreground fit-clamp">{animal.record || `#${animal.id}`}</p>
+                <p className="text-xs text-muted-foreground fit-clamp">{(typeof animal.breed === 'string' ? animal.breed : animal.breed?.name) || "Sin raza"} • {animal.sex || "N/A"}</p>
               </div>
             </div>
           </div>

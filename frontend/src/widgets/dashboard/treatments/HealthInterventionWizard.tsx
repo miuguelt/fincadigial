@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/shared/ui/button';
+import { useCallback } from 'react';
 import { GenericModal } from '@/shared/ui/common/GenericModal';
 import { useToast } from '@/app/providers/ToastContext';
 import { treatmentsService } from '@/entities/treatment/api/treatments.service';
@@ -32,14 +33,7 @@ export const HealthInterventionWizard: React.FC<HealthInterventionWizardProps> =
   const [selectedVaccines, setSelectedVaccines] = useState<number[]>([]);
   const [selectedMedications, setSelectedMedications] = useState<number[]>([]);
 
-  useEffect(() => {
-    if (isOpen) {
-      loadOptions();
-      resetForm();
-    }
-  }, [isOpen]);
-
-  const loadOptions = async () => {
+  const loadOptions = useCallback(async () => {
     try {
       const [anRes, vacRes, medRes] = await Promise.all([
         (animalsService as any).getAnimals?.({ limit: 100 }),
@@ -54,16 +48,23 @@ export const HealthInterventionWizard: React.FC<HealthInterventionWizardProps> =
       console.error('Error loading options', e);
       showToast('Error cargando datos para el formulario', 'error');
     }
-  };
+  }, [showToast]);
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setStep(1);
     setAnimalId('');
     setDiagnosis('');
     setNotes('');
     setSelectedVaccines([]);
     setSelectedMedications([]);
-  };
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadOptions();
+      resetForm();
+    }
+  }, [isOpen, loadOptions, resetForm]);
 
   const handleNext = () => setStep(s => s + 1);
   const handlePrev = () => setStep(s => s - 1);

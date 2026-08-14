@@ -4,6 +4,7 @@ import type { CRUDConfig, CRUDFormSection } from '@/shared/types/crud';
 import { AnimalLink, AnimalGrowthLink } from '@/entities/animal/ui';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
 import { ControlDetailExpanded } from './components/ControlDetailExpanded';
+import { parseDateOnlyLocal } from './controlPage.utils';
 
 /** Fila de la tabla de controles (respuesta cruda del API). */
 export type ControlRow = ControlResponse;
@@ -39,18 +40,23 @@ function renderControlCard(animalOptions: { value: number; label: string }[]) {
     const status = (item as any)?.health_status ?? (item as any)?.healt_status ?? '-';
     const desc = (item as any)?.description ?? (item as any)?.observations;
     const critical = ['Malo', 'Enfermo', 'Crítico'].includes(status);
+    const parsedDate = date ? parseDateOnlyLocal(String(date)) : null;
     return (
-      <div className={`flex flex-col gap-3 p-4 h-full ${critical ? 'ring-2 ring-red-300 bg-red-50/30 rounded-xl' : ''}`}>
-        <div className="flex items-start justify-between gap-2">
-          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap ${getStatusColor(status)}`}>{status}</span>
-          <span className="text-xs text-muted-foreground font-medium bg-muted/40 px-2 py-1 rounded-md">
-            {date ? new Date(date as string).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+      <div className={`flex h-full flex-col gap-3 p-4 ${critical ? 'rounded-xl bg-red-50/30 ring-2 ring-red-300 dark:bg-red-950/20 dark:ring-red-800' : ''}`}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 break-words text-base font-extrabold">
+            {item.animal_id ? <AnimalLink id={item.animal_id} label={label} /> : 'Animal sin identificar'}
+          </div>
+          <span className={`shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-bold ${getStatusColor(status)}`}>{status}</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-muted-foreground">
+          <span>
+            {parsedDate ? parsedDate.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Fecha no disponible'}
           </span>
+          {item.weight != null && <span>{Number(item.weight).toFixed(1)} kg</span>}
+          {item.height != null && <span>{Number(item.height).toFixed(2)} m</span>}
         </div>
-        <div className="text-base font-bold truncate">
-          {item.animal_id ? <AnimalLink id={item.animal_id} label={label} /> : '-'}
-        </div>
-        {desc && <p className="text-xs text-muted-foreground line-clamp-2 mt-auto pt-2 border-t border-border/20">"{desc}"</p>}
+        {desc && <p className="mt-auto break-words border-t border-border/40 pt-2 text-sm leading-relaxed text-muted-foreground">{desc}</p>}
       </div>
     );
   };
@@ -67,21 +73,21 @@ export function buildCrudConfig(
   // ControlForm; sin ello un campo mal escrito llegaba silencioso al formulario.
   const formSections: CRUDFormSection<ControlForm>[] = [
     {
-      title: 'Información Básica', gridCols: 2,
+      title: 'Animal y fecha', gridCols: 2,
       fields: [
-        { name: 'animal_id', label: 'Animal', type: 'select', required: true, options: animalOptions, placeholder: 'Seleccionar animal' },
-        { name: 'checkup_date', label: 'Fecha de Chequeo', type: 'date', required: true },
+        { name: 'animal_id', label: 'Animal', type: 'select', required: true, options: animalOptions, placeholder: 'Selecciona un animal' },
+        { name: 'checkup_date', label: 'Fecha de la revisión', type: 'date', required: true },
       ],
     },
     {
-      title: 'Métricas Básicas', gridCols: 2,
+      title: 'Estado del animal', gridCols: 2,
       fields: [
-        { name: 'weight', label: 'Peso (kg)', type: 'number', validation: { min: 0 } },
-        { name: 'height', label: 'Altura (m)', type: 'number', validation: { min: 0 } },
-        { name: 'health_status', label: 'Estado de Salud', type: 'select', required: true, options: STATUS_OPTIONS },
+        { name: 'health_status', label: 'Estado de salud', type: 'select', required: true, options: STATUS_OPTIONS, placeholder: 'Selecciona el estado' },
+        { name: 'weight', label: 'Peso en kg (opcional)', type: 'number', validation: { min: 0 } },
+        { name: 'height', label: 'Altura en m (opcional)', type: 'number', validation: { min: 0 } },
       ],
     },
-    { title: 'Descripción', fields: [{ name: 'description', label: 'Descripción', type: 'textarea', colSpan: 2 }] },
+    { title: 'Observación', fields: [{ name: 'description', label: '¿Qué observaste?', type: 'textarea', colSpan: 2, placeholder: 'Ej: no come, cojea o tiene una herida.' }] },
   ];
 
   return {
@@ -89,9 +95,9 @@ export function buildCrudConfig(
     entityName: 'Control',
     columns,
     formSections,
-    searchPlaceholder: 'Buscar controles...',
-    emptyStateMessage: 'No hay controles disponibles.',
-    emptyStateDescription: 'Crea el primer registro para comenzar.',
+    searchPlaceholder: 'Buscar por animal o estado...',
+    emptyStateMessage: 'Aún no hay revisiones registradas.',
+    emptyStateDescription: 'Usa “Reportar salud” para guardar la primera novedad.',
     enableDetailModal: true,
     enableCreateModal: false,
     enableEditModal: !isCampesino,

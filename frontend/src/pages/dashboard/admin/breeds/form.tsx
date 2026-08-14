@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useForm, FieldError } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import { breedsService } from '@/entities/breed/api/breeds.service';
 
 export type BreedFormFields = {
@@ -10,7 +11,7 @@ export type BreedFormFields = {
 
 export default function BreedForm() {
   const { id } = useParams<{ id?: string }>();
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<BreedFormFields>();
 
   useEffect(() => {
@@ -29,7 +30,7 @@ export default function BreedForm() {
       } else {
         await breedsService.createBreed({ name: data.name, species_id: data.species_id });
       }
-      navigate('/admin/breeds');
+      goTo('/admin/breeds');
     } catch (error: any) {
       const msg = error?.response?.data?.message || error?.message || 'Error al guardar raza';
       alert(msg);

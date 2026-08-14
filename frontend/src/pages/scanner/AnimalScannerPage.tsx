@@ -1,11 +1,22 @@
-import  { useEffect, useRef, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
-import { Scan, X, Search, CheckCircle2, AlertCircle, Camera, CameraOff, Keyboard } from 'lucide-react';
+import {
+  AlertCircle,
+  Camera,
+  CameraOff,
+  CheckCircle2,
+  Keyboard,
+  Scan,
+  ScanLine,
+  Search,
+  ShieldCheck,
+  X,
+} from 'lucide-react';
 import { animalsService } from '@/entities/animal/api/animal.service';
 import { useToast } from '@/app/providers/ToastContext';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 
 // BarcodeDetector es nativo en Chrome/Edge 83+ y Safari 17.4+
 declare const BarcodeDetector: any;
@@ -13,7 +24,7 @@ declare const BarcodeDetector: any;
 type ScanState = 'idle' | 'scanning' | 'searching' | 'found' | 'not-found' | 'error';
 
 export default function AnimalScannerPage() {
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
   const { showToast } = useToast();
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -125,33 +136,75 @@ export default function AnimalScannerPage() {
     setScanState('idle');
   };
 
-  return (
-    <div className="container mx-auto p-4 max-w-lg space-y-6">
-      {/* Encabezado */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-xl bg-primary/10">
-          <Scan className="h-6 w-6 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">Escáner de Animales</h1>
-          <p className="text-sm text-muted-foreground">
-            {nativeScanSupported
-              ? 'Apunta la cámara al QR o código del arete'
-              : 'Usa búsqueda manual — escáner nativo no disponible en este navegador'}
-          </p>
-        </div>
-      </div>
+  const stateLabel: Record<ScanState, string> = {
+    idle: 'Listo para escanear',
+    scanning: 'Cámara activa',
+    searching: 'Consultando registro',
+    found: 'Animal identificado',
+    'not-found': 'Sin coincidencias',
+    error: 'No se pudo consultar',
+  };
 
-      {/* Visor de cámara */}
-      <Card className="overflow-hidden">
-        <div className="relative bg-black" style={{ aspectRatio: '1/1' }}>
-          <video
-            ref={videoRef}
-            className="w-full h-full object-cover"
-            playsInline
-            muted
-            style={{ display: scanState === 'scanning' ? 'block' : 'none' }}
-          />
+  const stateVariant = scanState === 'found'
+    ? 'success'
+    : scanState === 'not-found'
+      ? 'warning'
+      : scanState === 'error'
+        ? 'destructive'
+        : scanState === 'scanning' || scanState === 'searching'
+          ? 'info'
+          : 'neutral';
+
+  return (
+    <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <header className="mb-6 flex flex-col gap-5 rounded-3xl border border-border/70 bg-card p-5 shadow-sm sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+            <Scan className="h-6 w-6" aria-hidden="true" />
+          </div>
+          <div className="min-w-0">
+            <div className="mb-1 flex flex-wrap items-center gap-2">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Herramienta de campo</p>
+              <Badge variant={stateVariant} size="sm" aria-live="polite">{stateLabel[scanState]}</Badge>
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Escáner de animales</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+              Identifica un animal en segundos con su código de arete. Puedes usar la cámara o buscar el registro manualmente.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm text-primary sm:max-w-xs">
+          <ShieldCheck className="h-5 w-5 shrink-0" aria-hidden="true" />
+          <span>La cámara se usa solo mientras mantienes activa la lectura.</span>
+        </div>
+      </header>
+
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.8fr)]">
+        {/* Visor de cámara */}
+        <Card className="h-auto min-h-0 overflow-hidden rounded-3xl">
+          <CardHeader className="border-b border-border/70 p-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Paso 1 · Detecta</p>
+                <CardTitle className="mt-1 text-xl">Enfoca el código del arete</CardTitle>
+                <CardDescription className="mt-2 max-w-xl leading-5">
+                  Ubica el código dentro del marco y mantén el teléfono estable hasta que aparezca el resultado.
+                </CardDescription>
+              </div>
+              <div className="rounded-xl bg-muted/50 p-2 text-primary" aria-hidden="true">
+                <ScanLine className="h-5 w-5" />
+              </div>
+            </div>
+          </CardHeader>
+
+          <div className="relative aspect-[4/3] bg-slate-950 sm:aspect-[16/10]">
+            <video
+              ref={videoRef}
+              className="h-full w-full object-cover"
+              playsInline
+              muted
+              style={{ display: scanState === 'scanning' ? 'block' : 'none' }}
+            />
 
           {/* Marco de escaneo */}
           {scanState === 'scanning' && nativeScanSupported && (
@@ -225,83 +278,132 @@ export default function AnimalScannerPage() {
 
           {/* Error de cámara */}
           {cameraError && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-danger/80 p-4">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-danger/80 p-4" role="alert">
               <CameraOff className="h-12 w-12 text-white" />
               <p className="text-white text-sm text-center">{cameraError}</p>
             </div>
           )}
-        </div>
-
-        <CardContent className="p-4 space-y-3">
-          {scanState === 'idle' && (
-            <Button onClick={startCamera} className="w-full gap-2">
-              <Camera className="h-4 w-4" />
-              Iniciar Cámara
-            </Button>
-          )}
-
-          {scanState === 'scanning' && (
-            <Button onClick={reset} variant="outline" className="w-full gap-2">
-              <X className="h-4 w-4" />
-              Detener
-            </Button>
-          )}
-
-          {['found', 'not-found', 'error'].includes(scanState) && (
-            <div className="flex gap-2">
-              <Button onClick={reset} variant="outline" className="flex-1 gap-2">
-                <Scan className="h-4 w-4" />
-                Escanear otro
-              </Button>
-              {scanState === 'found' && (
-                <Button
-                  onClick={() => navigate('/admin/animals')}
-                  className="flex-1 gap-2"
-                >
-                  <Search className="h-4 w-4" />
-                  Ver animales
-                </Button>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Búsqueda manual */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Keyboard className="h-4 w-4" />
-            Buscar por número de arete
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={manualInput}
-              onChange={e => setManualInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleManualSearch()}
-              placeholder="Ej: BOV-001, 12345…"
-              className="flex-1 px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-background"
-            />
-            <Button
-              onClick={handleManualSearch}
-              disabled={!manualInput.trim() || scanState === 'scanning'}
-              size="sm"
-            >
-              <Search className="h-4 w-4" />
-            </Button>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Si la cámara no funciona, escribe el número del arete y presiona Enter.
-          </p>
-        </CardContent>
-      </Card>
+
+          <CardContent className="flex flex-col gap-4 p-5 sm:p-6">
+            {scanState === 'idle' && (
+              <Button onClick={startCamera} size="lg" className="w-full gap-2">
+                <Camera className="h-4 w-4" />
+                Iniciar Cámara
+              </Button>
+            )}
+
+            {scanState === 'scanning' && (
+              <Button onClick={reset} variant="outline" className="w-full gap-2">
+                <X className="h-4 w-4" />
+                Detener
+              </Button>
+            )}
+
+            {['found', 'not-found', 'error'].includes(scanState) && (
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button onClick={reset} variant="outline" className="flex-1 gap-2">
+                  <Scan className="h-4 w-4" />
+                  Escanear otro
+                </Button>
+                {scanState === 'found' && (
+                  <Button
+                    onClick={() => goTo('/admin/animals')}
+                    className="flex-1 gap-2"
+                  >
+                    <Search className="h-4 w-4" />
+                    Ver animales
+                  </Button>
+                )}
+              </div>
+            )}
+            <div className="flex items-start gap-3 rounded-2xl border border-border/70 bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+              <p>El visor funciona con códigos QR y códigos de barras compatibles. Si tu navegador no admite lectura nativa, usa la búsqueda manual.</p>
+            </div>
+          </CardContent>
+        </Card>
+        <div className="space-y-6">
+          {/* Búsqueda manual */}
+          <Card className="h-auto min-h-0 rounded-3xl">
+            <CardHeader className="p-5 pb-3 sm:p-6 sm:pb-3">
+              <div className="flex items-start gap-3">
+                <div className="rounded-xl bg-primary/10 p-2 text-primary">
+                  <Keyboard className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Paso 2 · Consulta</p>
+                  <CardTitle className="mt-1 text-lg">Buscar sin cámara</CardTitle>
+                  <CardDescription className="mt-1 leading-5">Ideal para zonas con poca luz o sin permiso de cámara.</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4 p-5 pt-0 sm:p-6 sm:pt-0">
+              <form
+                className="space-y-2"
+                onSubmit={event => {
+                  event.preventDefault();
+                  handleManualSearch();
+                }}
+              >
+                <label htmlFor="animal-tag" className="text-sm font-semibold text-foreground">Número de arete</label>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <input
+                    id="animal-tag"
+                    type="text"
+                    value={manualInput}
+                    onChange={e => setManualInput(e.target.value)}
+                    placeholder="Ej.: BOV-001 o 12345"
+                    autoComplete="off"
+                    className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                  <Button
+                    type="submit"
+                    disabled={!manualInput.trim() || scanState === 'scanning' || scanState === 'searching'}
+                    className="w-full gap-2 sm:w-auto"
+                  >
+                    <Search className="h-4 w-4" aria-hidden="true" />
+                    Buscar
+                  </Button>
+                </div>
+              </form>
+              <p className="text-xs leading-5 text-muted-foreground">Presiona Enter para consultar. El último código leído quedará visible como referencia.</p>
+            </CardContent>
+          </Card>
+          <Card className="h-auto min-h-0 rounded-3xl border-primary/20 bg-primary/[0.045]">
+            <CardContent className="p-5 sm:p-6">
+              <div className="mb-4 flex items-center gap-3">
+                <div className="rounded-xl bg-primary p-2 text-primary-foreground">
+                  <ScanLine className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">Flujo rápido</p>
+                  <h2 className="text-lg font-bold text-foreground">Tres pasos y listo</h2>
+                </div>
+              </div>
+              <ol className="space-y-4">
+                {[
+                  ['01', 'Activa la cámara', 'Concede permiso solo cuando vayas a leer un código.'],
+                  ['02', 'Enfoca el arete', 'Mantén el código dentro del marco unos segundos.'],
+                  ['03', 'Revisa el registro', 'Abre la ficha del animal para continuar la gestión.'],
+                ].map(([step, title, description]) => (
+                  <li key={step} className="flex gap-3">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">{step}</span>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{title}</p>
+                      <p className="mt-0.5 text-xs leading-5 text-muted-foreground">{description}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       {scannedValue && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>Último código:</span>
+        <div className="mt-6 flex flex-wrap items-center gap-2 rounded-2xl border border-border/70 bg-card px-4 py-3 text-sm text-muted-foreground shadow-sm">
+          <span className="font-medium text-foreground">Último código consultado:</span>
           <Badge variant="outline">{scannedValue}</Badge>
         </div>
       )}

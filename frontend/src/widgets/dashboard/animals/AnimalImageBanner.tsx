@@ -38,28 +38,16 @@ interface AnimalImageBannerProps {
   deferRootMargin?: string;
   /** Notifica al contenedor cuántas imágenes reales están disponibles */
   onImagesChange?: (images: BannerImage[]) => void;
+  /**
+   * Reemplaza el marcador "Sin imágenes" por uno propio. El bloque por defecto
+   * está pensado para banners grandes y se desborda dentro de una tarjeta.
+   */
+  emptyState?: React.ReactNode;
 }
 
 type BannerImage = AnimalImage & { isPlaceholder?: boolean };
 
-const BROKEN_IMAGE_PLACEHOLDER = `data:image/svg+xml;utf8,${encodeURIComponent(
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 260">
-    <defs>
-      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#eef2ff"/>
-        <stop offset="100%" stop-color="#e2e8f0"/>
-      </linearGradient>
-    </defs>
-    <rect width="400" height="260" rx="24" fill="url(#g)"/>
-    <rect x="32" y="32" width="336" height="196" rx="16" fill="#fff" stroke="#cbd5f5" stroke-width="2"/>
-    <path d="M108 176l42-52 36 44 30-36 64 76H108z" fill="#c7d2fe" opacity="0.8"/>
-    <circle cx="150" cy="102" r="22" fill="#e0e7ff"/>
-    <path d="M96 200h208" stroke="#cbd5f5" stroke-width="6" stroke-linecap="round" opacity="0.7"/>
-    <text x="200" y="226" font-family="Inter, Helvetica, Arial" font-size="18" fill="#475569" text-anchor="middle">
-      Imagen no disponible
-    </text>
-  </svg>`
-)}`;
+
 
 /**
  * Banner elegante de carrusel para mostrar las imágenes de un animal
@@ -77,6 +65,7 @@ export function AnimalImageBanner({
   deferLoad = false,
   deferRootMargin = '200px',
   onImagesChange,
+  emptyState,
 }: AnimalImageBannerProps) {
   const [images, setImages] = useState<BannerImage[]>(initialImages || []);
   const [loading, setLoading] = useState(!initialImages && !deferLoad);
@@ -195,8 +184,6 @@ export function AnimalImageBanner({
 
   useEffect(() => {
     if (!shouldFetch) return;
-    // Si se proporcionan imágenes iniciales y no hay una orden de refresco manual,
-    // evitamos el primer fetch para optimizar rendimiento.
     if (initialImages && refreshTrigger === 0) {
       setLoading(false);
       return;
@@ -248,63 +235,42 @@ export function AnimalImageBanner({
     if (shouldUpdateCounters) {
       setBrokenImages((prev) => prev + 1);
       setBrokenNotice(
-        (prev) =>
-          prev ??
-          'Algunas imágenes no están disponibles en el servidor. Mostramos una imagen de referencia en su lugar.'
+        (prev) => prev || 'No se pudieron cargar algunas imágenes del animal.'
       );
     }
-
-    setImages((prev) =>
-      prev.map((img) =>
-        img.id === image.id
-          ? {
-            ...img,
-            url: BROKEN_IMAGE_PLACEHOLDER,
-            isPlaceholder: true,
-          }
-          : img
-      )
-    );
   }, []);
 
-  // Navegación con transiciones suaves
   const goToPrevious = useCallback(() => {
     if (isTransitioning) return;
     setIsTransitioning(true);
-    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-    setIsPaused(true);
-    setTimeout(() => setIsTransitioning(false), 500);
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+    setTimeout(() => setIsTransitioning(false), 300);
   }, [images.length, isTransitioning]);
 
   const goToNext = useCallback(() => {
     if (isTransitioning) return;
     setIsTransitioning(true);
     setCurrentIndex((prev) => (prev + 1) % images.length);
-    setIsPaused(true);
-    setTimeout(() => setIsTransitioning(false), 500);
+    setTimeout(() => setIsTransitioning(false), 300);
   }, [images.length, isTransitioning]);
 
   const goToIndex = useCallback((index: number) => {
     if (isTransitioning || index === currentIndex) return;
     setIsTransitioning(true);
     setCurrentIndex(index);
-    setIsPaused(true);
-    setTimeout(() => setIsTransitioning(false), 500);
+    setTimeout(() => setIsTransitioning(false), 300);
   }, [currentIndex, isTransitioning]);
 
-  // Navegación táctil (swipe)
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+  const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
-    setIsPaused(true);
-  }, []);
+  };
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+  const handleTouchMove = (e: React.TouchEvent) => {
     touchEndX.current = e.touches[0].clientX;
-  }, []);
+  };
 
   const handleTouchEnd = useCallback(() => {
     if (!touchStartX.current || !touchEndX.current) return;
-
     const diff = touchStartX.current - touchEndX.current;
     const threshold = 50; // Mínimo de píxeles para considerar un swipe
 
@@ -332,10 +298,13 @@ export function AnimalImageBanner({
           : 'relative w-full h-full rounded-xl banner-container-dynamic'
           }`}
       >
-        <div className="text-center">
-          <IconPhoto className="w-10 h-10 mx-auto text-muted-foreground/70 mb-2" />
-          <p className="text-xs text-muted-foreground">Cargando imágenes...</p>
-        </div>
+        {/* Con marcador propio no se parpadea entre "Cargando" y el resultado. */}
+        {emptyState ?? (
+          <div className="text-center">
+            <IconPhoto className="w-10 h-10 mx-auto text-muted-foreground/70 mb-2" />
+            <p className="text-xs text-muted-foreground">Cargando imágenes...</p>
+          </div>
+        )}
       </div>
     );
   }
@@ -349,10 +318,12 @@ export function AnimalImageBanner({
           : 'relative w-full h-full rounded-xl banner-container-dynamic'
           }`}
       >
-        <div className="text-center">
-          <IconPhoto className="w-12 h-12 mx-auto text-muted-foreground animate-pulse mb-2" />
-          <p className="text-sm text-muted-foreground">Cargando imágenes...</p>
-        </div>
+        {emptyState ?? (
+          <div className="text-center">
+            <IconPhoto className="w-12 h-12 mx-auto text-muted-foreground animate-pulse mb-2" />
+            <p className="text-sm text-muted-foreground">Cargando imágenes...</p>
+          </div>
+        )}
       </div>
     );
   }
@@ -394,6 +365,19 @@ export function AnimalImageBanner({
     if (hideWhenEmpty) {
       return null;
     }
+    if (emptyState) {
+      return (
+        <div
+          ref={setContainerRef}
+          className={`overflow-hidden ${fullscreen
+            ? 'fixed inset-0 z-50 w-screen h-screen'
+            : 'relative w-full h-full rounded-xl banner-container-dynamic'
+            }`}
+        >
+          {emptyState}
+        </div>
+      );
+    }
     return (
       <div
         ref={setContainerRef}
@@ -427,7 +411,7 @@ export function AnimalImageBanner({
         ref={setContainerRef}
         className={`overflow-hidden group ${fullscreen
           ? 'fixed inset-0 z-50 bg-black w-screen h-screen'
-          : `relative w-full h-full rounded-xl banner-container-dynamic ${isContainMode ? 'bg-foreground/80 dark:bg-black' : ''}`
+          : `relative w-full h-full rounded-xl banner-container-dynamic bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-black dark:via-slate-950 dark:to-black ${isContainMode ? '' : ''}`
           }`}
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
@@ -435,23 +419,39 @@ export function AnimalImageBanner({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
+        {/* Blurred background layer for depth */}
+        {!fullscreen && images.length > 0 && (
+          <div className="absolute inset-0 w-full h-full overflow-hidden z-[1]">
+            <img
+              src={images[currentIndex]?.url}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-40 dark:opacity-25 transition-all duration-700"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-black/40" />
+          </div>
+        )}
+
         {/* Contenedor de imágenes con transición suave */}
-        <div className="absolute inset-0 w-full h-full pointer-events-none">
+        <div className="absolute inset-0 w-full h-full pointer-events-none z-[2]">
           {images.map((image, index) => (
             <div
               key={image.id}
-              className={`absolute inset-0 w-full h-full transition-all duration-500 ease-in-out ${index === currentIndex
-                ? 'opacity-100 scale-100 z-10'
-                : 'opacity-0 scale-95 z-0'
-                }`}
+              className={`absolute inset-0 w-full h-full transition-all duration-700 ease-out ${
+                index === currentIndex
+                  ? 'opacity-100 scale-100 z-10'
+                  : index === (currentIndex - 1 + images.length) % images.length
+                    ? 'opacity-0 -translate-x-4 scale-[0.98] z-0'
+                    : 'opacity-0 translate-x-4 scale-[0.98] z-0'
+              }`}
             >
               <>
                 <img
                   src={image.url}
                   alt={image.filename}
-                  className={`block w-full h-full carousel-image ${objectFit === 'cover' ? 'object-cover' : 'object-contain'
-                    } transition-transform duration-700 ease-out ${image.isPlaceholder ? 'opacity-80' : ''
-                    }`}
+                  className={`block w-full h-full carousel-image ${
+                    objectFit === 'cover' ? 'object-cover' : 'object-contain'
+                  } transition-transform duration-700 ease-out ${image.isPlaceholder ? 'opacity-80' : ''}`}
                   decoding="async"
                   loading={index === 0 ? 'eager' : 'lazy'}
                   onError={() => handleBrokenImage(image)}
@@ -466,16 +466,21 @@ export function AnimalImageBanner({
                     </div>
                   </div>
                 )}
-                {/* Overlay gradient sutil - solo si no es fullscreen */}
+                {/* Overlay gradient cinematográfico */}
                 {!fullscreen && (
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-black/10 pointer-events-none" />
                 )}
               </>
             </div>
           ))}
         </div>
 
-        {/* Botón de zoom separado del selector de tarjetas del CRUD */}
+        {/* Vignette sutil */}
+        {!fullscreen && (
+          <div className="absolute inset-0 z-[3] pointer-events-none rounded-xl shadow-[inset_0_0_60px_rgba(0,0,0,0.15)]" />
+        )}
+
+        {/* Botón de zoom elegante */}
         <div className="absolute bottom-3 right-3 z-20 opacity-0 group-hover:opacity-100 active:opacity-100 transition-all duration-300 transform group-hover:scale-100 scale-95 pointer-events-auto">
           <Button
             type="button"
@@ -485,7 +490,7 @@ export function AnimalImageBanner({
               e.stopPropagation();
               setSelectedImage(currentImage);
             }}
-            className="h-9 gap-1.5 rounded-full border-white/20 bg-card px-3 text-xs shadow-md hover:bg-card dark:border-white/10 dark:bg-black dark:hover:bg-black sm:h-10 sm:px-3.5"
+            className="h-9 gap-1.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-xl border border-white/20 text-white px-3 text-xs shadow-lg sm:h-10 sm:px-3.5 transition-all duration-300"
             aria-label="Abrir foto del animal"
             title="Abrir foto"
           >
@@ -498,58 +503,64 @@ export function AnimalImageBanner({
         {/* Controles de navegación - adaptados a dispositivo - CON pointer-events-auto */}
         {showControls && images.length > 1 && (
           <>
-            {/* Botón anterior - más grande en móvil */}
+            {/* Botón anterior */}
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
+                e.preventDefault();
                 goToPrevious();
               }}
               disabled={isTransitioning}
-              className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20
-                opacity-0 group-hover:opacity-100 active:opacity-100
+              className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-30
+                opacity-80 group-hover:opacity-100 active:opacity-100
                 transition-all duration-300
-                p-2 sm:p-2.5 md:p-3
+                p-2.5 sm:p-3
                 rounded-full
-                bg-black/60 hover:bg-black/80 active:bg-black/90
+                bg-black/50 hover:bg-black/80 active:bg-black/90
+                backdrop-blur-xl
                 text-white
-                shadow-xl border border-white/10
-                disabled:opacity-50 disabled:cursor-not-allowed
+                shadow-xl border border-white/20
+                disabled:opacity-40 disabled:cursor-not-allowed
                 transform hover:scale-110 active:scale-95
                 pointer-events-auto"
               aria-label="Imagen anterior"
             >
-              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
 
-            {/* Botón siguiente - más grande en móvil */}
+            {/* Botón siguiente */}
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
+                e.preventDefault();
                 goToNext();
               }}
               disabled={isTransitioning}
-              className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20
-                opacity-0 group-hover:opacity-100 active:opacity-100
+              className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-30
+                opacity-80 group-hover:opacity-100 active:opacity-100
                 transition-all duration-300
-                p-2 sm:p-2.5 md:p-3
+                p-2.5 sm:p-3
                 rounded-full
-                bg-black/60 hover:bg-black/80 active:bg-black/90
+                bg-black/50 hover:bg-black/80 active:bg-black/90
+                backdrop-blur-xl
                 text-white
-                shadow-xl border border-white/10
-                disabled:opacity-50 disabled:cursor-not-allowed
+                shadow-xl border border-white/20
+                disabled:opacity-40 disabled:cursor-not-allowed
                 transform hover:scale-110 active:scale-95
                 pointer-events-auto"
               aria-label="Imagen siguiente"
             >
-              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </>
         )}
 
-        {/* Indicadores de puntos - responsivos - CON pointer-events-auto */}
+        {/* Indicadores de puntos elegantes */}
         {images.length > 1 && (
-          <div className="absolute bottom-3 sm:bottom-4 md:bottom-5 left-0 right-0 flex justify-center gap-1.5 sm:gap-2 z-20 px-2 pointer-events-auto">
-            <div className="flex gap-1.5 sm:gap-2 rounded-full border border-white/10 bg-black/70 px-2.5 py-1.5 sm:px-3 sm:py-2">
+          <div className="absolute bottom-3 sm:bottom-4 left-0 right-0 flex justify-center gap-1.5 z-20 px-2 pointer-events-auto">
+            <div className="flex gap-1.5 sm:gap-2 rounded-full bg-black/40 backdrop-blur-xl px-2.5 py-1.5 sm:px-3 sm:py-2 border border-white/10 shadow-lg">
               {images.map((_, index) => (
                 <button
                   key={index}
@@ -558,10 +569,10 @@ export function AnimalImageBanner({
                     goToIndex(index);
                   }}
                   disabled={isTransitioning}
-                  className={`rounded-full transition-all duration-300 disabled:cursor-not-allowed
+                  className={`rounded-full transition-all duration-500 disabled:cursor-not-allowed
                     ${index === currentIndex
-                      ? 'bg-card shadow-lg w-6 sm:w-7 md:w-8 h-2 sm:h-2.5'
-                      : 'bg-card/50 hover:bg-card/70 active:bg-card/90 shadow-md w-2 sm:w-2.5 h-2 sm:h-2.5'
+                      ? 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.6)] w-6 sm:w-7 h-2 sm:h-2.5'
+                      : 'bg-white/40 hover:bg-white/60 w-2 sm:w-2.5 h-2 sm:h-2.5'
                     }`}
                   aria-label={`Ir a imagen ${index + 1}`}
                   aria-current={index === currentIndex ? 'true' : 'false'}
@@ -571,10 +582,10 @@ export function AnimalImageBanner({
           </div>
         )}
 
-        {/* Contador de imágenes - solo en pantallas grandes */}
+        {/* Contador de imágenes elegante */}
         {images.length > 1 && (
-          <div className="hidden md:block absolute top-3 left-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="rounded-full border border-white/10 bg-black/70 px-3 py-1.5 text-xs font-medium text-white shadow-md">
+          <div className="absolute top-3 left-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="rounded-full bg-black/40 backdrop-blur-xl px-3 py-1.5 text-xs font-medium text-white/90 shadow-lg border border-white/10">
               {currentIndex + 1} / {images.length}
             </div>
           </div>

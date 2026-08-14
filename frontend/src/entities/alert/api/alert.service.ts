@@ -31,15 +31,25 @@ export interface AlertStats {
   total: number;
   unread: number;
   critical: number;
+  /** Críticas pendientes de leer — lo accionable, no el histórico. */
+  criticalUnread: number;
   high: number;
   medium: number;
   low: number;
   by_type: Record<string, number>;
 }
 
-export interface EvaluateResult {
-  triggered: number;
+export interface AlertPage {
+  items: Alert[];
+  /** Total matching rows on the server, not the page length. */
   total: number;
+}
+
+export interface EvaluateResult {
+  triggered?: number;
+  total?: number;
+  task_id?: string;
+  status?: 'queued' | 'running' | 'completed';
   errors?: string[];
 }
 
@@ -53,9 +63,13 @@ export function normalizeAlertStats(payload: any, fallbackTotal = 0): AlertStats
   const alerts = Array.isArray(envelope?.alerts) ? envelope.alerts : [];
 
   return {
-    total: Number(source.total ?? alerts.length ?? fallbackTotal),
+    total: Number(source.total ?? (alerts.length || fallbackTotal)),
     unread: Number(source.unread ?? alerts.filter((alert: any) => !alert.is_read).length ?? 0),
     critical: Number(source.critical ?? byPriority.critica ?? byPriority.crítica ?? 0),
+    criticalUnread: Number(
+      source.critical_unread ?? source.criticalUnread ??
+      alerts.filter((alert: any) => !alert.is_read && String(alert.priority).toLowerCase() === 'crítica').length
+    ),
     high: Number(source.high ?? byPriority.alta ?? 0),
     medium: Number(source.medium ?? byPriority.media ?? 0),
     low: Number(source.low ?? byPriority.baja ?? 0),
@@ -82,6 +96,28 @@ class AlertService extends BaseService<Alert> {
     return (response as any)?.data || response || [];
   }
 
+  /**
+   * Igual que getAlerts, pero conserva el total real de la paginación del backend
+   * (customRequest descarta `meta`, por eso se llama a apiClient directamente).
+   */
+  async getAlertsPage(params?: {
+    is_read?: boolean;
+    priority?: string;
+    alert_type?: string;
+    limit?: number;
+    page?: number;
+  }): Promise<AlertPage> {
+    const response = await apiClient.get('/alerts/', { params });
+    const body = (response as any)?.data ?? response;
+    const raw = body?.data ?? body?.alerts ?? body;
+    const items: Alert[] = Array.isArray(raw) ? raw : [];
+    const totalItems = body?.meta?.pagination?.total_items;
+    return {
+      items,
+      total: Number.isFinite(Number(totalItems)) ? Number(totalItems) : items.length,
+    };
+  }
+
   async getAlertStats(): Promise<AlertStats> {
     const response = await apiClient.get('/analytics/alerts/');
     const data = (response as any)?.data || response;
@@ -98,7 +134,7 @@ class AlertService extends BaseService<Alert> {
 
   async evaluateAlerts(): Promise<EvaluateResult> {
     const result = await this.customRequest<EvaluateResult>('/evaluate', 'POST');
-    return { triggered: (result as any)?.triggered || 0, total: (result as any)?.total || 0 };
+    return result;
   }
 
   async getConfigs(params?: { limit?: number; page?: number; is_active?: boolean }): Promise<AlertConfig[]> {

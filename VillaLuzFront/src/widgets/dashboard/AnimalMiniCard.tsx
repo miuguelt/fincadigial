@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { cn } from "@/shared/ui/cn.ts";
 import { ChevronLeft, ChevronRight, ImageIcon } from "lucide-react";
 import { getAnimalLabel } from "@/entities/animal/lib/animalHelpers";
@@ -304,7 +304,7 @@ export const AnimalMiniCard: React.FC<AnimalMiniCardProps> = ({
           {animal.birth_date && (
             <p className="text-xs text-muted-foreground/80 flex items-center gap-1">
               <span aria-hidden="true">Fecha:</span>
-              {new Date(animal.birth_date).toLocaleDateString("es-ES", {
+              {new Date(animal.birth_date).toLocaleDateString("es-CO", {
                 year: "numeric",
                 month: "short",
                 day: "numeric",

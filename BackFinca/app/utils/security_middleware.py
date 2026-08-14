@@ -23,6 +23,7 @@ def init_security_middlewares(app):
             '/api/v1/health',
             '/api/v1/docs',
             '/api/v1/public/',
+            '/api/v1/veterinarians/verify/',
             '/api/v1/push/vapid-public-key',
             '/api/v1/users/public',
             '/api/v1/knowledge_base/test',

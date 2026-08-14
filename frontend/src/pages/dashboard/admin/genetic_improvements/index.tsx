@@ -122,7 +122,7 @@ const customDetailContent = (item: AdminGeneticImprovementResponse) => (
           </div>
           <div className="flex justify-between">
             <dt className="text-muted-foreground">Fecha:</dt>
-            <dd className="font-medium">{new Date(item.date).toLocaleDateString('es-ES')}</dd>
+            <dd className="font-medium">{new Date(item.date).toLocaleDateString('es-CO')}</dd>
           </div>
         </dl>
       </div>
@@ -148,11 +148,11 @@ const customDetailContent = (item: AdminGeneticImprovementResponse) => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
       <div>
         <dt className="text-muted-foreground">Creado:</dt>
-        <dd className="font-medium">{new Date(item.created_at).toLocaleString('es-ES')}</dd>
+        <dd className="font-medium">{new Date(item.created_at).toLocaleString('es-CO')}</dd>
       </div>
       <div>
         <dt className="text-muted-foreground">Actualizado:</dt>
-        <dd className="font-medium">{new Date(item.updated_at).toLocaleString('es-ES')}</dd>
+        <dd className="font-medium">{new Date(item.updated_at).toLocaleString('es-CO')}</dd>
       </div>
     </div>
   </div>
@@ -220,7 +220,7 @@ const AdminGeneticImprovementsPage = () => {
     {
       key: 'date' as any,
       label: 'Fecha',
-      render: (value) => (value ? new Date(value as string).toLocaleDateString('es-ES') : '-'),
+      render: (value) => (value ? new Date(value as string).toLocaleDateString('es-CO') : '-'),
     },
     {
       key: 'animal_id' as any,
@@ -231,7 +231,7 @@ const AdminGeneticImprovementsPage = () => {
     // {
     //   key: 'created_at',
     //   label: 'Creado',
-    //   render: (value) => value ? new Date(value as string).toLocaleDateString('es-ES') : '-',
+    //   render: (value) => value ? new Date(value as string).toLocaleDateString('es-CO') : '-',
     // },
   ], [animalMap]);
 

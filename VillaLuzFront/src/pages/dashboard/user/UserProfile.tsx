@@ -319,12 +319,12 @@ const UserProfile = () => {
                 payload?.details?.errors;
 
             const fieldMap: Record<string, keyof PasswordFormValues> = {
-                current_password: 'currentPassword',
-                new_password: 'newPassword',
-                confirm_password: 'confirmPassword',
-                currentPassword: 'currentPassword',
-                newPassword: 'newPassword',
-                confirmPassword: 'confirmPassword',
+                current_password: `currentPassword`,
+                new_password: `newPassword`,
+                confirm_password: `confirmPassword`,
+                currentPassword: `currentPassword`,
+                newPassword: `newPassword`,
+                confirmPassword: `confirmPassword`,
             };
 
             if (errors && typeof errors === 'object') {
@@ -522,7 +522,7 @@ const UserProfile = () => {
             id: genetic?.id,
             animal: getAnimalLabel(genetic?.animal) || genetic?.animal?.code || genetic?.animal?.record || '-',
             type: genetic?.type || genetic?.genetic_event_technique || genetic?.genetic_event_techique || '-',
-            date: genetic?.date ? new Date(genetic.date).toLocaleDateString() : '-',
+            date: genetic?.date ? new Date(genetic.date).toLocaleDateString('es-CO') : '-',
             description: genetic?.description || genetic?.details || '-',
             animalId: getAnimalIdFromRecord(genetic),
             ts: genetic?.date || genetic?.updated_at || genetic?.created_at || null,
@@ -534,8 +534,8 @@ const UserProfile = () => {
             id: field?.id,
             animal: getAnimalLabel(field?.animal) || field?.animal?.code || field?.animal?.record || '-',
             field: field?.field?.name || '-',
-            entryDate: field?.entry_date ? new Date(field.entry_date).toLocaleDateString() : '-',
-            exitDate: field?.exit_date ? new Date(field.exit_date).toLocaleDateString() : '-',
+            entryDate: field?.entry_date ? new Date(field.entry_date).toLocaleDateString('es-CO') : '-',
+            exitDate: field?.exit_date ? new Date(field.exit_date).toLocaleDateString('es-CO') : '-',
             animalId: getAnimalIdFromRecord(field),
             ts: field?.exit_date || field?.entry_date || field?.updated_at || field?.created_at || null,
         }));
@@ -547,7 +547,7 @@ const UserProfile = () => {
             animal: d?.animal_record || animalLabelById.get(getAnimalIdFromRecord(d) ?? -1) || '-',
             disease: d?.disease_name || d?.diseases?.name || d?.disease?.name || '-',
             status: d?.status || '-',
-            date: d?.diagnosis_date ? new Date(d.diagnosis_date).toLocaleDateString() : '-',
+            date: d?.diagnosis_date ? new Date(d.diagnosis_date).toLocaleDateString('es-CO') : '-',
             animalId: getAnimalIdFromRecord(d),
             ts: d?.diagnosis_date || d?.updated_at || d?.created_at || null,
         }));
@@ -557,7 +557,7 @@ const UserProfile = () => {
         .map((t: any) => ({
             id: t?.id,
             animal: animalLabelById.get(getAnimalIdFromRecord(t) ?? -1) || t?.animals?.record || '-',
-            date: t?.treatment_date ? new Date(t.treatment_date).toLocaleDateString() : '-',
+            date: t?.treatment_date ? new Date(t.treatment_date).toLocaleDateString('es-CO') : '-',
             description: t?.description || t?.diagnosis || '-',
             frequency: t?.frequency || '-',
             animalId: getAnimalIdFromRecord(t),
@@ -571,7 +571,7 @@ const UserProfile = () => {
             id: v?.id,
             animal: animalLabelById.get(getAnimalIdFromRecord(v) ?? -1) || v?.animals?.record || '-',
             vaccine: v?.vaccines?.name || v?.vaccine?.name || v?.vaccine_id || '-',
-            date: v?.application_date ? new Date(v.application_date).toLocaleDateString() : '-',
+            date: v?.application_date ? new Date(v.application_date).toLocaleDateString('es-CO') : '-',
             responsible: v?.instructor_id || v?.apprentice_id || '-',
             animalId: getAnimalIdFromRecord(v),
             nextDateRaw: v?.next_dose_date || v?.next_vaccination_date || v?.next_due_date || v?.expiry_date || null,
@@ -583,7 +583,7 @@ const UserProfile = () => {
         .map((c: any) => ({
             id: c?.id,
             animal: animalLabelById.get(getAnimalIdFromRecord(c) ?? -1) || c?.animals?.record || '-',
-            date: c?.checkup_date ? new Date(c.checkup_date).toLocaleDateString() : '-',
+            date: c?.checkup_date ? new Date(c.checkup_date).toLocaleDateString('es-CO') : '-',
             status: c?.health_status || c?.healt_status || '-',
             animalId: getAnimalIdFromRecord(c),
             nextDateRaw: c?.next_control_date || c?.next_checkup_date || null,
@@ -912,7 +912,7 @@ const UserProfile = () => {
     const timelineGroups = useMemo(() => {
         const groups = new Map<string, ActivityEvent[]>();
         const formatDay = (ts: number) =>
-            new Date(ts).toLocaleDateString('es-ES', {
+            new Date(ts).toLocaleDateString('es-CO', {
                 weekday: 'short',
                 year: 'numeric',
                 month: 'short',
@@ -1062,7 +1062,7 @@ const UserProfile = () => {
         activityItems.forEach((item) => {
             const ts = new Date(item.timestamp).getTime();
             const label = Number.isFinite(ts)
-                ? new Date(ts).toLocaleDateString('es-ES', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
+                ? new Date(ts).toLocaleDateString('es-CO', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
                 : 'Sin fecha';
             if (label !== currentLabel) {
                 currentLabel = label;
@@ -1253,10 +1253,10 @@ const UserProfile = () => {
                                         <CalendarClock className="h-4 w-4 text-info" aria-hidden />
                                     </div>
                                     <p className="mt-1 text-lg font-semibold text-foreground">
-                                        {loading ? '-' : lastActivityAt ? new Date(lastActivityAt).toLocaleDateString('es-ES') : '-'}
+                                        {loading ? '-' : lastActivityAt ? new Date(lastActivityAt).toLocaleDateString('es-CO') : '-'}
                                     </p>
                                     <p className="text-[11px] text-muted-foreground">
-                                        {loading ? '' : lastActivityAt ? new Date(lastActivityAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : 'Sin eventos'}
+                                        {loading ? '' : lastActivityAt ? new Date(lastActivityAt).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : 'Sin eventos'}
                                     </p>
                                 </div>
                             </div>
@@ -1441,7 +1441,7 @@ const UserProfile = () => {
                                                                     : 'border-l-green-500';
                                                         const timestamp = new Date(item.timestamp);
                                                         const timeLabel = Number.isFinite(timestamp.getTime())
-                                                            ? timestamp.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+                                                            ? timestamp.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
                                                             : '';
                                                         const title = item.title || `${String(item.action)} · ${String(item.entity)}`;
                                                         const summary = item.summary || '';
@@ -1561,7 +1561,7 @@ const UserProfile = () => {
                                         .map((row: any) => toEpochMs(row.ts))
                                         .filter((v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0)
                                         .reduce((max, v) => Math.max(max, v), 0);
-                                    const lastLabel = lastTs ? new Date(lastTs).toLocaleString('es-ES') : 'Sin actividad';
+                                    const lastLabel = lastTs ? new Date(lastTs).toLocaleString('es-CO') : 'Sin actividad';
 
                                     const emptyCopy: Record<string, { title: string; body: string; cta: string }> = {
                                         animals: { title: 'Aun no tienes animales asignados', body: 'Agrega o asigna animales para ver su trazabilidad aqui.', cta: 'Ir a Animales' },

@@ -65,28 +65,38 @@ export const getAccessStatus = (status?: UserWithProfile["approval_status"]) =>
  * (misma finca activa + usuario habilitado). Cuando está disponible manda; si
  * aún no cargó se cae a la heurística local para no bloquear la interfaz.
  */
-export const canMessageUser = (
+export const getChatAvailability = (
 	target: UserWithProfile,
 	currentUser?: any,
 	chatContactIds?: Set<number> | null,
 ) => {
-	if (!currentUser?.id || !target?.id) return false;
-	if (Number(target.id) === Number(currentUser.id)) return false;
-
-	if (chatContactIds) return chatContactIds.has(Number(target.id));
-
-	if (!currentUser?.finca_id) return false;
+	if (!currentUser?.id || !target?.id) {
+		return { enabled: false, reason: "Verificando disponibilidad del chat…" };
+	}
+	if (Number(target.id) === Number(currentUser.id)) {
+		return { enabled: false, reason: "No puedes enviarte mensajes a ti mismo" };
+	}
 
 	const isActive =
 		typeof target.status === "boolean" ? target.status : target.status === "1";
-	if (!isActive) return false;
+	if (!isActive) {
+		return { enabled: false, reason: "Chat no disponible: usuario inactivo" };
+	}
 
-	const activeFincaId = Number(currentUser.finca_id);
-	if (Number(target.finca_id) === activeFincaId) return true;
+	if (chatContactIds) {
+		return chatContactIds.has(Number(target.id))
+			? { enabled: true, reason: `Escribir a ${target.fullname}` }
+			: {
+					enabled: false,
+					reason: "Chat no disponible: no comparte una finca activa",
+				};
+	}
 
-	return getUserFincas(target).some(
-		(finca) =>
-			Number(finca.finca_id ?? finca.id) === activeFincaId &&
-			finca.is_active !== false,
-	);
+	return { enabled: false, reason: "Verificando disponibilidad del chat…" };
 };
+
+export const canMessageUser = (
+	target: UserWithProfile,
+	currentUser?: any,
+	chatContactIds?: Set<number> | null,
+) => getChatAvailability(target, currentUser, chatContactIds).enabled;

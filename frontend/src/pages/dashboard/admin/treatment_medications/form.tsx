@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useForm, FieldError } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import { treatmentMedicationService as treatmentMedicationsService } from '@/entities/treatment-medication/api/treatmentMedication.service';
 
 export type TreatmentMedicationFormFields = {
@@ -17,7 +18,7 @@ export type TreatmentMedicationFormFields = {
 
 export default function TreatmentMedicationForm() {
   const { id } = useParams<{ id?: string }>();
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<TreatmentMedicationFormFields>();
 
   useEffect(() => {
@@ -44,7 +45,7 @@ export default function TreatmentMedicationForm() {
         await treatmentMedicationsService.createTreatmentMedication(data);
       }
       // Redirigir a la ruta válida sin el prefijo /dashboard
-      navigate('/admin/treatment_medications');
+      goTo('/admin/treatment_medications');
     } catch (error: any) {
       const msg = error?.response?.data?.message || error?.message || 'Error al guardar medicamento de tratamiento';
       alert(msg);
@@ -102,7 +103,7 @@ export default function TreatmentMedicationForm() {
       </div>
       <div>
         <label>Notas</label>
-        <textarea {...register('notes')} />
+        <textarea {...register('notes')}></textarea>
         {renderError(errors.notes)}
       </div>
       <button type="submit" disabled={isSubmitting}>{id ? 'Actualizar' : 'Crear'} medicamento de tratamiento</button>

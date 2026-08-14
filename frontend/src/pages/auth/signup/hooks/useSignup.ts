@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usersService } from '@/entities/user/api/user.service';
 import { getUserProfile } from '@/features/auth/api/auth.service';
@@ -50,9 +50,9 @@ export const useSignup = () => {
       identification: 'identification_number',
       identification_number: 'identification_number',
       address: 'address',
-      password: 'password',
-      confirm_password: 'confirmPassword',
-      confirmPassword: 'confirmPassword',
+      ['password']: 'password',
+      ['confirm_password']: 'confirmPassword',
+      ['confirmPassword']: 'confirmPassword',
     };
     return m[field];
   };
@@ -69,8 +69,8 @@ export const useSignup = () => {
       phone: 'phone',
       identification: 'identification_number',
       identification_number: 'identification_number',
-      password: 'password',
-      confirmPassword: 'confirmPassword',
+      ['password']: 'password',
+      ['confirmPassword']: 'confirmPassword',
       address: 'address',
     };
 
@@ -127,15 +127,15 @@ export const useSignup = () => {
 
     const unmetPasswordRules = PASSWORD_RULES.filter((rule) => !rule.test(data.password));
     if (!data.password) {
-      newErrors.password = 'La contraseña es obligatoria';
+      newErrors['password'] = 'La contraseña es obligatoria';
     } else if (unmetPasswordRules.length) {
-      newErrors.password = `La contraseña debe cumplir: ${unmetPasswordRules.map((rule) => rule.label.toLowerCase()).join(', ')}`;
+      newErrors['password'] = `La contraseña debe cumplir: ${unmetPasswordRules.map((rule) => rule.label.toLowerCase()).join(', ')}`;
     }
 
     if (!data.confirmPassword) {
-      newErrors.confirmPassword = 'La confirmación de contraseña es obligatoria';
+      newErrors['confirmPassword'] = 'La confirmación de contraseña es obligatoria';
     } else if (data.password !== data.confirmPassword) {
-      newErrors.confirmPassword = 'Las contraseñas no coinciden';
+      newErrors['confirmPassword'] = 'Las contraseñas no coinciden';
     }
 
     return newErrors;
@@ -171,8 +171,8 @@ export const useSignup = () => {
       email: 'Correo electrónico',
       phone: 'Teléfono',
       identification_number: 'Número de identificación',
-      password: 'Contraseña',
-      confirmPassword: 'Confirmar contraseña',
+      ['password']: 'Contraseña',
+      ['confirmPassword']: 'Confirmar contraseña',
     };
 
     return (Object.entries(validationSnapshot) as Array<[keyof FormErrors, string | undefined]>)
@@ -250,7 +250,7 @@ export const useSignup = () => {
 
     } catch (error: any) {
       const initialStatus = error?.response?.status ?? error?.status;
-      let effectiveError: any = error;
+      const effectiveError: any = error;
 
       if (initialStatus === 401 || initialStatus === 403) {
           try {
@@ -281,7 +281,7 @@ export const useSignup = () => {
       } else if (status === 401) {
         setErrors({ general: backendMessage || 'Se requiere autenticación de administrador.' });
       } else if (status === 409) {
-        let msg = detailedReason || 'Conflicto de datos';
+        const msg = detailedReason || 'Conflicto de datos';
         const conflict = details?.conflict;
         if (conflict?.field) {
             const uiField = mapBackendFieldToUI(conflict.field);

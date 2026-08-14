@@ -74,7 +74,7 @@ function AdminMedicationsPage() {
         );
       }
     },
-    { key: 'created_at', label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-') },
+    { key: 'created_at', label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
   ], [routeMap]);
 
   // Secciones del formulario

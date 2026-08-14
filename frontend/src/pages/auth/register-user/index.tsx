@@ -64,68 +64,9 @@ const RegisterUserPage: React.FC = () => {
     const validation = (details as any).validation_errors || (details as any).errors || details;
     if (!validation || typeof validation !== 'object') return;
 
-    const map: Record<string, keyof FormErrors> = {
-      fullname: 'name',
-      name: 'name',
-      email: 'email',
-      phone: 'phone',
-      identification: 'identification_number',
-      identification_number: 'identification_number',
-      password: 'password',
-      confirmPassword: 'confirmPassword',
-      address: 'address',
-    };
-
-    const newFieldErrors: FormErrors = {};
-    Object.entries(validation).forEach(([key, val]) => {
-      const uiKey = map[key];
-      if (!uiKey) return;
-      const messages = Array.isArray(val) ? val : [val];
-      const msg = messages
-        .map((e: any) => (typeof e === 'string' ? e : e?.message || e?.detail || e))
-        .filter(Boolean)
-        .join(' • ');
-      if (msg) newFieldErrors[uiKey] = msg;
-    });
-
-    if (Object.keys(newFieldErrors).length > 0) {
-      setErrors((prev) => ({ ...prev, ...newFieldErrors }));
-    }
   };
 
-  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const PHONE_REGEX = /^[+]?[0-9\s-]{7,15}$/;
-
-  const buildValidationErrors = (values: SignUpFormData): FormErrors => {
-    const e: FormErrors = {};
-    if (!values.name.trim()) e.name = 'El nombre completo es requerido';
-    if (!values.email.trim()) {
-      e.email = 'El correo electrónico es requerido';
-    } else if (!EMAIL_REGEX.test(values.email)) {
-      e.email = 'Ingrese un correo válido';
-    }
-    if (!values.phone.trim()) {
-      e.phone = 'El teléfono es requerido';
-    } else if (!PHONE_REGEX.test(values.phone)) {
-      e.phone = 'Ingrese un teléfono válido';
-    }
-    if (!values.identification_number.trim()) {
-      e.identification_number = 'El número de identificación es requerido';
-    }
-    if (!values.password) {
-      e.password = 'La contraseña es requerida';
-    } else {
-      if (values.password.length < 8) e.password = 'Mínimo 8 caracteres';
-      if (!/[A-Z]/.test(values.password)) e.password = 'Debe contener al menos una mayúscula';
-      if (!/\d/.test(values.password)) e.password = 'Debe contener al menos un número';
-    }
-    if (values.password !== values.confirmPassword) {
-      e.confirmPassword = 'Las contraseñas no coinciden';
-    }
-    return e;
-  };
-
-  const validationSnapshot = useMemo(() => buildValidationErrors(formData), [formData]);
+  const validationSnapshot = buildValidationErrors(formData);
   const isFormValid = useMemo(() => Object.keys(validationSnapshot).length === 0, [validationSnapshot]);
 
   const getFieldError = (field: keyof FormErrors) => {

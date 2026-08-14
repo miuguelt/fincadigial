@@ -9,7 +9,7 @@ interface BreadcrumbItem {
 
 const routeMap: Record<string, string> = {
   '/admin': 'Admin',
-  '/admin/dashboard': 'Dashboard',
+  '/admin/dashboard': 'Panel',
   '/admin/animals': 'Animales',
   '/admin/fields': 'Potreros',
   '/admin/reproduction': 'Reproducción',
@@ -23,10 +23,10 @@ const routeMap: Record<string, string> = {
   '/admin/reports': 'Reportes',
   '/admin/analytics/reports': 'Reportes Personalizados',
   '/admin/analytics/ica-compliance': 'Cumplimiento ICA',
-  '/apprentice/dashboard': 'Dashboard',
-  '/operario/dashboard': 'Dashboard',
-  '/instructor/dashboard': 'Dashboard',
-  '/veterinario/dashboard': 'Dashboard',
+  '/apprentice/dashboard': 'Panel',
+  '/operario/dashboard': 'Panel',
+  '/instructor/dashboard': 'Panel',
+  '/veterinario/dashboard': 'Panel',
 };
 
 export default function Breadcrumbs() {

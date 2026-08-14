@@ -56,7 +56,12 @@ def init_security_middlewares(app):
                     error_code="JWT_ERROR",
                     details={'path': raw_path}
                 )
-                return flask.make_response(flask.jsonify(body), status)
+                import json
+                return flask.Response(
+                    response=json.dumps(body),
+                    status=status,
+                    mimetype="application/json"
+                )
 
     @app.after_request
     def add_security_and_cache_headers(response):
@@ -64,6 +69,14 @@ def init_security_middlewares(app):
         response.headers['X-Content-Type-Options'] = 'nosniff'
 
         path = flask.request.path or ''
+
+        # ── Respuestas de error: nunca se cachean ──
+        # Un 401/403/5xx con max-age queda guardado en el navegador y se sigue
+        # sirviendo aunque el permiso ya se haya corregido en el backend.
+        if response.status_code >= 400:
+            response.headers['Cache-Control'] = 'no-store'
+            response.headers.pop('ETag', None)
+            return response
 
         # ── Imágenes WebP: caché agresivo 30 días (inmutables por hash de nombre) ──
         if path.startswith('/api/v1/public/images/') or response.content_type == 'image/webp':
@@ -76,7 +89,9 @@ def init_security_middlewares(app):
             '/api/v1/medications', '/api/v1/food', '/api/v1/diseases',
             '/api/v1/route-administrations', '/api/v1/knowledge_base',
         ]):
-            response.headers['Cache-Control'] = 'public, max-age=86400, stale-while-revalidate=3600'
+            # `private`: la respuesta depende del token (y de la finca del usuario),
+            # no debe quedar en cachés compartidas aunque se declare Vary.
+            response.headers['Cache-Control'] = 'private, max-age=86400, stale-while-revalidate=3600'
             response.headers['Vary'] = 'Accept-Encoding, Authorization'
 
         # ── Endpoints de usuario: no cachear en proxies públicos ──

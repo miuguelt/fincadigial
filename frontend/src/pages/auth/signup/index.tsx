@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -77,9 +77,9 @@ const SignUpForm: React.FC = () => {
       identification: 'identification_number',
       identification_number: 'identification_number',
       address: 'address',
-      password: 'password',
-      confirm_password: 'confirmPassword',
-      confirmPassword: 'confirmPassword',
+      password: `password`,
+      confirm_password: `confirmPassword`,
+      confirmPassword: `confirmPassword`,
       role: undefined as any,
     };
     return m[field];
@@ -110,8 +110,8 @@ const SignUpForm: React.FC = () => {
       phone: 'phone',
       identification: 'identification_number',
       identification_number: 'identification_number',
-      password: 'password',
-      confirmPassword: 'confirmPassword',
+      password: `password`,
+      confirmPassword: `confirmPassword`,
       address: 'address',
     };
 
@@ -168,15 +168,15 @@ const SignUpForm: React.FC = () => {
 
     const unmetPasswordRules = PASSWORD_RULES.filter((rule) => !rule.test(data.password));
     if (!data.password) {
-      newErrors.password = 'La contraseña es obligatoria';
+      newErrors['password'] = 'La contraseña es obligatoria';
     } else if (unmetPasswordRules.length) {
-      newErrors.password = `La contraseña debe cumplir: ${unmetPasswordRules.map((rule) => rule.label.toLowerCase()).join(', ')}`;
+      newErrors['password'] = `La contraseña debe cumplir: ${unmetPasswordRules.map((rule) => rule.label.toLowerCase()).join(', ')}`;
     }
 
     if (!data.confirmPassword) {
-      newErrors.confirmPassword = 'La confirmación de contraseña es obligatoria';
+      newErrors['confirmPassword'] = 'La confirmación de contraseña es obligatoria';
     } else if (data.password !== data.confirmPassword) {
-      newErrors.confirmPassword = 'Las contraseñas no coinciden';
+      newErrors['confirmPassword'] = 'Las contraseñas no coinciden';
     }
 
     return newErrors;
@@ -211,8 +211,8 @@ const SignUpForm: React.FC = () => {
       email: 'Correo electrónico',
       phone: 'Teléfono',
       identification_number: 'Número de identificación',
-      password: 'Contraseña',
-      confirmPassword: 'Confirmar contraseña',
+      password: `Contraseña`,
+      confirmPassword: `Confirmar contraseña`,
     };
 
     return (Object.entries(validationSnapshot) as Array<[keyof FormErrors, string | undefined]>)
@@ -329,7 +329,7 @@ const SignUpForm: React.FC = () => {
       if (initialStatus === 401 || initialStatus === 403) {
         const fallback = await attemptAuthenticatedCreate();
         if (fallback.ok) {
-          const message = fallback.created?.message || fallback.created?.detail || 'Cuenta creada exitosamente. Por favor inicia sesi¢n.';
+          const message = fallback.created?.message || fallback.created?.detail || 'Cuenta creada exitosamente. Por favor inicia sesión.';
           setSuccessMessage(message);
           setSuccess(true);
           setTimeout(() => {

@@ -67,13 +67,13 @@ const FieldCardComponent: React.FC<FieldCardProps> = ({
       {/* Header Estilo Modal */}
       <div className={`${getHeaderColor()} px-5 py-3 flex items-center justify-between`}>
         <div className="flex-1">
-          <h3 className="text-lg font-bold truncate">
+          <h3 className="text-lg font-bold fit-clamp">
             {field.name}
           </h3>
           {field.ubication && (
             <div className="flex items-center mt-0.5 text-xs text-white/90">
               <MapPin className="w-3.5 h-3.5 mr-1" />
-              <span className="truncate">{field.ubication}</span>
+              <span className="fit-clamp">{field.ubication}</span>
             </div>
           )}
         </div>

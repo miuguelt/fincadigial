@@ -114,7 +114,7 @@ export function WeatherForecast({ forecast }: Props) {
 								{day.wind_max.toFixed(0)} km/h
 							</p>
 						)}
-						<p className="text-[10px] text-muted-foreground mt-1 capitalize truncate">
+						<p className="text-[10px] text-muted-foreground mt-1 capitalize fit-clamp">
 							{getWmoDescription(day.weather_code)}
 						</p>
 					</motion.div>

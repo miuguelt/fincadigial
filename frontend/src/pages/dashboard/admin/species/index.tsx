@@ -13,12 +13,12 @@ const columns: CRUDColumn<SpeciesResponse & { [k: string]: any }>[] = [
   {
     key: 'created_at',
     label: 'Creado',
-    render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-'),
+    render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-'),
   },
   {
     key: 'updated_at',
     label: 'Actualizado',
-    render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-'),
+    render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-'),
   },
 ];
 
@@ -43,7 +43,7 @@ const renderSpeciesCard = (item: SpeciesResponse & { [k: string]: any }) => {
       <SectionCard title="Fecha de Creación">
         <InfoField
           label="Creado"
-          value={item.created_at ? new Date(item.created_at).toLocaleDateString('es-ES', {
+          value={item.created_at ? new Date(item.created_at).toLocaleDateString('es-CO', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
@@ -81,11 +81,11 @@ const renderSpeciesDetail = (item: SpeciesResponse & { [k: string]: any }) => {
             <div className={modalStyles.fieldsGrid}>
               <InfoField
                 label="Creado"
-                value={item.created_at ? new Date(item.created_at).toLocaleDateString('es-ES') : '-'}
+                value={item.created_at ? new Date(item.created_at).toLocaleDateString('es-CO') : '-'}
               />
               <InfoField
                 label="Actualizado"
-                value={item.updated_at ? new Date(item.updated_at).toLocaleDateString('es-ES') : '-'}
+                value={item.updated_at ? new Date(item.updated_at).toLocaleDateString('es-CO') : '-'}
               />
             </div>
           </SectionCard>

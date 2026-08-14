@@ -67,6 +67,33 @@ class TestSinAutenticacion:
 
 
 # ---------------------------------------------------------------------------
+# Catálogos operativos compartidos — ninguna pantalla autenticada debe fallar
+# al cargar sus opciones por rol.
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize(
+    ("role", "finca_type"),
+    [
+        ("Administrador", "Educativa"),
+        ("Propietario", "Tradicional"),
+        ("Capataz", "Tradicional"),
+        ("Veterinario", "Tradicional"),
+        ("Instructor", "Educativa"),
+        ("Operario", "Tradicional"),
+        ("Aprendiz", "Educativa"),
+    ],
+)
+def test_catalogo_enfermedades_legible_por_todos_los_roles(
+    client, token_for, role, finca_type,
+):
+    resp = client.get(
+        f"{BASE}/diseases?page=1&limit=100",
+        headers=token_for(role, finca_type=finca_type),
+    )
+    assert_rbac_allowed(resp)
+
+
+# ---------------------------------------------------------------------------
 # Administrador — acceso total
 # ---------------------------------------------------------------------------
 
@@ -247,10 +274,9 @@ class TestCapataz:
 class TestVeterinario:
     ROLE = "Veterinario"
 
-    def test_get_animals_bloqueado(self, client, token_for):
-        """/animals no es HEALTH_PATH → Veterinario no puede acceder."""
+    def test_get_animals_permitido(self, client, token_for):
         resp = client.get(f"{BASE}/animals", headers=token_for(self.ROLE, finca_type="Tradicional"))
-        assert_rbac_blocked(resp, "VET_HEALTH_ONLY")
+        assert_rbac_allowed(resp)
 
     def test_get_users_bloqueado(self, client, token_for):
         resp = client.get(f"{BASE}/users", headers=token_for(self.ROLE, finca_type="Tradicional"))

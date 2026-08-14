@@ -7,6 +7,7 @@ import {
   useMap,
   Circle,
 } from "react-leaflet";
+import { useCallback } from "react";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { fieldService } from "@/entities/field/api/field.service";
@@ -23,8 +24,7 @@ import { cn } from "@/shared/ui/cn";
 import { useToast } from "@/app/providers/ToastContext";
 
 // Corregir iconos de Leaflet por defecto en Vite/React
-// @ts-ignore
-delete L.Icon.Default.prototype._getIconUrl;
+delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -73,7 +73,7 @@ export const FarmInteractiveMap: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [center, setCenter] = useState<[number, number]>(FINCA_DEFAULT_CENTER);
 
-  const fetchFields = async () => {
+  const fetchFields = useCallback(async () => {
     setLoading(true);
     try {
       const resp = await fieldService.getFields({ limit: 100 });
@@ -96,11 +96,11 @@ export const FarmInteractiveMap: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
 
   useEffect(() => {
     fetchFields();
-  }, []);
+  }, [fetchFields]);
 
   return (
     <div className="flex flex-col h-full bg-muted overflow-hidden">
@@ -180,7 +180,7 @@ export const FarmInteractiveMap: React.FC = () => {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="font-black text-sm tracking-tight truncate">
+                        <p className="font-black text-sm tracking-tight fit-clamp">
                           {field.name}
                         </p>
                         {(() => {

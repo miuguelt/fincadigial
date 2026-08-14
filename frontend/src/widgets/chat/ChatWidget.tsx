@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { chatService, ChatMessage, ChatContact } from '@/entities/user/api/chat.service';
-import api from '@/shared/api/client';
 import { useAuth } from '@/features/auth/model/useAuth';
-import { subscribeSSE } from '@/lib/events';
+import { OfflineChatService, type ChatMessage as OfflineMessage } from '@/shared/api/offline/OfflineChatService';
 import { proximitySync } from '@/shared/api/offline/ProximitySyncService';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -17,7 +16,10 @@ import {
   ChevronLeft, 
   Search,
   User as UserIcon,
-  Wifi
+  Wifi,
+  Clock3,
+  Check,
+  CheckCheck,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/app/providers/ToastContext';
@@ -25,6 +27,21 @@ import { useToast } from '@/app/providers/ToastContext';
 export interface ChatWidgetProps {
   hideToggleButton?: boolean;
 }
+
+const toWidgetMessage = (message: OfflineMessage): ChatMessage => ({
+  id: Number(message.id) || 0,
+  finca_id: 0,
+  sender_id: message.senderId,
+  sender_name: message.senderName || 'Usuario',
+  recipient_id: message.recipientId,
+  recipient_name: '',
+  message: message.content,
+  is_read: message.status === 'synced',
+  client_message_id: message.clientMessageId,
+  read_at: message.readAt,
+  status: message.status,
+  created_at: message.createdAt,
+});
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -73,26 +90,6 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
           loadedContacts = contactsRes.value.data;
         }
 
-        // Si la API de chat no retorna contactos, cargar usuarios del sistema/finca como fallback
-        if (loadedContacts.length === 0) {
-          try {
-            const fallbackRes = await api.get<any>('/users?limit=50');
-            const rawData = fallbackRes.data;
-            const userList = rawData?.items || rawData?.data || (Array.isArray(rawData) ? rawData : []);
-            loadedContacts = userList
-              .filter((u: any) => u.id !== user.id)
-              .map((u: any) => ({
-                id: u.id,
-                fullname: u.full_name || u.fullname || u.nombre || u.email || `Usuario #${u.id}`,
-                role: u.role || u.rol || 'Miembro',
-                email: u.email || '',
-                unread_count: 0
-              }));
-          } catch (err) {
-            console.warn('Fallback de contactos:', err);
-          }
-        }
-
         setContacts(loadedContacts);
 
         if (unreadRes.status === 'fulfilled' && unreadRes.value?.data?.unread_count) {
@@ -108,27 +105,42 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
     initChat();
   }, [user]);
 
-  // Suscribirse a eventos SSE para mensajes nuevos
+  // GlobalNetworkHandlers recibe SSE una sola vez por pestaña y actualiza esta
+  // fuente local. El widget sólo se suscribe a ella para evitar duplicados.
   useEffect(() => {
-    if (!user) return;
-
-    const unsubscribe = subscribeSSE((event) => {
-      if (event.event === 'new_chat_message') {
-        const msg = event.data as ChatMessage;
-        
-        if (selectedContact && (msg.sender_id === selectedContact.id || msg.recipient_id === selectedContact.id)) {
-          setMessages(prev => [...prev, msg]);
-        } else {
-          setUnreadCount(prev => prev + 1);
-          setContacts(prev => prev.map(c => 
-            c.id === msg.sender_id ? { ...c, unread_count: (c.unread_count || 0) + 1 } : c
-          ));
-        }
-      }
+    const currentUserId = Number(user?.id);
+    if (!Number.isFinite(currentUserId)) return;
+    OfflineChatService.setCurrentUser(currentUserId);
+    return OfflineChatService.subscribe(() => {
+      if (!selectedContact) return;
+      setMessages(
+        OfflineChatService.getConversation(selectedContact.id, currentUserId)
+          .map(toWidgetMessage),
+      );
     });
+  }, [user?.id, selectedContact]);
 
-    return () => unsubscribe();
-  }, [user, selectedContact]);
+  useEffect(() => {
+    const refresh = async () => {
+      const [contactsResult, unreadResult] = await Promise.allSettled([
+        chatService.getContacts(),
+        chatService.getUnreadCount(),
+      ]);
+      if (contactsResult.status === 'fulfilled' && Array.isArray(contactsResult.value.data)) {
+        setContacts(contactsResult.value.data);
+      }
+      if (unreadResult.status === 'fulfilled') {
+        setUnreadCount(Number(unreadResult.value.data?.unread_count ?? 0));
+      }
+      if (selectedContact) {
+        const history = await chatService.getHistory(selectedContact.id);
+        setMessages(history.data ?? []);
+      }
+    };
+    const onRealtime = () => { void refresh(); };
+    window.addEventListener('chat-realtime-updated', onRealtime);
+    return () => window.removeEventListener('chat-realtime-updated', onRealtime);
+  }, [selectedContact]);
 
   // Cargar historial al seleccionar contacto
   useEffect(() => {
@@ -175,10 +187,14 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
     setNewMessage('');
 
     try {
-      const res = await chatService.sendMessage(selectedContact.id, text);
-      if (res.data) {
-        setMessages(prev => [...prev, res.data!]);
-      }
+      const senderId = Number(user?.id);
+      if (!Number.isFinite(senderId)) throw new Error('AUTH_USER_REQUIRED');
+      await OfflineChatService.send(
+        senderId,
+        String(user?.fullname || 'Usuario'),
+        selectedContact.id,
+        text,
+      );
     } catch (error) {
       console.error('Error al enviar mensaje:', error);
     }
@@ -234,6 +250,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                 {selectedContact ? (
                   <>
                     <button 
+                      type="button"
                       onClick={() => setSelectedContact(null)} 
                       className="h-8 w-8 rounded-full bg-background/50 hover:bg-background/80 flex items-center justify-center transition-colors border border-white/5"
                     >
@@ -246,7 +263,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                         </AvatarFallback>
                       </Avatar>
                       <div className="leading-tight">
-                        <p className="text-sm font-bold text-foreground truncate max-w-[150px]">
+                        <p className="text-sm font-bold text-foreground fit-clamp max-w-[150px]">
                           {selectedContact.fullname}
                         </p>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
@@ -268,6 +285,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                 )}
               </div>
               <button 
+                type="button"
                 onClick={() => setIsOpen(false)} 
                 className="h-8 w-8 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground"
               >
@@ -292,6 +310,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                         />
                       </div>
                       <Button 
+                        type="button"
                         variant="outline" 
                         size="icon" 
                         title="Sincronizar por proximidad (Bluetooth)"
@@ -313,6 +332,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                         filteredContacts.map(contact => (
                           <button
                             key={contact.id}
+                            type="button"
                             onClick={() => setSelectedContact(contact)}
                             className="w-full flex items-center gap-3.5 p-3 rounded-lg hover:bg-white/5 transition-all text-left group"
                           >
@@ -326,7 +346,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between gap-2">
-                                <p className="text-sm font-bold text-foreground truncate">
+                                <p className="text-sm font-bold text-foreground fit-clamp">
                                   {contact.fullname}
                                 </p>
                                 {contact.unread_count ? (
@@ -335,7 +355,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                                   </span>
                                 ) : null}
                               </div>
-                              <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                              <p className="text-[11px] text-muted-foreground fit-clamp mt-0.5">
                                 {contact.role}
                               </p>
                             </div>
@@ -372,7 +392,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                       </div>
                     ) : (
                       messages.map((msg, idx) => {
-                        const isMe = msg.sender_id === user.id;
+                        const isMe = Number(msg.sender_id) === Number(user.id);
                         return (
                           <div key={msg.id || idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                             <div className={cn(
@@ -386,7 +406,10 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                                 "text-[9px] mt-1.5 font-medium flex items-center gap-1",
                                 isMe ? "text-white/70 justify-end" : "text-muted-foreground justify-start"
                               )}>
-                                {format(new Date(msg.created_at), 'HH:mm')}
+                                 {format(new Date(msg.created_at), 'HH:mm')}
+                                 {isMe && msg.status === 'pending' && <Clock3 size={11} aria-label="Pendiente" />}
+                                 {isMe && msg.status === 'delivered' && <Check size={11} aria-label="Entregado" />}
+                                 {isMe && (msg.status === 'synced' || msg.is_read) && <CheckCheck size={11} aria-label="Leído" />}
                               </div>
                             </div>
                           </div>

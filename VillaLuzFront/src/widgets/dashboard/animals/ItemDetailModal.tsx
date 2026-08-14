@@ -66,7 +66,7 @@ export function ItemDetailModal({
         try {
             const date = new Date(dateStr);
             if (isNaN(date.getTime())) return dateStr;
-            return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            return date.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
         } catch (e) {
             return dateStr;
         }
@@ -77,7 +77,7 @@ export function ItemDetailModal({
         try {
             const date = new Date(dateStr);
             if (isNaN(date.getTime())) return dateStr;
-            return date.toLocaleString('es-ES', {
+            return date.toLocaleString('es-CO', {
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric',

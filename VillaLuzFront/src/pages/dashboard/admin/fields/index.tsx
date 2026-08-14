@@ -546,7 +546,7 @@ function AdminFieldsPage() {
         key: 'created_at',
         label: 'Creado',
         sortable: true,
-        render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-'),
+        render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-'),
       },
     ],
     [foodTypeMap, openAnimalsForField]

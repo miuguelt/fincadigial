@@ -25,8 +25,6 @@ export function useResourceMutations<T extends { id?: number | string }>(
 			try {
 				setLoading(true);
 				return await fn();
-			} catch (e: any) {
-				throw e;
 			} finally {
 				setLoading(false);
 			}

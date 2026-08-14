@@ -13,7 +13,7 @@ export const FieldLink: React.FC<{ id: number | string; label: string }> = ({ id
         title={`Click para ver detalles de ${label}`}
       >
         <span className="text-xs">🌱</span>
-        <span className="truncate max-w-[120px] font-bold">{label}</span>
+        <span className="fit-clamp max-w-[120px] font-bold">{label}</span>
       </button>
 
       <FieldDetailsModal

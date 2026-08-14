@@ -345,7 +345,7 @@ export const UserHistoryModal = ({ user, onClose }: UserHistoryModalProps) => {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1">
                   <Mail className="w-4 h-4" />
-                  Email
+                  Correo electrónico
                 </CardTitle>
               </CardHeader>
               <CardContent>

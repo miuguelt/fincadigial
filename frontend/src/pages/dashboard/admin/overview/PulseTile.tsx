@@ -90,14 +90,14 @@ export function PulseTile({
         )}
       </span>
       <span className="mt-2 block">
-        <span className={cn('block text-2xl font-black leading-none tabular-nums sm:text-3xl', config.value)}>
+        <span className={cn('block text-xl font-black leading-none tabular-nums sm:text-2xl', config.value)}>
           {displayValue}
           {unit && <span className="ml-0.5 text-base font-bold text-muted-foreground">{unit}</span>}
         </span>
-        <span className="mt-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
+        <span className="mt-1.5 block fit-clamp text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
           {label}
         </span>
-        {hint && <span className="mt-0.5 block truncate text-[11px] text-muted-foreground/80">{hint}</span>}
+        {hint && <span className="mt-0.5 block fit-clamp text-[11px] text-muted-foreground/80">{hint}</span>}
       </span>
     </>
   );

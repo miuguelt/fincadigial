@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, Bell, BellRing, Check, AlertCircle, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { useCallback } from 'react';
 import { cn } from '@/shared/ui/cn';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
@@ -30,7 +31,7 @@ export function AlertsSection({ animalId, healthAlerts = [] }: AlertsSectionProp
   const [error, setError] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const fetchAlerts = async () => {
+  const fetchAlerts = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -42,11 +43,11 @@ export function AlertsSection({ animalId, healthAlerts = [] }: AlertsSectionProp
     } finally {
       setLoading(false);
     }
-  };
+  }, [animalId]);
 
   useEffect(() => {
     if (animalId) fetchAlerts();
-  }, [animalId]);
+  }, [animalId, fetchAlerts]);
 
   const handleMarkAsRead = async (alertId: number) => {
     try {
@@ -198,7 +199,7 @@ export function AlertsSection({ animalId, healthAlerts = [] }: AlertsSectionProp
               <Icon className={cn("h-4 w-4 mt-0.5 shrink-0", cfg.color)} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="font-semibold text-foreground truncate">{alert.alert_type}</span>
+                  <span className="font-semibold text-foreground fit-clamp">{alert.alert_type}</span>
                   <Badge
                     variant="outline"
                     className={cn(

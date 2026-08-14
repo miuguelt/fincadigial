@@ -31,8 +31,10 @@ export const chatService = {
     const response = await apiFetch<UnreadCountResponse>({
       url: '/chat/unread-count',
       method: 'GET',
+      skipCache: true,
     });
-    return (response as any).unread_count ?? 0;
+    const payload = response.data as unknown as { data?: UnreadCountResponse; unread_count?: number };
+    return payload.data?.unread_count ?? payload.unread_count ?? 0;
   },
 
   /**
@@ -42,8 +44,10 @@ export const chatService = {
     const response = await apiFetch<ChatContact[]>({
       url: '/chat/contacts',
       method: 'GET',
+      skipCache: true,
     });
-    return (response as any) ?? [];
+    const payload = response.data as unknown as { data?: ChatContact[] } | ChatContact[];
+    return Array.isArray(payload) ? payload : payload.data ?? [];
   },
 
   /**
@@ -53,8 +57,10 @@ export const chatService = {
     const response = await apiFetch<ChatMessage[]>({
       url: `/chat/history/${recipientId}?page=${page}&per_page=${perPage}`,
       method: 'GET',
+      skipCache: true,
     });
-    return (response as any) ?? [];
+    const payload = response.data as unknown as { data?: ChatMessage[] } | ChatMessage[];
+    return Array.isArray(payload) ? payload : payload.data ?? [];
   },
 
   /**
@@ -76,7 +82,8 @@ export const chatService = {
         attachment_name: attachment?.name
       },
     });
-    return response as any;
+    const payload = response.data as unknown as { data?: ChatMessage } | ChatMessage;
+    return 'data' in payload && payload.data ? payload.data : payload as ChatMessage;
   },
 
   /**
@@ -94,6 +101,12 @@ export const chatService = {
         'Content-Type': 'multipart/form-data',
       },
     });
-    return response as any;
+    const payload = response.data as unknown as {
+      data?: { url: string; type: 'image' | 'file'; name: string };
+      url?: string;
+      type?: 'image' | 'file';
+      name?: string;
+    };
+    return payload.data ?? payload as { url: string; type: 'image' | 'file'; name: string };
   },
 };

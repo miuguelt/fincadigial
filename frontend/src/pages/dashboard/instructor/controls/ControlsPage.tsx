@@ -191,7 +191,7 @@ const ControlsPage = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Badge className={getAutoStatusClass(status)}>{status}</Badge>
-                    <span className="text-sm text-muted-foreground">{new Date(control.checkup_date).toLocaleDateString('es-ES')}</span>
+                    <span className="text-sm text-muted-foreground">{new Date(control.checkup_date).toLocaleDateString('es-CO')}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Button variant="ghost" size="sm" onClick={() => openDetail(control)} className="h-8 w-8 p-0"><Eye className="w-4 h-4" /></Button>

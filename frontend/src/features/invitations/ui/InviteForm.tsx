@@ -174,7 +174,7 @@ export const InviteForm = ({ fincaId, onSuccess }: InviteFormProps) => {
           <div className="p-4 bg-muted/50 rounded-xl border flex flex-col md:flex-row items-stretch md:items-center gap-3">
             <div className="flex-1 min-w-0">
               <span className="text-xs text-muted-foreground block font-semibold mb-1">Enlace de acceso</span>
-              <code className="text-sm font-mono text-success block truncate bg-background p-2 rounded-lg border">
+              <code className="text-sm font-mono text-success block fit-clamp bg-background p-2 rounded-lg border">
                 {createdInvitation.url}
               </code>
             </div>
@@ -208,7 +208,7 @@ export const InviteForm = ({ fincaId, onSuccess }: InviteFormProps) => {
                 {/* Visual fallback for QR data */}
                 <div className="w-40 h-40 flex flex-col items-center justify-center border-2 border-dashed border-muted rounded bg-muted/10 p-2 text-center">
                   <QrCode className="h-12 w-12 text-muted-foreground mb-2" />
-                  <span className="text-[10px] text-muted-foreground font-mono break-all line-clamp-3">
+                  <span className="text-[10px] text-muted-foreground font-mono break-anywhere line-clamp-3">
                     {createdInvitation.url}
                   </span>
                 </div>
@@ -311,7 +311,7 @@ export const InviteForm = ({ fincaId, onSuccess }: InviteFormProps) => {
                           <span className="flex items-center gap-1">
                             <FaIdCard className="h-3 w-3" /> C.C. {u.identification}
                           </span>
-                          <span className="flex items-center gap-1 truncate">
+                          <span className="flex items-center gap-1 fit-clamp">
                             <FaEnvelope className="h-3 w-3" /> {u.email}
                           </span>
                         </div>

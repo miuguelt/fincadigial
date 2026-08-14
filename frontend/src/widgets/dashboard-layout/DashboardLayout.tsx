@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/features/auth/model/useAuth';
 import RoleBasedSideBar from '@/widgets/dashboard/RoleBasedSideBar';
 import Header from './Header';
@@ -10,10 +10,15 @@ import { QuickActionsModal } from '@/widgets/dashboard-layout/QuickActionsModal'
 import { CrearFincaPage } from '@/features/multi-finca/ui/CrearFincaPage';
 import { cn } from '@/shared/lib/utils';
 
+// Ancho reservado por el menú lateral flotante: 280px de panel + 16px de gap izquierdo.
+const SIDEBAR_INSET = '296px';
+
 const DashboardLayout: React.FC = () => {
   const { loading, isAuthenticated, user } = useAuth();
+  const { pathname } = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const showSidebar = isAuthenticated && !!user?.finca_id;
+  const isChatPage = pathname === '/chat';
 
   useEffect(() => {
     // En pantallas grandes (≥1024px), dejamos el menú principal desplegado por defecto
@@ -24,6 +29,48 @@ const DashboardLayout: React.FC = () => {
       setIsSidebarOpen(false);
     }
   }, [showSidebar]);
+
+  useEffect(() => {
+    // Al pasar de escritorio a móvil, el drawer no debe quedarse cubriendo la vista.
+    const closeSidebarOnMobile = () => {
+      if (window.innerWidth < 1024) setIsSidebarOpen(false);
+    };
+
+    window.addEventListener('resize', closeSidebarOnMobile);
+    return () => window.removeEventListener('resize', closeSidebarOnMobile);
+  }, []);
+
+  /*
+    Publicamos la geometría del menú lateral como variables CSS globales para que las
+    barras flotantes que se renderizan por portal en document.body (barra de acciones
+    masivas, etc.) no queden debajo del menú:
+      --app-content-left    espacio a reservar a la izquierda en escritorio.
+      --app-floating-opacity / --app-floating-events
+                            en móvil el menú es un cajón que cubre el ancho útil,
+                            así que las barras flotantes se ocultan mientras está abierto.
+  */
+  useEffect(() => {
+    const root = document.documentElement;
+
+    const applyLayoutVars = () => {
+      const isDesktop = window.innerWidth >= 1024;
+      const open = showSidebar && isSidebarOpen;
+      const drawerOpen = open && !isDesktop;
+
+      root.style.setProperty('--app-content-left', open && isDesktop ? SIDEBAR_INSET : '0px');
+      root.style.setProperty('--app-floating-opacity', drawerOpen ? '0' : '1');
+      root.style.setProperty('--app-floating-events', drawerOpen ? 'none' : 'auto');
+    };
+
+    applyLayoutVars();
+    window.addEventListener('resize', applyLayoutVars);
+    return () => {
+      window.removeEventListener('resize', applyLayoutVars);
+      root.style.removeProperty('--app-content-left');
+      root.style.removeProperty('--app-floating-opacity');
+      root.style.removeProperty('--app-floating-events');
+    };
+  }, [isSidebarOpen, showSidebar]);
 
   if (loading) return <LoadingScreen />;
   if (!isAuthenticated) return <Navigate to="/" replace />;
@@ -74,15 +121,17 @@ const DashboardLayout: React.FC = () => {
         />
         <main 
           className={cn(
-            "flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-background px-2 sm:px-4 lg:px-6 py-2 sm:py-4 transition-all duration-500 ease-out w-full",
-            isSidebarOpen ? "lg:pl-[296px]" : "lg:pl-0"
+            "flex-1 min-h-0 flex flex-col overflow-y-auto overflow-x-hidden bg-background transition-all duration-500 ease-out w-full max-w-full",
+            // Con el menú abierto reservamos exactamente el ancho del menú + su margen (296px).
+            // Las páginas internas (AppLayout, etc) se encargarán de sus propios paddings.
+            isSidebarOpen && "lg:pl-[296px]"
           )}
         >
           <Outlet />
         </main>
       </div>
 
-      {showSidebar && <FloatingQuickActions />}
+      {showSidebar && !isChatPage && <FloatingQuickActions />}
       {showSidebar && <ChatWidget hideToggleButton={true} />}
       {showSidebar && <QuickActionsModal />}
       {isAuthenticated && <CrearFincaPage modal />}

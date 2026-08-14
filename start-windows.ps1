@@ -54,6 +54,25 @@ if (-not (Test-Path -LiteralPath $LogDir)) { New-Item -ItemType Directory -Path 
 
 function Write-Log { param($msg, $color="White") Write-Host "[$(Get-Date -Format 'HH:mm:ss')] $msg" -ForegroundColor $color }
 
+function Test-TcpPort {
+    param(
+        [string]$ComputerName = '127.0.0.1',
+        [Parameter(Mandatory)][int]$Port,
+        [int]$TimeoutMilliseconds = 750
+    )
+
+    $client = [Net.Sockets.TcpClient]::new()
+    try {
+        $connection = $client.ConnectAsync($ComputerName, $Port)
+        if (-not $connection.Wait([Math]::Max(100, $TimeoutMilliseconds))) { return $false }
+        return $client.Connected
+    } catch {
+        return $false
+    } finally {
+        $client.Dispose()
+    }
+}
+
 function Load-EnvFile {
     param([string]$Path)
     if (Test-Path $Path) {
@@ -211,7 +230,7 @@ function Ensure-Dependencies {
     $pgPort = Get-Port postgres
     $pgOk = $false
     foreach ($p in @("5434")) {
-        if ($p -and ($p -as [int]) -gt 0 -and (Test-NetConnection -ComputerName 127.0.0.1 -Port ([int]$p) -WarningAction SilentlyContinue).TcpTestSucceeded) {
+        if ($p -and ($p -as [int]) -gt 0 -and (Test-TcpPort -Port ([int]$p))) {
             $env:DB_PORT = $p; $pgOk = $true; break
         }
     }
@@ -233,7 +252,7 @@ function Ensure-Dependencies {
         $waited = 0
         while ($waited -lt $maxWait) {
             foreach ($p in @("5434")) {
-                if ((Test-NetConnection -ComputerName 127.0.0.1 -Port ([int]$p) -WarningAction SilentlyContinue).TcpTestSucceeded) {
+                if (Test-TcpPort -Port ([int]$p)) {
                     $env:DB_PORT = $p; $pgOk = $true; break
                 }
             }
@@ -255,7 +274,7 @@ function Ensure-Dependencies {
 
     # 2. Ensure Memurai/Redis Windows native service is running
     $redisPort = Get-Port redis
-    $redisOk = (Test-NetConnection -ComputerName 127.0.0.1 -Port $redisPort -WarningAction SilentlyContinue).TcpTestSucceeded
+    $redisOk = Test-TcpPort -Port $redisPort
     if (-not $redisOk) {
         Write-Log "Redis (${redisPort}) not reachable. Attempting to start Memurai Windows service..." "Yellow"
         $memuraiSvc = Get-Service -Name "Memurai" -ErrorAction SilentlyContinue
@@ -266,7 +285,7 @@ function Ensure-Dependencies {
         $maxWait = 10
         $waited = 0
         while ($waited -lt $maxWait) {
-            if ((Test-NetConnection -ComputerName 127.0.0.1 -Port $redisPort -WarningAction SilentlyContinue).TcpTestSucceeded) {
+            if (Test-TcpPort -Port $redisPort) {
                 $redisOk = $true; break
             }
             Start-Sleep -Seconds 1
@@ -332,8 +351,14 @@ function Stop-Villaluz {
 
         $stoppedIds = @(Stop-VillaluzOwnedProcesses `
             -ProjectRoot $ProjectRoot `
-            -PythonExe $PythonExe)
+            -PythonExe $PythonExe `
+            -PidDir (Join-Path $LogDir 'pids'))
         Stop-Containers
+
+        $rotation = Invoke-VillaluzLogRotation -LogDir $LogDir
+        if ($rotation.MovedCount -gt 0) {
+            Write-Log "Logs de la sesión archivados: $($rotation.MovedCount) archivo(s)." "Green"
+        }
 
         Set-Content -LiteralPath $LifecycleMarker `
             -Value ([DateTimeOffset]::Now.ToString('o')) `
@@ -350,12 +375,12 @@ function Show-Status {
     $fePort = Get-Port villaluz-frontend
     $pgPort = Get-Port postgres
     $rdPort = Get-Port redis
-    $backend = Test-NetConnection -ComputerName 127.0.0.1 -Port $bePort -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
-    $frontend = Test-NetConnection -ComputerName 127.0.0.1 -Port $fePort -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
-    Write-Log "Backend  ($bePort): $(if($backend.TcpTestSucceeded){'ONLINE'}else{'OFFLINE'})" $(if($backend.TcpTestSucceeded){'Green'}else{'Red'})
-    Write-Log "Frontend ($fePort): $(if($frontend.TcpTestSucceeded){'ONLINE'}else{'OFFLINE'})" $(if($frontend.TcpTestSucceeded){'Green'}else{'Red'})
-    Write-Log "DB      ($pgPort): $(if((Test-NetConnection -ComputerName 127.0.0.1 -Port $pgPort -WarningAction SilentlyContinue).TcpTestSucceeded){'ONLINE'}else{'OFFLINE'})"
-    Write-Log "Redis   ($rdPort): $(if((Test-NetConnection -ComputerName 127.0.0.1 -Port $rdPort -WarningAction SilentlyContinue).TcpTestSucceeded){'ONLINE'}else{'OFFLINE'})"
+    $backend = Test-TcpPort -Port $bePort
+    $frontend = Test-TcpPort -Port $fePort
+    Write-Log "Backend  ($bePort): $(if($backend){'ONLINE'}else{'OFFLINE'})" $(if($backend){'Green'}else{'Red'})
+    Write-Log "Frontend ($fePort): $(if($frontend){'ONLINE'}else{'OFFLINE'})" $(if($frontend){'Green'}else{'Red'})
+    Write-Log "DB      ($pgPort): $(if((Test-TcpPort -Port $pgPort)){'ONLINE'}else{'OFFLINE'})"
+    Write-Log "Redis   ($rdPort): $(if((Test-TcpPort -Port $rdPort)){'ONLINE'}else{'OFFLINE'})"
 }
 
 function Ensure-Pm2Daemon {
@@ -363,8 +388,12 @@ function Ensure-Pm2Daemon {
     # (PM2_HOME empty after a reboot or DEVBRAIN STOP). `pm2 ping` spawns and waits
     # for the daemon, so the following startOrReload always finds a live god process.
     for ($attempt = 1; $attempt -le 3; $attempt++) {
-        & $NpxExe pm2 ping 2>&1 | Out-Null
-        if ($LASTEXITCODE -eq 0) {
+        $pingOk = Invoke-VillaluzPm2Command `
+            -NpxExe $NpxExe `
+            -Pm2Home $ScopedPm2Home `
+            -Arguments @('pm2', 'ping') `
+            -TimeoutSeconds 10
+        if ($pingOk) {
             if ($attempt -gt 1) { Write-Log "Daemon PM2 listo (intento $attempt)." "Green" }
             return $true
         }
@@ -378,8 +407,12 @@ function Ensure-Pm2Daemon {
 function Invoke-Pm2StartOrReload {
     param([string]$AppSelection)
     for ($attempt = 1; $attempt -le 3; $attempt++) {
-        & $NpxExe pm2 startOrReload $EcosystemConfig --only $AppSelection --update-env
-        if ($LASTEXITCODE -eq 0) { return $true }
+        $startOk = Invoke-VillaluzPm2Command `
+            -NpxExe $NpxExe `
+            -Pm2Home $ScopedPm2Home `
+            -Arguments @('pm2', 'startOrReload', $EcosystemConfig, '--only', $AppSelection, '--update-env') `
+            -TimeoutSeconds 20
+        if ($startOk) { return $true }
         Write-Log "PM2 falló al iniciar '$AppSelection' (intento $attempt/3)." "Yellow"
         Start-Sleep -Seconds 3
     }
@@ -408,7 +441,7 @@ function Wait-VillaluzReady {
             } catch { }
         }
         if (-not $frontendOk) {
-            $frontendOk = (Test-NetConnection -ComputerName 127.0.0.1 -Port $fePort -WarningAction SilentlyContinue).TcpTestSucceeded
+            $frontendOk = Test-TcpPort -Port $fePort
         }
         if ($backendOk -and $frontendOk) { break }
         Start-Sleep -Seconds 2
@@ -432,12 +465,16 @@ function Initialize-LifecycleMarkerIfSafe {
 
     $bePort = Get-Port villaluz-backend
     $fePort = Get-Port villaluz-frontend
-    $backendOnline = (Test-NetConnection -ComputerName 127.0.0.1 -Port $bePort -WarningAction SilentlyContinue).TcpTestSucceeded
-    $frontendOnline = (Test-NetConnection -ComputerName 127.0.0.1 -Port $fePort -WarningAction SilentlyContinue).TcpTestSucceeded
+    $backendOnline = Test-TcpPort -Port $bePort
+    $frontendOnline = Test-TcpPort -Port $fePort
 
     try {
         $processes = @(Get-CimInstance Win32_Process -ErrorAction Stop)
-        $ownedIds = @(Get-VillaluzOwnedProcessIds $processes $ProjectRoot $PythonExe)
+        $ownedIds = @(Get-VillaluzRuntimeProcessIds `
+            $processes `
+            $ProjectRoot `
+            $PythonExe `
+            (Join-Path $LogDir 'pids'))
     } catch {
         Write-Log "No se pudo verificar procesos existentes; no se iniciará por seguridad." "Red"
         return $false
@@ -519,9 +556,15 @@ $env:REDIS_URL = "$rdUrl0"
 $env:CELERY_BROKER_URL = "$rdUrl1"
 $env:CELERY_RESULT_BACKEND = "$rdUrl1"
 $fieldNodeAddresses = @(
-    Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
-        Where-Object { $_.IPAddress -notlike '127.*' -and $_.AddressState -eq 'Preferred' } |
-        Select-Object -ExpandProperty IPAddress -Unique
+    [Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() |
+        Where-Object OperationalStatus -eq ([Net.NetworkInformation.OperationalStatus]::Up) |
+        ForEach-Object { $_.GetIPProperties().UnicastAddresses } |
+        Where-Object {
+            $_.Address.AddressFamily -eq [Net.Sockets.AddressFamily]::InterNetwork -and
+            -not [Net.IPAddress]::IsLoopback($_.Address)
+        } |
+        ForEach-Object { $_.Address.IPAddressToString } |
+        Select-Object -Unique
 )
 $fieldNodeOrigins = @($fieldNodeAddresses | ForEach-Object { "http://${_}:${fePort}" })
 $env:CORS_ORIGINS = (@("http://localhost:${fePort}", "http://127.0.0.1:${fePort}", "http://localhost:3003") + $fieldNodeOrigins) -join ','
@@ -563,6 +606,39 @@ $appSelection = $selectedApps -join ','
 
 $lifecycleLock = Enter-VillaluzLifecycleLock
 try {
+    # A cold start means no process can still hold the previous session files.
+    # Rotate before PM2 opens its handles so historical tracebacks never enter
+    # the active log set after a reboot or an unclean shutdown.
+    if (-not (Test-VillaluzPm2Daemon -Pm2Home $ScopedPm2Home)) {
+        $ownedIds = @(Get-VillaluzRuntimeProcessIds `
+            @(Get-CimInstance Win32_Process -ErrorAction Stop) `
+            $ProjectRoot `
+            $PythonExe `
+            (Join-Path $LogDir 'pids'))
+        if ($ownedIds.Count -gt 0) {
+            Write-Log "Limpiando $($ownedIds.Count) proceso(s) huérfano(s) de la sesión anterior." "Yellow"
+            [void](Stop-VillaluzOwnedProcesses `
+                -ProjectRoot $ProjectRoot `
+                -PythonExe $PythonExe `
+                -PidDir (Join-Path $LogDir 'pids'))
+        }
+        $rotation = Invoke-VillaluzLogRotation -LogDir $LogDir
+        if ($rotation.MovedCount -gt 0) {
+            Write-Log "Sesión anterior archivada: $($rotation.MovedCount) archivo(s)." "Green"
+        }
+    }
+
+    $runId = [guid]::NewGuid().ToString('N')
+    $env:VILLALUZ_RUN_ID = $runId
+    [ordered]@{
+        schema_version = 1
+        run_id = $runId
+        started_at = [DateTimeOffset]::Now.ToString('o')
+        apps = $selectedApps
+    } | ConvertTo-Json -Depth 4 | Set-Content `
+        -LiteralPath (Join-Path $LogDir 'current-session.json') `
+        -Encoding utf8
+
     Ensure-Dependencies
     Write-Log "=== Starting Villaluz Windows-Native with isolated PM2 ===" "Cyan"
     if (-not (Ensure-Pm2Daemon)) {

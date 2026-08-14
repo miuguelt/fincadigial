@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import analyticsService from '@/features/reporting/api/analytics.service';
 import {
@@ -129,7 +129,7 @@ export const AnimalMedicalHistory: React.FC<AnimalMedicalHistoryProps> = ({ anim
                       <span className="text-xs text-muted-foreground">
                         {new Date(
                           treatment.application_date || treatment.start_date
-                        ).toLocaleDateString('es-ES')}
+                        ).toLocaleDateString('es-CO')}
                       </span>
                       {treatment.status && (
                         <span
@@ -184,12 +184,12 @@ export const AnimalMedicalHistory: React.FC<AnimalMedicalHistoryProps> = ({ anim
                     </div>
                     <div className="text-right ml-4">
                       <span className="text-xs text-muted-foreground">
-                        {new Date(vacc.application_date).toLocaleDateString('es-ES')}
+                        {new Date(vacc.application_date).toLocaleDateString('es-CO')}
                       </span>
                       {vacc.next_dose_date && (
                         <p className="text-xs text-success mt-1">
                           Próxima dosis:{' '}
-                          {new Date(vacc.next_dose_date).toLocaleDateString('es-ES')}
+                          {new Date(vacc.next_dose_date).toLocaleDateString('es-CO')}
                         </p>
                       )}
                     </div>
@@ -254,7 +254,7 @@ export const AnimalMedicalHistory: React.FC<AnimalMedicalHistoryProps> = ({ anim
                     </div>
                     <div className="text-right ml-4">
                       <span className="text-xs text-muted-foreground">
-                        {new Date(control.control_date).toLocaleDateString('es-ES')}
+                        {new Date(control.control_date).toLocaleDateString('es-CO')}
                       </span>
                       {control.performed_by && (
                         <p className="text-xs text-muted-foreground mt-1">
@@ -303,7 +303,7 @@ export const AnimalMedicalHistory: React.FC<AnimalMedicalHistoryProps> = ({ anim
                     </div>
                     <div className="text-right ml-4">
                       <span className="text-xs text-muted-foreground">
-                        {new Date(disease.diagnosis_date).toLocaleDateString('es-ES')}
+                        {new Date(disease.diagnosis_date).toLocaleDateString('es-CO')}
                       </span>
                       {disease.status && (
                         <span

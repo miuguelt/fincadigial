@@ -150,10 +150,8 @@ class CropActivity(BaseModel):
                 if instance.input_name:
                     desc += f" | Insumo: {instance.input_name}"
 
-                # Para transacciones, usamos 'Other' si no encaja en las fijas,
-                # o podríamos expandir TransactionCategory para 'Agriculture' a futuro.
-                # Como TransactionCategory tiene Milk, Animal, Medication, Food, Service, Other:
-                cat = TransactionCategory.Service if not instance.input_name else TransactionCategory.Other
+                # A crop cost is farm input spending, not a veterinary service.
+                cat = TransactionCategory.Agriculture
 
                 Transaction.create(
                     finca_id=instance.finca_id,
@@ -202,7 +200,7 @@ class CropActivity(BaseModel):
                     if self.input_name:
                         desc += f" | Insumo: {self.input_name}"
                     
-                    cat = TransactionCategory.Service if not self.input_name else TransactionCategory.Other
+                    cat = TransactionCategory.Agriculture
                     tx.update(
                         commit=False,
                         finca_id=self.finca_id,
@@ -219,7 +217,7 @@ class CropActivity(BaseModel):
                 desc = f"Labor de cultivo ({self.activity_type.value}) - Lote: {plot_name}"
                 if self.input_name:
                     desc += f" | Insumo: {self.input_name}"
-                cat = TransactionCategory.Service if not self.input_name else TransactionCategory.Other
+                cat = TransactionCategory.Agriculture
                 Transaction.create(
                     commit=False,
                     finca_id=self.finca_id,
@@ -273,7 +271,7 @@ class CropActivity(BaseModel):
                 desc = f"Labor de cultivo ({self.activity_type.value}) - Lote: {plot_name}"
                 if self.input_name:
                     desc += f" | Insumo: {self.input_name}"
-                cat = TransactionCategory.Service if not self.input_name else TransactionCategory.Other
+                cat = TransactionCategory.Agriculture
                 Transaction.create(
                     commit=commit,
                     finca_id=self.finca_id,

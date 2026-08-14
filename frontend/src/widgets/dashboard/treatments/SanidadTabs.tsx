@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { 
+import { useAuth } from '@/features/auth/model/useAuth';
+import { normalizeRole } from '@/features/auth/api/auth.service';
+import { canAccessRoutePath, getRouteSection, toRolePath } from '@/shared/lib/routeAccess';
+import {
   HeartPulse, 
   ShieldAlert, 
   Activity, 
@@ -51,31 +54,63 @@ export const SANIDAD_TAB_GROUPS: Record<string, TabGroup> = {
   }
 };
 
+/**
+ * Grupos visibles para un rol.
+ *
+ * Las rutas del catálogo se declaran con prefijo `/admin`, pero cada rol vive
+ * bajo el suyo (`/veterinario`, `/instructor`, …). Se reescriben al prefijo
+ * activo y se descartan las que el rol no puede abrir, para que ninguna
+ * pestaña lleve a `/unauthorized`.
+ */
+export function getVisibleSanidadGroups(role: string): Array<readonly [string, TabGroup]> {
+  return Object.entries(SANIDAD_TAB_GROUPS)
+    .map(([groupId, group]) => {
+      const items = group.items
+        .map((item) => ({ ...item, path: toRolePath(role, item.path) }))
+        .filter((item) => canAccessRoutePath(role, item.path));
+      return [groupId, { ...group, items }] as const;
+    })
+    .filter(([, group]) => group.items.length > 0);
+}
+
+/**
+ * Pestaña activa según la URL. La comparación ignora el prefijo de rol:
+ * `/veterinario/treatments` y `/admin/treatments` son la misma sección.
+ */
+function findActiveTab(
+  groups: Array<readonly [string, TabGroup]>,
+  pathname: string,
+): { groupId: string; tabId: string } {
+  const currentSection = getRouteSection(pathname);
+
+  for (const [groupId, group] of groups) {
+    const found = group.items.find((item) => {
+      const section = getRouteSection(item.path);
+      return currentSection === section || currentSection.startsWith(`${section}/`);
+    });
+    if (found) return { groupId, tabId: found.id };
+  }
+
+  return { groupId: groups[0]?.[0] ?? '', tabId: '' };
+}
+
 export const SanidadTabs: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const currentPath = location.pathname;
+  const { user, role } = useAuth() as any;
+  const currentRole = normalizeRole(role || user?.role) || String(role || user?.role || '');
 
-  // Determine which group is active
-  let activeGroupId = 'cases';
-  let activeTabId = '';
+  const visibleGroups = useMemo(() => getVisibleSanidadGroups(currentRole), [currentRole]);
+  const { groupId: activeGroupId, tabId: activeTabId } = findActiveTab(visibleGroups, location.pathname);
 
-  for (const [groupId, group] of Object.entries(SANIDAD_TAB_GROUPS)) {
-    const found = group.items.find(item => currentPath.startsWith(item.path));
-    if (found) {
-      activeGroupId = groupId;
-      activeTabId = found.id;
-      break;
-    }
-  }
-
-  const activeGroup = SANIDAD_TAB_GROUPS[activeGroupId];
+  const activeGroup = visibleGroups.find(([groupId]) => groupId === activeGroupId)?.[1];
+  if (!activeGroup) return null;
 
   return (
-    <div className="space-y-4 mb-5">
+    <div className="space-y-3 mb-4 sm:mb-5">
       {/* Selector Principal de Secciones - Estilo Premium Glassmorphic */}
-      <div className="flex flex-wrap gap-3 pb-3 border-b border-white/5 dark:border-white/5">
-        {Object.entries(SANIDAD_TAB_GROUPS).map(([groupId, group]) => {
+      <div className="flex flex-wrap gap-2 pb-2 border-b border-white/5 dark:border-white/5">
+        {visibleGroups.map(([groupId, group]) => {
           const isActiveGroup = activeGroupId === groupId;
           const firstItemPath = group.items[0].path;
 
@@ -83,7 +118,7 @@ export const SanidadTabs: React.FC = () => {
             <button
               key={groupId}
               onClick={() => navigate(firstItemPath)}
-              className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 shadow-sm border transform hover:scale-[1.02] hover:-translate-y-[1px] active:scale-[0.97] ${
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 shadow-sm border transform hover:scale-[1.02] hover:-translate-y-[1px] active:scale-[0.97] ${
                 isActiveGroup
                   ? 'bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-600 text-white border-emerald-500/30 shadow-[0_4px_12px_rgba(16,185,129,0.25)] font-extrabold'
                   : 'bg-card/45 backdrop-blur-md text-muted-foreground hover:text-foreground hover:bg-card/85 border-border/30 hover:border-border/60 hover:shadow-md'
@@ -99,7 +134,7 @@ export const SanidadTabs: React.FC = () => {
       </div>
 
       {/* Sub-tabs con cristal translúcido, bordes luminosos y micro-animaciones */}
-      <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-lg bg-card/25 backdrop-blur-md border border-border/25 shadow-inner">
+      <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-lg bg-card/25 backdrop-blur-md border border-border/25 shadow-inner">
         {activeGroup.items.map((tab) => {
           const isActive = activeTabId === tab.id;
 
@@ -107,7 +142,7 @@ export const SanidadTabs: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => navigate(tab.path)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 transform active:scale-[0.97] ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 transform active:scale-[0.97] ${
                 isActive
                   ? 'bg-card text-foreground shadow-[0_2px_8px_rgba(0,0,0,0.08)] scale-[1.02] border border-border/50 bg-gradient-to-b from-white to-slate-50/80 dark:from-slate-800 dark:to-slate-900/80'
                   : 'text-muted-foreground hover:text-foreground hover:bg-card/45 hover:scale-[1.01]'

@@ -2,10 +2,11 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import JoinFincaPage from "./JoinFincaPage";
 
-const { mockGetPublicFincas, mockNavigate, mockShowToast } = vi.hoisted(() => ({
+const { mockGetPublicFincas, mockNavigate, mockShowToast, mockRefresh } = vi.hoisted(() => ({
 	mockGetPublicFincas: vi.fn(),
 	mockNavigate: vi.fn(),
 	mockShowToast: vi.fn(),
+	mockRefresh: vi.fn(),
 }));
 
 vi.mock("@/entities/finca/api/finca.service", () => ({
@@ -19,7 +20,7 @@ vi.mock("@/entities/user/api/membership.service", () => ({
 vi.mock("@/shared/hooks/useNotifications", () => ({
 	useNotifications: () => ({
 		notifications: [],
-		refresh: vi.fn(),
+		refresh: mockRefresh,
 		approve: vi.fn(),
 		reject: vi.fn(),
 	}),

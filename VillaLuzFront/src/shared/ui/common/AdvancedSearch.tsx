@@ -18,7 +18,7 @@ import {
   PopoverTrigger,
 } from '@/shared/ui/popover';
 import {
-  CalendarIcon,
+  Calendar as CalendarIcon,
   Search,
   Filter,
   X,
@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { Calendar } from '@/shared/ui/calendar';
 import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { formatDateColombia } from '@/shared/utils/dateUtils';
 
 
@@ -155,7 +156,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                 className="w-full justify-start text-left font-normal"
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {value ? format(new Date(value), 'PPP') : 'Seleccionar fecha'}
+                {value ? format(new Date(value), 'PPP', { locale: es }) : 'Seleccionar fecha'}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">

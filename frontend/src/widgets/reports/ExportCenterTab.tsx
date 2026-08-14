@@ -20,14 +20,14 @@ interface ExportItem {
 }
 
 const exportItems: ExportItem[] = [
-  { id: 'animals', title: 'Animales', description: 'Listado completo del hato con datos biométricos', endpoint: '/exports/animals.xlsx', formats: [{ ext: 'xlsx', icon: FileSpreadsheet, label: 'Excel' }], icon: FileText, color: 'text-info', bg: 'bg-info/5 dark:bg-blue-950/30' },
+  { id: 'animals', title: 'Animales', description: 'Listado completo del ganado con datos biométricos', endpoint: '/exports/animals.xlsx', formats: [{ ext: 'xlsx', icon: FileSpreadsheet, label: 'Excel' }], icon: FileText, color: 'text-info', bg: 'bg-info/5 dark:bg-blue-950/30' },
   { id: 'vaccinations', title: 'Vacunaciones', description: 'Registro histórico de vacunas aplicadas', endpoint: '/exports/vaccinations.xlsx', formats: [{ ext: 'xlsx', icon: FileSpreadsheet, label: 'Excel' }], icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
   { id: 'inventory', title: 'Inventario', description: 'Insumos, medicamentos y existencias', endpoint: '/exports/inventory.xlsx', formats: [{ ext: 'xlsx', icon: FileSpreadsheet, label: 'Excel' }], icon: Activity, color: 'text-warning', bg: 'bg-warning/5 dark:bg-amber-950/30' },
   { id: 'reproduction', title: 'Reproducción', description: 'Ciclos reproductivos, montas y gestaciones', endpoint: '/exports/reproduction.xlsx', formats: [{ ext: 'xlsx', icon: FileSpreadsheet, label: 'Excel' }], icon: Heart, color: 'text-pink-600', bg: 'bg-pink-50 dark:bg-pink-950/30' },
   { id: 'milk', title: 'Producción de Leche', description: 'Registro diario de producción láctea', endpoint: '/exports/milk_production.xlsx', formats: [{ ext: 'xlsx', icon: FileSpreadsheet, label: 'Excel' }], icon: Milk, color: 'text-sky-600', bg: 'bg-sky-50 dark:bg-sky-950/30' },
   { id: 'financials', title: 'Transacciones Financieras', description: 'Ingresos, egresos y costos operativos', endpoint: '/exports/financials.xlsx', formats: [{ ext: 'xlsx', icon: FileSpreadsheet, label: 'Excel' }], icon: DollarSign, color: 'text-violet-600', bg: 'bg-violet-50 dark:bg-violet-950/30' },
   { id: 'financial-report', title: 'Reporte Financiero', description: 'Estado financiero completo de la finca (PDF)', endpoint: '/exports/financial-report.pdf', formats: [{ ext: 'pdf', icon: FileText, label: 'PDF' }], icon: Receipt, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-950/30' },
-  { id: 'health-pdf', title: 'Reporte Sanitario', description: 'Historial clínico completo del hato (PDF)', endpoint: '/exports/bulk-health-report.pdf', formats: [{ ext: 'pdf', icon: FileText, label: 'PDF' }], icon: ShieldCheck, color: 'text-destructive', bg: 'bg-destructive/5 dark:bg-rose-950/30' },
+  { id: 'health-pdf', title: 'Reporte Sanitario', description: 'Historial clínico completo del ganado (PDF)', endpoint: '/exports/bulk-health-report.pdf', formats: [{ ext: 'pdf', icon: FileText, label: 'PDF' }], icon: ShieldCheck, color: 'text-destructive', bg: 'bg-destructive/5 dark:bg-rose-950/30' },
 ];
 
 async function downloadBlob(endpoint: string, filename: string, params?: Record<string, string>) {

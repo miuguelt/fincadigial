@@ -36,8 +36,11 @@ export interface TreatmentFormData {
   animalId: string;
   medicationId: string;
   dose: string;
+  /** Obligatorio en el backend (`Treatments.frequency`). */
+  frequency: string;
   date: string;
   description: string;
+  observations?: string;
 }
 
 export interface ActivityConfig {
@@ -50,13 +53,31 @@ export interface ActivityConfig {
 
 export interface HistoryRecord {
   id: string;
-  type: 'milking' | 'transfer' | 'disease' | 'treatment';
+  type: 'milking' | 'transfer' | 'disease' | 'treatment' | 'finance' | 'control';
   date: string;
-  animalId: number;
-  animalLabel: string;
+  animalId?: number;
+  animalLabel?: string;
   entityId?: number;
   entityLabel?: string;
   details: string;
   notes?: string;
   raw: any;
+}
+
+export interface FinanceFormData {
+  transaction_type: 'Ingreso' | 'Gasto';
+  category: string;
+  animalId?: string;
+  amount: string;
+  date: string;
+  description: string;
+}
+
+export interface ControlFormData {
+  animalId: string;
+  weight: string;
+  height?: string;
+  health_status: 'Excelente' | 'Bueno' | 'Regular' | 'Malo' | 'Sano' | '';
+  checkup_date: string;
+  description?: string;
 }

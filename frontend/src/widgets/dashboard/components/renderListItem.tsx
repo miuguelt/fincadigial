@@ -91,7 +91,7 @@ export function renderListItemInternal(
             {" "}
             <div className="flex justify-between items-center gap-2">
               {" "}
-              <span className="text-sm font-bold text-foreground truncate">
+              <span className="text-sm font-bold text-foreground fit-clamp">
                 {" "}
                 {getLabel(item.disease_id, options.diseases)}{" "}
               </span>{" "}
@@ -117,7 +117,7 @@ export function renderListItemInternal(
                 <span className="font-semibold text-foreground/60">
                   Por:
                 </span>{" "}
-                <span className="truncate max-w-[100px]">
+                <span className="fit-clamp max-w-[100px]">
                   {getLabel(item.instructor_id, options.users)}
                 </span>{" "}
               </div>{" "}
@@ -199,7 +199,7 @@ export function renderListItemInternal(
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
               {" "}
               <span className="font-semibold">Instructor:</span>{" "}
-              <span className="truncate">
+              <span className="fit-clamp">
                 {getLabel(item.instructor_id, options.users)}
               </span>{" "}
               {item.batch_number && (
@@ -238,7 +238,7 @@ export function renderListItemInternal(
                 <span className="text-[9px] font-bold text-purple-700 uppercase">
                   Dosis
                 </span>{" "}
-                <span className="text-[10px] text-foreground font-medium truncate">
+                <span className="text-[10px] text-foreground font-medium fit-clamp">
                   {item.dosis || "-"}
                 </span>{" "}
               </div>{" "}
@@ -247,7 +247,7 @@ export function renderListItemInternal(
                 <span className="text-[9px] font-bold text-purple-700 uppercase">
                   Frecuencia
                 </span>{" "}
-                <span className="text-[10px] text-foreground font-medium truncate">
+                <span className="text-[10px] text-foreground font-medium fit-clamp">
                   {item.frequency || "-"}
                 </span>{" "}
               </div>{" "}

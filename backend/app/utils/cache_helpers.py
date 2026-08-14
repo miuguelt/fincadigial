@@ -5,7 +5,7 @@ from typing import Any
 import logging
 import time
 from datetime import datetime
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended import get_jwt, get_jwt_identity, verify_jwt_in_request
 from flask_jwt_extended.exceptions import NoAuthorizationError
 
 logger = logging.getLogger(__name__)
@@ -174,7 +174,9 @@ def _get_cache_key_with_user(model_name: str, base_key: str, model_class) -> str
         verify_jwt_in_request(optional=True)
         user_id = get_jwt_identity()
         if user_id:
-            return f"user:{user_id}:{base_key}"
+            jwt_data = get_jwt() or {}
+            finca_id = jwt_data.get('finca_id') or 'none'
+            return f"user:{user_id}:finca:{finca_id}:{base_key}"
     except (NoAuthorizationError, Exception):
         pass
 

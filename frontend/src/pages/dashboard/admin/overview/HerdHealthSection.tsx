@@ -69,7 +69,7 @@ export interface HerdHealthSectionProps {
 }
 
 /**
- * Salud del hato: los cuatro indicadores que deciden el manejo sanitario y la
+ * Salud del ganado: los cuatro indicadores que deciden el manejo sanitario y la
  * curva de salud del último mes. Los indicadores secundarios quedan plegados
  * para no saturar la vista de entrada.
  */
@@ -100,22 +100,22 @@ export function HerdHealthSection({ cards, ventanaDias, trend, onOpenAnalytics }
     <section>
       <SectionHeading
         icon={HeartPulse}
-        title="Salud del hato"
+        title="Salud del ganado"
         subtitle={
           ventanaDias
             ? `Indicadores sanitarios de los últimos ${ventanaDias} días`
-            : 'Indicadores sanitarios del hato'
+            : 'Indicadores sanitarios del ganado'
         }
         actionLabel="Ver analítica"
         onAction={onOpenAnalytics}
       />
 
       {primary.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">{primary.map(renderKpi)}</div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-[repeat(auto-fit,_minmax(200px,_1fr))]">{primary.map(renderKpi)}</div>
       )}
 
       {trend.length > 0 && (
-        <div className="mt-4 rounded-xl border border-border bg-card p-4 shadow-sm">
+        <div className="mt-4 rounded-xl border border-border bg-card p-4 shadow-sm min-w-0 overflow-hidden">
           <div className="mb-2 flex items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-bold text-foreground">Tendencia del índice de salud</h3>
@@ -187,7 +187,7 @@ export function HerdHealthSection({ cards, ventanaDias, trend, onOpenAnalytics }
           </button>
 
           {showMore && (
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">{secondary.map(renderKpi)}</div>
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-[repeat(auto-fit,_minmax(200px,_1fr))]">{secondary.map(renderKpi)}</div>
           )}
         </div>
       )}

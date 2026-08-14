@@ -156,9 +156,7 @@ const MilkProductionPage = () => {
           label: 'Cantidad (Litros)',
           type: 'number',
           required: true,
-          // @ts-ignore
-          min: 0,
-          step: 0.1,
+          validation: { min: 0, step: 0.1 },
         },
         {
           name: 'milking_session',
@@ -180,24 +178,19 @@ const MilkProductionPage = () => {
           name: 'fat_percentage',
           label: '% Grasa',
           type: 'number',
-          // @ts-ignore
-          min: 0,
-          step: 0.01,
+          validation: { min: 0, step: 0.01 },
         },
         {
           name: 'protein_percentage',
           label: '% Proteína',
           type: 'number',
-          // @ts-ignore
-          min: 0,
-          step: 0.01,
+          validation: { min: 0, step: 0.01 },
         },
         {
           name: 'somatic_cells',
           label: 'Células Somáticas',
           type: 'number',
-          // @ts-ignore
-          min: 0,
+          validation: { min: 0 },
         },
         {
           name: 'notes',

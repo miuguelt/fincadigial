@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import {
   AlertTriangle,
   RefreshCw,
@@ -150,7 +150,7 @@ export const PreloadErrorHandler: React.FC<PreloadErrorHandlerProps> = ({
   // Formatear timestamp para mostrarlo de forma legible
   const formatTimestamp = (timestamp: number) => {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString("es-ES", {
+    return date.toLocaleTimeString("es-CO", {
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",

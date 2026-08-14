@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   IconScale,
@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/shared/ui/cn";
+import { useRealtimeNotifications, type EnrichedAlert } from "@/shared/hooks/useRealtimeNotifications";
 
 // ─── Tipos ────────────────────────────────────────────────────
 interface QuickAction {
@@ -39,6 +40,63 @@ interface QuickAction {
   bg: string;       // Tailwind bg-* class
   ring: string;     // Tailwind ring-* class for focus / active selection
   category?: 'registro' | 'animal' | 'navegacion';
+}
+
+/**
+ * Relaciona cada alerta no leída con el acceso donde el usuario puede revisarla.
+ * El tipo de alerta es la fuente principal; el contexto del mensaje permite
+ * separar alertas de potreros de las alertas generales del hato.
+ */
+export function getNotificationActionId(notification: EnrichedAlert): string | null {
+  const alertType = normalizeNotificationText(
+    notification.alertType ?? notification.data?.alert_type ?? '',
+  );
+  const message = normalizeNotificationText(
+    `${notification.title} ${notification.message} ${notification.data?.title ?? ''}`,
+  );
+
+  if (alertType.includes('produccion')) return 'milk';
+  if (alertType.includes('crecimiento')) return 'weight';
+  if (alertType.includes('salud')) return 'health';
+  if (alertType.includes('reproduccion')) {
+    return message.includes('parto') ? 'births' : 'reproduction';
+  }
+  if (alertType.includes('estado')) {
+    const refersToField = Boolean(notification.data?.field_id)
+      || /potrero|rotacion|pastura|campo activo/.test(message);
+    return refersToField ? 'fields' : 'animals';
+  }
+  if (alertType.includes('personalizada')) {
+    if (/agua|hidrat|\bph\b/.test(message)) return 'water';
+    if (/genet|consangu|cruce/.test(message)) return 'genetics';
+    return 'animals';
+  }
+  if (alertType.includes('predictiva')) return 'reports';
+
+  return null;
+}
+
+function normalizeNotificationText(value: unknown): string {
+  return String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+export function getQuickActionNotificationCounts(
+  notifications: EnrichedAlert[],
+): Record<string, number> {
+  return notifications.reduce<Record<string, number>>((counts, notification) => {
+    if (notification.read) return counts;
+
+    const actionId = getNotificationActionId(notification);
+    if (actionId) counts[actionId] = (counts[actionId] ?? 0) + 1;
+    return counts;
+  }, {});
+}
+
+function formatNotificationCount(count: number): string {
+  return count > 99 ? '99+' : String(count);
 }
 
 // ─── Catálogo Completo ─────────────────────────────────────────
@@ -211,7 +269,7 @@ const CATALOG: QuickAction[] = [
     icon: <BarChart3 className="h-[20px] w-[20px]" />,
     label: "Reportes",
     sub: "Análisis",
-    path: "/reports",
+    path: "/admin/reports",
     bg: "bg-sky-600",
     ring: "ring-sky-400",
     category: 'navegacion',
@@ -263,6 +321,11 @@ export const FloatingQuickActions: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const sheetRef = useRef<HTMLDivElement>(null);
+  const { notifications, refreshAlerts } = useRealtimeNotifications({ loadHistorical: true });
+  const notificationCounts = useMemo(
+    () => getQuickActionNotificationCounts(notifications),
+    [notifications],
+  );
 
   const [favIds, setFavIds] = useState<string[]>(() => {
     try {
@@ -317,6 +380,16 @@ export const FloatingQuickActions: React.FC = () => {
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, [isOpen, close]);
+
+  // Mantener los badges alineados con la campana aun cuando el usuario no
+  // tenga una conexión SSE activa.
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      void refreshAlerts();
+    }, 60000);
+
+    return () => window.clearInterval(interval);
+  }, [refreshAlerts]);
 
   const go = useCallback(
     (path: string) => {
@@ -376,6 +449,7 @@ export const FloatingQuickActions: React.FC = () => {
               ) : (
                 <ActionGrid
                   items={favorites}
+                  notificationCounts={notificationCounts}
                   onAction={go}
                   onEdit={() => setEditMode(true)}
                 />
@@ -419,11 +493,12 @@ export const FloatingQuickActions: React.FC = () => {
 // ─── Grid de acciones ─────────────────────────────────────────
 interface ActionGridProps {
   items: QuickAction[];
+  notificationCounts: Record<string, number>;
   onAction: (path: string) => void;
   onEdit: () => void;
 }
 
-const ActionGrid: React.FC<ActionGridProps> = ({ items, onAction, onEdit }) => {
+const ActionGrid: React.FC<ActionGridProps> = ({ items, notificationCounts, onAction, onEdit }) => {
   // Group favorites by category for display
   const grouped = items.reduce((acc, item) => {
     const cat = item.category || 'registro';
@@ -476,7 +551,13 @@ const ActionGrid: React.FC<ActionGridProps> = ({ items, onAction, onEdit }) => {
                 "grid-cols-2"
               )}>
                 {catItems.map((action, idx) => (
-                  <Tile key={action.id} action={action} index={idx} onPress={() => onAction(action.path)} />
+                  <Tile
+                    key={action.id}
+                    action={action}
+                    index={idx}
+                    notificationCount={notificationCounts[action.id] ?? 0}
+                    onPress={() => onAction(action.path)}
+                  />
                 ))}
               </div>
             </div>
@@ -485,7 +566,13 @@ const ActionGrid: React.FC<ActionGridProps> = ({ items, onAction, onEdit }) => {
       ) : (
         <div className="grid grid-cols-2 gap-3">
           {items.map((action, idx) => (
-            <Tile key={action.id} action={action} index={idx} onPress={() => onAction(action.path)} />
+            <Tile
+              key={action.id}
+              action={action}
+              index={idx}
+              notificationCount={notificationCounts[action.id] ?? 0}
+              onPress={() => onAction(action.path)}
+            />
           ))}
         </div>
       )}
@@ -498,9 +585,10 @@ interface TileProps {
   action: QuickAction;
   onPress: () => void;
   index?: number;
+  notificationCount?: number;
 }
 
-const Tile: React.FC<TileProps> = ({ action, onPress, index = 0 }) => (
+const Tile: React.FC<TileProps> = ({ action, onPress, index = 0, notificationCount = 0 }) => (
   <motion.button
     initial={{ opacity: 0, scale: 0.94, y: 12 }}
     animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -518,10 +606,24 @@ const Tile: React.FC<TileProps> = ({ action, onPress, index = 0 }) => (
       "py-3.5 px-4 rounded-lg text-left",
       "bg-card/40 dark:bg-card/25 border border-border/40 backdrop-blur-md",
       "hover:bg-card/60 dark:hover:bg-card/35 transition-all duration-200",
-      "min-h-[64px] shadow-sm hover:shadow-md"
+      "min-h-[64px] shadow-sm hover:shadow-md relative"
     )}
-    aria-label={action.label}
+    aria-label={notificationCount > 0
+      ? `${action.label}. ${notificationCount} notificaciones pendientes`
+      : action.label}
+    title={notificationCount > 0
+      ? `${action.label}: ${notificationCount} notificaciones pendientes`
+      : action.label}
   >
+    {notificationCount > 0 && (
+      <span
+        className="absolute -right-1.5 -top-1.5 z-10 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-black leading-none text-destructive-foreground shadow-md ring-2 ring-card"
+        aria-hidden="true"
+      >
+        {formatNotificationCount(notificationCount)}
+      </span>
+    )}
+
     {/* Icon badge */}
     <div
       className={cn(

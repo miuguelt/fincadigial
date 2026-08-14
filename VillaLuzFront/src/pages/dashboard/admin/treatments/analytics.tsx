@@ -73,8 +73,8 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
   const healthMetrics = useMemo(() => {
     const dist = healthStats?.health_status_distribution || {};
     const sano = Number(dist['Sano'] || dist['sano'] || 0);
-    const totalStatus = Object.values(dist).reduce((acc: number, val: any) => acc + (Number(val) || 0), 0);
-    const healthRate = totalStatus > 0 ? Math.round((sano / totalStatus) * 100) : 85; // Fallback razonable
+    const totalStatus = (Object.values(dist) as any[]).reduce((acc: number, val: any) => (acc as number) + (Number(val) || 0), 0);
+    const healthRate = (totalStatus as number) > 0 ? Math.round((sano / (totalStatus as number)) * 100) : 85; // Fallback razonable
     
     // Top Diagnóstico
     const topDisease = healthStats?.common_diseases?.[0]?.diagnosis || 'Ninguno registrado';
@@ -113,7 +113,7 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
       try {
         const [year, month] = period.split('-');
         const date = new Date(Number(year), Number(month) - 1);
-        label = date.toLocaleDateString('es-ES', { month: 'short', year: '2-digit' });
+        label = date.toLocaleDateString('es-CO', { month: 'short', year: '2-digit' });
       } catch (_) {}
       
       return { 

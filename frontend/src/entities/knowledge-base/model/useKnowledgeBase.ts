@@ -40,7 +40,7 @@ export function useKnowledgeBase() {
       const data = await kbService.getHatoCalendar();
       setCalendar(data);
     } catch (err: any) {
-      setError(err.message || 'Error al cargar calendario del hato');
+      setError(err.message || 'Error al cargar calendario del ganado');
     } finally {
       setLoading(false);
     }

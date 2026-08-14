@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
-import { Bot, RefreshCw, Zap, AlertTriangle } from "lucide-react";
+import { IconAlertTriangle, IconBolt, IconRefresh, IconRobot } from "@/shared/ui/icons";
 import { apiFetch } from "@/shared/api/apiFetch";
 import { unwrapApi } from "@/shared/api/client";
 import { useQuery } from "@tanstack/react-query";
@@ -122,27 +122,27 @@ export function AIInsightsWidget() {
   }, []);
 
   return (
-    <Card className="border border-border shadow-sm">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between gap-2 flex-wrap">
-          <CardTitle className="text-base font-bold flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-primary/10">
-              <Bot className="h-4 w-4 text-primary" />
+    <Card premium={false} hoverable={false} className="border border-border shadow-sm">
+      <CardHeader className="border-b border-border p-5 sm:p-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <CardTitle className="flex items-center gap-3 text-lg font-bold sm:text-xl">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-700">
+              <IconRobot size="md" />
             </div>
             Asistente IA Ganadero
           </CardTitle>
 
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center lg:w-auto">
             {/* Selector de tipo de análisis */}
-            <div className="flex rounded-lg border border-border overflow-hidden text-xs">
+            <div className="grid w-full grid-cols-3 gap-1 rounded-xl border border-border bg-secondary p-1 sm:w-auto">
               {(Object.keys(ACTION_LABELS) as ActionType[]).map((a) => (
                 <button
                   key={a}
                   onClick={() => handleActionChange(a)}
-                  className={`px-2.5 py-1 font-medium transition-colors ${
+                  className={`min-h-9 rounded-lg px-3 py-2 text-xs font-bold transition-colors ${
                     action === a
                       ? "bg-primary text-primary-foreground"
-                      : "bg-background text-muted-foreground hover:bg-muted"
+                      : "bg-secondary text-secondary-foreground hover:bg-secondary-300"
                   }`}
                 >
                   {ACTION_LABELS[a]}
@@ -154,18 +154,16 @@ export function AIInsightsWidget() {
               variant="ghost"
               onClick={handleRefresh}
               disabled={isFetching}
-              className="h-7 w-7 p-0"
+              className="h-10 w-10 self-end border border-border bg-card p-0 text-foreground hover:bg-secondary sm:self-auto"
               title="Actualizar análisis"
             >
-              <RefreshCw
-                className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`}
-              />
+              <IconRefresh size="sm" className={isFetching ? "animate-spin" : ""} />
             </Button>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="pt-0">
+      <CardContent className="p-5 sm:p-6">
         {/* Estado de carga */}
         {isLoading && (
           <div className="space-y-2 animate-pulse">
@@ -179,7 +177,7 @@ export function AIInsightsWidget() {
         {/* Error */}
         {isError && !isLoading && (
           <div className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-            <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+            <IconAlertTriangle size="sm" className="mt-0.5 shrink-0 text-destructive" />
             <div>
               <p className="text-sm font-medium text-destructive">
                 No se pudo obtener el análisis
@@ -202,7 +200,7 @@ export function AIInsightsWidget() {
         {data && !isLoading && (
           <div className="space-y-3">
             {/* Contenido del insight */}
-            <div className="p-3 rounded-lg bg-muted/40 border border-border/50">
+            <div className="rounded-xl border border-border bg-secondary/60 p-4 sm:p-5">
               <MarkdownText text={data.insight} />
             </div>
 
@@ -212,7 +210,7 @@ export function AIInsightsWidget() {
                 variant="default"
                 className="text-[10px] gap-1 bg-primary/80"
               >
-                <Bot className="h-3 w-3" />
+                <IconRobot size="sm" />
                 {data.model}
               </Badge>
 
@@ -221,7 +219,7 @@ export function AIInsightsWidget() {
                   variant="outline"
                   className="text-[10px] gap-1 text-emerald-600 border-emerald-300"
                 >
-                  <Zap className="h-3 w-3" />
+                  <IconBolt size="sm" />
                   Cacheado
                 </Badge>
               )}

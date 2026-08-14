@@ -450,7 +450,7 @@ export function AnimalImageGallery({
 
               {/* Info del archivo */}
               <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                <p className="text-xs text-white truncate" title={image.filename}>
+                <p className="text-xs text-white fit-clamp" title={image.filename}>
                   {image.filename}
                 </p>
                 <p className="text-xs text-white/70">
@@ -484,7 +484,7 @@ export function AnimalImageGallery({
                 `${(selectedImage.file_size / 1024).toFixed(2)} KB - ${selectedImage.mime_type
                 } - Subida el ${new Date(
                   selectedImage.created_at
-                ).toLocaleDateString('es-ES')}`}
+                ).toLocaleDateString('es-CO')}`}
             </DialogDescription>
           </DialogHeader>
 

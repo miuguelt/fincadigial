@@ -39,7 +39,7 @@ export const buildRecommendationColumns = (
 			<div className="min-w-[180px] max-w-[300px]">
 				<p className="font-semibold">{item.title}</p>
 				<p
-					className="truncate text-xs text-muted-foreground"
+					className="fit-clamp text-xs text-muted-foreground"
 					title={item.recommendation}
 				>
 					{item.recommendation}

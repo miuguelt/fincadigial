@@ -129,7 +129,7 @@ export const GrowthAnomalyMonitor: React.FC = () => {
                         {anomaly.severity}{" "}
                       </Badge>{" "}
                     </div>{" "}
-                    <p className="text-xs text-muted-foreground truncate font-medium mt-0.5">
+                    <p className="text-xs text-muted-foreground fit-clamp font-medium mt-0.5">
                       {" "}
                       {anomaly.message}{" "}
                     </p>{" "}

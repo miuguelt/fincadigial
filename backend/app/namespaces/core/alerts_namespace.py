@@ -2,6 +2,7 @@ from flask_restx import Namespace, Resource, fields
 import flask
 import logging
 from flask_jwt_extended import jwt_required
+from app import db
 from app.models.alerts import AnimalAlertConfig, AnimalAlert, AlertType
 from app.utils.response_handler import APIResponse
 from app.utils.tenant_context import get_current_finca_id
@@ -38,7 +39,7 @@ class AlertConfigList(Resource):
         """Listar configuraciones de alertas"""
         animal_id = flask.request.args.get('animal_id')
         page = flask.request.args.get('page', default=1, type=int) or 1
-        limit = flask.request.args.get('limit', default=50, type=int) or 50
+        limit = min(max(flask.request.args.get('limit', default=50, type=int) or 50, 1), 200)
 
         query = AnimalAlertConfig.query
         if animal_id:
@@ -152,9 +153,9 @@ class AlertList(Resource):
         animal_id = flask.request.args.get('animal_id')
         is_read = flask.request.args.get('is_read')
         page = flask.request.args.get('page', default=1, type=int) or 1
-        limit = flask.request.args.get('limit', default=50, type=int) or 50
+        limit = min(max(flask.request.args.get('limit', default=50, type=int) or 50, 1), 200)
 
-        query = AnimalAlert.query
+        query = AnimalAlert.query.filter(AnimalAlert.superseded_by_id.is_(None))
         if finca_id:
             query = query.filter_by(finca_id=finca_id)
         if animal_id:
@@ -162,7 +163,7 @@ class AlertList(Resource):
         if is_read is not None:
             query = query.filter_by(is_read=is_read.lower() == 'true')
 
-        pagination = query.order_by(AnimalAlert.triggered_at.desc()).paginate(page=page, per_page=int(limit), error_out=False)
+        pagination = query.order_by(AnimalAlert.triggered_at.desc()).paginate(page=page, per_page=limit, error_out=False)
         alerts_data = [a.to_namespace_dict() for a in pagination.items]
         total_items = pagination.total
 
@@ -212,7 +213,7 @@ class AlertList(Resource):
         return APIResponse.paginated_success(
             data=alerts_data,
             page=page,
-            limit=int(limit),
+            limit=limit,
             total_items=total_items,
             message="Alertas obtenidas"
         )
@@ -253,25 +254,58 @@ class AlertsReadAll(Resource):
     @alerts_ns.doc('mark_all_alerts_as_read')
     @jwt_required()
     def post(self):
-        """Marcar todas las alertas como leídas"""
-        animal_id = flask.request.args.get('animal_id')
-        query = AnimalAlert.query.filter_by(is_read=False)
+        """Marcar alertas como leídas con una sola operación por finca."""
+        finca_id = get_current_finca_id()
+        animal_id = flask.request.args.get('animal_id', type=int)
+
+        if not finca_id:
+            return APIResponse.error(
+                "Seleccione una finca antes de marcar sus alertas",
+                status_code=400,
+            )
+
+        query = AnimalAlert.query.filter_by(finca_id=finca_id, is_read=False)
         if animal_id:
             query = query.filter_by(animal_id=animal_id)
 
-        alerts = query.all()
-        for alert in alerts:
-            alert.update(is_read=True)
+        try:
+            updated = query.update(
+                {AnimalAlert.is_read: True},
+                synchronize_session=False,
+            )
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            logging.getLogger(__name__).exception(
+                "No fue posible marcar las alertas de la finca %s", finca_id
+            )
+            return APIResponse.error(
+                "No fue posible marcar las alertas como leídas",
+                status_code=500,
+            )
 
-        return APIResponse.success(None, f"{len(alerts)} alertas marcadas como leídas")
+        return APIResponse.success(
+            {'updated': updated},
+            f"{updated} alertas marcadas como leídas",
+        )
 
 @alerts_ns.route('/evaluate')
 class AlertEvaluate(Resource):
     @alerts_ns.doc('evaluate_alerts')
     @jwt_required()
     def post(self):
-        """Evaluar reglas de alertas manualmente (disparador del motor)"""
-        # Aquí se invocaría al motor de reglas
-        from app.services.alert_engine import AlertEngine
-        results = AlertEngine.evaluate_all()
-        return APIResponse.success(results, "Evaluación de alertas completada")
+        """Encolar la evaluación sin bloquear la petición HTTP."""
+        from app.tasks.alert_tasks import evaluate_all_alerts
+
+        finca_id = get_current_finca_id()
+        if not finca_id:
+            return APIResponse.error(
+                "Seleccione una finca antes de evaluar sus alertas",
+                status_code=400,
+            )
+        task = evaluate_all_alerts.delay(finca_id)
+        return APIResponse.success(
+            {'task_id': task.id, 'status': 'queued'},
+            "Evaluación de alertas encolada",
+            status_code=202,
+        )

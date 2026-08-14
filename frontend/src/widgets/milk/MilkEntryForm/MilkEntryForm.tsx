@@ -14,14 +14,19 @@ import { getTodayColombia } from '@/shared/utils/dateUtils';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/shared/ui/cn';
 
+const optionalNumber = (schema: z.ZodNumber) => z.preprocess(
+  (value) => value === '' || Number.isNaN(value) ? undefined : value,
+  schema.optional(),
+);
+
 const milkEntrySchema = z.object({
   animal_id: z.number().min(1, 'Selecciona un animal'),
   liters: z.number().min(0.1, 'Mínimo 0.1 litros').max(80, 'Máximo 80 litros'),
   milking_session: z.enum(['AM', 'PM', 'Extra']),
-  date: z.string(),
-  fat_percentage: z.number().min(0).max(100).optional().or(z.literal('')),
-  protein_percentage: z.number().min(0).max(100).optional().or(z.literal('')),
-  somatic_cells: z.number().min(0).max(1000000).optional().or(z.literal('')),
+  date: z.string().min(1, 'Selecciona la fecha'),
+  fat_percentage: optionalNumber(z.number().min(0).max(100)),
+  protein_percentage: optionalNumber(z.number().min(0).max(100)),
+  somatic_cells: optionalNumber(z.number().min(0).max(1000000)),
   notes: z.string().max(500).optional(),
 });
 
@@ -89,16 +94,17 @@ export function MilkEntryFormWidget({ onSuccess, defaultDate, onCancel }: MilkEn
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex min-h-full flex-col gap-5" aria-busy={isSubmitting}>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {/* Animal Selector */}
         <div className="space-y-2">
-          <Label htmlFor="animal_id" className="text-sm font-semibold text-gray-700">Animal</Label>
+          <Label htmlFor="animal_id" className="text-sm font-bold">Animal</Label>
           <Select
             value={selectedAnimalId?.toString()}
-            onValueChange={(value) => setValue('animal_id', parseInt(value))}
+            onValueChange={(value) => setValue('animal_id', parseInt(value), { shouldValidate: true })}
+            disabled={loadingAnimals}
           >
-            <SelectTrigger className="h-11 md:h-12 text-base md:text-sm rounded-xl border-gray-200">
+            <SelectTrigger id="animal_id" className="h-12 rounded-xl text-base sm:text-sm" aria-invalid={Boolean(errors.animal_id)}>
               <SelectValue placeholder={loadingAnimals ? 'Cargando...' : 'Seleccionar animal'} />
             </SelectTrigger>
             <SelectContent>
@@ -112,20 +118,24 @@ export function MilkEntryFormWidget({ onSuccess, defaultDate, onCancel }: MilkEn
           {errors.animal_id && (
             <p className="text-xs text-red-500 font-medium mt-0.5">{errors.animal_id.message}</p>
           )}
+          {!loadingAnimals && (animals?.length ?? 0) === 0 && !errors.animal_id && (
+            <p className="text-sm text-amber-700 dark:text-amber-300" role="status">No hay vacas vivas disponibles.</p>
+          )}
         </div>
 
         {/* Litros Input */}
         <div className="space-y-2">
-          <Label htmlFor="liters" className="text-sm font-semibold text-gray-700">Cantidad (Litros)</Label>
+          <Label htmlFor="liters" className="text-sm font-bold">Litros ordeñados</Label>
           <Input
             id="liters"
             type="number"
+            inputMode="decimal"
             step="0.1"
             min="0.1"
             max="80"
             {...register('liters', { valueAsNumber: true })}
             placeholder="Ej: 8.5"
-            className="h-11 md:h-12 text-base md:text-sm rounded-xl border-gray-200"
+            className="h-12 rounded-xl text-base sm:text-sm"
           />
           {errors.liters && (
             <p className="text-xs text-red-500 font-medium mt-0.5">{errors.liters.message}</p>
@@ -134,7 +144,7 @@ export function MilkEntryFormWidget({ onSuccess, defaultDate, onCancel }: MilkEn
 
         {/* Sesión de Ordeño Segmented Selector */}
         <div className="space-y-2">
-          <Label className="text-sm font-semibold text-gray-700">Sesión de Ordeño</Label>
+          <Label className="text-sm font-bold">Turno</Label>
           <div className="grid grid-cols-3 gap-2">
             {[
               { value: 'AM', label: 'Mañana (AM)' },
@@ -145,11 +155,12 @@ export function MilkEntryFormWidget({ onSuccess, defaultDate, onCancel }: MilkEn
                 key={session.value}
                 type="button"
                 onClick={() => setValue('milking_session', session.value as any)}
+                aria-pressed={watch('milking_session') === session.value}
                 className={cn(
-                  "py-3 px-2 rounded-xl text-xs md:text-sm font-bold border-2 transition-all duration-200 active:scale-95 select-none outline-none",
+                  'min-h-12 rounded-xl border-2 px-1.5 py-2 text-xs font-bold outline-none transition-all duration-200 active:scale-95 sm:text-sm',
                   watch('milking_session') === session.value
-                    ? "bg-emerald-50 border-emerald-600 text-emerald-800 shadow-sm"
-                    : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+                    ? 'border-blue-700 bg-blue-50 text-blue-900 shadow-sm dark:bg-blue-950/50 dark:text-blue-100'
+                    : 'border-border bg-card text-foreground hover:bg-muted'
                 )}
               >
                 {session.label}
@@ -160,22 +171,25 @@ export function MilkEntryFormWidget({ onSuccess, defaultDate, onCancel }: MilkEn
 
         {/* Fecha Input */}
         <div className="space-y-2">
-          <Label htmlFor="date" className="text-sm font-semibold text-gray-700">Fecha de Registro</Label>
+          <Label htmlFor="date" className="text-sm font-bold">Fecha</Label>
           <Input 
             id="date" 
             type="date" 
+            max={getTodayColombia()}
             {...register('date')} 
-            className="h-11 md:h-12 text-base md:text-sm rounded-xl border-gray-200"
+            className="h-12 rounded-xl text-base sm:text-sm"
           />
+          {errors.date && <p className="text-xs font-medium text-red-500">{errors.date.message}</p>}
         </div>
       </div>
 
-      <div className="border-t border-gray-100 my-4 pt-4">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Parámetros de Calidad (Opcional)</p>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <details className="rounded-xl border border-border bg-muted/30 open:bg-card">
+        <summary className="flex min-h-12 cursor-pointer items-center px-3 py-2 text-sm font-bold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+          Agregar datos de calidad (opcional)
+        </summary>
+        <div className="grid grid-cols-1 gap-4 border-t border-border p-3 sm:grid-cols-3">
           <div className="space-y-2">
-            <Label htmlFor="fat_percentage" className="text-xs font-semibold text-gray-600">% Grasa</Label>
+            <Label htmlFor="fat_percentage" className="text-sm font-semibold">Grasa (%)</Label>
             <Input
               id="fat_percentage"
               type="number"
@@ -184,12 +198,12 @@ export function MilkEntryFormWidget({ onSuccess, defaultDate, onCancel }: MilkEn
               max="100"
               {...register('fat_percentage', { valueAsNumber: true })}
               placeholder="Ej: 3.5"
-              className="h-11 text-base md:text-sm rounded-xl border-gray-200"
+              className="h-12 rounded-xl text-base sm:text-sm"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="protein_percentage" className="text-xs font-semibold text-gray-600">% Proteína</Label>
+            <Label htmlFor="protein_percentage" className="text-sm font-semibold">Proteína (%)</Label>
             <Input
               id="protein_percentage"
               type="number"
@@ -198,12 +212,12 @@ export function MilkEntryFormWidget({ onSuccess, defaultDate, onCancel }: MilkEn
               max="100"
               {...register('protein_percentage', { valueAsNumber: true })}
               placeholder="Ej: 3.2"
-              className="h-11 text-base md:text-sm rounded-xl border-gray-200"
+              className="h-12 rounded-xl text-base sm:text-sm"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="somatic_cells" className="text-xs font-semibold text-gray-600">Cel. Somáticas</Label>
+            <Label htmlFor="somatic_cells" className="text-sm font-semibold">Células somáticas</Label>
             <Input
               id="somatic_cells"
               type="number"
@@ -211,38 +225,39 @@ export function MilkEntryFormWidget({ onSuccess, defaultDate, onCancel }: MilkEn
               max="1000000"
               {...register('somatic_cells', { valueAsNumber: true })}
               placeholder="Ej: 200000"
-              className="h-11 text-base md:text-sm rounded-xl border-gray-200"
+              className="h-12 rounded-xl text-base sm:text-sm"
             />
           </div>
         </div>
-      </div>
+      </details>
 
       <div className="space-y-2">
-        <Label htmlFor="notes" className="text-sm font-semibold text-gray-700">Observaciones</Label>
+        <Label htmlFor="notes" className="text-sm font-bold">Observación (opcional)</Label>
         <Textarea
           id="notes"
           {...register('notes')}
-          placeholder="Notas adicionales sobre la salud del animal o del ordeño..."
+          placeholder="Ej: la leche salió diferente o la vaca estaba inquieta."
           maxLength={500}
-          className="rounded-xl border-gray-200 min-h-[80px]"
+          className="min-h-20 rounded-xl text-base sm:text-sm"
         />
       </div>
 
-      <div className="flex gap-3 pt-3">
+      <div className="sticky bottom-0 z-10 mt-auto grid grid-cols-2 gap-2 border-t border-border bg-card px-3 py-3 -mx-3 sm:-mx-5 sm:px-5">
         {onCancel && (
           <Button 
             type="button" 
             variant="outline" 
-            className="w-1/3 h-12 rounded-xl text-gray-600 active:scale-95 transition-transform" 
+            className="min-h-12 w-full rounded-xl font-bold active:scale-95"
             onClick={onCancel}
+            disabled={isSubmitting}
           >
             Cancelar
           </Button>
         )}
         <Button 
           type="submit" 
-          disabled={isSubmitting} 
-          className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl active:scale-95 transition-transform font-semibold text-base"
+          disabled={isSubmitting || loadingAnimals}
+          className={`min-h-12 w-full rounded-xl bg-blue-700 text-base font-bold text-white hover:bg-blue-800 active:scale-95 ${onCancel ? '' : 'col-span-2'}`}
         >
           {isSubmitting ? (
             <>
@@ -250,7 +265,7 @@ export function MilkEntryFormWidget({ onSuccess, defaultDate, onCancel }: MilkEn
               Guardando...
             </>
           ) : (
-            'Registrar Producción'
+            'Guardar ordeño'
           )}
         </Button>
       </div>

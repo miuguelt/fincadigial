@@ -1,13 +1,18 @@
 import React from "react";
 import { cn } from "@/shared/ui/cn";
+import * as icons from "@/shared/ui/icons";
+
 export type IconSize = "sm" | "md" | "lg" | number;
 const sizeMap: Record<string, number> = { sm: 16, md: 20, lg: 24 };
+
 export interface IconProps extends React.SVGAttributes<SVGElement> {
+  name?: string;
   size?: IconSize;
   strokeWidth?: number;
   "aria-label"?: string;
   "aria-hidden"?: boolean;
 }
+
 export function createIcon(
   TablerIcon: React.ElementType<any>
 ) {
@@ -38,3 +43,11 @@ export function createIcon(
   IconComponent.displayName = "Icon";
   return IconComponent;
 }
+
+export function Icon({ name = "bell", size = "md", className, ...props }: IconProps) {
+  const pascalName = name ? name.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('') : 'Bell';
+  const IconComp = (icons as any)[`Icon${pascalName}`] || (icons as any)[pascalName] || icons.IconBell;
+  return <IconComp size={size} className={className} {...props} />;
+}
+
+export default Icon;

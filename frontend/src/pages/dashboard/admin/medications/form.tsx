@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useForm, FieldError } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import { medicationsService } from '@/entities/medication/api/medications.service';
 
 export type MedicationFormFields = {
@@ -9,7 +10,7 @@ export type MedicationFormFields = {
 
 export default function MedicationForm() {
   const { id } = useParams<{ id?: string }>();
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<MedicationFormFields>();
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export default function MedicationForm() {
       } else {
         await medicationsService.createMedication({ name: data.name });
       }
-      navigate('/admin/medications')
+      goTo('/admin/medications')
     } catch (error: any) {
       const msg = error?.response?.data?.message || error?.message || 'Error al guardar medicamento';
       alert(msg);

@@ -30,6 +30,26 @@ export interface CalendarEvent {
 	animal_record?: string | null;
 	priority?: string | null;
 	description?: string;
+	/** Cantidad real representada por una tarjeta resumida. */
+	count?: number;
+	/** Indica que el evento representa un grupo y no un registro individual. */
+	is_summary?: boolean;
+}
+
+export interface CalendarResponse {
+	events: CalendarEvent[];
+	count: number;
+	total_count: number;
+	counts_by_type: Record<string, number>;
+	counts_by_day: Record<string, number>;
+	range?: { start: string; end: string };
+	alerts?: {
+		mode: "summary" | "details";
+		total: number;
+		loaded: number;
+		truncated: boolean;
+		limit: number;
+	};
 }
 
 export interface EventTypeConfig {

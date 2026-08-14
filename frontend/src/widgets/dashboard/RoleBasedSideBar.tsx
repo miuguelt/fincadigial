@@ -1,9 +1,10 @@
-/* eslint-disable max-lines, max-lines-per-function, complexity */
+ 
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import { cn } from "@/shared/ui/cn";
 import { useAuth } from "@/features/auth/model/useAuth";
 import {
   sidebarItems,
+  filterSidebarItemsByRole,
   type Role as SidebarRole,
 } from "@/widgets/dashboard/sidebarConfig";
 import { Link, useLocation } from "react-router-dom";
@@ -127,21 +128,12 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
 
   const filteredCategories = useMemo(() => {
     if (!currentRole) return [];
-
-    const filterItemsByRole = (items: typeof sidebarItems, userRole: SidebarRole): typeof sidebarItems => {
-      return items
-        .filter((item) =>
-          (item.roles as SidebarRole[]).includes(userRole),
-        )
-        .map((item) => ({
-          ...item,
-          children: item.children ? filterItemsByRole(item.children, userRole) : undefined,
-        }))
-        .filter((item) => !item.children || item.children.length > 0 || item.path);
-    };
-
-    return filterItemsByRole(sidebarItems, currentRole as SidebarRole);
-  }, [currentRole]);
+    return filterSidebarItemsByRole(
+      sidebarItems,
+      currentRole as SidebarRole,
+      Boolean(user?.is_system_admin),
+    );
+  }, [currentRole, user?.is_system_admin]);
 
   const rolePrefix = currentRole ? getRolePrefix(currentRole) : "/";
 
@@ -244,10 +236,10 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
     if (item.path === "user-approval" && pendingMemberships > 0) {
       return { count: pendingMemberships, color: 'bg-destructive' };
     }
-    if (item.title === "Salud del Ganado" && sickAnimalsCount > 0) {
+    if (item.title === "Enfermedades y alertas" && sickAnimalsCount > 0) {
       return { count: sickAnimalsCount, color: 'bg-amber-500' };
     }
-    if (item.title === "Cría y Reproducción" && upcomingBirthsCount > 0) {
+    if (item.title === "Cría y reproducción" && upcomingBirthsCount > 0) {
       return { count: upcomingBirthsCount, color: 'bg-emerald-500' };
     }
     if (item.badge === "farmNotificationsCount" && farmPending > 0) {

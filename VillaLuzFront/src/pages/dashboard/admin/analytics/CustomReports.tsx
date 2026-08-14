@@ -704,7 +704,7 @@ const CustomReports: React.FC = () => {
               </div>
               <div className="text-right text-xs text-blue-200 md:border-l md:border-white/20 md:pl-6">
                 <p>Generado por: <span className="font-semibold text-white">{metadata.user || 'Usuario'}</span></p>
-                <p className="mt-1">Fecha: <span className="font-semibold text-white">{new Date(metadata.generated_at).toLocaleString()}</span></p>
+                <p className="mt-1">Fecha: <span className="font-semibold text-white">{new Date(metadata.generated_at).toLocaleString('es-CO')}</span></p>
               </div>
             </div>
 

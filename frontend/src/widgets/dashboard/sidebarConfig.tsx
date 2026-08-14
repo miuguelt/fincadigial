@@ -1,26 +1,30 @@
 import { ReactNode } from "react";
 import {
   IconCow,
-  IconMap2,
-  IconCirclePlus,
-  IconHeart,
-  IconWheat,
+  IconCalf,
+  IconFence,
+  IconClipboardCheck,
+  IconGrain,
   IconStethoscope,
-  IconChartBar,
+  IconVirus,
+  IconFirstAidKit,
+  IconReportAnalytics,
+  IconChartHistogram,
+  IconFileText,
   IconUserCircle,
-  IconClockCheck,
+  IconClipboardList,
+  IconBuildingStore,
+  IconLifebuoy,
+  IconUserCheck,
   IconSettings2,
   IconUsersGroup,
-  IconIdBadge2,
+  IconShieldLock,
   IconTool,
   IconAdjustmentsHorizontal,
-  IconAlertTriangle as IconHealthAlert,
-  IconShieldCheck as IconHealthCheck,
-  IconFileText,
-  IconClipboardList,
-  IconShoppingBag,
   IconWorld,
+  IconBuilding,
 } from "@/shared/ui/icons";
+import { roleCan, type RbacAction } from "@/shared/lib/rbac";
 
 export type Role =
   | "Administrador"
@@ -41,12 +45,20 @@ export interface SidebarItemConfig {
   activePaths?: string[];
   requiresOnline?: boolean;
   isBottom?: boolean; // Para identificar items que van al fondo
+  systemAdminOnly?: boolean;
+  permission?: {
+    entity: string;
+    action?: RbacAction;
+  };
 }
 
 const AllRoles: Role[] = ["Administrador", "Propietario", "Capataz", "Instructor", "Veterinario", "Aprendiz", "Operario"];
 const AdminRoles: Role[] = ["Administrador", "Propietario", "Capataz", "Instructor"];
 const TechnicalRoles: Role[] = ["Administrador", "Propietario", "Capataz", "Instructor", "Veterinario"];
-const AdminAndInstructorRoles: Role[] = ["Administrador", "Propietario", "Capataz", "Instructor"];
+// Solo Administrador/Propietario: la matriz RBAC del backend deniega /users al resto.
+const UserManagerRoles: Role[] = ["Administrador", "Propietario"];
+// Ajustes de datos de la finca: requieren lectura de inventario/operación (no la tiene Instructor).
+const FarmDataRoles: Role[] = ["Administrador", "Propietario", "Capataz"];
 
 export const sidebarItems: SidebarItemConfig[] = [
   {
@@ -55,96 +67,113 @@ export const sidebarItems: SidebarItemConfig[] = [
     roles: AllRoles,
     children: [
       {
-        title: "Mis Potreros",
-        icon: <IconMap2 size={20} />,
+        title: "Potreros",
+        icon: <IconFence size={20} />,
         path: "fields",
         activePaths: ["fields"],
         roles: AllRoles,
+        permission: { entity: "fields" },
       },
       {
-        title: "Animales por Potrero",
+        title: "Ganado",
         icon: <IconCow size={20} />,
         path: "animals",
         activePaths: ["animals", "fields", "animal-fields"],
         roles: AllRoles,
+        permission: { entity: "animals" },
       },
       {
-        title: "Registrar Animal",
-        icon: <IconCirclePlus size={20} />,
+        title: "Trabajo de hoy",
+        icon: <IconClipboardCheck size={20} />,
         path: "controls",
         activePaths: ["milk-production", "growth", "animal-fields"],
         roles: AllRoles,
+        permission: { entity: "controls" },
       },
       {
-        title: "Cría y Reproducción",
-        icon: <IconHeart size={20} />,
+        title: "Cría y reproducción",
+        icon: <IconCalf size={20} />,
         path: "reproduction",
         activePaths: ["reproduction/fertility", "reproduction/sire-performance", "genetic-improvements"],
         roles: AdminRoles,
+        permission: { entity: "animals" },
       },
       {
-        title: "Alimentación",
-        icon: <IconWheat size={20} />,
+        title: "Alimentación y forrajes",
+        icon: <IconGrain size={20} />,
         path: "food-types",
         roles: AllRoles,
+        permission: { entity: "food_types" },
       },
     ],
   },
   {
-    title: "Salud del Ganado",
+    title: "Sanidad animal",
     icon: <IconStethoscope size={24} />,
     roles: TechnicalRoles,
     children: [
       {
-        title: "Salud del Ganado",
-        icon: <IconHealthAlert size={20} />,
+        title: "Enfermedades y alertas",
+        icon: <IconVirus size={20} />,
         path: "disease-animals",
         activePaths: ["diseases", "alerts"],
         roles: TechnicalRoles,
+        permission: { entity: "animal-diseases" },
       },
       {
-        title: "Tratamientos e Insumos",
-        icon: <IconHealthCheck size={20} />,
+        title: "Tratamientos e insumos",
+        icon: <IconFirstAidKit size={20} />,
         path: "treatments",
         activePaths: ["treatments/analytics", "treatment_medications", "treatment_vaccines", "vaccinations", "inventory", "medications", "vaccines", "route_administration"],
         roles: TechnicalRoles,
+        permission: { entity: "treatments" },
       },
     ],
   },
   {
     title: "Informes",
-    icon: <IconChartBar size={24} />,
+    icon: <IconReportAnalytics size={24} />,
     roles: TechnicalRoles,
     children: [
       {
-        title: "Analítica",
-        icon: <IconChartBar size={20} />,
-        path: "analytics/executive",
-        activePaths: ["analytics/multi-finca", "financial"],
-        roles: TechnicalRoles,
+        title: "Vista Panorámica",
+        icon: <IconWorld size={20} />,
+        path: "analytics/multi-finca",
+        activePaths: ["analytics/multi-finca"],
+        roles: ["Administrador", "Propietario"],
+        permission: { entity: "animals" },
       },
       {
-        title: "Informes y Exportación",
+        title: "Indicadores de la finca",
+        icon: <IconChartHistogram size={20} />,
+        path: "analytics/executive",
+        activePaths: ["financial"],
+        roles: TechnicalRoles,
+        permission: { entity: "animals" },
+      },
+      {
+        title: "Informes y exportación",
         icon: <IconFileText size={20} />,
         path: "reports",
         activePaths: ["regulatory-reports", "analytics/reports", "analytics/ica-compliance"],
         roles: TechnicalRoles,
+        permission: { entity: "animals" },
       },
     ],
   },
   {
-    title: "Mi Espacio",
+    title: "Mi espacio",
     icon: <IconUserCircle size={24} />,
     roles: AllRoles,
     children: [
       {
-        title: "Mi Panel",
+        title: "Mi panel",
         icon: <IconUserCircle size={20} />,
         path: "/campesino",
         roles: AllRoles,
       },
       {
-        title: "Mi Registro",
+        title: "Mi registro diario",
         icon: <IconClipboardList size={20} />,
         path: "/campesino/registro-operativo",
         activePaths: ["/campesino/crop-plots", "/campesino/water-sources", "/campesino/ganaderia", "/campesino/health"],
@@ -152,46 +181,78 @@ export const sidebarItems: SidebarItemConfig[] = [
         roles: AllRoles,
       },
       {
-        title: "Mercado Campesino",
-        icon: <IconShoppingBag size={20} />,
+        title: "Mercado campesino",
+        icon: <IconBuildingStore size={20} />,
         path: "/campesino/market-offers",
         requiresOnline: true,
         roles: AllRoles,
       },
       {
-        title: "Ayuda Técnica",
-        icon: <IconWorld size={20} />,
+        title: "Asistencia técnica",
+        icon: <IconLifebuoy size={20} />,
         path: "/campesino/technical-assistance",
         activePaths: ["/campesino/weather", "/campesino/climate-alerts"],
         requiresOnline: true,
-        roles: AllRoles,
+        roles: ["Administrador", "Propietario", "Capataz", "Instructor", "Aprendiz", "Operario"],
+      },
+      {
+        title: "Solicitudes de asistencia",
+        icon: <IconStethoscope size={20} />,
+        path: "/veterinario/dashboard?focus=assistance",
+        activePaths: ["/veterinario/dashboard"],
+        requiresOnline: true,
+        roles: ["Veterinario"],
       },
     ],
   },
   {
-    title: "Por Aprobar",
-    icon: <IconClockCheck size={24} />,
+    title: "Solicitudes de ingreso",
+    icon: <IconUserCheck size={24} />,
     path: "user-approval",
-    roles: AdminAndInstructorRoles,
+    roles: UserManagerRoles,
+    permission: { entity: "users" },
+  },
+  {
+    title: "Administración global",
+    icon: <IconWorld size={24} />,
+    roles: ["Administrador"],
+    systemAdminOnly: true,
+    children: [
+      {
+        title: "Usuarios del sistema",
+        icon: <IconUsersGroup size={20} />,
+        path: "users/global",
+        roles: ["Administrador"],
+        systemAdminOnly: true,
+      },
+      {
+        title: "Todas las fincas",
+        icon: <IconBuilding size={20} />,
+        path: "fincas",
+        roles: ["Administrador"],
+        systemAdminOnly: true,
+      },
+    ],
   },
   {
     title: "Configuración",
     icon: <IconSettings2 size={24} />,
-    roles: AdminRoles,
+    roles: TechnicalRoles,
     isBottom: true,
     children: [
       {
-        title: "Personas de la Finca",
+        title: "Personal de la finca",
         icon: <IconUsersGroup size={20} />,
         path: "users",
-        roles: AdminRoles,
+        roles: UserManagerRoles,
+        permission: { entity: "users" },
       },
       {
-        title: "Mi Finca y Permisos",
-        icon: <IconIdBadge2 size={20} />,
+        title: "Finca y permisos",
+        icon: <IconShieldLock size={20} />,
         path: "membership",
-        activePaths: ["fincas", "users/global"],
-        roles: AdminRoles,
+        roles: UserManagerRoles,
+        permission: { entity: "users" },
       },
       {
         title: "Herramientas",
@@ -199,14 +260,39 @@ export const sidebarItems: SidebarItemConfig[] = [
         path: "tasks",
         activePaths: ["scanner", "chat", "tools/frame-calculator", "tools/ration-calculator", "alerts/configs"],
         roles: TechnicalRoles,
+        permission: { entity: "tasks" },
       },
       {
-        title: "Ajustes del Sistema",
+        title: "Ajustes del sistema",
         icon: <IconAdjustmentsHorizontal size={20} />,
         path: "data-overview",
         activePaths: ["operational", "activity-log", "diagnostics", "base_model", "breeds", "species"],
-        roles: AdminRoles,
+        roles: FarmDataRoles,
       },
     ],
   },
 ];
+
+/**
+ * Filtra el árbol de navegación con la misma matriz RBAC que usa el frontend
+ * para las rutas. El backend continúa siendo la autoridad final.
+ */
+export function filterSidebarItemsByRole(
+  items: SidebarItemConfig[],
+  userRole: Role,
+  isSystemAdmin = false,
+): SidebarItemConfig[] {
+  return items
+    .filter((item) => (
+      item.roles.includes(userRole)
+      && (!item.systemAdminOnly || isSystemAdmin)
+      && (!item.permission || roleCan(userRole, item.permission.entity, item.permission.action ?? "read"))
+    ))
+    .map((item) => ({
+      ...item,
+      children: item.children
+        ? filterSidebarItemsByRole(item.children, userRole, isSystemAdmin)
+        : undefined,
+    }))
+    .filter((item) => !item.children || item.children.length > 0 || Boolean(item.path));
+}

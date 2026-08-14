@@ -1,211 +1,112 @@
-import React from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
+import type { LucideIcon } from 'lucide-react';
 import {
+  Activity,
   Bell,
-  Shield,
-  Palette,
-  Globe,
-  Zap,
   ChevronRight,
-  User as UserIcon,
-  Mail,
-  Lock,
-} from "lucide-react";
-import { cn } from "@/shared/ui/cn.ts";
-import { Badge } from "@/shared/ui/badge";
+  DatabaseZap,
+  ShieldCheck,
+  UserRoundCog,
+  Users,
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Button } from '@/shared/ui/button';
+import ThemeSelector from '@/widgets/dashboard/ThemeSelector';
 
-const SettingsTab: React.FC = () => {
-  const settingsGroups = [
-    {
-      title: "Cuenta y Perfil",
-      items: [
-        {
-          icon: UserIcon,
-          label: "Información Personal",
-          desc: "Nombre, avatar y datos básicos",
-          action: "Editar",
-        },
-        {
-          icon: Mail,
-          label: "Correo y Contacto",
-          desc: "miguel@villaluz.com",
-          action: "Cambiar",
-        },
-        {
-          icon: Lock,
-          label: "Seguridad",
-          desc: "Contraseña y 2FA activado",
-          action: "Gestionar",
-          badge: "Seguro",
-        },
-      ],
-    },
-    {
-      title: "Preferencias del Sistema",
-      items: [
-        {
-          icon: Bell,
-          label: "Notificaciones",
-          desc: "Alertas de salud y sistema",
-          action: "Configurar",
-        },
-        {
-          icon: Palette,
-          label: "Apariencia",
-          desc: "Modo oscuro y temas",
-          action: "Cambiar",
-        },
-        {
-          icon: Globe,
-          label: "Idioma y Región",
-          desc: "Español (Colombia)",
-          action: "Ajustar",
-        },
-      ],
-    },
-    {
-      title: "Integraciones",
-      items: [
-        {
-          icon: Zap,
-          label: "Dispositivos IoT",
-          desc: "Collares y sensores",
-          action: "Vincular",
-          badge: "2 Activos",
-        },
-      ],
-    },
-  ];
+interface SettingsDestination {
+  label: string;
+  description: string;
+  path: string;
+  icon: LucideIcon;
+}
+
+const destinations: SettingsDestination[] = [
+  {
+    label: 'Mi perfil',
+    description: 'Actualiza tus datos personales, contacto y fotografía.',
+    path: '/profile',
+    icon: UserRoundCog,
+  },
+  {
+    label: 'Personal de la finca',
+    description: 'Administra usuarios que pertenecen a la finca activa.',
+    path: '/admin/users',
+    icon: Users,
+  },
+  {
+    label: 'Finca y permisos',
+    description: 'Revisa membresías, roles y solicitudes de acceso.',
+    path: '/admin/membership',
+    icon: ShieldCheck,
+  },
+  {
+    label: 'Alertas y notificaciones',
+    description: 'Consulta avisos reales y marca como leídos los atendidos.',
+    path: '/admin/alerts',
+    icon: Bell,
+  },
+  {
+    label: 'Registro de actividad',
+    description: 'Audita las acciones recientes realizadas en la finca.',
+    path: '/admin/activity-log',
+    icon: Activity,
+  },
+  {
+    label: 'Diagnóstico del sistema',
+    description: 'Comprueba base de datos, caché, tareas y recursos del servidor.',
+    path: '/admin/diagnostics',
+    icon: DatabaseZap,
+  },
+];
+
+const SettingsTab = () => {
+  const navigate = useNavigate();
 
   return (
-    <div className="space-y-8 pb-10">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          {settingsGroups.map((group) => (
-            <div key={group.title} className="space-y-4">
-              <h3 className="text-sm font-semibold text-sm text-muted-foreground/60 px-2">
-                {group.title}
-              </h3>
-              <Card className="border-none shadow-xl shadow-primary/5 bg-card/40 backdrop-blur-xl rounded-xl overflow-hidden">
-                <CardContent className="p-2">
-                  {group.items.map((item, idx) => (
-                    <div
-                      key={item.label}
-                      className={cn(
-                        "flex items-center justify-between p-4 hover:bg-primary/5 transition-all duration-300 group cursor-pointer",
-                        idx !== group.items.length - 1 &&
-                          "border-b border-border/30",
-                      )}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                          <item.icon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-foreground group-hover:text-primary transition-colors">
-                              {item.label}
-                            </span>
-                            {item.badge && (
-                              <Badge
-                                variant="secondary"
-                                className="text-[9px] h-4 bg-primary/10 text-primary border-none"
-                              >
-                                {item.badge}
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {item.desc}
-                          </div>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        {item.action}
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Button>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
-          ))}
-        </div>
+    <div className="space-y-6 pb-10">
+      <div>
+        <h2 className="text-xl font-bold text-foreground">Ajustes y administración</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Accesos directos a configuraciones existentes y datos reales del sistema.
+        </p>
+      </div>
 
-        <div className="space-y-6">
-          <h3 className="text-sm font-semibold text-sm text-muted-foreground/60 px-2">
-            Actividad Reciente
-          </h3>
-          <Card className="border-none shadow-xl shadow-primary/5 bg-card/40 backdrop-blur-xl rounded-xl h-fit">
-            <CardHeader>
-              <CardTitle className="text-lg font-black tracking-tight">
-                Historial
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-[2px] before:bg-muted">
-                {[
-                  {
-                    time: "Ahora",
-                    title: "Cambio de tema",
-                    desc: "Se activó el modo oscuro",
-                    icon: Palette,
-                    color: "text-purple-500",
-                  },
-                  {
-                    time: "10:30 AM",
-                    title: "Login exitoso",
-                    desc: "Desde Bogotá, CO",
-                    icon: Shield,
-                    color: "text-emerald-500",
-                  },
-                  {
-                    time: "Ayer",
-                    title: "Update",
-                    desc: "Sistema v4.2.0",
-                    icon: Zap,
-                    color: "text-warning",
-                  },
-                ].map((act, i) => (
-                  <div key={i} className="relative pl-10 group">
-                    <div
-                      className={cn(
-                        "absolute left-0 top-0 h-10 w-10 rounded-lg bg-card border-4 border-muted flex items-center justify-center z-10 transition-transform group-hover:scale-110 shadow-sm",
-                        act.color,
-                      )}
-                    >
-                      <act.icon className="h-4 w-4" />
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs font-black text-foreground">
-                          {act.title}
-                        </span>
-                        <span className="text-[10px] font-medium text-muted-foreground">
-                          {act.time}
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground leading-tight">
-                        {act.desc}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+      <Card>
+        <CardHeader className="flex-row items-center justify-between gap-4 space-y-0">
+          <div>
+            <CardTitle className="text-base">Apariencia</CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">Selecciona el tema que prefieras.</p>
+          </div>
+          <ThemeSelector />
+        </CardHeader>
+      </Card>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {destinations.map((item) => (
+          <Card key={item.path} className="h-full">
+            <CardContent className="flex h-full flex-col p-5">
+              <div className="flex items-start gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <item.icon className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-foreground">{item.label}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.description}</p>
+                </div>
               </div>
               <Button
+                type="button"
                 variant="outline"
-                className="w-full mt-8 rounded-lg border-dashed border-2 hover:bg-muted/50 border-border transition-all"
+                className="mt-5 w-full justify-between"
+                aria-label={`Abrir ${item.label}`}
+                onClick={() => navigate(item.path)}
               >
-                Ver todo el historial
+                Abrir
+                <ChevronRight className="h-4 w-4" aria-hidden="true" />
               </Button>
             </CardContent>
           </Card>
-        </div>
+        ))}
       </div>
     </div>
   );

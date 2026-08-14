@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   MoreVertical,
   Activity,
@@ -466,7 +466,7 @@ export const UserActionsMenu: React.FC<UserActionsMenuProps> = ({ user }) => {
               <span className="font-medium text-foreground">Diagnóstico:</span>
               <span className="text-muted-foreground">
                 {item.diagnosis_date
-                  ? new Date(item.diagnosis_date).toLocaleDateString("es-ES")
+                  ? new Date(item.diagnosis_date).toLocaleDateString("es-CO")
                   : "-"}
               </span>
             </div>
@@ -509,7 +509,7 @@ export const UserActionsMenu: React.FC<UserActionsMenuProps> = ({ user }) => {
                 {item.application_date || item.vaccination_date
                   ? new Date(
                       item.application_date || item.vaccination_date,
-                    ).toLocaleDateString("es-ES")
+                    ).toLocaleDateString("es-CO")
                   : "-"}
               </span>
             </div>

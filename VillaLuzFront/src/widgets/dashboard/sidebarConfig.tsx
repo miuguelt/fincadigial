@@ -49,6 +49,8 @@ const AllRoles: Role[] = ["Administrador", "Propietario", "Capataz", "Instructor
 const AdminRoles: Role[] = ["Administrador", "Propietario", "Capataz"];
 const TechnicalRoles: Role[] = ["Administrador", "Propietario", "Capataz", "Instructor", "Veterinario"];
 const AdminAndInstructorRoles: Role[] = ["Administrador", "Propietario", "Capataz", "Instructor"];
+const FieldRoles: Role[] = ["Administrador", "Propietario", "Capataz", "Instructor", "Operario"];
+const AnimalRoles: Role[] = ["Administrador", "Propietario", "Capataz", "Instructor", "Operario", "Aprendiz"];
 
 export const sidebarItems: SidebarItemConfig[] = [
   {
@@ -88,14 +90,14 @@ export const sidebarItems: SidebarItemConfig[] = [
         icon: <IconMap2 size={20} />,
         path: "fields",
         activePaths: ["fields"],
-        roles: AllRoles,
+        roles: FieldRoles,
       },
       {
         title: "Animales por Potrero",
         icon: <IconCow size={20} />,
         path: "animals",
         activePaths: ["animals", "fields", "animal-fields"],
-        roles: AllRoles,
+        roles: AnimalRoles,
       },
       {
         title: "Registrar Animal",

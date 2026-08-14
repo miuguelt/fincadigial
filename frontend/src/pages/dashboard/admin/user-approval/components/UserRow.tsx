@@ -89,7 +89,7 @@ export function UserRow({
 						</div>
 					)}
 					<div className="flex flex-col min-w-0">
-						<span className="font-bold text-foreground truncate">
+						<span className="font-bold text-foreground fit-clamp">
 							{user.fullname}
 						</span>
 						<div className="flex items-center gap-3 mt-1 flex-wrap">

@@ -73,8 +73,10 @@ powershell -File .\start-windows.ps1 -Status
   árbol principal `_projects/villaluz`. Editar el worktree no cambia lo que corre.
 - **Ruido en los logs que NO es causa de arranque:** `redis.exceptions.TimeoutError:
   Timeout reading from socket` y `ConnectionError: Connection closed by server` son
-  reconexiones históricas del EventBus/Celery, acumuladas en logs que nunca se rotan.
-  No los persiga sin antes comparar la **fecha** con la del intento actual.
+  reconexiones históricas del EventBus/Celery. El lifecycle actual archiva cada sesión
+  detenida en `logs/archive/` y escribe la sesión vigente en
+  `logs/current-session.json`. No diagnostique archivos del archivo histórico como si
+  pertenecieran a la ejecución vigente.
 - **El dashboard DevBrain reporta "start finalizó con éxito" por código de salida del
   comando.** Con el gate de §3.5 ese código ya es fiable; antes no lo era.
 
@@ -82,3 +84,8 @@ powershell -File .\start-windows.ps1 -Status
 
 Antes de leer un traceback, compare su timestamp con la hora actual. La mayoría del
 tiempo perdido en este proyecto fue depurar errores de días anteriores.
+
+El monitor autónomo mantiene offsets durables en
+`_infrastructure/devbraind/logs/watchdog_offsets.json`: solo analiza bytes agregados
+desde la última lectura. Borrar ese cursor no limpia los logs; únicamente establece
+una nueva línea base al final de cada archivo existente.

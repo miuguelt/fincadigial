@@ -3,9 +3,30 @@ import { precacheAndRoute, matchPrecache } from 'workbox-precaching';
 import { registerRoute, setCatchHandler } from 'workbox-routing';
 import { CacheFirst, StaleWhileRevalidate, NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
+import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { Queue } from 'workbox-background-sync';
 
 declare const self: ServiceWorkerGlobalScope;
+
+// Workbox cachea cualquier respuesta no opaca si no se restringe: sin esto un
+// 401/403/500 queda guardado y se sigue sirviendo aunque el backend ya responda
+// bien. Solo se cachean respuestas OK.
+const onlySuccessful = () => new CacheableResponsePlugin({ statuses: [200] });
+// Recursos estáticos que pueden llegar como respuesta opaca (CDN / cross-origin).
+const onlySuccessfulOrOpaque = () => new CacheableResponsePlugin({ statuses: [0, 200] });
+
+// Cachés de versiones anteriores que llegaron a guardar errores HTTP (403/500).
+// Se borran una sola vez al activar el SW nuevo; los nombres vigentes son *-v2.
+const POISONED_CACHES = ['master-data-cache', 'pages'];
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    (async () => {
+      const names = await caches.keys();
+      await Promise.all(names.filter((n) => POISONED_CACHES.includes(n)).map((n) => caches.delete(n)));
+    })(),
+  );
+});
 
 // Precache only the shell and critical chunks. Pre-caching every lazy route
 // makes first install download several megabytes on rural networks.
@@ -65,6 +86,7 @@ registerRoute(
   new CacheFirst({
     cacheName: 'images',
     plugins: [
+      onlySuccessfulOrOpaque(),
       new ExpirationPlugin({
         maxEntries: 60,
         maxAgeSeconds: 30 * 24 * 60 * 60,
@@ -81,6 +103,7 @@ registerRoute(
   new CacheFirst({
     cacheName: 'fonts',
     plugins: [
+      onlySuccessfulOrOpaque(),
       new ExpirationPlugin({
         maxEntries: 10,
         maxAgeSeconds: 365 * 24 * 60 * 60,
@@ -94,7 +117,10 @@ registerRoute(
   ({ request }) => request.destination === 'script' || request.destination === 'style',
   new CacheFirst({
     cacheName: 'static-assets',
-    plugins: [new ExpirationPlugin({ maxEntries: 120, maxAgeSeconds: 30 * 24 * 60 * 60 })],
+    plugins: [
+      onlySuccessfulOrOpaque(),
+      new ExpirationPlugin({ maxEntries: 120, maxAgeSeconds: 30 * 24 * 60 * 60 }),
+    ],
   }),
 );
 
@@ -113,8 +139,9 @@ registerRoute(
     url.pathname.includes('/api/v1/route-administrations') ||
     url.pathname.includes('/api/v1/diseases'),
   new StaleWhileRevalidate({
-    cacheName: 'master-data-cache',
+    cacheName: 'master-data-cache-v2',
     plugins: [
+      onlySuccessful(),
       new ExpirationPlugin({
         maxEntries: 150,
         maxAgeSeconds: 24 * 60 * 60,
@@ -129,9 +156,10 @@ registerRoute(
 registerRoute(
   ({ request }) => request.mode === 'navigate',
   new NetworkFirst({
-    cacheName: 'pages',
+    cacheName: 'pages-v2',
     networkTimeoutSeconds: 3,
     plugins: [
+      onlySuccessful(),
       new ExpirationPlugin({
         maxEntries: 10,
         maxAgeSeconds: 24 * 60 * 60,

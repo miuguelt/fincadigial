@@ -14,10 +14,14 @@ def init_sse_bus(app):
     try:
         from ..utils.redis_bus import RedisEventBus, InMemoryEventBus
         redis_client = app.extensions.get('redis')
+        redis_pubsub_client = app.extensions.get('redis_pubsub')
 
-        if redis_client:
-            app.extensions["event_bus"] = RedisEventBus(redis_client)
+        if redis_client and redis_pubsub_client:
+            app.extensions["event_bus"] = RedisEventBus(redis_client, redis_pubsub_client)
             logger.info("SSE Bus: Utilizando Redis (Escalable)")
+        elif redis_client:
+            app.extensions["event_bus"] = RedisEventBus(redis_client, redis_client)
+            logger.info("SSE Bus: Utilizando Redis (cliente compartido)")
         else:
             app.extensions["event_bus"] = InMemoryEventBus()
             if not app.debug:
@@ -57,6 +61,26 @@ def _is_internal_event(payload) -> bool:
         return isinstance(payload, dict) and payload.get('action') == _INVALIDATION_ACTION
     except Exception:
         return False
+
+
+def _event_visible_to_user(payload, user_identity) -> bool:
+    """Keep targeted notifications private while preserving broadcast events."""
+    try:
+        decoded = payload
+        if isinstance(decoded, bytes):
+            decoded = decoded.decode('utf-8')
+        if isinstance(decoded, str):
+            decoded = json.loads(decoded)
+        if not isinstance(decoded, dict):
+            return True
+
+        recipient_id = decoded.get('recipient_id')
+        if recipient_id is None:
+            return True
+        return str(recipient_id) == str(user_identity)
+    except Exception:
+        # Malformed non-targeted coordination events keep the previous behavior.
+        return True
 
 
 def _get_client_ip() -> str:
@@ -208,7 +232,11 @@ def sse_events_handler():
                 while True:
                     try:
                         payload = q.get(timeout=ping_interval)
-                        if payload and not _is_internal_event(payload):
+                        if (
+                            payload
+                            and not _is_internal_event(payload)
+                            and _event_visible_to_user(payload, safe_user_identity)
+                        ):
                             yield f"data: {payload}\n\n"
                             last_ping = time.time()
 

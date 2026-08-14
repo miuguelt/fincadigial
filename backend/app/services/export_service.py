@@ -221,7 +221,9 @@ class ExportService:
     def export_financial_pdf():
         finca_id = get_current_finca_id()
         finca = Finca.query.get(finca_id)
-        txs = apply_tenant_filter(Transaction.query, Transaction).order_by(Transaction.date.desc()).all()
+        txs = apply_tenant_filter(Transaction.query, Transaction).filter(
+            Transaction.is_deleted.is_(False)
+        ).order_by(Transaction.date.desc()).all()
         income = sum([t.amount for t in txs if t.transaction_type == TransactionType.Income])
         expenses = sum([t.amount for t in txs if t.transaction_type == TransactionType.Expense])
 
@@ -231,40 +233,28 @@ class ExportService:
     @staticmethod
     def export_multi_finca_general_pdf(user_id):
         from app.models.user import User
-        from app.models.user_finca import UserFinca
-        from app.models.finca import Finca
-        from app.models.animals import Animals, AnimalStatus
-        from app.models.milk_production import MilkProduction
-        from app.models.financial import Transaction, TransactionType
-        from sqlalchemy import func
 
         user = User.query.get(user_id)
         user_name = user.fullname if user else "Usuario"
 
-        fincas = UserFinca.get_user_fincas(user_id, active_only=True)
-        fincas_data = []
+        # Mismo cálculo que la vista panorámica: un solo origen evita que el
+        # PDF y la pantalla muestren totales distintos.
+        from app.services.finca_kpis import get_user_fincas_report
 
-        for f in fincas:
-            f_id = f['finca_id']
-            finca = Finca.query.get(f_id)
-            if not finca:
-                continue
-
-            total_animals = Animals.query.filter_by(finca_id=f_id, status=AnimalStatus.Vivo).count()
-            total_milk = db.session.query(func.sum(MilkProduction.liters)).filter_by(finca_id=f_id).scalar() or 0.0
-            total_income = db.session.query(func.sum(Transaction.amount)).filter_by(finca_id=f_id, transaction_type=TransactionType.Income).scalar() or 0.0
-            total_expenses = db.session.query(func.sum(Transaction.amount)).filter_by(finca_id=f_id, transaction_type=TransactionType.Expense).scalar() or 0.0
-
-            fincas_data.append({
-                'name': finca.name,
-                'type': finca.type.value if finca.type else 'Educativa',
-                'location': f"{finca.municipality or ''}, {finca.department or ''}".strip(', '),
-                'role': f.get('role', 'Operario'),
-                'total_animals': total_animals,
-                'total_milk': float(total_milk),
-                'total_income': float(total_income),
-                'total_expenses': float(total_expenses)
-            })
+        fincas_data = [
+            {
+                'name': row['finca_name'],
+                'type': row['finca_type'] or 'Sin tipo',
+                'location': f"{row['municipality']}, {row['department']}".strip(', '),
+                'role': row['role'] or 'Sin rol',
+                'total_animals': row['kpis']['total_animals'],
+                'total_milk': row['kpis']['total_milk_liters'],
+                'total_income': row['kpis']['total_income'],
+                'total_expenses': row['kpis']['total_expenses'],
+                'net_balance': row['kpis']['net_balance'],
+            }
+            for row in get_user_fincas_report(user_id)
+        ]
 
         from app.services.export_pdf_helpers import _build_multi_finca_general_pdf
         pdf_bytes = _build_multi_finca_general_pdf(fincas_data, user_name)
@@ -275,10 +265,8 @@ class ExportService:
         from app.models.user import User
         from app.models.user_finca import UserFinca
         from app.models.finca import Finca
-        from app.models.animals import Animals, AnimalStatus, Sex
         from app.models.milk_production import MilkProduction
-        from app.models.financial import Transaction, TransactionType
-        from app.models.fields import Fields
+        from app.models.financial import Transaction
         from sqlalchemy import func
 
         # Validar acceso
@@ -286,30 +274,28 @@ class ExportService:
             return None, "No tiene acceso a esta finca"
 
         finca = Finca.query.get(finca_id)
-        if not finca:
+        if not finca or finca.is_deleted:
             return None, "Finca no encontrada"
 
         user = User.query.get(user_id)
         user_name = user.fullname if user else "Usuario"
 
-        # Compilar estadísticas
-        total_animals = Animals.query.filter_by(finca_id=finca_id, status=AnimalStatus.Vivo).count()
-        total_males = Animals.query.filter_by(finca_id=finca_id, status=AnimalStatus.Vivo, sex=Sex.Macho).count()
-        total_females = Animals.query.filter_by(finca_id=finca_id, status=AnimalStatus.Vivo, sex=Sex.Hembra).count()
+        # Mismos KPIs que la vista panorámica (excluyen filas con soft delete).
+        from app.services.finca_kpis import get_fincas_kpis
+        kpis = get_fincas_kpis([finca_id])[finca_id]
 
-        total_milk = db.session.query(func.sum(MilkProduction.liters)).filter_by(finca_id=finca_id).scalar() or 0.0
-        avg_milk = db.session.query(func.avg(MilkProduction.liters)).filter_by(finca_id=finca_id).scalar() or 0.0
+        # Promedio por registro de ordeño, no promedio diario.
+        avg_milk = db.session.query(func.avg(MilkProduction.liters)).filter(
+            MilkProduction.finca_id == finca_id,
+            MilkProduction.is_deleted.is_(False)
+        ).scalar() or 0.0
 
-        total_income = db.session.query(func.sum(Transaction.amount)).filter_by(finca_id=finca_id, transaction_type=TransactionType.Income).scalar() or 0.0
-        total_expenses = db.session.query(func.sum(Transaction.amount)).filter_by(finca_id=finca_id, transaction_type=TransactionType.Expense).scalar() or 0.0
-
-        total_fields = Fields.query.filter_by(finca_id=finca_id).count()
-        fields = Fields.query.filter_by(finca_id=finca_id).all()
-        total_area = sum([f.area_num for f in fields])
-
-        recent_txs = Transaction.query.filter_by(finca_id=finca_id).order_by(Transaction.date.desc()).limit(5).all()
+        recent_txs = Transaction.query.filter(
+            Transaction.finca_id == finca_id,
+            Transaction.is_deleted.is_(False)
+        ).order_by(Transaction.date.desc()).limit(5).all()
         txs_data = [{
-            'date': t.date.isoformat(),
+            'date': t.date,
             'type': t.transaction_type.value,
             'category': t.category.value,
             'amount': float(t.amount),
@@ -317,15 +303,16 @@ class ExportService:
         } for t in recent_txs]
 
         stats = {
-            'total_animals': total_animals,
-            'total_males': total_males,
-            'total_females': total_females,
-            'total_milk': float(total_milk),
+            'total_animals': kpis['total_animals'],
+            'total_males': kpis['total_animals_males'],
+            'total_females': kpis['total_animals_females'],
+            'total_milk': kpis['total_milk_liters'],
             'avg_milk': float(avg_milk),
-            'total_income': float(total_income),
-            'total_expenses': float(total_expenses),
-            'total_fields': total_fields,
-            'total_area': float(total_area),
+            'total_income': kpis['total_income'],
+            'total_expenses': kpis['total_expenses'],
+            'net_balance': kpis['net_balance'],
+            'total_fields': kpis['total_fields'],
+            'total_area': kpis['total_fields_area'],
             'recent_transactions': txs_data
         }
 

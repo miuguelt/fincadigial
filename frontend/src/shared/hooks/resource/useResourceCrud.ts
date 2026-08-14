@@ -58,8 +58,6 @@ export function useResourceCrud<T extends { id?: number | string }>(
         return created;
       });
       return result === undefined ? null : result;
-    } catch (error) {
-      throw error;
     } finally {
       crudInProgressRef.current = false;
     }
@@ -119,8 +117,6 @@ export function useResourceCrud<T extends { id?: number | string }>(
         return updated;
       });
       return result === undefined ? null : result;
-    } catch (error) {
-      throw error;
     } finally {
       crudInProgressRef.current = false;
     }
@@ -178,8 +174,6 @@ export function useResourceCrud<T extends { id?: number | string }>(
         }
       });
       return result === undefined ? false : result;
-    } catch (err) {
-      throw err;
     } finally {
       crudInProgressRef.current = false;
     }

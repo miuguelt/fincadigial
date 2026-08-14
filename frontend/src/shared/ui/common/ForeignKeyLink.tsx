@@ -105,8 +105,15 @@ export const ForeignKeyLink: React.FC<ForeignKeyLinkProps> = ({
       const result = await service.getById(id);
       setData(result);
     } catch (err: any) {
-      console.error('Error loading entity details:', err);
-      setError(err?.message || 'Error al cargar los detalles');
+      const status = err?.status ?? err?.response?.status;
+      if (status === 404) {
+        // El registro puede haberse eliminado o pertenecer a otra finca: el
+        // mensaje crudo del backend ("<Modelo> no encontrado") no orienta.
+        setError(`No se encontró el registro #${id}. Puede haber sido eliminado o pertenecer a otra finca.`);
+      } else {
+        console.error('Error loading entity details:', err);
+        setError(err?.message || 'Error al cargar los detalles');
+      }
     } finally {
       setLoading(false);
     }
@@ -222,6 +229,7 @@ export const ForeignKeyLink: React.FC<ForeignKeyLinkProps> = ({
           const isUser = titleLower.includes('usuario') || titleLower.includes('instructor') || titleLower.includes('user') || titleLower.includes('aprendiz');
           const isVaccine = titleLower.includes('vacuna') || titleLower.includes('vaccine');
           const isMedication = titleLower.includes('medicamento') || titleLower.includes('medication');
+          const isTreatment = titleLower.includes('tratamiento') || titleLower.includes('treatment');
           const isField = titleLower.includes('potrero') || titleLower.includes('field');
           const isFoodType = titleLower.includes('alimento') || titleLower.includes('food');
           const isBreed = titleLower.includes('raza') || titleLower.includes('breed');
@@ -243,6 +251,8 @@ export const ForeignKeyLink: React.FC<ForeignKeyLinkProps> = ({
             badgeClass = "bg-teal-500/5 text-teal-700 dark:text-teal-300 border-teal-500/20 hover:bg-teal-500/10 hover:border-teal-500/40 hover:shadow-[0_4px_12px_rgba(20,184,166,0.15)] hover:scale-[1.02]";
           } else if (isFoodType) {
             badgeClass = "bg-amber-500/5 text-amber-700 dark:text-amber-300 border-amber-500/20 hover:bg-amber-500/10 hover:border-amber-500/40 hover:shadow-[0_4px_12px_rgba(245,158,11,0.15)] hover:scale-[1.02]";
+          } else if (isTreatment) {
+            badgeClass = "bg-emerald-500/5 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/40 hover:shadow-[0_4px_12px_rgba(16,185,129,0.15)] hover:scale-[1.02]";
           } else if (isBreed || isSpecies) {
             badgeClass = "bg-emerald-500/5 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/40 hover:shadow-[0_4px_12px_rgba(16,185,129,0.15)] hover:scale-[1.02]";
           }
@@ -258,12 +268,13 @@ export const ForeignKeyLink: React.FC<ForeignKeyLinkProps> = ({
               {isUser && <span className="text-xs">👤</span>}
               {isVaccine && <span className="text-xs">💉</span>}
               {isMedication && <span className="text-xs">💊</span>}
+              {isTreatment && <span className="text-xs">🩺</span>}
               {isField && <span className="text-xs">🌱</span>}
               {isFoodType && <span className="text-xs">🌾</span>}
               {isBreed && <span className="text-xs">🧬</span>}
               {isSpecies && <span className="text-xs">🐾</span>}
-              {!isAnimal && !isDisease && !isUser && !isVaccine && !isMedication && !isField && !isFoodType && !isBreed && !isSpecies && showIcon && <ExternalLink className="h-3 w-3 opacity-60" />}
-              <span className="truncate max-w-[120px] font-bold">{label}</span>
+              {!isAnimal && !isDisease && !isUser && !isVaccine && !isMedication && !isTreatment && !isField && !isFoodType && !isBreed && !isSpecies && showIcon && <ExternalLink className="h-3 w-3 opacity-60" />}
+              <span className="fit-clamp max-w-[120px] font-bold">{label}</span>
             </button>
           );
         })()

@@ -198,7 +198,7 @@ export const OfflineStatusBar = React.memo(function OfflineStatusBar() {
 					{/* Textos Principales */}
 					<div className="flex-1 min-w-0">
 						<p className="font-semibold text-sm text-zinc-100">{LABELS[level]}</p>
-						<p className="text-[11px] text-zinc-400 truncate">
+						<p className="text-[11px] text-zinc-400 fit-clamp">
 							{isOnline
 								? peers.length > 0
 									? "La app comparte con equipos cercanos"
@@ -297,7 +297,7 @@ export const OfflineStatusBar = React.memo(function OfflineStatusBar() {
 												<div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
 													{peer.connectionType === "bluetooth" ? <Radio className="w-4 h-4" /> : <Wifi className="w-4 h-4" />}
 												</div>
-												<span className="text-sm text-zinc-200 flex-1 truncate font-medium">{peer.name}</span>
+												<span className="text-sm text-zinc-200 flex-1 fit-clamp font-medium">{peer.name}</span>
 														<span className="text-xs text-emerald-400 font-medium">
 															{peer.isConnected ? "Compartiendo" : "Buscando ruta"}
 														</span>

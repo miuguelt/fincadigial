@@ -608,7 +608,7 @@ export const TreatmentSuppliesModal: React.FC<TreatmentSuppliesModalProps> = ({
                             >
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
                                     <InfoField label="Diagnóstico" value={treatment.diagnosis || '-'} fullWidth />
-                                    <InfoField label="Fecha" value={treatment.treatment_date ? new Date(treatment.treatment_date).toLocaleDateString('es-ES') : '-'} />
+                                    <InfoField label="Fecha" value={treatment.treatment_date ? new Date(treatment.treatment_date).toLocaleDateString('es-CO') : '-'} />
                                     <InfoField
                                         label="Estado"
                                         value={treatment.status || 'Iniciado'}

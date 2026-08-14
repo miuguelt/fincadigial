@@ -7,10 +7,12 @@ import {
 	ProductionStatistics,
 	FilterOptions,
 } from '@/shared/api/generated/swaggerTypes';
+import type { CalendarResponse } from '@/widgets/calendar/model/calendar.types';
 
 // --- Micro-cache in-memory para endpoints analíticos (amortiza ráfagas en 300–1000ms) ---
 const MICROCACHE_TTL_MS = 600; // ventana corta
 const microCache = new Map<string, { ts: number; data: any }>();
+const inFlightRequests = new Map<string, Promise<any>>();
 const stableStringify = (obj: any) => {
 	if (!obj || typeof obj !== 'object') return '';
 	const keys = Object.keys(obj).sort();
@@ -27,16 +29,32 @@ async function getWithMicroCache<T>(path: string, params?: Partial<FilterOptions
 	if (hit && (now - hit.ts) <= MICROCACHE_TTL_MS) {
 		return hit.data as T;
 	}
-	try {
+	const inFlight = inFlightRequests.get(key);
+	if (inFlight) return inFlight as Promise<T>;
+
+	const request = (async () => {
 		const res = await apiFetch({ url: path, method: 'GET', params });
 		const data = unwrapApi<T>(res);
-		microCache.set(key, { ts: now, data });
+		microCache.set(key, { ts: Date.now(), data });
 		return data;
+	})();
+	inFlightRequests.set(key, request);
+	try {
+		return await request;
 	} catch (e) {
 		// En error, limpiar posible entrada obsoleta
 		microCache.delete(key);
 		throw e;
+	} finally {
+		if (inFlightRequests.get(key) === request) inFlightRequests.delete(key);
 	}
+}
+
+export interface GlobalCalendarOptions {
+	fincaId?: number;
+	alertMode?: 'summary' | 'details';
+	alertLimit?: number;
+	onlyAlerts?: boolean;
 }
 
 /**
@@ -100,14 +118,23 @@ class AnalyticsService {
 	}
 
 	/** Obtiene el calendario global de la finca (eventos, tratamientos, vacunas, etc.) */
-	async getGlobalCalendar(startDate?: string, endDate?: string, fincaId?: number): Promise<any> {
+	async getGlobalCalendar(
+		startDate?: string,
+		endDate?: string,
+		fincaOrOptions?: number | GlobalCalendarOptions,
+	): Promise<CalendarResponse> {
 		try {
 			const params: Record<string, any> = {};
 			if (startDate) params.start_date = startDate;
 			if (endDate) params.end_date = endDate;
-			if (fincaId) params.finca_id = fincaId;
-			const res = await apiFetch({ url: `${this.base}/calendar/`, method: 'GET', params });
-			return unwrapApi(res);
+			const options = typeof fincaOrOptions === 'number'
+				? { fincaId: fincaOrOptions }
+				: (fincaOrOptions ?? {});
+			if (options.fincaId) params.finca_id = options.fincaId;
+			if (options.alertMode) params.alert_mode = options.alertMode;
+			if (options.alertLimit) params.alert_limit = options.alertLimit;
+			if (options.onlyAlerts) params.only_alerts = true;
+			return getWithMicroCache<CalendarResponse>(`${this.base}/calendar/`, params);
 		} catch (error) {
 			console.error('Error fetching global calendar:', error);
 			throw error;
@@ -220,7 +247,7 @@ class AnalyticsService {
 		return unwrapApi(res);
 	}
 
-	/** Reporte de cumplimiento ICA para todo el hato */
+	/** Reporte de cumplimiento ICA para todo el ganado */
 	async getHerdICAComplianceReport(): Promise<any> {
 		const res = await apiFetch({ url: `${this.base}/animals/ica-compliance-report`, method: 'GET' });
 		return unwrapApi(res);

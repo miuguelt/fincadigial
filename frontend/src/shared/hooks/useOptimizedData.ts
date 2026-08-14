@@ -258,7 +258,7 @@ export function useOptimizedData<T = any>(
         console.error(`[OptimizedData] Error sincronizando ${resource}:`, err);
       }
     }
-  }, [hasChanges, aggressive, syncIncremental, loadFullData, resource]);
+  }, [hasChanges, aggressive, syncIncremental, loadFullData, onDataUpdated, resource]);
 
   /**
    * Recarga completa (bypass caché)

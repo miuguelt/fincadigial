@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   IconScale,
   IconCalculator,
@@ -243,7 +243,7 @@ export const RationCalculator: React.FC = () => {
                 </p>{" "}
                 <h2 className="text-6xl font-black tracking-tighter tabular-nums">
                   {" "}
-                  {resultKg.toLocaleString("es-ES", {
+                  {resultKg.toLocaleString("es-CO", {
                     maximumFractionDigits: 1,
                   })}{" "}
                   <span className="text-2xl">kg</span>{" "}
@@ -257,7 +257,7 @@ export const RationCalculator: React.FC = () => {
                     Peso Total Lote
                   </p>{" "}
                   <p className="text-lg font-black">
-                    {totalWeight.toLocaleString()} kg
+                    {totalWeight.toLocaleString('es-CO')} kg
                   </p>{" "}
                 </div>{" "}
                 <div className="flex-1 bg-card/10 backdrop-blur-md rounded-lg p-4 border border-white/10">

@@ -158,14 +158,11 @@ const GrowthPage: React.FC = () => {
         render: (val: any) => <span className="font-medium">{val} kg</span>
       },
     ],
-    // @ts-ignore
     formSections: [],
     enableCreateModal: false,
     enableEditModal: false,
     enableDelete: false,
     enableDetailModal: true,
-    // @ts-ignore
-    customDetailContent: (item: AnimalResponse) => <GrowthDetailContent item={item} />,
   };
 
   return (
@@ -173,6 +170,7 @@ const GrowthPage: React.FC = () => {
       config={crudConfig}
       service={animalService}
       initialFormData={initialFormData}
+      customDetailContent={(item) => <GrowthDetailContent item={item} />}
     />
   );
 };

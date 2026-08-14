@@ -69,7 +69,7 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
   const { data: healthStatsRaw, isLoading: loadingStats, error: statsError } = useHealthStatistics();
   const healthStats = healthStatsRaw as any;
 
-  // 1. Calcular Tasa de Salud del Hato usando distribución de estados de salud
+  // 1. Calcular Tasa de Salud del Ganado usando distribución de estados de salud
   const healthMetrics = useMemo(() => {
     const dist = healthStats?.health_status_distribution || {};
     const sano = Number(dist['Sano'] || dist['sano'] || 0);
@@ -113,8 +113,8 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
       try {
         const [year, month] = period.split('-');
         const date = new Date(Number(year), Number(month) - 1);
-        label = date.toLocaleDateString('es-ES', { month: 'short', year: '2-digit' });
-      } catch (_) {}
+        label = date.toLocaleDateString('es-CO', { month: 'short', year: '2-digit' });
+      } catch { /* Keep the original period when it cannot be parsed. */ }
       
       return { 
         period: label, 
@@ -167,7 +167,7 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
       doc.setFontSize(20);
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
-      doc.text("INFORME CLÍNICO Y SANITARIO DEL HATO", 20, 16);
+      doc.text("INFORME CLÍNICO Y SANITARIO DEL GANADO", 20, 16);
 
       doc.setFontSize(9);
       doc.setTextColor(165, 180, 252); // Indigo-300
@@ -198,7 +198,7 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
       const summaryRows = [
         ["Total de Tratamientos Registrados", String(healthStats?.summary?.total_treatments ?? 0)],
         ["Total de Vacunas Administradas", String(healthStats?.summary?.total_vaccinations ?? 0)],
-        ["Índice de Estabilidad de Salud del Hato", `${healthMetrics.healthRate}%`],
+        ["Índice de Estabilidad de Salud del Ganado", `${healthMetrics.healthRate}%`],
         ["Diagnóstico Frecuente Predominante", `${healthMetrics.topDisease} (${healthMetrics.topDiseaseCount} casos)`],
         ["Medicamento Farmacéutico más Utilizado", `${healthMetrics.topMed} (${healthMetrics.topMedCount} aplicaciones)`]
       ];
@@ -433,7 +433,7 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
           </div>
           <div className="min-w-0 flex-1">
             <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground block">Top Diagnóstico</span>
-            <span className="text-sm font-bold text-foreground block truncate" title={healthMetrics.topDisease}>
+            <span className="text-sm font-bold text-foreground block fit-clamp" title={healthMetrics.topDisease}>
               {healthMetrics.topDisease}
             </span>
             <span className="text-[10px] text-muted-foreground block mt-0.5">
@@ -510,7 +510,7 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
           <div className="space-y-2 border-t pt-3">
             {diseasesData.slice(0, 3).map((item: any, idx: number) => (
               <div key={idx} className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-muted-foreground truncate max-w-[150px]">{item.name}</span>
+                <span className="font-semibold text-muted-foreground fit-clamp max-w-[150px]">{item.name}</span>
                 <Badge variant="outline" className="text-[10px] font-bold border-red-200/50 bg-red-50/30 text-red-600">
                   {item.Casos} casos
                 </Badge>

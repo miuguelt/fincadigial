@@ -1,5 +1,6 @@
 ﻿import  { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/shared/ui/card";
+import { useCallback } from 'react';
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Badge } from "@/shared/ui/badge";
@@ -30,7 +31,7 @@ export default function OfflineLearningView() {
   );
   const [activeCategory, setActiveCategory] = useState('Todos');
 
-  const fetchMaterials = async () => {
+  const fetchMaterials = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await offlineLearningService.list();
@@ -45,11 +46,11 @@ export default function OfflineLearningView() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     fetchMaterials();
-  }, [toast]);
+  }, [fetchMaterials]);
 
   const [cachedMap, setCachedMap] = useState<Record<string, boolean>>({});
 

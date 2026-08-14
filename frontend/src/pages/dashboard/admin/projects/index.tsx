@@ -408,7 +408,7 @@ export default function ProjectsPage() {
 										<CardContent className="p-5 flex flex-col gap-4">
 											<div className="flex items-start justify-between gap-3">
 												<div className="min-w-0">
-													<h3 className="font-bold text-foreground truncate">
+													<h3 className="font-bold text-foreground fit-clamp">
 														{project.name}
 													</h3>
 													{project.version && (
@@ -438,7 +438,7 @@ export default function ProjectsPage() {
 												)}
 												{project.start_command && (
 													<div className="flex items-center gap-1.5">
-														<code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded font-mono truncate max-w-full block">
+														<code className="text-[11px] bg-muted/50 px-1.5 py-0.5 rounded font-mono fit-clamp max-w-full block">
 															{project.start_command}
 														</code>
 													</div>

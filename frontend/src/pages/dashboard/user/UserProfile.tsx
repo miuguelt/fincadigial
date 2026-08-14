@@ -29,22 +29,24 @@ import { changePassword } from '@/features/auth/api/auth.service';
 import { User, Mail, Phone, MapPin, UserCircle, Activity, Shield, CheckCircle2, Info, AlertTriangle, ClipboardList, CalendarClock, ExternalLink } from 'lucide-react';
 import { useDerivedActivity, ActivityEntity, ActivityAction, ActivitySeverity, ActivityItem } from '@/features/activity/model/useDerivedActivity';
 import { CollapsibleCard } from '@/shared/ui/common/CollapsibleCard';
+import { ProfessionalCredentialSection } from './components/ProfessionalCredentialSection';
 import { GenericModal } from '@/shared/ui/common/GenericModal';
 import { JoinFincaForm } from '@/features/membership/ui/JoinFincaForm';
+import { useMultiFinca } from '@/features/multi-finca/model/useMultiFinca';
 
 const profileSchema = z.object({
     fullname: z.string().min(3, 'Ingresa al menos 3 caracteres').max(120, 'Nombre demasiado largo'),
-    email: z.string().email('Correo electr¢nico inv lido'),
-    phone: z.string().optional().refine((value) => !value || /^[0-9+()\\-\\s]{7,20}$/.test(value), 'Tel‚fono inv lido'),
-    address: z.string().max(160, 'Direcci¢n demasiado larga').optional(),
+    email: z.string().email('Correo electrónico inválido'),
+    phone: z.string().optional().refine((value) => !value || /^[0-9+()\\-\\s]{7,20}$/.test(value), 'Teléfono inválido'),
+    address: z.string().max(160, 'Dirección demasiado larga').optional(),
 });
 
 const passwordSchema = z
     .object({
-        currentPassword: z.string().min(4, 'Ingresa tu contrasena actual'),
+        currentPassword: z.string().min(4, 'Ingresa tu contraseña actual'),
         newPassword: z
             .string()
-            .min(8, 'La contrasena debe tener al menos 8 caracteres')
+            .min(8, 'La contraseña debe tener al menos 8 caracteres')
             .superRefine((value, ctx) => {
                 const hasUppercase = /[A-Z]/.test(value);
                 const hasLowercase = /[a-z]/.test(value);
@@ -52,7 +54,7 @@ const passwordSchema = z
                 if (!hasUppercase || !hasLowercase) {
                     ctx.addIssue({
                         code: z.ZodIssueCode.custom,
-                        message: 'Debe incluir al menos 1 mayuscula y 1 minuscula.',
+                        message: 'Debe incluir al menos 1 mayúscula y 1 minúscula.',
                     });
                 }
             }),
@@ -62,7 +64,7 @@ const passwordSchema = z
         if (data.newPassword !== data.confirmPassword) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
-                message: 'Las contrasenas no coinciden',
+                message: 'Las contraseñas no coinciden',
                 path: ['confirmPassword'],
             });
         }
@@ -73,7 +75,7 @@ type PasswordFormValues = z.infer<typeof passwordSchema>;
 
 type BubbleVariant = 'success' | 'error' | 'info' | 'warning';
 
-const PASSWORD_POLICY_HELP = 'La nueva contrasena debe tener minimo 8 caracteres e incluir al menos 1 mayuscula y 1 minuscula. Ejemplo: Abcdefgh';
+const PASSWORD_POLICY_HELP = 'La nueva contraseña debe tener mínimo 8 caracteres e incluir al menos 1 mayúscula y 1 minúscula. Ejemplo: Abcdefgh';
 
 const BubbleMessage = ({ message, variant = 'error' }: { message: string; variant?: BubbleVariant }) => {
     const variants: Record<BubbleVariant, { wrapper: string; arrow: string }> = {
@@ -116,10 +118,10 @@ const PasswordLiveRequirements = ({ newPassword, confirmPassword }: { newPasswor
 
     return (
         <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <Item ok={lengthOk} text="Minimo 8 caracteres" />
-            <Item ok={uppercaseOk} text="Incluye 1 mayuscula" />
-            <Item ok={lowercaseOk} text="Incluye 1 minuscula" />
-            <Item ok={matchOk} text="Confirmacion coincide" />
+            <Item ok={lengthOk} text="Mínimo 8 caracteres" />
+            <Item ok={uppercaseOk} text="Incluye 1 mayúscula" />
+            <Item ok={lowercaseOk} text="Incluye 1 minúscula" />
+            <Item ok={matchOk} text="Confirmación coincide" />
         </div>
     );
 };
@@ -128,6 +130,7 @@ const UserProfile = () => {
     const { user, loading: authLoading, refreshUserData, logout } = useAuth();
     const navigate = useNavigate();
     const { showToast } = useToast();
+    const { switchFinca, switching } = useMultiFinca();
     const { animals, loading: animalsLoading } = useAnimals();
     const { geneticImprovements: genetics, loading: geneticsLoading } = useGenetics();
     const { animalFields, loading: animalFieldsLoading } = useAnimalFields();
@@ -203,7 +206,7 @@ const UserProfile = () => {
             payload?.message ||
             payload?.detail ||
             error?.message ||
-            'No se pudo actualizar la contrasena.'
+            'No se pudo actualizar la contraseña.'
         );
     };
 
@@ -282,14 +285,14 @@ const UserProfile = () => {
 
         try {
             const result = await changePassword(values.currentPassword, values.newPassword);
-            const okMessage = result?.message || 'Contrasena actualizada correctamente.';
+            const okMessage = result?.message || 'Contraseña actualizada correctamente.';
 
             if (result?.should_clear_auth) {
-                const msg = result?.message || 'Contrasena actualizada. Por seguridad debes iniciar sesion nuevamente.';
+                const msg = result?.message || 'Contraseña actualizada. Por seguridad debes iniciar sesión nuevamente.';
                 setPasswordStatus({
                     type: 'info',
-                    title: 'Vuelve a iniciar sesion',
-                    message: `${msg} Cerraremos tu sesion en unos segundos para proteger tu cuenta.`,
+                    title: 'Vuelve a iniciar sesión',
+                    message: `${msg} Cerraremos tu sesión en unos segundos para proteger tu cuenta.`,
                 });
                 showToast(msg, 'info', 9000);
                 passwordForm.reset({ currentPassword: '', newPassword: '', confirmPassword: '' });
@@ -323,12 +326,12 @@ const UserProfile = () => {
                 payload?.details?.errors;
 
             const fieldMap: Record<string, keyof PasswordFormValues> = {
-                current_password: 'currentPassword',
-                new_password: 'newPassword',
-                confirm_password: 'confirmPassword',
-                currentPassword: 'currentPassword',
-                newPassword: 'newPassword',
-                confirmPassword: 'confirmPassword',
+                current_password: `currentPassword`,
+                new_password: `newPassword`,
+                confirm_password: `confirmPassword`,
+                currentPassword: `currentPassword`,
+                newPassword: `newPassword`,
+                confirmPassword: `confirmPassword`,
             };
 
             if (errors && typeof errors === 'object') {
@@ -371,16 +374,16 @@ const UserProfile = () => {
                 const isCsrf = normalized.includes('csrf');
                 setPasswordStatus({
                     type: 'error',
-                    title: isCsrf ? 'Sesion expirada' : 'No autorizado',
+                    title: isCsrf ? 'Sesión expirada' : 'No autorizado',
                     message:
                         message ||
                         (isCsrf
-                            ? 'Sesion expirada o CSRF invalido. Recarga la pagina e intenta nuevamente.'
-                            : 'No autorizado. Verifica tu contrasena actual.'),
+                            ? 'Sesión expirada o CSRF inválido. Recarga la página e intenta nuevamente.'
+                            : 'No autorizado. Verifica tu contraseña actual.'),
                 });
-                showToast(message || (isCsrf ? 'Sesion expirada o CSRF invalido. Recarga la pagina e intenta nuevamente.' : 'No autorizado. Verifica tu contrasena actual.'), 'error', 9000);
+                showToast(message || (isCsrf ? 'Sesión expirada o CSRF inválido. Recarga la página e intenta nuevamente.' : 'No autorizado. Verifica tu contraseña actual.'), 'error', 9000);
                 if (!errors && normalized.includes('actual')) {
-                    passwordForm.setError('currentPassword', { message: message || 'Contrasena actual incorrecta.' });
+                    passwordForm.setError('currentPassword', { message: message || 'Contraseña actual incorrecta.' });
                 }
             } else if (status === 403) {
                 setPasswordStatus({
@@ -406,24 +409,24 @@ const UserProfile = () => {
             } else if (!status) {
                 setPasswordStatus({
                     type: 'error',
-                    title: 'Sin conexion',
-                    message: message || 'No se pudo conectar con el servidor. Verifica tu conexion o el proxy.',
+                    title: 'Sin conexión',
+                    message: message || 'No se pudo conectar con el servidor. Verifica tu conexión o el proxy.',
                 });
-                showToast(message || 'No se pudo conectar con el servidor. Verifica tu conexion o el proxy.', 'error', 9000);
+                showToast(message || 'No se pudo conectar con el servidor. Verifica tu conexión o el proxy.', 'error', 9000);
             } else {
                 setPasswordStatus({
                     type: 'error',
                     title: 'No se pudo actualizar',
-                    message: message || 'No se pudo actualizar la contrasena.',
+                    message: message || 'No se pudo actualizar la contraseña.',
                 });
-                showToast(message || 'No se pudo actualizar la contrasena.', 'error', 9000);
+                showToast(message || 'No se pudo actualizar la contraseña.', 'error', 9000);
             }
         } finally {
             setUpdatingPassword(false);
         }
     };
 
-    const loading = authLoading || animalsLoading || geneticsLoading || animalFieldsLoading || animalDiseasesLoading || treatmentsLoading || vaccinationsLoading || controlsLoading;
+    const dataLoading = animalsLoading || geneticsLoading || animalFieldsLoading || animalDiseasesLoading || treatmentsLoading || vaccinationsLoading || controlsLoading;
 
     const userIdentity = String(user?.identification ?? user?.id ?? '');
     const userId = Number(user?.id ?? 0);
@@ -526,7 +529,7 @@ const UserProfile = () => {
             id: genetic?.id,
             animal: getAnimalLabel(genetic?.animal) || genetic?.animal?.code || genetic?.animal?.record || '-',
             type: genetic?.type || genetic?.genetic_event_technique || genetic?.genetic_event_techique || '-',
-            date: genetic?.date ? new Date(genetic.date).toLocaleDateString() : '-',
+            date: genetic?.date ? new Date(genetic.date).toLocaleDateString('es-CO') : '-',
             description: genetic?.description || genetic?.details || '-',
             animalId: getAnimalIdFromRecord(genetic),
             ts: genetic?.date || genetic?.updated_at || genetic?.created_at || null,
@@ -538,8 +541,8 @@ const UserProfile = () => {
             id: field?.id,
             animal: getAnimalLabel(field?.animal) || field?.animal?.code || field?.animal?.record || '-',
             field: field?.field?.name || '-',
-            entryDate: field?.entry_date ? new Date(field.entry_date).toLocaleDateString() : '-',
-            exitDate: field?.exit_date ? new Date(field.exit_date).toLocaleDateString() : '-',
+            entryDate: field?.entry_date ? new Date(field.entry_date).toLocaleDateString('es-CO') : '-',
+            exitDate: field?.exit_date ? new Date(field.exit_date).toLocaleDateString('es-CO') : '-',
             animalId: getAnimalIdFromRecord(field),
             ts: field?.exit_date || field?.entry_date || field?.updated_at || field?.created_at || null,
         }));
@@ -551,7 +554,7 @@ const UserProfile = () => {
             animal: d?.animal_record || animalLabelById.get(getAnimalIdFromRecord(d) ?? -1) || '-',
             disease: d?.disease_name || d?.diseases?.name || d?.disease?.name || '-',
             status: d?.status || '-',
-            date: d?.diagnosis_date ? new Date(d.diagnosis_date).toLocaleDateString() : '-',
+            date: d?.diagnosis_date ? new Date(d.diagnosis_date).toLocaleDateString('es-CO') : '-',
             animalId: getAnimalIdFromRecord(d),
             ts: d?.diagnosis_date || d?.updated_at || d?.created_at || null,
         }));
@@ -561,7 +564,7 @@ const UserProfile = () => {
         .map((t: any) => ({
             id: t?.id,
             animal: animalLabelById.get(getAnimalIdFromRecord(t) ?? -1) || t?.animals?.record || '-',
-            date: t?.treatment_date ? new Date(t.treatment_date).toLocaleDateString() : '-',
+            date: t?.treatment_date ? new Date(t.treatment_date).toLocaleDateString('es-CO') : '-',
             description: t?.description || t?.diagnosis || '-',
             frequency: t?.frequency || '-',
             animalId: getAnimalIdFromRecord(t),
@@ -575,7 +578,7 @@ const UserProfile = () => {
             id: v?.id,
             animal: animalLabelById.get(getAnimalIdFromRecord(v) ?? -1) || v?.animals?.record || '-',
             vaccine: v?.vaccines?.name || v?.vaccine?.name || v?.vaccine_id || '-',
-            date: v?.application_date ? new Date(v.application_date).toLocaleDateString() : '-',
+            date: v?.application_date ? new Date(v.application_date).toLocaleDateString('es-CO') : '-',
             responsible: v?.instructor_id || v?.apprentice_id || '-',
             animalId: getAnimalIdFromRecord(v),
             nextDateRaw: v?.next_dose_date || v?.next_vaccination_date || v?.next_due_date || v?.expiry_date || null,
@@ -587,7 +590,7 @@ const UserProfile = () => {
         .map((c: any) => ({
             id: c?.id,
             animal: animalLabelById.get(getAnimalIdFromRecord(c) ?? -1) || c?.animals?.record || '-',
-            date: c?.checkup_date ? new Date(c.checkup_date).toLocaleDateString() : '-',
+            date: c?.checkup_date ? new Date(c.checkup_date).toLocaleDateString('es-CO') : '-',
             status: c?.health_status || c?.healt_status || '-',
             animalId: getAnimalIdFromRecord(c),
             nextDateRaw: c?.next_control_date || c?.next_checkup_date || null,
@@ -615,13 +618,35 @@ const UserProfile = () => {
 
     const rolePrefix = getRolePrefix(user?.role);
 
+    // En /auth/me cada item de `fincas` es una membresía: el id de la finca es
+    // `finca_id`, mientras que `id` corresponde al registro de membresía.
+    const userMemberships = useMemo(() => {
+        const memberships = (user as any)?.fincas;
+        if (!Array.isArray(memberships)) return [];
+        return memberships
+            .map((membership: any) => {
+                const fincaId = Number(membership?.finca_id ?? membership?.id);
+                return {
+                    key: String(membership?.id ?? fincaId),
+                    fincaId,
+                    name: membership?.finca_name || membership?.name || `Finca #${fincaId}`,
+                    role: membership?.role || 'Sin rol asignado',
+                    isActive: Number(user?.finca_id) === fincaId,
+                };
+            })
+            .filter((membership) => Number.isFinite(membership.fincaId));
+    }, [user]);
+
+    // Las páginas CRUD abren un registro con ?edit=<id> y filtran el listado con
+    // ?search=<texto>. No existe soporte para ?detail= ni ?animal_id=.
     const openCrudDetail = (path: string, id: number | string) => {
         if (!id) return;
-        navigate(`${rolePrefix}/${path}?detail=${id}`);
+        navigate(`${rolePrefix}/${path}?edit=${id}`);
     };
 
     const openCrudList = (path: string, search: string = '') => {
-        navigate(`${rolePrefix}/${path}${search}`);
+        const query = search ? `?search=${encodeURIComponent(search)}` : '';
+        navigate(`${rolePrefix}/${path}${query}`);
     };
 
     const activitySections = ([
@@ -916,7 +941,7 @@ const UserProfile = () => {
     const timelineGroups = useMemo(() => {
         const groups = new Map<string, ActivityEvent[]>();
         const formatDay = (ts: number) =>
-            new Date(ts).toLocaleDateString('es-ES', {
+            new Date(ts).toLocaleDateString('es-CO', {
                 weekday: 'short',
                 year: 'numeric',
                 month: 'short',
@@ -1066,7 +1091,7 @@ const UserProfile = () => {
         activityItems.forEach((item) => {
             const ts = new Date(item.timestamp).getTime();
             const label = Number.isFinite(ts)
-                ? new Date(ts).toLocaleDateString('es-ES', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
+                ? new Date(ts).toLocaleDateString('es-CO', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
                 : 'Sin fecha';
             if (label !== currentLabel) {
                 currentLabel = label;
@@ -1127,8 +1152,10 @@ const UserProfile = () => {
         if (item.links?.crud) return openActivityLink(item.links.crud);
         const crud = entityCrudPath(item.entity);
         if (!crud) return;
-        const animalId = item.animal_id;
-        openCrudList(crud, animalId ? `?animal_id=${animalId}` : '');
+        // El listado CRUD filtra por texto libre: usamos la etiqueta del animal.
+        const animalId = Number(item.animal_id ?? 0);
+        const animalLabel = animalId ? animalLabelById.get(animalId) : undefined;
+        openCrudList(crud, animalLabel && animalLabel !== '-' ? animalLabel : '');
     };
 
     const openActivityAnimal = (item: ActivityItem) => {
@@ -1137,7 +1164,7 @@ const UserProfile = () => {
         if (animalId) openCrudDetail('animals', animalId);
     };
 
-    if (loading) {
+    if (authLoading) {
         return (
             <div className="flex justify-center items-center min-h-[60vh]">
                 <ClimbingBoxLoader color="#16a34a" size={30} />
@@ -1154,7 +1181,7 @@ const UserProfile = () => {
     }
 
     return (
-        <div className="h-full overflow-auto p-4 md:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500" tabIndex={0}>
+        <div className="min-h-full p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8 overflow-x-hidden animate-in fade-in duration-500" tabIndex={0}>
             <header className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-success/10 rounded-full">
@@ -1187,9 +1214,9 @@ const UserProfile = () => {
                         </div>
                         <div className="space-y-1 border-t pt-3">
                             <p className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1">
-                                <Mail className="w-3 h-3" /> Email
+                                <Mail className="w-3 h-3" /> Correo electrónico
                             </p>
-                            <p className="font-medium truncate">{user.email}</p>
+                            <p className="font-medium fit-clamp">{user.email}</p>
                         </div>
                         {user.phone && (
                             <div className="space-y-1 border-t pt-3">
@@ -1209,6 +1236,13 @@ const UserProfile = () => {
                         )}
                     </div>
                 </CollapsibleCard>
+
+                {/* La acreditación solo aplica al rol que firma diagnósticos y
+                    tratamientos; pedir matrícula a los demás roles recolectaría
+                    datos personales sin finalidad. */}
+                {user.role === 'Veterinario' && (
+                    <ProfessionalCredentialSection className="lg:col-span-3" />
+                )}
 
                 <CollapsibleCard
                     title="Tu Actividad"
@@ -1257,10 +1291,10 @@ const UserProfile = () => {
                                         <CalendarClock className="h-4 w-4 text-info" aria-hidden />
                                     </div>
                                     <p className="mt-1 text-lg font-semibold text-foreground">
-                                        {loading ? '-' : lastActivityAt ? new Date(lastActivityAt).toLocaleDateString('es-ES') : '-'}
+                                        {dataLoading ? '-' : lastActivityAt ? new Date(lastActivityAt).toLocaleDateString('es-CO') : '-'}
                                     </p>
                                     <p className="text-[11px] text-muted-foreground">
-                                        {loading ? '' : lastActivityAt ? new Date(lastActivityAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : 'Sin eventos'}
+                                        {dataLoading ? '' : lastActivityAt ? new Date(lastActivityAt).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : 'Sin eventos'}
                                     </p>
                                 </div>
                             </div>
@@ -1276,7 +1310,7 @@ const UserProfile = () => {
                             <div className="rounded-lg border bg-card p-4">
                                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
                                     <div>
-                                        <p className="text-xs text-muted-foreground">Usa paginado + filtros (sin reordenar la data) y navega con deep links.</p>
+                                        <p className="text-xs text-muted-foreground">Usa páginado + filtros (sin reordenar la data) y navega con deep links.</p>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-2 sm:items-center w-full md:w-auto">
                                         <div className="flex items-center gap-2">
@@ -1355,7 +1389,7 @@ const UserProfile = () => {
                                             }}
                                         >
                                             <SelectTrigger className="h-9 w-full lg:w-[150px]">
-                                                <SelectValue placeholder="Accion" />
+                                                <SelectValue placeholder="Acción" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="all">Todas</SelectItem>
@@ -1400,21 +1434,21 @@ const UserProfile = () => {
                                                     <SelectItem value="50">50</SelectItem>
                                                 </SelectContent>
                                             </Select>
-                                            <Button type="button" variant="outline" size="sm" onClick={() => setActivityPage(1)} disabled={loading}>
+                                            <Button type="button" variant="outline" size="sm" onClick={() => setActivityPage(1)} disabled={dataLoading}>
                                                 Refrescar
                                             </Button>
                                         </div>
                                     </div>
                                 </div>
 
-                                {loading ? (
+                                {dataLoading ? (
                                     <div className="mt-4 flex justify-center py-6">
                                         <ClimbingBoxLoader color="#16a34a" size={10} />
                                     </div>
                                 ) : activityItems.length === 0 ? (
                                     <div className="mt-4 rounded-lg border border-dashed p-4 text-center">
                                         <p className="text-sm font-medium text-foreground">Sin actividad con estos filtros.</p>
-                                        <p className="text-xs text-muted-foreground mt-1">Ajusta fechas/entidad o registra una accion desde el CRUD.</p>
+                                        <p className="text-xs text-muted-foreground mt-1">Ajusta fechas/entidad o registra una acción desde el CRUD.</p>
                                         <div className="mt-3 flex flex-col sm:flex-row gap-2 justify-center">
                                             <Button type="button" variant="outline" size="sm" onClick={() => openCrudList('animals')}>
                                                 Ir a Animales
@@ -1445,7 +1479,7 @@ const UserProfile = () => {
                                                                     : 'border-l-green-500';
                                                         const timestamp = new Date(item.timestamp);
                                                         const timeLabel = Number.isFinite(timestamp.getTime())
-                                                            ? timestamp.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+                                                            ? timestamp.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
                                                             : '';
                                                         const title = item.title || `${String(item.action)} · ${String(item.entity)}`;
                                                         const summary = item.summary || '';
@@ -1464,7 +1498,7 @@ const UserProfile = () => {
                                                                         <button
                                                                             type="button"
                                                                             onClick={() => openActivityDetail(item)}
-                                                                            className="text-left text-sm font-semibold text-foreground truncate hover:underline"
+                                                                            className="text-left text-sm font-semibold text-foreground fit-clamp hover:underline"
                                                                         >
                                                                             {title}
                                                                         </button>
@@ -1476,7 +1510,7 @@ const UserProfile = () => {
                                                                             {String(item.action)}
                                                                         </Badge>
                                                                     </div>
-                                                                    {summary && <p className="text-xs text-muted-foreground mt-1 truncate">{summary}</p>}
+                                                                    {summary && <p className="text-xs text-muted-foreground mt-1 fit-clamp">{summary}</p>}
                                                                 </div>
                                                                 <div className="flex flex-wrap gap-2">
                                                                     {canOpenDetail && (
@@ -1509,7 +1543,7 @@ const UserProfile = () => {
 
                                         <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                             <p className="text-xs text-muted-foreground">
-                                                Pagina {activityPage}
+                                                Página {activityPage}
                                                 {` de ${filteredAndPaginatedActivity.totalPages}`}
                                                 {` · Total: ${filteredAndPaginatedActivity.total}`}
                                             </p>
@@ -1565,18 +1599,18 @@ const UserProfile = () => {
                                         .map((row: any) => toEpochMs(row.ts))
                                         .filter((v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0)
                                         .reduce((max, v) => Math.max(max, v), 0);
-                                    const lastLabel = lastTs ? new Date(lastTs).toLocaleString('es-ES') : 'Sin actividad';
+                                    const lastLabel = lastTs ? new Date(lastTs).toLocaleString('es-CO') : 'Sin actividad';
 
                                     const emptyCopy: Record<string, { title: string; body: string; cta: string }> = {
-                                        animals: { title: 'Aun no tienes animales asignados', body: 'Agrega o asigna animales para ver su trazabilidad aqui.', cta: 'Ir a Animales' },
-                                        genetics: { title: 'Sin mejoras geneticas registradas', body: 'Registra una mejora para mantener el historial productivo al dia.', cta: 'Ir a Mejoras' },
-                                        fields: { title: 'Sin lotes vinculados', body: 'Asigna un animal a un lote para mejorar el seguimiento de ubicacion.', cta: 'Ir a Lotes' },
-                                        diseases: { title: 'Sin enfermedades registradas', body: 'Si aparece un caso, registralo para mantener el historial medico.', cta: 'Ir a Enfermedades' },
-                                        treatments: { title: 'Aun no tienes tratamientos', body: 'Registra el primer tratamiento para uno de tus animales.', cta: 'Ir a Tratamientos' },
-                                        vaccinations: { title: 'Aun no tienes vacunaciones', body: 'Registra una aplicacion para mantener los vencimientos controlados.', cta: 'Ir a Vacunaciones' },
-                                        controls: { title: 'Aun no tienes controles', body: 'Registra un control para dar seguimiento al estado del animal.', cta: 'Ir a Controles' },
+                                        animals: { title: 'Aún no tienes animales asignados', body: 'Agrega o asigna animales para ver su trazabilidad aqui.', cta: 'Ir a Animales' },
+                                        genetics: { title: 'Sin mejoras genéticas registradas', body: 'Registra una mejora para mantener el historial productivo al día.', cta: 'Ir a Mejoras' },
+                                        fields: { title: 'Sin lotes vinculados', body: 'Asigna un animal a un lote para mejorar el seguimiento de ubicación.', cta: 'Ir a Lotes' },
+                                        diseases: { title: 'Sin enfermedades registradas', body: 'Si aparece un caso, regístralo para mantener el historial médico.', cta: 'Ir a Enfermedades' },
+                                        treatments: { title: 'Aún no tienes tratamientos', body: 'Registra el primer tratamiento para uno de tus animales.', cta: 'Ir a Tratamientos' },
+                                        vaccinations: { title: 'Aún no tienes vacunaciones', body: 'Registra una aplicación para mantener los vencimientos controlados.', cta: 'Ir a Vacunaciones' },
+                                        controls: { title: 'Aún no tienes controles', body: 'Registra un control para dar seguimiento al estado del animal.', cta: 'Ir a Controles' },
                                     };
-                                    const empty = emptyCopy[section.key] ?? { title: 'Sin registros', body: 'Aun no hay actividad en esta seccion.', cta: 'Abrir CRUD' };
+                                    const empty = emptyCopy[section.key] ?? { title: 'Sin registros', body: 'Aún no hay actividad en esta sección.', cta: 'Abrir CRUD' };
 
                                     return (
                                         <TabsContent
@@ -1777,10 +1811,10 @@ const UserProfile = () => {
                                         {logoutCountdown != null && (
                                             <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
                                                 <p className="text-sm">
-                                                    Cerrando sesion en <span className="font-semibold">{logoutCountdown}s</span>...
+                                                    Cerrando sesión en <span className="font-semibold">{logoutCountdown}s</span>...
                                                 </p>
                                                 <Button type="button" variant="outline" size="sm" onClick={() => Promise.resolve(logout()).catch(() => { })}>
-                                                    Cerrar sesion ahora
+                                                    Cerrar sesión ahora
                                                 </Button>
                                             </div>
                                         )}
@@ -1820,16 +1854,16 @@ const UserProfile = () => {
                                 <Alert className="bg-warning/5 border-yellow-200">
                                     <AlertTitle className="font-semibold flex items-center gap-2">
                                         <AlertTriangle className="h-4 w-4" aria-hidden />
-                                        Requisitos de contrasena
+                                        Requisitos de contraseña
                                     </AlertTitle>
                                     <AlertDescription className="text-sm">
-                                        <p>Actual: 4+ caracteres. Nueva: minimo 8 caracteres e incluye al menos 1 mayuscula y 1 minuscula.</p>
+                                        <p>Actual: 4+ caracteres. Nueva: mínimo 8 caracteres e incluye al menos 1 mayúscula y 1 minúscula.</p>
                                         <PasswordLiveRequirements newPassword={newPasswordValue || ''} confirmPassword={confirmPasswordValue || ''} />
                                     </AlertDescription>
                                 </Alert>
                             )}
                             <div className="space-y-2">
-                                <Label htmlFor="currentPassword">Contrasena actual</Label>
+                                <Label htmlFor="currentPassword">Contraseña actual</Label>
                                 <Input
                                     id="currentPassword"
                                     type="password"
@@ -1845,7 +1879,7 @@ const UserProfile = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="newPassword" className="flex items-center gap-2">
-                                        Nueva contrasena
+                                        Nueva contraseña
                                         <HelpTooltip content={PASSWORD_POLICY_HELP} side="right" />
                                     </Label>
                                     <Input
@@ -1861,7 +1895,7 @@ const UserProfile = () => {
                                     )}
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="confirmPassword">Confirmar nueva contrasena</Label>
+                                    <Label htmlFor="confirmPassword">Confirmar nueva contraseña</Label>
                                     <Input
                                         id="confirmPassword"
                                         type="password"
@@ -1878,7 +1912,7 @@ const UserProfile = () => {
                             <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
                                 <p className="text-xs text-muted-foreground">Si el backend responde should_clear_auth, cerraremos la sesión de forma segura.</p>
                                 <Button type="submit" disabled={updatingPassword} className="min-w-[180px]">
-                                    {updatingPassword ? 'Actualizando...' : 'Actualizar contrasena'}
+                                    {updatingPassword ? 'Actualizando...' : 'Actualizar contraseña'}
                                 </Button>
                             </div>
                         </form>
@@ -1896,15 +1930,60 @@ const UserProfile = () => {
                             <Info className="h-4 w-4 text-info" aria-hidden />
                             <AlertTitle className="font-semibold text-info">Unirse a otra finca</AlertTitle>
                             <AlertDescription className="text-info">
-                                ¿Trabajas en más de una finca? Puedes solicitar unirte a otras instancias del sistema. 
+                                ¿Trabajas en más de una finca? Puedes solicitar unirte a otras instancias del sistema.
                                 Un administrador de la finca destino deberá aprobar tu solicitud.
                             </AlertDescription>
                         </Alert>
-                        
+
+                        <div className="space-y-2">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase">
+                                Fincas donde ya eres miembro ({userMemberships.length})
+                            </p>
+                            {userMemberships.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">
+                                    Todavía no apareces como miembro de ninguna finca.
+                                </p>
+                            ) : (
+                                <ul className="space-y-2">
+                                    {userMemberships.map((membership) => (
+                                        <li
+                                            key={membership.key}
+                                            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-card p-3"
+                                        >
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-medium break-words">{membership.name}</p>
+                                                <p className="text-xs text-muted-foreground">{membership.role}</p>
+                                            </div>
+                                            {membership.isActive ? (
+                                                <Badge variant="outline" className="bg-success/5 text-success border-success/30">
+                                                    Finca activa
+                                                </Badge>
+                                            ) : (
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    disabled={switching}
+                                                    onClick={() => { void switchFinca(membership.fincaId); }}
+                                                >
+                                                    {switching ? 'Cambiando...' : 'Usar esta finca'}
+                                                </Button>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+
                         <p className="text-sm text-muted-foreground">Envía una solicitud para trabajar en otra finca y conserva esta vista abierta.</p>
-                        <Button type="button" onClick={() => setJoinFincaModalOpen(true)} className="w-full sm:w-auto">
-                            Solicitar acceso a otra finca
-                        </Button>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                            <Button type="button" onClick={() => setJoinFincaModalOpen(true)} className="w-full sm:w-auto">
+                                Solicitar acceso a otra finca
+                            </Button>
+                            <Button type="button" variant="outline" onClick={() => navigate('/select-finca')} className="w-full sm:w-auto">
+                                Explorar fincas públicas
+                            </Button>
+                        </div>
                         <GenericModal
                             isOpen={joinFincaModalOpen}
                             onOpenChange={setJoinFincaModalOpen}
@@ -1912,7 +1991,10 @@ const UserProfile = () => {
                             description="Selecciona la finca y el rol que deseas solicitar."
                             size="lg"
                         >
-                            <JoinFincaForm />
+                            <JoinFincaForm
+                                onSuccess={() => setJoinFincaModalOpen(false)}
+                                onCancel={() => setJoinFincaModalOpen(false)}
+                            />
                         </GenericModal>
                     </div>
                 </CollapsibleCard>

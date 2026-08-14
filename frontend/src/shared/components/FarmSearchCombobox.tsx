@@ -73,7 +73,7 @@ export function FarmSearchCombobox({
           aria-expanded={open}
           className={cn("w-full justify-between h-11 px-3 bg-[var(--color-surface)] border-[var(--color-border)]", className)}
         >
-          <div className="flex items-center gap-2 truncate">
+          <div className="flex items-center gap-2 fit-clamp">
             {selectedFarm ? (
               <>
                 <div className="w-6 h-6 rounded-lg overflow-hidden bg-[var(--color-surface-raised)] border border-[var(--color-border)]">

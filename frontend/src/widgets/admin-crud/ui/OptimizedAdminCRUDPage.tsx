@@ -98,6 +98,19 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
   
   // Selección masiva
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  // Estado de pantalla completa
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullScreen) {
+        setIsFullScreen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFullScreen]);
   
   const toggleSelect = useCallback((id: number) => {
     setSelectedIds(prev => 
@@ -189,7 +202,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
     cacheTTL,
   });
 
-  const formSections = config.formSections || [];
+  const formSections = useMemo(() => config.formSections || [], [config.formSections]);
   
   // Paginación
   const pageFromURL = parseInt((searchParams.get('page') || '').toString(), 10);
@@ -566,6 +579,8 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
           searchPlaceholder={config.searchPlaceholder}
           onOpenCreate={config.enableCreateModal !== false ? openCreate : undefined}
           customToolbar={config.customToolbar}
+          onToggleFullScreen={() => setIsFullScreen((prev) => !prev)}
+          isFullScreen={isFullScreen}
         />
       }
     />
@@ -609,18 +624,20 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
   // Empty state
   const empty = !loading && (filteredItems?.length || 0) === 0;
   
-  return (
+  const mainContent = (
     <AppLayout
       header={header}
-      className="px-2 sm:px-3 pt-0 sm:pt-0 pb-0 sm:pb-0 md:pb-0 lg:pb-0 max-w-full"
-      contentClassName="space-y-0"
+      className="px-2 sm:px-3 pt-0 sm:pt-0 pb-0 sm:pb-0 md:pb-0 lg:pb-0 max-w-full flex flex-col h-full"
+      contentClassName="space-y-0 flex flex-col h-full"
     >
-      {config.customHeader && (
+      {/* Estándar de pantallas de datos: con filas, el encabezado viaja dentro
+          del scroll de la tabla (`headerSlot`) para no restarle alto. */}
+      {config.customHeader && empty && (
         <div className="flex-shrink-0">
           {config.customHeader}
         </div>
       )}
-      
+
       {empty ? (
         <EmptyState
           title={config.emptyStateMessage || `${t('state.empty.title', 'Sin datos')}: ${config.entityName}`}
@@ -634,8 +651,9 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
         />
       ) : (
         <>
-          <div className="bg-card/95 backdrop-blur-sm border-2 border-border/50 rounded-xl shadow-2xl shadow-primary/10 mt-1">
+          <div className="bg-card/95 backdrop-blur-sm border-2 border-border/50 rounded-xl shadow-2xl shadow-primary/10 mt-1 flex-1 flex flex-col min-h-0 overflow-hidden">
             <CRUDTable
+              headerSlot={config.customHeader}
               items={filteredItems}
               columns={config.columns}
               config={config}
@@ -731,6 +749,35 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       />
     </AppLayout>
   );
+
+  if (isFullScreen) {
+    return (
+      <div className="fixed inset-0 z-[2000] bg-background p-2 sm:p-4 flex flex-col h-screen w-screen overflow-hidden animate-in fade-in duration-200">
+        <div className="flex items-center justify-between px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-xl mb-2 shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+            </span>
+            <span className="font-bold text-xs sm:text-sm text-foreground">
+              Modo Pantalla Completa — {config.title}
+            </span>
+          </div>
+          <button
+            onClick={() => setIsFullScreen(false)}
+            className="text-xs font-bold px-3 py-1 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all flex items-center gap-1.5 shadow-sm"
+          >
+            <span>✕ Salir de Pantalla Completa (ESC)</span>
+          </button>
+        </div>
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+          {mainContent}
+        </div>
+      </div>
+    );
+  }
+
+  return mainContent;
 }
 
 export default OptimizedAdminCRUDPage;

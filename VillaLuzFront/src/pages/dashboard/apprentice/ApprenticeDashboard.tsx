@@ -1,4 +1,4 @@
-﻿import React, { useMemo, forwardRef } from 'react';
+import React, { useMemo, forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardStatsCard, DashboardStatsGrid } from '@/widgets/dashboard/DashboardStatsCard';
 import { useCompleteDashboardStats, getStatValue, KpiCardSummary } from '@/features/dashboard/model/useCompleteDashboardStats';
@@ -105,7 +105,7 @@ const ApprenticeDashboard: React.FC = () => {
             </p>
             {lastUpdated && (
               <p className="text-xs text-muted-foreground mt-1">
-                Última actualización: {lastUpdated.toLocaleTimeString()}
+                Última actualización: {lastUpdated.toLocaleTimeString('es-CO')}
               </p>
             )}
           </div>

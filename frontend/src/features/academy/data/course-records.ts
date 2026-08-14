@@ -180,7 +180,7 @@ Además de la chapeta visual, el SINIIGA contempla el uso de dispositivos RFID (
 - Trazabilidad completa del animal para mercados de exportación
 - Facilita el manejo reproductivo y sanitario
 - Permite el control preciso de inventario ganadero
-- Agrega valor comercial al hato (animal identificado = mayor precio)
+- Agrega valor comercial al ganado (animal identificado = mayor precio)
 
 ### Errores comunes en la identificación
 - Colocar la chapeta en la oreja equivocada (debe ser oreja izquierda)
@@ -388,7 +388,7 @@ El sistema te alertará 30 días antes del vencimiento de cualquier certificado 
 ### Registro y seguimiento de chapetas
 Cada animal en Villa Luz tiene un campo específico para el código SINIIGA:
 1. Al registrar un nuevo animal, asigna el código de la chapeta en el campo correspondiente
-2. El sistema valida que el código no esté duplicado en el hato
+2. El sistema valida que el código no esté duplicado en el ganado
 3. Puedes generar un reporte de chapetas faltantes (animales sin identificar)
 4. El listado de chapetas por animal está disponible para imprimir y cruzar con el inventario físico
 5. Al dar de baja un animal, la chapeta queda marcada como "inactiva" y no puede reutilizarse
@@ -417,7 +417,7 @@ La recomendación es: registra los eventos primero en Villa Luz (digital), y al 
       ],
       keyPoints: [
         'Villa Luz alerta con 30 días de anticipación sobre vencimientos de certificados',
-        'El sistema valida que no se dupliquen códigos de chapeta en el mismo hato',
+        'El sistema valida que no se dupliquen códigos de chapeta en el mismo ganado',
         'Los reportes sanitarios generados coinciden con el formato ICA',
         'Registra primero en digital, luego transcribe al libro físico para sincronizar',
       ],
@@ -434,9 +434,9 @@ La recomendación es: registra los eventos primero en Villa Luz (digital), y al 
           {
             id: 'r6q2',
             question: '¿Qué validación realiza Villa Luz al registrar el código de una chapeta?',
-            options: ['Que tenga exactamente 16 dígitos', 'Que no esté duplicada en el hato', 'Que coincida con el color del animal', 'Que esté aprobada por Fedegán'],
+            options: ['Que tenga exactamente 16 dígitos', 'Que no esté duplicada en el ganado', 'Que coincida con el color del animal', 'Que esté aprobada por Fedegán'],
             correctAnswer: 1,
-            explanation: 'El sistema valida que el código de chapeta no esté duplicado dentro del mismo hato, evitando que dos animales tengan el mismo identificador.',
+            explanation: 'El sistema valida que el código de chapeta no esté duplicado dentro del mismo ganado, evitando que dos animales tengan el mismo identificador.',
           },
           {
             id: 'r6q3',
@@ -638,7 +638,7 @@ La plataforma Villa Luz te permite:
 5. Programar recordatorios automáticos para las fechas límite de cada reporte
 
 ### Estadísticas útiles que puedes extraer
-Más allá del cumplimiento, los datos que reportas te permiten analizar: tasa de natalidad y mortalidad anual, eficiencia reproductiva del hato, días promedio de permanencia de animales, y trazabilidad completa de cada animal para mercados premium.`,
+Más allá del cumplimiento, los datos que reportas te permiten analizar: tasa de natalidad y mortalidad anual, eficiencia reproductiva del ganado, días promedio de permanencia de animales, y trazabilidad completa de cada animal para mercados premium.`,
       objectives: [
         'Conocer el calendario de reportes obligatorios al ICA durante el año',
         'Identificar los plazos para reportar nacimientos, muertes y movilizaciones',

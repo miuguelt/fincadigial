@@ -54,12 +54,16 @@ function mapAlertToNotification(alert: Alert): EnrichedAlert {
   };
 }
 
+function isTechnicalAssistanceEvent(payload: any): boolean {
+  return String(payload?.data?.type || '').startsWith('technical_assistance_');
+}
+
 export function useRealtimeNotifications(options: UseRealtimeNotificationsOptions = {}) {
   const { onNotification, loadHistorical = true } = options;
 
   const [notifications, setNotifications] = useState<EnrichedAlert[]>([]);
   const [connected, setConnected] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [serverUnread, setServerUnread] = useState(0);
   const [loading, setLoading] = useState(false);
 
   const onNotificationRef = useRef(onNotification);
@@ -69,16 +73,19 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
     onNotificationRef.current = onNotification;
   }, [onNotification]);
 
-  useEffect(() => {
-    setUnreadCount(notifications.filter(n => !n.read).length);
-  }, [notifications]);
+  // La lista local está recortada (límite de página, deduplicada por mensaje y
+  // cortada a 100), así que contar sobre ella subestima el badge. El total real
+  // lo da el servidor; el máximo cubre los eventos SSE aún no reflejados allí.
+  const localUnread = notifications.filter(n => !n.read).length;
+  const unreadCount = Math.max(localUnread, serverUnread);
 
   const loadHistoricalAlerts = useCallback(async () => {
     if (!loadHistorical) return;
     setLoading(true);
     try {
-      const alerts = await alertService.getAlerts({ is_read: false, limit: 50 });
-      const mapped = alerts.map(mapAlertToNotification);
+      const page = await alertService.getAlertsPage({ is_read: false, limit: 50 });
+      setServerUnread(page.total);
+      const mapped = page.items.map(mapAlertToNotification);
       setNotifications(prev => {
         const seenMessages = new Set<string>();
         const uniqueList: EnrichedAlert[] = [];
@@ -124,30 +131,38 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
       return;
     }
 
+    // Technical assistance has its own inbox and contextual listener. Keeping
+    // it out of the generic animal-alert counter prevents a request burst from
+    // inflating the global "Alertas" badge for veterinarians and farmers.
+    if (isTechnicalAssistanceEvent(payload)) return;
+
     const notification: EnrichedAlert = {
-      id: payload.id || `${Date.now()}-${Math.random()}`,
-      type: payload.type || 'info',
-      title: payload.title || 'Notificación',
+      id: payload.id || payload.data?.request_id || `${Date.now()}-${Math.random()}`,
+      type: payload.type || payload.data?.notification_type || 'info',
+      title: payload.title || payload.data?.title || 'Notificación',
       message: payload.message || payload.data?.message || 'Nueva actualización',
       timestamp: payload.timestamp || new Date().toISOString(),
       read: false,
       data: payload.data,
-      action: payload.action,
+      action: payload.action || payload.data?.action,
       alertType: payload.data?.alert_type,
       priority: payload.data?.priority,
       recommendation: payload.data?.recommendation,
       source: 'sse',
     };
 
+    let accepted = true;
     setNotifications(prev => {
       if (notification.message) {
         const key = notification.message.trim().toLowerCase();
         if (prev.some(n => !n.read && n.message && n.message.trim().toLowerCase() === key)) {
+          accepted = false;
           return prev;
         }
       }
       return [notification, ...prev].slice(0, 100);
     });
+    if (accepted) setServerUnread(n => n + 1);
 
     if (onNotificationRef.current) {
       onNotificationRef.current(notification);
@@ -155,9 +170,12 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
   }, []);
 
   const markAsRead = useCallback(async (id: string) => {
-    setNotifications(prev =>
-      prev.map(n => (n.id === id ? { ...n, read: true } : n))
-    );
+    let wasUnread = false;
+    setNotifications(prev => {
+      wasUnread = prev.some(n => n.id === id && !n.read);
+      return prev.map(n => (n.id === id ? { ...n, read: true } : n));
+    });
+    if (wasUnread) setServerUnread(n => Math.max(0, n - 1));
     const numericId = parseInt(id, 10);
     if (!isNaN(numericId)) {
       try {
@@ -172,6 +190,7 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
     setNotifications(prev =>
       prev.map(n => ({ ...n, read: true }))
     );
+    setServerUnread(0);
     try {
       await alertService.markAllAsRead();
     } catch (error) {
@@ -196,15 +215,18 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
       source: notification.source || 'sse',
     };
 
+    let accepted = true;
     setNotifications(prev => {
       if (newNotification.message) {
         const key = newNotification.message.trim().toLowerCase();
         if (prev.some(n => !n.read && n.message && n.message.trim().toLowerCase() === key)) {
+          accepted = false;
           return prev;
         }
       }
       return [newNotification, ...prev].slice(0, 100);
     });
+    if (accepted) setServerUnread(n => n + 1);
 
     if (onNotificationRef.current) {
       onNotificationRef.current(newNotification);
@@ -228,7 +250,7 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
       mountedRef.current = false;
       unsubscribe();
     };
-  }, []);
+  }, [handleSSEMessage, loadHistorical, loadHistoricalAlerts]);
 
   return {
     notifications,

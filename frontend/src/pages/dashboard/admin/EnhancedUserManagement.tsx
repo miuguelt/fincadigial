@@ -128,9 +128,9 @@ const EnhancedUserManagement: React.FC = () => {
     if (!fd.fullname.trim()) errors.fullname = "El nombre completo es obligatorio.";
     if (!fd.email.trim()) errors.email = "El correo es obligatorio.";
     if (!fd.password || !fd.password.trim()) {
-      errors.password = "Debes definir una contraseña.";
+      errors['password'] = "Debes definir una contraseña.";
     } else if (fd.password.trim().length < 4) {
-      errors.password = "La contraseña debe tener al menos 4 caracteres.";
+      errors['password'] = "La contraseña debe tener al menos 4 caracteres.";
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -148,7 +148,7 @@ const EnhancedUserManagement: React.FC = () => {
       phone: "phone",
       address: "address",
       role: "role",
-      password: "password",
+      password: `password`,
     };
 
     const newErrors: Partial<Record<keyof UserFormData, string>> = {};
@@ -244,7 +244,7 @@ const EnhancedUserManagement: React.FC = () => {
           { title: 'Usuario', fields: [
             { name: 'identification', label: 'Identificación', type: 'text' },
             { name: 'fullname', label: 'Nombre Completo', type: 'text' },
-            { name: 'email', label: 'Email', type: 'text' },
+            { name: 'email', label: 'Correo electrónico', type: 'text' },
             { name: 'phone', label: 'Teléfono', type: 'text' },
             { name: 'address', label: 'Dirección', type: 'text' },
             { name: 'role', label: 'Rol', type: 'select' },
@@ -398,7 +398,7 @@ const EnhancedUserManagement: React.FC = () => {
                 <TableRow>
                   <TableHead>Identificación</TableHead>
                   <TableHead>Nombre Completo</TableHead>
-                  <TableHead>Email</TableHead>
+                  <TableHead>Correo electrónico</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Rol</TableHead>
                   <TableHead>Acciones</TableHead>
@@ -517,7 +517,7 @@ const EnhancedUserManagement: React.FC = () => {
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="email" className="text-right">
-              Email
+              Correo electrónico
             </Label>
             <div className="col-span-3 space-y-1">
               <Input
@@ -525,7 +525,7 @@ const EnhancedUserManagement: React.FC = () => {
                 type="email"
                 value={formData.email}
                 onChange={(e) => setField("email", e.target.value)}
-                placeholder="Ingrese el email"
+                placeholder="Ingrese el correo electrónico"
                 aria-invalid={Boolean(formErrors.email)}
               />
               {formErrors.email && (
@@ -654,7 +654,7 @@ const EnhancedUserManagement: React.FC = () => {
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="edit_email" className="text-right">
-              Email
+              Correo electrónico
             </Label>
             <Input
               id="edit_email"
@@ -662,7 +662,7 @@ const EnhancedUserManagement: React.FC = () => {
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               className="col-span-3"
-              placeholder="Ingrese el email"
+              placeholder="Ingrese el correo electrónico"
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -766,7 +766,7 @@ const EnhancedUserManagement: React.FC = () => {
                 <p className="text-sm">{selectedUser.fullname}</p>
               </div>
               <div>
-                <Label className="text-sm font-medium text-muted-foreground">Email</Label>
+                <Label className="text-sm font-medium text-muted-foreground">Correo electrónico</Label>
                 <p className="text-sm">{selectedUser.email}</p>
               </div>
               <div>

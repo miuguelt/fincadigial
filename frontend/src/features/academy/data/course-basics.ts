@@ -17,7 +17,7 @@ export const courseBasics: Course = {
       duration: '15 min',
       content: `## Objetivo del Módulo
       
-El manejo bovino es el conjunto de prácticas y técnicas que garantizan el bienestar, la productividad y la salud del ganado. Este curso está diseñado para que adquieras los conocimientos fundamentales necesarios para el cuidado diario del hato.
+El manejo bovino es el conjunto de prácticas y técnicas que garantizan el bienestar, la productividad y la salud del ganado. Este curso está diseñado para que adquieras los conocimientos fundamentales necesarios para el cuidado diario del ganado.
 
 ### ¿Por qué es importante el buen manejo?
 - **Bienestar animal**: Animales bien manejados son más productivos y longevos.
@@ -153,7 +153,7 @@ Las instalaciones son el entorno físico donde el ganado pasa gran parte de su v
       duration: '15 min',
       content: `## Fundamentos de Nutrición Bovina
 
-La alimentación representa entre el 60% y 70% de los costos de producción ganadera. Una nutrición adecuada es fundamental para la salud, reproducción y productividad del hato.
+La alimentación representa entre el 60% y 70% de los costos de producción ganadera. Una nutrición adecuada es fundamental para la salud, reproducción y productividad del ganado.
 
 ### Requerimientos nutricionales básicos
 - **Agua**: 30-50 litros/día (adulto); acceso permanente y limpio
@@ -419,7 +419,7 @@ La bioseguridad es el conjunto de medidas preventivas para evitar la entrada y p
 
 #### Cuarentena
 - **Animales nuevos**: 21-30 días de aislamiento
-- Ubicación alejada del hato principal
+- Ubicación alejada del ganado principal
 - Personal dedicado o atención al final del día
 - Pruebas diagnósticas antes de integrar
 
@@ -451,7 +451,7 @@ La bioseguridad es el conjunto de medidas preventivas para evitar la entrada y p
             question: '¿Cuántos días de cuarentena se recomiendan para animales nuevos?',
             options: ['7-14 días', '21-30 días', '45-60 días', '90 días'],
             correctAnswer: 1,
-            explanation: 'Se recomiendan 21-30 días de aislamiento para animales nuevos antes de integrarlos al hato principal.',
+            explanation: 'Se recomiendan 21-30 días de aislamiento para animales nuevos antes de integrarlos al ganado principal.',
           },
           {
             id: 'b6q2',

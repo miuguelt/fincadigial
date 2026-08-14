@@ -40,7 +40,7 @@ case 'error': return <Badge variant="destructive" className="flex gap-1"><IconAl
           <div className="h-6 w-6 rounded-[var(--radius-full)] bg-muted flex items-center justify-center hidden sm:flex">
             <IconUser size="sm" className="text-muted-foreground" />
           </div>
-          <span className="text-[10px] sm:text-xs font-medium truncate max-w-[80px] sm:max-w-none">
+          <span className="text-[10px] sm:text-xs font-medium fit-clamp max-w-[80px] sm:max-w-none">
             {val?.fullname || item.actor_id || 'Sistema'}
           </span>
         </div>

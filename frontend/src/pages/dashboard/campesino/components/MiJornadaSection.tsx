@@ -66,7 +66,7 @@ export const MiJornadaSection: React.FC = () => {
 			initial={{ opacity: 0, y: 10 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ delay: 0.15, duration: 0.4 }}
-			className="rounded-[2rem] bg-gradient-to-br from-amber-50/80 via-orange-50/40 to-transparent dark:from-amber-950/30 dark:via-orange-950/10 dark:to-transparent border-2 border-amber-200/50 dark:border-amber-800/30 p-5 md:p-6 shadow-lg"
+			className="rounded-3xl border border-amber-200/60 bg-gradient-to-br from-amber-50/80 via-orange-50/40 to-transparent p-5 shadow-lg dark:border-amber-800/30 dark:from-amber-950/30 dark:via-orange-950/10 dark:to-transparent md:p-6"
 		>
 			<div className="flex items-center justify-between mb-4">
 				<div className="flex items-center gap-3">
@@ -132,7 +132,7 @@ export const MiJornadaSection: React.FC = () => {
 									<p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
 										{alert.type} · {alert.animal_record || "Finca"}
 									</p>
-									<p className="text-sm font-medium text-foreground truncate mt-0.5">
+									<p className="text-sm font-medium text-foreground fit-clamp mt-0.5">
 										{alert.message}
 									</p>
 								</div>

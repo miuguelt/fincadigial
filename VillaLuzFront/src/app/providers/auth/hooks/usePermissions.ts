@@ -31,15 +31,7 @@ const ROLE_PERMISSIONS: Record<string, any> = {
     'fincas': ['read'],
     'inventory': ['read', 'create', 'update'],
   },
-  [Role.Instructor]: {
-    'animals': ['read'],
-    'vaccinations': ['read', 'create'],
-    'treatments': ['read', 'create'],
-    'controls': ['read', 'create'],
-    'breeds': ['read'],
-    'species': ['read'],
-    'fincas': ['read'],
-  },
+  [Role.Instructor]: '*',
   [Role.Operario]: {
     'animals': ['read'],
     'controls': ['read', 'create'],

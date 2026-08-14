@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import {
   IconBuilding,
   IconCircleCheck,
@@ -148,7 +148,7 @@ export const MultiFincaPage: React.FC = () => {
                         {" "}
                         {new Date(
                           membership.created_at,
-                        ).toLocaleDateString()}{" "}
+                        ).toLocaleDateString('es-CO')}{" "}
                       </span>{" "}
                     </div>{" "}
                     <Button

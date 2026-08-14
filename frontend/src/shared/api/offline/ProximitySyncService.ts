@@ -718,7 +718,7 @@ export class ProximitySyncService {
       peer.isConnected = false;
       this.activeConnections.delete(peer.id);
       if (server) {
-        try { server.disconnect(); } catch (e) {}
+        try { server.disconnect(); } catch { /* The Bluetooth server may already be disconnected. */ }
       }
     }
   }

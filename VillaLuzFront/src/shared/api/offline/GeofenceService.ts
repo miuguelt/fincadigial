@@ -33,7 +33,10 @@ export class GeofenceService {
           state: f.state
         }));
       
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.status === 403 || error?.statusCode === 403 || error?.message?.includes('permisos')) {
+        return;
+      }
       console.error('[Geofence] Error al cargar geocercas:', error);
     }
   }

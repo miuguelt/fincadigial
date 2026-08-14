@@ -50,21 +50,26 @@ export function AppLayout({
   className,
   contentClassName,
 }: AppLayoutProps) {
-  const innerStackClasses = contentClassName ?? "space-y-4 sm:space-y-6"; // por defecto mantiene el espaciado actual
-  const isHFull = className?.includes("h-full");
+  const innerStackClasses = contentClassName ?? "space-y-5 sm:space-y-7";
+  const isHFull = className?.includes("h-full") || className?.includes("flex-1");
   return (
     <div className={cn(
       "min-h-0 bg-background text-foreground transition-colors duration-300",
-      isHFull ? "h-full" : "h-auto"
+      isHFull ? "flex-1 flex flex-col w-full" : "h-auto w-full"
     )}>
       <main
         className={cn(
-          "w-full max-w-full mx-auto px-3 sm:px-4 lg:px-6 pt-4 pb-6 sm:pb-8",
+          "w-full max-w-full mx-auto px-4 sm:px-6 lg:px-6 pt-5",
+          // El canalón inferior solo aplica a páginas de alto natural. En una
+          // pantalla a pantalla completa `sm:pb-10` sobrevivía al `pb-0` que
+          // pasa la página (twMerge no fusiona variantes distintas) y dejaba
+          // 40 px muertos bajo la tabla.
+          isHFull ? "flex-1 min-h-0 flex flex-col pb-0" : "pb-8 sm:pb-10",
           className
         )}
       >
         {header}
-        <div className={innerStackClasses}>{children}</div>
+        <div className={cn("min-w-0 w-full", innerStackClasses)}>{children}</div>
       </main>
       {/* Contenedor global de toasts accesibles */}
       <ToastContainer />

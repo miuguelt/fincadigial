@@ -2,6 +2,7 @@ import { useId } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { getTodayColombia } from "@/shared/utils/dateUtils";
 import {
 	Select,
 	SelectContent,
@@ -34,12 +35,14 @@ export function ControlEntryCommonFields({
 	const animalFieldId = useId();
 	const animalErrorId = useId();
 	const dateFieldId = useId();
+	const dateErrorId = useId();
 	const animalError = form.formState.errors.animal_id;
+	const dateError = form.formState.errors.checkup_date;
 
 	return (
-		<div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+		<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 			<div className="space-y-2">
-				<Label htmlFor={animalFieldId}>Animal</Label>
+				<Label htmlFor={animalFieldId} className="text-sm font-bold">Animal</Label>
 				<Select
 					value={form.watch("animal_id")?.toString()}
 					onValueChange={(value) =>
@@ -51,7 +54,7 @@ export function ControlEntryCommonFields({
 				>
 					<SelectTrigger
 						id={animalFieldId}
-						className="h-12"
+						className="h-12 rounded-xl text-base sm:text-sm"
 						aria-invalid={Boolean(animalError)}
 						aria-describedby={animalError ? animalErrorId : undefined}
 					>
@@ -74,16 +77,29 @@ export function ControlEntryCommonFields({
 						{animalError.message}
 					</p>
 				)}
+				{!loadingAnimals && animals.length === 0 && !animalError && (
+					<p className="text-sm text-amber-700 dark:text-amber-300" role="status">
+						No hay animales vivos disponibles.
+					</p>
+				)}
 			</div>
 
 			<div className="space-y-2">
-				<Label htmlFor={dateFieldId}>Fecha</Label>
+				<Label htmlFor={dateFieldId} className="text-sm font-bold">Fecha</Label>
 				<Input
 					id={dateFieldId}
 					type="date"
-					className="h-12"
+					max={getTodayColombia()}
+					className="h-12 rounded-xl text-base sm:text-sm"
+					aria-invalid={Boolean(dateError)}
+					aria-describedby={dateError ? dateErrorId : undefined}
 					{...form.register("checkup_date")}
 				/>
+				{dateError && (
+					<p id={dateErrorId} className="text-sm text-red-500" role="alert">
+						{dateError.message}
+					</p>
+				)}
 			</div>
 		</div>
 	);

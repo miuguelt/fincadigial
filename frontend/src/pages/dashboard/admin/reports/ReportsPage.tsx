@@ -2,11 +2,11 @@ import { useState, lazy, Suspense } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { FileText, ShieldCheck, Download, BarChart3, DollarSign, Heart } from 'lucide-react';
 import { ExportCenterTab } from '@/widgets/reports/ExportCenterTab';
-import { QuickReportBuilder } from '@/widgets/reports/QuickReportBuilder';
 import { TabSkeleton } from '@/widgets/reports/ReportsSkeleton';
 import { Button } from '@/shared/ui/button';
 
 const RegulatoryReportsTab = lazy(() => import('./RegulatoryReportsTab'));
+const CustomReports = lazy(() => import('@/pages/dashboard/admin/analytics/CustomReports'));
 const ICADashboard = lazy(() => import('@/pages/dashboard/admin/analytics/ICADashboard'));
 const FinancialDashboard = lazy(() => import('@/pages/dashboard/admin/financial/index'));
 const FertilityDashboard = lazy(() => import('@/pages/dashboard/admin/reproduction/FertilityDashboard'));
@@ -31,7 +31,7 @@ function ReproductionTabContent() {
           onClick={() => setSubTab('fertility')}
           className="rounded-lg font-bold h-10 px-4"
         >
-          Fertilidad del Hato
+          Fertilidad del Ganado
         </Button>
         <Button
           variant={subTab === 'sires' ? undefined : 'ghost'}
@@ -77,7 +77,9 @@ export function ReportsPage() {
         </TabsList>
 
         <TabsContent value="personalizados" className="mt-0">
-          <QuickReportBuilder />
+          <Suspense fallback={<TabSkeleton />}>
+            <CustomReports />
+          </Suspense>
         </TabsContent>
 
         <TabsContent value="regulatorios" className="mt-0">

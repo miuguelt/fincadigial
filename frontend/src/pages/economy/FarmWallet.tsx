@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { 
   IconPlus, IconMinus, IconTrendingUp, IconTrendingDown, 
   IconCash, IconSwitchHorizontal,
@@ -116,7 +116,7 @@ const FarmWallet: React.FC = () => {
               </div>
               <div className="text-right">
                  <p className={`text-lg font-black ${t.type === 'income' ? 'text-success-500' : 'text-danger-500'}`}>
-                  {t.type === 'income' ? '+' : '-'} $ {t.amount.toLocaleString()}
+                  {t.type === 'income' ? '+' : '-'} $ {t.amount.toLocaleString('es-CO')}
                 </p>
               </div>
             </div>

@@ -1,6 +1,7 @@
 import logging
 import time
 from datetime import datetime, UTC
+from sqlalchemy import text
 from app import db, cache
 from app.models.activity_log import ActivityLog
 
@@ -63,7 +64,7 @@ class SelfHealingManager:
                 db.session.remove()
                 db.engine.dispose()
                 return False
-            except:
+            except Exception:
                 return False
 
     @staticmethod
@@ -71,20 +72,27 @@ class SelfHealingManager:
         """Verifica si hay workers activos consumiendo tareas."""
         from app.utils.health_check import HealthChecker
         checker = HealthChecker(db, cache)
-        status = checker.check_celery()
+        # This runs inside the worker itself, so a cached verdict from a Flask
+        # request would be misleading: force a fresh probe.
+        status = checker.check_celery(use_cache=False)
         if status.get('status') != 'healthy':
             # Si no hay workers, emitir evento SSE para notificar al admin en tiempo real
             try:
                 import flask
                 bus = flask.current_app.extensions.get('event_bus')
                 if bus:
-                    bus.publish('system', {
+                    # publish() takes (endpoint, action, record_id): passing the
+                    # dict there produced an event whose ``action`` was an object,
+                    # which no SSE consumer matches.
+                    bus.publish_payload({
+                        'endpoint': 'system',
                         'action': 'HEALTH_WARNING',
                         'service': 'celery_workers',
-                        'message': 'No se detectan workers activos. Las tareas programadas podrían retrasarse.'
+                        'message': 'No se detectan workers activos. Las tareas programadas podrían retrasarse.',
+                        'timestamp': time.time(),
                     })
-            except:
-                pass
+            except Exception:
+                logger.debug("No se pudo emitir el aviso SSE de workers", exc_info=True)
             return False
         return True
 
@@ -99,7 +107,7 @@ class SelfHealingManager:
                 logger.warning(f"Alta latencia en Redis detectada: {latency:.2f}ms")
                 return False
             return True
-        except:
+        except Exception:
             return False
 
     @staticmethod
@@ -115,6 +123,4 @@ class SelfHealingManager:
             )
         except Exception as e:
             logger.error(f"No se pudo registrar log de self-healing: {e}")
-
-from sqlalchemy import text
 

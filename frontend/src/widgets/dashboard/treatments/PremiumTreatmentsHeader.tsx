@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { HeartPulse, Calendar, TrendingUp } from 'lucide-react';
 import KPICard from '@/widgets/analytics/KPICard';
+import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
 import { TreatmentResponse } from '@/shared/api/generated/swaggerTypes';
 
 interface PremiumTreatmentsHeaderProps {
@@ -56,41 +57,30 @@ export const PremiumTreatmentsHeader: React.FC<PremiumTreatmentsHeaderProps> = (
   }, [items]);
 
   return (
-    <div className="mb-6 space-y-6">
-      {/* Header Premium */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 bg-card/40 backdrop-blur-xl p-6 sm:p-8 rounded-[2.5rem] border border-border/50 shadow-2xl shadow-primary/5">
-        <div className="flex items-center gap-5">
-          <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-xl shadow-purple-500/20">
-            <HeartPulse className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tighter text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-              Salud y <span className="text-purple-500">Tratamientos</span>
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground font-medium mt-1">
-              Monitoreo clínico, insumos aplicados y control de salud (Offline-Ready)
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Métricas Resumen */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <KPICard title="Total Tratamientos" value={metrics.totalTreatments} icon="📋" />
-        <KPICard title="Animales Tratados" value={metrics.uniqueAnimalsCount} icon="🐄" />
-        <KPICard title="Tratamientos (30d)" value={metrics.recentTreatments} icon={<Calendar className="w-5 h-5 text-purple-500" />} />
-        <KPICard 
-          title="Top Diagnóstico" 
-          value={metrics.topDiagnoses[0]?.name || 'Ninguno'} 
-          icon={<TrendingUp className="w-5 h-5 text-indigo-500" />} 
-        />
-      </div>
-
+    <DataScreenHeader
+      icon={<HeartPulse className="h-5 w-5 text-white" />}
+      iconClassName="from-purple-500 to-purple-600 shadow-purple-500/20"
+      title={<>Salud y <span className="text-purple-500">Tratamientos</span></>}
+      description="Monitoreo clínico, insumos aplicados y control de salud (Offline-Ready)"
+      metrics={
+        <>
+          <KPICard compact title="Total Tratamientos" value={metrics.totalTreatments} icon="📋" />
+          <KPICard compact title="Animales Tratados" value={metrics.uniqueAnimalsCount} icon="🐄" />
+          <KPICard compact title="Tratamientos (30d)" value={metrics.recentTreatments} icon={<Calendar className="w-4 h-4 text-purple-500" />} />
+          <KPICard
+            compact
+            title="Top Diagnóstico"
+            value={metrics.topDiagnoses[0]?.name || 'Ninguno'}
+            icon={<TrendingUp className="w-4 h-4 text-indigo-500" />}
+          />
+        </>
+      }
+    >
       {/* Top Diagnósticos Frecuentes */}
       {metrics.topDiagnoses.length > 0 && (
-        <div className="bg-card/40 backdrop-blur-xl rounded-[2.5rem] border border-border/50 shadow-2xl shadow-primary/5 p-6 sm:p-8">
-          <h2 className="text-lg font-black text-foreground mb-6">Diagnósticos Más Frecuentes</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-card/40 backdrop-blur-xl rounded-2xl border border-border/50 shadow-lg shadow-primary/5 px-4 py-3">
+          <h2 className="text-sm font-black text-foreground mb-2">Diagnósticos Más Frecuentes</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
             {metrics.topDiagnoses.map((diag, index) => {
               const gradients = [
                 'from-rose-500 to-pink-500',
@@ -101,17 +91,17 @@ export const PremiumTreatmentsHeader: React.FC<PremiumTreatmentsHeaderProps> = (
               const gradientClass = gradients[index] || 'from-primary to-primary-foreground';
 
               return (
-                <div key={index} className="p-5 bg-background/50 rounded-lg border border-border/50 shadow-sm hover:shadow-md transition-all group">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors truncate max-w-[80%]">
+                <div key={index} className="p-3 bg-background/50 rounded-lg border border-border/50 shadow-sm hover:shadow-md transition-all group">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors fit-clamp max-w-[80%]">
                       {diag.name}
                     </h3>
                     <span className="text-[10px] font-mono bg-purple-500/10 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded font-bold">
                       #{index + 1}
                     </span>
                   </div>
-                  <div className="flex items-baseline justify-between mb-3">
-                    <span className="text-2xl font-black text-foreground">{diag.count}</span>
+                  <div className="flex items-baseline justify-between mb-2">
+                    <span className="text-xl font-black text-foreground">{diag.count}</span>
                     <span className="text-xs font-bold text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-md">
                       {diag.percentage}% del total
                     </span>
@@ -125,6 +115,6 @@ export const PremiumTreatmentsHeader: React.FC<PremiumTreatmentsHeaderProps> = (
           </div>
         </div>
       )}
-    </div>
+    </DataScreenHeader>
   );
 };

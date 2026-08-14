@@ -11,7 +11,12 @@ from contextlib import contextmanager
 from datetime import date, datetime, timedelta, UTC
 import logging
 from app import db
-from app.models.alerts import AnimalAlert, AnimalAlertConfig, AlertPriority
+from app.models.alerts import (
+    AnimalAlert,
+    AnimalAlertConfig,
+    AlertPriority,
+    build_alert_dedupe_key,
+)
 from app.models.animals import Animals
 from app.models.control import Control
 from app.models.inventory import InventoryLot
@@ -28,6 +33,11 @@ logger = logging.getLogger(__name__)
 class AlertEngine:
 
     _weather_cache = {}
+    _dedupe_cache: dict[int, set[str]] | None = None
+    _weather_dedupe: set[int] | None = None
+    _animal_record_cache: dict[int, str] | None = None
+    _sse_batch: dict[int, int] | None = None
+    _EVALUATION_CHUNK_SIZE = 250
 
     # Buffer de notificaciones push agrupadas por finca. Mientras está activo
     # (durante evaluate_all), _queue_push acumula en vez de enviar: un ciclo con
@@ -38,15 +48,20 @@ class AlertEngine:
     @staticmethod
     @contextmanager
     def _batch_push():
-        """Agrupa los push emitidos dentro del bloque y los envía al salir."""
+        """Agrupa push y SSE emitidos dentro del ciclo completo."""
         previous = AlertEngine._push_batch
+        previous_sse = AlertEngine._sse_batch
         AlertEngine._push_batch = {}
+        AlertEngine._sse_batch = {}
         try:
             yield
         finally:
             batch = AlertEngine._push_batch
+            sse_batch = AlertEngine._sse_batch
             AlertEngine._push_batch = previous
+            AlertEngine._sse_batch = previous_sse
             AlertEngine._flush_push_batch(batch)
+            AlertEngine._flush_sse_batch(sse_batch)
 
     @staticmethod
     def _queue_push(finca_id: int, title: str, body: str, data: dict) -> None:
@@ -94,6 +109,43 @@ class AlertEngine:
                 logger.error(f'Error enviando resumen push de finca {finca_id}: {e}')
 
     @staticmethod
+    def _queue_sse(finca_id: int, priority: AlertPriority) -> None:
+        """Publica un solo cambio en vivo por finca durante evaluaciones masivas."""
+        if AlertEngine._sse_batch is not None:
+            AlertEngine._sse_batch[finca_id] = (
+                AlertEngine._sse_batch.get(finca_id, 0) + 1
+            )
+            return
+        try:
+            from app import sse
+
+            sse.publish({
+                'type': f'alerta_{priority.value.lower()}',
+                'message': 'Nueva alerta disponible',
+                'timestamp': datetime.now(UTC).isoformat(),
+            }, type='alertas')
+        except Exception:
+            pass
+
+    @staticmethod
+    def _flush_sse_batch(batch: dict[int, int] | None) -> None:
+        if not batch:
+            return
+        try:
+            from app import sse
+
+            for finca_id, count in batch.items():
+                sse.publish({
+                    'type': 'alertas_actualizadas',
+                    'finca_id': finca_id,
+                    'count': count,
+                    'message': f'{count} alertas nuevas',
+                    'timestamp': datetime.now(UTC).isoformat(),
+                }, type='alertas')
+        except Exception:
+            logger.warning('No se pudo publicar el resumen SSE de alertas', exc_info=True)
+
+    @staticmethod
     def _get_param(key: str) -> float | None:
         from app.models.system_content import SystemContent
         entry = SystemContent.get_by_key(f'param.alert.{key}')
@@ -112,7 +164,7 @@ class AlertEngine:
     # ── EVALUACIÓN PRINCIPAL ───────────────────────────────────────────
 
     @staticmethod
-    def evaluate_all() -> dict:
+    def evaluate_all(finca_id: int | None = None) -> dict:
         results = {
             'triggered': 0,
             'processed_animals': 0,
@@ -129,7 +181,7 @@ class AlertEngine:
                 pass
 
             with AlertEngine._batch_push():
-                AlertEngine._evaluate_all_inner(results)
+                AlertEngine._evaluate_all_inner(results, finca_id=finca_id)
         except Exception as e:
             db.session.rollback()
             logger.error(f"Error crítico en AlertEngine: {e}")
@@ -137,24 +189,101 @@ class AlertEngine:
         return results
 
     @staticmethod
-    def _evaluate_all_inner(results: dict) -> None:
+    def _evaluate_all_inner(results: dict, finca_id: int | None = None) -> None:
         try:
-            animals = db.session.query(Animals).filter_by(status='Vivo').all()
+            animals_query = db.session.query(Animals).filter_by(status='Vivo')
+            if finca_id is not None:
+                animals_query = animals_query.filter(Animals.finca_id == finca_id)
+            animals = animals_query.all()
             results['processed_animals'] = len(animals)
 
-            fincas_to_analyze = set()
+            fincas_to_analyze = {
+                animal.finca_id for animal in animals if animal.finca_id
+            }
+            animal_ids = [animal.id for animal in animals]
+            active_configs = AnimalAlertConfig.query.filter(
+                AnimalAlertConfig.is_active.is_(True),
+                db.or_(
+                    AnimalAlertConfig.animal_id.in_(animal_ids),
+                    db.and_(
+                        AnimalAlertConfig.animal_id.is_(None),
+                        AnimalAlertConfig.finca_id.in_(fincas_to_analyze),
+                    ),
+                ),
+            ).all() if animals else []
+            configs_by_animal = {}
+            global_configs_by_finca = {}
+            for config in active_configs:
+                if config.animal_id is not None:
+                    configs_by_animal.setdefault(config.animal_id, []).append(config)
+                elif config.finca_id is not None:
+                    global_configs_by_finca.setdefault(config.finca_id, []).append(config)
 
-            for animal in animals:
-                try:
-                    finca_id = getattr(animal, 'finca_id', None)
-                    if finca_id:
-                        fincas_to_analyze.add(finca_id)
-                    results['triggered'] += AlertEngine._evaluate_predetermined(animal, finca_id)
-                    results['triggered'] += AlertEngine._evaluate_custom(animal, finca_id)
-                except Exception as e:
-                    logger.error(f"Error evaluando animal {animal.id}: {e}")
-                    db.session.rollback()
-                    results['errors'] += 1
+            cutoff = datetime.now(UTC) - timedelta(hours=24)
+            try:
+                for offset in range(0, len(animals), AlertEngine._EVALUATION_CHUNK_SIZE):
+                    chunk = animals[offset:offset + AlertEngine._EVALUATION_CHUNK_SIZE]
+                    chunk_ids = [animal.id for animal in chunk]
+                    existing_rows = db.session.query(
+                        AnimalAlert.animal_id,
+                        AnimalAlert.message,
+                        AnimalAlert.alert_type,
+                        AnimalAlert.config_id,
+                        AnimalAlert.finca_id,
+                        AnimalAlert.dedupe_key,
+                    ).filter(
+                        AnimalAlert.animal_id.in_(chunk_ids),
+                        AnimalAlert.superseded_by_id.is_(None),
+                        db.or_(
+                            AnimalAlert.triggered_at >= cutoff,
+                            AnimalAlert.is_read.is_(False),
+                        ),
+                    ).all()
+                    AlertEngine._dedupe_cache = {animal_id: set() for animal_id in chunk_ids}
+                    AlertEngine._weather_dedupe = set()
+                    AlertEngine._animal_record_cache = {
+                        animal.id: animal.record or 'Animal' for animal in chunk
+                    }
+                    for (
+                        animal_id,
+                        message,
+                        alert_type,
+                        config_id,
+                        existing_finca_id,
+                        dedupe_key,
+                    ) in existing_rows:
+                        stable_key = dedupe_key or build_alert_dedupe_key(
+                            finca_id=existing_finca_id,
+                            animal_id=animal_id,
+                            config_id=config_id,
+                            alert_type=alert_type,
+                            message=message,
+                        )
+                        AlertEngine._dedupe_cache.setdefault(animal_id, set()).add(stable_key)
+                        normalized = (message or '').lower()
+                        if 'estrés térmico' in normalized or 'thi' in normalized:
+                            AlertEngine._weather_dedupe.add(animal_id)
+
+                    for animal in chunk:
+                        try:
+                            finca_id = getattr(animal, 'finca_id', None)
+                            custom_configs = [
+                                *configs_by_animal.get(animal.id, []),
+                                *global_configs_by_finca.get(finca_id, []),
+                            ]
+                            results['triggered'] += AlertEngine._evaluate_predetermined(
+                                animal, finca_id
+                            )
+                            results['triggered'] += AlertEngine._evaluate_custom(
+                                animal, finca_id, custom_configs
+                            )
+                        except Exception as e:
+                            logger.error(f"Error evaluando animal {animal.id}: {e}")
+                            results['errors'] += 1
+            finally:
+                AlertEngine._dedupe_cache = None
+                AlertEngine._weather_dedupe = None
+                AlertEngine._animal_record_cache = None
 
             from app.services.predictive_engine_service import PredictiveEngineService
             for finca_id in fincas_to_analyze:
@@ -168,16 +297,19 @@ class AlertEngine:
                     results['errors'] += 1
 
             try:
-                results['inventory_alerts'] = AlertEngine._evaluate_inventory()
+                results['inventory_alerts'] = AlertEngine._evaluate_inventory(
+                    finca_id=finca_id
+                )
             except Exception as e:
                 logger.error(f"Error evaluando inventario: {e}")
                 db.session.rollback()
 
-            try:
-                results['infrastructure_alerts'] = AlertEngine._evaluate_infrastructure_health()
-            except Exception as e:
-                logger.error(f"Error evaluando salud de infraestructura: {e}")
-                db.session.rollback()
+            if finca_id is None:
+                try:
+                    results['infrastructure_alerts'] = AlertEngine._evaluate_infrastructure_health()
+                except Exception as e:
+                    logger.error(f"Error evaluando salud de infraestructura: {e}")
+                    db.session.rollback()
 
             try:
                 results['water_alerts'] = AlertEngine._evaluate_water_sources(fincas_to_analyze)
@@ -214,6 +346,7 @@ class AlertEngine:
         since = datetime.now(UTC) - timedelta(hours=48)
         pending_alerts = AnimalAlert.query.filter(
             AnimalAlert.recommendation == None,
+            AnimalAlert.superseded_by_id.is_(None),
             AnimalAlert.triggered_at >= since
         ).limit(50).all()
         if not pending_alerts:
@@ -336,14 +469,19 @@ class AlertEngine:
     # ── REGLAS PERSONALIZADAS ─────────────────────────────────────────
 
     @staticmethod
-    def _evaluate_custom(animal, finca_id=None) -> int:
+    def _evaluate_custom(animal, finca_id=None, configs=None) -> int:
         n = 0
         today = date.today()
-        all_configs = []
-        all_configs.extend(animal.alert_configs.filter_by(is_active=True).all())
-        if finca_id:
-            global_configs = AnimalAlertConfig.query.filter_by(finca_id=finca_id, animal_id=None, is_active=True).all()
-            all_configs.extend(global_configs)
+        if configs is None:
+            all_configs = list(animal.alert_configs.filter_by(is_active=True).all())
+            if finca_id:
+                all_configs.extend(AnimalAlertConfig.query.filter_by(
+                    finca_id=finca_id,
+                    animal_id=None,
+                    is_active=True,
+                ).all())
+        else:
+            all_configs = configs
         for cfg in all_configs:
             try:
                 dim = cfg.dimension.lower()
@@ -406,10 +544,13 @@ class AlertEngine:
     # ── INVENTARIO ────────────────────────────────────────────────────
 
     @staticmethod
-    def _evaluate_inventory() -> int:
+    def _evaluate_inventory(finca_id: int | None = None) -> int:
         n = 0
         today = date.today()
-        lots = InventoryLot.query.filter(InventoryLot.current_quantity > 0).all()
+        lots_query = InventoryLot.query.filter(InventoryLot.current_quantity > 0)
+        if finca_id is not None:
+            lots_query = lots_query.filter(InventoryLot.finca_id == finca_id)
+        lots = lots_query.all()
         for lot in lots:
             try:
                 days_to_exp = (lot.expiry_date - today).days
@@ -667,46 +808,92 @@ class AlertEngine:
     @staticmethod
     def _trigger_if_not_exists(animal_id, alert_type, message, priority, config_id=None, finca_id=None) -> bool:
         cutoff = datetime.now(UTC) - timedelta(hours=24)
+        dedupe_key = build_alert_dedupe_key(
+            finca_id=finca_id,
+            animal_id=animal_id,
+            config_id=config_id,
+            alert_type=alert_type,
+            message=message,
+        )
 
         # 1. De-duplicación estándar: si ya existe una alerta igual sin leer o en las últimas 24h, no duplicarla.
-        recent = AnimalAlert.query.filter(
-            AnimalAlert.animal_id == animal_id,
-            AnimalAlert.message == message,
-            db.or_(
-                AnimalAlert.triggered_at >= cutoff,
-                AnimalAlert.is_read == False
-            )
-        ).first()
-        if recent:
-            return False
+        if AlertEngine._dedupe_cache is not None:
+            existing_messages = AlertEngine._dedupe_cache.setdefault(animal_id, set())
+            if dedupe_key in existing_messages:
+                return False
+        else:
+            recent = AnimalAlert.query.filter(
+                AnimalAlert.animal_id == animal_id,
+                AnimalAlert.finca_id == finca_id,
+                AnimalAlert.superseded_by_id.is_(None),
+                db.or_(
+                    AnimalAlert.triggered_at >= cutoff,
+                    AnimalAlert.is_read.is_(False),
+                )
+            ).all()
+            if any(
+                (row.dedupe_key or build_alert_dedupe_key(
+                    finca_id=row.finca_id,
+                    animal_id=row.animal_id,
+                    config_id=row.config_id,
+                    alert_type=row.alert_type,
+                    message=row.message,
+                )) == dedupe_key
+                for row in recent
+            ):
+                return False
 
         # 2. De-duplicación especial para Estrés Térmico (Clima) para evitar inundar la DB
         # cuando el valor del THI fluctúa levemente y cambia el string exacto.
         if 'estrés térmico' in message.lower() or 'thi' in message.lower():
-            recent_weather = AnimalAlert.query.filter(
-                AnimalAlert.animal_id == animal_id,
-                AnimalAlert.is_read == False,
-                db.or_(
-                    AnimalAlert.message.ilike('%estrés térmico%'),
-                    AnimalAlert.message.ilike('%thi%')
-                )
-            ).first()
-            if recent_weather:
+            if (
+                AlertEngine._weather_dedupe is not None
+                and animal_id in AlertEngine._weather_dedupe
+            ):
                 return False
+            if AlertEngine._weather_dedupe is None:
+                recent_weather = AnimalAlert.query.filter(
+                    AnimalAlert.animal_id == animal_id,
+                    AnimalAlert.is_read.is_(False),
+                    AnimalAlert.superseded_by_id.is_(None),
+                    db.or_(
+                        AnimalAlert.message.ilike('%estrés térmico%'),
+                        AnimalAlert.message.ilike('%thi%')
+                    )
+                ).first()
+                if recent_weather:
+                    return False
 
-        AnimalAlert.create(animal_id=animal_id, config_id=config_id, alert_type=alert_type, message=message, priority=priority, triggered_at=datetime.now(UTC), finca_id=finca_id)
+        db.session.add(AnimalAlert(
+            animal_id=animal_id,
+            config_id=config_id,
+            alert_type=alert_type,
+            message=message,
+            priority=priority,
+            triggered_at=datetime.now(UTC),
+            finca_id=finca_id,
+            is_read=False,
+            dedupe_key=dedupe_key,
+        ))
+        if AlertEngine._dedupe_cache is not None:
+            AlertEngine._dedupe_cache.setdefault(animal_id, set()).add(dedupe_key)
+        if (
+            AlertEngine._weather_dedupe is not None
+            and ('estrés térmico' in message.lower() or 'thi' in message.lower())
+        ):
+            AlertEngine._weather_dedupe.add(animal_id)
         if finca_id:
             if priority in [AlertPriority.HIGH, AlertPriority.CRITICAL]:
                 try:
-                    animal = Animals.query.get(animal_id)
-                    animal_record = animal.record if animal else "Animal"
+                    if AlertEngine._animal_record_cache is not None:
+                        animal_record = AlertEngine._animal_record_cache.get(
+                            animal_id, 'Animal'
+                        )
+                    else:
+                        animal = db.session.get(Animals, animal_id)
+                        animal_record = animal.record if animal else "Animal"
                     AlertEngine._queue_push(finca_id=finca_id, title=f" Alerta {priority.value}: {animal_record}", body=message, data={'type': 'alert', 'animal_id': animal_id, 'alert_type': alert_type.value if hasattr(alert_type, 'value') else str(alert_type), 'priority': priority.value.lower() if hasattr(priority, 'value') else str(priority).lower(), 'url': f'/animales/{animal_id}'})
                 except Exception as e:
                     logger.error(f"Error enviando push notification: {e}")
-            try:
-                from app import sse
-                sse_data = {'type': f'alerta_{priority.value.lower()}', 'message': message, 'animal_id': animal_id, 'timestamp': datetime.now(UTC).isoformat()}
-                sse.publish(sse_data, type='alertas')
-            except Exception:
-                pass
+            AlertEngine._queue_sse(finca_id, priority)
         return True

@@ -184,7 +184,7 @@ export const animalReportService = {
       doc.text(sub, x + 4, startY + 14);
     };
 
-    drawCard(15, "Total Hato", `${totalCount} cabezas`, "Sujetos en lote");
+    drawCard(15, "Total Ganado", `${totalCount} cabezas`, "Sujetos en lote");
     drawCard(15 + cardWidth + cardGap, "Distribución", `${hembras} H / ${machos} M`, "Hembras vs Machos");
     drawCard(15 + (cardWidth + cardGap) * 2, "Peso Promedio", `${avgWeight || "---"} kg`, `${animalsWithWeight.length} pesados`);
     drawCard(15 + (cardWidth + cardGap) * 3, "Raza Principal", topBreed, `${maxCount} cabezas (${Math.round((maxCount / totalCount) * 100)}%)`);

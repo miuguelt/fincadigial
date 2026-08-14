@@ -304,7 +304,7 @@ export function useResourceRefetch<T extends { id?: number | string }, P extends
     } finally {
       if (hasData) setRefreshing(false);
     }
-  }, [buildEffectiveParams, cache, cacheTTL, data, generateKey, getCache, map, prefix, safeExecute, service, setCache, lastParamsRef, abortControllerRef, skipCacheUntilRef, recentlyCreatedIds, recentlyCreatedItems, recentlyDeletedIds, applyStableOrder]);
+  }, [buildEffectiveParams, cache, cacheTTL, data, generateKey, getCache, map, prefix, safeExecute, service, setCache, setData, setMeta, setRefreshing, lastParamsRef, abortControllerRef, skipCacheUntilRef, recentlyCreatedIds, recentlyCreatedItems, recentlyDeletedIds, applyStableOrder]);
 
   return { refetch };
 }

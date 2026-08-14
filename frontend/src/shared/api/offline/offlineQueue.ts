@@ -302,12 +302,19 @@ class OfflineQueue {
     // navigator.onLine only describes internet reachability imperfectly. A
     // configured farm node is a valid route even when the browser reports no
     // internet, so do not abandon the queue in that case.
-    if (this.isSyncing || (!isOnline && !hasFieldNode && !hasSameOriginApi)) return;
+    if ((!isOnline && !hasFieldNode && !hasSameOriginApi)) return;
+
+    if (this.isSyncing) {
+      console.log('[OfflineQueue] syncQueue already running, skipping');
+      return;
+    }
 
     const pending = await this.getPendingOperations();
     if (pending.length === 0) return;
 
     this.isSyncing = true;
+
+    try {
 
     const { survivors, discarded } = resolveQueueConflicts(pending);
     for (const loser of discarded) {
@@ -373,14 +380,27 @@ class OfflineQueue {
         operation.retries++;
         operation.error = error.message || 'Error desconocido';
 
+        const esErrorAuth = /401|403|unauthorized|forbidden|token.*expired|csrf/i.test(error.message || '');
+
+        if (esErrorAuth) {
+          operation.status = 'failed';
+          operation.error = 'Sesión expirada - Requiring login';
+          await dbPut(operation);
+          this.notifyCallbacks(false, operation);
+          try {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('sync-auth-error', { detail: { operationId: operation.id } }));
+            }
+          } catch { /* noop */ }
+          continue;
+        }
+
         if (operation.retries >= operation.maxRetries) {
           operation.status = 'failed';
           await dbPut(operation);
           this.notifyCallbacks(false, operation);
         } else {
-          // Backoff hasta 15 minutos: no quema batería durante una jornada
-          // sin señal, pero la operación sigue pendiente y nunca se pierde.
-          const backoffMs = Math.min(15 * 60 * 1000, 1000 * (2 ** Math.min(operation.retries, 10)));
+          const backoffMs = Math.min(5 * 60 * 1000, 1000 * (2 ** Math.min(operation.retries, 8)));
           operation.nextAttemptAt = Date.now() + backoffMs;
           operation.status = 'pending';
           await dbPut(operation);
@@ -388,7 +408,9 @@ class OfflineQueue {
       }
     }
 
-    this.isSyncing = false;
+    } finally {
+      this.isSyncing = false;
+    }
 
     const remaining = await this.getPendingCount();
     try {
@@ -435,6 +457,37 @@ class OfflineQueue {
       }
     }
     await this.syncQueue();
+  }
+
+  async resetStuckOperations(): Promise<number> {
+    const all = await dbGetAll();
+    const ahora = Date.now();
+    let reseteadas = 0;
+
+    for (const op of all) {
+      const estaAtascada =
+        (op.status === 'pending' && op.nextAttemptAt && op.nextAttemptAt - ahora > 60000) ||
+        (op.status === 'pending' && op.retries > 3) ||
+        op.status === 'failed';
+
+      if (estaAtascada) {
+        op.status = 'pending';
+        op.retries = 0;
+        op.nextAttemptAt = undefined;
+        op.error = undefined;
+        await dbPut(op);
+        reseteadas++;
+      }
+    }
+
+    if (reseteadas > 0) {
+      console.log(`[OfflineQueue] ${reseteadas} operaciones atascadas reseteadas`);
+      if (typeof navigator !== 'undefined' && navigator.onLine && !this.isSyncing) {
+        setTimeout(() => this.syncQueue().catch(() => {}), 100);
+      }
+    }
+
+    return reseteadas;
   }
 
   async getStatusCounts(): Promise<{ pending: number; failed: number; syncing: boolean }> {

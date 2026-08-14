@@ -12,8 +12,28 @@ Uso:
 
 from flask_jwt_extended import get_jwt, get_jwt_identity
 import logging
+import os
 
 logger = logging.getLogger(__name__)
+
+
+def is_system_admin_identity(role: str | None, identification) -> bool:
+    """Return whether an identity is the configured platform administrator."""
+    if role != 'Administrador':
+        return False
+
+    configured = os.getenv('SYSTEM_ADMIN_IDENTIFICATION') or os.getenv('ADMIN_ID') or '1098'
+    allowed = {value.strip() for value in configured.split(',') if value.strip()}
+    return str(identification or '').strip() in allowed
+
+
+def is_current_system_admin() -> bool:
+    """Check the current JWT without granting global access to every farm admin."""
+    try:
+        jwt_data = get_jwt() or {}
+        return is_system_admin_identity(jwt_data.get('role'), jwt_data.get('identification'))
+    except Exception:
+        return False
 
 
 def get_current_finca_id() -> int | None:
@@ -149,8 +169,8 @@ TENANT_MODELS = {
     'Transaction',
     'MilkSummary',
     'LivestockSummary',
-    'TreatmentMedication',
-    'TreatmentVaccine',
+    'TreatmentMedications',
+    'TreatmentVaccines',
     'CropPlot',
     'CropActivity',
     'WaterSource',
@@ -184,6 +204,21 @@ TENANT_MODELS = {
 }
 
 
+# Modelos sin columna finca_id propia: heredan el tenant de su registro padre.
+# Formato: {'ModelName': ('foreign_key_column', 'app.models.module', 'ParentModel')}
+TENANT_PARENT_MODELS = {
+    'TreatmentMedications': ('treatment_id', 'app.models.treatments', 'Treatments'),
+    'TreatmentVaccines': ('treatment_id', 'app.models.treatments', 'Treatments'),
+}
+
+
+def _resolve_parent_model(module_path: str, class_name: str):
+    """Import the parent model lazily to avoid circular imports."""
+    import importlib
+    module = importlib.import_module(module_path)
+    return getattr(module, class_name)
+
+
 def is_tenant_model(model_class) -> bool:
     """
     Verifica si un modelo requiere filtrado por finca.
@@ -209,6 +244,39 @@ def apply_tenant_filter(query, model_class, finca_id: int | None = None):
     Returns:
         Query filtrada por finca_id si aplica
     """
+    model_name = model_class.__name__
+
+    # User is tenant-scoped through the N:M membership table (plus the legacy
+    # finca_id column). Even the platform administrator must use /users/global
+    # to cross tenant boundaries; /users always means the active finca.
+    if model_name == 'User':
+        if finca_id is None:
+            finca_id = get_current_finca_id()
+        if finca_id is None:
+            return query.filter(model_class.id == -1)
+
+        from sqlalchemy import or_, select
+        from app.models.user_finca import UserFinca
+        member_user_ids = select(UserFinca.user_id).where(
+            UserFinca.finca_id == finca_id,
+            UserFinca.is_active.is_(True),
+        )
+        return query.filter(or_(
+            model_class.finca_id == finca_id,
+            model_class.id.in_(member_user_ids),
+        ))
+
+    # The platform administrator sees the master farm catalog. Every other
+    # account only sees its active farm from the authenticated CRUD endpoint.
+    if model_name == 'Finca':
+        if is_current_system_admin():
+            return query
+        if finca_id is None:
+            finca_id = get_current_finca_id()
+        if finca_id is None:
+            return query.filter(model_class.id == -1)
+        return query.filter(model_class.id == finca_id)
+
     if not is_tenant_model(model_class):
         return query
 
@@ -231,6 +299,8 @@ def apply_tenant_filter(query, model_class, finca_id: int | None = None):
     if finca_id is None:
         finca_id = get_current_finca_id()
 
+    parent_rule = TENANT_PARENT_MODELS.get(model_class.__name__)
+
     # Si el modelo requiere tenant pero no hay finca_id en el contexto
     if finca_id is None:
         # Si estamos en un flask.request pero NO hay finca_id, bloquear acceso por seguridad
@@ -238,9 +308,29 @@ def apply_tenant_filter(query, model_class, finca_id: int | None = None):
             if hasattr(model_class, 'finca_id'):
                 logger.warning(f"Intento de acceso a {model_class.__name__} sin contexto de finca. Bloqueando query.")
                 return query.filter(model_class.finca_id == -1)
+            if parent_rule:
+                logger.warning(f"Intento de acceso a {model_class.__name__} sin contexto de finca. Bloqueando query.")
+                return query.filter(getattr(model_class, parent_rule[0]) == -1)
         return query
 
     if hasattr(model_class, 'finca_id'):
         return query.filter(model_class.finca_id == finca_id)
+
+    # Modelos puente (treatment_medications, treatment_vaccines): el aislamiento
+    # se hereda del tratamiento padre, que sí guarda finca_id.
+    if parent_rule:
+        fk_column, module_path, class_name = parent_rule
+        try:
+            parent_model = _resolve_parent_model(module_path, class_name)
+        except Exception:
+            logger.warning(
+                f"No se pudo resolver el modelo padre {class_name} para {model_class.__name__}; "
+                "la query queda sin filtro de finca",
+                exc_info=True
+            )
+            return query
+        from app import db
+        parent_ids = db.session.query(parent_model.id).filter(parent_model.finca_id == finca_id)
+        return query.filter(getattr(model_class, fk_column).in_(parent_ids))
 
     return query

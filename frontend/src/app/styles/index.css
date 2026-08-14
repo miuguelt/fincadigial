@@ -436,10 +436,23 @@
   .flex > * { min-width: 0; }
   .grid  > * { min-width: 0; }
 
-  /* Textos que pueden ser largos nunca rompen el layout horizontal */
+  /* ── Corte de palabras: solo como último recurso ────────────────────────────
+     `word-break: break-word` es el alias antiguo de `overflow-wrap: anywhere`,
+     y esa palabra clave sí reduce el ancho min-content a un carácter. En un
+     flex o un grid eso deja que el contenedor se encoja por debajo de la
+     palabra más larga, y el navegador parte la palabra aunque hubiera sitio:
+     de ahí "Enfermed / ad" en las tarjetas de acción rápida.
+
+     `overflow-wrap: break-word` a secas mantiene min-content = palabra más
+     larga: el contenedor reserva ese ancho y solo se parte la palabra cuando
+     de verdad no cabe. Para partir a la brava (identificadores, hashes, URLs)
+     está `.break-anywhere`, que se pide explícitamente.
+     Ver docs/estandar-texto-adaptable.md.
+  ─────────────────────────────────────────────────────────────────────────── */
   h1, h2, h3, h4, h5, h6, p, span, a {
     overflow-wrap: break-word;
-    word-break: break-word;
+    word-break: normal;
+    hyphens: manual;
   }
 
   /* Mejora global de iconos (lucide-react agrega la clase .lucide automáticamente) */
@@ -604,6 +617,95 @@
 }
 
 @layer utilities {
+
+  /* ── TEXTO ADAPTABLE — Estándar Villa Luz ──────────────────────────────────
+     .fit-text        la aplica <FitText>/useFitText: prohíbe el corte de
+                      palabra para que el ajuste lo haga el tamaño de letra.
+     .break-anywhere  escotilla explícita para cadenas sin espacios (IDs,
+                      hashes, URLs, correos) que sí deben poder partirse.
+     .text-fluid-*    ajuste sin JavaScript: la letra crece con el ancho del
+                      contenedor (`cqi`), no con el del viewport. Requiere un
+                      ancestro con `container-type: inline-size` (.fit-container).
+     Ver docs/estandar-texto-adaptable.md.
+  ─────────────────────────────────────────────────────────────────────────── */
+  .fit-text {
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: manual;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  /* Ni al tamaño mínimo cabe la palabra: se permite partir antes que desbordar. */
+  .fit-text[data-fit-overflow="break"] {
+    overflow-wrap: anywhere;
+  }
+
+  /* ── .fit-clamp — el relevo de `truncate` ───────────────────────────────────
+     Mismo compromiso de altura que `truncate` (un renglón, sin crecer), pero
+     antes de perder texto se encoge la letra. Solo cuando ni al mínimo entra
+     aparecen los puntos suspensivos, y entonces recorta menos que `truncate`,
+     que recortaba sin intentar nada.
+     El planificador marca `data-fit-clip` cuando toca recortar.
+  ─────────────────────────────────────────────────────────────────────────── */
+  .fit-clamp {
+    white-space: nowrap;
+    overflow: hidden;
+    overflow-wrap: normal;
+    word-break: normal;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .fit-clamp[data-fit-clip="1"] {
+    text-overflow: ellipsis;
+  }
+
+  .break-anywhere {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .fit-container {
+    container-type: inline-size;
+  }
+
+  /* Etiquetas y píldoras (badges, metadatos) dentro de tarjetas estrechas.
+     No baja del suelo de legibilidad de 11 px. A diferencia de `.fit-clamp`,
+     el tamaño lo manda el contenedor (`cqi`) y no el propio texto, así que se
+     puede usar en cajas cuyo ancho depende del contenido —una píldora
+     `inline-flex`— sin realimentar la medida. */
+  .text-fluid-xs {
+    font-size: clamp(0.6875rem, 4.6cqi, 0.75rem);
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  .text-fluid-sm {
+    font-size: clamp(0.75rem, 4cqi, 0.875rem);
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  .text-fluid-base {
+    font-size: clamp(0.875rem, 5cqi, 1.125rem);
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  .text-fluid-lg {
+    font-size: clamp(1rem, 7cqi, 1.5rem);
+    line-height: 1.2;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  .text-fluid-xl {
+    font-size: clamp(1.125rem, 9cqi, 2rem);
+    line-height: 1.15;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
 
   /* ── GRID SYSTEM — Estándar Villa Luz ──────────────────────────────────────
      .vl-grid-1:  1 columna (mobile-first)
@@ -872,7 +974,7 @@
 
   50% {
     background-color: hsl(var(--success-ghost-strong));
-    border-color: hsl(var(--color-success));
+    border-color: var(--color-success);
   }
 }
 
@@ -1046,7 +1148,7 @@
 
   50% {
     background-color: hsl(var(--warning-ghost-strong));
-    border-color: hsl(var(--color-warning));
+    border-color: var(--color-warning);
   }
 }
 
@@ -1060,7 +1162,7 @@
 
   50% {
     background-color: hsl(var(--danger-ghost-strong));
-    border-color: hsl(var(--color-danger));
+    border-color: var(--color-danger);
   }
 }
 
@@ -1074,7 +1176,7 @@
 
   50% {
     background-color: hsl(var(--info-ghost-strong));
-    border-color: hsl(var(--color-info));
+    border-color: var(--color-info);
   }
 }
 
@@ -1145,17 +1247,17 @@
 /* Loading spinner con código de colores */
 .loading-spinner-success {
   border-color: hsl(var(--success-ghost));
-  border-top-color: hsl(var(--color-success));
+  border-top-color: var(--color-success);
 }
 
 .loading-spinner-warning {
   border-color: hsl(var(--warning-ghost));
-  border-top-color: hsl(var(--color-warning));
+  border-top-color: var(--color-warning);
 }
 
 .loading-spinner-danger {
   border-color: hsl(var(--danger-ghost));
-  border-top-color: hsl(var(--color-danger));
+  border-top-color: var(--color-danger);
 }
 
 /* Loading dots animation */
@@ -1243,28 +1345,28 @@
 .alert-success {
   background-color: hsl(var(--success-ghost));
   border: 1px solid hsl(var(--success-ghost-strong));
-  color: hsl(var(--color-success));
+  color: var(--color-success);
   animation: colorPulseSuccess 2s ease-in-out infinite;
 }
 
 .alert-warning {
   background-color: hsl(var(--warning-ghost));
   border: 1px solid hsl(var(--warning-ghost-strong));
-  color: hsl(var(--color-warning));
+  color: var(--color-warning);
   animation: colorPulseWarning 2s ease-in-out infinite;
 }
 
 .alert-danger {
   background-color: hsl(var(--danger-ghost));
   border: 1px solid hsl(var(--danger-ghost-strong));
-  color: hsl(var(--color-danger));
+  color: var(--color-danger);
   animation: colorPulseDanger 2s ease-in-out infinite;
 }
 
 .alert-info {
   background-color: hsl(var(--info-ghost));
   border: 1px solid hsl(var(--info-ghost-strong));
-  color: hsl(var(--color-info));
+  color: var(--color-info);
   animation: colorPulseInfo 2s ease-in-out infinite;
 }
 
@@ -1304,8 +1406,10 @@
     background: transparent;
   }
 
+  /* Los tokens --color-* ya son colores completos: envolverlos en hsl() invalida
+     la declaración y Chrome pinta el pulgar transparente. Se usa color-mix. */
   ::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--color-muted-foreground) / 0.25);
+    background-color: color-mix(in srgb, var(--color-muted-foreground) 35%, transparent);
     border-radius: 9999px;
     border: 2px solid transparent;
     /* Creates padding effect */
@@ -1314,7 +1418,7 @@
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background-color: hsl(var(--color-muted-foreground) / 0.45);
+    background-color: color-mix(in srgb, var(--color-muted-foreground) 55%, transparent);
   }
 
   ::-webkit-scrollbar-thumb:active {
@@ -1334,9 +1438,46 @@
   @supports (scrollbar-width: thin) {
     * {
       scrollbar-width: thin;
-      scrollbar-color: hsl(var(--color-muted-foreground) / 0.3) transparent;
+      scrollbar-color: color-mix(in srgb, var(--color-muted-foreground) 40%, transparent) transparent;
     }
   }
+}
+
+/* === Barras de desplazamiento flotantes de las pantallas de datos ===
+ *
+ * Las barras nativas siempre reservan pista: 10-14 px de alto y de ancho que
+ * se le restan a la tabla. `overflow: overlay` habría resuelto esto, pero
+ * Chromium lo eliminó. Por eso `FloatingScrollArea` oculta la barra nativa con
+ * esta clase y pinta el pulgar por encima del contenido, sin coste de layout.
+ *
+ * El scroll sigue siendo nativo: rueda, teclado y gestos táctiles intactos.
+ * Ver docs/estandar-pantallas-de-datos.md §1.2b.
+ */
+.no-native-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-native-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* Pulgar flotante. El anillo lo despega del contenido que pasa por debajo, de
+   modo que se distinga tanto sobre filas claras como sobre filas oscuras. */
+.floating-scroll-thumb {
+  background-color: color-mix(in srgb, var(--color-muted-foreground) 45%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-background) 75%, transparent);
+}
+
+.group\/fsa:hover .floating-scroll-thumb,
+.floating-scroll-thumb[data-prominent='true'] {
+  background-color: color-mix(in srgb, var(--color-muted-foreground) 80%, transparent);
+}
+
+.floating-scroll-thumb[data-dragging='true'] {
+  background-color: color-mix(in srgb, var(--color-primary) 90%, transparent);
 }
 
 /* Animaciones del buscador semántico */

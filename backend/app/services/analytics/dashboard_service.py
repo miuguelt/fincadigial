@@ -69,6 +69,7 @@ class DashboardService:
         return {
             'total_animals': summary.total_animals,
             'active_animals': summary.active_animals,
+            'sick_animals': summary.sick_animals,
             'average_weight': round(float(avg_weight), 2),
             'total_treatments': db.session.query(func.count(Treatments.id)).filter_by(
                 finca_id=finca_id, is_deleted=False
@@ -85,12 +86,14 @@ class DashboardService:
         animal_alerts = AnimalAlert.query.filter(
             AnimalAlert.finca_id == finca_id,
             AnimalAlert.is_read == False,
+            AnimalAlert.superseded_by_id.is_(None),
             AnimalAlert.animal_id != None
         ).order_by(AnimalAlert.triggered_at.desc()).limit(10).all()
 
         finca_alerts = AnimalAlert.query.filter(
             AnimalAlert.finca_id == finca_id,
             AnimalAlert.is_read == False,
+            AnimalAlert.superseded_by_id.is_(None),
             AnimalAlert.animal_id == None
         ).order_by(AnimalAlert.triggered_at.desc()).limit(10).all()
 
@@ -98,8 +101,8 @@ class DashboardService:
             "animal_alerts": [a.to_namespace_dict() for a in animal_alerts],
             "finca_alerts": [a.to_namespace_dict() for a in finca_alerts],
             "counts": {
-                "critical": AnimalAlert.query.filter_by(finca_id=finca_id, is_read=False, priority=AlertPriority.CRITICAL).count(),
-                "high": AnimalAlert.query.filter_by(finca_id=finca_id, is_read=False, priority=AlertPriority.HIGH).count()
+                "critical": AnimalAlert.query.filter_by(finca_id=finca_id, is_read=False, priority=AlertPriority.CRITICAL, superseded_by_id=None).count(),
+                "high": AnimalAlert.query.filter_by(finca_id=finca_id, is_read=False, priority=AlertPriority.HIGH, superseded_by_id=None).count()
             }
         }
 
@@ -381,10 +384,10 @@ class DashboardService:
 
             if finca_id:
                 num_pending_tasks = Tasks.query.filter_by(finca_id=finca_id).filter(Tasks.status != TaskStatus.COMPLETED).count()
-                num_alerts = AnimalAlert.query.filter_by(finca_id=finca_id, is_read=False).count()
+                num_alerts = AnimalAlert.query.filter_by(finca_id=finca_id, is_read=False, superseded_by_id=None).count()
             else:
                 num_pending_tasks = Tasks.query.filter(Tasks.status != TaskStatus.COMPLETED).count()
-                num_alerts = AnimalAlert.query.filter_by(is_read=False).count()
+                num_alerts = AnimalAlert.query.filter_by(is_read=False, superseded_by_id=None).count()
 
             # Resúmenes Financieros y Lecheros con manejo de nulos
             f_summary = FinancialSummary.get_for_finca(finca_id)

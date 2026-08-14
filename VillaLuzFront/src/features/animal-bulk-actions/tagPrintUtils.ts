@@ -29,7 +29,7 @@ export const handlePrint = (printRef: HTMLDivElement | null, format: PaperFormat
     <!DOCTYPE html>
     <html>
       <head>
-        <title>Etiquetas Villa Luz - ${new Date().toLocaleDateString()}</title>
+        <title>Etiquetas Villa Luz - ${new Date().toLocaleDateString('es-CO')}</title>
         <meta charset="UTF-8">
         <style>${getPrintStyles(format)}</style>
       </head>

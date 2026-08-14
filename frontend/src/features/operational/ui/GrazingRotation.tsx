@@ -1,4 +1,4 @@
-/* eslint-disable max-lines, max-lines-per-function, complexity */
+ 
 import React, { useEffect, useMemo, useState } from "react";
 import {
   IconRefresh,

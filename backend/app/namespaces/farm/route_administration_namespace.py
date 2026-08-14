@@ -4,6 +4,7 @@ from flask_jwt_extended import jwt_required
 from app.models.route_administration import RouteAdministration
 from app.utils.namespace_helpers import create_optimized_namespace
 from app.utils.response_handler import APIResponse, ResponseFormatter
+from app.utils.tenant_context import apply_tenant_filter
 
 # Crear el namespace optimizado para rutas de administración
 route_admin_ns = create_optimized_namespace(
@@ -50,7 +51,7 @@ class RouteAdministrationSearch(Resource):
         page = flask.request.args.get('page', default=1, type=int) or 1
         limit = flask.request.args.get('limit', type=int) or flask.request.args.get('per_page', type=int) or 50
         try:
-            query = RouteAdministration.query.filter(RouteAdministration.status == True)
+            query = apply_tenant_filter(RouteAdministration.query, RouteAdministration).filter(RouteAdministration.status == True)
             if q:
                 query = query.filter(
                     (RouteAdministration.name.ilike(f'%{q}%')) |
@@ -88,7 +89,7 @@ class ActiveRouteAdministrations(Resource):
         page = flask.request.args.get('page', default=1, type=int) or 1
         limit = flask.request.args.get('limit', type=int) or flask.request.args.get('per_page', type=int) or 50
         try:
-            query = RouteAdministration.query.filter_by(status=True)
+            query = apply_tenant_filter(RouteAdministration.query, RouteAdministration).filter_by(status=True)
             pagination = query.paginate(page=page, per_page=int(limit), error_out=False)
             items = [
                 (item.to_namespace_dict() if hasattr(item, 'to_namespace_dict') else {

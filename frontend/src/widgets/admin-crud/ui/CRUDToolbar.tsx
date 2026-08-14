@@ -6,7 +6,7 @@
  */
 
 import React, { memo, useCallback } from 'react';
-import { Search, Plus, X, Loader2 } from 'lucide-react';
+import { Search, Plus, X, Loader2, Maximize2, Minimize2 } from 'lucide-react';
 import { Input } from '@/shared/ui/input';
 import { Button } from '@/shared/ui/button';
 import { cn } from '@/shared/ui/cn.ts';
@@ -18,6 +18,8 @@ interface CRUDToolbarProps {
   onOpenCreate?: () => void;
   customToolbar?: React.ReactNode;
   saving?: boolean;
+  onToggleFullScreen?: () => void;
+  isFullScreen?: boolean;
 }
 
 export const CRUDToolbar = memo<CRUDToolbarProps>(({
@@ -27,6 +29,8 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
   onOpenCreate,
   customToolbar,
   saving = false,
+  onToggleFullScreen,
+  isFullScreen = false,
 }) => {
   // Manejar cambio de búsqueda
   const handleSearchChange = useCallback((value: string) => {
@@ -65,7 +69,36 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
         )}
       </div>
       
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
+        {onToggleFullScreen && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onToggleFullScreen}
+            className={cn(
+              "h-10 px-3 rounded-xl border-border/60 font-semibold text-xs gap-1.5 transition-all shadow-sm",
+              isFullScreen
+                ? "bg-primary text-primary-foreground hover:bg-primary/90 border-primary"
+                : "bg-background/80 text-foreground hover:bg-muted"
+            )}
+            title={isFullScreen ? "Salir de Pantalla Completa (ESC)" : "Ver Tabla en Pantalla Completa"}
+            aria-label={isFullScreen ? "Salir de pantalla completa" : "Pantalla completa"}
+          >
+            {isFullScreen ? (
+              <>
+                <Minimize2 className="h-4 w-4" />
+                <span className="hidden md:inline">Restaurar</span>
+              </>
+            ) : (
+              <>
+                <Maximize2 className="h-4 w-4 text-primary" />
+                <span className="hidden md:inline">Pantalla Completa</span>
+              </>
+            )}
+          </Button>
+        )}
+
         {onOpenCreate && (
           <Button size="sm"
             className="h-10 w-10 sm:w-auto sm:px-4 rounded-xl shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20 transition-all"
@@ -83,7 +116,7 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
         )}
         
         {customToolbar && (
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             {customToolbar}
           </div>
         )}

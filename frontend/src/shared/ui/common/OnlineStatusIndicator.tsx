@@ -66,7 +66,20 @@ export const OnlineStatusIndicator: React.FC = () => {
         failed: (prev?.failed || 0) + (success ? 0 : 1),
       }));
     });
-    return unsub;
+
+    const handleAuthError = () => {
+      setLastSyncResult(prev => ({
+        success: prev?.success || 0,
+        failed: (prev?.failed || 0) + 1,
+      }));
+    };
+
+    window.addEventListener('sync-auth-error', handleAuthError);
+
+    return () => {
+      unsub();
+      window.removeEventListener('sync-auth-error', handleAuthError);
+    };
   }, []);
 
   React.useEffect(() => {
@@ -110,8 +123,8 @@ export const OnlineStatusIndicator: React.FC = () => {
         <button onClick={() => setIsExpanded(!isExpanded)} className="flex items-center gap-2 w-full text-left">
           <StatusIcon className={cn("h-4 w-4 md:h-5 md:w-5 flex-shrink-0", status.color, (syncStatus.syncing || isSyncing) && "animate-spin")} />
           <div className="flex-1 min-w-0">
-            <p className={cn("text-xs md:text-sm font-semibold truncate", status.color)}>{status.label}</p>
-            {!isExpanded && totalIssues > 0 && <p className="text-[10px] md:text-xs text-muted-foreground truncate">{status.description}</p>}
+            <p className={cn("text-xs md:text-sm font-semibold fit-clamp", status.color)}>{status.label}</p>
+            {!isExpanded && totalIssues > 0 && <p className="text-[10px] md:text-xs text-muted-foreground fit-clamp">{status.description}</p>}
           </div>
           {totalIssues > 0 && <span className={cn("px-1.5 md:px-2 py-0.5 rounded-full text-[10px] md:text-xs font-bold", "bg-card/50 dark:bg-black/20", status.color)}>{totalIssues}</span>}
         </button>

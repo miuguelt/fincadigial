@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import { treatmentVaccinesService } from '@/entities/treatment-vaccine/api/treatmentVaccines.service';
 
 export default function TreatmentVaccineDetail() {
   const { id } = useParams<{ id: string }>();
+  const { rolePath } = useRoleNavigation();
   const [item, setItem] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -35,7 +37,7 @@ export default function TreatmentVaccineDetail() {
       <div><b>Estado vacunación:</b> {item.vaccination_status}</div>
       <div><b>Tipo vacuna:</b> {item.vaccine_type}</div>
       <div><b>Notas:</b> {item.notes}</div>
-      <Link to="/admin/treatment_vaccines">Volver</Link>
+      <Link to={rolePath('/admin/treatment_vaccines')}>Volver</Link>
     </div>
   );
 }

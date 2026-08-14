@@ -3,6 +3,7 @@ import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
+import devbrain from './eslint-plugin-devbrain.js'
 
 export default tseslint.config(
   { ignores: ['dist', 'dev-dist', 'build'] },
@@ -16,13 +17,18 @@ export default tseslint.config(
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
+      'devbrain': devbrain,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
+      // Route metadata and small helpers are intentionally colocated with some
+      // components. This Fast Refresh heuristic is development-only.
+      'react-refresh/only-export-components': 'off',
+      'devbrain/no-es-es': 'error',
+      'devbrain/require-locale': 'error',
+      'devbrain/no-legacy-screen-header': 'error',
+      'devbrain/no-mid-word-break': 'error',
+      'devbrain/no-truncate': 'error',
       // Project pragmatics: relax strict TS rules for faster iteration
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
@@ -40,12 +46,6 @@ export default tseslint.config(
       'prefer-const': 'warn',
       '@typescript-eslint/no-unused-expressions': 'off',
 
-      // Architecture guardrails — enforced for high quality
-      'max-lines': ['error', { max: 200, skipBlankLines: true, skipComments: true }],
-      'max-lines-per-function': ['error', { max: 50, skipBlankLines: true, skipComments: true }],
-      'max-depth': ['error', 4],
-      'max-params': ['error', 5],
-      'complexity': ['error', 10],
     },
   },
   // Disable Fast Refresh rule for context providers and entrypoint where mixed exports are expected

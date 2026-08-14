@@ -14,7 +14,7 @@ interface EnumEntry { value: string; label: string }
 // VACUNAS
 // =============================================
 
-export let VACCINE_TYPES: readonly EnumEntry[] = [
+export const VACCINE_TYPES: readonly EnumEntry[] = [
   { value: 'Atenuada', label: 'Atenuada' },
   { value: 'Inactivada', label: 'Inactivada' },
   { value: 'Toxoide', label: 'Toxoide' },
@@ -31,7 +31,7 @@ export const VACCINE_TYPE_VALUES = (): string[] => VACCINE_TYPES.map(t => t.valu
 // ESTADOS
 // =============================================
 
-export let FIELD_STATES: readonly EnumEntry[] = [
+export const FIELD_STATES: readonly EnumEntry[] = [
   { value: 'Disponible', label: 'Disponible' },
   { value: 'Ocupado', label: 'Ocupado' },
   { value: 'Mantenimiento', label: 'Mantenimiento' },
@@ -42,7 +42,7 @@ export let FIELD_STATES: readonly EnumEntry[] = [
 
 export const FIELD_STATE_VALUES = (): string[] => FIELD_STATES.map(s => s.value);
 
-export let ANIMAL_DISEASE_STATUSES: readonly EnumEntry[] = [
+export const ANIMAL_DISEASE_STATUSES: readonly EnumEntry[] = [
   { value: 'Activo', label: 'Activo' },
   { value: 'En tratamiento', label: 'En tratamiento' },
   { value: 'Recuperado', label: 'Recuperado' },
@@ -53,7 +53,7 @@ export let ANIMAL_DISEASE_STATUSES: readonly EnumEntry[] = [
 
 export const ANIMAL_DISEASE_STATUS_VALUES = (): string[] => ANIMAL_DISEASE_STATUSES.map(s => s.value);
 
-export let ANIMAL_DISEASE_SEVERITIES: readonly EnumEntry[] = [
+export const ANIMAL_DISEASE_SEVERITIES: readonly EnumEntry[] = [
   { value: 'Leve', label: 'Leve' },
   { value: 'Moderada', label: 'Moderada' },
   { value: 'Severa', label: 'Severa' },
@@ -66,7 +66,7 @@ export const ANIMAL_DISEASE_SEVERITY_VALUES = (): string[] => ANIMAL_DISEASE_SEV
 // RUTAS DE ADMINISTRACIÓN
 // =============================================
 
-export let ADMINISTRATION_ROUTES: readonly EnumEntry[] = [
+export const ADMINISTRATION_ROUTES: readonly EnumEntry[] = [
   { value: 'Intramuscular', label: 'Intramuscular (IM)' },
   { value: 'Subcutánea', label: 'Subcutánea (SC)' },
   { value: 'Intravenosa', label: 'Intravenosa (IV)' },
@@ -81,7 +81,7 @@ export const ADMINISTRATION_ROUTE_VALUES = (): string[] => ADMINISTRATION_ROUTES
 // GÉNEROS
 // =============================================
 
-export let ANIMAL_GENDERS: readonly EnumEntry[] = [
+export const ANIMAL_GENDERS: readonly EnumEntry[] = [
   { value: 'Macho', label: 'Macho' },
   { value: 'Hembra', label: 'Hembra' },
   { value: 'Castrado', label: 'Castrado' },
@@ -93,7 +93,7 @@ export const ANIMAL_GENDER_VALUES = (): string[] => ANIMAL_GENDERS.map(g => g.va
 // ESTADOS DE ANIMAL
 // =============================================
 
-export let ANIMAL_STATES: readonly EnumEntry[] = [
+export const ANIMAL_STATES: readonly EnumEntry[] = [
   { value: 'Sano', label: 'Sano' },
   { value: 'Enfermo', label: 'Enfermo' },
   { value: 'En tratamiento', label: 'En tratamiento' },

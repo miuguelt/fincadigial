@@ -69,18 +69,45 @@ class EventService:
         Emite un evento de nuevo mensaje de chat.
         Este evento debe ser escuchado por el frontend para actualización en tiempo real.
         """
-        # Notificar al destinatario
+        recipient_data = {**message_data, 'type': 'chat_message'}
+        sender_data = {**message_data, 'type': 'chat_message_sent'}
+
+        # Notificar al destinatario. `event` es el contrato canónico; `type`
+        # dentro de data permite a consumidores antiguos reconocerlo también.
         cls.emit_to_user(
             user_id=message_data['recipient_id'],
             event_type='chat_message',
-            data=message_data
+            data=recipient_data,
         )
 
         # También al remitente (para sincronizar entre múltiples pestañas/dispositivos)
         cls.emit_to_user(
             user_id=message_data['sender_id'],
             event_type='chat_message_sent',
-            data=message_data
+            data=sender_data,
+        )
+
+    @classmethod
+    def emit_chat_read(
+        cls,
+        *,
+        message_ids: list[int],
+        sender_id: int,
+        reader_id: int,
+        finca_id: int,
+    ):
+        """Notifica al remitente que el destinatario abrió sus mensajes."""
+        if not message_ids:
+            return
+        cls.emit_to_user(
+            user_id=sender_id,
+            event_type='chat_message_read',
+            data={
+                'type': 'chat_message_read',
+                'message_ids': message_ids,
+                'reader_id': reader_id,
+                'finca_id': finca_id,
+            },
         )
 
     @classmethod

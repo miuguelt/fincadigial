@@ -65,10 +65,10 @@ export function FincaIdentity({ name, profile, location }: Props) {
           <Home className="h-6 w-6" aria-hidden="true" />
         </span>
         <div className="min-w-0">
-          <h2 className="truncate text-xl font-black leading-tight text-foreground sm:text-2xl">
+          <h2 className="fit-clamp text-xl font-black leading-tight text-foreground sm:text-2xl">
             {name}
           </h2>
-          <p className="truncate text-sm text-muted-foreground">
+          <p className="fit-clamp text-sm text-muted-foreground">
             {place || 'Ubicación sin registrar'}
           </p>
         </div>

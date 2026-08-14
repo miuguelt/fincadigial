@@ -9,6 +9,8 @@ import type {
 	ControlEntryModeCopy,
 } from "./ControlEntryForm.types";
 
+export const CONTROL_DESCRIPTION_MAX_LENGTH = 255;
+
 const HEALTH_STATUSES = [
 	"Excelente",
 	"Bueno",
@@ -32,7 +34,7 @@ export const MODE_COPY: Record<ControlEntryMode, ControlEntryModeCopy> = {
 		errorMessage: "No se pudo guardar la novedad",
 	},
 	full: {
-		submitLabel: "Registrar Control",
+		submitLabel: "Guardar revisión",
 		successMessage: "Control registrado correctamente",
 		errorMessage: "Error al registrar control",
 	},
@@ -54,7 +56,13 @@ export function getControlEntrySchema(
 				: optionalPositiveNumber("El peso debe ser mayor a 0"),
 		height: optionalPositiveNumber("La altura debe ser mayor a 0"),
 		health_status: healthStatus,
-		description: z.string().max(500).optional(),
+		description: z
+			.string()
+			.max(
+				CONTROL_DESCRIPTION_MAX_LENGTH,
+				`La observación no puede superar ${CONTROL_DESCRIPTION_MAX_LENGTH} caracteres`,
+			)
+			.optional(),
 	}) as z.ZodType<ControlEntryFormValues>;
 }
 

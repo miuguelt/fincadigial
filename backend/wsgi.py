@@ -119,15 +119,19 @@ with app.app_context():
         db.create_all()
 
         # Poblar catálogos base (especies, razas, enfermedades, vacunas, etc.)
-        from app.services.system_initializer import run_core_initialization
-        from app.services.default_alert_configs import seed_all_fincas
+        from app.services.system_initializer import run_core_initialization, initialize_all_finca_defaults
 
         try:
             run_core_initialization()
-            # Asegurar que todas las fincas existentes tengan alertas base
-            seed_all_fincas()
         except Exception as e:
-            logging.error(f"Error durante la inicialización automática: {e}")
+            logging.error(f"Error durante la inicialización del núcleo: {e}")
+
+        # La reconciliación tenant no debe quedar anulada por un error puntual
+        # del seed histórico de usuarios/catálogos globales.
+        try:
+            initialize_all_finca_defaults()
+        except Exception as e:
+            logging.error(f"Error durante la reconciliación de defaults por finca: {e}")
 
 def _resolve_ssl_context():
     # En desarrollo, desactivar HTTPS por defecto para evitar problemas con certificados 'adhoc'.

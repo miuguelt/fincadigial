@@ -12,7 +12,7 @@ animals_ns = Namespace('analytics/animals', description='🐄 Animal Analytics')
 @animals_ns.route('/<int:animal_id>/medical-history')
 class AnimalMedicalHistory(Resource):
     @jwt_required()
-    @require_permission('animals', 'read')
+    @require_permission('animal-analytics', 'read')
     def get(self, animal_id):
         """Historial médico + reproductivo + alertas + cumplimiento ICA de un animal"""
         limit      = int(flask.request.args.get('limit', 50))
@@ -27,7 +27,7 @@ class AnimalMedicalHistory(Resource):
 @animals_ns.route('/<int:animal_id>/ica-compliance')
 class AnimalICACompliance(Resource):
     @jwt_required()
-    @require_permission('animals', 'read')
+    @require_permission('animal-analytics', 'read')
     def get(self, animal_id):
         """Semáforo de cumplimiento ICA para un animal (verde/amarillo/rojo)"""
         from datetime import date
@@ -38,7 +38,7 @@ class AnimalICACompliance(Resource):
 @animals_ns.route('/ica-compliance-report')
 class HerdICACompliance(Resource):
     @jwt_required()
-    @require_permission('animals', 'read')
+    @require_permission('animal-analytics', 'read')
     def get(self):
         """Reporte de cumplimiento ICA para todo el hato."""
         from app.utils.tenant_context import get_current_finca_id
@@ -53,7 +53,7 @@ class HerdICACompliance(Resource):
 @animals_ns.route('/upcoming-events')
 class UpcomingEvents(Resource):
     @jwt_required()
-    @require_permission('animals', 'read')
+    @require_permission('animal-analytics', 'read')
     def get(self):
         """
         Eventos ganaderos en los próximos N días:
@@ -67,7 +67,7 @@ class UpcomingEvents(Resource):
 @animals_ns.route('/distribution')
 class AnimalDistribution(Resource):
     @jwt_required()
-    @require_permission('animals', 'read')
+    @require_permission('animal-analytics', 'read')
     def get(self):
         """Distribución de animales por raza/sexo"""
         group_by = flask.request.args.get('group_by', 'breed')

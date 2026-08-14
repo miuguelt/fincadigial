@@ -199,7 +199,7 @@ export function useResource<T extends { id?: number | string }, P extends Record
       fromURL.ordering = orderingQP;
     }
     return { ...base, ...last, ...fromURL };
-  }, [fieldsQP, initialParams, limitQP, pageQP, searchQP, orderingQP, sortByQP, sortOrderQP]);
+  }, [fieldsQP, initialParams, limitQP, options.filters, pageQP, searchQP, orderingQP, sortByQP, sortOrderQP]);
 
   const refetch = useCallback(async (params?: P): Promise<T[]> => {
     lastParams.current = params || lastParams.current;
@@ -591,7 +591,7 @@ export function useResource<T extends { id?: number | string }, P extends Record
       if (hasData) setRefreshing(false);
       // NO resetear skipCacheUntil aquí - dejarlo expirar naturalmente por timestamp
     }
-  }, [buildEffectiveParams, cache, cacheTTL, data, generateKey, getCache, map, prefix, safeExecute, service, setCache]);
+  }, [buildEffectiveParams, cache, cacheTTL, data, generateKey, getCache, map, prefix, safeExecute, searchQP, service, setCache]);
 
   // Ref para trackear items recién creados/actualizados que deben preservarse en refetch
   const recentlyCreatedIds = useRef<Set<string>>(new Set());

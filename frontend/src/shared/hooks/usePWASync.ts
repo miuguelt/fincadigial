@@ -56,7 +56,7 @@ interface UsePWASyncOptions {
  *       <button onClick={sync} disabled={isSyncing}>
  *         Sincronizar
  *       </button>
- *       {lastSync && <p>Última sincronización: {new Date(lastSync).toLocaleString()}</p>}
+ *       {lastSync && <p>Última sincronización: {new Date(lastSync).toLocaleString('es-CO')}</p>}
  *     </div>
  *   );
  * }

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import analyticsService from "@/features/reporting/api/analytics.service";
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 
 /**
  * Panel de Próximos Eventos — calendario ejecutivo de la finca.
@@ -65,7 +65,7 @@ function statusBadge(status: string) {
 }
 
 const UpcomingEventsPanel: React.FC = () => {
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
   const [activeTab, setActiveTab] = useState<TabKey>("births");
   const [days, setDays] = useState(30);
 
@@ -90,14 +90,14 @@ const UpcomingEventsPanel: React.FC = () => {
         key={b.animal_id}
         className="flex items-center justify-between py-2.5 border-b border-border last:border-0"
       >
-        <div>
-          <p className="font-semibold text-text-primary text-sm">{b.record}</p>
+        <div className="min-w-0 flex-1">
+          <p className="fit-clamp font-semibold text-text-primary text-sm">{b.record}</p>
           <p className="text-xs text-text-secondary">
             Gestación día {b.gestation_days} · Parto esperado{" "}
             {new Date(b.expected_birth).toLocaleDateString("es-CO")}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <span className="text-xs text-text-secondary">
             {b.days_to_birth < 0
               ? `${Math.abs(b.days_to_birth)} días pasados`
@@ -112,14 +112,14 @@ const UpcomingEventsPanel: React.FC = () => {
         key={p.animal_id}
         className="flex items-center justify-between py-2.5 border-b border-border last:border-0"
       >
-        <div>
-          <p className="font-semibold text-text-primary text-sm">{p.record}</p>
+        <div className="min-w-0 flex-1">
+          <p className="fit-clamp font-semibold text-text-primary text-sm">{p.record}</p>
           <p className="text-xs text-text-secondary">
             Parto {new Date(p.birth_date).toLocaleDateString("es-CO")} · Día{" "}
             {p.days_postparto} post-parto
           </p>
         </div>
-        <div className="text-right">
+        <div className="text-right shrink-0">
           <p className="text-xs text-text-secondary">Próxima revisión</p>
           <p className="text-xs font-semibold text-orange-600">
             {new Date(p.next_check).toLocaleDateString("es-CO")}
@@ -132,14 +132,14 @@ const UpcomingEventsPanel: React.FC = () => {
         key={v.animal_id}
         className="flex items-center justify-between py-2.5 border-b border-border last:border-0"
       >
-        <div>
-          <p className="font-semibold text-text-primary text-sm">{v.record}</p>
+        <div className="min-w-0 flex-1">
+          <p className="fit-clamp font-semibold text-text-primary text-sm">{v.record}</p>
           <p className="text-xs text-text-secondary">{v.vaccine}</p>
           <p className="text-xs text-text-secondary">
             Última: {new Date(v.last_date).toLocaleDateString("es-CO")}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <span className="text-xs text-text-secondary">
             {v.days_remaining < 0
               ? `${Math.abs(v.days_remaining)}d vencida`
@@ -154,8 +154,8 @@ const UpcomingEventsPanel: React.FC = () => {
         key={c.animal_id}
         className="flex items-center justify-between py-2.5 border-b border-border last:border-0"
       >
-        <div>
-          <p className="font-semibold text-text-primary text-sm">{c.record}</p>
+        <div className="min-w-0 flex-1">
+          <p className="fit-clamp font-semibold text-text-primary text-sm">{c.record}</p>
           <p className="text-xs text-text-secondary">
             Último control:{" "}
             {new Date(c.last_control).toLocaleDateString("es-CO")}
@@ -165,8 +165,8 @@ const UpcomingEventsPanel: React.FC = () => {
           </p>
         </div>
         <button
-          onClick={() => navigate("/admin/control")}
-          className="text-xs font-semibold text-primary hover:underline"
+          onClick={() => goTo("/admin/control")}
+          className="text-xs font-semibold text-primary hover:underline shrink-0"
         >
           Programar →
         </button>
@@ -181,7 +181,7 @@ const UpcomingEventsPanel: React.FC = () => {
     <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-sm">
       {/* Header */}
       <div className="px-6 py-5 border-b border-border">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h2 className="text-xl font-black text-text-primary tracking-tight">
               📅 Próximos Eventos

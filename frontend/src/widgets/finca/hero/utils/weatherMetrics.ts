@@ -100,7 +100,7 @@ function feelsMetric(r: WeatherRecord): WeatherMetricItem {
     key: 'feels',
     label: 'Sensación',
     value: num(r.feels_like_celsius, '°C', 1),
-    hint: 'Estrés calórico del hato',
+    hint: 'Estrés calórico del ganado',
     icon: Thermometer,
     tone: 'rose',
   };

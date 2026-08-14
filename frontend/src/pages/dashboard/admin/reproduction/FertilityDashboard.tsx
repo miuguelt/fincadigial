@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
+import { useCallback } from 'react';
 import { Button } from '@/shared/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { Badge } from '@/shared/ui/badge';
@@ -16,13 +17,14 @@ import {
   Sparkles,
   Award
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import { reproductionService } from '@/entities/reproduction/api/reproduction.service';
 import { useToast } from '@/app/providers/ToastContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import AssistedCalvingForm from '@/widgets/reproduction/AssistedCalvingForm';
 import { getStatusBadgeClass } from '@/shared/utils/badgeStyles';
 import { motion } from 'framer-motion';
+import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
@@ -53,14 +55,14 @@ interface FertilityData {
 }
 
 export default function FertilityDashboard() {
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [months, setMonths] = useState(12);
   const [data, setData] = useState<FertilityData | null>(null);
   const [isCalvingModalOpen, setIsCalvingModalOpen] = useState(false);
 
-  const loadDashboard = async () => {
+  const loadDashboard = useCallback(async () => {
     setLoading(true);
     try {
       const response = await reproductionService.getFertilityDashboard(months);
@@ -71,11 +73,11 @@ export default function FertilityDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [months, showToast]);
 
   useEffect(() => {
     loadDashboard();
-  }, [months]);
+  }, [loadDashboard]);
 
   const monthlyData = data?.events_by_month
     ? Object.entries(data.events_by_month).map(([month, count]) => ({ month, count }))
@@ -107,41 +109,26 @@ export default function FertilityDashboard() {
 
   return (
     <div className="min-h-full bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 lg:p-8 space-y-8 overflow-x-hidden">
-      {/* Header Premium */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 bg-card/45 backdrop-blur-xl p-6 sm:p-8 rounded-[2.5rem] border border-border/50 shadow-2xl shadow-primary/5"
-      >
-        <div className="flex items-center gap-5">
+      <DataScreenHeader
+        leading={
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate('/admin/reproduction')}
-            className="h-11 w-11 rounded-full border border-border/60 hover:bg-muted/50 transition-colors"
+            onClick={() => goTo('/admin/reproduction')}
+            className="h-9 w-9 rounded-full border border-border/60 hover:bg-muted/50 transition-colors shrink-0"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div className="flex items-center gap-4">
-            <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-xl shadow-pink-500/20">
-              <Heart className="h-7 w-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tighter text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-                Dashboard de <span className="text-pink-600">Fertilidad</span>
-              </h1>
-              <p className="text-sm sm:text-base text-muted-foreground font-medium mt-1">
-                Auditoría reproductiva y seguimiento de partos
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+        }
+        icon={<Heart className="h-5 w-5 text-white" />}
+        iconClassName="from-pink-500 to-rose-600 shadow-pink-500/20"
+        title={<>Dashboard de <span className="text-pink-600">Fertilidad</span></>}
+        description="Auditoría reproductiva y seguimiento de partos"
+        actions={
+          <>
           <Dialog open={isCalvingModalOpen} onOpenChange={setIsCalvingModalOpen}>
             <DialogTrigger asChild>
-              <Button className="rounded-lg h-12 gap-2 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-bold transition-all shadow-xl shadow-pink-600/20 w-full sm:w-auto">
+              <Button className="rounded-lg h-9 gap-2 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-bold transition-all shadow-lg shadow-pink-600/20">
                 <Plus className="h-4 w-4" />
                 Registrar Parto Asistido
               </Button>
@@ -162,7 +149,7 @@ export default function FertilityDashboard() {
           </Dialog>
 
           <Select value={months.toString()} onValueChange={(v) => setMonths(parseInt(v))}>
-            <SelectTrigger className="w-full sm:w-[180px] h-12 rounded-lg bg-background/50 border-border/50 font-semibold focus:ring-pink-500/20">
+            <SelectTrigger className="w-full sm:w-[180px] h-9 rounded-lg bg-background/50 border-border/50 font-semibold focus:ring-pink-500/20">
               <SelectValue placeholder="Período" />
             </SelectTrigger>
             <SelectContent className="rounded-xl border border-border">
@@ -172,8 +159,9 @@ export default function FertilityDashboard() {
               <SelectItem value="24">Últimos 24 meses</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-      </motion.div>
+          </>
+        }
+      />
 
       {/* KPI Cards Premium */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -189,7 +177,7 @@ export default function FertilityDashboard() {
           {
             title: 'Intervalo entre Partos',
             value: `${data.avg_interval_between_births_days} días`,
-            subtitle: 'Promedio del hato',
+            subtitle: 'Promedio del ganado',
             borderColor: 'border-l-blue-500',
             bg: 'bg-blue-500/5',
             icon: <Calendar className="w-5 h-5 text-blue-600" />
@@ -344,7 +332,7 @@ export default function FertilityDashboard() {
               {data.top_females.map((female, index) => (
                 <div
                   key={female.animal_id}
-                  onClick={() => navigate(`/admin/animals/${female.animal_id}`)}
+                  onClick={() => goTo(`/admin/animals/${female.animal_id}`)}
                   className="flex items-center justify-between p-3 rounded-lg bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/10 cursor-pointer transition-all"
                 >
                   <div className="flex items-center gap-3">
@@ -384,7 +372,7 @@ export default function FertilityDashboard() {
               {data.bottom_females.map((female, index) => (
                 <div
                   key={female.animal_id}
-                  onClick={() => navigate(`/admin/animals/${female.animal_id}`)}
+                  onClick={() => goTo(`/admin/animals/${female.animal_id}`)}
                   className="flex items-center justify-between p-3 rounded-lg bg-rose-500/5 hover:bg-rose-500/10 border border-rose-500/10 cursor-pointer transition-all"
                 >
                   <div className="flex items-center gap-3">

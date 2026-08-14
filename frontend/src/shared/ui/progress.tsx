@@ -4,26 +4,36 @@ import { cn } from "@/shared/ui/cn.ts"
 interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   value?: number;
   className?: string;
+  indicatorClassName?: string;
 }
 
 const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
-  ({ className, value = 0, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn(
-        "relative h-4 w-full overflow-hidden rounded-full bg-secondary",
-        className
-      )}
-      {...props}
-    >
+  ({ className, value = 0, indicatorClassName, ...props }, ref) => {
+    const percent = Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 0;
+
+    return (
       <div
+        ref={ref}
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={percent}
         className={cn(
-          "h-full w-full flex-1 bg-primary transition-all",
-          `w-[${Math.min(100, Math.max(0, value))}%)]`
+          "relative h-4 w-full overflow-hidden rounded-full bg-secondary",
+          className
         )}
-      />
-    </div>
-  )
+        {...props}
+      >
+        <div
+          className={cn(
+            "h-full rounded-full bg-primary transition-[width] duration-500 ease-out",
+            indicatorClassName
+          )}
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+    )
+  }
 )
 Progress.displayName = "Progress"
 

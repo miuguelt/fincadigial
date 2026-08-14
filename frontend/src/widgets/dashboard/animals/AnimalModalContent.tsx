@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Activity, Syringe, MapPin, Pill, ClipboardList, TrendingUp, Plus, List, Eye, Edit, Trash2, RefreshCw, ChevronDown, ChevronUp, Copy, FileText } from 'lucide-react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { Activity, Syringe, MapPin, Pill, ClipboardList, TrendingUp, Plus, List, Eye, Edit, Trash2, RefreshCw, ChevronDown, ChevronUp, Copy, FileText, Heart, Shield, Calendar, Scale, Zap, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/shared/ui/cn';
 import { useToast } from '@/app/providers/ToastContext';
 import { Badge } from '@/shared/ui/badge';
@@ -59,19 +59,35 @@ function DetailField({
 function SummaryMetric({
   label,
   value,
-  icon
+  icon,
+  accent = 'default'
 }: {
   label: string;
   value: React.ReactNode;
   icon: React.ReactNode;
+  accent?: 'emerald' | 'blue' | 'amber' | 'purple' | 'default';
 }) {
+  const accentStyles: Record<string, string> = {
+    emerald: 'from-emerald-500/8 to-transparent dark:from-emerald-500/5 text-emerald-600 dark:text-emerald-400',
+    blue: 'from-blue-500/8 to-transparent dark:from-blue-500/5 text-blue-600 dark:text-blue-400',
+    amber: 'from-amber-500/8 to-transparent dark:from-amber-500/5 text-amber-600 dark:text-amber-400',
+    purple: 'from-purple-500/8 to-transparent dark:from-purple-500/5 text-purple-600 dark:text-purple-400',
+    default: 'from-primary/5 to-transparent text-primary/70',
+  };
+  const style = accentStyles[accent] || accentStyles.default;
+  const iconColor = style.split(' ').filter(c => c.startsWith('text-')).join(' ');
+
   return (
-    <div className="min-w-0 border-r border-b border-border/40 p-3 last:border-r-0 even:border-r-0">
+    <div className={cn(
+      "min-w-0 border-r border-b border-border/40 p-3 last:border-r-0 even:border-r-0",
+      "bg-gradient-to-br transition-all duration-200 hover:shadow-sm",
+      style
+    )}>
       <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-        <span className="text-primary/70">{icon}</span>
+        <span className={iconColor}>{icon}</span>
         {label}
       </div>
-      <div className="mt-1 truncate text-base font-bold text-foreground" title={String(value ?? '')}>
+      <div className="mt-1 fit-clamp text-base font-bold text-foreground" title={String(value ?? '')}>
         {value}
       </div>
     </div>
@@ -80,19 +96,275 @@ function SummaryMetric({
 
 function MiniFact({
   label,
-  value
+  value,
+  icon,
+  accent = 'slate'
 }: {
   label: string;
   value: React.ReactNode;
+  icon?: React.ReactNode;
+  accent?: 'blue' | 'pink' | 'emerald' | 'amber' | 'slate';
 }) {
+  const accentMap: Record<string, string> = {
+    blue: 'border-blue-200/60 dark:border-blue-800/40 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-blue-500/5',
+    pink: 'border-pink-200/60 dark:border-pink-800/40 hover:border-pink-300 dark:hover:border-pink-700 hover:shadow-pink-500/5',
+    emerald: 'border-emerald-200/60 dark:border-emerald-800/40 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-emerald-500/5',
+    amber: 'border-amber-200/60 dark:border-amber-800/40 hover:border-amber-300 dark:hover:border-amber-700 hover:shadow-amber-500/5',
+    slate: 'border-border/40 hover:border-border/60 hover:shadow-slate-500/5',
+  };
+  const iconColorMap: Record<string, string> = {
+    blue: 'text-blue-500/60 dark:text-blue-400/50',
+    pink: 'text-pink-500/60 dark:text-pink-400/50',
+    emerald: 'text-emerald-500/60 dark:text-emerald-400/50',
+    amber: 'text-amber-500/60 dark:text-amber-400/50',
+    slate: 'text-muted-foreground/50',
+  };
+
   return (
-    <div className="min-w-0 rounded-lg border border-border/40 bg-background/50 px-3 py-2">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+    <div className={cn(
+      "min-w-0 rounded-lg border bg-background/50 px-3 py-2 transition-all duration-200 hover:shadow-sm",
+      accentMap[accent] || accentMap.slate
+    )}>
+      <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+        {icon && <span className={cn("shrink-0", iconColorMap[accent] || iconColorMap.slate)}>{icon}</span>}
         {label}
       </p>
-      <p className="mt-0.5 truncate text-sm font-semibold text-foreground" title={String(value ?? '')}>
+      <p className="mt-0.5 fit-clamp text-sm font-semibold text-foreground" title={String(value ?? '')}>
         {value || '-'}
       </p>
+    </div>
+  );
+}
+
+// ─── Estadísticas Rápidas (Bento Grid) ───────────────────────────────
+function AnimalStatsBar({
+  vaccinations,
+  treatments,
+  controls,
+  diseases,
+  geneticImprovements: _geneticImprovements,
+  animal: _animal
+}: {
+  vaccinations: any[];
+  treatments: any[];
+  controls: any[];
+  diseases: any[];
+  geneticImprovements: any[];
+  animal: any;
+}) {
+  const activeDiseases = diseases.filter((d: any) => d.status === 'Activo').length;
+
+  // ADG: Average Daily Gain = (último peso - primer peso) / diff días
+  const adg = useMemo(() => {
+    if (controls.length < 2) return null;
+    const sorted = [...controls]
+      .filter(c => c.weight && c.checkup_date)
+      .sort((a, b) => new Date(a.checkup_date).getTime() - new Date(b.checkup_date).getTime());
+    if (sorted.length < 2) return null;
+    const first = sorted[0];
+    const last = sorted[sorted.length - 1];
+    const diffDays = (new Date(last.checkup_date).getTime() - new Date(first.checkup_date).getTime()) / (1000 * 60 * 60 * 24);
+    if (diffDays <= 0) return null;
+    return ((last.weight - first.weight) / diffDays).toFixed(2);
+  }, [controls]);
+
+  // Días desde el último control
+  const daysSinceLastControl = useMemo(() => {
+    if (controls.length === 0) return null;
+    const sorted = [...controls]
+      .filter(c => c.checkup_date)
+      .sort((a, b) => new Date(b.checkup_date).getTime() - new Date(a.checkup_date).getTime());
+    if (sorted.length === 0) return null;
+    const last = new Date(sorted[0].checkup_date);
+    const diff = Math.floor((Date.now() - last.getTime()) / (1000 * 60 * 60 * 24));
+    return diff;
+  }, [controls]);
+
+  const stats = [
+    {
+      label: 'Vacunas',
+      value: vaccinations.length,
+      icon: <Syringe className="h-4 w-4" />,
+      color: 'from-cyan-500/10 to-cyan-500/0 dark:from-cyan-500/8',
+      iconColor: 'text-cyan-500 dark:text-cyan-400',
+      borderColor: 'border-cyan-200/50 dark:border-cyan-800/30',
+    },
+    {
+      label: 'Tratamientos',
+      value: treatments.length,
+      icon: <Pill className="h-4 w-4" />,
+      color: 'from-purple-500/10 to-purple-500/0 dark:from-purple-500/8',
+      iconColor: 'text-purple-500 dark:text-purple-400',
+      borderColor: 'border-purple-200/50 dark:border-purple-800/30',
+    },
+    {
+      label: 'Controles',
+      value: controls.length,
+      icon: <ClipboardList className="h-4 w-4" />,
+      color: 'from-blue-500/10 to-blue-500/0 dark:from-blue-500/8',
+      iconColor: 'text-blue-500 dark:text-blue-400',
+      borderColor: 'border-blue-200/50 dark:border-blue-800/30',
+    },
+    {
+      label: 'Enf. Activas',
+      value: activeDiseases,
+      icon: <AlertTriangle className="h-4 w-4" />,
+      color: activeDiseases > 0
+        ? 'from-red-500/10 to-red-500/0 dark:from-red-500/8'
+        : 'from-emerald-500/10 to-emerald-500/0 dark:from-emerald-500/8',
+      iconColor: activeDiseases > 0
+        ? 'text-red-500 dark:text-red-400'
+        : 'text-emerald-500 dark:text-emerald-400',
+      borderColor: activeDiseases > 0
+        ? 'border-red-200/50 dark:border-red-800/30'
+        : 'border-emerald-200/50 dark:border-emerald-800/30',
+    },
+    {
+      label: 'GDP (kg/día)',
+      value: adg !== null ? `${adg}` : '-',
+      icon: <TrendingUp className="h-4 w-4" />,
+      color: 'from-amber-500/10 to-amber-500/0 dark:from-amber-500/8',
+      iconColor: 'text-amber-500 dark:text-amber-400',
+      borderColor: 'border-amber-200/50 dark:border-amber-800/30',
+    },
+    {
+      label: 'Días s/ Control',
+      value: daysSinceLastControl !== null ? daysSinceLastControl : '-',
+      icon: <Calendar className="h-4 w-4" />,
+      color: daysSinceLastControl !== null && daysSinceLastControl > 30
+        ? 'from-orange-500/10 to-orange-500/0 dark:from-orange-500/8'
+        : 'from-teal-500/10 to-teal-500/0 dark:from-teal-500/8',
+      iconColor: daysSinceLastControl !== null && daysSinceLastControl > 30
+        ? 'text-orange-500 dark:text-orange-400'
+        : 'text-teal-500 dark:text-teal-400',
+      borderColor: daysSinceLastControl !== null && daysSinceLastControl > 30
+        ? 'border-orange-200/50 dark:border-orange-800/30'
+        : 'border-teal-200/50 dark:border-teal-800/30',
+    },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+      {stats.map((s) => (
+        <div
+          key={s.label}
+          className={cn(
+            "relative overflow-hidden rounded-xl border p-3 bg-gradient-to-br transition-all duration-300",
+            "hover:shadow-md hover:scale-[1.02] active:scale-100",
+            s.color,
+            s.borderColor
+          )}
+        >
+          <div className={cn("mb-1.5", s.iconColor)}>
+            {s.icon}
+          </div>
+          <div className="text-lg font-black text-foreground tabular-nums">
+            {s.value}
+          </div>
+          <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/70 mt-0.5">
+            {s.label}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Score de Salud ──────────────────────────────────────────────────
+function HealthScoreIndicator({
+  diseases,
+  controls,
+  animal,
+  hasRecentTreatments: _hasRecentTreatments
+}: {
+  diseases: any[];
+  controls: any[];
+  animal: any;
+  hasRecentTreatments: boolean | null;
+}) {
+  const score = useMemo(() => {
+    let pts = 0;
+    // Sin enfermedades activas → +40pts
+    const activeDiseases = diseases.filter((d: any) => d.status === 'Activo').length;
+    if (activeDiseases === 0) pts += 40;
+    else if (activeDiseases === 1) pts += 20;
+    // Peso registrado → +20pts
+    if (animal.weight && animal.weight > 0) pts += 20;
+    // Control reciente (< 30 días) → +20pts
+    if (controls.length > 0) {
+      const sorted = [...controls]
+        .filter(c => c.checkup_date)
+        .sort((a: any, b: any) => new Date(b.checkup_date).getTime() - new Date(a.checkup_date).getTime());
+      if (sorted.length > 0) {
+        const lastDate = new Date(sorted[0].checkup_date);
+        const diff = (Date.now() - lastDate.getTime()) / (1000 * 60 * 60 * 24);
+        if (diff <= 30) pts += 20;
+        else if (diff <= 60) pts += 10;
+      }
+    }
+    // Sin alertas pendientes → +20pts
+    const pendingAlerts = animal.pending_alerts_count ?? 0;
+    if (pendingAlerts === 0) pts += 20;
+    else if (pendingAlerts <= 2) pts += 10;
+    return pts;
+  }, [diseases, controls, animal]);
+
+  const color = score >= 70
+    ? { bar: 'bg-emerald-500', text: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500/10', label: 'Óptimo' }
+    : score >= 40
+      ? { bar: 'bg-amber-500', text: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-500/10', label: 'Atención' }
+      : { bar: 'bg-red-500', text: 'text-red-600 dark:text-red-400', bg: 'bg-red-500/10', label: 'Crítico' };
+
+  return (
+    <div className={cn(
+      "rounded-xl border border-border/40 p-4 transition-all duration-300",
+      color.bg
+    )}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Shield className={cn("h-4 w-4", color.text)} />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Score de Salud
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className={cn("text-sm font-black tabular-nums", color.text)}>
+            {score}/100
+          </span>
+          <span className={cn(
+            "text-[9px] font-bold uppercase px-2 py-0.5 rounded-full",
+            score >= 70 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+              : score >= 40 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+                : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+          )}>
+            {color.label}
+          </span>
+        </div>
+      </div>
+      <div className="relative h-2 rounded-full bg-muted/40 overflow-hidden">
+        <div
+          className={cn(
+            "absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out",
+            color.bar
+          )}
+          style={{ width: `${score}%` }}
+        />
+      </div>
+      <div className="mt-2.5 grid grid-cols-4 gap-1">
+        {[
+          { label: 'Enfermedades', ok: diseases.filter((d: any) => d.status === 'Activo').length === 0, icon: <Heart className="h-3 w-3" /> },
+          { label: 'Peso', ok: !!(animal.weight && animal.weight > 0), icon: <Scale className="h-3 w-3" /> },
+          { label: 'Control', ok: controls.length > 0 && (() => { const s = [...controls].filter(c => c.checkup_date).sort((a: any, b: any) => new Date(b.checkup_date).getTime() - new Date(a.checkup_date).getTime()); return s.length > 0 && (Date.now() - new Date(s[0].checkup_date).getTime()) / (1000*60*60*24) <= 30; })(), icon: <Syringe className="h-3 w-3" /> },
+          { label: 'Alertas', ok: (animal.pending_alerts_count ?? 0) === 0, icon: <Zap className="h-3 w-3" /> },
+        ].map((item) => (
+          <div key={item.label} className="flex items-center gap-1 text-[9px] font-medium">
+            {item.ok
+              ? <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
+              : <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0" />}
+            <span className="text-muted-foreground fit-clamp">{item.label}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -487,7 +759,7 @@ export function AnimalModalContent({
 
   const gender = animal.sex || animal.gender;
   const birthDate = animal.birth_date
-    ? new Date(animal.birth_date).toLocaleDateString('es-ES')
+    ? new Date(animal.birth_date).toLocaleDateString('es-CO')
     : '-';
   const ageMonths = animal.age_in_months ?? '-';
   const ageDays = animal.age_in_days ?? '-';
@@ -817,15 +1089,22 @@ export function AnimalModalContent({
         ? 'Atención'
         : 'Estable';
   const healthTone = healthLabel === 'Crítico'
-    ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300'
+    ? 'border-red-200/60 bg-red-50/80 text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300 backdrop-blur-sm'
     : healthLabel === 'Atención'
-      ? 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300'
-      : 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300';
+      ? 'border-amber-200/60 bg-amber-50/80 text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300 backdrop-blur-sm'
+      : 'border-emerald-200/60 bg-emerald-50/80 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300 backdrop-blur-sm';
   const sexTone = gender === 'Macho'
-    ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300'
+    ? 'border-blue-200/60 bg-blue-50/80 text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300 backdrop-blur-sm'
     : gender === 'Hembra'
-      ? 'border-pink-200 bg-pink-50 text-pink-700 dark:border-pink-900 dark:bg-pink-950/30 dark:text-pink-300'
-      : 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-300';
+      ? 'border-pink-200/60 bg-pink-50/80 text-pink-700 dark:border-pink-900/60 dark:bg-pink-950/40 dark:text-pink-300 backdrop-blur-sm'
+      : 'border-slate-200/60 bg-slate-50/80 text-slate-700 dark:border-slate-800/60 dark:bg-slate-900/40 dark:text-slate-300 backdrop-blur-sm';
+
+  // Gradiente dinámico del aside basado en estado de salud
+  const asideGradient = healthLabel === 'Crítico'
+    ? 'bg-gradient-to-b from-red-50/60 via-card to-card dark:from-red-950/20 dark:via-card dark:to-card'
+    : healthLabel === 'Atención'
+      ? 'bg-gradient-to-b from-amber-50/60 via-card to-card dark:from-amber-950/20 dark:via-card dark:to-card'
+      : 'bg-gradient-to-b from-emerald-50/50 via-card to-card dark:from-emerald-950/15 dark:via-card dark:to-card';
   const healthAlerts = controls.length >= 2 ? analyzeGrowthTrends(controls.map(c => ({
     date: c.checkup_date,
     weight: c.weight,
@@ -848,15 +1127,15 @@ export function AnimalModalContent({
           hasAnimalImages && "xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.9fr)]"
         )}>
           {hasAnimalImages && (
-            <div className="min-w-0 overflow-hidden rounded-xl border border-border/50 bg-background shadow-sm">
-              <div className="relative h-[clamp(300px,48vh,620px)] bg-black">
+            <div className="min-w-0 overflow-hidden rounded-xl border border-border/30 shadow-lg h-full">
+              <div className="relative h-full min-h-[280px]">
                 <AnimalImageBanner
                   animalId={animal.id}
                   height="100%"
                   showControls={true}
                   autoPlayInterval={5000}
                   hideWhenEmpty={true}
-                  objectFit="contain"
+                  objectFit="cover"
                   refreshTrigger={refreshTrigger}
                   initialImages={animalImages}
                 />
@@ -864,17 +1143,17 @@ export function AnimalModalContent({
             </div>
           )}
 
-          <aside className="min-w-0 rounded-xl border border-border/60 bg-card shadow-sm overflow-hidden">
+          <aside className={cn("min-w-0 rounded-xl border border-border/60 shadow-sm overflow-hidden", asideGradient)}>
             <div className="p-4 border-b border-border/40">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
                     Ficha del animal
                   </p>
-                  <h2 className="mt-1 text-2xl font-bold text-foreground truncate" data-testid="animal-modal-title">
+                  <h2 className="mt-1 text-2xl font-bold text-foreground fit-clamp" data-testid="animal-modal-title">
                     {animal.record || `Animal #${animal.id}`}
                   </h2>
-                  <p className="mt-1 text-sm text-muted-foreground truncate">
+                  <p className="mt-1 text-sm text-muted-foreground fit-clamp">
                     ID {animal.id} · {breedLabel}
                   </p>
                 </div>
@@ -939,15 +1218,15 @@ export function AnimalModalContent({
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                <Badge variant="outline" className={cn("h-7 px-2.5 text-xs font-semibold", healthTone)}>
+                <Badge variant="outline" className={cn("h-7 px-2.5 text-xs font-semibold shadow-sm", healthTone)}>
                   <Activity className="mr-1.5 h-3.5 w-3.5" />
                   {healthLabel}
                 </Badge>
-                <Badge variant="outline" className={cn("h-7 px-2.5 text-xs font-semibold", sexTone)}>
+                <Badge variant="outline" className={cn("h-7 px-2.5 text-xs font-semibold shadow-sm", sexTone)}>
                   {gender || 'Sin sexo'}
                 </Badge>
                 {hasRecentTreatments && (
-                  <Badge variant="outline" className="h-7 px-2.5 text-xs font-semibold border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
+                  <Badge variant="outline" className="h-7 px-2.5 text-xs font-semibold shadow-sm border-amber-200/60 bg-amber-50/80 text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300 backdrop-blur-sm animate-pulse">
                     <Pill className="mr-1.5 h-3.5 w-3.5" />
                     Tratamiento reciente
                   </Badge>
@@ -956,15 +1235,15 @@ export function AnimalModalContent({
             </div>
 
             <div className="grid grid-cols-2 border-b border-border/40">
-              <SummaryMetric label="Peso" value={displayWeight} icon={<TrendingUp className="h-4 w-4" />} />
-              <SummaryMetric label="Edad" value={ageMonths !== '-' ? `${ageMonths} meses` : '-'} icon={<Activity className="h-4 w-4" />} />
-              <SummaryMetric label="Estado" value={status} icon={<ClipboardList className="h-4 w-4" />} />
-              <SummaryMetric label="Ult. control" value={latestControlDate} icon={<Syringe className="h-4 w-4" />} />
+              <SummaryMetric label="Peso" value={displayWeight} icon={<TrendingUp className="h-4 w-4" />} accent="emerald" />
+              <SummaryMetric label="Edad" value={ageMonths !== '-' ? `${ageMonths} meses` : '-'} icon={<Activity className="h-4 w-4" />} accent="blue" />
+              <SummaryMetric label="Estado" value={status} icon={<ClipboardList className="h-4 w-4" />} accent="amber" />
+              <SummaryMetric label="Ult. control" value={latestControlDate} icon={<Syringe className="h-4 w-4" />} accent="purple" />
             </div>
 
             <div className="p-4 space-y-3">
-              <div className="rounded-lg border border-border/50 bg-background/60 p-3">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              <div className="rounded-lg border border-emerald-200/40 dark:border-emerald-800/30 bg-emerald-50/30 dark:bg-emerald-950/10 p-3 transition-all hover:shadow-sm">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                   <MapPin className="h-3.5 w-3.5" />
                   Ubicación
                 </div>
@@ -974,14 +1253,32 @@ export function AnimalModalContent({
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <MiniFact label="Nacimiento" value={birthDate} />
-                <MiniFact label="Adulto" value={isAdult} />
-                <MiniFact label="Padre" value={fatherLabel === '-' ? 'N/A' : fatherLabel} />
-                <MiniFact label="Madre" value={motherLabel === '-' ? 'N/A' : motherLabel} />
+                <MiniFact label="Nacimiento" value={birthDate} icon={<Calendar className="h-3 w-3" />} accent="amber" />
+                <MiniFact label="Adulto" value={isAdult} icon={<CheckCircle2 className="h-3 w-3" />} accent="emerald" />
+                <MiniFact label="Padre" value={fatherLabel === '-' ? 'N/A' : fatherLabel} icon={<Activity className="h-3 w-3" />} accent="blue" />
+                <MiniFact label="Madre" value={motherLabel === '-' ? 'N/A' : motherLabel} icon={<Heart className="h-3 w-3" />} accent="pink" />
               </div>
             </div>
           </aside>
         </section>
+
+        {/* ─── Estadísticas Rápidas (Bento Grid) ─── */}
+        <AnimalStatsBar
+          vaccinations={vaccinations}
+          treatments={treatments}
+          controls={controls}
+          diseases={diseases}
+          geneticImprovements={geneticImprovements}
+          animal={animal}
+        />
+
+        {/* ─── Score de Salud ─── */}
+        <HealthScoreIndicator
+          diseases={diseases}
+          controls={controls}
+          animal={animal}
+          hasRecentTreatments={hasRecentTreatments}
+        />
 
         <AlertsSection animalId={animal.id} healthAlerts={healthAlerts} />
 
@@ -1188,7 +1485,7 @@ export function AnimalModalContent({
               renderItem={(item) => (
                 <div className="flex flex-col gap-1.5 w-full">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[13px] font-bold text-foreground truncate">
+                    <span className="text-[13px] font-bold text-foreground fit-clamp">
                       {diseaseOptions[item.disease_id] || `Enfermedad #${item.disease_id}`}
                     </span>
                     <Badge
@@ -1202,7 +1499,7 @@ export function AnimalModalContent({
                     <span className="flex items-center gap-1">
                       <span className="font-semibold">Diagnóstico:</span> {formatDate(item.diagnosis_date)}
                     </span>
-                    {item.notes && <span className="italic max-w-[120px] truncate">"{item.notes}"</span>}
+                    {item.notes && <span className="italic max-w-[120px] fit-clamp">"{item.notes}"</span>}
                   </div>
                 </div>
               )}
@@ -1350,7 +1647,7 @@ export function AnimalModalContent({
               renderItem={(item) => (
                 <div className="flex flex-col gap-1.5 w-full">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[13px] font-bold text-foreground truncate">
+                    <span className="text-[13px] font-bold text-foreground fit-clamp">
                       {vaccineOptions[item.vaccine_id] || `Vacuna #${item.vaccine_id}`}
                     </span>
                     <Badge variant="outline" className="text-[9px] h-4 bg-blue-500/10 text-blue-700 border-blue-200 shrink-0">

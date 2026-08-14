@@ -32,7 +32,7 @@ class MockBroadcastChannel {
 describe('AuthProvider (smoke)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Simular sesi¢n activa de navegador (requerida para permitir /auth/me en arranque)
+    // Simular sesión activa de navegador (requerida para permitir /auth/me en arranque)
     sessionStorage.setItem('auth:session_active', '1')
     getUserProfileSpy.mockResolvedValue({ user: { id: 1, role: 'Administrador', fullname: 'Test User' } } as any);
   });
@@ -66,7 +66,7 @@ describe('AuthProvider', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    // Simular sesi¢n activa de navegador (requerida para permitir /auth/me en arranque)
+    // Simular sesión activa de navegador (requerida para permitir /auth/me en arranque)
     sessionStorage.setItem('auth:session_active', '1')
 
     // Spy on getUserProfile and provide role variants to validate normalizeRole

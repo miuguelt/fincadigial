@@ -170,7 +170,9 @@ class UsersService extends BaseService<UserResponse> {
    * [ADMIN/INSTRUCTOR] Cambiar el estado de aprobación de un usuario
    */
   async updateApprovalStatus(id: number, approvalStatus: 'Approved' | 'Rejected' | 'Suspended'): Promise<UserResponse> {
-    return this.customRequest(`${id}/approval-status`, 'PATCH', { approval_status: approvalStatus });
+    const result = await this.customRequest<UserResponse>(`${id}/approval-status`, 'PATCH', { approval_status: approvalStatus });
+    await this.clearCache();
+    return result;
   }
 
   /**

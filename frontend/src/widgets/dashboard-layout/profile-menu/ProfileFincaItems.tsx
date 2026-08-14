@@ -1,6 +1,7 @@
-import { Check, LayoutDashboard, Plus } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
-import { DropdownMenuItem, DropdownMenuLabel } from '@/shared/ui/dropdown-menu';
+import { Check, Eye, Plus } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { IconBuildingCottage } from '@/shared/ui/icons';
+import { DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/shared/ui/dropdown-menu';
 import { useMultiFinca } from '@/features/multi-finca/model/useMultiFinca';
 import { cn } from '@/shared/ui/cn';
 
@@ -11,10 +12,10 @@ interface Props {
 }
 
 /**
- * Cambio de finca dentro del menú del perfil. Antes vivía en el menú lateral;
- * se movió aquí para que la hamburguesa sea únicamente la lista de secciones.
+ * Cambio de finca dentro del menú del perfil.
  */
 export function ProfileFincaItems({ fincas, activeFincaId, onNavigate }: Props) {
+  const navigate = useNavigate();
   const [, setSearchParams] = useSearchParams();
   const { switchFinca, switching } = useMultiFinca();
 
@@ -42,16 +43,29 @@ export function ProfileFincaItems({ fincas, activeFincaId, onNavigate }: Props) 
               )}
             >
               <span className="flex min-w-0 items-center gap-2">
-                <LayoutDashboard
+                <IconBuildingCottage
                   className={cn('h-4 w-4 shrink-0', isActive ? 'text-primary' : 'text-muted-foreground/60')}
                 />
-                <span className="truncate">{displayName}</span>
+                <span className="fit-clamp">{displayName}</span>
               </span>
               {isActive && <Check className="h-4 w-4 shrink-0 text-primary" />}
             </DropdownMenuItem>
           );
         })}
       </div>
+
+      <DropdownMenuSeparator className="my-1 border-border/30" />
+
+      <DropdownMenuItem
+        onClick={() => {
+          navigate('/admin/analytics/multi-finca');
+          onNavigate?.();
+        }}
+        className="flex min-h-[44px] cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+      >
+        <Eye className="h-4 w-4 shrink-0" />
+        Vista Panorámica Multi-Finca
+      </DropdownMenuItem>
 
       <DropdownMenuItem
         onClick={() => {
@@ -62,9 +76,10 @@ export function ProfileFincaItems({ fincas, activeFincaId, onNavigate }: Props) 
         }}
         className="flex min-h-[44px] cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-bold text-primary"
       >
-        <Plus className="h-4 w-4" />
+        <Plus className="h-4 w-4 shrink-0" />
         Agregar nueva finca
       </DropdownMenuItem>
     </>
   );
 }
+

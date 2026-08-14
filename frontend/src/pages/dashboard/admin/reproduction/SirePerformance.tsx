@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
+import { useCallback } from 'react';
 import { Button } from '@/shared/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { Badge } from '@/shared/ui/badge';
 import { ArrowLeft, Award, Star, Activity } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import { reproductionService } from '@/entities/reproduction/api/reproduction.service';
 import { useToast } from '@/app/providers/ToastContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, Legend, ResponsiveContainer } from 'recharts';
 import { getStatusBadgeClass } from '@/shared/utils/badgeStyles';
 import { motion } from 'framer-motion';
+import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
 
 interface SireData {
   sire_id: number;
@@ -29,13 +31,13 @@ interface SirePerformanceData {
 }
 
 export default function SirePerformance() {
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [months, setMonths] = useState(12);
   const [data, setData] = useState<SirePerformanceData | null>(null);
 
-  const loadSirePerformance = async () => {
+  const loadSirePerformance = useCallback(async () => {
     setLoading(true);
     try {
       const response = await reproductionService.getSirePerformance(months);
@@ -46,11 +48,11 @@ export default function SirePerformance() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [months, showToast]);
 
   useEffect(() => {
     loadSirePerformance();
-  }, [months]);
+  }, [loadSirePerformance]);
 
   const gradeStatusMap: Record<string, 'success' | 'info' | 'warning' | 'danger' | 'neutral'> = {
     'A': 'success',
@@ -86,40 +88,24 @@ export default function SirePerformance() {
 
   return (
     <div className="min-h-full bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 lg:p-8 space-y-8 overflow-x-hidden">
-      {/* Header Premium */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 bg-card/45 backdrop-blur-xl p-6 sm:p-8 rounded-[2.5rem] border border-border/50 shadow-2xl shadow-primary/5"
-      >
-        <div className="flex items-center gap-5">
+      <DataScreenHeader
+        leading={
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate('/admin/reproduction')}
-            className="h-11 w-11 rounded-full border border-border/60 hover:bg-muted/50 transition-colors"
+            onClick={() => goTo('/admin/reproduction')}
+            className="h-9 w-9 rounded-full border border-border/60 hover:bg-muted/50 transition-colors shrink-0"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div className="flex items-center gap-4">
-            <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-xl shadow-indigo-500/20">
-              <Award className="h-7 w-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tighter text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-                Análisis de <span className="text-indigo-600">Toros (Sires)</span>
-              </h1>
-              <p className="text-sm sm:text-base text-muted-foreground font-medium mt-1">
-                Desempeño reproductivo y calidad genética de reproductores
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+        }
+        icon={<Award className="h-5 w-5 text-white" />}
+        iconClassName="from-indigo-500 to-violet-600 shadow-indigo-500/20"
+        title={<>Análisis de <span className="text-indigo-600">Toros (Sires)</span></>}
+        description="Desempeño reproductivo y calidad genética de reproductores"
+        actions={
           <Select value={months.toString()} onValueChange={(v) => setMonths(parseInt(v))}>
-            <SelectTrigger className="w-full sm:w-[180px] h-12 rounded-lg bg-background/50 border-border/50 font-semibold focus:ring-indigo-500/20">
+            <SelectTrigger className="w-full sm:w-[180px] h-9 rounded-lg bg-background/50 border-border/50 font-semibold focus:ring-indigo-500/20">
               <SelectValue placeholder="Período" />
             </SelectTrigger>
             <SelectContent className="rounded-xl border border-border">
@@ -129,8 +115,8 @@ export default function SirePerformance() {
               <SelectItem value="24">Últimos 24 meses</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-      </motion.div>
+        }
+      />
 
       {/* Gráfico de barras */}
       <motion.div

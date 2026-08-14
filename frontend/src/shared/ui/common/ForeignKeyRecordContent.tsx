@@ -135,7 +135,7 @@ export function ForeignKeyRecordContent({
 										className="inline-flex min-h-10 max-w-full items-center gap-2 rounded-lg border border-primary/25 bg-primary/5 px-3 py-2 text-left text-sm font-semibold text-primary transition hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/30"
 										aria-label={`Ver ${reference.title.toLowerCase()}`}
 									>
-										<span className="truncate">{valueText}</span>
+										<span className="fit-clamp">{valueText}</span>
 										<ExternalLink className="h-3.5 w-3.5 shrink-0" />
 									</button>
 								) : (

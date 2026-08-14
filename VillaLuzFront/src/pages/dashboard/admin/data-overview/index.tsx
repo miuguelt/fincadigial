@@ -262,21 +262,21 @@ export default function DataOverviewDashboard() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Balance"
-            value={`$${(stats?.financial.balance || 0).toLocaleString()}`}
+            value={`$${(stats?.financial.balance || 0).toLocaleString('es-CO')}`}
             description="Ingresos - Gastos"
             loading={isLoading}
             variant={stats?.financial.balance && stats.financial.balance >= 0 ? 'positive' : 'negative'}
           />
           <StatCard
             title="Ingresos"
-            value={`$${(stats?.financial.income || 0).toLocaleString()}`}
+            value={`$${(stats?.financial.income || 0).toLocaleString('es-CO')}`}
             description="Total ingresos"
             loading={isLoading}
             variant="positive"
           />
           <StatCard
             title="Gastos"
-            value={`$${(stats?.financial.expenses || 0).toLocaleString()}`}
+            value={`$${(stats?.financial.expenses || 0).toLocaleString('es-CO')}`}
             description="Total gastos"
             loading={isLoading}
             variant="negative"
@@ -575,7 +575,7 @@ export default function DataOverviewDashboard() {
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Registros Totales</span>
                 <div className="flex items-baseline gap-2 mt-2">
                   <span className="text-2xl font-black text-info">
-                    {dashboardStatsLoading ? <Skeleton className="h-8 w-24" /> : totalRecordsCount.toLocaleString()}
+                    {dashboardStatsLoading ? <Skeleton className="h-8 w-24" /> : totalRecordsCount.toLocaleString('es-CO')}
                   </span>
                 </div>
                 <span className="text-[10px] text-muted-foreground mt-2">Registros reales de esta finca en BD</span>
@@ -585,7 +585,7 @@ export default function DataOverviewDashboard() {
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actividad Operativa Reciente</span>
                 <div className="flex items-baseline gap-2 mt-2">
                   <span className="text-2xl font-black text-purple-500">
-                    {dashboardStatsLoading ? <Skeleton className="h-8 w-20" /> : `+${addedRecordsCount.toLocaleString()}`}
+                    {dashboardStatsLoading ? <Skeleton className="h-8 w-20" /> : `+${addedRecordsCount.toLocaleString('es-CO')}`}
                   </span>
                 </div>
                 <span className="text-[10px] text-muted-foreground mt-2">Suma de tratamientos, vacunas, controles y tareas</span>
@@ -616,7 +616,7 @@ export default function DataOverviewDashboard() {
                           {dashboardStatsLoading ? (
                             <Skeleton className="h-5 w-12" />
                           ) : (
-                            (val || 0).toLocaleString()
+                            (val || 0).toLocaleString('es-CO')
                           )}
                         </span>
                         {isPopulated && (

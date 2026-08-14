@@ -21,7 +21,7 @@ export const passwordSchema = z
                 if (!hasUppercase || !hasLowercase) {
                     ctx.addIssue({
                         code: z.ZodIssueCode.custom,
-                        message: 'Debe incluir al menos 1 mayuscula y 1 minuscula.',
+                        message: 'Debe incluir al menos 1 mayúscula y 1 minúscula.',
                     });
                 }
             }),

@@ -6,6 +6,21 @@ import { ToastProvider } from '@/app/providers/ToastContext'
 
 const mockOnClick = vi.fn()
 
+// La pantalla se monta fuera del AuthProvider: se fija un rol para que las
+// pestañas y los enlaces con prefijo de rol se resuelvan igual que en /admin.
+vi.mock('@/features/auth/model/useAuth', () => ({
+  useAuth: () => ({ user: { role: 'Administrador' }, role: 'Administrador', isAuthenticated: true, loading: false }),
+}))
+
+vi.mock('@/features/auth/model/useRoleNavigation', () => ({
+  useRoleNavigation: () => ({
+    role: 'Administrador',
+    rolePath: (path: string) => path,
+    canAccess: () => true,
+    goTo: vi.fn(),
+  }),
+}))
+
 vi.mock('@/widgets/admin-crud', () => ({
   AdminCRUDPage: ({ config }: any) => {
     const item = { id: 41, diagnosis: 'Dx', animal_id: 1, treatment_date: '2025-01-10' }

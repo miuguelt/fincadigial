@@ -33,7 +33,7 @@ const loadState = () => {
       if (expiry > Date.now()) {
         isRateLimited = true;
         rateLimitExpiry = expiry;
-        console.log(`[SSE] Restored rate limit from storage. Waiting until ${new Date(expiry).toLocaleTimeString()}`);
+        console.log(`[SSE] Restored rate limit from storage. Waiting until ${new Date(expiry).toLocaleTimeString('es-CO')}`);
       } else {
         // Limit expired — clear everything so stale strikes don't affect this session
         localStorage.removeItem(LIMIT_STORAGE_KEY);
@@ -262,7 +262,7 @@ const createEventSource = () => {
           rateLimitExpiry = Date.now() + backoffMs;
           rapidFailureCount = 0; // Reset counter
           saveState(); // Save rate limit state
-          console.warn(`[SSE] Assuming rate limit after ${RAPID_FAILURE_COUNT_THRESHOLD} rapid failures. Backing off until ${new Date(rateLimitExpiry).toLocaleTimeString()}`);
+          console.warn(`[SSE] Assuming rate limit after ${RAPID_FAILURE_COUNT_THRESHOLD} rapid failures. Backing off until ${new Date(rateLimitExpiry).toLocaleTimeString('es-CO')}`);
         }
       } else {
         // Not a rapid failure, reset counter
@@ -285,7 +285,7 @@ const createEventSource = () => {
           rateLimitExpiry = Date.now() + backoffMs;
         }
         saveState();
-        console.warn(`[SSE] Rate limit event detected, backing off until ${new Date(rateLimitExpiry).toLocaleTimeString()}`);
+        console.warn(`[SSE] Rate limit event detected, backing off until ${new Date(rateLimitExpiry).toLocaleTimeString('es-CO')}`);
       }
 
       handleError();

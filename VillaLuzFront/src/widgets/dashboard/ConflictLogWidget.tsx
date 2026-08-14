@@ -65,7 +65,7 @@ export const ConflictLogWidget: React.FC = () => {
                   RECURSO: {log.resource.split("/").pop()}
                 </p>
                 <p className="text-[10px] text-muted-foreground">
-                  {new Date(log.resolvedAt).toLocaleTimeString()}
+                  {new Date(log.resolvedAt).toLocaleTimeString('es-CO')}
                 </p>
               </div>
 

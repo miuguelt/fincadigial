@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { useToast } from '@/app/providers/ToastContext';
@@ -71,12 +71,12 @@ export default function VeterinarioDashboard() {
       description: 'Registrar enfermedad/diagnóstico',
     },
     {
-      id: 'ver-animales',
-      label: 'Ver Animales',
+      id: 'ver-diagnosticos',
+      label: 'Ver Diagnósticos',
       icon: <ClipboardList className="h-6 w-6" />,
-      path: '/veterinario/animals',
+      path: '/veterinario/disease-animals',
       color: 'bg-primary hover:bg-primary/80',
-      description: 'Lista de animales de la finca',
+      description: 'Historial de diagnósticos y enfermedades',
     },
   ];
 

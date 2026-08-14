@@ -1,4 +1,4 @@
-﻿import { useAnimals } from '@/entities/animal/model/useAnimals';
+import { useAnimals } from '@/entities/animal/model/useAnimals';
 import { useGeneticImprovements as useGenetics } from '@/entities/genetic-improvement/model/useGeneticImprovement';
 import { useAnimalFields } from '@/entities/animal-field/model/useAnimalFields';
 import { useAnimalDiseases } from '@/entities/animal-disease/model/useAnimalDiseases';
@@ -99,7 +99,7 @@ export const useUserActivityData = (user: any) => {
             id: g?.id,
             animal: getAnimalLabel(g?.animal) || g?.animal?.code || g?.animal?.record || '-',
             type: g?.type || g?.genetic_event_technique || g?.genetic_event_techique || '-',
-            date: g?.date ? new Date(g.date).toLocaleDateString() : '-',
+            date: g?.date ? new Date(g.date).toLocaleDateString('es-CO') : '-',
             description: g?.description || g?.details || '-',
             animalId: getAnimalIdFromRecord(g),
             ts: g?.date || g?.updated_at || g?.created_at || null,
@@ -111,8 +111,8 @@ export const useUserActivityData = (user: any) => {
             id: f?.id,
             animal: getAnimalLabel(f?.animal) || f?.animal?.code || f?.animal?.record || '-',
             field: f?.field?.name || '-',
-            entryDate: f?.entry_date ? new Date(f.entry_date).toLocaleDateString() : '-',
-            exitDate: f?.exit_date ? new Date(f.exit_date).toLocaleDateString() : '-',
+            entryDate: f?.entry_date ? new Date(f.entry_date).toLocaleDateString('es-CO') : '-',
+            exitDate: f?.exit_date ? new Date(f.exit_date).toLocaleDateString('es-CO') : '-',
             animalId: getAnimalIdFromRecord(f),
             ts: f?.exit_date || f?.entry_date || f?.updated_at || f?.created_at || null,
         }));
@@ -124,7 +124,7 @@ export const useUserActivityData = (user: any) => {
             animal: d?.animal_record || animalLabelById.get(getAnimalIdFromRecord(d) ?? -1) || '-',
             disease: d?.disease_name || d?.diseases?.name || d?.disease?.name || '-',
             status: d?.status || '-',
-            date: d?.diagnosis_date ? new Date(d.diagnosis_date).toLocaleDateString() : '-',
+            date: d?.diagnosis_date ? new Date(d.diagnosis_date).toLocaleDateString('es-CO') : '-',
             animalId: getAnimalIdFromRecord(d),
             ts: d?.diagnosis_date || d?.updated_at || d?.created_at || null,
         }));
@@ -134,7 +134,7 @@ export const useUserActivityData = (user: any) => {
         .map((t: any) => ({
             id: t?.id,
             animal: animalLabelById.get(getAnimalIdFromRecord(t) ?? -1) || t?.animals?.record || '-',
-            date: t?.treatment_date ? new Date(t.treatment_date).toLocaleDateString() : '-',
+            date: t?.treatment_date ? new Date(t.treatment_date).toLocaleDateString('es-CO') : '-',
             description: t?.description || t?.diagnosis || '-',
             frequency: t?.frequency || '-',
             animalId: getAnimalIdFromRecord(t),
@@ -148,7 +148,7 @@ export const useUserActivityData = (user: any) => {
             id: v?.id,
             animal: animalLabelById.get(getAnimalIdFromRecord(v) ?? -1) || v?.animals?.record || '-',
             vaccine: v?.vaccines?.name || v?.vaccine?.name || v?.vaccine_id || '-',
-            date: v?.application_date ? new Date(v.application_date).toLocaleDateString() : '-',
+            date: v?.application_date ? new Date(v.application_date).toLocaleDateString('es-CO') : '-',
             responsible: v?.instructor_id || v?.apprentice_id || '-',
             animalId: getAnimalIdFromRecord(v),
             nextDateRaw: v?.next_dose_date || v?.next_vaccination_date || v?.next_due_date || v?.expiry_date || null,
@@ -160,7 +160,7 @@ export const useUserActivityData = (user: any) => {
         .map((c: any) => ({
             id: c?.id,
             animal: animalLabelById.get(getAnimalIdFromRecord(c) ?? -1) || c?.animals?.record || '-',
-            date: c?.checkup_date ? new Date(c.checkup_date).toLocaleDateString() : '-',
+            date: c?.checkup_date ? new Date(c.checkup_date).toLocaleDateString('es-CO') : '-',
             status: c?.health_status || c?.healt_status || '-',
             animalId: getAnimalIdFromRecord(c),
             nextDateRaw: c?.next_control_date || c?.next_checkup_date || null,

@@ -6,11 +6,7 @@ import landingimg3 from "@/shared/assets/landingimg3.jpg";
 import landingimg4 from "@/shared/assets/landingimg4.jpg";
 import landingimg5 from "@/shared/assets/landingimg5.webp";
 import landingimg6 from "@/shared/assets/landingimg6.webp";
-import { GiField } from "react-icons/gi";
-import { FaUsersCog, FaCalendarAlt } from "react-icons/fa";
-import { FaFileContract } from "react-icons/fa6";
-import { MdOutlineHealing } from "react-icons/md";
-import { IoNewspaperSharp } from "react-icons/io5";
+import { IconTrees as GiField, IconUsers as FaUsersCog, IconCalendar as FaCalendarAlt, IconFileText as FaFileContract, IconStethoscope as MdOutlineHealing, IconFileText as IoNewspaperSharp } from "@/shared/ui/icons";
 
 // Datos de características (features)
 export const features = [

@@ -400,7 +400,7 @@ const EnhancedUserManagement: React.FC = () => {
                   <TableHead>Nombre Completo</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead>Rol</TableHead>
+                  <TableHead>Rol / Verificación</TableHead>
                   <TableHead>Acciones</TableHead>
                 </TableRow>
               </TableHeader>
@@ -422,14 +422,21 @@ const EnhancedUserManagement: React.FC = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <a className="hover:underline" href={`/pilot-profile/?id=${user.id}&tab=settings`}>
-                        <Badge
-                          variant={getRoleBadgeVariant(user.role)}
-                          className="transition-300 hover:scale-[1.02]"
-                        >
-                          {user.role}
-                        </Badge>
-                      </a>
+                      <div className="flex flex-col gap-1 items-start">
+                        <a className="hover:underline" href={`/pilot-profile/?id=${user.id}&tab=settings`}>
+                          <Badge
+                            variant={getRoleBadgeVariant(user.role)}
+                            className="transition-300 hover:scale-[1.02]"
+                          >
+                            {user.role}
+                          </Badge>
+                        </a>
+                        {(user as any).professional_card && (
+                          <Badge variant="outline" className={(user as any).is_verified_professional ? "border-emerald-500 text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 text-[10px]" : "border-amber-400 text-amber-700 bg-amber-50 dark:bg-amber-950/40 text-[10px]"}>
+                            {(user as any).is_verified_professional ? "🩺 Verificado" : "⏳ TP Pendiente"}
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">

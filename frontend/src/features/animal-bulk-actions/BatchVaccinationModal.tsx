@@ -137,7 +137,7 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
             </div>
             <div className="min-w-0">
               {" "}
-              <DialogTitle className="text-xl font-bold tracking-tight text-white flex items-center gap-3 truncate drop-shadow-sm">
+              <DialogTitle className="text-xl font-bold tracking-tight text-white flex items-center gap-3 fit-clamp drop-shadow-sm">
                 Inmunización Colectiva
                 <Badge className="bg-white/20 text-white font-bold text-[10px] px-2.5 py-0.5 rounded-[var(--radius-full)] border-white/10 shadow-sm">
                   {selectedAnimalIds.length} Sujetos
@@ -228,13 +228,13 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
                           {" "}
                           <p
                             className={cn(
-                              "text-sm font-bold truncate transition-colors",
+                              "text-sm font-bold fit-clamp transition-colors",
                               isSelected ? "text-primary" : "text-foreground",
                             )}
                           >
                             {v.name}
                           </p>{" "}
-                          <p className="text-[10px] font-medium text-muted-foreground/60 uppercase truncate tracking-widest mt-1">
+                          <p className="text-[10px] font-medium text-muted-foreground/60 uppercase fit-clamp tracking-widest mt-1">
                             {" "}
                             {v.type || "Biológico Clínico"}{" "}
                           </p>{" "}
@@ -401,7 +401,7 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
                             <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40 mb-1">
                               Biológico Activo
                             </p>{" "}
-                            <h5 className="text-xl font-bold truncate text-primary">
+                            <h5 className="text-xl font-bold fit-clamp text-primary">
                               {selectedVaccine.name}
                             </h5>{" "}
                           </div>{" "}
@@ -470,7 +470,7 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
                 </span>{" "}
                 <span
                   className={cn(
-                    "text-base font-bold uppercase tracking-tight transition-all leading-none truncate max-w-[180px]",
+                    "text-base font-bold uppercase tracking-tight transition-all leading-none fit-clamp max-w-[180px]",
                     selectedVaccine
                       ? "text-foreground"
                       : "text-muted-foreground/20",

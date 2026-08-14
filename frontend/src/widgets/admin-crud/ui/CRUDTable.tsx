@@ -17,6 +17,7 @@ import { Checkbox } from '@/shared/ui/checkbox';
 import { cn } from '@/shared/ui/cn.ts';
 import { useT } from '@/shared/i18n';
 import { useMediaQuery } from '@/shared/hooks/useMediaQuery';
+import { FloatingScrollArea } from '@/shared/ui/FloatingScrollArea';
 import InlineEditCell from './InlineEditCell';
 import {
   DropdownMenu,
@@ -27,6 +28,8 @@ import {
 
 // Interfaces
 import { CRUDColumn, CRUDConfig } from '@/shared/types/crud';
+import { buildForeignKeyLabelMap, getCrudItemTitle, mapCrudValue } from './crudTable.helpers';
+import { CRUDTableCardView } from './CRUDTableCardView';
 
 // ⚠️ COMPONENTE CRÍTICO - NO ELIMINAR SIN REVISIÓN
 // Funciones: [Tabla CRUD con selección masiva, virtualización, responsive cards]
@@ -47,6 +50,13 @@ interface CRUDTableProps<T extends { id: number }> {
   onToggleSelect?: (id: number) => void;
   onToggleSelectAll?: () => void;
   onUpdateCell?: (item: T, key: string, value: any) => Promise<void>;
+  /**
+   * Encabezado de la pantalla (resumen, pestañas…). Se pinta DENTRO del área
+   * con scroll para que se desplace junto con las filas: así la tabla puede
+   * llegar a ocupar toda la altura disponible en lugar de quedar aplastada
+   * bajo un encabezado fijo.
+   */
+  headerSlot?: React.ReactNode;
 }
 
 interface InternalTableProps<T extends { id: number }> {
@@ -102,15 +112,13 @@ function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>
   const t = useT();
 
   const firstCol = columns[0];
-  const rawTitle = firstCol ? (item as any)[firstCol.key] : null;
-  const mappedTitle = firstCol ? fkLabelMap[String(firstCol.key)]?.get(String(rawTitle)) : null;
-  const titleText = mappedTitle ?? String(rawTitle ?? `${config.entityName} #${item.id}`);
+  const titleText = getCrudItemTitle(item, config, fkLabelMap);
 
-  const hasActions = config.enableDetailModal !== false || config.enableEditModal !== false || config.enableDelete;
+  const hasActions = Boolean(onOpenDetail || onOpenEdit || onOpenDelete);
   const actionCount = [
-    config.enableDetailModal !== false,
-    config.enableEditModal !== false,
-    config.enableDelete,
+    Boolean(onOpenDetail),
+    Boolean(onOpenEdit),
+    Boolean(onOpenDelete),
   ].filter(Boolean).length;
 
   // Si hay 3+ acciones, mostrar kebab menu
@@ -119,8 +127,7 @@ function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>
   const getCellValue = (col: CRUDColumn<T>) => {
     const raw = (item as any)[col.key];
     if (col.render) return col.render(raw, item, index);
-    const mapped = fkLabelMap[String(col.key)]?.get(String(raw));
-    return mapped ?? String(raw ?? '-');
+    return mapCrudValue(raw, String(col.key), item, fkLabelMap);
   };
 
   return (
@@ -143,7 +150,7 @@ function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>
     >
       {/* ── Título principal ── */}
       <div className="flex items-start justify-between gap-2 mb-3">
-        <h3 className="font-bold text-sm text-foreground truncate flex-1" title={titleText}>
+        <h3 className="font-bold text-sm text-foreground fit-clamp flex-1" title={titleText}>
           {firstCol && firstCol.render ? getCellValue(firstCol) : titleText}
         </h3>
 
@@ -179,7 +186,7 @@ function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>
             <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mb-0.5">
               {col.label}
             </div>
-            <div className="text-xs font-medium text-foreground truncate" title={col.render ? undefined : String((item as any)[col.key] ?? '-')}>
+            <div className="text-xs font-medium text-foreground fit-clamp" title={col.render ? undefined : String((item as any)[col.key] ?? '-')}>
               {getCellValue(col)}
             </div>
           </div>
@@ -195,7 +202,7 @@ function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>
           {useKebab ? (
             <>
               {/* Vista directa en móvil */}
-              {config.enableDetailModal !== false && (
+                  {onOpenDetail && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -219,13 +226,13 @@ function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="min-w-[160px]">
-                  {config.enableEditModal !== false && (
+                  {onOpenEdit && (
                     <DropdownMenuItem onClick={() => onOpenEdit?.(item)} className="py-2.5">
                       <Edit className="h-4 w-4 mr-2 text-warning" />
                       {t('common.edit', 'Editar')}
                     </DropdownMenuItem>
                   )}
-                  {config.enableDelete && (
+                  {onOpenDelete && (
                     <DropdownMenuItem
                       onClick={() => onOpenDelete?.(item.id)}
                       className="py-2.5 text-destructive focus:text-destructive"
@@ -239,7 +246,7 @@ function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>
             </>
           ) : (
             <>
-              {config.enableDetailModal !== false && (
+              {onOpenDetail && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -251,7 +258,7 @@ function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>
                   {t('common.view', 'Ver')}
                 </Button>
               )}
-              {config.enableEditModal !== false && (
+              {onOpenEdit && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -263,7 +270,7 @@ function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>
                   {t('common.edit', 'Editar')}
                 </Button>
               )}
-              {config.enableDelete && (
+              {onOpenDelete && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -402,9 +409,9 @@ function TableRowComponent<T extends { id: number }>(props: TableRowProps<T>) {
         <td
           key={String(col.key)}
           className={cn(
-            "px-2 sm:px-3 py-2 whitespace-nowrap text-[11px] md:text-sm",
+            "px-3 sm:px-4 py-2.5 sm:py-3 whitespace-nowrap text-[12px] md:text-sm",
             col.width ? `w-${col.width}` : '',
-            "truncate max-w-[120px] sm:max-w-[180px] md:max-w-[240px]"
+            "max-w-[320px] xl:max-w-[480px] fit-clamp"
           )}
           title={col.render ? undefined : (fkLabelMap[String(col.key)]?.get(String((item as any)[col.key])) ?? String((item as any)[col.key] ?? ''))}
         >
@@ -430,18 +437,17 @@ function TableRowComponent<T extends { id: number }>(props: TableRowProps<T>) {
               ? col.render((item as any)[col.key], item, index)
               : (() => {
                   const raw = (item as any)[col.key];
-                  const mapped = fkLabelMap[String(col.key)]?.get(String(raw));
-                  return mapped ?? String(raw ?? '-');
+                  return mapCrudValue(raw, String(col.key), item, fkLabelMap);
                 })()}
         </td>
       ))}
       
-      {(config.enableDetailModal !== false || config.enableEditModal !== false || config.enableDelete || config.customActions) && (
+      {(onOpenDetail || onOpenEdit || onOpenDelete || config.customActions) && (
         <td className="px-2 sm:px-3 py-2 whitespace-nowrap text-[11px] md:text-xs font-medium" 
             onClick={(e) => e.stopPropagation()} 
             onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}>
           <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap">
-            {config.enableDetailModal !== false && (
+            {onOpenDetail && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -452,7 +458,7 @@ function TableRowComponent<T extends { id: number }>(props: TableRowProps<T>) {
                 <Eye className="h-4 w-4" />
               </Button>
             )}
-            {config.enableEditModal !== false && (
+            {onOpenEdit && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -463,7 +469,7 @@ function TableRowComponent<T extends { id: number }>(props: TableRowProps<T>) {
                 <Edit className="h-4 w-4" />
               </Button>
             )}
-            {config.enableDelete && (
+            {onOpenDelete && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -515,11 +521,15 @@ function TraditionalTableComponent<T extends { id: number }>(props: InternalTabl
   const totalCols = useMemo(() => {
     return columns.length + 
       (config.enableSelection ? 1 : 0) + 
-      ((config.enableDelete || config.enableEditModal !== false || config.enableDetailModal !== false || config.customActions) ? 1 : 0);
-  }, [columns.length, config.enableSelection, config.enableDelete, config.enableEditModal, config.enableDetailModal, config.customActions]);
+      ((onOpenDelete || onOpenEdit || onOpenDetail || config.customActions) ? 1 : 0);
+  }, [columns.length, config.enableSelection, onOpenDelete, onOpenEdit, onOpenDetail, config.customActions]);
 
+  // `max(100%, …)` y no un ancho fijo: con pocas columnas la tabla se estira
+  // hasta llenar la caja (el `min-w-full` de la clase lo pisaba el style en
+  // línea y sobraba media pantalla en blanco); con muchas, sigue desbordando y
+  // aparece la barra horizontal flotante.
   const minWidthStyle = useMemo(() => {
-    return `${Math.max(800, totalCols * 140)}px`;
+    return `max(100%, ${Math.max(800, totalCols * 140)}px)`;
   }, [totalCols]);
 
   return (
@@ -544,13 +554,13 @@ function TraditionalTableComponent<T extends { id: number }>(props: InternalTabl
               className={cn(
                 "px-2 sm:px-3 py-2 text-left text-[10px] sm:text-[11px] md:text-xs font-semibold text-muted-foreground uppercase tracking-wider",
                 col.width ? `w-${col.width}` : '',
-                "truncate"
+                "fit-clamp"
               )}
             >
               {col.label}
             </th>
           ))}
-          {(config.enableDelete || config.customActions) && (
+          {(onOpenDelete || onOpenEdit || onOpenDetail || config.customActions) && (
             <th className="px-1 sm:px-2 py-1 text-left text-[10px] sm:text-[11px] md:text-xs font-medium text-muted-foreground uppercase tracking-wider">
               <span className="hidden sm:inline">Acciones</span>
               <span className="sm:hidden">Acc.</span>
@@ -600,129 +610,50 @@ export function CRUDTable<T extends { id: number }>({
   onToggleSelect,
   onToggleSelectAll,
   onUpdateCell,
+  headerSlot,
 }: CRUDTableProps<T>) {
   const isMobile = useMediaQuery('(max-width: 767px)');
 
   // Mapa de etiquetas para llaves foráneas
-  const fkLabelMap = useMemo(() => {
-    const map: Record<string, Map<string, string>> = {};
-    try {
-      (config.formSections || []).forEach((section) => {
-        (section.fields || []).forEach((field) => {
-          if ((field.type === 'select' || field.type === 'searchable-select') && field.options && field.options.length) {
-            const m = new Map<string, string>();
-            field.options.forEach((opt) => {
-              m.set(String(opt.value), opt.label);
-            });
-            map[String(field.name)] = m;
-          }
-        });
-      });
-    } catch (e) {
-      console.warn('[CRUDTable] Error construyendo mapa de etiquetas', e);
-    }
-    return map;
-  }, [config.formSections]);
+  const fkLabelMap = useMemo(() => buildForeignKeyLabelMap(config), [config]);
   
   const deletingItems = useMemo(() => new Set<string>(), []);
 
   return (
     <div className="relative flex-1 min-h-0 flex flex-col group/table">
-      {/* Indicador visual de scroll lateral (solo tablet+) */}
-      {!isMobile && (
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black/5 to-transparent pointer-events-none z-10 opacity-0 group-hover/table:opacity-100 transition-opacity hidden md:block" />
-      )}
-      
-      <div className={cn(
-        "flex-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent pb-16 md:pb-20",
-        isMobile ? "overflow-y-auto" : "overflow-x-auto overflow-y-auto",
-        refreshing && "opacity-70"
-      )}>
+      {/* Las barras flotan sobre las filas (`FloatingScrollArea`): no reservan
+          pista, así que la tabla usa todo el alto y todo el ancho de la caja, y
+          el pulgar sigue a mano en cualquier momento para arrastrarlo.
+          El colchón inferior deja pasar la barra de paginación flotante. */}
+      <FloatingScrollArea
+        containerClassName="flex-1"
+        horizontal={!isMobile}
+        className={cn(
+          "pb-20 md:pb-24",
+          refreshing && "opacity-70"
+        )}
+      >
+        {/* El encabezado se desplaza con las filas; `sticky left-0` evita que
+            se corra al hacer scroll horizontal de la tabla. */}
+        {headerSlot && (
+          <div className="sticky left-0 w-full">
+            {headerSlot}
+          </div>
+        )}
+
         {/* Forzar viewMode cards desde config */}
         {config.viewMode === 'cards' ? (
-          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {items.map((item) => {
-              const firstCol = columns[0];
-              const rawTitle = (item as any)[firstCol?.key];
-              const mappedTitle = fkLabelMap[String(firstCol?.key)]?.get(String(rawTitle));
-              const titleText = mappedTitle ?? String(rawTitle ?? `${config.entityName} #${item.id}`);
-              
-              return (
-                <div
-                  key={item.id}
-                  className="bg-card border border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer relative"
-                  onClick={() => onOpenDetail?.(item)}
-                >
-                  {config.enableSelection && onToggleSelect && (
-                    <div
-                      className="absolute top-2 right-2 z-10"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Checkbox
-                        checked={selectedIds?.includes(item.id) || false}
-                        onCheckedChange={() => onToggleSelect(item.id)}
-                        aria-label={`Seleccionar ${config.entityName} ${item.id}`}
-                      />
-                    </div>
-                  )}
-                  <h3 className="font-medium text-sm mb-2 truncate">{titleText}</h3>
-                  <div className="text-xs text-muted-foreground space-y-1">
-                    {columns.slice(1, 3).map((col) => {
-                      const raw = (item as any)[col.key];
-                      const mapped = fkLabelMap[String(col.key)]?.get(String(raw));
-                      return (
-                        <div key={String(col.key)}>
-                          <span className="font-medium">{col.label}:</span>{' '}
-                          <span>{mapped ?? String(raw ?? '-')}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="flex justify-end gap-2 mt-3">
-                    {config.enableDetailModal !== false && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 flex items-center justify-center border border-sky-500/20 bg-sky-500/10 text-sky-600 dark:text-sky-400 hover:bg-sky-500 hover:text-white hover:border-sky-500/40 hover:shadow-[0_0_12px_rgba(56,189,248,0.35)] hover:scale-105 active:scale-95 transition-all duration-300 rounded-xl"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onOpenDetail?.(item);
-                        }}
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                      </Button>
-                    )}
-                    {config.enableEditModal !== false && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 flex items-center justify-center border border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-white hover:border-amber-500/40 hover:shadow-[0_0_12px_rgba(245,158,11,0.35)] hover:scale-105 active:scale-95 transition-all duration-300 rounded-xl"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onOpenEdit?.(item);
-                        }}
-                      >
-                        <Edit className="h-3.5 w-3.5" />
-                      </Button>
-                    )}
-                    {config.enableDelete && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 flex items-center justify-center border border-rose-500/20 bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500 hover:text-white hover:border-rose-500/40 hover:shadow-[0_0_12px_rgba(244,63,94,0.35)] hover:scale-105 active:scale-95 transition-all duration-300 rounded-xl"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onOpenDelete?.(item.id);
-                        }}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <CRUDTableCardView
+            items={items}
+            columns={columns}
+            config={config}
+            labels={fkLabelMap}
+            selectedIds={selectedIds}
+            onToggleSelect={onToggleSelect}
+            onOpenDetail={onOpenDetail}
+            onOpenEdit={onOpenEdit}
+            onOpenDelete={onOpenDelete}
+          />
         ) : isMobile ? (
           /* ── MOBILE: Cards apiladas ── */
           <MobileCardList
@@ -756,7 +687,7 @@ export function CRUDTable<T extends { id: number }>({
             onUpdateCell={onUpdateCell}
           />
         )}
-      </div>
+      </FloatingScrollArea>
     </div>
   );
 }

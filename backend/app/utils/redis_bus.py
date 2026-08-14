@@ -16,11 +16,12 @@ class RedisEventBus:
     MAX_BACKOFF_SECONDS = 30
     WARNING_THROTTLE_SECONDS = 60
 
-    def __init__(self, redis_client):
+    def __init__(self, redis_client, redis_pubsub_client=None):
         self.redis = redis_client
         # Dedicated handle for the subscriber side: a connection in subscribe
         # mode cannot serve regular commands, so publishers never share it.
-        self.redis_sub = redis_client
+        # If no dedicated pubsub client is provided, fall back to the shared client.
+        self.redis_sub = redis_pubsub_client if redis_pubsub_client is not None else redis_client
         # Nombre de canal semántico con namespace Redis (villaluz:events).
         # Configurable via REDIS_CHANNEL_NAME para soporte multi-tenant.
         import os as _os

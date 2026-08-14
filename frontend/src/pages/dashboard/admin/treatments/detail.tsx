@@ -1,10 +1,12 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import { treatmentsService } from '@/entities/treatment/api/treatments.service';
 
 export default function TreatmentDetail() {
   const { id } = useParams<{ id: string }>();
+  const { rolePath } = useRoleNavigation();
   const [treatment, setTreatment] = useState<any | null>(null);
 
   useEffect(() => {
@@ -24,7 +26,7 @@ export default function TreatmentDetail() {
       <p><strong>Fecha:</strong> {treatment.treatment_date}</p>
       <p><strong>Estado:</strong> {treatment.status}</p>
 
-      <Link to="/admin/treatments">Volver al listado</Link>
+      <Link to={rolePath('/admin/treatments')}>Volver al listado</Link>
     </div>
   );
 }

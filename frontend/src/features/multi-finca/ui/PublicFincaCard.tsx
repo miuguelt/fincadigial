@@ -43,11 +43,11 @@ const DataPoint: React.FC<{
 	<div className="min-w-0 border-r border-slate-300 px-2 last:border-r-0 sm:px-3">
 		<div className="mb-1 flex items-center gap-1.5 text-slate-600">
 			<span className={cn("shrink-0", accent)}>{icon}</span>
-			<span className="truncate text-[10px] font-semibold uppercase tracking-wide">
+			<span className="fit-clamp text-[10px] font-semibold uppercase tracking-wide">
 				{label}
 			</span>
 		</div>
-		<p className="truncate text-base font-bold tabular-nums text-slate-800">
+		<p className="fit-clamp text-base font-bold tabular-nums text-slate-800">
 			{value}
 		</p>
 	</div>
@@ -115,18 +115,18 @@ export const PublicFincaCard: React.FC<PublicFincaCardProps> = ({
 				</div>
 				<CardContent className="flex flex-1 flex-col gap-4 p-4">
 					<div className="min-w-0">
-						<h3 className="truncate text-xl font-bold tracking-tight text-slate-950">
+						<h3 className="fit-clamp text-xl font-bold tracking-tight text-slate-950">
 							{finca.name}
 						</h3>
 						<div className="mt-1 flex items-center gap-1.5 text-sm text-slate-700">
 							<IconMapPin size={15} className="shrink-0 text-emerald-700" />
-							<span className="truncate">
+							<span className="fit-clamp">
 								{finca.location || "Ubicación no registrada"}
 							</span>
 						</div>
 					</div>
 					<div className="flex items-center justify-between gap-3 text-sm text-slate-700">
-						<span className="flex items-center gap-1.5 truncate">
+						<span className="flex items-center gap-1.5 fit-clamp">
 							<IconCalendar size={14} />
 							{formatDate(finca.created_at)}
 						</span>

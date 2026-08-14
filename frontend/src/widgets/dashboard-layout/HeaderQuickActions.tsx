@@ -1,7 +1,7 @@
 import React from 'react';
-import { Activity, Droplet, Heart, Plus, QrCode, Sprout } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { IconCow, IconMilk, IconPlant2, IconQrcode, IconStethoscope } from '@/shared/ui/icons';
 import { useAuth } from '@/features/auth/model/useAuth';
 import {
   DropdownMenu,
@@ -22,26 +22,21 @@ const ROLE_PREFIX: Record<string, string> = {
   Operario: '/operario',
 };
 
-const SCANNER_BY_PREFIX: Record<string, string> = {
-  '/instructor': '/instructor/scanner',
-  '/veterinario': '/veterinario/scanner',
-};
-
 interface Action {
   label: string;
   path: string;
-  icon: LucideIcon;
+  icon: React.ElementType;
   color: string;
   group: 1 | 2;
 }
 
 function buildActions(prefix: string): Action[] {
   return [
-    { label: 'Mis Animales', path: `${prefix}/animals`, icon: Activity, color: 'text-amber-500', group: 1 },
-    { label: 'Mi Huerta', path: '/campesino', icon: Sprout, color: 'text-emerald-500', group: 1 },
-    { label: 'Escáner QR', path: SCANNER_BY_PREFIX[prefix] || '/scanner', icon: QrCode, color: 'text-sky-500', group: 1 },
-    { label: 'Registrar Leche', path: '/quick/milk', icon: Droplet, color: 'text-blue-500', group: 2 },
-    { label: 'Salud Animal', path: '/quick/disease', icon: Heart, color: 'text-rose-500', group: 2 },
+    { label: 'Mi ganado', path: `${prefix}/animals`, icon: IconCow, color: 'text-amber-600', group: 1 },
+    { label: 'Mi huerta', path: '/campesino', icon: IconPlant2, color: 'text-emerald-500', group: 1 },
+    { label: 'Escáner QR', path: '/scanner', icon: IconQrcode, color: 'text-sky-500', group: 1 },
+    { label: 'Registrar leche', path: '/quick/milk', icon: IconMilk, color: 'text-blue-500', group: 2 },
+    { label: 'Reportar enfermedad', path: '/quick/disease', icon: IconStethoscope, color: 'text-rose-500', group: 2 },
   ];
 }
 

@@ -314,7 +314,7 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({
 			<div className="text-right text-xs text-slate-500">
 				<p>Fecha de Generación:</p>
 				<p className="font-bold text-slate-700">
-					{new Date().toLocaleString("es-ES")}
+					{new Date().toLocaleString("es-CO")}
 				</p>
 			</div>
 		</div>

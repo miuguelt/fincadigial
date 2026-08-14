@@ -10,6 +10,16 @@ vi.mock('react-router-dom', () => ({
   useNavigate: () => vi.fn()
 }));
 
+// La tarjeta navega con el prefijo del rol; aquí sólo se prueba el render.
+vi.mock('@/features/auth/model/useRoleNavigation', () => ({
+  useRoleNavigation: () => ({
+    role: 'Administrador',
+    rolePath: (path: string) => path,
+    canAccess: () => true,
+    goTo: vi.fn(),
+  })
+}));
+
 vi.mock('@/widgets/dashboard/AnimalActionsMenu', () => ({
   AnimalActionsMenu: () => <div data-testid="animal-actions-menu" />
 }));
@@ -39,7 +49,8 @@ describe('AnimalCard', () => {
     );
     expect(screen.getByText('Lola-001')).toBeInTheDocument();
     expect(screen.getByText('Jersey')).toBeInTheDocument();
-    expect(screen.getByText('250k')).toBeInTheDocument();
+    // El peso viene en kilos: antes se pintaba "250k", que se leía como 250 000.
+    expect(screen.getByTitle('250 kg')).toBeInTheDocument();
     expect(screen.getAllByText('♀').length).toBeGreaterThanOrEqual(1);
   });
 
@@ -67,7 +78,7 @@ describe('AnimalCard', () => {
         alertCount={3}
       />
     );
-    expect(screen.getByText('3!')).toBeInTheDocument();
+    expect(screen.getByLabelText('3 alertas pendientes')).toBeInTheDocument();
   });
 
   it('maneja el click en el padre si se proporciona onFatherClick', () => {

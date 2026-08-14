@@ -10,6 +10,9 @@ export interface ChatMessage {
   recipient_name: string;
   message: string;
   is_read: boolean;
+  client_message_id?: string | null;
+  read_at?: string | null;
+  status?: 'pending' | 'delivered' | 'synced';
   created_at: string;
 }
 
@@ -26,7 +29,7 @@ export const chatService = {
    * Obtener contactos disponibles para chatear
    */
   async getContacts() {
-    const response = await api.get<ApiResponse<ChatContact[]>>('/chat/contacts');
+    const response = await api.get<ApiResponse<ChatContact[]>>('/chat/contacts', { skipCache: true } as never);
     return response.data;
   },
 
@@ -34,17 +37,18 @@ export const chatService = {
    * Obtener historial con un usuario
    */
   async getHistory(recipientId: number) {
-    const response = await api.get<ApiResponse<ChatMessage[]>>(`/chat/history/${recipientId}`);
+    const response = await api.get<ApiResponse<ChatMessage[]>>(`/chat/history/${recipientId}`, { skipCache: true } as never);
     return response.data;
   },
 
   /**
    * Enviar mensaje
    */
-  async sendMessage(recipientId: number, message: string) {
+  async sendMessage(recipientId: number, message: string, clientMessageId?: string) {
     const response = await api.post<ApiResponse<ChatMessage>>('/chat/send', {
       recipient_id: recipientId,
-      message
+      message,
+      client_message_id: clientMessageId,
     });
     return response.data;
   },
@@ -53,7 +57,7 @@ export const chatService = {
    * Obtener total de no leídos
    */
   async getUnreadCount() {
-    const response = await api.get<ApiResponse<{ unread_count: number }>>('/chat/unread-count');
+    const response = await api.get<ApiResponse<{ unread_count: number }>>('/chat/unread-count', { skipCache: true } as never);
     return response.data;
   }
 };

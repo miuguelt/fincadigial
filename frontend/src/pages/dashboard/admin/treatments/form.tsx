@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useForm, FieldError } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import { treatmentsService } from '@/entities/treatment/api/treatments.service';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
 
@@ -21,7 +22,7 @@ export type TreatmentFormFields = {
 
 export default function TreatmentForm() {
   const { id } = useParams<{ id?: string }>();
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<TreatmentFormFields>();
 
   useEffect(() => {
@@ -51,7 +52,7 @@ export default function TreatmentForm() {
         await treatmentsService.createTreatment(data as any);
       }
       // Redirigir a la ruta válida sin el prefijo /dashboard
-      navigate('/admin/treatments');
+      goTo('/admin/treatments');
     } catch (error: any) {
       const msg = error?.response?.data?.message || error?.message || 'Error al guardar tratamiento';
       alert(msg);
@@ -114,7 +115,7 @@ export default function TreatmentForm() {
       </div>
       <div>
         <label>Plan de tratamiento</label>
-        <textarea {...register('treatment_plan')} />
+        <textarea {...register('treatment_plan')}></textarea>
         {renderError(errors.treatment_plan)}
       </div>
       <div>
@@ -145,7 +146,7 @@ export default function TreatmentForm() {
       </div>
       <div>
         <label>Notas</label>
-        <textarea {...register('notes')} />
+        <textarea {...register('notes')}></textarea>
         {renderError(errors.notes)}
       </div>
       <div>

@@ -441,7 +441,7 @@ export default function RegisterPage() {
                         <li>• Finca: <strong>{formData.finca.name}</strong></li>
                         <li>• Tipo: <strong>{formData.finca.type}</strong></li>
                         <li>• Propietario: <strong>{formData.owner.fullname}</strong></li>
-                        <li>• Email: <strong>{formData.owner.email}</strong></li>
+                        <li>• Correo electrónico: <strong>{formData.owner.email}</strong></li>
                       </ul>
                     </div>
                   </div>

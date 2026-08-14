@@ -23,6 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/sha
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Badge } from '@/shared/ui/badge';
+import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -159,7 +160,7 @@ const FinancialDashboard = () => {
   };
 
   const summary = summaryQuery.data || { total_income: 0, total_expense: 0, balance: 0, roi_percentage: 0 };
-  const transactions = transactionsQuery.data || [];
+  const transactions = useMemo(() => transactionsQuery.data || [], [transactionsQuery.data]);
 
   // Procesar datos para gráficos
   const chartData = useMemo(() => {
@@ -210,55 +211,41 @@ const FinancialDashboard = () => {
 
   return (
     <div className="min-h-full bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 lg:p-8 space-y-8 overflow-x-hidden">
-      {/* Header Premium */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 bg-card/45 backdrop-blur-xl p-6 sm:p-8 rounded-[2.5rem] border border-border/50 shadow-2xl shadow-primary/5"
-      >
-        <div className="flex items-center gap-5">
-          <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-xl shadow-emerald-500/20">
-            <DollarSign className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tighter text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-              Gestión y Balance <span className="text-emerald-600">Financiero</span>
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground font-medium mt-1">
-              Monitoreo en tiempo real de ingresos, egresos y retorno de inversión
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-          <Button
-            onClick={handleExportExcel}
-            disabled={exportingExcel || transactions.length === 0}
-            variant="outline"
-            className="rounded-lg h-12 gap-2 border-dashed border-emerald-500/30 hover:border-emerald-500 text-foreground transition-all flex-1 sm:flex-none"
-          >
-            {exportingExcel ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileSpreadsheet className="h-4 w-4 text-emerald-600" />}
-            Exportar Excel
-          </Button>
-          <Button
-            onClick={handleExportPDF}
-            disabled={exportingPDF || transactions.length === 0}
-            variant="outline"
-            className="rounded-lg h-12 gap-2 border-dashed border-red-500/30 hover:border-red-500 text-foreground transition-all flex-1 sm:flex-none"
-          >
-            {exportingPDF ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4 text-destructive" />}
-            Reporte PDF
-          </Button>
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            className="rounded-lg h-12 gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold transition-all shadow-xl shadow-emerald-600/20 w-full sm:w-auto"
-          >
-            <Plus className="h-4 w-4" />
-            Nueva Transacción
-          </Button>
-        </div>
-      </motion.div>
+      <DataScreenHeader
+        icon={<DollarSign className="h-5 w-5 text-white" />}
+        iconClassName="from-emerald-500 to-teal-600 shadow-emerald-500/20"
+        title={<>Gestión y Balance <span className="text-emerald-600">Financiero</span></>}
+        description="Monitoreo en tiempo real de ingresos, egresos y retorno de inversión"
+        actions={
+          <>
+            <Button
+              onClick={handleExportExcel}
+              disabled={exportingExcel || transactions.length === 0}
+              variant="outline"
+              className="rounded-lg h-9 gap-2 border-dashed border-emerald-500/30 hover:border-emerald-500 text-foreground transition-all"
+            >
+              {exportingExcel ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileSpreadsheet className="h-4 w-4 text-emerald-600" />}
+              Exportar Excel
+            </Button>
+            <Button
+              onClick={handleExportPDF}
+              disabled={exportingPDF || transactions.length === 0}
+              variant="outline"
+              className="rounded-lg h-9 gap-2 border-dashed border-red-500/30 hover:border-red-500 text-foreground transition-all"
+            >
+              {exportingPDF ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4 text-destructive" />}
+              Reporte PDF
+            </Button>
+            <Button
+              onClick={() => setIsModalOpen(true)}
+              className="rounded-lg h-9 gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold transition-all shadow-lg shadow-emerald-600/20"
+            >
+              <Plus className="h-4 w-4" />
+              Nueva Transacción
+            </Button>
+          </>
+        }
+      />
 
       {/* KPI Cards Premium */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -399,7 +386,7 @@ const FinancialDashboard = () => {
                             className="w-2.5 h-2.5 rounded-full shrink-0"
                             style={{ backgroundColor: COLORS_PIE[index % COLORS_PIE.length] }}
                           />
-                          <span className="truncate max-w-[100px] text-muted-foreground">{entry.name}</span>
+                          <span className="fit-clamp max-w-[100px] text-muted-foreground">{entry.name}</span>
                         </div>
                         <span className="font-bold text-foreground">{formatCurrency(entry.value)}</span>
                       </div>
@@ -460,7 +447,7 @@ const FinancialDashboard = () => {
                         </Badge>
                       </td>
                       <td className="px-6 py-4 font-semibold text-foreground whitespace-nowrap">{tx.category}</td>
-                      <td className="px-6 py-4 text-muted-foreground max-w-xs truncate">{tx.description || '—'}</td>
+                      <td className="px-6 py-4 text-muted-foreground max-w-xs fit-clamp">{tx.description || '—'}</td>
                       <td className={`px-6 py-4 text-right font-black whitespace-nowrap ${tx.transaction_type === 'Ingreso' ? 'text-emerald-600' : 'text-rose-600'}`}>
                         {tx.transaction_type === 'Ingreso' ? '+' : '-'}{formatCurrency(tx.amount)}
                       </td>
@@ -502,12 +489,12 @@ const FinancialDashboard = () => {
       {/* Modal Nueva Transacción Premium */}
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="vl-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-card rounded-[2rem] border border-border shadow-2xl w-full max-w-md overflow-hidden"
+              className="vl-modal-surface w-full max-w-md overflow-hidden rounded-2xl border border-border/80 text-foreground shadow-2xl"
             >
               <div className="p-6 bg-gradient-to-r from-emerald-600 to-teal-600 text-white flex justify-between items-center">
                 <div>

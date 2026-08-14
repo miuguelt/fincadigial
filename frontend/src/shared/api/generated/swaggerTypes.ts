@@ -73,6 +73,7 @@ export interface UserResponse {
   updated_at?: string;
   finca_id?: number;
   finca_name?: string;
+  is_system_admin?: boolean;
 }
 
 export interface UserInput {
@@ -576,6 +577,7 @@ export interface ControlResponse {
 export interface DashboardData {
   total_animals?: number;
   active_animals?: number;
+  sick_animals?: number;
   total_fields?: number;
   occupied_fields?: number;
   recent_treatments?: number;

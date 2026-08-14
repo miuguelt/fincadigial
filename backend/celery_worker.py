@@ -12,10 +12,14 @@ import app.tasks.system_tasks
 import app.tasks.weather_tasks
 
 # Configurar el cron (Celery Beat) para evaluar alertas cada 6 horas
+alert_evaluation_interval = max(
+    float(os.getenv('ALERT_EVALUATION_INTERVAL_SECONDS', '21600')),
+    3600.0,
+)
 celery.conf.beat_schedule = {
-    'evaluate-alerts-every-hour': {
+    'evaluate-alerts-periodically': {
         'task': 'app.tasks.alert_tasks.evaluate_all_alerts',
-        'schedule': 3600.0,  # 1 hora en segundos
+        'schedule': alert_evaluation_interval,
     },
     'broadcast-live-kpis-every-60-seconds': {
         'task': 'app.tasks.alert_tasks.broadcast_live_kpis',

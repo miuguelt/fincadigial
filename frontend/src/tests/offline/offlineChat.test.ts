@@ -28,7 +28,7 @@ vi.mock("@/shared/api/offline/FieldNodeService", () => ({
 const mockApi = api as unknown as { get: any; post: any };
 const mockFieldNode = FieldNodeService as unknown as { get: any; post: any };
 
-const OUTBOX_KEY = "villaluz.chat.outbox";
+const OUTBOX_KEY = "villaluz.chat.outbox:1";
 
 const apiMessage = (id: number, message: string) => ({
 	data: {
@@ -64,10 +64,11 @@ describe("OfflineChatService", () => {
 
 		expect(msg.id).toBe(31);
 		expect(msg.status).toBe("delivered");
-		expect(mockApi.post).toHaveBeenCalledWith("/chat/send", {
+		expect(mockApi.post).toHaveBeenCalledWith("/chat/send", expect.objectContaining({
 			recipient_id: 2,
 			message: "Hola desde el potrero 5",
-		}, { skipOffline: true });
+			client_message_id: expect.any(String),
+		}), { skipOffline: true });
 	});
 
 	it("conserva el mensaje como pendiente cuando no hay red", async () => {
@@ -98,10 +99,11 @@ describe("OfflineChatService", () => {
 
 		expect(msg.id).toBe(41);
 		expect(msg.status).toBe("delivered");
-		expect(mockFieldNode.post).toHaveBeenCalledWith("/chat/send", {
+		expect(mockFieldNode.post).toHaveBeenCalledWith("/chat/send", expect.objectContaining({
 			recipient_id: 2,
 			message: "Mensaje por la red local",
-		});
+			client_message_id: expect.any(String),
+		}));
 		expect(JSON.parse(localStorage.getItem(OUTBOX_KEY) ?? "[]")).toHaveLength(0);
 	});
 

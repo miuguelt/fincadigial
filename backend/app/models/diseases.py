@@ -5,12 +5,13 @@ class Diseases(BaseModel):
     """Modelo para enfermedades que pueden afectar a los animales optimizado para namespaces"""
     __tablename__ = 'diseases'
     __table_args__ = (
+        db.UniqueConstraint('name', 'finca_id', name='uq_diseases_name_finca'),
         db.Index('ix_diseases_updated_at', 'updated_at'),
         db.Index('ix_diseases_created_at', 'created_at'),
     )
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)
+    name = db.Column(db.String(100), nullable=False)
     symptoms = db.Column(db.String(255), nullable=False)
     details = db.Column(db.String(255), nullable=False)
     finca_id = db.Column(db.Integer, db.ForeignKey('finca.id'), nullable=False)

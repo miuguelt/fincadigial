@@ -1,8 +1,19 @@
 import logging
 from datetime import datetime, timedelta, UTC
+from collections import defaultdict
+
+from sqlalchemy import func
+from sqlalchemy.orm import noload
+
+from app import db
 from app.models.animals import Animals, AnimalStatus
 from app.models.control import Control
-from app.models.alerts import AnimalAlert, AlertType, AlertPriority
+from app.models.alerts import (
+    AnimalAlert,
+    AlertType,
+    AlertPriority,
+    build_alert_dedupe_key,
+)
 from app.models.system_content import SystemContent
 
 
@@ -34,11 +45,128 @@ class PredictiveEngineService:
         if not animals:
             return {"status": "success", "alerts_created": 0, "message": "No hay animales activos para analizar."}
 
+        animal_ids = [animal.id for animal in animals]
         alerts_created = 0
+        alerts_updated = 0
+
+        content_keys = {
+            'param.predictive.weight_loss_pct',
+            'param.predictive.control_overdue_days',
+            'param.predictive.adg_low',
+            'recommendation.weight_loss_critical',
+            'recommendation.control_overdue',
+            'recommendation.slow_growth',
+        }
+        content_rows = SystemContent.query.filter(
+            SystemContent.key.in_(content_keys),
+            SystemContent.is_active.is_(True),
+            SystemContent.finca_id.is_(None),
+        ).all()
+        content = {row.key: row.content for row in content_rows}
+
+        def numeric_param(key):
+            try:
+                return float(content[f'param.predictive.{key}'])
+            except (KeyError, TypeError, ValueError):
+                return None
+
+        params = {
+            'weight_loss_pct': numeric_param('weight_loss_pct'),
+            'control_overdue_days': numeric_param('control_overdue_days'),
+            'adg_low': numeric_param('adg_low'),
+        }
+
+        ranked_controls = db.session.query(
+            Control.id.label('control_id'),
+            func.row_number().over(
+                partition_by=Control.animal_id,
+                order_by=(Control.checkup_date.desc(), Control.id.desc()),
+            ).label('position'),
+        ).filter(Control.animal_id.in_(animal_ids)).subquery()
+
+        controls = db.session.query(Control).options(
+            noload(Control.animals)
+        ).join(
+            ranked_controls,
+            Control.id == ranked_controls.c.control_id,
+        ).filter(
+            ranked_controls.c.position <= 3
+        ).order_by(
+            Control.animal_id,
+            Control.checkup_date.desc(),
+            Control.id.desc(),
+        ).all()
+
+        controls_by_animal = defaultdict(list)
+        for control in controls:
+            controls_by_animal[control.animal_id].append(control)
+
+        def category_for_message(message):
+            normalized = (message or '').lower()
+            if 'caída de peso' in normalized:
+                return 'weight_loss'
+            if 'sin control veterinario' in normalized:
+                return 'control_overdue'
+            if 'crecimiento lento' in normalized:
+                return 'slow_growth'
+            return None
+
+        existing_alerts = AnimalAlert.query.filter(
+            AnimalAlert.finca_id == finca_id,
+            AnimalAlert.animal_id.in_(animal_ids),
+            AnimalAlert.alert_type == AlertType.PREDICTIVE,
+            AnimalAlert.is_read.is_(False),
+            AnimalAlert.superseded_by_id.is_(None),
+        ).all()
+        existing_by_key = {}
+        for alert in existing_alerts:
+            category = category_for_message(alert.message)
+            if category:
+                existing_by_key[(alert.animal_id, category)] = alert
+
+        now = datetime.now(UTC)
+
+        def upsert_alert(animal, category, message, recommendation, priority):
+            nonlocal alerts_created, alerts_updated
+            existing = existing_by_key.get((animal.id, category))
+            if existing:
+                changed = (
+                    existing.message != message
+                    or existing.recommendation != recommendation
+                    or existing.priority != priority
+                )
+                if changed:
+                    existing.message = message
+                    existing.recommendation = recommendation
+                    existing.priority = priority
+                    existing.triggered_at = now
+                    alerts_updated += 1
+                return
+
+            alert = AnimalAlert(
+                animal_id=animal.id,
+                finca_id=finca_id,
+                alert_type=AlertType.PREDICTIVE,
+                message=message,
+                recommendation=recommendation,
+                priority=priority,
+                is_read=False,
+                triggered_at=now,
+                dedupe_key=build_alert_dedupe_key(
+                    finca_id=finca_id,
+                    animal_id=animal.id,
+                    alert_type=AlertType.PREDICTIVE,
+                    message=message,
+                    category=category,
+                ),
+            )
+            db.session.add(alert)
+            existing_by_key[(animal.id, category)] = alert
+            alerts_created += 1
 
         for animal in animals:
             try:
-                recent_controls = animal.controls.order_by(Control.checkup_date.desc()).limit(3).all()
+                recent_controls = controls_by_animal.get(animal.id, [])
                 if len(recent_controls) < 2:
                     continue
 
@@ -50,54 +178,28 @@ class PredictiveEngineService:
                 weight_loss_pct = (w_prev - w_actual) / w_prev * 100
 
                 # Regla 1: Caída de peso >10%
-                wl_threshold = _get_predictive_param("weight_loss_pct")
+                wl_threshold = params['weight_loss_pct']
                 if wl_threshold is not None and weight_loss_pct > wl_threshold:
-                    existing = AnimalAlert.query.filter(
-                        AnimalAlert.animal_id == animal.id,
-                        AnimalAlert.alert_type == AlertType.PREDICTIVE,
-                        AnimalAlert.message.ilike('%caída de peso%'),
-                        AnimalAlert.triggered_at > datetime.now(UTC) - timedelta(days=1)
-                    ).first()
-
-                    if not existing:
-                        rec = SystemContent.get_by_key('recommendation.weight_loss_critical')
-                        AnimalAlert.create(
-                            animal_id=animal.id,
-                            finca_id=finca_id,
-                            alert_type=AlertType.PREDICTIVE,
-                            message=f"⚠️ Caída de peso detectada: -{weight_loss_pct:.1f}% ({w_prev}→{w_actual} kg). Evaluar estado de salud y nutrición.",
-                            recommendation=rec.content if rec else None,
-                            priority=AlertPriority.HIGH,
-                            commit=True
-                        )
-                        alerts_created += 1
-                        logger.info(f"Alerta predictiva (peso) creada para {animal.record}")
+                    upsert_alert(
+                        animal,
+                        'weight_loss',
+                        f"⚠️ Caída de peso detectada: -{weight_loss_pct:.1f}% ({w_prev}→{w_actual} kg). Evaluar estado de salud y nutrición.",
+                        content.get('recommendation.weight_loss_critical'),
+                        AlertPriority.HIGH,
+                    )
 
                 # Regla 2: Animal sin control reciente (>90 días)
                 last_ctrl = recent_controls[0]
                 days_since = (datetime.now(UTC).date() - last_ctrl.checkup_date).days
-                ctrl_days = _get_predictive_param("control_overdue_days")
+                ctrl_days = params['control_overdue_days']
                 if ctrl_days is not None and days_since > ctrl_days and animal.age_in_months and animal.age_in_months >= 6:
-                    existing = AnimalAlert.query.filter(
-                        AnimalAlert.animal_id == animal.id,
-                        AnimalAlert.alert_type == AlertType.PREDICTIVE,
-                        AnimalAlert.message.ilike('%sin control%'),
-                        AnimalAlert.triggered_at > datetime.now(UTC) - timedelta(days=1)
-                    ).first()
-
-                    if not existing:
-                        rec = SystemContent.get_by_key('recommendation.control_overdue')
-                        AnimalAlert.create(
-                            animal_id=animal.id,
-                            finca_id=finca_id,
-                            alert_type=AlertType.PREDICTIVE,
-                            message=f"📊 Sin control veterinario hace {days_since} días. Programar revisión completa.",
-                            recommendation=rec.content if rec else None,
-                            priority=AlertPriority.MEDIUM,
-                            commit=True
-                        )
-                        alerts_created += 1
-                        logger.info(f"Alerta predictiva (control) creada para {animal.record}")
+                    upsert_alert(
+                        animal,
+                        'control_overdue',
+                        f"📊 Sin control veterinario hace {days_since} días. Programar revisión completa.",
+                        content.get('recommendation.control_overdue'),
+                        AlertPriority.MEDIUM,
+                    )
 
                 # Regla 3: ADG bajo sostenido
                 if len(recent_controls) >= 3:
@@ -107,39 +209,36 @@ class PredictiveEngineService:
                         total_days = (dates[-1] - dates[0]).days
                         if total_days > 0:
                             adg = (weights[-1] - weights[0]) / total_days
-                            adg_threshold = _get_predictive_param("adg_low")
+                            adg_threshold = params['adg_low']
                             if adg_threshold is not None and adg < adg_threshold:
-                                existing = AnimalAlert.query.filter(
-                                    AnimalAlert.animal_id == animal.id,
-                                    AnimalAlert.alert_type == AlertType.PREDICTIVE,
-                                    AnimalAlert.message.ilike('%crecimiento lento%'),
-                                    AnimalAlert.triggered_at > datetime.now(UTC) - timedelta(days=1)
-                                ).first()
-
-                                if not existing:
-                                    rec = SystemContent.get_by_key('recommendation.slow_growth')
-                                    AnimalAlert.create(
-                                        animal_id=animal.id,
-                                        finca_id=finca_id,
-                                        alert_type=AlertType.PREDICTIVE,
-                                        message=f"📉 Crecimiento lento: ADG {adg:.3f} kg/día en {total_days} días de observación.",
-                                        recommendation=rec.content if rec else None,
-                                        priority=AlertPriority.MEDIUM,
-                                        commit=True
-                                    )
-                                    alerts_created += 1
-                                    logger.info(f"Alerta predictiva (ADG) creada para {animal.record}")
+                                upsert_alert(
+                                    animal,
+                                    'slow_growth',
+                                    f"📉 Crecimiento lento: ADG {adg:.3f} kg/día en {total_days} días de observación.",
+                                    content.get('recommendation.slow_growth'),
+                                    AlertPriority.MEDIUM,
+                                )
 
             except Exception as e:
                 logger.error(f"Error analizando animal {animal.id}: {e}")
                 continue
 
+        db.session.commit()
+        logger.info(
+            "Análisis predictivo de finca %s: %s nuevas, %s actualizadas",
+            finca_id,
+            alerts_created,
+            alerts_updated,
+        )
+
         heat_alerts = PredictiveEngineService.predict_heat_cycles(finca_id)
         alerts_created += heat_alerts.get('alerts_created', 0)
+        alerts_updated += heat_alerts.get('alerts_updated', 0)
 
         return {
             "status": "success",
             "alerts_created": alerts_created,
+            "alerts_updated": alerts_updated,
             "total_analyzed": len(animals)
         }
 
@@ -161,53 +260,97 @@ class PredictiveEngineService:
         else:
             cows = cows_query
 
+        if not cows:
+            return {"alerts_created": 0, "alerts_updated": 0}
+
         alerts_created = 0
+        alerts_updated = 0
         today = datetime.now(UTC).date()
+        cow_ids = [cow.id for cow in cows]
+        heat_window_start_param = _get_predictive_param("heat_window_start")
+        recommendation = SystemContent.get_by_key('recommendation.heat_cycle')
+
+        ranked_events = db.session.query(
+            ReproductiveEvent.id.label('event_id'),
+            func.row_number().over(
+                partition_by=ReproductiveEvent.animal_id,
+                order_by=(ReproductiveEvent.event_date.desc(), ReproductiveEvent.id.desc()),
+            ).label('position'),
+        ).filter(
+            ReproductiveEvent.animal_id.in_(cow_ids),
+            ReproductiveEvent.event_type.in_([EventType.Celo, EventType.Inseminacion]),
+        ).subquery()
+        latest_events = db.session.query(ReproductiveEvent).join(
+            ranked_events,
+            ReproductiveEvent.id == ranked_events.c.event_id,
+        ).filter(ranked_events.c.position == 1).all()
+        latest_by_animal = {event.animal_id: event for event in latest_events}
+
+        positive_diagnoses = dict(db.session.query(
+            ReproductiveEvent.animal_id,
+            func.max(ReproductiveEvent.event_date),
+        ).filter(
+            ReproductiveEvent.animal_id.in_(cow_ids),
+            ReproductiveEvent.event_type == EventType.Diagnostico,
+            ReproductiveEvent.diagnosis_result == DiagnosisResult.Positivo,
+        ).group_by(ReproductiveEvent.animal_id).all())
+
+        existing_alerts = AnimalAlert.query.filter(
+            AnimalAlert.finca_id == finca_id,
+            AnimalAlert.animal_id.in_(cow_ids),
+            AnimalAlert.alert_type == AlertType.REPRODUCTION,
+            AnimalAlert.is_read.is_(False),
+            AnimalAlert.superseded_by_id.is_(None),
+            AnimalAlert.message.ilike('%celo probable%'),
+        ).all()
+        existing_by_animal = {alert.animal_id: alert for alert in existing_alerts}
 
         for cow in cows:
-            last_event = ReproductiveEvent.query.filter(
-                ReproductiveEvent.animal_id == cow.id,
-                ReproductiveEvent.event_type.in_([EventType.Celo, EventType.Inseminacion])
-            ).order_by(ReproductiveEvent.event_date.desc()).first()
+            last_event = latest_by_animal.get(cow.id)
 
             if last_event:
-                is_pregnant = ReproductiveEvent.query.filter_by(
-                    animal_id=cow.id,
-                    event_type=EventType.Diagnostico,
-                    diagnosis_result=DiagnosisResult.Positivo
-                ).filter(ReproductiveEvent.event_date >= last_event.event_date).first()
-
-                if is_pregnant:
+                positive_date = positive_diagnoses.get(cow.id)
+                if positive_date and positive_date >= last_event.event_date:
                     continue
 
                 days_since = (today - last_event.event_date).days
                 cycle_day = days_since % 21
 
-                heat_window_start_param = _get_predictive_param("heat_window_start")
                 if heat_window_start_param is not None and (int(heat_window_start_param) <= cycle_day <= 21 or cycle_day == 0):
                     next_heat = today + timedelta(days=(21 - cycle_day) if cycle_day != 0 else 0)
+                    message = f"🔔 Celo probable para el {next_heat.strftime('%d/%m/%Y')}."
+                    existing = existing_by_animal.get(cow.id)
 
-                    existing = AnimalAlert.query.filter(
-                        AnimalAlert.animal_id == cow.id,
-                        AnimalAlert.alert_type == AlertType.REPRODUCTION,
-                        AnimalAlert.message.ilike('%celo probable%'),
-                        AnimalAlert.triggered_at > datetime.now(UTC) - timedelta(days=5)
-                    ).first()
-
-                    if not existing:
-                        rec = SystemContent.get_by_key('recommendation.heat_cycle')
-                        AnimalAlert.create(
+                    if existing:
+                        if existing.message != message:
+                            existing.message = message
+                            existing.recommendation = recommendation.content if recommendation else None
+                            existing.triggered_at = datetime.now(UTC)
+                            alerts_updated += 1
+                    else:
+                        alert = AnimalAlert(
                             animal_id=cow.id,
                             finca_id=finca_id,
                             alert_type=AlertType.REPRODUCTION,
-                            message=f"🔔 Celo probable para el {next_heat.strftime('%d/%m/%Y')}.",
-                            recommendation=rec.content if rec else None,
+                            message=message,
+                            recommendation=recommendation.content if recommendation else None,
                             priority=AlertPriority.HIGH,
-                            commit=True
+                            is_read=False,
+                            triggered_at=datetime.now(UTC),
+                            dedupe_key=build_alert_dedupe_key(
+                                finca_id=finca_id,
+                                animal_id=cow.id,
+                                alert_type=AlertType.REPRODUCTION,
+                                message=message,
+                                category='heat_cycle',
+                            ),
                         )
+                        db.session.add(alert)
+                        existing_by_animal[cow.id] = alert
                         alerts_created += 1
 
-        return {"alerts_created": alerts_created}
+        db.session.commit()
+        return {"alerts_created": alerts_created, "alerts_updated": alerts_updated}
 
     @staticmethod
     def get_finca_insights_summary(finca_id):

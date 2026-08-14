@@ -106,7 +106,7 @@ export const useAlertEngine = () => {
     });
 
     return virtualAlerts;
-  }, [configs, animals, controls]);
+  }, [configs, animals, controls, fieldAssignments, milkRecords]);
 
   return {
     localAlerts,

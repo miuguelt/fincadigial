@@ -81,6 +81,11 @@ from .knowledge_base import KBRecomendacion, KBRegla, KBCalendario, KBCategoria,
 from .sinigan_registrations import SiniganRegistrations
 from .management_plans import ManagementPlan, PlanType, PlanStatus
 from .producer_profiles import ProducerProfile, ProducerType
+from .professional_credentials import (
+    ProfessionalCredential,
+    CredentialTitle,
+    CredentialStatus,
+)
 from .animal_health_history import AnimalHealthHistory, HealthEventType
 from .animal_production_metrics import AnimalProductionMetrics, MetricType
 from .breeds import BreedPurpose
@@ -208,6 +213,9 @@ __all__ = [
     'PlanStatus',
     'ProducerProfile',
     'ProducerType',
+    'ProfessionalCredential',
+    'CredentialTitle',
+    'CredentialStatus',
     'AnimalHealthHistory',
     'HealthEventType',
     'AnimalProductionMetrics',

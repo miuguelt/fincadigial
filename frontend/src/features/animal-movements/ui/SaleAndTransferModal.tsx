@@ -93,7 +93,7 @@ export const SaleAndTransferModal: React.FC<SaleAndTransferModalProps> = ({
 					setLoadingFincas(false);
 				});
 		}
-	}, [isOpen, animal]);
+	}, [isOpen, animal, showToast]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();

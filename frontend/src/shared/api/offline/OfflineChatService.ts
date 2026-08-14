@@ -18,12 +18,14 @@ export interface ChatMessage {
   attachmentUrl?: string;
   attachmentType?: 'image' | 'file';
   attachmentName?: string;
+  clientMessageId?: string;
+  readAt?: string;
   /** pending: sólo en el buffer local · delivered: en servidor sin leer · synced: leído. */
   status: 'pending' | 'delivered' | 'synced';
 }
 
 /** Forma cruda devuelta por la API `/chat`. */
-interface ApiChatMessage {
+export interface ApiChatMessage {
   id: number;
   sender_id: number;
   sender_name?: string;
@@ -31,6 +33,8 @@ interface ApiChatMessage {
   message: string;
   created_at: string;
   is_read?: boolean;
+  client_message_id?: string | null;
+  read_at?: string | null;
   attachment_url?: string;
   attachment_type?: 'image' | 'file';
   attachment_name?: string;
@@ -47,6 +51,8 @@ function fromApi(raw: ApiChatMessage): ChatMessage {
     attachmentUrl: raw.attachment_url,
     attachmentType: raw.attachment_type,
     attachmentName: raw.attachment_name,
+    clientMessageId: raw.client_message_id ?? undefined,
+    readAt: raw.read_at ?? undefined,
     status: raw.is_read ? 'synced' : 'delivered',
   };
 }
@@ -54,28 +60,31 @@ function fromApi(raw: ApiChatMessage): ChatMessage {
 const STORAGE_KEY = 'villaluz.chat.outbox';
 const CACHE_KEY = 'villaluz.chat.cache';
 
+const storageKey = (base: string, userId: number | null) =>
+  userId === null ? base : `${base}:${userId}`;
+
 type Listener = (messages: ChatMessage[]) => void;
 
-function readOutbox(): ChatMessage[] {
+function readOutbox(userId: number | null): ChatMessage[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey(STORAGE_KEY, userId));
     return raw ? (JSON.parse(raw) as ChatMessage[]) : [];
   } catch {
     return [];
   }
 }
 
-function writeOutbox(messages: ChatMessage[]): void {
+function writeOutbox(messages: ChatMessage[], userId: number | null): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    localStorage.setItem(storageKey(STORAGE_KEY, userId), JSON.stringify(messages));
   } catch {
     /* almacenamiento lleno o no disponible: el envío sigue intentándose en memoria */
   }
 }
 
-function readCache(): ChatMessage[] {
+function readCache(userId: number | null): ChatMessage[] {
   try {
-    const raw = localStorage.getItem(CACHE_KEY);
+    const raw = localStorage.getItem(storageKey(CACHE_KEY, userId));
     return raw ? (JSON.parse(raw) as ChatMessage[]) : [];
   } catch {
     return [];
@@ -85,7 +94,9 @@ function readCache(): ChatMessage[] {
 function mergeMessages(...groups: ChatMessage[][]): ChatMessage[] {
   const merged = new Map<string, ChatMessage>();
   for (const message of groups.flat()) {
-    const key = String(message.id);
+    const key = message.clientMessageId
+      ? `client:${message.senderId}:${message.clientMessageId}`
+      : `server:${message.id}`;
     const previous = merged.get(key);
     if (!previous || (previous.status === 'pending' && message.status !== 'pending')) {
       merged.set(key, message);
@@ -94,10 +105,10 @@ function mergeMessages(...groups: ChatMessage[][]): ChatMessage[] {
   return [...merged.values()].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 }
 
-function writeCache(messages: ChatMessage[]): void {
+function writeCache(messages: ChatMessage[], userId: number | null): void {
   try {
     // Text chat is deliberately bounded so it cannot exhaust storage on low-end phones.
-    localStorage.setItem(CACHE_KEY, JSON.stringify(messages.slice(-500)));
+    localStorage.setItem(storageKey(CACHE_KEY, userId), JSON.stringify(messages.slice(-500)));
   } catch {
     /* Cache is an optimization; the pending outbox remains the durable priority. */
   }
@@ -105,7 +116,8 @@ function writeCache(messages: ChatMessage[]): void {
 
 class OfflineChatServiceImpl {
   private listeners = new Set<Listener>();
-  private messages: ChatMessage[] = mergeMessages(readCache(), readOutbox());
+  private currentUserId: number | null = null;
+  private messages: ChatMessage[] = mergeMessages(readCache(null), readOutbox(null));
 
   subscribe(listener: Listener): () => void {
     this.listeners.add(listener);
@@ -114,8 +126,16 @@ class OfflineChatServiceImpl {
   }
 
   private emit(): void {
-    writeOutbox(this.messages.filter((m) => m.status === 'pending'));
-    writeCache(this.messages);
+    writeOutbox(this.messages.filter((m) => m.status === 'pending'), this.currentUserId);
+    writeCache(this.messages, this.currentUserId);
+    for (const listener of this.listeners) listener(this.messages);
+  }
+
+  setCurrentUser(userId: number | null): void {
+    const normalized = userId !== null && Number.isFinite(userId) ? userId : null;
+    if (this.currentUserId === normalized) return;
+    this.currentUserId = normalized;
+    this.messages = mergeMessages(readCache(normalized), readOutbox(normalized));
     for (const listener of this.listeners) listener(this.messages);
   }
 
@@ -125,7 +145,25 @@ class OfflineChatServiceImpl {
    * del anterior, y entre casos de prueba.
    */
   reset(): void {
-    this.messages = mergeMessages(readCache(), readOutbox());
+    this.currentUserId = null;
+    this.messages = mergeMessages(readCache(null), readOutbox(null));
+    this.emit();
+  }
+
+  receiveFromServer(raw: ApiChatMessage): ChatMessage {
+    const message = fromApi(raw);
+    this.messages = mergeMessages(this.messages, [message]);
+    this.emit();
+    return message;
+  }
+
+  markMessagesRead(messageIds: number[]): void {
+    const ids = new Set(messageIds.map(String));
+    this.messages = this.messages.map((message) =>
+      ids.has(String(message.id))
+        ? { ...message, status: 'synced', readAt: message.readAt ?? new Date().toISOString() }
+        : message,
+    );
     this.emit();
   }
 
@@ -143,6 +181,7 @@ class OfflineChatServiceImpl {
 
   /** Carga el historial con un usuario desde el servidor. */
   async loadHistory(recipientId: number, senderId?: number): Promise<ChatMessage[]> {
+    if (senderId !== undefined) this.setCurrentUser(senderId);
     try {
       // Chat history must not use the generic GET cache: a cached empty result
       // can hide a message that was just confirmed by the server or field node.
@@ -184,13 +223,17 @@ class OfflineChatServiceImpl {
     recipientId: number,
     text: string,
   ): Promise<ChatMessage> {
+    this.setCurrentUser(senderId);
+    const clientMessageId = globalThis.crypto?.randomUUID?.()
+      ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const optimistic: ChatMessage = {
-      id: `local-${senderId}-${recipientId}-${this.messages.length}`,
+      id: `local-${clientMessageId}`,
       senderId,
       senderName,
       recipientId,
       content: text,
       createdAt: new Date().toISOString(),
+      clientMessageId,
       status: 'pending',
     };
     this.messages = [...this.messages, optimistic];
@@ -203,6 +246,7 @@ class OfflineChatServiceImpl {
       const response = await api.post<{ data?: ApiChatMessage; __offlineQueued?: boolean }>('/chat/send', {
         recipient_id: recipientId,
         message: text,
+        client_message_id: clientMessageId,
       }, { skipOffline: true } as never);
       if (response.status === 202 || response.data?.__offlineQueued) throw new Error('PRIMARY_MESSAGE_QUEUED');
       const raw = response.data?.data;
@@ -215,6 +259,7 @@ class OfflineChatServiceImpl {
         const response = await FieldNodeService.post<{ data?: ApiChatMessage }>('/chat/send', {
           recipient_id: recipientId,
           message: text,
+          client_message_id: clientMessageId,
         });
         const saved = response.data ? fromApi(response.data) : { ...optimistic, status: 'delivered' as const };
         this.messages = this.messages.map((m) => (m.id === optimistic.id ? saved : m));
@@ -237,6 +282,7 @@ class OfflineChatServiceImpl {
           const response = await api.post<{ data?: ApiChatMessage; __offlineQueued?: boolean }>('/chat/send', {
             recipient_id: message.recipientId,
             message: message.content,
+            client_message_id: message.clientMessageId,
           }, { skipOffline: true } as never);
           if (response.status === 202 || response.data?.__offlineQueued) throw new Error('PRIMARY_MESSAGE_QUEUED');
           raw = response.data?.data;
@@ -244,6 +290,7 @@ class OfflineChatServiceImpl {
           const response = await FieldNodeService.post<{ data?: ApiChatMessage }>('/chat/send', {
             recipient_id: message.recipientId,
             message: message.content,
+            client_message_id: message.clientMessageId,
           });
           raw = response.data;
         }
@@ -269,7 +316,7 @@ class OfflineChatServiceImpl {
   async pullFromServer(): Promise<number> {
     await this.flushPending();
     try {
-      const response = await api.get<{ data: { unread_count?: number } }>('/chat/unread-count');
+      const response = await api.get<{ data: { unread_count?: number } }>('/chat/unread-count', { skipCache: true } as never);
       return response.data?.data?.unread_count ?? 0;
     } catch {
       try {
@@ -284,7 +331,7 @@ class OfflineChatServiceImpl {
   /** Mensajes sin leer según el servidor; 0 si no hay red. */
   async getUnreadCount(_userId: number): Promise<number> {
     try {
-      const response = await api.get<{ data: { unread_count?: number } }>('/chat/unread-count');
+      const response = await api.get<{ data: { unread_count?: number } }>('/chat/unread-count', { skipCache: true } as never);
       return response.data?.data?.unread_count ?? 0;
     } catch {
       return 0;

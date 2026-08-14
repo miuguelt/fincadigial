@@ -1,6 +1,7 @@
 ﻿import { useEffect } from 'react';
 import { useForm, FieldError } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import { speciesService } from '@/entities/species/api/species.service';
 import type { SpeciesInput } from '@/shared/api/generated/swaggerTypes';
 
@@ -9,7 +10,7 @@ export type SpeciesFormFields = Pick<SpeciesInput, 'name'>;
 
 export default function SpeciesForm() {
   const { id } = useParams<{ id?: string }>();
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
   const {
     register,
     handleSubmit,
@@ -35,7 +36,7 @@ export default function SpeciesForm() {
       } else {
         await speciesService.createSpecies(payload);
       }
-      navigate('/admin/species');
+      goTo('/admin/species');
     } catch (error: any) {
       const msg =
         error?.response?.data?.message || error?.message || 'Error al guardar especie';

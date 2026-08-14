@@ -89,8 +89,8 @@ class Finca(BaseModel):
             db.session.commit()
             # Sembrar datos predeterminados (alertas, etc.) para la nueva finca
             try:
-                from app.services.default_alert_configs import seed_default_configs_for_finca
-                seed_default_configs_for_finca(instance.id)
+                from app.services.system_initializer import initialize_finca_defaults
+                initialize_finca_defaults(instance.id)
             except Exception as e:
                 import logging
                 logging.getLogger(__name__).error("Error al sembrar configuraciones por defecto para la finca %s: %s", instance.id, e)

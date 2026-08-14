@@ -14,6 +14,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { formatDateColombia } from '@/shared/utils/dateUtils';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 
 interface FKDetailModalProps {
   isOpen: boolean;
@@ -33,6 +34,11 @@ export const FKDetailModal: React.FC<FKDetailModalProps> = ({
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { rolePath, canAccess } = useRoleNavigation();
+
+  // La ficha completa vive bajo el prefijo del rol; si no puede abrirla, no se ofrece.
+  const fullRecordPath = rolePath(`/admin/${entity}?edit=${id}`);
+  const canOpenFullRecord = canAccess(`/admin/${entity}`);
 
   useEffect(() => {
     if (!isOpen || !entity || !id) return;
@@ -135,7 +141,7 @@ export const FKDetailModal: React.FC<FKDetailModalProps> = ({
                       <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/70 mb-0.5">
                         {key.replace(/_/g, ' ')}
                       </p>
-                      <p className="text-sm font-medium text-foreground truncate">
+                      <p className="text-sm font-medium text-foreground fit-clamp">
                         {renderValue(key, value)}
                       </p>
                     </div>
@@ -150,13 +156,15 @@ export const FKDetailModal: React.FC<FKDetailModalProps> = ({
               >
                 Cerrar
               </button>
-              <a
-                href={`/admin/${entity}?edit=${id}`}
-                className="ml-3 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-bold flex items-center gap-2 hover:opacity-90 transition-all shadow-md shadow-primary/20"
-              >
-                <ExternalLink className="h-4 w-4" />
-                Ir al Registro Completo
-              </a>
+              {canOpenFullRecord && (
+                <a
+                  href={fullRecordPath}
+                  className="ml-3 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-bold flex items-center gap-2 hover:opacity-90 transition-all shadow-md shadow-primary/20"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Ir al Registro Completo
+                </a>
+              )}
             </div>
           </div>
         ) : (

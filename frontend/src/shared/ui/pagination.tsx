@@ -33,7 +33,7 @@ export function ResultInfo({
   const end = Math.min(page * pageSize, totalItems);
   return (
     <div className={cn("text-sm text-muted-foreground", className)}>
-      Mostrando {start} a {end} de {totalItems.toLocaleString()} resultados
+      Mostrando {start} a {end} de {totalItems.toLocaleString('es-CO')} resultados
     </div>
   );
 }
@@ -94,34 +94,34 @@ export function PaginationBar({
   };
 
   const content = (
-    <div className={cn("bg-card/8 dark:bg-black/20 backdrop-blur-md border border-white/10 rounded-lg px-4 py-3", className)}>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <PageSizeSelect value={pageSize} onChange={onPageSizeChange} />
+    <div className={cn("bg-slate-900/90 dark:bg-slate-900/95 text-white backdrop-blur-xl border border-white/15 rounded-full px-2.5 py-1 shadow-xl text-xs", className)}>
+      <div className="flex items-center justify-between gap-2 sm:gap-3">
+        <PageSizeSelect value={pageSize} onChange={onPageSizeChange} className="hidden sm:flex text-xs text-white/80" />
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => goTo(page - 1)}
             disabled={!canPrev}
-            className="w-8 h-8 rounded-full text-foreground/60 hover:bg-card/10 hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center text-base"
+            className="w-6 h-6 sm:w-7 sm:h-7 rounded-full text-white/70 hover:bg-white/15 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center text-sm"
             aria-label="Página anterior"
           >
             ‹
           </button>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             {startPage > 1 && (
               <>
                 <button
                   type="button"
                   onClick={() => goTo(1)}
-                  className="w-8 h-8 rounded-full text-sm text-foreground/70 hover:bg-card/10 hover:text-foreground transition-all duration-200"
+                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-full text-xs text-white/80 hover:bg-white/15 hover:text-white transition-all duration-200"
                   aria-label="Primera página"
                 >
                   1
                 </button>
                 {startPage > 2 && (
-                  <span aria-hidden className="px-1 text-sm text-foreground/30">⋯</span>
+                  <span aria-hidden className="px-0.5 text-xs text-white/40">⋯</span>
                 )}
               </>
             )}
@@ -132,10 +132,10 @@ export function PaginationBar({
                 key={p}
                 onClick={() => goTo(p)}
                 className={cn(
-                  "w-8 h-8 rounded-full text-sm font-medium transition-all duration-200 focus:outline-none",
+                  "w-6 h-6 sm:w-7 sm:h-7 rounded-full text-xs font-semibold transition-all duration-200 focus:outline-none",
                   p === page
-                    ? "bg-primary text-primary-foreground shadow-sm scale-110"
-                    : "text-foreground/70 hover:bg-card/10 hover:text-foreground"
+                    ? "bg-primary text-white shadow-sm scale-105 font-bold"
+                    : "text-white/80 hover:bg-white/15 hover:text-white"
                 )}
                 aria-label={`Ir a la página ${p}`}
                 aria-current={p === page ? "page" : undefined}
@@ -147,12 +147,12 @@ export function PaginationBar({
             {endPage < totalPages && (
               <>
                 {endPage < totalPages - 1 && (
-                  <span aria-hidden className="px-1 text-sm text-foreground/30">⋯</span>
+                  <span aria-hidden className="px-0.5 text-xs text-white/40">⋯</span>
                 )}
                 <button
                   type="button"
                   onClick={() => goTo(totalPages)}
-                  className="w-8 h-8 rounded-full text-sm text-foreground/70 hover:bg-card/10 hover:text-foreground transition-all duration-200"
+                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-full text-xs text-white/80 hover:bg-white/15 hover:text-white transition-all duration-200"
                   aria-label="Última página"
                 >
                   {totalPages}
@@ -165,17 +165,17 @@ export function PaginationBar({
             type="button"
             onClick={() => goTo(page + 1)}
             disabled={!canNext}
-            className="w-8 h-8 rounded-full text-foreground/60 hover:bg-card/10 hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center text-base"
+            className="w-6 h-6 sm:w-7 sm:h-7 rounded-full text-white/70 hover:bg-white/15 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center text-sm"
             aria-label="Página siguiente"
           >
             ›
           </button>
         </div>
 
-        <div className="text-xs font-medium text-foreground/50">
-          Página <span className="text-foreground/80 font-semibold">{page}</span> de <span className="text-foreground/80 font-semibold">{Math.max(totalPages, 1)}</span>
+        <div className="text-[10px] sm:text-xs font-medium text-white/70">
+          Pág. <span className="text-white font-bold">{page}</span> / <span className="text-white font-bold">{Math.max(totalPages, 1)}</span>
           {typeof totalItems === "number" && totalItems >= 0 ? (
-            <span className="ml-1.5 text-foreground/30">({totalItems.toLocaleString()} registros)</span>
+            <span className="ml-1 text-white/50 hidden md:inline">({totalItems.toLocaleString('es-CO')} reg.)</span>
           ) : null}
         </div>
       </div>
@@ -187,7 +187,7 @@ export function PaginationBar({
   return (
     <div
       className={cn(
-        "fixed bottom-3 left-1/2 -translate-x-1/2 z-[100] max-w-[95vw] opacity-65 hover:opacity-100 transition-all duration-300 pointer-events-auto",
+        "fixed bottom-1 sm:bottom-1.5 left-1/2 -translate-x-1/2 z-[100] max-w-[95vw] opacity-90 hover:opacity-100 transition-all duration-300 pointer-events-auto",
         containerClassName
       )}
     >

@@ -4,8 +4,9 @@ from app.models.finca import Finca
 from app.models.activity_log import ActivityLog
 from app.utils.namespace_helpers import create_optimized_namespace
 from flask_restx import Resource, fields
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.utils.response_handler import APIResponse
+from app.utils.rbac import require_permission
 from app import db
 from sqlalchemy import func, or_
 import logging
@@ -109,9 +110,46 @@ class FincaGlobalActivity(Resource):
             return APIResponse.error('Error interno del servidor', details={'error': str(e)}, status_code=500)
 
 
+def _membership_flags(finca_ids: list[int]) -> dict[int, dict]:
+    """Membership state of the current user for the given fincas.
+
+    The public catalog is readable without a session; in that case every finca
+    is reported as available so the UI keeps the "Solicitar" action enabled.
+    """
+    flags = {finca_id: {'is_member': False, 'already_requested': False} for finca_id in finca_ids}
+    if not finca_ids:
+        return flags
+
+    user_id = get_jwt_identity()
+    if not user_id:
+        return flags
+
+    from app.models.join_request import JoinRequest, JoinRequestStatus
+    from app.models.user_finca import UserFinca
+
+    member_rows = db.session.query(UserFinca.finca_id).filter(
+        UserFinca.user_id == user_id,
+        UserFinca.finca_id.in_(finca_ids),
+        UserFinca.is_active == True,
+    ).all()
+    for (finca_id,) in member_rows:
+        flags[finca_id]['is_member'] = True
+
+    pending_rows = db.session.query(JoinRequest.finca_id).filter(
+        JoinRequest.user_id == user_id,
+        JoinRequest.finca_id.in_(finca_ids),
+        JoinRequest.status == JoinRequestStatus.PENDING,
+    ).all()
+    for (finca_id,) in pending_rows:
+        flags[finca_id]['already_requested'] = True
+
+    return flags
+
+
 @fincas_ns.route('/public', endpoint='public_fincas_list')
 class PublicFincasList(Resource):
     @fincas_ns.doc('public_fincas_list', description='Listar fincas públicas disponibles para solicitar membresía. No requiere autenticación.')
+    @jwt_required(optional=True)
     def get(self):
         try:
             search = flask.request.args.get('search', '').strip()
@@ -148,8 +186,10 @@ class PublicFincasList(Resource):
             pagination = query.paginate(page=page, per_page=limit, error_out=False)
 
             # Construir respuesta pública (solo campos seguros)
+            flags = _membership_flags([finca.id for finca in pagination.items])
             items = []
             for finca in pagination.items:
+                finca_flags = flags[finca.id]
                 items.append({
                     'id': finca.id,
                     'name': finca.name,
@@ -158,6 +198,8 @@ class PublicFincasList(Resource):
                     'municipality': finca.municipality,
                     'address': finca.address,
                     'created_at': finca.created_at.isoformat() if finca.created_at else None,
+                    'is_member': finca_flags['is_member'],
+                    'already_requested': finca_flags['already_requested'],
                 })
 
             return APIResponse.paginated_success(
@@ -219,6 +261,7 @@ def _public_livestock_stats(finca_id: int) -> dict:
 @fincas_ns.route('/public/<int:finca_id>', endpoint='public_finca_detail')
 class PublicFincaDetail(Resource):
     @fincas_ns.doc('public_finca_detail', description='Obtener detalles públicos de una finca específica')
+    @jwt_required(optional=True)
     def get(self, finca_id):
         try:
             finca = Finca.query.get(finca_id)
@@ -240,6 +283,7 @@ class PublicFincaDetail(Resource):
                 'nit': finca.nit,
                 'logo_url': finca.logo_url,
                 'created_at': finca.created_at.isoformat() if finca.created_at else None,
+                **_membership_flags([finca.id])[finca.id],
             }
 
             # Livestock stats are opt-in per finca: only 'full' visibility
@@ -254,3 +298,53 @@ class PublicFincaDetail(Resource):
         except Exception as e:
             logger.error('Error obteniendo finca pública %s: %s', finca_id, e, exc_info=True)
             return APIResponse.error('Error interno del servidor', status_code=500)
+
+
+finca_location_model = fincas_ns.model('FincaLocationUpdate', {
+    'latitude': fields.Float(required=True, description='Latitud'),
+    'longitude': fields.Float(required=True, description='Longitud'),
+})
+
+
+@fincas_ns.route('/<int:finca_id>/location', endpoint='finca_location_update')
+class FincaLocationUpdate(Resource):
+    @fincas_ns.doc('update_finca_location', description='Actualizar coordenadas GPS de una finca', security=['Bearer'])
+    @fincas_ns.expect(finca_location_model, validate=False)
+    @require_permission('finca-location', 'update')
+    def patch(self, finca_id: int):
+        try:
+            finca = Finca.query.get(finca_id)
+            if not finca:
+                return APIResponse.error('Finca no encontrada', status_code=404)
+
+            payload = flask.request.get_json(force=True, silent=True) or {}
+            if not isinstance(payload, dict):
+                return APIResponse.error('Se requiere un objeto JSON', status_code=400)
+
+            lat = payload.get('latitude')
+            lon = payload.get('longitude')
+
+            if lat is None or lon is None:
+                return APIResponse.error('latitude y longitude son obligatorios', status_code=400)
+
+            try:
+                lat = float(lat)
+                lon = float(lon)
+            except (TypeError, ValueError):
+                return APIResponse.error('latitude y longitude deben ser numéricos', status_code=400)
+
+            if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
+                return APIResponse.error('Coordenadas fuera de rango geográfico', status_code=400)
+
+            finca.latitude = lat
+            finca.longitude = lon
+            db.session.commit()
+
+            return APIResponse.success(
+                data={'id': finca.id, 'latitude': finca.latitude, 'longitude': finca.longitude},
+                message='Ubicación GPS actualizada',
+            )
+        except Exception as e:
+            db.session.rollback()
+            logger.error('Error actualizando ubicación de finca %s: %s', finca_id, e, exc_info=True)
+            return APIResponse.error('Error interno del servidor', details={'error': str(e)}, status_code=500)

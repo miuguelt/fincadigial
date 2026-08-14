@@ -28,7 +28,7 @@ import gallery6Large from '@/shared/assets/landing-gallery-6-1280.webp';
 
 const featureList = [
   {
-    title: 'Control integral del hato',
+    title: 'Control integral del ganado',
     description: 'Inventario, genealogías y estado de cada animal en una sola pantalla y siempre sincronizado.',
     icon: Layers,
   },

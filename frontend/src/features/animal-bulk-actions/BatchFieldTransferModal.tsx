@@ -180,7 +180,7 @@ export const BatchFieldTransferModal: React.FC<BatchFieldTransferModalProps> = (
               <IconSwitchHorizontal className="h-5 w-5 text-white" />
             </div>
             <div className="min-w-0">
-              <DialogTitle className="text-xl font-bold tracking-tight text-white flex items-center gap-3 truncate drop-shadow-sm">
+              <DialogTitle className="text-xl font-bold tracking-tight text-white flex items-center gap-3 fit-clamp drop-shadow-sm">
                 Relocalización de Ganado
                 <Badge className="bg-white/20 text-white font-bold text-[10px] px-2.5 py-0.5 rounded-[var(--radius-full)] border-white/10 shadow-sm">
                   {selectedAnimalIds.length} Lotes
@@ -236,10 +236,10 @@ export const BatchFieldTransferModal: React.FC<BatchFieldTransferModalProps> = (
                           <IconMeat size="sm" className="text-primary" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[11px] font-bold text-foreground truncate">
+                          <p className="text-[11px] font-bold text-foreground fit-clamp">
                             {animal.record || `ID-${animal.id}`}
                           </p>
-                          <p className="text-[8px] font-bold text-muted-foreground/40 truncate uppercase tracking-widest">
+                          <p className="text-[8px] font-bold text-muted-foreground/40 fit-clamp uppercase tracking-widest">
                             Ejemplar
                           </p>
                         </div>
@@ -305,7 +305,7 @@ export const BatchFieldTransferModal: React.FC<BatchFieldTransferModalProps> = (
                               Destino Seleccionado
                             </p>
                             <h5 className={cn(
-                              'text-xl font-bold truncate',
+                              'text-xl font-bold fit-clamp',
                               isOverCapacity ? 'text-destructive' : 'text-primary'
                             )}>
                               {selectedField.name}
@@ -603,14 +603,14 @@ export const BatchFieldTransferModal: React.FC<BatchFieldTransferModalProps> = (
                           {/* Nombre y ubicación */}
                           <div className="relative z-10 min-w-0">
                             <p className={cn(
-                              'text-sm font-black truncate transition-colors leading-none',
+                              'text-sm font-black fit-clamp transition-colors leading-none',
                               isSelected ? 'text-primary' : 'text-foreground'
                             )}>
                               {field.name}
                             </p>
                             <div className="flex items-center gap-1.5 mt-1.5">
                               <IconMap2 className="h-3 w-3 text-muted-foreground/40 shrink-0" />
-                              <p className="text-[11px] font-semibold text-muted-foreground/60 truncate">
+                              <p className="text-[11px] font-semibold text-muted-foreground/60 fit-clamp">
                                 {field.ubication || 'Sin ubicación'}
                               </p>
                             </div>
@@ -740,7 +740,7 @@ export const BatchFieldTransferModal: React.FC<BatchFieldTransferModalProps> = (
                   Destino
                 </span>
                 <span className={cn(
-                  'text-sm font-bold truncate max-w-[150px]',
+                  'text-sm font-bold fit-clamp max-w-[150px]',
                   selectedField ? 'text-foreground' : 'text-muted-foreground/20'
                 )}>
                   {selectedField ? selectedField.name : 'No seleccionado'}

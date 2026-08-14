@@ -13,6 +13,7 @@ import {
   formatMessageFromCode
 } from './error-parser';
 import { toRelativeApiPath, normalizeApiPath } from './urlUtils';
+import { getCacheScope } from './cache-scope';
 
 const envStr = (key: string, fallback = ''): string => String(getEnvVar(key, fallback) ?? fallback);
 
@@ -936,19 +937,6 @@ const lastRequestAt = new Map<string, number>();
 // Disabled by default: coalescing and endpoint backoff already control bursts.
 // A global delay here made repeated user actions feel artificially sluggish.
 const REQUEST_MIN_INTERVAL_MS = Number(getEnvVar('VITE_REQUEST_MIN_INTERVAL_MS', '0'));
-
-function getCacheScope(): string {
-  try {
-    const fincaId = localStorage.getItem('villaluz_finca_id') || 'default-finca';
-    const rawUser = localStorage.getItem('auth:user');
-    if (!rawUser) return `anonymous:${fincaId}`;
-    const user = JSON.parse(rawUser) as { id?: number | string; user_id?: number | string };
-    const userId = user.id ?? user.user_id ?? 'anonymous';
-    return `${String(userId)}:${fincaId}`;
-  } catch {
-    return 'anonymous:unknown';
-  }
-}
 
 const buildGetKey = (url: string, config?: any) => {
   const base = api.defaults.baseURL || '';

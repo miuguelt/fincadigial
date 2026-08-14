@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   IconScale,
@@ -30,25 +30,8 @@ import {
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/shared/ui/cn";
 import { useAuth } from "@/features/auth/model/useAuth";
-
-const getRolePrefix = (r?: string | null): string => {
-  switch (r) {
-    case "Administrador":
-    case "Propietario":
-    case "Capataz":
-      return "/admin";
-    case "Instructor":
-      return "/instructor";
-    case "Veterinario":
-      return "/veterinario";
-    case "Aprendiz":
-      return "/apprentice";
-    case "Operario":
-      return "/operario";
-    default:
-      return "/admin";
-  }
-};
+import { normalizeRole } from "@/features/auth/api/auth.service";
+import { canAccessRoutePath, toRolePath } from "@/shared/lib/routeAccess";
 
 // ─── Tipos ────────────────────────────────────────────────────
 interface QuickAction {
@@ -155,12 +138,12 @@ const CATALOG: QuickAction[] = [
     ring: "ring-amber-500",
     category: 'registro',
   },
-  // Categoría: Animal / Hato
+  // Categoría: Animal / Ganado
   {
     id: "animals",
     icon: <ListChecks className="h-[20px] w-[20px]" />,
     label: "Animales",
-    sub: "Ver hato",
+    sub: "Ver ganado",
     path: "/admin/animals",
     bg: "bg-amber-500",
     ring: "ring-amber-400",
@@ -242,7 +225,7 @@ const CATALOG: QuickAction[] = [
     icon: <BarChart3 className="h-[20px] w-[20px]" />,
     label: "Reportes",
     sub: "Análisis",
-    path: "/reports",
+    path: "/admin/reports",
     bg: "bg-sky-600",
     ring: "ring-sky-400",
     category: 'navegacion',
@@ -275,16 +258,59 @@ const DEFAULT_FAV: string[] = [
   "transfer",    // Traslado entre potreros
   "health",      // Reportar enfermedad
   "milk",        // Registro de ordeño
-  "animals",     // Ver listado del hato
+  "animals",     // Ver listado del ganado
   "scanner",     // Escanear QR/Tag
 ];
 const MAX_FAV = 8;
 const LS_KEY = "vl_quick_fab_v5";
 
+import { offlineQueue, type QueuedOperation } from "@/shared/api/offline/offlineQueue";
+import { alertService, type Alert } from "@/entities/alert/api/alert.service";
+import { OfflineChatService } from "@/shared/api/offline/OfflineChatService";
+
+// Helper para mapear operaciones encoladas a IDs de acciones del catálogo
+function mapOpToActionId(op: QueuedOperation): string | null {
+  const url = (op.url || '').toLowerCase();
+  const entity = (op.entityType || '').toLowerCase();
+
+  if (url.includes('milk') || entity.includes('milk')) return 'milk';
+  if (url.includes('control') || url.includes('corral') || entity.includes('control')) return 'weight';
+  if (url.includes('disease') || entity.includes('disease')) return 'health';
+  if (url.includes('transfer') || url.includes('animal-fields') || entity.includes('field')) return 'transfer';
+  if (url.includes('treatment') || entity.includes('treatment')) return 'treatment';
+  if (url.includes('vaccine') || entity.includes('vaccine')) return 'vaccine';
+  if (url.includes('birth') || entity.includes('birth')) return 'births';
+  if (url.includes('water') || entity.includes('water')) return 'water';
+  if (url.includes('animal') || entity.includes('animal')) return 'new_animal';
+  return null;
+}
+
+// Helper para mapear alertas del backend a IDs de acciones del catálogo por área/módulo
+function mapAlertToActionId(alert: Alert): string {
+  const alertType = (alert.alert_type || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const message = `${alert.message || ''} ${alert.recommendation || ''}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  if (alertType.includes('produccion') || alertType.includes('leche') || message.includes('leche') || message.includes('orden')) return 'milk';
+  if (alertType.includes('crecimiento') || alertType.includes('peso') || message.includes('peso') || message.includes('pesaje') || message.includes('corporal')) return 'weight';
+  if (alertType.includes('salud') || alertType.includes('sanidad') || message.includes('salud') || message.includes('enfermedad') || message.includes('sintoma') || message.includes('mastitis') || message.includes('fiebre')) return 'health';
+  if (alertType.includes('vacuna') || message.includes('vacuna') || message.includes('inmuniz') || message.includes('aftosa') || message.includes('brucelosis')) return 'vaccine';
+  if (alertType.includes('tratamiento') || message.includes('tratamiento') || message.includes('medicamento') || message.includes('dosis') || message.includes('farmaco')) return 'treatment';
+  if (alertType.includes('reproduccion') || message.includes('reproduccion') || message.includes('celo') || message.includes('servicio') || message.includes('inseminac') || message.includes('prenada')) {
+    return (message.includes('parto') || message.includes('nacimiento')) ? 'births' : 'reproduction';
+  }
+  if (alertType.includes('parto') || message.includes('parto') || message.includes('nacimiento') || message.includes('cria')) return 'births';
+  if (alertType.includes('potrero') || alertType.includes('traslado') || message.includes('potrero') || message.includes('traslado') || message.includes('rotacion') || alert.field_id) return 'transfer';
+  if (message.includes('agua') || message.includes('hidrat')) return 'water';
+  if (message.includes('genet') || message.includes('cruce')) return 'genetics';
+  if (message.includes('report') || message.includes('predic')) return 'reports';
+  
+  return 'tasks';
+}
+
 // Category labels
 const CATEGORY_LABELS: Record<string, string> = {
   registro: '⚡ Registro Rápido',
-  animal: '🐄 Hato y Campo',
+  animal: '🐄 Ganado y Campo',
   navegacion: '🏠 Navegación',
 };
 
@@ -297,8 +323,19 @@ export const FloatingQuickActions: React.FC = () => {
   const sheetRef = useRef<HTMLDivElement>(null);
 
   const { user, role } = useAuth() as any;
-  const currentRole = role ?? user?.role ?? null;
-  const rolePrefix = getRolePrefix(currentRole);
+  const currentRoleRaw = role ?? user?.role ?? null;
+  const currentRole = currentRoleRaw ? normalizeRole(currentRoleRaw) || String(currentRoleRaw) : null;
+
+  /**
+   * El catálogo se declara con rutas `/admin/...`; aquí se traducen al prefijo
+   * del rol y se descartan las acciones que su RBAC no permite.
+   */
+  const allowedCatalog = useMemo(
+    () => CATALOG
+      .map((action) => ({ ...action, path: toRolePath(currentRole, action.path) }))
+      .filter((action) => canAccessRoutePath(currentRole, action.path)),
+    [currentRole],
+  );
 
   const [favIds, setFavIds] = useState<string[]>(() => {
     try {
@@ -309,7 +346,21 @@ export const FloatingQuickActions: React.FC = () => {
     }
   });
 
-  const favorites = CATALOG.filter((a) => favIds.includes(a.id));
+  const [badgesMap, setBadgesMap] = useState<Record<string, number>>({});
+
+  /**
+   * Al desplegar el menú de acceso rápido, mostramos:
+   * 1. Las acciones favoritas elegidas por el usuario.
+   * 2. Cualquier otra acción permitida que TENGA notificaciones/alertas pendientes (badgesMap > 0),
+   *    para asegurar que al desplegar el menú NUNCA queden notificaciones ocultas.
+   */
+  const visibleItems = useMemo(() => {
+    const favs = allowedCatalog.filter((a) => favIds.includes(a.id));
+    const extraWithBadges = allowedCatalog.filter(
+      (a) => !favIds.includes(a.id) && (badgesMap[a.id] || 0) > 0
+    );
+    return [...favs, ...extraWithBadges];
+  }, [allowedCatalog, favIds, badgesMap]);
 
   const saveFavs = useCallback((next: string[]) => {
     localStorage.setItem(LS_KEY, JSON.stringify(next));
@@ -344,7 +395,6 @@ export const FloatingQuickActions: React.FC = () => {
     if (!isOpen) return;
     const handleClick = (e: MouseEvent) => {
       if (sheetRef.current && !sheetRef.current.contains(e.target as Node)) {
-        // Check we're not clicking the FAB itself
         const fab = document.getElementById('fqa-fab');
         if (fab && fab.contains(e.target as Node)) return;
         close();
@@ -354,25 +404,96 @@ export const FloatingQuickActions: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [isOpen, close]);
 
-  const [chatUnreadCount, setChatUnreadCount] = useState<number>(0);
+  const refreshBadges = useCallback(async () => {
+    const nextMap: Record<string, number> = {};
 
-  // Suscribirse al contador de mensajes no leídos del Chat
+    // 1. Mensajes no leídos de chat
+    try {
+      const userId = user?.id || user?.user_id || '';
+      if (userId) {
+        const chatUnread = await OfflineChatService.getUnreadCount(userId);
+        if (chatUnread > 0) {
+          nextMap['chat'] = chatUnread;
+        }
+      }
+    } catch { /* noop */ }
+
+    // 2. Operaciones offline pendientes por módulo
+    try {
+      const pendingOps = await offlineQueue.getPendingOperations();
+      for (const op of pendingOps) {
+        const actionId = mapOpToActionId(op);
+        if (actionId) {
+          nextMap[actionId] = (nextMap[actionId] || 0) + 1;
+        }
+      }
+    } catch { /* noop */ }
+
+    // 3. Alertas no leídas clasificadas correctamente por área
+    try {
+      const page = await alertService.getAlertsPage({ is_read: false, limit: 200 });
+      for (const alert of page.items) {
+        const actionId = mapAlertToActionId(alert);
+        nextMap[actionId] = (nextMap[actionId] || 0) + 1;
+      }
+      // El área se deduce del texto de cada alerta, así que las que no caben en la
+      // página no se pueden clasificar. Se agrupan en 'tasks' para que el total
+      // del badge siga siendo el real y no se quede clavado en el tamaño de página.
+      const unclassified = page.total - page.items.length;
+      if (unclassified > 0) {
+        nextMap.tasks = (nextMap.tasks || 0) + unclassified;
+      }
+    } catch { /* noop */ }
+
+    setBadgesMap(nextMap);
+  }, [user]);
+
+  // Suscribirse a actualizaciones de notificaciones/chat/offlineQueue/alerts
   useEffect(() => {
-    const handleUnreadCount = (e: Event) => {
+    refreshBadges();
+
+    const handleChatUnread = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       if (typeof detail?.unreadCount === 'number') {
-        setChatUnreadCount(detail.unreadCount);
+        setBadgesMap((prev) => ({
+          ...prev,
+          chat: detail.unreadCount,
+        }));
       }
     };
-    window.addEventListener('chat-unread-count-updated', handleUnreadCount as EventListener);
-    return () => window.removeEventListener('chat-unread-count-updated', handleUnreadCount as EventListener);
-  }, []);
+
+    const handleOfflineSynced = () => {
+      refreshBadges();
+    };
+
+    window.addEventListener('chat-unread-count-updated', handleChatUnread as EventListener);
+    window.addEventListener('offline-queue-synced', handleOfflineSynced);
+    window.addEventListener('alerts-updated', refreshBadges);
+    window.addEventListener('alert-marked-read', refreshBadges);
+    window.addEventListener('online', refreshBadges);
+    window.addEventListener('offline', refreshBadges);
+
+    const interval = setInterval(refreshBadges, 15000);
+
+    return () => {
+      window.removeEventListener('chat-unread-count-updated', handleChatUnread as EventListener);
+      window.removeEventListener('offline-queue-synced', handleOfflineSynced);
+      window.removeEventListener('alerts-updated', refreshBadges);
+      window.removeEventListener('alert-marked-read', refreshBadges);
+      window.removeEventListener('online', refreshBadges);
+      window.removeEventListener('offline', refreshBadges);
+      clearInterval(interval);
+    };
+  }, [refreshBadges]);
+
+  const totalBadgeCount = useMemo(() => {
+    return Object.values(badgesMap).reduce((acc, count) => acc + (count || 0), 0);
+  }, [badgesMap]);
 
   const go = useCallback(
     (path: string) => {
       close();
       if (path === '/chat') {
-        // Abrir modal flotante del chat
         window.dispatchEvent(new CustomEvent('open-chat-modal'));
       } else if (path.startsWith('/quick/')) {
         const action = path.replace('/quick/', '');
@@ -380,13 +501,10 @@ export const FloatingQuickActions: React.FC = () => {
         newSearchParams.set('quick', action);
         setSearchParams(newSearchParams, { replace: true });
       } else {
-        const targetPath = path.startsWith('/admin/')
-          ? `${rolePrefix}${path.replace('/admin', '')}`
-          : path;
-        navigate(targetPath);
+        navigate(toRolePath(currentRole, path));
       }
     },
-    [close, navigate, rolePrefix, searchParams, setSearchParams]
+    [close, currentRole, navigate, searchParams, setSearchParams]
   );
 
   return (
@@ -423,15 +541,19 @@ export const FloatingQuickActions: React.FC = () => {
             <div className="flex-1 overflow-y-auto overscroll-contain">
               {editMode ? (
                 <EditPanel
-                  catalog={CATALOG}
+                  catalog={allowedCatalog}
                   favIds={favIds}
+                  badgesMap={badgesMap}
                   onToggle={toggleFav}
                   onDone={() => setEditMode(false)}
                   maxFav={MAX_FAV}
                 />
               ) : (
                 <ActionGrid
-                  items={favorites}
+                  items={visibleItems}
+                  badgesMap={badgesMap}
+                  totalBadgeCount={totalBadgeCount}
+                  favIds={favIds}
                   onAction={go}
                   onEdit={() => setEditMode(true)}
                 />
@@ -448,7 +570,8 @@ export const FloatingQuickActions: React.FC = () => {
         whileHover={{ scale: 1.08 }}
         onClick={() => { setIsOpen((v) => !v); setEditMode(false); }}
         className={cn(
-          "fixed bottom-3 right-3 sm:bottom-4 sm:right-4 z-[9999]",
+          "fixed bottom-3 right-3 sm:bottom-4 sm:right-4",
+          isOpen ? "z-[9999]" : "z-40 sm:z-[9999]",
           "h-10 w-10 sm:h-11 sm:w-11 rounded-full",
           "flex items-center justify-center backdrop-blur-md",
           "transition-all duration-300 shadow-lg cursor-pointer",
@@ -467,9 +590,9 @@ export const FloatingQuickActions: React.FC = () => {
           {isOpen ? <IconX size="md" /> : <Zap className="h-6 w-6 fill-white" />}
         </motion.div>
 
-        {chatUnreadCount > 0 && !isOpen && (
-          <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-black h-5 w-5 rounded-full flex items-center justify-center border-2 border-card shadow-sm animate-bounce">
-            {chatUnreadCount > 9 ? '9+' : chatUnreadCount}
+        {totalBadgeCount > 0 && !isOpen && (
+          <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-black h-5 min-w-[20px] px-1 rounded-full flex items-center justify-center border-2 border-card shadow-sm animate-bounce">
+            {totalBadgeCount > 99 ? '99+' : totalBadgeCount}
           </span>
         )}
       </motion.button>
@@ -480,12 +603,22 @@ export const FloatingQuickActions: React.FC = () => {
 // ─── Grid de acciones ─────────────────────────────────────────
 interface ActionGridProps {
   items: QuickAction[];
+  badgesMap: Record<string, number>;
+  totalBadgeCount: number;
+  favIds: string[];
   onAction: (path: string) => void;
   onEdit: () => void;
 }
 
-const ActionGrid: React.FC<ActionGridProps> = ({ items, onAction, onEdit }) => {
-  // Group favorites by category for display
+const ActionGrid: React.FC<ActionGridProps> = ({
+  items,
+  badgesMap,
+  totalBadgeCount,
+  favIds,
+  onAction,
+  onEdit,
+}) => {
+  // Group items by category for display
   const grouped = items.reduce((acc, item) => {
     const cat = item.category || 'registro';
     if (!acc[cat]) acc[cat] = [];
@@ -500,9 +633,16 @@ const ActionGrid: React.FC<ActionGridProps> = ({ items, onAction, onEdit }) => {
       {/* Header row */}
       <div className="flex items-center justify-between mb-4 px-0.5">
         <div>
-          <p className="text-[13px] font-bold text-foreground">
-            Acceso Rápido
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-[13px] font-bold text-foreground">
+              Acceso Rápido
+            </p>
+            {totalBadgeCount > 0 && (
+              <span className="bg-rose-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+                {totalBadgeCount} {totalBadgeCount === 1 ? 'pendiente' : 'pendientes'}
+              </span>
+            )}
+          </div>
           <p className="text-[10px] text-muted-foreground/70 mt-0.5">
             Finca Digital · Campo sin señal
           </p>
@@ -524,29 +664,55 @@ const ActionGrid: React.FC<ActionGridProps> = ({ items, onAction, onEdit }) => {
       {/* Grid — show categories if multiple */}
       {hasMultipleCategories ? (
         <div className="space-y-4">
-          {Object.entries(grouped).map(([cat, catItems]) => (
-            <div key={cat}>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-2 px-0.5">
-                {CATEGORY_LABELS[cat] || cat}
-              </p>
-              <div className={cn(
-                "grid gap-2",
-                catItems.length === 1 ? "grid-cols-1" :
-                catItems.length === 2 ? "grid-cols-2" :
-                catItems.length === 3 ? "grid-cols-3" :
-                "grid-cols-2"
-              )}>
-                {catItems.map((action, idx) => (
-                  <Tile key={action.id} action={action} index={idx} onPress={() => onAction(action.path)} />
-                ))}
+          {Object.entries(grouped).map(([cat, catItems]) => {
+            const catBadgeTotal = catItems.reduce((acc, action) => acc + (badgesMap[action.id] || 0), 0);
+
+            return (
+              <div key={cat}>
+                <div className="flex items-center justify-between mb-2 px-0.5">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                    {CATEGORY_LABELS[cat] || cat}
+                  </p>
+                  {catBadgeTotal > 0 && (
+                    <span className="bg-rose-500/15 text-rose-600 dark:text-rose-400 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-rose-500/30 flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
+                      {catBadgeTotal} {catBadgeTotal === 1 ? 'notificación' : 'notificaciones'}
+                    </span>
+                  )}
+                </div>
+                <div className={cn(
+                  "grid gap-2",
+                  catItems.length === 1 ? "grid-cols-1" :
+                  catItems.length === 2 ? "grid-cols-2" :
+                  catItems.length === 3 ? "grid-cols-3" :
+                  "grid-cols-2"
+                )}>
+                  {catItems.map((action, idx) => (
+                    <Tile
+                      key={action.id}
+                      action={action}
+                      badgeCount={badgesMap[action.id] || 0}
+                      isExtraNotif={!favIds.includes(action.id)}
+                      index={idx}
+                      onPress={() => onAction(action.path)}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3">
           {items.map((action, idx) => (
-            <Tile key={action.id} action={action} index={idx} onPress={() => onAction(action.path)} />
+            <Tile
+              key={action.id}
+              action={action}
+              badgeCount={badgesMap[action.id] || 0}
+              isExtraNotif={!favIds.includes(action.id)}
+              index={idx}
+              onPress={() => onAction(action.path)}
+            />
           ))}
         </div>
       )}
@@ -557,11 +723,13 @@ const ActionGrid: React.FC<ActionGridProps> = ({ items, onAction, onEdit }) => {
 // ─── Tile individual ──────────────────────────────────────────
 interface TileProps {
   action: QuickAction;
+  badgeCount?: number;
+  isExtraNotif?: boolean;
   onPress: () => void;
   index?: number;
 }
 
-const Tile: React.FC<TileProps> = ({ action, onPress, index = 0 }) => (
+const Tile: React.FC<TileProps> = ({ action, badgeCount = 0, isExtraNotif = false, onPress, index = 0 }) => (
   <motion.button
     initial={{ opacity: 0, scale: 0.94, y: 12 }}
     animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -575,30 +743,45 @@ const Tile: React.FC<TileProps> = ({ action, onPress, index = 0 }) => (
     whileHover={{ scale: 1.02, y: -2 }}
     onClick={onPress}
     className={cn(
-      "flex items-center gap-3",
-      "py-3.5 px-4 rounded-lg text-left",
-      "bg-card/40 dark:bg-card/25 border border-border/40 backdrop-blur-md",
-      "hover:bg-card/60 dark:hover:bg-card/35 transition-all duration-200",
-      "min-h-[64px] shadow-sm hover:shadow-md"
+      "flex items-center gap-3 relative overflow-hidden",
+      "py-3.5 px-4 rounded-lg text-left backdrop-blur-md",
+      "transition-all duration-200 min-h-[64px] shadow-sm hover:shadow-md",
+      badgeCount > 0
+        ? "bg-rose-500/10 dark:bg-rose-950/30 border-2 border-rose-500/60 ring-2 ring-rose-500/20 hover:bg-rose-500/15"
+        : isExtraNotif
+        ? "bg-amber-500/5 dark:bg-amber-950/20 border border-amber-500/40 hover:bg-amber-500/10"
+        : "bg-card/40 dark:bg-card/25 border border-border/40 hover:bg-card/60 dark:hover:bg-card/35"
     )}
-    aria-label={action.label}
+    aria-label={`${action.label}${badgeCount > 0 ? ` (${badgeCount} notificaciones)` : ''}`}
   >
-    {/* Icon badge */}
+    {/* Icon container + badge */}
     <div
       className={cn(
-        "h-11 w-11 shrink-0 rounded-xl flex items-center justify-center text-white shadow-md transition-transform duration-300 group-hover:scale-110",
+        "h-11 w-11 shrink-0 rounded-xl flex items-center justify-center text-white shadow-md transition-transform duration-300 group-hover:scale-110 relative",
         action.bg
       )}
     >
       {action.icon}
+      {badgeCount > 0 && (
+        <span className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[10px] font-black h-5 min-w-[20px] px-1 rounded-full flex items-center justify-center border-2 border-card shadow-md animate-pulse z-10">
+          {badgeCount > 99 ? '99+' : badgeCount}
+        </span>
+      )}
     </div>
 
     {/* Labels */}
     <div className="min-w-0 flex-1">
-      <p className="text-[13px] font-bold text-foreground leading-tight">
-        {action.label}
-      </p>
-      <p className="text-[11px] text-muted-foreground/70 leading-tight mt-0.5">
+      <div className="flex items-center justify-between gap-1.5">
+        <p className="text-[13px] font-bold text-foreground leading-tight fit-clamp">
+          {action.label}
+        </p>
+        {badgeCount > 0 && (
+          <span className="bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0 shadow-sm animate-pulse">
+            {badgeCount} {action.id === 'chat' ? (badgeCount === 1 ? 'nuevo' : 'nuevos') : (badgeCount === 1 ? 'pendiente' : 'pendientes')}
+          </span>
+        )}
+      </div>
+      <p className="text-[11px] text-muted-foreground/70 leading-tight mt-0.5 fit-clamp">
         {action.sub}
       </p>
     </div>
@@ -609,6 +792,7 @@ const Tile: React.FC<TileProps> = ({ action, onPress, index = 0 }) => (
 interface EditPanelProps {
   catalog: QuickAction[];
   favIds: string[];
+  badgesMap: Record<string, number>;
   onToggle: (id: string) => void;
   onDone: () => void;
   maxFav: number;
@@ -617,6 +801,7 @@ interface EditPanelProps {
 const EditPanel: React.FC<EditPanelProps> = ({
   catalog,
   favIds,
+  badgesMap,
   onToggle,
   onDone,
   maxFav,
@@ -676,6 +861,7 @@ const EditPanel: React.FC<EditPanelProps> = ({
               {catItems.map((action) => {
                 const isFav = favIds.includes(action.id);
                 const disabled = !isFav && count >= maxFav;
+                const badgeCount = badgesMap[action.id] || 0;
 
                 return (
                   <motion.button
@@ -684,7 +870,7 @@ const EditPanel: React.FC<EditPanelProps> = ({
                     onClick={() => !disabled && onToggle(action.id)}
                     disabled={disabled}
                     className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all text-left",
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all text-left relative",
                       isFav
                         ? "border-primary/40 bg-primary/8 shadow-sm"
                         : disabled
@@ -700,7 +886,12 @@ const EditPanel: React.FC<EditPanelProps> = ({
                       )}
                     >
                       {action.icon}
-                      {isFav && (
+                      {badgeCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-extrabold h-4 min-w-[16px] px-0.5 rounded-full flex items-center justify-center border border-card shadow-sm animate-pulse z-10">
+                          {badgeCount > 99 ? '99+' : badgeCount}
+                        </span>
+                      )}
+                      {isFav && badgeCount === 0 && (
                         <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary rounded-full flex items-center justify-center border-2 border-card shadow-sm">
                           <Check className="h-2.5 w-2.5 text-white" />
                         </span>
@@ -709,10 +900,17 @@ const EditPanel: React.FC<EditPanelProps> = ({
 
                     {/* Text */}
                     <div className="min-w-0 flex-1">
-                      <p className="text-[13px] font-bold leading-tight text-foreground">
-                        {action.label}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground/70 mt-0.5 leading-tight">
+                      <div className="flex items-center justify-between gap-1">
+                        <p className="text-[13px] font-bold leading-tight text-foreground fit-clamp">
+                          {action.label}
+                        </p>
+                        {badgeCount > 0 && (
+                          <span className="bg-rose-500/20 text-rose-600 dark:text-rose-400 text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
+                            {badgeCount}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground/70 mt-0.5 leading-tight fit-clamp">
                         {action.sub}
                       </p>
                     </div>

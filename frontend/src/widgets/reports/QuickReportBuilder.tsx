@@ -2,7 +2,7 @@ import { Card } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
 import { BarChart3, ArrowRight } from 'lucide-react';
 import { cn } from '@/shared/ui/cn';
-import { useNavigate } from 'react-router-dom';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 
 const metrics = [
   { id: 'animals', label: 'Animales', desc: 'Cantidad por estado, sexo y raza', color: 'bg-info' },
@@ -14,7 +14,7 @@ const metrics = [
 ];
 
 export function QuickReportBuilder() {
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
 
   return (
     <div className="space-y-6">
@@ -49,7 +49,7 @@ export function QuickReportBuilder() {
         </div>
 
         <div className="p-5 pt-0 bg-background/50">
-          <Button onClick={() => navigate('/admin/analytics/reports')} className="gap-2 shadow-sm transition-all hover:shadow-md">
+          <Button onClick={() => goTo('/admin/analytics/reports')} className="gap-2 shadow-sm transition-all hover:shadow-md">
             <BarChart3 className="h-4 w-4" />
             Ir al constructor de reportes
             <ArrowRight className="h-4 w-4" />

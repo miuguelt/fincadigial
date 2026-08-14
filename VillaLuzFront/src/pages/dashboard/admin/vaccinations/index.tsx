@@ -108,7 +108,7 @@ function AdminVaccinationsPage() {
   // Columnas de la tabla con renderizado optimizado y Foreign Key Links
   const columns: CRUDColumn<VaccinationResponse & { [k: string]: any }>[] = useMemo(() => [
 
-    { key: 'vaccination_date', label: 'Fecha', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-') },
+    { key: 'vaccination_date', label: 'Fecha', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
     {
       key: 'animal_id',
       label: 'Animal',
@@ -165,7 +165,7 @@ function AdminVaccinationsPage() {
         );
       }
     },
-    { key: 'created_at' as any, label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-') },
+    { key: 'created_at' as any, label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
   ], [animalMap, vaccineMap, apprenticeMap, instructorMap]);
 
   const formSections: CRUDFormSection<VaccinationInput & { [k: string]: any }>[] = [

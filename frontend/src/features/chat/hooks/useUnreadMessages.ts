@@ -9,12 +9,12 @@ export function useUnreadMessages(pollInterval = 30000) {
   const fetchUnreadCount = useCallback(async () => {
     setLoading(true);
     try {
-      // getUnreadCount devuelve la envoltura ApiResponse, no el número.
-      const response: any = await chatService.getUnreadCount();
-      const count = Number(
-        response?.data?.unread_count ?? response?.unread_count ?? 0,
-      );
-      setUnreadCount(Number.isFinite(count) ? count : 0);
+      const count = Number(await chatService.getUnreadCount());
+      const normalized = Number.isFinite(count) ? count : 0;
+      setUnreadCount(normalized);
+      window.dispatchEvent(new CustomEvent('chat-unread-count-updated', {
+        detail: { unreadCount: normalized },
+      }));
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Error al obtener mensajes no leídos'));
@@ -33,9 +33,11 @@ export function useUnreadMessages(pollInterval = 30000) {
 
     const interval = setInterval(refreshWhenVisible, pollInterval);
     document.addEventListener('visibilitychange', refreshWhenVisible);
+    window.addEventListener('chat-unread-refresh', fetchUnreadCount);
     return () => {
       clearInterval(interval);
       document.removeEventListener('visibilitychange', refreshWhenVisible);
+      window.removeEventListener('chat-unread-refresh', fetchUnreadCount);
     };
   }, [fetchUnreadCount, pollInterval]);
 

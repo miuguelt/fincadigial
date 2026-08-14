@@ -134,6 +134,8 @@ export default defineConfig(({ command, mode }) => {
     resolve: {
       alias: [
         { find: '@', replacement: path.resolve(__dirname, './src') },
+        { find: 'lucide-react', replacement: path.resolve(__dirname, './src/shared/ui/icons') },
+        { find: /^react-icons(\/.*)?$/, replacement: path.resolve(__dirname, './src/shared/ui/icons') },
       ],
       conditions: ['module'],
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']

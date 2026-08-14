@@ -119,7 +119,7 @@ export const useUserData = ({
 					genetic?.genetic_event_technique ||
 					genetic?.genetic_event_techique ||
 					"-",
-				date: genetic?.date ? new Date(genetic.date).toLocaleDateString() : "-",
+				date: genetic?.date ? new Date(genetic.date).toLocaleDateString('es-CO') : "-",
 				description: genetic?.description || genetic?.details || "-",
 				animalId: getAnimalIdFromRecord(genetic),
 				ts: genetic?.date || genetic?.updated_at || genetic?.created_at || null,
@@ -136,10 +136,10 @@ export const useUserData = ({
 					"-",
 				field: field?.field?.name || "-",
 				entryDate: field?.entry_date
-					? new Date(field.entry_date).toLocaleDateString()
+					? new Date(field.entry_date).toLocaleDateString('es-CO')
 					: "-",
 				exitDate: field?.exit_date
-					? new Date(field.exit_date).toLocaleDateString()
+					? new Date(field.exit_date).toLocaleDateString('es-CO')
 					: "-",
 				animalId: getAnimalIdFromRecord(field),
 				ts:
@@ -162,7 +162,7 @@ export const useUserData = ({
 					d?.disease_name || d?.diseases?.name || d?.disease?.name || "-",
 				status: d?.status || "-",
 				date: d?.diagnosis_date
-					? new Date(d.diagnosis_date).toLocaleDateString()
+					? new Date(d.diagnosis_date).toLocaleDateString('es-CO')
 					: "-",
 				animalId: getAnimalIdFromRecord(d),
 				ts: d?.diagnosis_date || d?.updated_at || d?.created_at || null,
@@ -177,7 +177,7 @@ export const useUserData = ({
 					t?.animals?.record ||
 					"-",
 				date: t?.treatment_date
-					? new Date(t.treatment_date).toLocaleDateString()
+					? new Date(t.treatment_date).toLocaleDateString('es-CO')
 					: "-",
 				description: t?.description || t?.diagnosis || "-",
 				frequency: t?.frequency || "-",
@@ -196,7 +196,7 @@ export const useUserData = ({
 					"-",
 				vaccine: v?.vaccines?.name || v?.vaccine?.name || v?.vaccine_id || "-",
 				date: v?.application_date
-					? new Date(v.application_date).toLocaleDateString()
+					? new Date(v.application_date).toLocaleDateString('es-CO')
 					: "-",
 				responsible: v?.instructor_id || v?.apprentice_id || "-",
 				animalId: getAnimalIdFromRecord(v),
@@ -216,7 +216,7 @@ export const useUserData = ({
 				c?.animals?.record ||
 				"-",
 			date: c?.checkup_date
-				? new Date(c.checkup_date).toLocaleDateString()
+				? new Date(c.checkup_date).toLocaleDateString('es-CO')
 				: "-",
 			status: c?.health_status || c?.healt_status || "-",
 			animalId: getAnimalIdFromRecord(c),

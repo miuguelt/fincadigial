@@ -1,5 +1,6 @@
 ﻿import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useCallback } from "react";
 import {
   IconCalendar,
   IconAlertCircle,
@@ -25,7 +26,7 @@ interface CalendarioEvento {
   edad_actual_dias?: number;
 }
 interface Props {
-  /** Si se pasa animalId, muestra solo ese animal. Sin él, muestra el hato completo. */ animalId?: number;
+  /** Si se pasa animalId, muestra solo ese animal. Sin él, muestra el ganado completo. */ animalId?: number;
   maxItems?: number;
 }
 const TIPO_ICON: Record<string, React.ReactNode> = {
@@ -42,7 +43,7 @@ export const CalendarioSanitarioWidget: React.FC<Props> = ({
   const [eventos, setEventos] = useState<CalendarioEvento[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const cargar = async () => {
+  const cargar = useCallback(async () => {
     setLoading(true);
     setError(false);
     try {
@@ -58,10 +59,10 @@ export const CalendarioSanitarioWidget: React.FC<Props> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [animalId, maxItems]);
   useEffect(() => {
     cargar();
-  }, [animalId]);
+  }, [cargar]);
   if (loading)
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
@@ -121,7 +122,7 @@ export const CalendarioSanitarioWidget: React.FC<Props> = ({
             {" "}
             {animalId
               ? "Ejemplar con trazabilidad 100% al día"
-              : "Perímetro Hato: Totalmente Protegido"}{" "}
+              : "Perímetro del Ganado: Totalmente Protegido"}{" "}
           </p>{" "}
         </div>{" "}
       </div>

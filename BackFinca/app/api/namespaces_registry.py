@@ -87,10 +87,12 @@ def register_namespaces(api):
     from ..namespaces.search.search_namespace import search_ns
     from ..namespaces.system.enums_namespace import enums_ns
     from ..namespaces.weather.weather_namespace import weather_ns
+    from ..namespaces.users.veterinarians_namespace import vets_ns
 
     # Registro de namespaces
     api.add_namespace(auth_ns)
     api.add_namespace(users_ns)
+    api.add_namespace(vets_ns)
     api.add_namespace(animals_ns)
     api.add_namespace(milk_ns)
     api.add_namespace(lactation_ns)

@@ -28,9 +28,12 @@ class VaccineType(enum.Enum):
 class Vaccines(BaseModel):
     """Modelo para vacunas utilizadas en el sistema optimizado para namespaces"""
     __tablename__ = 'vaccines'
+    __table_args__ = (
+        db.UniqueConstraint('name', 'finca_id', name='uq_vaccines_name_finca'),
+    )
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)
+    name = db.Column(db.String(100), nullable=False)
     dosis = db.Column(db.String(255), nullable=False)
     route_administration_id = db.Column(db.Integer, db.ForeignKey('route_administrations.id'), nullable=False)
     vaccination_interval = db.Column(db.String(255), nullable=False)

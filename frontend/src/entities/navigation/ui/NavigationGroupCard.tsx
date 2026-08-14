@@ -43,7 +43,7 @@ export function NavigationGroupCard({ group, onClick }: NavigationGroupCardProps
                 >
                   {endpoint.method}
                 </Badge>
-                <span className="text-muted-foreground truncate max-w-[200px]">
+                <span className="text-muted-foreground fit-clamp max-w-[200px]">
                   {endpoint.description || endpoint.path}
                 </span>
               </div>

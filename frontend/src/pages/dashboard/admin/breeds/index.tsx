@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AdminCRUDPage } from '@/widgets/admin-crud';
 import { CRUDColumn, CRUDFormSection } from '@/shared/types/crud';
@@ -85,7 +85,7 @@ function AdminBreedsPage() {
         return <SpeciesLink id={id} label={label} />;
       }
     },
-    { key: 'created_at', label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-') },
+    { key: 'created_at', label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
   ], [speciesMap]);
 
   const formSectionsLocal: CRUDFormSection<BreedInput>[] = [
@@ -115,7 +115,7 @@ function AdminBreedsPage() {
         <SectionCard title="Fecha de Creación">
           <InfoField
             label="Creado"
-            value={item.created_at ? new Date(item.created_at).toLocaleDateString('es-ES', {
+            value={item.created_at ? new Date(item.created_at).toLocaleDateString('es-CO', {
               year: 'numeric',
               month: 'long',
               day: 'numeric'
@@ -163,11 +163,11 @@ function AdminBreedsPage() {
               <div className={modalStyles.fieldsGrid}>
                 <InfoField
                   label="Creado"
-                  value={item.created_at ? new Date(item.created_at).toLocaleDateString('es-ES') : '-'}
+                  value={item.created_at ? new Date(item.created_at).toLocaleDateString('es-CO') : '-'}
                 />
                 <InfoField
                   label="Actualizado"
-                  value={item.updated_at ? new Date(item.updated_at).toLocaleDateString('es-ES') : '-'}
+                  value={item.updated_at ? new Date(item.updated_at).toLocaleDateString('es-CO') : '-'}
                 />
               </div>
             </SectionCard>

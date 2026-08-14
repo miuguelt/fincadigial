@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Dialog, DialogContent } from '@/shared/ui/dialog';
 import { Button } from '@/shared/ui/button';
 import { CATEGORIES, PRIORITY_OPTIONS } from './assistance.constants';
-import { Camera, Send, ChevronLeft } from 'lucide-react';
+import { BellRing, Camera, Send, ChevronLeft } from 'lucide-react';
 
 type FormData = {
   title: string;
@@ -22,9 +22,10 @@ interface NewAssistanceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (data: { title: string; category: string; description: string; priority: string }) => Promise<void>;
+  recipientCount?: number;
 }
 
-export const NewAssistanceDialog = React.memo<NewAssistanceDialogProps>(({ open, onOpenChange, onSave }) => {
+export const NewAssistanceDialog = React.memo<NewAssistanceDialogProps>(({ open, onOpenChange, onSave, recipientCount = 0 }) => {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormData>(INITIAL);
   const [saving, setSaving] = useState(false);
@@ -88,7 +89,7 @@ export const NewAssistanceDialog = React.memo<NewAssistanceDialogProps>(({ open,
             <div className="space-y-5">
               <div className="text-center space-y-1">
                 <h2 className="text-lg font-semibold text-foreground">¿Qué tipo de problema tienes?</h2>
-                <p className="text-sm text-muted-foreground">Elegí una opción para que podamos ayudarte mejor</p>
+                <p className="text-sm text-muted-foreground">Elige una opción para que podamos ayudarte mejor</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {CATEGORIES.map(cat => {
@@ -116,7 +117,7 @@ export const NewAssistanceDialog = React.memo<NewAssistanceDialogProps>(({ open,
                 <ChevronLeft className="w-4 h-4" /> Volver
               </button>
               <div className="space-y-1">
-                <h2 className="text-lg font-semibold text-foreground">Contanos qué está pasando</h2>
+                <h2 className="text-lg font-semibold text-foreground">Cuéntanos qué está pasando</h2>
                 <p className="text-sm text-muted-foreground">Describí el problema con tus propias palabras</p>
               </div>
               <textarea
@@ -182,6 +183,14 @@ export const NewAssistanceDialog = React.memo<NewAssistanceDialogProps>(({ open,
                     <span className="font-medium text-sm text-foreground">{opt.label}</span>
                   </button>
                 ))}
+              </div>
+              <div className="flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100">
+                <BellRing className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                <span>
+                  {recipientCount > 0
+                    ? `Al enviarla avisaremos a ${recipientCount} veterinario${recipientCount === 1 ? '' : 's'} de tu finca.`
+                    : 'La solicitud quedará en la bandeja hasta que la finca vincule un veterinario.'}
+                </span>
               </div>
               <div className="flex justify-end pt-2">
                 <Button onClick={handleSubmit} loading={saving} size="lg">

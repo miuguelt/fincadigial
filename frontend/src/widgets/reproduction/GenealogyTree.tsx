@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
+import { useCallback } from 'react';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
@@ -44,7 +45,7 @@ export default function GenealogyTree({ animalId }: GenealogyTreeProps) {
   const [activeTab, setActiveTab] = useState<'ancestors' | 'descendants'>('ancestors');
   const [depth, setDepth] = useState(3);
 
-  const loadGenealogy = async () => {
+  const loadGenealogy = useCallback(async () => {
     setLoading(true);
     try {
       const response = await reproductionService.getGenealogy(animalId, depth, 'both');
@@ -55,11 +56,11 @@ export default function GenealogyTree({ animalId }: GenealogyTreeProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [animalId, depth, showToast]);
 
   useEffect(() => {
     loadGenealogy();
-  }, [animalId, depth]);
+  }, [loadGenealogy]);
   const getSexStyles = (sex: string) => {
     return sex === 'Macho' 
       ? 'from-info-500/20 to-info-600/5 border-info-500/30 text-info-700 dark:text-info-300' 

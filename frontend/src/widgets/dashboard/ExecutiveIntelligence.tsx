@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/shared/ui/button";
 import { motion } from "framer-motion";
 import {
@@ -14,10 +15,22 @@ import {
 
 import { analyticsService } from "@/features/reporting/api/analytics.service";
 import { proximitySync } from "@/shared/api/offline/ProximitySyncService";
+import type { DashboardData } from "@/shared/api/generated/swaggerTypes";
+
+type ExecutiveStats = DashboardData & { sick_animals?: number };
+
+export function calculateHealthScore(stats: ExecutiveStats | null): number | null {
+  const active = Number(stats?.active_animals ?? 0);
+  if (active <= 0) return null;
+  const sick = Math.max(0, Number(stats?.sick_animals ?? 0));
+  return Math.max(0, Math.min(100, Math.round(((active - sick) / active) * 100)));
+}
 
 export const ExecutiveIntelligence: React.FC = () => {
-  const [stats, setStats] = useState<any>(null);
+  const navigate = useNavigate();
+  const [stats, setStats] = useState<ExecutiveStats | null>(null);
   const [meshSyncs, setMeshSyncs] = useState(0);
+  const [lastSyncAt, setLastSyncAt] = useState<Date | null>(null);
   const [aiInsight, setAiInsight] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [criticalAlerts, setCriticalAlerts] = useState<number>(0);
@@ -26,19 +39,18 @@ export const ExecutiveIntelligence: React.FC = () => {
     // Cargar estadísticas base
     const loadData = async () => {
       try {
-        const res = await (analyticsService as any).getSummary();
-        setStats(res);
-
-        // Cargar alertas críticas del endpoint completo
-        const completeRes = await analyticsService.getCompleteDashboardStats();
-        const alertasTotal = completeRes?.alertas_sistema?.valor ?? 0;
-        setCriticalAlerts(alertasTotal);
-
-        // Cargar insight previo si existe
-        const insightRes = await analyticsService.getPredictiveInsights();
-        setAiInsight(insightRes.insight);
-      } catch (err) {
-        console.warn("Usando datos cacheados para panel ejecutivo");
+        const [dashboardResult, completeResult, insightResult] = await Promise.allSettled([
+          analyticsService.getDashboard(),
+          analyticsService.getCompleteDashboardStats(),
+          analyticsService.getPredictiveInsights(),
+        ]);
+        if (dashboardResult.status === 'fulfilled') setStats(dashboardResult.value);
+        if (completeResult.status === 'fulfilled') {
+          setCriticalAlerts(Number(completeResult.value?.alertas_sistema?.valor ?? 0));
+        }
+        if (insightResult.status === 'fulfilled') setAiInsight(insightResult.value.insight);
+      } catch {
+        // Promise.allSettled protects independent cards; this is a final guard.
       }
     };
     loadData();
@@ -46,12 +58,13 @@ export const ExecutiveIntelligence: React.FC = () => {
     // Obtener estadísticas reales de sincronización Mesh
     const syncState = proximitySync.getSyncState();
     setMeshSyncs(syncState.messagesReceived + syncState.messagesSent);
+    setLastSyncAt(syncState.lastSyncAt);
   }, []);
 
   const handleRunAnalysis = async () => {
     setIsAnalyzing(true);
     setAiInsight(
-      "Iniciando escaneo inteligente del hato... Esto puede tomar unos minutos.",
+      "Iniciando escaneo inteligente del ganado... Esto puede tomar unos minutos.",
     );
     try {
       const res = await analyticsService.runPredictiveAnalysis();
@@ -82,12 +95,7 @@ export const ExecutiveIntelligence: React.FC = () => {
     }
   };
 
-  const healthScore = stats
-    ? Math.floor(
-        ((stats.active_animals - stats.sick_animals) / stats.active_animals) *
-          100,
-      )
-    : 0;
+  const healthScore = calculateHealthScore(stats);
 
   return (
     <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-8 text-white shadow-2xl relative overflow-hidden">
@@ -125,14 +133,16 @@ export const ExecutiveIntelligence: React.FC = () => {
                 Índice Vital
               </span>
             </div>
-            <div className="text-4xl font-black mb-1">{healthScore}%</div>
+            <div className="text-4xl font-black mb-1">
+              {healthScore === null ? '—' : `${healthScore}%`}
+            </div>
             <div className="text-xs text-muted-foreground">
-              Salud proyectada del hato
+              Salud proyectada del ganado
             </div>
             <div className="mt-4 h-1.5 bg-muted rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
-                animate={{ width: `${healthScore}%` }}
+                animate={{ width: `${healthScore ?? 0}%` }}
                 className="h-full bg-info shadow-[0_0_10px_rgba(59,130,246,0.5)]"
               />
             </div>
@@ -205,7 +215,7 @@ export const ExecutiveIntelligence: React.FC = () => {
                   : "shadow-[0_0_20px_rgba(255,255,255,0.2)]"
               }`}
             >
-              {isAnalyzing ? "Procesando..." : "Escanear Hato"}
+              {isAnalyzing ? "Procesando..." : "Escanear Ganado"}
             </Button>
           </div>
 
@@ -229,11 +239,18 @@ export const ExecutiveIntelligence: React.FC = () => {
             <p className="text-[10px] font-bold text-muted-foreground/70">
               Última sincronización del Gateway:{" "}
               <span className="text-white">
-                {new Date().toLocaleTimeString()}
+                {lastSyncAt
+                  ? new Date(lastSyncAt).toLocaleTimeString('es-CO')
+                  : 'Sin sincronizaciones registradas'}
               </span>
             </p>
           </div>
-          <Button variant="link" className="text-[10px] font-black text-info/80 hover:text-info transition-colors uppercase tracking-widest px-0 h-auto">
+          <Button
+            type="button"
+            variant="link"
+            onClick={() => navigate('/admin/analytics/executive')}
+            className="text-[10px] font-black text-info/80 hover:text-info transition-colors uppercase tracking-widest px-0 h-auto"
+          >
             Ver Reporte Detallado
           </Button>
         </div>

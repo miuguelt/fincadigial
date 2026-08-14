@@ -1,4 +1,4 @@
-﻿import { Task } from '../model/types';
+import { Task } from '../model/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Badge } from '@/shared/ui/badge';
 import { Calendar, User } from 'lucide-react';
@@ -48,7 +48,7 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
             {task.due_date && (
               <div className="flex items-center gap-1 text-xs">
                 <Calendar className="h-3 w-3" />
-                <span>{new Date(task.due_date).toLocaleDateString()}</span>
+                <span>{new Date(task.due_date).toLocaleDateString('es-CO')}</span>
               </div>
             )}
           </div>

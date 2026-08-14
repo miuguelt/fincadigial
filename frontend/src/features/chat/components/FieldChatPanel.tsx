@@ -80,7 +80,7 @@ const MessageBubble = memo(function MessageBubble({
 						{msg.senderName}
 					</p>
 				)}
-				<p style={{ wordBreak: "break-word" }}>{msg.content}</p>
+				<p style={{ overflowWrap: "break-word" }}>{msg.content}</p>
 				<div className="flex justify-end items-center gap-1 mt-1">
 					<span className="text-xs opacity-60">
 						{formatTime(msg.createdAt)}
@@ -349,7 +349,7 @@ export const FieldChatPanel = memo(function FieldChatPanel({
 									</div>
 									<div className="flex-1 min-w-0">
 										<div className="flex justify-between items-center">
-											<p className="font-semibold text-sm truncate">
+											<p className="font-semibold text-sm fit-clamp">
 												{conv.name}
 											</p>
 											{conv.isNearby && (
@@ -359,7 +359,7 @@ export const FieldChatPanel = memo(function FieldChatPanel({
 											)}
 										</div>
 										{conv.lastMsg && (
-											<p className="text-xs text-gray-400 truncate mt-0.5">
+											<p className="text-xs text-gray-400 fit-clamp mt-0.5">
 												{conv.lastMsg.senderId === myUserId ? "→ " : ""}
 												{conv.lastMsg.content}
 											</p>

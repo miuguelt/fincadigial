@@ -1,7 +1,7 @@
-﻿import React from 'react';
+import React from 'react';
 import { createPortal } from 'react-dom';
 import { ToastType, useToast } from '@/app/providers/ToastContext';
-import { CircleCheck, Info, AlertTriangle, CircleX } from 'lucide-react';
+import { CheckCircle2 as CircleCheck, Info, AlertTriangle, XCircle as CircleX } from 'lucide-react';
 import { ColorTokens } from '@/shared/constants/colorSystem';
 
 const toastColors: Record<ToastType, string> = {

@@ -1,5 +1,6 @@
 ﻿import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useCallback } from "react";
 import { fincaService, Finca } from "@/entities/finca/api/finca.service";
 import { membershipService } from "@/entities/user/api/membership.service";
 import { useToast } from "@/shared/hooks/use-toast";
@@ -38,13 +39,7 @@ export const JoinFincaRequestDialog: React.FC<JoinFincaRequestDialogProps> = ({
   const [role, setRole] = useState<string>("Aprendiz");
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    if (isOpen) {
-      loadFincas();
-    }
-  }, [isOpen]);
-
-  const loadFincas = async () => {
+  const loadFincas = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fincaService.getAll();
@@ -63,7 +58,13 @@ export const JoinFincaRequestDialog: React.FC<JoinFincaRequestDialogProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast, user]);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadFincas();
+    }
+  }, [isOpen, loadFincas]);
 
   const handleSubmit = async () => {
     if (!selectedFinca) {

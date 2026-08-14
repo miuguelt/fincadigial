@@ -71,7 +71,7 @@ export const ThemeOption: React.FC<ThemeOptionProps> = ({
           <IconCheck size="sm" className="text-primary flex-shrink-0" />
         )}{" "}
       </div>{" "}
-      <p className="text-xs text-muted-foreground truncate">
+      <p className="text-xs text-muted-foreground fit-clamp">
         {description}
       </p>{" "}
     </div>{" "}

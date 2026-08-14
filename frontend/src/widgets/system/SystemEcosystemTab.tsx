@@ -78,7 +78,7 @@ export default function SystemEcosystemTab() {
 			</div>
 			{status?.last_updated && (
 				<p className="text-[11px] text-muted-foreground">
-					Last: {new Date(status.last_updated).toLocaleString()}
+					Last: {new Date(status.last_updated).toLocaleString('es-CO')}
 				</p>
 			)}
 		</div>

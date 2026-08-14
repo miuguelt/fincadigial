@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/shared/ui/button';
 import { useToast } from '@/shared/hooks/use-toast';
 import { invitationService, InvitationListItem } from '@/features/invitations/api/invitation.service';
@@ -17,7 +17,7 @@ export const PendingRequests = ({ onActionComplete }: PendingRequestsProps) => {
   const [processing, setProcessing] = useState<number | null>(null);
   const { toast } = useToast();
 
-  const fetchPending = async () => {
+  const fetchPending = useCallback(async () => {
     try {
       const response = await invitationService.getPending();
       setPending(response.data);
@@ -26,11 +26,11 @@ export const PendingRequests = ({ onActionComplete }: PendingRequestsProps) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     fetchPending();
-  }, []);
+  }, [fetchPending]);
 
   const handleRespond = async (id: number, approve: boolean) => {
     setProcessing(id);

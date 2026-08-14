@@ -38,7 +38,7 @@ const AUTH_STORAGE_KEY = ENV.VITE_AUTH_STORAGE_KEY || 'finca_access_token';
 // If the backend still requires bearer tokens, enable explicitly.
 const USE_BEARER_AUTH = String(ENV.VITE_USE_BEARER_AUTH ?? '').toLowerCase() === 'true';
 
-type AuthRequestConfig = { cancelToken?: any; signal?: AbortSignal };
+type AuthRequestConfig = { cancelToken?: any; signal?: AbortSignal; forceRefresh?: boolean };
 
 // Helpers de caché para recordar la última ruta de login válida (usar sessionStorage: no sensible)
 const LOGIN_PATH_CACHE_KEY = (ENV?.VITE_AUTH_LOGIN_PATH_CACHE_KEY || 'finca_auth_login_path');
@@ -259,8 +259,6 @@ interface AuthError {
 }
 
 class AuthService {
-  // private readonly TOKEN_COOKIE_NAME = 'access_token_cookie';
-
   /**
    * Retrieve bearer token from web storage (only if enabled).
    */
@@ -363,6 +361,10 @@ class AuthService {
    */
   async getUserProfile(config?: AuthRequestConfig): Promise<UserProfileResponse> {
     try {
+      if (config?.forceRefresh) {
+        meCache = { ts: 0, data: null };
+      }
+      
       // Evitar ráfaga: usar micro-caché
       const now = Date.now();
       if (meCache.data && (now - meCache.ts) < ME_TTL_MS) {
@@ -640,7 +642,7 @@ export const loginUser = async (userData: any) => {
       data: result,
       user: normalizedUser,
       access_token: normalizedToken,
-      message: extractMessageFromPayload(result) || 'Login exitoso'
+      message: extractMessageFromPayload(result) || 'Inicio de sesión exitoso'
     };
   } catch (error: any) {
     // Re-lanzar el error para que el componente de login lo maneje

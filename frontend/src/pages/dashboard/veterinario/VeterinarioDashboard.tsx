@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { useToast } from '@/app/providers/ToastContext';
@@ -28,6 +28,8 @@ import { useCompleteDashboardStats } from '@/features/dashboard/model/useComplet
 import AlertsPanel from '@/widgets/analytics/AlertsPanel';
 import QuickActionCards from '@/widgets/mobile/QuickActionCards';
 import GlobalCalendarWidget from '@/widgets/analytics/GlobalCalendarWidget';
+import { FincaHeroBanner } from '@/widgets/finca/hero';
+import { VeterinarianAssistancePanel } from '@/widgets/assistance';
 
 interface QuickAction {
   id: string;
@@ -125,6 +127,7 @@ export default function VeterinarioDashboard() {
 
   return (
     <div className="w-full p-4 space-y-6">
+      <FincaHeroBanner />
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -153,6 +156,9 @@ export default function VeterinarioDashboard() {
           )}
         </div>
       </div>
+
+      {/* Bandeja persistente: complementa los avisos push y en tiempo real. */}
+      <VeterinarianAssistancePanel />
 
       {/* KPIs en tiempo real */}
       <LiveStats />

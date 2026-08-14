@@ -123,7 +123,7 @@ export const UserActivityTimeline: React.FC<UserActivityTimelineProps> = ({
 		activityItems.forEach((item) => {
 			const ts = new Date(item.timestamp).getTime();
 			const label = Number.isFinite(ts)
-				? new Date(ts).toLocaleDateString("es-ES", {
+				? new Date(ts).toLocaleDateString("es-CO", {
 						weekday: "short",
 						year: "numeric",
 						month: "short",
@@ -205,14 +205,14 @@ export const UserActivityTimeline: React.FC<UserActivityTimelineProps> = ({
 		const headers = [
 			"Fecha",
 			"Entidad",
-			"Accion",
+			"Acción",
 			"Titulo",
 			"Resumen",
 			"Gravedad",
 			"ID Animal",
 		];
 		const rows = filteredAndPaginatedActivity.filteredAll.map((item) => [
-			new Date(item.timestamp).toLocaleString("es-ES"),
+			new Date(item.timestamp).toLocaleString("es-CO"),
 			item.entity,
 			item.action,
 			item.title,
@@ -505,7 +505,7 @@ export const UserActivityTimeline: React.FC<UserActivityTimelineProps> = ({
 													: "border-l-green-500";
 										const timestamp = new Date(item.timestamp);
 										const timeLabel = Number.isFinite(timestamp.getTime())
-											? timestamp.toLocaleTimeString("es-ES", {
+											? timestamp.toLocaleTimeString("es-CO", {
 													hour: "2-digit",
 													minute: "2-digit",
 												})
@@ -535,7 +535,7 @@ export const UserActivityTimeline: React.FC<UserActivityTimelineProps> = ({
 														<button
 															type="button"
 															onClick={() => openActivityDetail(item)}
-															className="text-left text-sm font-semibold text-foreground truncate hover:underline"
+															className="text-left text-sm font-semibold text-foreground fit-clamp hover:underline"
 														>
 															{title}
 														</button>
@@ -552,7 +552,7 @@ export const UserActivityTimeline: React.FC<UserActivityTimelineProps> = ({
 														</Badge>
 													</div>
 													{summary && (
-														<p className="text-xs text-muted-foreground mt-1 truncate">
+														<p className="text-xs text-muted-foreground mt-1 fit-clamp">
 															{summary}
 														</p>
 													)}
@@ -602,7 +602,7 @@ export const UserActivityTimeline: React.FC<UserActivityTimelineProps> = ({
 
 						<div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
 							<p className="text-xs text-muted-foreground">
-								Pagina {activityPage} de{" "}
+								Página {activityPage} de{" "}
 								{filteredAndPaginatedActivity.totalPages} · Total:{" "}
 								{filteredAndPaginatedActivity.total}
 							</p>

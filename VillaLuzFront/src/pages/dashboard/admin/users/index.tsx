@@ -69,7 +69,7 @@ const columns: CRUDColumn<UserResponse & { [k: string]: any }>[] = [
        <span className="text-xs font-medium">{v ? 'Activo' : 'Inactivo'}</span>
     </div>
   )},
-  { key: 'created_at', label: 'Desde', width: 28, render: (v: any) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-') },
+  { key: 'created_at', label: 'Desde', width: 28, render: (v: any) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
 ];
 
 // Secciones del formulario
@@ -234,7 +234,7 @@ const renderUserCard = (user: UserResponse & { [k: string]: any }) => {
         <div className="mt-auto pt-4 border-t border-border/40 flex items-center justify-between gap-4 text-[9px] text-muted-foreground font-black uppercase tracking-tighter">
           <div className="flex flex-col">
             <span className="opacity-50">Vinculado desde</span>
-            <span className="text-foreground/60">{user.created_at ? new Date(user.created_at).toLocaleDateString('es-ES') : '-'}</span>
+            <span className="text-foreground/60">{user.created_at ? new Date(user.created_at).toLocaleDateString('es-CO') : '-'}</span>
           </div>
           {user.fincas && user.fincas.length > 0 && (
              <div className="flex -space-x-2 overflow-hidden py-1" title={`${user.fincas.length} fincas asociadas`}>

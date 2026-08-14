@@ -10,9 +10,9 @@ import { offlineQueue } from '@/shared/api/offline/offlineQueue';
 import { api } from '@/shared/api/base-client';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
 
-// UI components
 import { Card, CardContent } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
+import { cn } from '@/shared/ui/cn.ts';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
@@ -39,6 +39,7 @@ import { DiseaseLink } from '@/entities/disease/ui/DiseaseLink';
 import { MedicationLink } from '@/entities/medication/ui/MedicationLink';
 import { AnimalImageBanner } from '@/widgets/dashboard/animals/AnimalImageBanner';
 import { apiClient } from '@/shared/api/client';
+import { FinanceModal } from '@/widgets/registro-operativo/modals/FinanceModal';
 
 // Icons
 import {
@@ -50,9 +51,12 @@ import {
   FileText,
   Download,
   RefreshCw,
+  History,
   Printer,
   X,
-  History
+  Maximize2,
+  Minimize2,
+  DollarSign
 } from 'lucide-react';
 
 import {
@@ -62,8 +66,9 @@ import {
   IconHealthAlert,
   IconHealthCheck
 } from '@/shared/icons/cattle';
+import type { FinanceFormData } from '@/widgets/registro-operativo/types';
 
-type RecordType = 'all' | 'milking' | 'transfer' | 'disease' | 'treatment';
+type RecordType = 'all' | 'milking' | 'transfer' | 'disease' | 'treatment' | 'finance';
 
 interface UnifiedRecord {
   id: string;
@@ -88,6 +93,18 @@ export default function GanaderiaOperativaPage() {
   // Dialog / Modal states
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  const [isBitacoraFullScreen, setIsBitacoraFullScreen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isBitacoraFullScreen) {
+        setIsBitacoraFullScreen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isBitacoraFullScreen]);
 
   const handleDownloadReport = async (animalId: number, record: string) => {
     setDownloadingId(`report-${animalId}`);
@@ -169,7 +186,7 @@ export default function GanaderiaOperativaPage() {
       setMedications(Array.isArray(medsResp) ? medsResp : (medsResp as any)?.data || []);
     } catch (e) {
       console.error('Error loading master data:', e);
-      showToast('Error al cargar datos del hato', 'error');
+      showToast('Error al cargar datos del ganado', 'error');
     } finally {
       setLoadingMaster(false);
     }
@@ -461,7 +478,7 @@ export default function GanaderiaOperativaPage() {
 
     drawCard(15, 'Producción Leche', `${stats.milkTotal} Litros`);
     drawCard(15 + cardWidth + cardGap, 'Enfermos Activos', `${stats.activeDiseases} Casos`);
-    drawCard(15 + (cardWidth + cardGap) * 2, 'Traslados Hato', `${stats.transfersCount} Movs`);
+    drawCard(15 + (cardWidth + cardGap) * 2, 'Traslados de Ganado', `${stats.transfersCount} Movs`);
     drawCard(15 + (cardWidth + cardGap) * 3, 'Tratamientos', `${stats.treatmentsCount} Aplicados`);
 
     // Table mapping
@@ -722,6 +739,50 @@ export default function GanaderiaOperativaPage() {
     }
   };
 
+  // 5. Finance
+  const [financeForm, setFinanceForm] = useState<FinanceFormData>({
+    transaction_type: 'Ingreso',
+    category: 'Venta de Leche',
+    animalId: '',
+    amount: '',
+    date: getTodayColombia(),
+    description: ''
+  });
+
+  const handleFinanceSubmit = async (): Promise<boolean> => {
+    if (!financeForm.amount || !financeForm.category) { showToast('Complete monto y categoría', 'error'); return false; }
+    setSavingForm(true);
+    const payload: any = { 
+      transaction_type: financeForm.transaction_type, 
+      category: financeForm.category, 
+      amount: Number(financeForm.amount), 
+      date: financeForm.date, 
+      description: financeForm.description 
+    };
+    if (financeForm.animalId) {
+      payload.animal_id = Number(financeForm.animalId);
+    }
+    
+    try {
+      if (!isOnline) { 
+        await offlineQueue.enqueue('POST', 'financial/transactions', payload); 
+        showToast('Transacción guardada sin señal. Se sincronizará pronto.', 'success'); 
+      } else { 
+        await api.post('/financial/transactions', payload); 
+        showToast('Transacción registrada exitosamente', 'success'); 
+      }
+      closeModal(); 
+      loadHistoryRecords(); 
+      return true;
+    } catch { 
+      showToast('Error al registrar transacción', 'error'); 
+      return false; 
+    } finally { 
+      setSavingForm(false); 
+    }
+  };
+
+
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/20 font-sans pb-12">
       {/* ─── ENCABEZADO PRINCIPAL ─── */}
@@ -744,7 +805,7 @@ export default function GanaderiaOperativaPage() {
               </div>
               <div>
                 <h1 className="text-2xl md:text-3xl font-black tracking-tight uppercase">Ganadería Operativa</h1>
-                <p className="text-emerald-100 text-xs md:text-sm opacity-90 mt-0.5">Control unificado del hato, registros rápidos y reportes</p>
+                <p className="text-emerald-100 text-xs md:text-sm opacity-90 mt-0.5">Control unificado del ganado, registros rápidos y reportes</p>
               </div>
             </div>
           </div>
@@ -838,6 +899,21 @@ export default function GanaderiaOperativaPage() {
               </div>
               <div className="absolute right-3 top-3 text-white/10 font-bold text-6xl select-none leading-none pointer-events-none">💉</div>
             </motion.button>
+            
+            {/* Finance Register */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => openModal('finance')}
+              className="p-5 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-md hover:shadow-lg transition-all text-left flex flex-col justify-between h-32 border-0 cursor-pointer relative overflow-hidden md:col-span-4 lg:col-span-1"
+            >
+              <div className="bg-white/20 p-2.5 rounded-xl w-fit"><DollarSign className="w-6 h-6" /></div>
+              <div>
+                <span className="block font-black text-sm uppercase tracking-wider">Ingreso / Gasto</span>
+                <span className="block text-[11px] text-white/80 mt-0.5">Ventas, insumos, compras</span>
+              </div>
+              <div className="absolute right-3 top-3 text-white/10 font-bold text-6xl select-none leading-none pointer-events-none">💰</div>
+            </motion.button>
           </div>
         </section>
 
@@ -874,7 +950,7 @@ export default function GanaderiaOperativaPage() {
             <CardContent className="p-4 flex items-center gap-3">
               <div className="p-3 bg-indigo-500/10 text-indigo-600 rounded-lg"><IconCow className="w-6 h-6" /></div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Hato Controlado</span>
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Ganado Controlado</span>
                 <span className="block text-lg font-black text-slate-800 dark:text-slate-100 mt-0.5">{animals.length} Vacas</span>
               </div>
             </CardContent>
@@ -882,7 +958,10 @@ export default function GanaderiaOperativaPage() {
         </section>
 
         {/* ─── FILTROS Y HISTORIAL DE REGISTROS ─── */}
-        <section className="bg-white dark:bg-slate-900 border rounded-xl p-5 shadow-sm space-y-6">
+        <section className={cn(
+          "bg-white dark:bg-slate-900 border rounded-xl p-5 shadow-sm space-y-6 transition-all duration-200",
+          isBitacoraFullScreen && "fixed inset-0 z-[2000] p-6 h-screen w-screen overflow-auto rounded-none flex flex-col"
+        )}>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-300">
@@ -896,6 +975,23 @@ export default function GanaderiaOperativaPage() {
 
             {/* Export buttons */}
             <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsBitacoraFullScreen(!isBitacoraFullScreen)}
+                className="rounded-xl border shadow-sm font-bold text-slate-700 bg-white dark:bg-slate-800 dark:text-slate-200"
+                title={isBitacoraFullScreen ? "Salir de Pantalla Completa (ESC)" : "Pantalla Completa"}
+              >
+                {isBitacoraFullScreen ? (
+                  <>
+                    <Minimize2 className="w-4 h-4 mr-1.5 text-emerald-500" /> Salir de Pantalla Completa
+                  </>
+                ) : (
+                  <>
+                    <Maximize2 className="w-4 h-4 mr-1.5 text-emerald-500" /> Pantalla Completa
+                  </>
+                )}
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -1004,7 +1100,7 @@ export default function GanaderiaOperativaPage() {
                     <tr>
                       <th className="px-5 py-3.5 text-left text-[10px] font-black uppercase text-slate-400 tracking-wider">Fecha</th>
                       <th className="px-5 py-3.5 text-left text-[10px] font-black uppercase text-slate-400 tracking-wider">Foto</th>
-                      <th className="px-5 py-3.5 text-left text-[10px] font-black uppercase text-slate-400 tracking-wider">Animal / Hato</th>
+                      <th className="px-5 py-3.5 text-left text-[10px] font-black uppercase text-slate-400 tracking-wider">Animal / Ganado</th>
                       <th className="px-5 py-3.5 text-left text-[10px] font-black uppercase text-slate-400 tracking-wider">Actividad</th>
                       <th className="px-5 py-3.5 text-left text-[10px] font-black uppercase text-slate-400 tracking-wider">Detalle</th>
                       <th className="px-5 py-3.5 text-left text-[10px] font-black uppercase text-slate-400 tracking-wider">Notas</th>
@@ -1090,7 +1186,7 @@ export default function GanaderiaOperativaPage() {
                               )}
                             </div>
                           </td>
-                          <td className="px-5 py-4 text-xs text-slate-400 max-w-xs truncate italic">
+                          <td className="px-5 py-4 text-xs text-slate-400 max-w-xs fit-clamp italic">
                             {r.notes || '---'}
                           </td>
                           <td className="whitespace-nowrap px-5 py-4 text-right">
@@ -1512,6 +1608,17 @@ export default function GanaderiaOperativaPage() {
           </div>
         </DialogContent>
       </Dialog>
+      
+      {/* ─── 5. MODAL DE FINANZAS (FINANCE) ─── */}
+      <FinanceModal
+        open={activeModal === 'finance'}
+        onClose={closeModal}
+        form={financeForm}
+        setForm={setFinanceForm}
+        animals={animals}
+        saving={savingForm}
+        onSubmit={handleFinanceSubmit}
+      />
     </div>
   );
 }

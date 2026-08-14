@@ -37,7 +37,7 @@ function renderControlCard(animalOptions: { value: number; label: string }[]) {
         <div className="flex items-start justify-between gap-2">
           <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap ${getStatusColor(status)}`}>{status}</span>
           <span className="text-xs text-muted-foreground font-medium bg-muted/40 px-2 py-1 rounded-md">
-            {date ? new Date(date as string).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+            {date ? new Date(date as string).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
           </span>
         </div>
         <div className="text-base font-bold truncate">

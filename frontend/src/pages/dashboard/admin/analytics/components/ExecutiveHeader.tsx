@@ -4,12 +4,14 @@ import { es } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { FileText } from 'lucide-react';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 
 interface ExecutiveHeaderProps {
   fechaActualizacion?: Date;
 }
 
 export const ExecutiveHeader: React.FC<ExecutiveHeaderProps> = ({ fechaActualizacion }) => {
+  const { rolePath } = useRoleNavigation();
   return (
     <motion.div 
       initial={{ opacity: 0, y: -20 }}
@@ -39,7 +41,7 @@ export const ExecutiveHeader: React.FC<ExecutiveHeaderProps> = ({ fechaActualiza
           </div>
         )}
         
-        <Link to="/admin/analytics/reports" className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-white transition-all duration-200 bg-gradient-to-r from-blue-600 to-indigo-600 border border-transparent rounded-full shadow-md hover:shadow-lg hover:from-blue-500 hover:to-indigo-500 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600">
+        <Link to={rolePath('/admin/analytics/reports')} className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-white transition-all duration-200 bg-gradient-to-r from-blue-600 to-indigo-600 border border-transparent rounded-full shadow-md hover:shadow-lg hover:from-blue-500 hover:to-indigo-500 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600">
           <FileText className="w-4 h-4 transition-transform group-hover:scale-110" />
           Visión Finca 360° (Offline)
         </Link>

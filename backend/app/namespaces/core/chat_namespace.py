@@ -1,8 +1,10 @@
 import flask
+from datetime import UTC, datetime
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.chat_message import ChatMessage
 from app.models.user import User
+from app.models.user_finca import UserFinca
 from app.utils.response_handler import APIResponse
 from app.utils.tenant_context import get_current_finca_id
 from app.utils.file_storage import save_chat_file
@@ -17,10 +19,40 @@ chat_ns = Namespace('chat', description='Operaciones de chat interno')
 message_model = chat_ns.model('ChatMessage', {
     'recipient_id': fields.Integer(required=True, description='ID del destinatario'),
     'message': fields.String(required=True, description='Contenido del mensaje'),
+    'client_message_id': fields.String(required=False, description='ID idempotente generado por el cliente'),
     'attachment_url': fields.String(required=False, description='URL del archivo adjunto'),
     'attachment_type': fields.String(required=False, description='Tipo de archivo (image/file)'),
     'attachment_name': fields.String(required=False, description='Nombre del archivo')
 })
+
+
+def _identity_as_int() -> int:
+    try:
+        return int(get_jwt_identity())
+    except (TypeError, ValueError):
+        return 0
+
+
+def _active_membership_exists(finca_id: int):
+    """Expresión SQL para membresía activa, conservando usuarios heredados.
+
+    `User.finca_id` sigue aceptándose porque hay instalaciones anteriores a la
+    tabla N:M. Las altas nuevas y multi-finca se resuelven desde `user_finca`.
+    """
+    membership = db.session.query(UserFinca.id).filter(
+        UserFinca.user_id == User.id,
+        UserFinca.finca_id == finca_id,
+        UserFinca.is_active.is_(True),
+    ).exists()
+    return db.or_(User.finca_id == finca_id, membership)
+
+
+def _chat_recipient(recipient_id: int, finca_id: int):
+    return User.query.filter(
+        User.id == recipient_id,
+        User.status.is_(True),
+        _active_membership_exists(finca_id),
+    ).first()
 
 
 @chat_ns.route('/contacts')
@@ -28,43 +60,45 @@ class ChatContactsResource(Resource):
     @jwt_required()
     def get(self):
         """Listar usuarios en la misma finca para chatear."""
-        user_id = get_jwt_identity()
+        user_id = _identity_as_int()
         finca_id = get_current_finca_id()
 
         if not finca_id:
             return APIResponse.error('No se ha detectado el contexto de la finca', status_code=400)
 
-        # Cache key incluye user_id y finca_id para evitar datos incorrectos
-        cache_key = f"chat_contacts_{user_id}_{finca_id}"
-
-        # Intentar obtener del cache primero
-        cached_data = cache.get(cache_key)
-        if cached_data:
-            return APIResponse.success(data=cached_data)
-
-        # Obtener todos los usuarios activos de la finca excepto el actual
-        # Optimizado: solo seleccionar campos necesarios
+        # La membresía N:M es la fuente de verdad para personal multi-finca.
+        # `distinct` evita duplicados en instalaciones con fila heredada y N:M.
         contacts = User.query.filter(
-            User.finca_id == finca_id,
             User.id != user_id,
-            User.status == True
-        ).with_entities(
-            User.id,
-            User.fullname,
-            User.role,
-            User.email
+            User.status.is_(True),
+            _active_membership_exists(finca_id),
+        ).order_by(User.fullname.asc()).all()
+
+        unread_rows = db.session.query(
+            ChatMessage.sender_id,
+            db.func.count(ChatMessage.id),
+        ).filter(
+            ChatMessage.recipient_id == user_id,
+            ChatMessage.finca_id == finca_id,
+            ChatMessage.is_read.is_(False),
+        ).group_by(ChatMessage.sender_id).all()
+        unread_by_sender = {int(sender_id): int(count) for sender_id, count in unread_rows}
+
+        membership_rows = UserFinca.query.filter(
+            UserFinca.user_id.in_([contact.id for contact in contacts]),
+            UserFinca.finca_id == finca_id,
+            UserFinca.is_active.is_(True),
         ).all()
+        finca_roles = {membership.user_id: membership.role for membership in membership_rows}
 
         # Transformar datos
         contacts_data = [{
             'id': c.id,
             'fullname': c.fullname,
-            'role': c.role.value if hasattr(c.role, 'value') else c.role,
-            'email': c.email
+            'role': finca_roles.get(c.id) or (c.role.value if hasattr(c.role, 'value') else c.role),
+            'email': c.email,
+            'unread_count': unread_by_sender.get(c.id, 0),
         } for c in contacts]
-
-        # Guardar en cache
-        cache.set(cache_key, contacts_data, timeout=300)
 
         return APIResponse.success(data=contacts_data)
 
@@ -73,7 +107,7 @@ class ChatHistoryResource(Resource):
     @jwt_required()
     def get(self, recipient_id):
         """Obtener historial de mensajes con un usuario."""
-        user_id = get_jwt_identity()
+        user_id = _identity_as_int()
         finca_id = get_current_finca_id()
 
         # Parámetros de paginación
@@ -83,17 +117,13 @@ class ChatHistoryResource(Resource):
         if not finca_id:
             return APIResponse.error('No se ha detectado el contexto de la finca', status_code=400)
 
-        # Cache key para historial (corta duración por ser datos dinámicos)
-        cache_key = f"chat_history_{finca_id}_{user_id}_{recipient_id}_{page}_{per_page}"
+        if recipient_id == user_id:
+            return APIResponse.error('No puede abrir un chat consigo mismo', status_code=400)
+        if not _chat_recipient(recipient_id, finca_id):
+            return APIResponse.forbidden('El usuario no pertenece activamente a esta finca')
 
-        # Para polling reciente, usar cache muy corto
-        cache_timeout = 30 if page == 1 else 300  # 30s para primera página, 5min para antiguas
-
-        cached_data = cache.get(cache_key)
-        if cached_data:
-            return APIResponse.success(data=cached_data)
-
-        # Consulta optimizada con paginación
+        # El historial es dinámico y también marca lectura; no debe servirse de
+        # caché HTTP/servidor porque una respuesta vacía puede ocultar mensajes.
         history_query = ChatMessage.query.filter(
             ChatMessage.finca_id == finca_id,
             db.or_(
@@ -109,18 +139,27 @@ class ChatHistoryResource(Resource):
             error_out=False
         )
 
-        # Transformar datos
-        messages_data = [msg.to_dict() for msg in history_paginated.items]
-
         # Marcar como leídos
         unread = [m for m in history_paginated.items if m.recipient_id == user_id and not m.is_read]
         if unread:
+            read_at = datetime.now(UTC).replace(tzinfo=None)
             for m in unread:
                 m.is_read = True
+                # El instante viaja en la respuesta/recibo; `is_read` es la
+                # marca persistida compatible con el esquema ya desplegado.
+                m.read_at = read_at
             db.session.commit()
+            cache.delete(f"chat_unread_{finca_id}_{user_id}")
+            EventService.emit_chat_read(
+                message_ids=[m.id for m in unread],
+                sender_id=recipient_id,
+                reader_id=user_id,
+                finca_id=finca_id,
+            )
 
-        # Guardar en cache
-        cache.set(cache_key, messages_data, timeout=cache_timeout)
+        # La consulta pagina descendente para obtener los últimos N, pero el
+        # contrato de UI entrega la conversación en orden cronológico.
+        messages_data = [msg.to_dict() for msg in reversed(history_paginated.items)]
 
         return APIResponse.success(data=messages_data)
 
@@ -129,7 +168,7 @@ class ChatUploadResource(Resource):
     @jwt_required()
     def post(self):
         """Subir archivo para adjuntar en chat."""
-        user_id = get_jwt_identity()
+        user_id = _identity_as_int()
         finca_id = get_current_finca_id()
 
         if not finca_id:
@@ -164,23 +203,54 @@ class ChatSendResource(Resource):
     @chat_ns.expect(message_model)
     def post(self):
         """Enviar un mensaje de chat."""
-        user_id = get_jwt_identity()
+        user_id = _identity_as_int()
         finca_id = get_current_finca_id()
-        data = flask.request.json
+        data = flask.request.get_json(silent=True) or {}
 
         if not finca_id:
             return APIResponse.error('No se ha detectado el contexto de la finca', status_code=400)
 
-        recipient_id = data.get('recipient_id')
+        try:
+            recipient_id = int(data.get('recipient_id'))
+        except (TypeError, ValueError):
+            recipient_id = 0
         message = data.get('message', '').strip()
+        client_message_id = str(data.get('client_message_id') or '').strip() or None
         attachment_url = data.get('attachment_url')
         attachment_type = data.get('attachment_type')
         attachment_name = data.get('attachment_name')
 
         if not recipient_id or not message:
             return APIResponse.error('recipient_id y message son requeridos', status_code=400)
+        if recipient_id == user_id:
+            return APIResponse.error('No puede enviarse mensajes a sí mismo', status_code=400)
+        if client_message_id and len(client_message_id) > 64:
+            return APIResponse.error('client_message_id supera 64 caracteres', status_code=400)
+        if not _chat_recipient(recipient_id, finca_id):
+            return APIResponse.forbidden('El destinatario no pertenece activamente a esta finca')
 
         try:
+            if client_message_id:
+                idempotency_key = f"chat_idempotency_{user_id}_{client_message_id}"
+                cached_message = cache.get(idempotency_key)
+                existing = (
+                    db.session.get(ChatMessage, cached_message.get('id'))
+                    if isinstance(cached_message, dict) and cached_message.get('id')
+                    else None
+                )
+                if existing:
+                    if (
+                        existing.recipient_id != recipient_id
+                        or existing.message != message
+                        or cached_message.get('recipient_id') != recipient_id
+                    ):
+                        return APIResponse.error(
+                            'El identificador del mensaje ya fue usado con otro contenido',
+                            status_code=409,
+                        )
+                    existing.client_message_id = client_message_id
+                    return APIResponse.success(data=existing.to_dict(), message='Mensaje ya confirmado')
+
             chat_message = ChatMessage(
                 sender_id=user_id,
                 recipient_id=recipient_id,
@@ -193,13 +263,23 @@ class ChatSendResource(Resource):
 
             db.session.add(chat_message)
             db.session.commit()
+            chat_message.client_message_id = client_message_id
+
+            if client_message_id:
+                cache.set(
+                    f"chat_idempotency_{user_id}_{client_message_id}",
+                    {
+                        'id': chat_message.id,
+                        'recipient_id': recipient_id,
+                        'message': message,
+                    },
+                    timeout=86_400,
+                )
 
             # Invalidar caches relevantes
             cache_keys_to_clear = [
-                f"chat_history_{finca_id}_{user_id}_{recipient_id}_1_50",
-                f"chat_history_{finca_id}_{recipient_id}_{user_id}_1_50",
                 f"chat_unread_{finca_id}_{recipient_id}",
-                f"chat_unread_{finca_id}_{user_id}"
+                f"chat_unread_{finca_id}_{user_id}",
             ]
 
             for key in cache_keys_to_clear:
@@ -220,7 +300,7 @@ class ChatUnreadResource(Resource):
     @jwt_required()
     def get(self):
         """Obtener contador de mensajes no leídos."""
-        user_id = get_jwt_identity()
+        user_id = _identity_as_int()
         finca_id = get_current_finca_id()
 
         # Cache muy corto para unread count (datos muy dinámicos)

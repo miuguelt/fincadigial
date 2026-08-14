@@ -56,8 +56,8 @@ function recoverDocumentInteractivityIfNoDialogsOpen(attempt = 0) {
       setTimeout(() => recoverDocumentInteractivityIfNoDialogsOpen(attempt + 1), 50)
       return
     }
-    // Tras varios intentos: si el DOM sigue reportando "open" pero el lock qued¢ pegado,
-    // preferimos recuperar interacci¢n para evitar una UI congelada.
+    // Tras varios intentos: si el DOM sigue reportando "open" pero el lock quedó pegado,
+    // preferimos recuperar interacción para evitar una UI congelada.
   }
 
   const body = document.body
@@ -187,7 +187,6 @@ const DialogOverlay = React.forwardRef<
         // Solo aplicar z-[1100] si NO hay zIndex personalizado
         !hasCustomZIndex && "z-[1100]",
         "pointer-events-auto",
-        "pointer-events-auto",
         // Importante: si por alguna razón el overlay queda montado en estado "closed",
         // no debe bloquear la interacción con la página.
         "data-[state=closed]:pointer-events-none",
@@ -236,8 +235,8 @@ const DialogContent = React.forwardRef<
         fullWidth
           ? "w-[98vw] sm:w-[96vw] max-w-[98vw] sm:max-w-[96vw]"
           : cn(
-              "w-[95vw] sm:w-auto",
-              "min-w-[300px] sm:min-w-[400px]",
+              "w-[calc(100vw-2rem)] sm:w-auto",
+              "min-w-0 sm:min-w-[400px]",
               "max-w-[95vw] sm:max-w-lg md:max-w-xl lg:max-w-2xl",
             ),
 
@@ -246,9 +245,9 @@ const DialogContent = React.forwardRef<
         "max-h-[90vh] sm:max-h-[92vh]",
 
         // Estética premium
-        "vl-modal-surface",
+        "vl-modal-surface text-card-foreground",
         "ring-1 ring-black/5 dark:ring-white/10",
-        "rounded-xl",
+        "rounded-2xl",
         "shadow-2xl shadow-black/20 dark:shadow-black/40",
         "p-0 sm:p-0 gap-0 overflow-hidden",
 
@@ -275,13 +274,13 @@ const DialogContent = React.forwardRef<
       {children}
       <DialogPrimitive.Close className={cn(
         "absolute right-3 top-3 sm:right-4 sm:top-4",
-        "h-8 w-8 rounded-full flex items-center justify-center",
-        "focus:outline-none focus:ring-2",
-        "disabled:pointer-events-none z-50 transition-colors backdrop-blur-sm",
+        "z-50 flex h-11 w-11 items-center justify-center rounded-full",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        "disabled:pointer-events-none transition-colors backdrop-blur-sm",
         closeButtonClassName || "bg-black/5 text-gray-500 hover:bg-black/10 hover:text-gray-700 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 focus:ring-primary/50"
-      )}>
+      )} aria-label="Cerrar diálogo">
         <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
+        <span className="sr-only">Cerrar</span>
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </DialogPortal>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { RefreshCw, CheckCheck, CheckCircle, Bell, Zap } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { cn } from '@/shared/lib/utils';
@@ -8,9 +8,13 @@ import { AlertStatsCards } from '@/widgets/alerts/AlertStatsCards';
 import { AlertFilterBar, type PriorityFilter, type TypeFilter, type ReadFilter } from '@/widgets/alerts/AlertFilterBar';
 import { useToast } from '@/app/providers/ToastContext';
 
+/** Tope de la API para una sola página; el resto se refleja en los contadores del servidor. */
+const PAGE_SIZE = 200;
+
 export function AlertsPage() {
   const { showToast } = useToast();
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [totalOnServer, setTotalOnServer] = useState(0);
   const [stats, setStats] = useState<AlertStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,14 +23,15 @@ export function AlertsPage() {
   const [readFilter, setReadFilter] = useState<ReadFilter>('no_leidas');
   const [evaluating, setEvaluating] = useState(false);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [alertsData, statsData] = await Promise.all([
-        alertService.getAlerts({ limit: 200 }),
+      const [alertsPage, statsData] = await Promise.all([
+        alertService.getAlertsPage({ limit: PAGE_SIZE }),
         alertService.getAlertStats(),
       ]);
-      setAlerts(alertsData);
+      setAlerts(alertsPage.items);
+      setTotalOnServer(alertsPage.total);
       setStats(statsData);
     } catch (error) {
       console.error('[Alerts] Error loading data:', error);
@@ -34,18 +39,22 @@ export function AlertsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const handleEvaluate = async () => {
     setEvaluating(true);
     try {
       const result: EvaluateResult = await alertService.evaluateAlerts();
-      showToast(`Evaluación completada: ${result.triggered} nuevas alertas`, 'success');
-      await loadData();
+      if (result.status === 'queued') {
+        showToast('Evaluación iniciada. Te avisaremos cuando termine.', 'success');
+      } else {
+        showToast(`Evaluación completada: ${result.triggered ?? 0} nuevas alertas`, 'success');
+        await loadData();
+      }
     } catch (error) {
       console.error('[Alerts] Error evaluating:', error);
       showToast('Error evaluando alertas', 'error');
@@ -55,9 +64,19 @@ export function AlertsPage() {
   };
 
   const handleMarkAsRead = async (id: number) => {
+    const target = alerts.find(a => a.id === id);
+    if (target?.is_read) return;
     try {
       await alertService.markAsRead(id);
       setAlerts(prev => prev.map(a => a.id === id ? { ...a, is_read: true } : a));
+      // Mantener las tarjetas en sincronía sin recargar toda la página.
+      setStats(prev => prev && {
+        ...prev,
+        unread: Math.max(0, prev.unread - 1),
+        criticalUnread: target?.priority === 'Crítica'
+          ? Math.max(0, prev.criticalUnread - 1)
+          : prev.criticalUnread,
+      });
     } catch {
       showToast('Error marcando alerta', 'error');
     }
@@ -67,6 +86,7 @@ export function AlertsPage() {
     try {
       await alertService.markAllAsRead();
       setAlerts(prev => prev.map(a => ({ ...a, is_read: true })));
+      setStats(prev => prev && { ...prev, unread: 0, criticalUnread: 0 });
       showToast('Todas las alertas marcadas como leídas', 'success');
     } catch {
       showToast('Error marcando todas', 'error');
@@ -95,8 +115,12 @@ export function AlertsPage() {
     });
   }, [filteredAlerts]);
 
-  const unreadCount = alerts.filter(a => !a.is_read).length;
-  const criticalCount = alerts.filter(a => a.priority === 'Crítica' && !a.is_read).length;
+  // Conteos locales: solo sirven de respaldo mientras `stats` no haya llegado.
+  const localUnread = alerts.filter(a => !a.is_read).length;
+  const localCritical = alerts.filter(a => a.priority === 'Crítica' && !a.is_read).length;
+  const unreadCount = stats?.unread ?? localUnread;
+  const criticalCount = stats?.criticalUnread ?? localCritical;
+  const truncated = totalOnServer > alerts.length;
 
   return (
     <div className="space-y-6">
@@ -124,13 +148,14 @@ export function AlertsPage() {
               )}
             </div>
             <p className="text-muted-foreground mt-0.5 text-sm">
-              Monitoreo inteligente del hato ganadero
+              Monitoreo inteligente del ganado
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
           <Button
+            type="button"
             variant="outline"
             size="sm"
             onClick={handleEvaluate}
@@ -145,6 +170,7 @@ export function AlertsPage() {
           </Button>
           {unreadCount > 0 && (
             <Button
+              type="button"
               variant="ghost"
               size="sm"
               onClick={handleMarkAllAsRead}
@@ -161,7 +187,7 @@ export function AlertsPage() {
       {/* ── Stats ──────────────────────────────────────────────────────────*/}
       <AlertStatsCards
         stats={stats}
-        total={alerts.length}
+        total={totalOnServer || alerts.length}
         unreadCount={unreadCount}
         criticalCount={criticalCount}
       />
@@ -193,6 +219,11 @@ export function AlertsPage() {
             )}>
               {sortedAlerts.length}
             </span>
+            {truncated && (
+              <span className="text-xs text-muted-foreground">
+                de {totalOnServer.toLocaleString('es-CO')} en la finca
+              </span>
+            )}
           </div>
           {loading && (
             <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -210,7 +241,7 @@ export function AlertsPage() {
             </div>
             <div>
               <p className="text-base font-semibold">Cargando alertas…</p>
-              <p className="text-sm text-muted-foreground mt-1">Evaluando reglas del hato ganadero</p>
+              <p className="text-sm text-muted-foreground mt-1">Evaluando reglas del ganado</p>
             </div>
           </div>
         ) : sortedAlerts.length === 0 ? (
@@ -231,6 +262,7 @@ export function AlertsPage() {
             </div>
             {readFilter === 'no_leidas' && (
               <Button
+                type="button"
                 variant="outline"
                 size="sm"
                 className="gap-2 rounded-xl mt-2"
@@ -238,7 +270,7 @@ export function AlertsPage() {
                 disabled={evaluating}
               >
                 <Zap className={cn('h-4 w-4', evaluating && 'animate-pulse')} />
-                Evaluar alertas del hato
+                Evaluar alertas del ganado
               </Button>
             )}
           </div>

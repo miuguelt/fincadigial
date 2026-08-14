@@ -17,13 +17,13 @@ export interface SectionHeadingProps {
 export function SectionHeading({ icon: Icon, title, subtitle, actionLabel, onAction }: SectionHeadingProps) {
   return (
     <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-      <div className="flex items-center gap-2.5">
+      <div className="min-w-0 flex-1 flex items-center gap-2.5">
         <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-muted/50 text-primary">
           <Icon className="h-5 w-5" />
         </span>
-        <div>
-          <h2 className="text-base font-black leading-tight tracking-tight text-foreground sm:text-lg">{title}</h2>
-          {subtitle && <p className="text-xs text-muted-foreground sm:text-sm">{subtitle}</p>}
+        <div className="min-w-0">
+          <h2 className="fit-clamp text-base font-black leading-tight tracking-tight text-foreground sm:text-lg">{title}</h2>
+          {subtitle && <p className="fit-clamp text-xs text-muted-foreground sm:text-sm">{subtitle}</p>}
         </div>
       </div>
       {actionLabel && onAction && (

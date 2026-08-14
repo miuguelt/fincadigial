@@ -75,19 +75,34 @@ class User(BaseModel):
     finca_id = db.Column(db.Integer, db.ForeignKey('finca.id'), nullable=True)
     avatar_url = db.Column(db.String(255), nullable=True)
 
+    # Campos de Verificación de Tarjeta Profesional (Veterinarios)
+    professional_card = db.Column(db.String(50), nullable=True)
+    professional_specialty = db.Column(db.String(100), nullable=True)
+    is_verified_professional = db.Column(db.Boolean, default=False, nullable=False)
+    verification_document_url = db.Column(db.String(255), nullable=True)
+    verification_date = db.Column(db.DateTime, nullable=True)
+
+    # Campos de Cumplimiento de Tratamiento de Datos (Habeas Data Ley 1581 / GDPR)
+    habeas_data_accepted = db.Column(db.Boolean, default=False, nullable=False)
+    habeas_data_accepted_at = db.Column(db.DateTime, nullable=True)
+    terms_accepted = db.Column(db.Boolean, default=False, nullable=False)
+    terms_accepted_at = db.Column(db.DateTime, nullable=True)
+
     finca = db.relationship('Finca', backref='users', lazy='selectin')
 
     _namespace_fields = [
         'id', 'identification', 'fullname', 'email', 'phone', 'address', 'role', 'status', 'approval_status',
-        'finca_id', 'avatar_url', 'created_at', 'updated_at', 'fincas', 'is_multi_finca', 'finca_name', 'finca_type'
+        'finca_id', 'avatar_url', 'created_at', 'updated_at', 'fincas', 'is_multi_finca', 'finca_name', 'finca_type',
+        'professional_card', 'professional_specialty', 'is_verified_professional', 'verification_document_url', 'verification_date',
+        'habeas_data_accepted', 'habeas_data_accepted_at', 'terms_accepted', 'terms_accepted_at'
     ]
     _namespace_relations = {
         'diseases': {'fields': ['id', 'animal_id', 'disease_id', 'diagnosis_date'], 'depth': 1},
         'vaccines_as_apprentice': {'fields': ['id', 'animal_id', 'vaccine_id', 'vaccination_date'], 'depth': 1},
         'vaccines_as_instructor': {'fields': ['id', 'animal_id', 'vaccine_id', 'vaccination_date'], 'depth': 1}
     }
-    _searchable_fields = ['fullname', 'email']
-    _filterable_fields = ['role', 'status', 'approval_status', 'created_at']
+    _searchable_fields = ['fullname', 'email', 'professional_card']
+    _filterable_fields = ['role', 'status', 'approval_status', 'is_verified_professional', 'created_at']
     _sortable_fields = ['id', 'fullname', 'email', 'identification', 'created_at', 'updated_at']
     _required_fields = ['identification', 'fullname', 'password', 'email', 'phone', 'role']
     _unique_fields = ['identification', 'email', 'phone']

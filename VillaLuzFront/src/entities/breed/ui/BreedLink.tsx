@@ -42,11 +42,11 @@ export const BreedLink: React.FC<{ id: number | string; label: string }> = ({ id
               <div className={modalStyles.fieldsGrid}>
                 <InfoField
                   label="Creado"
-                  value={item.created_at ? new Date(item.created_at).toLocaleDateString('es-ES') : '-'}
+                  value={item.created_at ? new Date(item.created_at).toLocaleDateString('es-CO') : '-'}
                 />
                 <InfoField
                   label="Actualizado"
-                  value={item.updated_at ? new Date(item.updated_at).toLocaleDateString('es-ES') : '-'}
+                  value={item.updated_at ? new Date(item.updated_at).toLocaleDateString('es-CO') : '-'}
                 />
               </div>
             </SectionCard>

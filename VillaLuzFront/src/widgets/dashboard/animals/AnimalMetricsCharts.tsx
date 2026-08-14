@@ -42,7 +42,7 @@ export const AnimalMetricsCharts: React.FC<AnimalMetricsChartsProps> = ({ contro
 
     const labels = sortedControls.map((c) => {
         const d = new Date(c.checkup_date);
-        return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+        return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' });
     });
 
     const weightData = {

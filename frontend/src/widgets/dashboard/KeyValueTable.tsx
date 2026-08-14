@@ -24,10 +24,13 @@ export const KeyValueTable: React.FC<KeyValueTableProps> = ({
         <tbody>
           {entries.map(([k, v]) => (
             <tr key={k} className="odd:bg-muted">
-              <td className="px-2 py-1 font-medium align-top w-1/3 break-all">
+              {/* La clave es un nombre de campo legible: se parte por palabras.
+                  El valor puede ser un identificador sin espacios, así que ahí
+                  sí se autoriza el corte a la brava. */}
+              <td className="px-2 py-1 font-medium align-top w-1/3">
                 {k}
               </td>
-              <td className="px-2 py-1 text-muted-foreground break-all">
+              <td className="px-2 py-1 text-muted-foreground break-anywhere">
                 {normalizeDisplayValue(v)}
               </td>
             </tr>

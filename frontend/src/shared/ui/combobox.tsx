@@ -164,7 +164,7 @@ export function Combobox({
           disabled={disabled || loading}
           onKeyDown={handleKeyDown}
         >
-          <span className="truncate">
+          <span className="fit-clamp">
             {loading ? "Cargando..." : selectedOption ? selectedOption.label : placeholder}
           </span>
           {loading ? (

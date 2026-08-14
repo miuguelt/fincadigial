@@ -121,7 +121,59 @@ export interface TechnicalAssistanceRequest {
   requested_at?: string | null;
   resolved_at?: string | null;
   resolution_notes?: string | null;
+  requester?: { id: number; fullname: string } | null;
+  assignee?: { id: number; fullname: string } | null;
+  assignee_credential?: AssistanceCredentialSummary | null;
   _is_offline_pending?: boolean;
+}
+
+export interface AssistanceCredentialSummary {
+  user_id: number;
+  title: string | null;
+  status: string;
+  card_number_masked: string;
+  specialization: string | null;
+  verified_at: string | null;
+  verified_by_name: string | null;
+  verification_expires_at: string | null;
+}
+
+export interface AssistanceVeterinarian {
+  id: number;
+  fullname: string;
+  avatar_url?: string | null;
+  credential?: AssistanceCredentialSummary | null;
+}
+
+export interface AssistanceNetwork {
+  veterinarians: AssistanceVeterinarian[];
+  total: number;
+  verified: number;
+}
+
+export interface AssistanceNotificationSummary {
+  recipients: number;
+  push_deliveries: number;
+  in_app_deliveries: number;
+}
+
+export interface AssistanceCreateResult {
+  request: TechnicalAssistanceRequest;
+  notification: AssistanceNotificationSummary;
+}
+
+export interface AssistanceInbox {
+  items: TechnicalAssistanceRequest[];
+  counts: {
+    waiting: number;
+    mine: number;
+    active: number;
+  };
+}
+
+export interface MyAssistanceRequests {
+  items: TechnicalAssistanceRequest[];
+  total: number;
 }
 
 export interface OfflineLearningMaterial {

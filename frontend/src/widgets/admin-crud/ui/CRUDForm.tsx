@@ -5,7 +5,7 @@
  * Implementa validación eficiente y mejor experiencia de usuario.
  */
 
-import React, { memo, useCallback, useMemo, useEffect } from 'react';
+import React, { memo, useCallback, useMemo, useEffect, useState } from 'react';
 import { GenericModal } from '@/shared/ui/common/GenericModal';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -46,6 +46,30 @@ const FormField = memo<{
   editingItem?: any;
 }>(({ field, value, onChange, error, saving, editingItem }) => {
   const t = useT();
+  const [asyncOptions, setAsyncOptions] = useState(field.options);
+  const [loadingOptions, setLoadingOptions] = useState(false);
+
+  useEffect(() => {
+    setAsyncOptions(field.options);
+    if (!field.loadOptions) return;
+
+    let active = true;
+    setLoadingOptions(true);
+    void field.loadOptions()
+      .then((options) => {
+        if (active) setAsyncOptions(options);
+      })
+      .catch(() => {
+        if (active) setAsyncOptions([]);
+      })
+      .finally(() => {
+        if (active) setLoadingOptions(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [field]);
 
   // Variables derivadas frecuentes usadas en diferentes ramas
   const isBirthDateField = String(field.name) === 'birth_date';
@@ -88,7 +112,10 @@ const FormField = memo<{
         );
 
       case 'select':
-        if (!field.options || field.options.length === 0) {
+        if (loadingOptions) {
+          return <div className="text-sm text-muted-foreground">Cargando opciones...</div>;
+        }
+        if (!asyncOptions || asyncOptions.length === 0) {
           return (
             <div className="text-sm text-muted-foreground">
               No hay opciones disponibles
@@ -97,7 +124,7 @@ const FormField = memo<{
         }
 
         {
-          const opts = field.options || [];
+          const opts = asyncOptions || [];
           const isNumeric = opts.length > 0 && opts.every((o: any) => typeof o.value === 'number');
 
           return (
@@ -137,7 +164,10 @@ const FormField = memo<{
         }
 
       case 'searchable-select':
-        if (!field.options || field.options.length === 0) {
+        if (loadingOptions) {
+          return <div className="text-sm text-muted-foreground">Cargando opciones...</div>;
+        }
+        if (!asyncOptions || asyncOptions.length === 0) {
           return (
             <div className="text-sm text-muted-foreground">
               No hay opciones disponibles
@@ -146,7 +176,7 @@ const FormField = memo<{
         }
 
         {
-          let opts = field.options || [];
+          let opts = asyncOptions || [];
           const isNumeric = opts.length > 0 && opts.every((o: any) => typeof o.value === 'number');
 
           // Excluir el propio registro si se solicita
@@ -211,6 +241,7 @@ const FormField = memo<{
             placeholder={field.placeholder}
             min={field.validation?.min}
             max={field.validation?.max}
+            step={field.validation?.step}
             disabled={saving}
             aria-invalid={showWarning}
             aria-required={isRequired}
@@ -370,7 +401,7 @@ export function CRUDForm<T extends { id?: number }>({
 
   // Renderizar secciones del formulario
   const renderFormSections = useMemo(() => {
-    return formSections.map((section, sectionIndex) => {
+    return formSections.filter((section) => section.showIf?.(formData) !== false).map((section, sectionIndex) => {
       const gridCols = section.gridCols ?? 3;
       const gridClass = `grid grid-cols-1 ${gridCols >= 2 ? 'sm:grid-cols-2' : ''} ${gridCols >= 3 ? 'lg:grid-cols-3' : ''} gap-3 sm:gap-4 lg:gap-5`;
 
@@ -394,7 +425,7 @@ export function CRUDForm<T extends { id?: number }>({
           )}
 
           <div className={gridClass}>
-            {section.fields.map((field: any) => (
+            {section.fields.filter((field) => field.showIf?.(formData) !== false).map((field: any) => (
               <FormField
                 key={String(field.name)}
                 field={field}
@@ -437,10 +468,10 @@ export function CRUDForm<T extends { id?: number }>({
             <div className="flex flex-wrap gap-x-4 gap-y-1">
               <span><strong className="text-foreground/80">ID:</strong> {editingItem.id}</span>
               {(editingItem as any).created_at && (
-                <span><strong className="text-foreground/80">Creado:</strong> {new Date((editingItem as any).created_at).toLocaleDateString('es-ES')}</span>
+                <span><strong className="text-foreground/80">Creado:</strong> {new Date((editingItem as any).created_at).toLocaleDateString('es-CO')}</span>
               )}
               {(editingItem as any).updated_at && (
-                <span><strong className="text-foreground/80">Actualizado:</strong> {new Date((editingItem as any).updated_at).toLocaleDateString('es-ES')}</span>
+                <span><strong className="text-foreground/80">Actualizado:</strong> {new Date((editingItem as any).updated_at).toLocaleDateString('es-CO')}</span>
               )}
             </div>
           </div>

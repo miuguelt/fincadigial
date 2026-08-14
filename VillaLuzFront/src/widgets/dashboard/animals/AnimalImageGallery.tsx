@@ -484,7 +484,7 @@ export function AnimalImageGallery({
                 `${(selectedImage.file_size / 1024).toFixed(2)} KB - ${selectedImage.mime_type
                 } - Subida el ${new Date(
                   selectedImage.created_at
-                ).toLocaleDateString('es-ES')}`}
+                ).toLocaleDateString('es-CO')}`}
             </DialogDescription>
           </DialogHeader>
 

@@ -159,4 +159,27 @@ export const formatLongDateColombia = (date: Date | string): string => {
     year: 'numeric'
   }).format(localDate);
 };
+
+export const formatDateTimeColombia = (date: Date | string): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(dateObj.getTime())) return '';
+  return new Intl.DateTimeFormat('es-CO', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+    timeZone: 'America/Bogota',
+  }).format(dateObj);
+};
+
+export const formatTimeColombia = (date: Date | string): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(dateObj.getTime())) return '';
+  return new Intl.DateTimeFormat('es-CO', {
+    timeStyle: 'short',
+    timeZone: 'America/Bogota',
+  }).format(dateObj);
+};
+
+export const formatNumberColombia = (value: number): string => {
+  return new Intl.NumberFormat('es-CO').format(value);
+};
 

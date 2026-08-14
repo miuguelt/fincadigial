@@ -85,7 +85,7 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
             </div>
             <div className="min-w-0">
               {" "}
-              <DialogTitle className="text-xl font-bold tracking-tight text-white flex items-center gap-3 truncate drop-shadow-sm">
+              <DialogTitle className="text-xl font-bold tracking-tight text-white flex items-center gap-3 fit-clamp drop-shadow-sm">
                 Control de Biomasa
                 <Badge className="bg-white/20 text-white font-bold text-[10px] px-2.5 py-0.5 rounded-[var(--radius-full)] border-white/10 shadow-sm">
                   {selectedAnimalIds.length} Sujetos
@@ -279,7 +279,7 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
                 </span>{" "}
                 <span
                   className={cn(
-                    "text-base font-bold uppercase tracking-tight transition-all leading-none truncate max-w-[180px]",
+                    "text-base font-bold uppercase tracking-tight transition-all leading-none fit-clamp max-w-[180px]",
                     weight ? "text-foreground" : "text-muted-foreground/20",
                   )}
                 >

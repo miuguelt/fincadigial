@@ -1,11 +1,11 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { membershipService, MembershipRequest } from '@/entities/user/api/membership.service';
 import { useToast } from '@/shared/hooks/use-toast';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
 import { Badge } from '@/shared/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
-import { FaCheck, FaTimes, FaUserPlus, FaCalendarAlt, FaEnvelope, FaIdCard } from 'react-icons/fa';
+import { IconCheck, IconX, IconUserPlus, IconCalendar, IconMail, IconIdBadge2 } from '@/shared/ui/icons';
 import { ClimbingBoxLoader } from 'react-spinners';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -86,7 +86,7 @@ const MembershipRequestsPage = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-success flex items-center gap-2">
-            <FaUserPlus className="text-success" />
+            <IconUserPlus className="text-success" />
             Solicitudes de Acceso
           </h1>
           <p className="text-muted-foreground mt-1">
@@ -107,7 +107,7 @@ const MembershipRequestsPage = () => {
           {requests.length === 0 ? (
             <div className="p-12 text-center">
               <div className="bg-muted/50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaUserPlus className="text-muted-foreground/60 text-2xl" />
+                <IconUserPlus className="text-muted-foreground/60 text-2xl" />
               </div>
               <h3 className="text-lg font-medium text-foreground">No hay solicitudes pendientes</h3>
               <p className="text-muted-foreground mt-1">Cuando alguien solicite unirse, aparecerá aquí.</p>
@@ -138,10 +138,10 @@ const MembershipRequestsPage = () => {
                         <span className="font-bold text-foreground">{request.user?.fullname || 'Usuario'}</span>
                         <div className="flex items-center gap-3 mt-1">
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <FaIdCard className="text-[10px]" /> {request.user?.identification}
+                            <IconIdBadge2 className="text-[10px]" /> {request.user?.identification}
                           </span>
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <FaEnvelope className="text-[10px]" /> {request.user?.email}
+                            <IconMail className="text-[10px]" /> {request.user?.email}
                           </span>
                         </div>
                       </div>
@@ -153,7 +153,7 @@ const MembershipRequestsPage = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <FaCalendarAlt className="text-muted-foreground" />
+                        <IconCalendar className="text-muted-foreground" />
                         {format(new Date(request.created_at), "d 'de' MMMM, yyyy", { locale: es })}
                       </div>
                     </TableCell>
@@ -170,7 +170,7 @@ const MembershipRequestsPage = () => {
                           className="bg-success hover:bg-green-700 h-8 w-8 p-0 rounded-full shadow-sm"
                           title="Aprobar"
                         >
-                          <FaCheck className="h-3 w-3" />
+                          <IconCheck className="h-3 w-3" />
                         </Button>
                         <Button
                           size="sm"
@@ -179,7 +179,7 @@ const MembershipRequestsPage = () => {
                           className="text-destructive hover:text-destructive hover:bg-destructive/5 h-8 w-8 p-0 rounded-full"
                           title="Rechazar"
                         >
-                          <FaTimes className="h-3 w-3" />
+                          <IconX className="h-3 w-3" />
                         </Button>
                       </div>
                     </TableCell>

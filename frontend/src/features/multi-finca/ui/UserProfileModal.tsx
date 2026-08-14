@@ -1,6 +1,7 @@
 import { Mail, MapPin, Phone } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
+import { useCallback } from "react";
 import {
 	Bar,
 	BarChart,
@@ -39,13 +40,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 	const [loading, setLoading] = useState(false);
 	const [userData, setUserData] = useState<any>(null);
 
-	useEffect(() => {
-		if (isOpen && userId) {
-			fetchUserData();
-		}
-	}, [isOpen, userId]);
-
-	const fetchUserData = async () => {
+	const fetchUserData = useCallback(async () => {
 		setLoading(true);
 		try {
 			let fetchedUser: any = null;
@@ -79,7 +74,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 				fincas_count: fetchedUser?.fincas?.length || 0,
 				animals_count: realAnimalsCount,
 				join_date: fetchedUser?.created_at
-					? new Date(fetchedUser.created_at).toLocaleDateString()
+					? new Date(fetchedUser.created_at).toLocaleDateString('es-CO')
 					: "No disponible",
 				role_suggested: fetchedUser?.role || "Operario",
 			};
@@ -90,7 +85,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 			devLogger.error(error);
 			setLoading(false);
 		}
-	};
+	}, [userEmail, userId, userName]);
+
+	useEffect(() => {
+		if (isOpen && userId) {
+			fetchUserData();
+		}
+	}, [fetchUserData, isOpen, userId]);
 
 	const chartData = userData
 		? [
@@ -155,7 +156,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 												<Mail size={10} /> Correo
 											</p>
 											<p
-												className="font-semibold text-foreground truncate"
+												className="font-semibold text-foreground fit-clamp"
 												title={userData?.email}
 											>
 												{userData?.email}

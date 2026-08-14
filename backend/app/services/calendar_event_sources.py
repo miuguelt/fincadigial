@@ -199,6 +199,7 @@ def alert_events(start: date, end: date) -> list[dict]:
         AnimalAlert
     ).filter(
         AnimalAlert.priority.in_([AlertPriority.HIGH, AlertPriority.CRITICAL]),
+        AnimalAlert.superseded_by_id.is_(None),
         func.date(AnimalAlert.triggered_at) >= start,
         func.date(AnimalAlert.triggered_at) <= end,
     ).all()

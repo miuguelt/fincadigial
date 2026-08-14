@@ -8,7 +8,6 @@ import {
 } from "../../shared/api/offline/OfflineChatService";
 import {
 	offlineQueue,
-	QueuedOperation,
 } from "../../shared/api/offline/offlineQueue";
 import { FieldNodeService } from "../../shared/api/offline/FieldNodeService";
 

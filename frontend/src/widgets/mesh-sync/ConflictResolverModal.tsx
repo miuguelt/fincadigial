@@ -1,6 +1,7 @@
 import { AlertTriangle, Check, Server, Smartphone } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
+import { useCallback } from "react";
 import { useAuth } from "@/features/auth/model/useAuth";
 import {
 	type SyncConflict,
@@ -16,17 +17,17 @@ export const ConflictResolverModal: React.FC<{ onClose: () => void }> = ({
 	const [loading, setLoading] = useState(true);
 	const [resolvingId, setResolvingId] = useState<number | null>(null);
 
-	useEffect(() => {
-		loadConflicts();
-	}, [currentFincaId]);
-
-	const loadConflicts = async () => {
+	const loadConflicts = useCallback(async () => {
 		if (!currentFincaId) return;
 		setLoading(true);
 		const data = await SyncConflictsApi.getActiveConflicts(currentFincaId);
 		setConflicts(data);
 		setLoading(false);
-	};
+	}, [currentFincaId]);
+
+	useEffect(() => {
+		loadConflicts();
+	}, [loadConflicts]);
 
 	const handleResolve = async (
 		conflictId: number,
@@ -106,12 +107,12 @@ export const ConflictResolverModal: React.FC<{ onClose: () => void }> = ({
 	};
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 backdrop-blur-sm sm:p-4">
+		<div className="vl-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
 			<div
 				role="dialog"
 				aria-modal="true"
 				aria-label="Resolución de conflictos"
-				className="flex max-h-[92dvh] w-full max-w-[1600px] flex-col overflow-hidden rounded-t-2xl bg-white p-4 shadow-2xl sm:w-[95vw] sm:rounded-2xl sm:p-6"
+				className="vl-modal-surface flex max-h-[92dvh] w-full max-w-[1600px] flex-col overflow-hidden rounded-t-2xl border border-border/80 bg-card p-4 text-foreground shadow-2xl sm:w-[95vw] sm:rounded-2xl sm:p-6"
 				style={{ fontFamily: "'Inter', sans-serif" }}
 			>
 				{/* Header */}
@@ -173,7 +174,7 @@ export const ConflictResolverModal: React.FC<{ onClose: () => void }> = ({
 											</h4>
 											<p className="text-xs text-gray-500">
 												Detectado el{" "}
-												{new Date(conflict.created_at).toLocaleString()}
+												{new Date(conflict.created_at).toLocaleString('es-CO')}
 											</p>
 										</div>
 									</div>

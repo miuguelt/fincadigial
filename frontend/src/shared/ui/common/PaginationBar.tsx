@@ -52,7 +52,7 @@ export const PaginationBar: React.FC<PaginationBarProps> = ({
           <button
             key={i}
             onClick={() => goTo(i)}
-            className="w-8 h-8 min-w-[32px] rounded-full text-sm text-foreground/70 hover:bg-card/10 hover:text-foreground transition-all duration-200 focus:outline-none"
+            className="w-6 h-6 sm:w-7 sm:h-7 min-w-[24px] sm:min-w-[28px] rounded-full text-xs text-white/80 hover:bg-white/15 hover:text-white transition-all duration-200 focus:outline-none"
             aria-label={`Ir a la página ${i}`}
           >
             {i}
@@ -63,7 +63,7 @@ export const PaginationBar: React.FC<PaginationBarProps> = ({
 
     if (start > boundaryCount + 1) {
       numbers.push(
-        <span key="start-ellipsis" aria-hidden className="px-2 py-2 text-sm text-muted-foreground">
+        <span key="start-ellipsis" aria-hidden className="px-1 text-xs text-white/50">
           ...
         </span>
       );
@@ -75,10 +75,10 @@ export const PaginationBar: React.FC<PaginationBarProps> = ({
           key={i}
           onClick={() => goTo(i)}
           className={cn(
-            'w-8 h-8 min-w-[32px] rounded-full text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring/50',
+            'w-6 h-6 sm:w-7 sm:h-7 min-w-[24px] sm:min-w-[28px] rounded-full text-xs font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring/50',
             i === page
-              ? 'bg-primary text-primary-foreground shadow-sm scale-110'
-              : 'text-foreground/70 hover:bg-card/10 hover:text-foreground'
+              ? 'bg-primary text-white shadow-sm scale-105 font-bold'
+              : 'text-white/80 hover:bg-white/15 hover:text-white'
           )}
           aria-current={i === page ? 'page' : undefined}
           aria-label={`Ir a la página ${i}`}
@@ -90,7 +90,7 @@ export const PaginationBar: React.FC<PaginationBarProps> = ({
 
     if (end < pages - boundaryCount) {
       numbers.push(
-        <span key="end-ellipsis" aria-hidden className="px-2 py-2 text-sm text-muted-foreground">
+        <span key="end-ellipsis" aria-hidden className="px-1 text-xs text-white/50">
           ...
         </span>
       );
@@ -101,7 +101,7 @@ export const PaginationBar: React.FC<PaginationBarProps> = ({
         <button
           key={i}
           onClick={() => goTo(i)}
-          className="w-8 h-8 min-w-[32px] rounded-full text-sm text-foreground/70 hover:bg-card/10 hover:text-foreground transition-all duration-200 focus:outline-none"
+          className="w-6 h-6 sm:w-7 sm:h-7 min-w-[24px] sm:min-w-[28px] rounded-full text-xs text-white/80 hover:bg-white/15 hover:text-white transition-all duration-200 focus:outline-none"
           aria-label={`Ir a la página ${i}`}
         >
           {i}
@@ -109,17 +109,17 @@ export const PaginationBar: React.FC<PaginationBarProps> = ({
       );
     }
 
-    return <div className="flex items-center gap-1">{numbers}</div>;
+    return <div className="flex items-center gap-0.5">{numbers}</div>;
   };
 
   const content = (
-    <div className="bg-slate-900/75 dark:bg-slate-900/85 text-white backdrop-blur-xl border border-white/10 ring-1 ring-white/10 rounded-[2rem] px-5 py-3 shadow-2xl">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-1.5">
+    <div className="bg-slate-900/90 dark:bg-slate-900/95 text-white backdrop-blur-xl border border-white/15 rounded-full px-2.5 py-1 shadow-xl">
+      <div className="flex items-center justify-between gap-2.5 sm:gap-4">
+        <div className="flex items-center gap-1">
           <button
             onClick={() => goTo(page - 1)}
             disabled={!canPrev}
-            className="w-8 h-8 rounded-full text-foreground/60 hover:bg-card/10 hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center text-sm"
+            className="w-6 h-6 sm:w-7 sm:h-7 rounded-full text-white/70 hover:bg-white/15 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center text-xs"
             aria-label="Página anterior"
           >
             ‹
@@ -130,15 +130,15 @@ export const PaginationBar: React.FC<PaginationBarProps> = ({
           <button
             onClick={() => goTo(page + 1)}
             disabled={!canNext}
-            className="w-8 h-8 rounded-full text-foreground/60 hover:bg-card/10 hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center text-sm"
+            className="w-6 h-6 sm:w-7 sm:h-7 rounded-full text-white/70 hover:bg-white/15 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center text-xs"
             aria-label="Página siguiente"
           >
             ›
           </button>
         </div>
 
-        <div className="text-xs font-medium text-white/60 tracking-wide">
-          Página <span className="text-white font-semibold">{page}</span> de <span className="text-white font-semibold">{Math.max(pages, 1)}</span>
+        <div className="text-[10px] sm:text-xs font-medium text-white/70 tracking-wide shrink-0">
+          Pág. <span className="text-white font-bold">{page}</span> / <span className="text-white font-bold">{Math.max(pages, 1)}</span>
         </div>
       </div>
     </div>
@@ -149,7 +149,7 @@ export const PaginationBar: React.FC<PaginationBarProps> = ({
   return (
     <div
       className={cn(
-        'fixed bottom-3 left-1/2 -translate-x-1/2 z-[100] max-w-[95vw] opacity-65 hover:opacity-100 transition-all duration-300 pointer-events-auto',
+        'fixed bottom-1 sm:bottom-1.5 left-1/2 -translate-x-1/2 z-[100] max-w-[95vw] opacity-90 hover:opacity-100 transition-all duration-300 pointer-events-auto',
         containerClassName
       )}
     >

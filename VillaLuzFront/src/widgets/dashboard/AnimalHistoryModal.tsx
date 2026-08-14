@@ -16,6 +16,7 @@ import {
 import ICAComplianceBadge from "@/widgets/dashboard/ICAComplianceBadge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { format, differenceInCalendarDays } from "date-fns";
+import { es } from 'date-fns/locale';
 import { getStatusBadgeClass } from "@/shared/utils/badgeStyles";
 
 // Interfaces for data types - removed unused interfaces
@@ -448,7 +449,7 @@ export const AnimalHistoryModal = ({
 
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), "PPP");
+      return format(new Date(dateString), "PPP", { locale: es });
     } catch (error) {
       return dateString;
     }

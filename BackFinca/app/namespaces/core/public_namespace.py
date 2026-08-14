@@ -44,6 +44,10 @@ owner_model = public_ns.model('OwnerInput', {
     'phone': fields.String(required=True, description='Teléfono', example='3001234567'),
     'password': fields.String(required=True, description='Contraseña (mínimo 8 caracteres)', example='SecurePass123!'),
     'address': fields.String(required=False, description='Dirección del usuario'),
+    'professional_card': fields.String(required=False, description='Tarjeta Profesional (para Veterinarios)'),
+    'professional_specialty': fields.String(required=False, description='Especialidad profesional'),
+    'habeas_data_accepted': fields.Boolean(required=False, default=False, description='Aceptación de Habeas Data'),
+    'terms_accepted': fields.Boolean(required=False, default=False, description='Aceptación de Términos y Salvedades Legales'),
 })
 
 register_model = public_ns.model('RegisterRequest', {
@@ -173,6 +177,11 @@ class RegisterFincaResource(Resource):
             # El propietario/administrador que registra su propia finca
             # se auto-aprueba: no necesita validación de un admin externo.
             from app.models.user import ApprovalStatus
+            from datetime import datetime
+
+            habeas = bool(owner_data.get('habeas_data_accepted', False))
+            terms = bool(owner_data.get('terms_accepted', False))
+
             user = User.create(
                 identification=owner_data.get('identification'),
                 fullname=owner_data.get('fullname'),
@@ -184,6 +193,12 @@ class RegisterFincaResource(Resource):
                 status=True,
                 finca_id=finca.id,
                 approval_status=ApprovalStatus.Approved,
+                professional_card=owner_data.get('professional_card'),
+                professional_specialty=owner_data.get('professional_specialty'),
+                habeas_data_accepted=habeas,
+                habeas_data_accepted_at=datetime.utcnow() if habeas else None,
+                terms_accepted=terms,
+                terms_accepted_at=datetime.utcnow() if terms else None,
             )
 
             # 3. Generar tokens JWT

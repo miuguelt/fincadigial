@@ -70,16 +70,16 @@ const AdminControlPage = () => {
     }},
     { key: 'checkup_date', label: 'Fecha de Chequeo', render: (_v: any, item: any) => {
       const d = item?.checkup_date ?? item?.control_date;
-      return d ? new Date(d as string).toLocaleDateString('es-ES') : '-';
+      return d ? new Date(d as string).toLocaleDateString('es-CO') : '-';
     }},
     { key: 'weight', label: 'Peso', render: (v: any) => (v != null ? `${Number(v).toFixed(1)} kg` : '-') },
     { key: 'height', label: 'Altura', render: (v: any) => (v != null ? `${Number(v).toFixed(1)} m` : '-') },
     { key: 'health_status', label: 'Estado de Salud', render: (_v: any, item: any) => item?.health_status ?? item?.healt_status ?? '-' },
     { key: 'description', label: 'Descripción', render: (_v: any, item: any) => item?.description ?? item?.observations ?? '-' },
-    { key: 'created_at', label: 'Creado', render: (v: any) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-') },
+    { key: 'created_at', label: 'Creado', render: (v: any) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
   ], [animalMap]);
 
-  const todayFormatted = new Date(getTodayColombia()).toLocaleDateString('es-ES', {
+  const todayFormatted = new Date(getTodayColombia()).toLocaleDateString('es-CO', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
 

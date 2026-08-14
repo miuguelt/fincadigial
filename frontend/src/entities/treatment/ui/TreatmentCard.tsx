@@ -20,7 +20,7 @@ export function TreatmentCard({ treatment, onClick }: TreatmentCardProps) {
           {treatment.cost && (
             <Badge variant="outline" className="flex items-center gap-1">
               <DollarSign className="h-3 w-3" />
-              ${treatment.cost.toLocaleString()}
+              ${treatment.cost.toLocaleString('es-CO')}
             </Badge>
           )}
         </div>
@@ -29,10 +29,10 @@ export function TreatmentCard({ treatment, onClick }: TreatmentCardProps) {
         <div className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
             <Calendar className="h-4 w-4" />
-            <span>{new Date(treatment.treatment_date).toLocaleDateString()}</span>
+            <span>{new Date(treatment.treatment_date).toLocaleDateString('es-CO')}</span>
             {treatment.withdrawal_end_date && (
               <span className="text-xs text-orange-600 ml-2">
-                (Retiro hasta: {new Date(treatment.withdrawal_end_date).toLocaleDateString()})
+                (Retiro hasta: {new Date(treatment.withdrawal_end_date).toLocaleDateString('es-CO')})
               </span>
             )}
           </div>

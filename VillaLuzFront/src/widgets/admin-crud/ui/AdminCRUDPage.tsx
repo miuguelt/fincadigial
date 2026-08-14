@@ -624,117 +624,9 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     }
   }, [searchParams, config.enableEditModal, isModalOpen, editingItem, service, openEdit, showToast, t, setSearchParams]);
   
-  // Header con búsqueda y botones
-  const header = (
-    <PageHeader
-      title={config.title}
-      dense
-      className="mb-0 p-0"
-      titleClassName="text-base sm:text-lg lg:text-xl"
-      actions={
-        <CRUDToolbar
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          searchPlaceholder={config.searchPlaceholder}
-          onOpenCreate={config.enableCreateModal !== false ? openCreate : undefined}
-          customToolbar={config.customToolbar}
-        />
-      }
-    />
-  );
-  
-  // Loading state
-  if (loading && !items) {
-    return (
-      <AppLayout
-        header={header}
-        className="px-2 sm:px-3 pt-0 sm:pt-1 pb-0 max-w-full min-h-0"
-        contentClassName="space-y-0"
-      >
-        <div className="bg-card/95 backdrop-blur-sm border border-border/30 rounded-lg shadow-lg overflow-hidden">
-          <SkeletonTable
-            columnLabels={config.columns.map((c: any) => c.label)}
-            columnWidths={config.columns.map((c: any) => c.width)}
-            rows={8}
-          />
-        </div>
-      </AppLayout>
-    );
-  }
-  
-  // Error state
-  if (error) {
-    return (
-      <AppLayout
-        header={header}
-        className="px-2 sm:px-3 pt-1 sm:pt-2 pb-0 sm:pb-0 md:pb-0 lg:pb-0 max-w-full min-h-0"
-        contentClassName="space-y-0"
-      >
-        <ErrorState
-          message={String(error)}
-          onRetry={() => window.location.reload()}
-        />
-    setIsCheckingDependencies(false);
-    
-    try {
-      const success = await deleteItem(idToDelete);
-      
-      if (success) {
-        showToast(`🗑️ ${config.entityName} eliminado correctamente`, 'success');
-        
-        // Registrar tombstone para ocultar temporalmente si el backend aún lo devuelve
-        addTombstone(entityKey, String(idToDelete), 120000);
-        
-        // Cerrar modales si el item eliminado estaba abierto
-        if (isDetailOpen && detailItem?.id === idToDelete) {
-          setIsDetailOpen(false);
-          setDetailIndex(null);
-        }
-        if (isModalOpen && editingItem?.id === idToDelete) {
-          setIsModalOpen(false);
-          setEditingItem(null);
-        }
-        
-        // Verificar si después de eliminar, la página actual quedará vacía
-        const currentPageItems = filteredItems.length - 1;
-        const willBeEmpty = currentPageItems === 0;
-        
-        if (willBeEmpty && currentPage > 1 && setPage) {
-          setPage(currentPage - 1);
-        }
-        
-        // Invalidar caché del servicio para asegurar datos frescos
-        if (typeof service.clearCache === 'function') {
-          try {
-            await service.clearCache();
-          } catch (e) {
-            console.warn('[AdminCRUDPage] Error al limpiar caché del servicio:', e);
-          }
-        }
-        
-        // Refrescar después de un breve delay
-        setTimeout(async () => {
-          try {
-            await refetch();
-          } catch (error) {
-            console.error('Error al refrescar datos después de eliminar:', error);
-          }
-        }, 300);
-      }
-    } catch (error: any) {
-      let errorMessage = `Error al eliminar ${config.entityName.toLowerCase()}`;
-      
-      if (error?.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error?.response?.data?.detail) {
-        errorMessage = error.response.data.detail;
-      } else if (error?.message) {
-        errorMessage = error.message;
-      }
-      
-      showToast(errorMessage, 'error');
-    }
-  }, [targetId, deleteItem, entityKey, isDetailOpen, detailItem, isModalOpen, editingItem, filteredItems, currentPage, setPage, refetch, config.entityName, showToast]);
+
+
+
   
   // Sincronizar búsqueda con URL - solo cuando el usuario escribe
   useEffect(() => {
@@ -765,84 +657,10 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     }
   }, [searchParams]);
 
-  const handleUpdateCell = useCallback(async (item: T, key: string, value: any) => {
-    await updateItem(item.id, { [key]: value } as any);
-  }, [updateItem]);
-
-  // Auto-open create modal via ?create=1
-  useEffect(() => {
-    if (config.enableCreateModal !== false) {
-      const c = searchParams.get('create');
-      if (c && !isModalOpen) {
-        openCreate();
-      }
-    }
-  }, [searchParams, config.enableCreateModal, isModalOpen, openCreate]);
-  
-  // Auto-open edit modal via ?edit=ID
-  useEffect(() => {
-    if (config.enableEditModal !== false) {
-      const e = searchParams.get('edit');
-      if (!e) {
-        suppressEditAutoOpenRef.current = false;
-        lastClosedEditIdRef.current = null;
-        return;
-      }
-      if (suppressEditAutoOpenRef.current && e === String(lastClosedEditIdRef.current ?? '')) {
-        return;
-      }
-      if (e) {
-        const id = Number(e);
-        if (!Number.isNaN(id) && (!isModalOpen || !editingItem || editingItem.id !== id)) {
-          const requestSeq = editRequestSeqRef.current + 1;
-          editRequestSeqRef.current = requestSeq;
-          (async () => {
-            try {
-              const item = await service.getById(id);
-              if (editRequestSeqRef.current !== requestSeq) {
-                return;
-              }
-              const currentEdit = new URLSearchParams(window.location.search).get('edit');
-              if (currentEdit !== String(id)) {
-                return;
-              }
-              openEdit(item);
-            } catch (err) {
-              showToast(t('common.errorLoading', 'No se pudo cargar el registro para edición'), 'error');
-              const sp = new URLSearchParams(searchParams);
-              sp.delete('edit');
-              setSearchParams(sp, { replace: true });
-            }
-          })();
-        }
-      }
-    }
-  }, [searchParams, config.enableEditModal, isModalOpen, editingItem, service, openEdit, showToast, t, setSearchParams]);
-  
-  // Header con búsqueda y botones
-  const header = (
-    <PageHeader
-      title={config.title}
-      dense
-      className="mb-0 p-0"
-      titleClassName="text-base sm:text-lg lg:text-xl"
-      actions={
-        <CRUDToolbar
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          searchPlaceholder={config.searchPlaceholder}
-          onOpenCreate={config.enableCreateModal !== false ? openCreate : undefined}
-          customToolbar={config.customToolbar}
-        />
-      }
-    />
-  );
-  
   // Loading state
   if (loading && !items) {
     return (
       <AppLayout
-        header={header}
         className="px-2 sm:px-3 pt-0 sm:pt-1 pb-0 max-w-full min-h-0"
         contentClassName="space-y-0"
       >
@@ -861,7 +679,6 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   if (error) {
     return (
       <AppLayout
-        header={header}
         className="px-2 sm:px-3 pt-1 sm:pt-2 pb-0 sm:pb-0 md:pb-0 lg:pb-0 max-w-full min-h-0"
         contentClassName="space-y-0"
       >
@@ -878,7 +695,6 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   
   return (
     <AppLayout
-      header={header}
       className={cn(
         "px-2 sm:px-3 lg:px-4 pt-0 pb-0 max-w-full min-h-0 flex flex-col flex-1 h-full",
         (config.viewMode === 'cards' || config.autoHeight) ? "h-auto" : "h-full"

@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 
 export const LoadingDashboard: React.FC = () => (
-  <div className="h-full overflow-auto bg-background p-6" tabIndex={0}>
+  <div className="min-h-full bg-background p-4 sm:p-6 lg:p-8" tabIndex={0}>
     <div className="mb-8 animate-pulse">
       <div className="h-8 bg-muted rounded w-1/4 mb-2"></div>
       <div className="h-4 bg-muted rounded w-1/3"></div>

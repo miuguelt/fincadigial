@@ -46,6 +46,17 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     });
   }, []);
 
+  const handleOpen = useCallback(() => {
+    setIsOpen(true);
+    updateDropdownPosition();
+  }, [updateDropdownPosition]);
+
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+    clear();
+    onClose?.();
+  }, [clear, onClose]);
+
   /* Recalcula si cambia el tamaño de la ventana */
   useEffect(() => {
     if (!isOpen) return;
@@ -67,7 +78,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     };
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
-  }, []);
+  }, [handleClose]);
 
   /* Cerrar con Ctrl+K o Ctrl+B (en Colombia se usa más Ctrl+K como estándar digital) */
   useEffect(() => {
@@ -80,18 +91,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     };
     document.addEventListener('keydown', handleGlobalKey);
     return () => document.removeEventListener('keydown', handleGlobalKey);
-  }, []);
-
-  const handleOpen = () => {
-    setIsOpen(true);
-    updateDropdownPosition();
-  };
-
-  const handleClose = () => {
-    setIsOpen(false);
-    clear();
-    onClose?.();
-  };
+  }, [handleOpen]);
 
   const showDropdown = isOpen && (query.trim().length >= 2 || loading);
 
@@ -239,7 +239,7 @@ const SearchResultItem: React.FC<{ result: any, onSelect: () => void, navigate: 
         </div>
         <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
-                <span className="font-semibold text-sm text-foreground truncate">
+                <span className="font-semibold text-sm text-foreground fit-clamp">
                     {result.name || result.title}
                 </span>
                 <Badge

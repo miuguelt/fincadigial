@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
+import { useCallback } from 'react';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Syringe, Pill, HeartPulse, AlertCircle } from 'lucide-react';
@@ -7,16 +8,7 @@ import { analyticsService } from '@/features/reporting/api/analytics.service';
 import { useToast } from '@/app/providers/ToastContext';
 import { addDays, subDays, format, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
-
-interface CalendarEvent {
-  id: string;
-  title: string;
-  start: string;
-  type: string;
-  color: string;
-  animal_id?: number;
-  description?: string;
-}
+import type { CalendarEvent } from '@/widgets/calendar/model/calendar.types';
 
 export default function GlobalCalendarWidget() {
   const { showToast } = useToast();
@@ -24,7 +16,7 @@ export default function GlobalCalendarWidget() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  const loadEvents = async () => {
+  const loadEvents = useCallback(async () => {
     setLoading(true);
     try {
       const startDate = format(subDays(currentDate, 15), 'yyyy-MM-dd');
@@ -39,11 +31,11 @@ export default function GlobalCalendarWidget() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentDate, showToast]);
 
   useEffect(() => {
     loadEvents();
-  }, [currentDate]);
+  }, [loadEvents]);
 
   const groupEventsByDate = () => {
     const grouped: Record<string, CalendarEvent[]> = {};
@@ -157,7 +149,7 @@ export default function GlobalCalendarWidget() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between mb-1">
-                              <p className="text-sm font-semibold text-foreground truncate">
+                              <p className="text-sm font-semibold text-foreground fit-clamp">
                                 {event.title}
                               </p>
                               <Badge variant="outline" className="text-[10px] uppercase font-bold" style={{ color: event.color, borderColor: event.color + '40', backgroundColor: event.color + '10' }}>

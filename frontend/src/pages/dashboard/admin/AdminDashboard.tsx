@@ -150,13 +150,13 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       {isFirstLoad ? (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(160px,1fr))]">
           {Array.from({ length: 6 }).map((_, i) => (
             <SkeletonCard key={i} className="h-[112px]" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(160px,1fr))]">
           <PulseTile
             label="Animales activos"
             value={totals.animales}
@@ -266,7 +266,7 @@ const AdminDashboard: React.FC = () => {
         </Suspense>
       </section>
 
-      {/* Reproducción: celos y servicios, el motor productivo del hato. */}
+      {/* Reproducción: celos y servicios, el motor productivo del ganado. */}
       <section className="vl-deferred-section">
         <SectionHeading
           icon={CalendarDays}
@@ -311,7 +311,7 @@ const AdminDashboard: React.FC = () => {
   );
 
   return (
-    <div className="mx-auto max-w-[1600px] space-y-6 p-3 sm:p-4 lg:p-6">
+    <div className="mx-auto max-w-[1600px] min-h-full space-y-6 p-2 sm:p-4 lg:p-5 w-full overflow-x-hidden">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="h-auto w-full justify-start gap-2 overflow-x-auto rounded-xl border border-border bg-card p-1.5 shadow-sm [scrollbar-width:none] [-webkit-overflow-scrolling:touch]">
           <TabsTrigger

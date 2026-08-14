@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useForm, FieldError } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import { vaccinesService } from '@/entities/vaccine/api/vaccines.service';
 
 export type VaccineFormFields = {
@@ -9,7 +10,7 @@ export type VaccineFormFields = {
 
 export default function VaccineForm() {
   const { id } = useParams<{ id?: string }>();
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<VaccineFormFields>();
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export default function VaccineForm() {
       } else {
         await vaccinesService.createVaccine({ name: data.name });
       }
-      navigate('/admin/vaccines')
+      goTo('/admin/vaccines')
     } catch (error: any) {
       const msg = error?.response?.data?.message || error?.message || 'Error al guardar vacuna';
       alert(msg);

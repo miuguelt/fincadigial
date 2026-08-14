@@ -42,7 +42,7 @@ def inspect_campesino_data():
         # 1. Relación CropPlot -> Finca/Field
         plot = CropPlot.query.first()
         if plot:
-            print(f"📍 Relación CropPlot -> Finca & Lote:")
+            print("📍 Relación CropPlot -> Finca & Lote:")
             finca = Finca.query.get(plot.finca_id)
             print(f"  * Parcela '{plot.name}' ({plot.crop_name}) pertenece a la Finca '{finca.name if finca else 'N/A'}' (ID: {plot.finca_id})")
             if plot.field:
@@ -55,7 +55,7 @@ def inspect_campesino_data():
         # 2. Relación CropActivity -> CropPlot & User
         activity = CropActivity.query.first()
         if activity:
-            print(f"\n🚜 Relación CropActivity -> Parcela & Usuario:")
+            print("\n🚜 Relación CropActivity -> Parcela & Usuario:")
             plot_related = CropPlot.query.get(activity.crop_plot_id)
             actor = User.query.get(activity.performed_by) if activity.performed_by else None
             print(f"  * Actividad: '{activity.activity_type.value}' - {activity.description}")
@@ -76,7 +76,7 @@ def inspect_campesino_data():
         # 3. Relación WaterMeasurement -> WaterSource & User
         measurement = WaterMeasurement.query.first()
         if measurement:
-            print(f"\n💧 Relación WaterMeasurement -> Fuente de Agua & Usuario:")
+            print("\n💧 Relación WaterMeasurement -> Fuente de Agua & Usuario:")
             source = WaterSource.query.get(measurement.water_source_id)
             actor = User.query.get(measurement.measured_by) if measurement.measured_by else None
             print(f"  * Medición de nivel: {measurement.level_percent}% el {measurement.measured_at}")
@@ -88,7 +88,7 @@ def inspect_campesino_data():
         # 4. Relación TechnicalAssistanceRequest -> User (Requester/Assignee)
         req = TechnicalAssistanceRequest.query.first()
         if req:
-            print(f"\n🙋 Relación TechnicalAssistanceRequest -> Usuarios:")
+            print("\n🙋 Relación TechnicalAssistanceRequest -> Usuarios:")
             requester = User.query.get(req.requester_user_id) if req.requester_user_id else None
             assignee = User.query.get(req.assigned_user_id) if req.assigned_user_id else None
             print(f"  * Solicitud: '{req.title}' ({req.category})")

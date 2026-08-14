@@ -2,34 +2,79 @@ import React from 'react';
 import { AdminCRUDPage } from '@/widgets/admin-crud';
 import type { CRUDConfig } from '../../../../shared/types/crud';
 import { apiClient } from '@/shared/api/client';
-import {   Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
+import { Badge } from '@/shared/ui/badge';
 import { InviteUserDialog } from '../../../../features/multi-finca/ui/InviteUserDialog';
 
-const fincasConfig: CRUDConfig<any, any> = {
-  title: 'Gestión de Fincas',
+interface FarmAdminRecord {
+  id: number;
+  name: string;
+  type: 'Educativa' | 'Tradicional';
+  nit?: string;
+  department?: string;
+  municipality?: string;
+  address?: string;
+  is_active: boolean;
+}
+
+type FarmAdminInput = Omit<FarmAdminRecord, 'id'>;
+
+export const fincasConfig: CRUDConfig<FarmAdminRecord, FarmAdminInput> = {
+  title: 'Todas las Fincas del Sistema',
   entityName: 'Finca',
   columns: [
     { label: 'ID', key: 'id', sortable: true },
     { label: 'Nombre', key: 'name', sortable: true },
-    { label: 'Ubicación', key: 'location', sortable: true },
-    { label: 'Hectáreas', key: 'size_ha', sortable: true },
-    { label: 'Estado', key: 'status', sortable: true },
+    { label: 'Tipo', key: 'type', sortable: true },
+    { label: 'Departamento', key: 'department', sortable: true },
+    { label: 'Municipio', key: 'municipality', sortable: true },
+    {
+      label: 'Estado',
+      key: 'is_active',
+      render: (value) => (
+        <Badge variant={value ? 'default' : 'secondary'}>
+          {value ? 'Activa' : 'Inactiva'}
+        </Badge>
+      ),
+    },
   ],
   formSections: [
     {
       title: 'Información General',
       fields: [
         { name: 'name', label: 'Nombre de la Finca', type: 'text', required: true },
-        { name: 'location', label: 'Ubicación', type: 'text', required: true },
-        { name: 'size_ha', label: 'Tamaño (Hectáreas)', type: 'number', required: false },
-        { name: 'description', label: 'Descripción', type: 'textarea', required: false },
-      ]
-    }
+        {
+          name: 'type',
+          label: 'Tipo de Finca',
+          type: 'select',
+          required: true,
+          options: [
+            { label: 'Tradicional', value: 'Tradicional' },
+            { label: 'Educativa', value: 'Educativa' },
+          ],
+        },
+        { name: 'nit', label: 'NIT', type: 'text' },
+        { name: 'department', label: 'Departamento', type: 'text' },
+        { name: 'municipality', label: 'Municipio', type: 'text' },
+        { name: 'address', label: 'Dirección', type: 'text' },
+        { name: 'is_active', label: 'Finca activa', type: 'checkbox' },
+      ],
+    },
   ],
-  searchPlaceholder: 'Buscar fincas...',
+  searchPlaceholder: 'Buscar en todas las fincas...',
   exportable: true,
-} as any;
+} as CRUDConfig<FarmAdminRecord, FarmAdminInput>;
+
+export const fincaFormDefaults: FarmAdminInput = {
+  name: '',
+  type: 'Tradicional',
+  nit: '',
+  department: '',
+  municipality: '',
+  address: '',
+  is_active: true,
+};
 
 const FincasAdminPage: React.FC = () => {
   const [inviteDialogOpen, setInviteDialogOpen] = React.useState(false);
@@ -45,8 +90,9 @@ const FincasAdminPage: React.FC = () => {
       <AdminCRUDPage
         config={{
           ...fincasConfig,
-          customActions: (row: any) => (
+          customActions: (row) => (
             <Button
+              type="button"
               variant="ghost"
               size="sm"
               onClick={() => handleInvite(row.id)}
@@ -58,19 +104,14 @@ const FincasAdminPage: React.FC = () => {
           )
         }}
         service={{
-          getAll: (params: any) => apiClient.get('/api/v1/fincas', { params }).then(r => r.data),
-          getPaginated: (params: any) => apiClient.get('/api/v1/fincas', { params }).then(r => r.data),
+          getAll: (params: Record<string, unknown>) => apiClient.get('/api/v1/fincas', { params }).then(r => r.data),
+          getPaginated: (params: Record<string, unknown>) => apiClient.get('/api/v1/fincas', { params }).then(r => r.data),
           getById: (id: number | string) => apiClient.get(`/api/v1/fincas/${id}`).then(r => r.data),
-          create: (data: any) => apiClient.post('/api/v1/fincas', data).then(r => r.data),
-          update: (id: number | string, data: any) => apiClient.put(`/api/v1/fincas/${id}`, data).then(r => r.data),
+          create: (data: FarmAdminInput) => apiClient.post('/api/v1/fincas', data).then(r => r.data),
+          update: (id: number | string, data: FarmAdminInput) => apiClient.put(`/api/v1/fincas/${id}`, data).then(r => r.data),
           delete: (id: number | string) => apiClient.delete(`/api/v1/fincas/${id}`).then(r => r.data),
         }}
-        initialFormData={{
-          name: '',
-          location: '',
-          size_ha: 0,
-          description: '',
-        }}
+        initialFormData={fincaFormDefaults}
       />
 
       <InviteUserDialog

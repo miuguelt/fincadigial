@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { GenericModal } from '@/shared/ui/common/GenericModal';
 import { campesinoServices, WaterSource } from '@/entities/campesino';
 import { Button } from '@/shared/ui/button';
 import { Plus, X, Loader2, RefreshCw, Search, Droplets } from 'lucide-react';
@@ -179,92 +180,85 @@ const WaterSourcesPage: React.FC = () => {
       </div>
 
       {/* Modal */}
-      <AnimatePresence>
-        {showForm && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4"
-            onClick={e => { if (e.target === e.currentTarget) setShowForm(false); }}
-          >
-            <motion.div initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 60 }}
-              className="bg-card rounded-lg shadow-2xl w-full max-w-md max-h-[85vh] overflow-y-auto"
-            >
-              <div className="flex items-center justify-between p-5 border-b sticky top-0 bg-card z-10">
-                <h2 className="font-bold text-lg">{editId ? '✏️ Editar Fuente' : '💧 Nueva Fuente de Agua'}</h2>
-                <button onClick={() => setShowForm(false)} className="p-2 rounded-xl hover:bg-muted"><X className="w-5 h-5" /></button>
-              </div>
-              <div className="p-5 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">Nombre *</label>
-                  <input type="text" placeholder="Ej: Quebrada La Honda, Pozo Norte"
-                    value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
-                  />
-                </div>
+      <GenericModal
+        isOpen={showForm}
+        onOpenChange={(val) => !val && setShowForm(false)}
+        title={editId ? '✏️ Editar Fuente' : '💧 Nueva Fuente de Agua'}
+        size="md"
+        themeColor="cyan"
+        enableBackdropBlur
+      >
+        <div className="space-y-4 pt-2">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">Nombre *</label>
+            <input type="text" placeholder="Ej: Quebrada La Honda, Pozo Norte"
+              value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+            />
+          </div>
 
-                <div>
-                  <p className="text-sm font-medium text-foreground mb-2">Tipo de fuente</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {SOURCE_TYPES.map(t => (
-                      <button key={t.value} onClick={() => setForm(f => ({ ...f, source_type: t.value }))}
-                        className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 text-xs font-semibold transition-all ${form.source_type === t.value ? `${t.border} ${t.color}` : 'border-border bg-background text-muted-foreground'}`}
-                      >
-                        <span className="text-xl">{t.emoji}</span>{t.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">Capacidad estimada (litros)</label>
-                  <input type="number" min="0" step="100" placeholder="0"
-                    value={form.capacity_liters} onChange={e => setForm(f => ({ ...f, capacity_liters: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
-                  />
-                </div>
-
-                {/* ¿Es potable? */}
-                <button onClick={() => setForm(f => ({ ...f, is_potable: !f.is_potable }))}
-                  className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all ${form.is_potable ? 'border-green-400 bg-green-50 dark:bg-green-950/30 text-green-800 dark:text-green-300' : 'border-border bg-background text-muted-foreground'}`}
+          <div>
+            <p className="text-sm font-medium text-foreground mb-2">Tipo de fuente</p>
+            <div className="grid grid-cols-3 gap-2">
+              {SOURCE_TYPES.map(t => (
+                <button key={t.value} onClick={() => setForm(f => ({ ...f, source_type: t.value }))}
+                  className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 text-xs font-semibold transition-all ${form.source_type === t.value ? `${t.border} ${t.color}` : 'border-border bg-background text-muted-foreground'}`}
                 >
-                  <span className="font-medium text-sm">¿El agua es potable?</span>
-                  <span className="text-2xl">{form.is_potable ? '✅' : '❌'}</span>
+                  <span className="text-xl">{t.emoji}</span>{t.label}
                 </button>
+              ))}
+            </div>
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Confiabilidad</label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {[
-                      { value: 'high', label: 'Alta', emoji: '🟢' },
-                      { value: 'medium', label: 'Media', emoji: '🟡' },
-                      { value: 'low', label: 'Baja', emoji: '🔴' },
-                      { value: 'seasonal', label: 'Estacional', emoji: '🔵' },
-                    ].map(r => (
-                      <button key={r.value} onClick={() => setForm(f => ({ ...f, reliability: r.value }))}
-                        className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 text-xs font-semibold transition-all ${form.reliability === r.value ? 'border-cyan-400 bg-cyan-50 dark:bg-cyan-950/30 text-cyan-800 dark:text-cyan-300' : 'border-border bg-background text-muted-foreground'}`}
-                      >
-                        <span>{r.emoji}</span>{r.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">Capacidad estimada (litros)</label>
+            <input type="number" min="0" step="100" placeholder="0"
+              value={form.capacity_liters} onChange={e => setForm(f => ({ ...f, capacity_liters: e.target.value }))}
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+            />
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">Observaciones</label>
-                  <textarea rows={2} placeholder="Notas sobre acceso, estado, uso..."
-                    value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/30 resize-none"
-                  />
-                </div>
-              </div>
-              <div className="px-5 pb-5">
-                <Button onClick={handleSave} disabled={saving} className="w-full bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl py-3 text-base font-bold">
-                  {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Guardando...</> : '✅ Guardar Fuente'}
-                </Button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          {/* ¿Es potable? */}
+          <button onClick={() => setForm(f => ({ ...f, is_potable: !f.is_potable }))}
+            className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all ${form.is_potable ? 'border-green-400 bg-green-50 dark:bg-green-950/30 text-green-800 dark:text-green-300' : 'border-border bg-background text-muted-foreground'}`}
+          >
+            <span className="font-medium text-sm">¿El agua es potable?</span>
+            <span className="text-2xl">{form.is_potable ? '✅' : '❌'}</span>
+          </button>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">Confiabilidad</label>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { value: 'high', label: 'Alta', emoji: '🟢' },
+                { value: 'medium', label: 'Media', emoji: '🟡' },
+                { value: 'low', label: 'Baja', emoji: '🔴' },
+                { value: 'seasonal', label: 'Estacional', emoji: '🔵' },
+              ].map(r => (
+                <button key={r.value} onClick={() => setForm(f => ({ ...f, reliability: r.value }))}
+                  className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 text-xs font-semibold transition-all ${form.reliability === r.value ? 'border-cyan-400 bg-cyan-50 dark:bg-cyan-950/30 text-cyan-800 dark:text-cyan-300' : 'border-border bg-background text-muted-foreground'}`}
+                >
+                  <span>{r.emoji}</span>{r.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">Observaciones</label>
+            <textarea rows={2} placeholder="Notas sobre acceso, estado, uso..."
+              value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/30 resize-none"
+            />
+          </div>
+
+          <div className="pt-2 pb-4">
+            <Button onClick={handleSave} disabled={saving} className="w-full bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl py-3 text-base font-bold">
+              {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Guardando...</> : '✅ Guardar Fuente'}
+            </Button>
+          </div>
+        </div>
+      </GenericModal>
     </div>
   );
 };

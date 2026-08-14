@@ -162,7 +162,7 @@ export function InlineEditCell({
       className={`group relative flex items-center justify-between cursor-pointer hover:bg-primary/5 px-2 py-1 rounded-lg transition duration-200 border border-transparent hover:border-border/30 ${className}`}
       title="Doble clic para editar"
     >
-      <span className="truncate pr-4">{displayValue ?? '-'}</span>
+      <span className="fit-clamp pr-4">{displayValue ?? '-'}</span>
       <Edit2 className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-muted-foreground/60 transition duration-200 absolute right-2 opacity-0 group-hover:opacity-100 flex-shrink-0" />
     </div>
   );

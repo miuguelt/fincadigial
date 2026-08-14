@@ -68,8 +68,7 @@ const OperationalCostsPage: React.FC = () => {
           label: 'Monto ($)',
           type: 'number',
           required: true,
-          // @ts-ignore
-          min: 0,
+          validation: { min: 0 },
         },
         {
           name: 'date',
@@ -107,9 +106,9 @@ const OperationalCostsPage: React.FC = () => {
     searchPlaceholder: 'Buscar por concepto...',
     columns,
     formSections,
-    enableEdit: true,
+    enableEditModal: true,
     enableDelete: true,
-    enableDetail: true,
+    enableDetailModal: true,
   } as any;
 
   return (

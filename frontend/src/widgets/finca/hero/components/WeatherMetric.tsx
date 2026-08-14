@@ -23,7 +23,7 @@ export function WeatherMetric({ item }: { item: WeatherMetricItem }) {
   return (
     <div
       className={cn(
-        'flex min-h-[64px] items-center gap-2.5 rounded-xl border px-3 py-2.5',
+        'flex min-h-[64px] items-center gap-2.5 rounded-2xl border px-3 py-2.5',
         TONES[item.tone],
       )}
     >
@@ -32,11 +32,11 @@ export function WeatherMetric({ item }: { item: WeatherMetricItem }) {
         <p className="text-[10px] font-bold uppercase leading-none tracking-wider opacity-70">
           {item.label}
         </p>
-        <p className="mt-1 truncate text-base font-black leading-none tabular-nums sm:text-lg">
+        <p className="mt-1 fit-clamp text-base font-black leading-none tabular-nums sm:text-lg">
           {item.value}
         </p>
         {item.hint && (
-          <p className="mt-1 truncate text-[10px] leading-none opacity-70">{item.hint}</p>
+          <p className="mt-1 text-[10px] leading-tight opacity-70 break-words">{item.hint}</p>
         )}
       </div>
     </div>

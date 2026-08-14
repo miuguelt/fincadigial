@@ -437,10 +437,10 @@ export function CRUDForm<T extends { id?: number }>({
             <div className="flex flex-wrap gap-x-4 gap-y-1">
               <span><strong className="text-foreground/80">ID:</strong> {editingItem.id}</span>
               {(editingItem as any).created_at && (
-                <span><strong className="text-foreground/80">Creado:</strong> {new Date((editingItem as any).created_at).toLocaleDateString('es-ES')}</span>
+                <span><strong className="text-foreground/80">Creado:</strong> {new Date((editingItem as any).created_at).toLocaleDateString('es-CO')}</span>
               )}
               {(editingItem as any).updated_at && (
-                <span><strong className="text-foreground/80">Actualizado:</strong> {new Date((editingItem as any).updated_at).toLocaleDateString('es-ES')}</span>
+                <span><strong className="text-foreground/80">Actualizado:</strong> {new Date((editingItem as any).updated_at).toLocaleDateString('es-CO')}</span>
               )}
             </div>
           </div>

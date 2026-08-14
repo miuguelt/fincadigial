@@ -1,7 +1,8 @@
-﻿import React from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
 import { Bell, Calendar, CreditCard, Home, User } from 'lucide-react';
+import { FincaHeroBanner } from '@/widgets/finca/hero';
 
 const UserDashboard: React.FC = () => {
   return (
@@ -27,6 +28,8 @@ const UserDashboard: React.FC = () => {
             </Button>
           </div>
         </div>
+
+        <FincaHeroBanner className="mb-8" />
 
         {/* Main Content */}
         <div className="py-0">

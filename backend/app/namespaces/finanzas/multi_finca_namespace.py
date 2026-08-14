@@ -478,8 +478,8 @@ class CreateFincaResource(Resource):
 
             # Sembrar configuraciones por defecto
             try:
-                from app.services.default_alert_configs import seed_default_configs_for_finca
-                seed_default_configs_for_finca(finca.id)
+                from app.services.system_initializer import initialize_finca_defaults
+                initialize_finca_defaults(finca.id)
             except Exception as e:
                 logger.warning("Error al sembrar configs para finca %s: %s", finca.id, e)
 
@@ -660,61 +660,11 @@ class CompareKPIsResource(Resource):
             except (ValueError, TypeError):
                 return APIResponse.error('ID de usuario inválido', status_code=400)
 
-            fincas = UserFinca.get_user_fincas(user_id, active_only=True)
-            results = []
-
-            for f in fincas:
-                f_id = f['finca_id']
-
-                # Importaciones locales para evitar problemas circulares
-                from app.models.animals import Animals, AnimalStatus, Sex
-                from app.models.milk_production import MilkProduction
-                from app.models.financial import Transaction, TransactionType
-                from app.models.fields import Fields
-                from sqlalchemy import func
-
-                # Obtener finca
-                finca = Finca.query.get(f_id)
-                if not finca:
-                    continue
-
-                # Calcular KPIs básicos
-                total_animals = Animals.query.filter_by(finca_id=f_id, status=AnimalStatus.Vivo).count()
-                total_animals_males = Animals.query.filter_by(finca_id=f_id, status=AnimalStatus.Vivo, sex=Sex.Macho).count()
-                total_animals_females = Animals.query.filter_by(finca_id=f_id, status=AnimalStatus.Vivo, sex=Sex.Hembra).count()
-
-                total_milk = db.session.query(func.sum(MilkProduction.liters)).filter_by(finca_id=f_id).scalar() or 0.0
-
-                total_income = db.session.query(func.sum(Transaction.amount)).filter_by(finca_id=f_id, transaction_type=TransactionType.Income).scalar() or 0.0
-                total_expenses = db.session.query(func.sum(Transaction.amount)).filter_by(finca_id=f_id, transaction_type=TransactionType.Expense).scalar() or 0.0
-
-                # Potreros
-                total_fields = Fields.query.filter_by(finca_id=f_id).count()
-                fields = Fields.query.filter_by(finca_id=f_id).all()
-                total_fields_area = sum([f.area_num for f in fields])
-
-                results.append({
-                    'finca_id': f_id,
-                    'finca_name': finca.name,
-                    'finca_type': finca.type.value if finca.type else 'Educativa',
-                    'department': finca.department or '',
-                    'municipality': finca.municipality or '',
-                    'role': f.get('role', 'Operario'),
-                    'kpis': {
-                        'total_animals': total_animals,
-                        'total_animals_males': total_animals_males,
-                        'total_animals_females': total_animals_females,
-                        'total_milk_liters': float(total_milk),
-                        'total_income': float(total_income),
-                        'total_expenses': float(total_expenses),
-                        'total_fields': total_fields,
-                        'total_fields_area': float(total_fields_area)
-                    }
-                })
+            from app.services.finca_kpis import get_user_fincas_report
 
             return APIResponse.success(
                 message='KPIs comparativos generados exitosamente',
-                data=results
+                data=get_user_fincas_report(user_id)
             )
 
         except Exception as e:

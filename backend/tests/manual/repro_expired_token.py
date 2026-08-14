@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import logging
 
 # Add current directory to path so we can import app
 sys.path.append(os.getcwd())
@@ -10,6 +11,7 @@ from flask_jwt_extended import create_access_token
 from datetime import timedelta
 
 app = create_app('development')
+logger = logging.getLogger(__name__)
 
 def test_expired_token():
     with app.test_client() as client:

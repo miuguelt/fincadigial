@@ -62,11 +62,18 @@ const CustomReports: React.FC = () => {
     generateReport.mutate(config);
   };
 
+  const formatSexLabel = (value: string) => {
+    const normalized = value.replace(/_(vivos|vivas)$/, '');
+    if (normalized === 'machos') return 'Machos';
+    if (normalized === 'hembras') return 'Hembras';
+    return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+  };
+
   const handleDownloadJSON = () => {
     if (!generateReport.data) return;
     const dataStr = JSON.stringify(generateReport.data, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-    const exportFileDefaultName = `reporte-${new Date().toISOString()}.json`;
+    const exportFileDefaultName = `reporte-${new Date().toISOString().split('T')[0]}.json`;
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
@@ -76,24 +83,27 @@ const CustomReports: React.FC = () => {
   const handleDownloadCSV = () => {
     if (!generateReport.data) return;
 
-    // Convertir datos a CSV (simplificado)
-    let csv = 'Métrica,Valor\n';
+    const csvEscape = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+    const rows: string[][] = [];
     const flattenObject = (obj: any, prefix = ''): void => {
       for (const [key, value] of Object.entries(obj)) {
         if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
           flattenObject(value, `${prefix}${key}.`);
         } else {
-          csv += `${prefix}${key},${value}\n`;
+          rows.push([`${prefix}${key}`, Array.isArray(value) ? JSON.stringify(value) : String(value ?? '')]);
         }
       }
     };
     flattenObject(generateReport.data);
 
+    const csv = [['Métrica', 'Valor'], ...rows]
+      .map((row) => row.map(csvEscape).join(','))
+      .join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `reporte-${new Date().toISOString()}.csv`;
+    a.download = `reporte-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -126,7 +136,7 @@ const CustomReports: React.FC = () => {
 
     doc.setFontSize(9);
     doc.setTextColor(200, 200, 255);
-    doc.text("Ecosistema Villa Luz OS - Gestión Inteligente de Hatos", 20, 27);
+    doc.text("Ecosistema Villa Luz OS - Gestión Inteligente de Ganado", 20, 27);
 
     // Metadatos
     doc.setFontSize(10);
@@ -166,7 +176,7 @@ const CustomReports: React.FC = () => {
       if (currentY > 230) { doc.addPage(); currentY = 20; }
       doc.setFontSize(12);
       doc.setTextColor(15, 23, 42);
-      doc.text("2. Distribución y Demografía del Hato", 20, currentY);
+      doc.text("2. Distribución y Demografía del Ganado", 20, currentY);
       currentY += 8;
 
       const estadoRows = Object.entries(details.inventario_animales.estados).map(([state, qty]: [string, any]) => [
@@ -186,7 +196,7 @@ const CustomReports: React.FC = () => {
       currentY = (doc as any).lastAutoTable.finalY + 10;
 
       const sexoRows = Object.entries(details.inventario_animales.sexo).map(([sex, qty]: [string, any]) => [
-        sex.replace('_vivos', '').replace('_vivas', '').toUpperCase() + 'S',
+        formatSexLabel(sex).toUpperCase(),
         String(qty)
       ]);
 
@@ -392,6 +402,61 @@ const CustomReports: React.FC = () => {
       currentY = (doc as any).lastAutoTable.finalY + 15;
     }
 
+    // Detalle: Inventario de insumos
+    if (details.inventario_insumos) {
+      if (currentY > 230) { doc.addPage(); currentY = 20; }
+      doc.setFontSize(12);
+      doc.setTextColor(15, 23, 42);
+      doc.text("10. Inventario de Insumos", 20, currentY);
+      currentY += 8;
+
+      const inventoryRows = details.inventario_insumos.lotes.map((lot: any) => [
+        lot.producto,
+        lot.lote,
+        `${lot.cantidad} ${lot.unidad}`,
+        lot.vencimiento,
+        lot.estado
+      ]);
+
+      runAutoTable(doc, {
+        startY: currentY,
+        head: [["Producto", "Lote", "Cantidad", "Vencimiento", "Estado"]],
+        body: inventoryRows.length > 0 ? inventoryRows : [["N/A", "N/A", "N/A", "N/A", "Sin lotes"]],
+        headStyles: { fillColor: [2, 132, 199] },
+        theme: 'striped',
+        margin: { left: 20, right: 20 }
+      });
+
+      currentY = (doc as any).lastAutoTable.finalY + 15;
+    }
+
+    // Detalle: Agrupaciones
+    if (details.agrupaciones && Object.keys(details.agrupaciones).length > 0) {
+      if (currentY > 230) { doc.addPage(); currentY = 20; }
+      doc.setFontSize(12);
+      doc.setTextColor(15, 23, 42);
+      doc.text("11. Agrupaciones del Reporte", 20, currentY);
+      currentY += 8;
+
+      const groupingRows: string[][] = [];
+      Object.entries(details.agrupaciones).forEach(([group, values]: [string, any]) => {
+        Object.entries(values as Record<string, number>).forEach(([label, value]) => {
+          groupingRows.push([group.replace(/_/g, ' '), label, String(value)]);
+        });
+      });
+
+      runAutoTable(doc, {
+        startY: currentY,
+        head: [["Agrupación", "Categoría", "Cantidad"]],
+        body: groupingRows.length > 0 ? groupingRows : [["N/A", "N/A", "0"]],
+        headStyles: { fillColor: [124, 58, 237] },
+        theme: 'grid',
+        margin: { left: 20, right: 20 }
+      });
+
+      currentY = (doc as any).lastAutoTable.finalY + 15;
+    }
+
     // Firma y pie de página
     doc.setFontSize(9);
     doc.setTextColor(150, 150, 150);
@@ -406,6 +471,7 @@ const CustomReports: React.FC = () => {
     { value: 'health', label: 'Salud', description: 'Tratamientos, vacunaciones y enfermedades' },
     { value: 'production', label: 'Producción', description: 'Peso, GMD y productividad' },
     { value: 'fields', label: 'Campos', description: 'Ocupación y gestión de potreros' },
+    { value: 'inventory', label: 'Inventario', description: 'Lotes, existencias, vencimientos y valor' },
     { value: 'finance', label: 'Finanzas', description: 'Ingresos, Egresos y Balances' },
     { value: 'milk', label: 'Lechería', description: 'Control de ordeños y producción de leche' },
     { value: 'agriculture', label: 'Agricultura', description: 'Cosechas, cultivos e insumos' },
@@ -429,7 +495,7 @@ const CustomReports: React.FC = () => {
   ];
 
   return (
-    <div className="h-full overflow-auto bg-muted/50 p-6" tabIndex={0}>
+    <div className="min-h-full bg-muted/50 p-4 sm:p-6 lg:p-8 overflow-x-hidden" tabIndex={0}>
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
@@ -704,7 +770,7 @@ const CustomReports: React.FC = () => {
               </div>
               <div className="text-right text-xs text-blue-200 md:border-l md:border-white/20 md:pl-6">
                 <p>Generado por: <span className="font-semibold text-white">{metadata.user || 'Usuario'}</span></p>
-                <p className="mt-1">Fecha: <span className="font-semibold text-white">{new Date(metadata.generated_at).toLocaleString()}</span></p>
+                <p className="mt-1">Fecha: <span className="font-semibold text-white">{new Date(metadata.generated_at).toLocaleString('es-CO')}</span></p>
               </div>
             </div>
 
@@ -798,7 +864,7 @@ const CustomReports: React.FC = () => {
                             <tbody className="divide-y divide-gray-100">
                               {Object.entries(details.inventario_animales.sexo).map(([sex, qty]: [string, any]) => (
                                 <tr key={sex} className="hover:bg-muted/50">
-                                  <td className="p-3 capitalize font-medium text-foreground/80">{sex.replace('_vivos', '').replace('_vivas', '')}s</td>
+                                  <td className="p-3 font-medium text-foreground/80">{formatSexLabel(sex)}</td>
                                   <td className="p-3 text-right font-bold text-foreground">{qty}</td>
                                 </tr>
                               ))}
@@ -810,7 +876,7 @@ const CustomReports: React.FC = () => {
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
                             <Pie
-                              data={Object.entries(details.inventario_animales.sexo).map(([key, val]) => ({ name: key.replace('_vivos', '').replace('_vivas', ''), value: val }))}
+                          data={Object.entries(details.inventario_animales.sexo).map(([key, val]) => ({ name: formatSexLabel(key), value: val }))}
                               cx="50%"
                               cy="50%"
                               innerRadius={45}
@@ -940,7 +1006,7 @@ const CustomReports: React.FC = () => {
                         </div>
                       </div>
                       <div className="text-xs text-emerald-600 font-medium mt-6 pt-4 border-t border-emerald-100">
-                        * Mide la proactividad e intervenciones aplicadas para mantener el bienestar de tu hato.
+                        * Mide la proactividad e intervenciones aplicadas para mantener el bienestar de tu ganado.
                       </div>
                     </div>
                   </div>
@@ -1046,7 +1112,7 @@ const CustomReports: React.FC = () => {
                         <tbody className="divide-y divide-gray-100">
                           {details.gestion_potreros.potreros.length === 0 ? (
                             <tr>
-                              <td colSpan={4} className="p-4 text-center text-muted-foreground">Sin potreros registrados en esta finca.</td>
+                                <td colSpan={5} className="p-4 text-center text-muted-foreground">Sin potreros registrados en esta finca.</td>
                             </tr>
                           ) : (
                             details.gestion_potreros.potreros.map((p: any, idx: number) => (
@@ -1116,7 +1182,7 @@ const CustomReports: React.FC = () => {
                             <tr key={idx} className="hover:bg-muted/50">
                               <td className="p-3 font-medium text-foreground">{m.fecha}</td>
                               <td className="p-3 text-foreground/80">
-                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${m.tipo === 'INGRESO' ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${String(m.tipo).toLowerCase() === 'ingreso' ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>
                                   {m.tipo}
                                 </span>
                               </td>
@@ -1228,13 +1294,84 @@ const CustomReports: React.FC = () => {
                                 <td className="p-3 text-foreground/80">{a.tipo}</td>
                                 <td className="p-3 font-medium text-lime-600">{a.cultivo}</td>
                                 <td className="p-3 text-right text-foreground/80">${a.costo}</td>
-                                <td className="p-3 text-foreground/80 text-xs truncate max-w-[150px]">{a.observaciones}</td>
+                                <td className="p-3 text-foreground/80 text-xs break-words">{a.observaciones}</td>
                               </tr>
                             ))
                           )}
                         </tbody>
                       </table>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 9. Inventario */}
+              {details.inventario_insumos && (
+                <div className="space-y-6">
+                  <h4 className="text-base font-bold text-foreground border-b pb-2 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-sky-600"></span>
+                    Inventario de Insumos
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {[
+                      ['Lotes', details.inventario_insumos.total_lotes],
+                      ['Unidades', details.inventario_insumos.unidades_disponibles],
+                      ['Bajo stock', details.inventario_insumos.bajo_stock],
+                      ['Vencidos', details.inventario_insumos.vencidos],
+                    ].map(([label, value]) => (
+                      <div key={label} className="rounded-lg border border-border bg-muted/30 p-3">
+                        <p className="text-xs font-bold uppercase text-muted-foreground">{label}</p>
+                        <p className="mt-1 text-xl font-black text-foreground">{value}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="overflow-x-auto rounded-lg border border-border">
+                    <table className="w-full min-w-[620px] text-left text-sm">
+                      <thead className="bg-muted/50 text-xs font-bold uppercase text-muted-foreground">
+                        <tr>
+                          <th className="p-3">Producto</th>
+                          <th className="p-3">Lote</th>
+                          <th className="p-3 text-right">Cantidad</th>
+                          <th className="p-3">Vencimiento</th>
+                          <th className="p-3">Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {details.inventario_insumos.lotes.length === 0 ? (
+                          <tr><td colSpan={5} className="p-4 text-center text-muted-foreground">Sin lotes registrados.</td></tr>
+                        ) : details.inventario_insumos.lotes.slice(0, 10).map((lot: any) => (
+                          <tr key={`${lot.lote}-${lot.vencimiento}`} className="hover:bg-muted/30">
+                            <td className="p-3 font-medium text-foreground break-words">{lot.producto}</td>
+                            <td className="p-3 text-foreground/80 break-words">{lot.lote}</td>
+                            <td className="p-3 text-right text-foreground/80">{lot.cantidad} {lot.unidad}</td>
+                            <td className="p-3 text-foreground/80">{lot.vencimiento || '—'}</td>
+                            <td className="p-3 text-foreground/80">{lot.estado}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* 10. Agrupaciones calculadas en backend */}
+              {details.agrupaciones && Object.keys(details.agrupaciones).length > 0 && (
+                <div className="space-y-4">
+                  <h4 className="text-base font-bold text-foreground border-b pb-2">Agrupaciones del reporte</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {Object.entries(details.agrupaciones).map(([group, values]: [string, any]) => (
+                      <div key={group} className="rounded-lg border border-border overflow-hidden">
+                        <div className="bg-muted/50 px-3 py-2 text-xs font-bold uppercase text-muted-foreground">{group}</div>
+                        <div className="divide-y divide-border">
+                          {Object.entries(values).map(([label, value]) => (
+                            <div key={label} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+                              <span className="break-words text-foreground/80">{label}</span>
+                              <span className="font-bold text-foreground">{String(value)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

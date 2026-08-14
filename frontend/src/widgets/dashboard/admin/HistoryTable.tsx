@@ -20,7 +20,7 @@ const HistoryTable = ({
   actionsHeader = 'Acciones',
 }: HistoryTableProps) => {
   if (data.length === 0) {
-    return <p>No records to display.</p>;
+    return <p>No hay registros para mostrar.</p>;
   }
 
   const normalizedColumns = columns.map((col) =>

@@ -33,7 +33,7 @@ export function ResultInfo({
   const end = Math.min(page * pageSize, totalItems);
   return (
     <div className={cn("text-sm text-muted-foreground", className)}>
-      Mostrando {start} a {end} de {totalItems.toLocaleString()} resultados
+      Mostrando {start} a {end} de {totalItems.toLocaleString('es-CO')} resultados
     </div>
   );
 }
@@ -175,7 +175,7 @@ export function PaginationBar({
         <div className="text-xs font-medium text-foreground/50">
           Página <span className="text-foreground/80 font-semibold">{page}</span> de <span className="text-foreground/80 font-semibold">{Math.max(totalPages, 1)}</span>
           {typeof totalItems === "number" && totalItems >= 0 ? (
-            <span className="ml-1.5 text-foreground/30">({totalItems.toLocaleString()} registros)</span>
+            <span className="ml-1.5 text-foreground/30">({totalItems.toLocaleString('es-CO')} registros)</span>
           ) : null}
         </div>
       </div>

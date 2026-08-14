@@ -1,5 +1,7 @@
 from app import db
 import enum
+import hashlib
+import re
 from datetime import datetime, UTC
 from app.models.base_model import BaseModel
 
@@ -30,6 +32,50 @@ class AlertPriority(enum.Enum):
 def _enum_values(enum_cls):
     """Persist enum values because existing alert rows store Spanish labels."""
     return [choice.value for choice in enum_cls]
+
+
+_DYNAMIC_ALERT_VALUE = re.compile(
+    r"(?<![a-záéíóúñ])[-+]?\d+(?:[.,]\d+)*(?:\s*[%°])?",
+    flags=re.IGNORECASE,
+)
+_ALERT_WHITESPACE = re.compile(r"\s+")
+
+
+def normalize_alert_condition(message: str) -> str:
+    """Return a stable condition signature without changing the user message.
+
+    Measurements, dates and day counters naturally change on every evaluation.
+    Treating the complete message as an identity therefore created a new unread
+    row on every run.  The normalized text keeps the semantic rule and replaces
+    only its dynamic numeric values.
+    """
+    normalized = (message or "").strip().casefold()
+    normalized = _DYNAMIC_ALERT_VALUE.sub("#", normalized)
+    return _ALERT_WHITESPACE.sub(" ", normalized)
+
+
+def build_alert_dedupe_key(
+    *,
+    finca_id: int | None,
+    animal_id: int | None,
+    alert_type: AlertType | str,
+    message: str,
+    config_id: int | None = None,
+    category: str | None = None,
+) -> str:
+    """Build the tenant-safe identity for one currently actionable condition."""
+    type_value = alert_type.value if hasattr(alert_type, "value") else str(alert_type)
+    condition = category.strip().casefold() if category else normalize_alert_condition(message)
+    source = "|".join(
+        (
+            str(finca_id or 0),
+            str(animal_id or 0),
+            str(config_id or 0),
+            type_value.casefold(),
+            condition,
+        )
+    )
+    return hashlib.sha256(source.encode("utf-8")).hexdigest()
 
 class AnimalAlertConfig(BaseModel):
     """Configuración de alertas para animales.
@@ -72,6 +118,24 @@ class AnimalAlert(BaseModel):
             'triggered_at',
             postgresql_where=db.text('is_read = false'),
         ),
+        db.Index(
+            'ix_animal_alerts_finca_priority_unread_triggered',
+            'finca_id',
+            'priority',
+            'triggered_at',
+            postgresql_where=db.text('is_read = false'),
+        ),
+        db.Index(
+            'uq_animal_alerts_unread_dedupe_key',
+            'dedupe_key',
+            unique=True,
+            postgresql_where=db.text(
+                'is_read = false AND dedupe_key IS NOT NULL AND superseded_by_id IS NULL'
+            ),
+            sqlite_where=db.text(
+                'is_read = 0 AND dedupe_key IS NOT NULL AND superseded_by_id IS NULL'
+            ),
+        ),
     )
 
     id           = db.Column(db.Integer, primary_key=True)
@@ -85,6 +149,8 @@ class AnimalAlert(BaseModel):
     is_read      = db.Column(db.Boolean, default=False)
     triggered_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC))
     finca_id     = db.Column(db.Integer, db.ForeignKey('finca.id'), nullable=True)
+    dedupe_key   = db.Column(db.String(64), nullable=True)
+    superseded_by_id = db.Column(db.Integer, nullable=True)
 
     # Relaciones
     animal = db.relationship('Animals', back_populates='alerts')

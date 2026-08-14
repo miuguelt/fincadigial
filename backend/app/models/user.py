@@ -75,7 +75,8 @@ class User(BaseModel):
 
     _namespace_fields = [
         'id', 'identification', 'fullname', 'email', 'phone', 'address', 'role', 'status', 'approval_status',
-        'finca_id', 'avatar_url', 'created_at', 'updated_at', 'fincas', 'is_multi_finca', 'finca_name', 'finca_type'
+        'finca_id', 'avatar_url', 'created_at', 'updated_at', 'fincas', 'is_multi_finca', 'finca_name', 'finca_type',
+        'is_system_admin'
     ]
     _namespace_relations = {
         'diseases': {'fields': ['id', 'animal_id', 'disease_id', 'diagnosis_date'], 'depth': 1},
@@ -224,6 +225,30 @@ class User(BaseModel):
         data.pop('password', None)
         return data
 
+    @classmethod
+    def get_paginated_response(cls, query_result, include_relations=False, depth=1):
+        """Serialize /users with the role held in the active farm."""
+        payload = super().get_paginated_response(query_result, include_relations, depth)
+        from app.utils.tenant_context import get_current_finca_id
+        finca_id = get_current_finca_id()
+        items = payload.get('items', [])
+        if not finca_id or not items:
+            return payload
+
+        from app.models.user_finca import UserFinca
+        user_ids = [item['id'] for item in items if item.get('id') is not None]
+        memberships = UserFinca.query.filter(
+            UserFinca.user_id.in_(user_ids),
+            UserFinca.finca_id == finca_id,
+            UserFinca.is_active.is_(True),
+        ).all()
+        roles = {membership.user_id: membership.role for membership in memberships}
+        for item in items:
+            item['global_role'] = item.get('role')
+            if item.get('id') in roles:
+                item['role'] = roles[item['id']]
+        return payload
+
     @property
     def fincas(self):
         from app.models.user_finca import UserFinca
@@ -241,6 +266,12 @@ class User(BaseModel):
     @property
     def finca_type(self):
         return getattr(self.finca.type, 'value', str(self.finca.type)) if self.finca and self.finca.type else None
+
+    @property
+    def is_system_admin(self):
+        from app.utils.tenant_context import is_system_admin_identity
+        role_value = getattr(self.role, 'value', str(self.role))
+        return is_system_admin_identity(role_value, self.identification)
 
     def __repr__(self):
         return f'<User {self.id}: {self.fullname}>'

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
+import { useCallback } from 'react';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -30,7 +31,7 @@ export default function ReproductionCalendar() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  const loadEvents = async () => {
+  const loadEvents = useCallback(async () => {
     setLoading(true);
     try {
       const startDate = format(subDays(currentDate, 30), 'yyyy-MM-dd');
@@ -43,11 +44,11 @@ export default function ReproductionCalendar() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentDate, showToast]);
 
   useEffect(() => {
     loadEvents();
-  }, [currentDate]);
+  }, [loadEvents]);
 
   const groupEventsByDate = () => {
     const grouped: Record<string, CalendarEvent[]> = {};
@@ -127,9 +128,9 @@ export default function ReproductionCalendar() {
                       style={{ borderLeft: `4px solid ${event.borderColor}` }}
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{event.title}</p>
+                        <p className="text-sm font-medium fit-clamp">{event.title}</p>
                         {event.extendedProps.notes && (
-                          <p className="text-xs text-muted-foreground truncate">
+                          <p className="text-xs text-muted-foreground fit-clamp">
                             {event.extendedProps.notes}
                           </p>
                         )}

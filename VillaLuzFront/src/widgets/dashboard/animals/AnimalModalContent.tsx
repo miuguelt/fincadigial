@@ -486,7 +486,7 @@ export function AnimalModalContent({
 
   const gender = animal.sex || animal.gender;
   const birthDate = animal.birth_date
-    ? new Date(animal.birth_date).toLocaleDateString('es-ES')
+    ? new Date(animal.birth_date).toLocaleDateString('es-CO')
     : '-';
   const ageMonths = animal.age_in_months ?? '-';
   const ageDays = animal.age_in_days ?? '-';

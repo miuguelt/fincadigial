@@ -311,7 +311,7 @@ const IndividualFemaleReport: React.FC<FemaleReportProps> = ({
                 Sistema Villa Luz
               </span>
               <span className="text-[8px] font-medium">
-                Generado el: {new Date().toLocaleString()}
+                Generado el: {new Date().toLocaleString('es-CO')}
               </span>
             </div>
             <IconHash size="lg" />

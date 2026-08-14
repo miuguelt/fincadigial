@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { MapPin, ChevronDown, Check, RefreshCw, LayoutDashboard, Plus } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { MapPin, ChevronDown, Check, RefreshCw, LayoutDashboard, Plus, Eye } from 'lucide-react';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { useMultiFinca } from '../model/useMultiFinca';
 import {
@@ -18,8 +18,13 @@ import { cn } from '@/shared/ui/cn';
 export const FincaSelector: React.FC = () => {
   const { user } = useAuth();
   const { switchFinca, switching } = useMultiFinca();
+  const navigate = useNavigate();
   const [, setSearchParams] = useSearchParams();
-  const fincas = useMemo(() => (user?.fincas as any[]) || [], [user?.fincas]);
+
+  const fincas = useMemo(
+    () => (user?.fincas as any[]) || (user as any)?.finca_memberships || [],
+    [user]
+  );
 
   // Obtener el nombre de la finca activa
   const activeFincaName = useMemo(() => {
@@ -55,7 +60,7 @@ export const FincaSelector: React.FC = () => {
             <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <MapPin className="h-3.5 w-3.5" />
             </div>
-            <span className="max-w-[90px] truncate font-medium sm:max-w-[130px]">{activeFincaName}</span>
+            <span className="max-w-[90px] fit-clamp font-medium sm:max-w-[130px]">{activeFincaName}</span>
             {switching ? (
               <RefreshCw className="h-3.5 w-3.5 shrink-0 animate-spin text-primary" />
             ) : (
@@ -66,14 +71,14 @@ export const FincaSelector: React.FC = () => {
 
         <DropdownMenuContent
           align="start"
-          className="z-[2000] mt-2 w-60 rounded-2xl border border-border/50 bg-card/95 p-1.5 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200"
+          className="z-[2000] mt-2 w-64 rounded-2xl border border-border/50 bg-card/95 p-1.5 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200"
         >
           <DropdownMenuLabel className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
             Mis Fincas
           </DropdownMenuLabel>
           <DropdownMenuSeparator className="my-1 border-border/30" />
 
-          <div className="max-h-[260px] space-y-0.5 overflow-y-auto">
+          <div className="max-h-[240px] space-y-0.5 overflow-y-auto">
             {fincas.length === 0 ? (
               <div className="px-3 py-3 text-center text-xs text-muted-foreground">No hay fincas disponibles</div>
             ) : (
@@ -100,7 +105,7 @@ export const FincaSelector: React.FC = () => {
                       <LayoutDashboard
                         className={cn('h-4 w-4 shrink-0', isActive ? 'text-primary' : 'text-muted-foreground/60')}
                       />
-                      <span className="truncate">{displayName}</span>
+                      <span className="fit-clamp">{displayName}</span>
                     </div>
                     {isActive && <Check className="h-4 w-4 shrink-0 text-primary" />}
                   </DropdownMenuItem>
@@ -110,6 +115,15 @@ export const FincaSelector: React.FC = () => {
           </div>
 
           <DropdownMenuSeparator className="my-1 border-border/30" />
+
+          <DropdownMenuItem
+            onClick={() => navigate('/admin/analytics/multi-finca')}
+            className="flex min-h-[40px] cursor-pointer items-center gap-2 rounded-xl px-3 text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+          >
+            <Eye className="h-4 w-4 shrink-0" />
+            <span>Vista Panorámica Multi-Finca</span>
+          </DropdownMenuItem>
+
           <DropdownMenuItem
             onClick={() => {
               const nextParams = new URLSearchParams(window.location.search);

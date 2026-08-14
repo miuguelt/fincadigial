@@ -1,11 +1,19 @@
 ﻿import  { useState, useEffect } from 'react';
 import { usersService } from '@/entities/user/api/user.service';
+import { useCallback } from 'react';
 import { useToast } from '@/shared/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { Badge } from '@/shared/ui/badge';
 import { getStatusBadgeClass, getAutoStatusClass } from '@/shared/utils/badgeStyles';
 import { Button } from '@/shared/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/ui/dialog';
 import { 
   Users, 
   Building2, 
@@ -14,9 +22,10 @@ import {
   User as UserIcon, 
   Search, 
   ShieldCheck,
-  MapPin,
   RefreshCw,
-  ExternalLink
+  ExternalLink,
+  UserRoundCheck,
+  UserRoundX,
 } from 'lucide-react';
 import { Input } from '@/shared/ui/input';
 import { ClimbingBoxLoader } from 'react-spinners';
@@ -25,9 +34,10 @@ const GlobalUsersPage = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const { toast } = useToast();
 
-  const fetchGlobalUsers = async () => {
+  const fetchGlobalUsers = useCallback(async () => {
     setLoading(true);
     try {
       const response = await usersService.getGlobalUsers();
@@ -43,11 +53,11 @@ const GlobalUsersPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     fetchGlobalUsers();
-  }, []);
+  }, [fetchGlobalUsers]);
 
   const filteredUsers = users.filter(u => 
     u.fullname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -70,10 +80,10 @@ const GlobalUsersPage = () => {
         <div>
           <h1 className="text-3xl font-bold text-success flex items-center gap-3">
             <ShieldCheck className="h-8 w-8 text-success" />
-            Administración Global de Usuarios
+            Usuarios de Todo el Sistema
           </h1>
           <p className="text-muted-foreground mt-1">
-            Visualiza todos los usuarios del sistema y sus relaciones con múltiples fincas.
+            Área exclusiva del administrador maestro para diferenciar usuarios entre fincas.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -81,6 +91,7 @@ const GlobalUsersPage = () => {
             {users.length} Usuarios Totales
           </Badge>
           <Button 
+            type="button"
             variant="outline" 
             size="sm" 
             onClick={fetchGlobalUsers} 
@@ -195,7 +206,14 @@ const GlobalUsersPage = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full hover:bg-success/10 hover:text-success" title="Ver Detalles">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 rounded-full hover:bg-success/10 hover:text-success"
+                          aria-label={`Ver detalles de ${user.fullname}`}
+                          onClick={() => setSelectedUser(user)}
+                        >
                           <ExternalLink className="h-4 w-4" />
                         </Button>
                       </TableCell>
@@ -226,12 +244,12 @@ const GlobalUsersPage = () => {
         <Card className="border-purple-100 bg-purple-50/30">
           <CardContent className="p-4 flex items-center gap-4">
             <div className="h-12 w-12 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600">
-              <MapPin className="h-6 w-6" />
+              <UserRoundCheck className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm text-purple-700 font-medium">Ubicaciones Activas</p>
+              <p className="text-sm text-purple-700 font-medium">Usuarios Activos</p>
               <h3 className="text-2xl font-bold text-purple-900">
-                Colombia
+                {users.filter((user) => user.status).length}
               </h3>
             </div>
           </CardContent>
@@ -240,19 +258,72 @@ const GlobalUsersPage = () => {
         <Card className="border-orange-100 bg-orange-50/30">
           <CardContent className="p-4 flex items-center gap-4">
             <div className="h-12 w-12 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600">
-              <ShieldCheck className="h-6 w-6" />
+              <UserRoundX className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm text-orange-700 font-medium">Nivel de Acceso</p>
-              <h3 className="text-2xl font-bold text-orange-900 uppercase text-xs">
-                Administrador Maestro
+              <p className="text-sm text-orange-700 font-medium">Sin Finca Asignada</p>
+              <h3 className="text-2xl font-bold text-orange-900">
+                {users.filter((user) => !user.fincas?.length).length}
               </h3>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={Boolean(selectedUser)} onOpenChange={(open) => !open && setSelectedUser(null)}>
+        <DialogContent className="max-w-2xl">
+          {selectedUser && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{selectedUser.fullname}</DialogTitle>
+                <DialogDescription>
+                  Información global y membresías del usuario en el sistema.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <UserDetail label="Identificación" value={selectedUser.identification} />
+                <UserDetail label="Rol global" value={selectedUser.role} />
+                <UserDetail label="Correo" value={selectedUser.email} />
+                <UserDetail label="Teléfono" value={selectedUser.phone || 'No registrado'} />
+                <UserDetail label="Estado" value={selectedUser.status ? 'Activo' : 'Inactivo'} />
+              </div>
+
+              <section aria-labelledby="global-user-farms-heading" className="space-y-3">
+                <h3 id="global-user-farms-heading" className="font-semibold text-foreground">
+                  Fincas asociadas
+                </h3>
+                {selectedUser.fincas?.length ? (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {selectedUser.fincas.map((finca: any) => (
+                      <div key={finca.id} className="rounded-lg border border-border p-3">
+                        <p className="font-semibold text-foreground">{finca.name}</p>
+                        <p className="text-sm text-muted-foreground">Rol: {finca.role}</p>
+                        <Badge variant={finca.is_active ? 'default' : 'secondary'} className="mt-2">
+                          {finca.is_active ? 'Finca activa' : 'Membresía secundaria'}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+                    Este usuario no tiene fincas asignadas.
+                  </p>
+                )}
+              </section>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
+
+const UserDetail = ({ label, value }: { label: string; value: unknown }) => (
+  <div className="rounded-lg bg-muted/40 p-3">
+    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+    <p className="mt-1 break-words font-medium text-foreground">{String(value ?? 'No registrado')}</p>
+  </div>
+);
 
 export default GlobalUsersPage;

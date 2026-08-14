@@ -34,7 +34,7 @@ export function CalendarToolbar({
 					<CalendarDays className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
 				</div>
 				<div className="min-w-0">
-					<h1 className="text-sm sm:text-2xl font-black text-foreground leading-tight truncate">
+					<h1 className="text-sm sm:text-2xl font-black text-foreground leading-tight fit-clamp">
 						Calendario de la Finca
 					</h1>
 					<p className="text-[11px] sm:text-sm text-muted-foreground capitalize">

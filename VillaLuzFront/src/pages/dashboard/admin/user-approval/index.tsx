@@ -24,6 +24,7 @@ const UserApprovalPage = () => {
       const response = await usersService.getUsers({
         approval_status: 'Pending',
         limit: 100,
+        cache_bust: Date.now(),
       });
       setUsers((response as any).data ?? []);
     } catch (error) {
@@ -52,10 +53,12 @@ const UserApprovalPage = () => {
         variant: 'default',
       });
       setUsers((prev) => prev.filter((u) => u.id !== userId));
-    } catch (error) {
+    } catch (error: any) {
+      const status = error?.status || error?.response?.status;
+      if (status === 403 || status === 401) return;
       toast({
         title: 'Error',
-        description: 'No se pudo aprobar el usuario.',
+        description: error?.response?.data?.message || error?.message || 'No se pudo aprobar el usuario.',
         variant: 'destructive',
       });
     } finally {
@@ -73,10 +76,12 @@ const UserApprovalPage = () => {
         variant: 'default',
       });
       setUsers((prev) => prev.filter((u) => u.id !== userId));
-    } catch (error) {
+    } catch (error: any) {
+      const status = error?.status || error?.response?.status;
+      if (status === 403 || status === 401) return;
       toast({
         title: 'Error',
-        description: 'No se pudo rechazar el usuario.',
+        description: error?.response?.data?.message || error?.message || 'No se pudo rechazar el usuario.',
         variant: 'destructive',
       });
     } finally {

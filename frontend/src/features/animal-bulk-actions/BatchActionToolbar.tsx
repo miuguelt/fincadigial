@@ -56,7 +56,7 @@ const ActionItem: React.FC<ActionItemProps> = ({
       onClick();
     }}
     className={cn(
-      'group flex flex-col items-center justify-center min-w-[85px] h-13 rounded-lg transition-all duration-500 active:scale-95 relative overflow-hidden',
+      'group flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] px-1 sm:px-1.5 py-1.5 rounded-lg transition-all duration-500 active:scale-95 relative overflow-hidden',
       'hover:bg-card/[0.05] border border-transparent hover:border-white/10'
     )}
   >
@@ -68,12 +68,12 @@ const ActionItem: React.FC<ActionItemProps> = ({
     />
     <Icon
       className={cn(
-        'h-6 w-6 transition-all duration-700 group-hover:scale-125 group-hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] relative z-10',
+        'h-5 w-5 sm:h-6 sm:w-6 transition-all duration-700 group-hover:scale-125 group-hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] relative z-10',
         color,
         hoverColor
       )}
     />
-    <span className="text-[9px] font-bold uppercase tracking-[0.25em] mt-2 text-white/70 group-hover:text-white transition-all duration-700 relative z-10">
+    <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.18em] mt-1.5 whitespace-nowrap text-white/70 group-hover:text-white transition-all duration-700 relative z-10">
       {label}
     </span>
   </button>
@@ -107,16 +107,29 @@ export const BatchActionToolbar: React.FC<BatchActionToolbarProps> = ({
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[110] flex items-center pointer-events-none"
+        className="fixed inset-x-0 bottom-3 sm:bottom-4 z-[1000] flex justify-center pointer-events-none"
+        style={{
+          // Espacio reservado por el menú lateral (escritorio) y por el botón flotante de
+          // acciones rápidas (esquina inferior derecha), publicado por DashboardLayout.
+          paddingLeft: 'calc(var(--app-content-left, 0px) + 0.5rem)',
+          paddingRight: '4.5rem',
+        }}
       >
-        <div className="flex h-16 items-center gap-4 rounded-[2.5rem] border border-white/10 bg-slate-900/75 dark:bg-slate-900/85 p-2 shadow-2xl backdrop-blur-xl pointer-events-auto max-w-[98vw] relative overflow-hidden text-white ring-1 ring-white/10">
+        <div
+          className="flex w-auto max-w-full flex-wrap sm:flex-nowrap items-center justify-center gap-x-2 gap-y-2 rounded-3xl border border-white/10 bg-slate-900/85 dark:bg-slate-900/90 p-2 shadow-2xl backdrop-blur-xl relative overflow-hidden text-white ring-1 ring-white/10 transition-opacity duration-300"
+          style={{
+            // Con el cajón del menú abierto en móvil no hay ancho útil: la barra se retira.
+            opacity: 'var(--app-floating-opacity, 1)',
+            pointerEvents: 'var(--app-floating-events, auto)' as React.CSSProperties['pointerEvents'],
+          }}
+        >
           {/* Gradiente de fondo */}
           <div className="absolute inset-0 bg-gradient-to-t from-indigo-500/5 to-transparent pointer-events-none" />
 
           {/* ── Contador de selección ──────────────────────────────────── */}
-          <div className="flex items-center gap-5 px-7 h-full rounded-lg bg-indigo-600 text-white shadow-md mr-1 shrink-0 cursor-default relative border-t border-white/30">
-            <div className="flex items-center justify-center h-9 w-9 rounded-[var(--radius-full)] bg-black/30 border border-white/20 shadow-inner">
-              <span className="text-xl font-black leading-none drop-shadow-md italic">
+          <div className="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg bg-indigo-600 text-white shadow-md shrink-0 cursor-default relative border-t border-white/30">
+            <div className="flex items-center justify-center h-8 w-8 rounded-[var(--radius-full)] bg-black/30 border border-white/20 shadow-inner">
+              <span className="text-lg font-black leading-none drop-shadow-md italic">
                 {selectedCount}
               </span>
             </div>
@@ -132,7 +145,8 @@ export const BatchActionToolbar: React.FC<BatchActionToolbarProps> = ({
           </div>
 
           {/* ── Acciones ──────────────────────────────────────────────── */}
-          <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-2 relative z-10">
+          {/* Envuelven en varias filas antes que recortarse: todas las opciones deben verse. */}
+          <div className="order-last basis-full sm:order-none sm:basis-auto sm:flex-1 flex min-w-0 flex-wrap items-center justify-center gap-1 px-1 relative z-10">
             <ActionItem
               icon={IconSwitchHorizontal}
               label="Traslado"
@@ -170,7 +184,7 @@ export const BatchActionToolbar: React.FC<BatchActionToolbarProps> = ({
             {onReproduction && (
               <ActionItem
                 icon={IconDna}
-                label="Reproduc."
+                label="Reproducción"
                 onClick={onReproduction}
                 color="text-purple-400"
                 glowColor="bg-purple-500/20"
@@ -196,7 +210,7 @@ export const BatchActionToolbar: React.FC<BatchActionToolbarProps> = ({
             )}
             {onDelete && (
               <>
-                <div className="mx-3 h-10 w-[1px] bg-card/10 shrink-0" />
+                <div className="mx-2 hidden h-10 w-[1px] bg-card/10 shrink-0 sm:block" />
                 <ActionItem
                   icon={IconTrash}
                   label="Borrar"
@@ -210,7 +224,7 @@ export const BatchActionToolbar: React.FC<BatchActionToolbarProps> = ({
           </div>
 
           {/* ── Cerrar selección ──────────────────────────────────────── */}
-          <div className="flex items-center pr-4 ml-2 border-l border-white/10 pl-3">
+          <div className="flex items-center shrink-0 ml-auto sm:ml-0 pl-2 sm:pl-3 sm:border-l sm:border-white/10 relative z-10">
             <button
               onClick={(e) => {
                 e.stopPropagation();

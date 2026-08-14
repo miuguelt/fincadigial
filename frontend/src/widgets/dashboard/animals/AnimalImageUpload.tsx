@@ -233,7 +233,7 @@ export function AnimalImageUpload({
           }, 800);
         } catch (error) {
           if (process.env.NODE_ENV !== 'production') {
-            console.warn('[AnimalImageUpload] No se pudo emitir evento de actualizaci¢n', error);
+            console.warn('[AnimalImageUpload] No se pudo emitir evento de actualización', error);
           }
         }
       } else {
@@ -399,7 +399,7 @@ export function AnimalImageUpload({
                   )}
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
-                  <p className="text-xs text-white truncate">
+                  <p className="text-xs text-white fit-clamp">
                     {filePreview.file.name}
                   </p>
                   <p className="text-xs text-white/70">

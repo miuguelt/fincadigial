@@ -1,21 +1,22 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { AnimalResponse } from '@/shared/api/generated/swaggerTypes';
 import { Button } from '@/shared/ui/button';
-import { 
-  IconEye, 
-  IconScale, 
-  IconClock, 
-  IconGenderMale, 
-  IconGenderFemale, 
-  IconMapPin, 
+import {
+  IconEye,
+  IconScale,
+  IconClock,
+  IconGenderMale,
+  IconGenderFemale,
+  IconMapPin,
+  IconCow,
+  IconAlertTriangle,
 } from '@/shared/ui/icons';
 import { AnimalActionsMenu } from '@/widgets/dashboard/AnimalActionsMenu';
 import { AnimalImageBanner } from './AnimalImageBanner';
-import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/shared/ui/card';
 import { cn } from '@/shared/ui/cn';
 import { getBreedColor } from '@/shared/config/animalColors';
-import { formatCompactNumber } from '@/shared/utils/dateUtils';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 
 interface AnimalCardProps {
   animal: AnimalResponse & { [k: string]: any };
@@ -42,7 +43,7 @@ interface AnimalCardProps {
  * Paleta de colores para potreros (determinística)
  */
 const FIELD_PALETTE = [
-  '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', 
+  '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b',
   '#ef4444', '#f43f5e', '#f97316', '#06b6d4'
 ];
 
@@ -53,6 +54,81 @@ const getFieldColor = (name: string) => {
   }
   return FIELD_PALETTE[Math.abs(hash) % FIELD_PALETTE.length];
 };
+
+const INK_DARK = '#020617';
+const INK_LIGHT = '#ffffff';
+/** Luminancia relativa de `#020617`, la tinta oscura de los chips. */
+const INK_DARK_LUMINANCE = 0.0055;
+
+/**
+ * Elige la tinta del chip comparando el contraste real contra blanco y contra
+ * tinta oscura. Con umbral fijo, el ámbar y el naranja de la paleta se quedaban
+ * en blanco a razón 2:1, ilegible en un rótulo de 9 px.
+ */
+const getChipInk = (hex: string) => {
+  const value = hex.replace('#', '');
+  const channel = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const luminance =
+    0.2126 * channel(parseInt(value.slice(0, 2), 16) / 255) +
+    0.7152 * channel(parseInt(value.slice(2, 4), 16) / 255) +
+    0.0722 * channel(parseInt(value.slice(4, 6), 16) / 255);
+  const againstLight = 1.05 / (luminance + 0.05);
+  const againstDark = (luminance + 0.05) / (INK_DARK_LUMINANCE + 0.05);
+  return againstDark >= againstLight ? INK_DARK : INK_LIGHT;
+};
+
+const weightFormatter = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 1 });
+
+interface Metric {
+  key: string;
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  /** Unidad en tipografía secundaria; se omite en los progenitores. */
+  unit?: string;
+  onClick?: () => void;
+}
+
+/**
+ * Celda del panel de métricas. Las etiquetas nunca se parten: el ancho lo
+ * absorbe el valor, que encoge con `fit-clamp` antes de perder caracteres.
+ */
+function MetricCell({ metric, index, columns }: { metric: Metric; index: number; columns: number }) {
+  const interactive = Boolean(metric.onClick);
+  return (
+    <div
+      className={cn(
+        'min-w-0 px-2.5 py-2',
+        index % columns !== columns - 1 && 'border-r border-[var(--color-border)]',
+        index >= columns && 'border-t border-[var(--color-border)]',
+        interactive && 'cursor-pointer transition-colors hover:bg-[var(--color-surface-raised)]'
+      )}
+      onClick={(event) => {
+        if (!metric.onClick) return;
+        event.stopPropagation();
+        metric.onClick();
+      }}
+    >
+      <div className="flex items-center gap-1 text-[var(--color-text-muted)]">
+        {metric.icon}
+        <span className="whitespace-nowrap text-[9px] font-bold uppercase tracking-wide">
+          {metric.label}
+        </span>
+      </div>
+      <p
+        className="fit-clamp mt-0.5 text-[13px] font-bold leading-tight text-[var(--color-text)]"
+        title={metric.unit ? `${metric.value} ${metric.unit}` : metric.value}
+      >
+        {metric.value}
+        {metric.unit && (
+          <span className="ml-0.5 text-[10px] font-semibold text-[var(--color-text-muted)]">
+            {metric.unit}
+          </span>
+        )}
+      </p>
+    </div>
+  );
+}
 
 export function AnimalCard({
   animal,
@@ -73,10 +149,9 @@ export function AnimalCard({
   compact,
   actions,
 }: AnimalCardProps) {
-  const navigate = useNavigate();
-  const [hasImages, setHasImages] = useState(false);
-  const handleImagesChange = useCallback((images: unknown[]) => {
-    setHasImages(images.length > 0);
+  const { goTo } = useRoleNavigation();
+  const handleImagesChange = useCallback((_images: unknown[]) => {
+    // do nothing
   }, []);
 
   const status = animal.status || 'VIVO';
@@ -89,9 +164,15 @@ export function AnimalCard({
   const breed = breedLabel || animal.breed?.name || 'Desconocida';
   const breedColor = getBreedColor(breed);
 
-  const weight = animal.weight ? `${formatCompactNumber(Number(animal.weight))}k` : '—k';
-  const age = animal.age_in_months !== undefined ? `${animal.age_in_months}m` : '—m';
-  
+  // El peso llega en kilos: mostrarlo con la unidad evita el "247.5k" anterior,
+  // que se leía como 247 500.
+  const weight = animal.weight !== undefined && animal.weight !== null
+    ? weightFormatter.format(Number(animal.weight))
+    : '—';
+  const age = animal.age_in_months !== undefined && animal.age_in_months !== null
+    ? String(animal.age_in_months)
+    : '—';
+
   const father = fatherLabel || animal.father?.record || 'N/A';
   const mother = motherLabel || animal.mother?.record || 'N/A';
 
@@ -103,7 +184,44 @@ export function AnimalCard({
   const sexSymbol = animal.sex === 'Hembra' ? '♀' : animal.sex === 'Macho' ? '♂' : null;
 
   const field = fieldName || animal.current_field_name || null;
+  const showField = Boolean(field && field !== 'Sin potrero');
   const potreroColor = field ? getFieldColor(field) : 'transparent';
+
+  const metrics: Metric[] = [
+    {
+      key: 'weight',
+      icon: <IconScale size={11} className="shrink-0" />,
+      label: 'Peso',
+      value: weight,
+      unit: weight === '—' ? undefined : 'kg',
+    },
+    {
+      key: 'age',
+      icon: <IconClock size={11} className="shrink-0" />,
+      label: 'Edad',
+      value: age,
+      unit: age === '—' ? undefined : (age === '1' ? 'mes' : 'meses'),
+    },
+  ];
+
+  if (!compact) {
+    metrics.push(
+      {
+        key: 'father',
+        icon: <IconGenderMale size={11} className="shrink-0 text-blue-500" />,
+        label: 'Padre',
+        value: father,
+        onClick: onFatherClick && fatherId ? () => onFatherClick(fatherId) : undefined,
+      },
+      {
+        key: 'mother',
+        icon: <IconGenderFemale size={11} className="shrink-0 text-rose-500" />,
+        label: 'Madre',
+        value: mother,
+        onClick: onMotherClick && motherId ? () => onMotherClick(motherId) : undefined,
+      },
+    );
+  }
 
   const handleCardClick = () => {
     if (onCardClick) {
@@ -113,7 +231,7 @@ export function AnimalCard({
     if (onNavigate) {
       onNavigate(String(animal.id));
     } else {
-      navigate(`/admin/animals/${animal.id}`);
+      goTo(`/admin/animals/${animal.id}`);
     }
   };
 
@@ -146,10 +264,11 @@ export function AnimalCard({
       tabIndex={0}
       aria-label={`Abrir ficha de ${animal.record || `animal ${animal.id}`}`}
     >
-      {/* Header: Imagen y Badges */}
+      {/* Cabecera: foto o marca de agua de raza, siempre con la misma altura
+          para que las tarjetas de una fila queden alineadas. */}
       <div className={cn(
-        "relative aspect-video w-full overflow-hidden bg-[var(--color-surface-raised)]",
-        compact && "aspect-[2/1]"
+        "relative aspect-[16/9] w-full overflow-hidden bg-[var(--color-surface-raised)]",
+        compact && "aspect-[5/2]"
       )}>
         <AnimalImageBanner
           animalId={animal.id!}
@@ -160,70 +279,53 @@ export function AnimalCard({
           initialImages={(animal as any).images}
           deferLoad
           deferRootMargin="100px"
+          emptyState={
+            <div className="relative h-full w-full overflow-hidden">
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: `linear-gradient(135deg, ${breedColor}33 0%, rgba(15,23,42,0.92) 62%, rgba(2,6,23,0.96) 100%)`,
+                }}
+              />
+              <IconCow
+                size={96}
+                className="absolute -bottom-4 -right-3 text-white/10"
+              />
+              <span className="sr-only">Este animal aún no tiene imágenes</span>
+            </div>
+          }
         />
-        
-        {/* Chip Estado (Top-Left) */}
-        <div className="absolute top-2 left-2 flex items-center gap-1.5 rounded-full border border-white/10 bg-black/70 px-2 py-1">
-          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: statusColor }} />
-          <span className="text-[9px] font-bold text-white uppercase tracking-widest">{status}</span>
-        </div>
 
-        {/* Badge Potrero y Alertas (Bottom, solo sobre imágenes reales) */}
-        {hasImages && <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between gap-2">
-          {field && field !== 'Sin potrero' && (
-            <div 
-              className="flex min-w-0 items-center gap-1.5 px-2.5 py-1 rounded-lg border shadow-lg max-w-[70%] transition-transform group-hover:scale-105"
-              style={{ 
-                backgroundColor: potreroColor,
-                borderColor: potreroColor,
-              }}
+        {/* Franja inferior: estado a la izquierda, potrero a la derecha. Ambos
+            chips viven sobre la imagen y ya no duplican bloque en el cuerpo. */}
+        <div className="pointer-events-none absolute inset-x-2 bottom-2 flex items-end justify-between gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-black/70 px-2 py-1 backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: statusColor }} />
+            <span className="whitespace-nowrap text-[9px] font-bold uppercase tracking-wider text-white">
+              {status}
+            </span>
+          </div>
+
+          {showField && (
+            <div
+              className="flex min-w-0 items-center gap-1 rounded-full border px-2 py-1 shadow-sm"
+              style={{ backgroundColor: potreroColor, borderColor: potreroColor, color: getChipInk(potreroColor) }}
+              title={field ?? undefined}
             >
-              <IconMapPin size={10} className="shrink-0 text-white" />
-              <span className="truncate text-[10px] font-bold uppercase tracking-tight text-white">
+              <IconMapPin size={10} className="shrink-0" />
+              <span className="fit-clamp text-[9px] font-bold uppercase tracking-tight">
                 {field}
               </span>
             </div>
           )}
-          
-          {alertCount > 0 && (
-            <div className="mr-12 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[var(--color-warning)] text-slate-950 shadow-lg animate-pulse">
-              <span className="text-[10px] font-black">{alertCount}!</span>
-            </div>
-          )}
-        </div>}
+        </div>
       </div>
 
-      <CardContent className={cn("flex flex-col gap-3 p-4", compact && "gap-2.5 p-3")}>
-        {/* En tarjetas sin imagen, el potrero vive fuera del banner para no tapar el estado vacío. */}
-        {!hasImages && (field || alertCount > 0) && (
-          <div className="-mt-1 flex items-center justify-between gap-2 pb-1">
-            {field && field !== 'Sin potrero' ? (
-              <div
-                className="flex min-w-0 max-w-[calc(100%-2rem)] items-center gap-1.5 rounded-lg border px-2 py-1 shadow-sm"
-                style={{
-                  backgroundColor: potreroColor,
-                  borderColor: potreroColor,
-                }}
-              >
-                <IconMapPin size={10} className="shrink-0 text-white" />
-                <span className="truncate text-[10px] font-bold uppercase tracking-tight text-white">
-                  {field}
-                </span>
-              </div>
-            ) : <span />}
-
-            {alertCount > 0 && (
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[var(--color-warning)] text-slate-950 shadow-sm">
-                <span className="text-[10px] font-black">{alertCount}!</span>
-              </div>
-            )}
-          </div>
-        )}
-
+      <CardContent className={cn("flex flex-1 flex-col gap-2.5 p-3.5", compact && "gap-2 p-3")}>
         {/* Identidad */}
-        <div>
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="text-sm font-bold leading-tight truncate tracking-tight text-[var(--color-text)]">
+        <div className="flex items-start gap-2">
+          <div className="min-w-0 flex-1">
+            <h3 className="fit-clamp text-[13px] font-bold leading-tight tracking-tight text-[var(--color-text)]">
               {animal.record || `#${animal.id}`}
               {sexSymbol && (
                 <span
@@ -237,100 +339,70 @@ export function AnimalCard({
                 </span>
               )}
             </h3>
-            {/* Menú de acciones legacy si es necesario */}
-            {!hideFooterActions && (
-                <div onClick={e => {
-                    e.stopPropagation();
-                    if (onSelect) onSelect(String(animal.id));
-                }}>
-                   {actions || (
-                       <AnimalActionsMenu 
-                        animal={animal} 
-                        currentUserId={currentUserId}
-                       />
-                   )}
-                </div>
-            )}
+            <div className="mt-1 flex min-w-0 items-center gap-1.5">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: breedColor }} />
+              <span
+                className="fit-clamp text-[10px] font-semibold uppercase tracking-wide"
+                style={{ color: breedColor }}
+              >
+                {breed}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-2 mt-1">
-            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: breedColor }} />
-            <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: breedColor }}>
-              {breed}
-            </span>
-          </div>
+
+          {alertCount > 0 && (
+            <div
+              className="flex shrink-0 items-center gap-1 rounded-full bg-[var(--color-warning)] px-1.5 py-0.5 text-slate-950 shadow-sm"
+              aria-label={`${alertCount} ${alertCount === 1 ? 'alerta pendiente' : 'alertas pendientes'}`}
+              title={`${alertCount} ${alertCount === 1 ? 'alerta pendiente' : 'alertas pendientes'}`}
+            >
+              <IconAlertTriangle size={10} className="shrink-0" />
+              <span className="text-[10px] font-black leading-none">{alertCount}</span>
+            </div>
+          )}
+
+          {/* Menú de acciones legacy si es necesario */}
+          {!hideFooterActions && (
+            <div
+              className="shrink-0"
+              onClick={e => {
+                e.stopPropagation();
+                if (onSelect) onSelect(String(animal.id));
+              }}
+            >
+              {actions || (
+                <AnimalActionsMenu
+                  animal={animal}
+                  currentUserId={currentUserId}
+                />
+              )}
+            </div>
+          )}
         </div>
 
-        <div className="h-px bg-[var(--color-border)] opacity-50" />
-
-        {/* Grid Peso y Edad */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4">
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-1.5 text-[var(--color-text-muted)]">
-              <IconScale size={12} />
-              <span className="text-[9px] font-bold uppercase tracking-widest">Peso</span>
-            </div>
-            <p className="text-xs font-bold text-[var(--color-text)]">{weight}</p>
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-1.5 text-[var(--color-text-muted)]">
-              <IconClock size={12} />
-              <span className="text-[9px] font-bold uppercase tracking-widest">Edad</span>
-            </div>
-            <p className="text-xs font-bold text-[var(--color-text)]">{age}</p>
-          </div>
-        </div>
-
-        {!compact && <div className="h-px bg-[var(--color-border)] opacity-50" />}
-
-        {/* Grid Padres */}
-        {!compact && <div className="grid grid-cols-2 gap-3 sm:gap-4">
-          <div 
-            className={cn("flex flex-col gap-0.5 overflow-hidden", onFatherClick && "cursor-pointer hover:opacity-70")}
-            onClick={(e) => {
-                if (onFatherClick && fatherId) {
-                    e.stopPropagation();
-                    onFatherClick(fatherId);
-                }
-            }}
-          >
-            <div className="flex items-center gap-1.5 text-[var(--color-text-muted)]">
-              <IconGenderMale size={12} className="text-blue-500" />
-              <span className="text-[9px] font-bold uppercase tracking-widest">Padre</span>
-            </div>
-            <p className="text-[10px] font-medium text-[var(--color-text)] truncate">{father}</p>
-          </div>
-          <div 
-            className={cn("flex flex-col gap-0.5 overflow-hidden", onMotherClick && "cursor-pointer hover:opacity-70")}
-            onClick={(e) => {
-                if (onMotherClick && motherId) {
-                    e.stopPropagation();
-                    onMotherClick(motherId);
-                }
-            }}
-          >
-            <div className="flex items-center gap-1.5 text-[var(--color-text-muted)]">
-              <IconGenderFemale size={12} className="text-rose-500" />
-              <span className="text-[9px] font-bold uppercase tracking-widest">Madre</span>
-            </div>
-            <p className="text-[10px] font-medium text-[var(--color-text)] truncate">{mother}</p>
-          </div>
-        </div>}
+        {/* Panel de métricas: una sola caja en lugar de dos rejillas separadas
+            por líneas, así el ancho disponible se reparte de forma pareja. */}
+        <dl className="grid grid-cols-2 overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)]/40">
+          {metrics.map((metric, index) => (
+            <MetricCell key={metric.key} metric={metric} index={index} columns={2} />
+          ))}
+        </dl>
 
         {/* Acción principal visible: el resto de la tarjeta también es clicable. */}
-        <div className="mt-auto border-t border-[var(--color-border)] pt-3">
+        <div className="mt-auto pt-1">
           <Button
             type="button"
             variant="outline"
             size="sm"
-            className="h-10 w-full justify-center gap-2 text-xs font-bold"
+            className="h-9 w-full justify-center gap-2 text-[11px] font-bold"
             onClick={(event) => {
               event.stopPropagation();
               handleCardClick();
             }}
             aria-label={`Abrir ficha de ${animal.record || `animal ${animal.id}`}`}
           >
-            <IconEye size={16} />
-            <span>{compact ? 'Abrir ficha' : 'Ver ficha completa'}</span>
+            <IconEye size={14} className="shrink-0" />
+            <span className="fit-clamp">{compact ? 'Abrir ficha' : 'Ver ficha completa'}</span>
           </Button>
         </div>
       </CardContent>

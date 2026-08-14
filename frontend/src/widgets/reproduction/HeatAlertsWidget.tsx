@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
+import { useCallback } from 'react';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { AlertTriangle, Clock, Plus, RefreshCw } from 'lucide-react';
 import { reproductionService } from '@/entities/reproduction/api/reproduction.service';
 import { useToast } from '@/app/providers/ToastContext';
-import { useNavigate } from 'react-router-dom';
 import { getAutoStatusClass } from '@/shared/utils/badgeStyles';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 
 interface HeatAlert {
   animal_id: number;
@@ -19,12 +20,12 @@ interface HeatAlert {
 }
 
 export default function HeatAlertsWidget() {
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [alerts, setAlerts] = useState<HeatAlert[]>([]);
 
-  const loadAlerts = async () => {
+  const loadAlerts = useCallback(async () => {
     setLoading(true);
     try {
       const response = await reproductionService.getHeatAlerts();
@@ -35,14 +36,14 @@ export default function HeatAlertsWidget() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
 
   useEffect(() => {
     loadAlerts();
-  }, []);
+  }, [loadAlerts]);
 
   const handleRegisterHeat = (animalId: number) => {
-    navigate('/admin/reproduction', { state: { preselectAnimal: animalId, eventType: 'Celo' } });
+    goTo('/admin/reproduction', { state: { preselectAnimal: animalId, eventType: 'Celo' } });
   };
 
   // getPriorityColor reemplazado por getAutoStatusClass() de badgeStyles
@@ -99,7 +100,7 @@ export default function HeatAlertsWidget() {
                     {alert.priority}
                   </Badge>
                   <div className="min-w-0">
-                    <p className="font-medium text-sm truncate">{alert.record}</p>
+                    <p className="font-medium text-sm fit-clamp">{alert.record}</p>
                     <p className="text-xs text-muted-foreground">
                       {alert.breed} • {alert.age_days ? `${Math.floor(alert.age_days / 365)} años` : '---'}
                     </p>
@@ -124,7 +125,7 @@ export default function HeatAlertsWidget() {
                 variant="ghost"
                 size="sm"
                 className="w-full"
-                onClick={() => navigate('/admin/reproduction')}
+                onClick={() => goTo('/admin/reproduction')}
               >
                 Ver {alerts.length - 5} más
               </Button>

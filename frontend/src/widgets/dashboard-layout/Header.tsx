@@ -8,6 +8,7 @@ import { Breadcrumbs } from '@/shared/ui/common';
 import HeaderActions from './HeaderActions';
 import HeaderSearch from './HeaderSearch';
 import ProfileMenu from './profile-menu/ProfileMenu';
+import { FincaSelector } from '@/features/multi-finca/ui/FincaSelector';
 
 interface HeaderProps {
   isSidebarOpen?: boolean;
@@ -39,7 +40,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar }) => {
       className="sticky top-0 z-[1000] h-14 w-full border-b border-border bg-card shadow-sm sm:h-16"
       role="banner"
     >
-      <div className="relative flex h-14 items-center gap-2 px-2 sm:h-16 sm:px-3 lg:px-4">
+      <div className="relative flex h-14 items-center gap-2 px-3 sm:h-16 sm:px-5 lg:px-6">
         <div className="flex min-w-0 items-center gap-2.5">
           {hasFinca && (
             <button
@@ -70,7 +71,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar }) => {
             <button
               type="button"
               onClick={contextualNewAction.action}
-              className="mr-1 hidden h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 active:scale-95 md:inline-flex"
+              className="mr-1 hidden h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 active:scale-95 xl:inline-flex"
             >
               <Plus size={16} />
               {contextualNewAction.label}
@@ -87,6 +88,11 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar }) => {
           )}
 
           <div className="mx-1 h-5 w-[1px] bg-border" />
+
+          {/* Finca Activa: selector visible permanentemente */}
+          <div className="hidden sm:block mr-1">
+            <FincaSelector />
+          </div>
 
           {/* Perfil: agrupa cuenta, tema, cambio de finca y salir. */}
           <ProfileMenu />

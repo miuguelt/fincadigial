@@ -13,6 +13,32 @@ import { VaccineLink } from '@/entities/vaccine/ui';
 import { UserLink } from '@/entities/user/ui';
 import { SanidadTabs } from '@/widgets/dashboard/treatments/SanidadTabs';
 
+// Mapear respuesta a formulario
+const mapResponseToForm = (item: VaccinationResponse & { [k: string]: any }): VaccinationInput & { [k: string]: any } => ({
+  animal_id: item.animal_id,
+  vaccine_id: item.vaccine_id,
+  vaccination_date: item.vaccination_date,
+  apprentice_id: item.apprentice_id,
+  instructor_id: item.instructor_id,
+});
+
+// Validación
+const validateForm = (formData: VaccinationInput & { [k: string]: any }): string | null => {
+  if (!formData.animal_id) return 'El animal es obligatorio.';
+  if (!formData.vaccine_id) return 'La vacuna es obligatoria.';
+  if (!formData.vaccination_date) return 'La fecha de vacunación es obligatoria.';
+  return null;
+};
+
+// Datos iniciales
+const initialFormData: VaccinationInput & { [k: string]: any } = {
+  animal_id: 0,
+  vaccine_id: 0,
+  vaccination_date: getTodayColombia(),
+  apprentice_id: undefined,
+  instructor_id: undefined,
+};
+
 function AdminVaccinationsPage() {
   const [searchParams] = useSearchParams();
   const preselectedUserId = searchParams.get('user_id');
@@ -108,7 +134,7 @@ function AdminVaccinationsPage() {
   // Columnas de la tabla con renderizado optimizado y Foreign Key Links
   const columns: CRUDColumn<VaccinationResponse & { [k: string]: any }>[] = useMemo(() => [
 
-    { key: 'vaccination_date', label: 'Fecha', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-') },
+    { key: 'vaccination_date', label: 'Fecha', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
     {
       key: 'animal_id',
       label: 'Animal',
@@ -165,7 +191,7 @@ function AdminVaccinationsPage() {
         );
       }
     },
-    { key: 'created_at' as any, label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-') },
+    { key: 'created_at' as any, label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
   ], [animalMap, vaccineMap, apprenticeMap, instructorMap]);
 
   const formSections: CRUDFormSection<VaccinationInput & { [k: string]: any }>[] = [
@@ -233,28 +259,4 @@ function AdminVaccinationsPage() {
 
 export default AdminVaccinationsPage;
 
-// Mapear respuesta a formulario
-const mapResponseToForm = (item: VaccinationResponse & { [k: string]: any }): VaccinationInput & { [k: string]: any } => ({
-  animal_id: item.animal_id,
-  vaccine_id: item.vaccine_id,
-  vaccination_date: item.vaccination_date,
-  apprentice_id: item.apprentice_id,
-  instructor_id: item.instructor_id,
-});
 
-// Validación
-const validateForm = (formData: VaccinationInput & { [k: string]: any }): string | null => {
-  if (!formData.animal_id) return 'El animal es obligatorio.';
-  if (!formData.vaccine_id) return 'La vacuna es obligatoria.';
-  if (!formData.vaccination_date) return 'La fecha de vacunación es obligatoria.';
-  return null;
-};
-
-// Datos iniciales
-const initialFormData: VaccinationInput & { [k: string]: any } = {
-  animal_id: 0,
-  vaccine_id: 0,
-  vaccination_date: getTodayColombia(),
-  apprentice_id: undefined,
-  instructor_id: undefined,
-};

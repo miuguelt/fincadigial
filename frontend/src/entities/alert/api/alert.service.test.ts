@@ -10,18 +10,29 @@ describe('normalizeAlertStats', () => {
         statistics: {
           total: 4,
           unread: 2,
+          critical_unread: 1,
           by_priority: { critica: 1, alta: 2, media: 1, baja: 0 },
+          by_type: { Salud: 3, Reproducción: 1 },
         },
       },
     })).toEqual({
       total: 4,
       unread: 2,
       critical: 1,
+      criticalUnread: 1,
       high: 2,
       medium: 1,
       low: 0,
-      by_type: {},
+      by_type: { Salud: 3, Reproducción: 1 },
     });
+  });
+
+  it('never lets unread exceed total (page-size vs. real count)', () => {
+    const stats = normalizeAlertStats({
+      data: { statistics: { total: 240, unread: 201, critical_unread: 7 } },
+    });
+    expect(stats.total).toBeGreaterThanOrEqual(stats.unread);
+    expect(stats.criticalUnread).toBe(7);
   });
 
   it('keeps compatibility with a flat stats payload', () => {

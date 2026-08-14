@@ -285,11 +285,11 @@ const ClimateAlertsPage: React.FC = () => {
       <AnimatePresence>
         {showForm && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4"
+            className="vl-modal-overlay fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
             onClick={e => { if (e.target === e.currentTarget) setShowForm(false); }}
           >
             <motion.div initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 60 }}
-              className="bg-card rounded-lg shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+              className="vl-modal-surface w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-border/80 text-foreground shadow-2xl"
             >
               <div className="flex items-center justify-between p-5 border-b sticky top-0 bg-card z-10">
                 <h2 className="font-bold text-lg">{editId ? '✏️ Editar Alerta' : '⛈️ Nueva Alerta'}</h2>

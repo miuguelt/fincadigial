@@ -64,3 +64,27 @@ def try_make_redis_client(url: str, **overrides):
     except Exception as exc:  # pragma: no cover - depends on runtime env
         logger.warning("Redis no disponible en '%s': %s", url, exc)
         return None
+
+
+def make_redis_pubsub_client(url: str, **overrides):
+    """Build a Redis client optimized for Pub/Sub (long-lived connections).
+
+    Pub/Sub connections block on ``get_message`` with a short poll timeout,
+    so we disable ``socket_timeout`` to avoid spurious TimeoutError when
+    Memurai reaps idle sockets.  ``socket_keepalive`` and a shorter
+    ``health_check_interval`` ensure broken connections are detected fast.
+    """
+    if not url:
+        return None
+    from redis import Redis
+
+    pubsub_defaults = {
+        "socket_timeout": None,
+        "socket_connect_timeout": 5,
+        "socket_keepalive": True,
+        "health_check_interval": 10,
+        "retry_on_timeout": True,
+        "max_connections": 5,
+    }
+    merged = {**pubsub_defaults, **overrides}
+    return Redis.from_url(url, **merged)

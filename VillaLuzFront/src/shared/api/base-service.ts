@@ -328,6 +328,9 @@ export class BaseService<T> {
       data: payload,
       ...config,
     });
+    if (method !== 'GET') {
+      await this.clearCache();
+    }
     return response.data?.data || response.data || response;
   }
 

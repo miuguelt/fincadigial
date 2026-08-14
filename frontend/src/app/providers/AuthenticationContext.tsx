@@ -8,6 +8,7 @@ import { locationService } from "@/entities/user/api/location.service"
 import { geofenceService } from "@/shared/api/offline/GeofenceService"
 import sse from "@/lib/events"
 import { isDevelopment } from "@/shared/utils/envConfig"
+import { roleCanPermission } from "@/shared/lib/rbac"
 
 // AuthContext imported from separate file
 
@@ -284,7 +285,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     lastInflightTxAtRef.current = Date.now()
 
     try {
-      const profile = await getUserProfile({ signal: ctrl.signal });
+      const profile = await getUserProfile({ signal: ctrl.signal, forceRefresh: !!opts?.force });
       if (meAbortRef.current !== ctrl || ctrl.signal.aborted) return
 
       const status = (profile as any)?.status
@@ -340,8 +341,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           try {
             const keysToRemove = ['finca_access_token', 'access_token', 'auth:user', 'auth:session_active', 'auth:user:cache', 'dev_user_data_session']
             keysToRemove.forEach(k => {
-              try { localStorage.removeItem(k) } catch {}
-              try { sessionStorage.removeItem(k) } catch {}
+              try { localStorage.removeItem(k) } catch { /* Storage may be blocked by browser policy. */ }
+              try { sessionStorage.removeItem(k) } catch { /* Storage may be blocked by browser policy. */ }
             })
             // Limpiar cookies relacionadas
             document.cookie.split(';').forEach(c => {
@@ -351,7 +352,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname}`
               }
             })
-          } catch {}
+          } catch { /* Session cleanup is best effort. */ }
           navigate('/', { replace: true })
         }
       }
@@ -369,8 +370,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           const keysToRemove = ['finca_access_token', 'access_token', 'auth:user', 'auth:session_active', 'auth:user:cache', 'dev_user_data_session']
           keysToRemove.forEach(k => {
-            try { localStorage.removeItem(k) } catch {}
-            try { sessionStorage.removeItem(k) } catch {}
+            try { localStorage.removeItem(k) } catch { /* Storage may be blocked by browser policy. */ }
+            try { sessionStorage.removeItem(k) } catch { /* Storage may be blocked by browser policy. */ }
           })
           document.cookie.split(';').forEach(c => {
             const name = c.trim().split('=')[0]
@@ -379,7 +380,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname}`
             }
           })
-        } catch {}
+        } catch { /* Session cleanup is best effort. */ }
         navigate('/', { replace: true })
         return
       }
@@ -397,7 +398,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (activeIsForeground) setLoading(false)
       }
     }
-  }, [clearAuthState])
+  }, [clearAuthState, navigate])
 
   // Hidratar desde sessionStorage y revalidar en background
   useEffect(() => {
@@ -632,20 +633,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     navigate(nextPath, { replace: true })
   }, [enableRoleSwitch, navigate, user])
 
-  // Chequeo de permisos por rol
+  // Chequeo de permisos por rol — matriz espejo de backend/app/utils/rbac.py
   const hasPermission = useCallback((permission: string) => {
     if (!user || !isAuthenticated) return false
-    const rolePermissions: Record<string, string[]> = {
-      [Role.Administrador]: ['dashboard:read', 'user:read', 'user:write', 'system:read', 'system:write', 'animal:read', 'animal:write', 'treatment:read', 'treatment:write', 'task:read', 'task:write'],
-      [Role.Propietario]: ['dashboard:read', 'user:read', 'user:write', 'system:read', 'system:write', 'animal:read', 'animal:write', 'treatment:read', 'treatment:write', 'task:read', 'task:write'],
-      [Role.Capataz]: ['dashboard:read', 'system:read', 'animal:read', 'animal:write', 'treatment:read', 'treatment:write', 'task:read', 'task:write', 'controls:read', 'controls:write', 'inventory:read', 'inventory:write', 'fields:read', 'fields:write'],
-      [Role.Instructor]: ['dashboard:read', 'animal:read', 'animal:write', 'treatment:read', 'treatment:write', 'task:read', 'controls:read', 'controls:write', 'species:read', 'breeds:read', 'inventory:read'],
-      [Role.Veterinario]: ['dashboard:read', 'animal:read', 'animal:write', 'treatment:read', 'treatment:write', 'task:read', 'controls:read', 'controls:write', 'vaccinations:read', 'vaccinations:write', 'medications:read', 'vaccines:read'],
-      [Role.Aprendiz]: ['dashboard:read', 'animal:read', 'treatment:read', 'task:read', 'controls:read', 'species:read', 'breeds:read', 'inventory:read', 'fields:read'],
-      [Role.Operario]: ['dashboard:read', 'animal:read', 'treatment:read', 'task:read', 'controls:read', 'controls:write', 'inventory:read', 'fields:read'],
-    }
-    const userPermissions = rolePermissions[user.role] || []
-    return userPermissions.includes(permission)
+    return roleCanPermission(user.role, permission)
   }, [user, isAuthenticated])
 
   // Logout: llama a /auth/logout, limpia estado y coordina con otras pestañas

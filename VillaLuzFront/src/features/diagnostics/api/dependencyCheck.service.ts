@@ -395,7 +395,7 @@ export async function checkAnimalDependencies(animalId: number): Promise<Depende
     const treatmentsCount = treatments.length;
     if (treatmentsCount > 0) {
       const treatmentDates = treatments.slice(0, 3).map((t: any) => {
-        const date = t.treatment_date ? new Date(t.treatment_date).toLocaleDateString('es-ES') : 'Sin fecha';
+        const date = t.treatment_date ? new Date(t.treatment_date).toLocaleDateString('es-CO') : 'Sin fecha';
         return `${date} (ID ${t.id})`;
       });
       const moreText = treatmentsCount > 3 ? ` y ${treatmentsCount - 3} más` : '';
@@ -410,7 +410,7 @@ export async function checkAnimalDependencies(animalId: number): Promise<Depende
     const vaccinationsCount = vaccinations.length;
     if (vaccinationsCount > 0) {
       const vaccinationDates = vaccinations.slice(0, 3).map((v: any) => {
-        const date = v.vaccination_date ? new Date(v.vaccination_date).toLocaleDateString('es-ES') : 'Sin fecha';
+        const date = v.vaccination_date ? new Date(v.vaccination_date).toLocaleDateString('es-CO') : 'Sin fecha';
         return `${date} (ID ${v.id})`;
       });
       const moreText = vaccinationsCount > 3 ? ` y ${vaccinationsCount - 3} más` : '';
@@ -425,7 +425,7 @@ export async function checkAnimalDependencies(animalId: number): Promise<Depende
     const diseasesCount = diseases.length;
     if (diseasesCount > 0) {
       const diseaseDates = diseases.slice(0, 3).map((d: any) => {
-        const date = d.diagnosis_date ? new Date(d.diagnosis_date).toLocaleDateString('es-ES') : 'Sin fecha';
+        const date = d.diagnosis_date ? new Date(d.diagnosis_date).toLocaleDateString('es-CO') : 'Sin fecha';
         return `${date} (ID ${d.id})`;
       });
       const moreText = diseasesCount > 3 ? ` y ${diseasesCount - 3} más` : '';
@@ -440,7 +440,7 @@ export async function checkAnimalDependencies(animalId: number): Promise<Depende
     const fieldsCount = fields.length;
     if (fieldsCount > 0) {
       const fieldDates = fields.slice(0, 3).map((f: any) => {
-        const date = f.assignment_date ? new Date(f.assignment_date).toLocaleDateString('es-ES') : 'Sin fecha';
+        const date = f.assignment_date ? new Date(f.assignment_date).toLocaleDateString('es-CO') : 'Sin fecha';
         return `${date} (ID ${f.id})`;
       });
       const moreText = fieldsCount > 3 ? ` y ${fieldsCount - 3} más` : '';
@@ -455,7 +455,7 @@ export async function checkAnimalDependencies(animalId: number): Promise<Depende
     const improvementsCount = improvements.length;
     if (improvementsCount > 0) {
       const improvementDates = improvements.slice(0, 3).map((i: any) => {
-        const date = i.improvement_date ? new Date(i.improvement_date).toLocaleDateString('es-ES') : 'Sin fecha';
+        const date = i.improvement_date ? new Date(i.improvement_date).toLocaleDateString('es-CO') : 'Sin fecha';
         return `${date} (ID ${i.id})`;
       });
       const moreText = improvementsCount > 3 ? ` y ${improvementsCount - 3} más` : '';
@@ -511,7 +511,7 @@ export async function checkFieldDependencies(fieldId: number): Promise<Dependenc
         assignments.slice(0, 3).map(async (a: any) => {
           try {
             const animal = await animalsService.getAnimalById(a.animal_id);
-            const date = a.assignment_date ? new Date(a.assignment_date).toLocaleDateString('es-ES') : 'Sin fecha';
+            const date = a.assignment_date ? new Date(a.assignment_date).toLocaleDateString('es-CO') : 'Sin fecha';
             return `${animal?.record || `Animal ID ${a.animal_id}`} (${date})`;
           } catch {
             return `Animal ID ${a.animal_id}`;
@@ -562,7 +562,7 @@ export async function checkDiseaseDependencies(diseaseId: number): Promise<Depen
         diagnoses.slice(0, 3).map(async (d: any) => {
           try {
             const animal = await animalsService.getAnimalById(d.animal_id);
-            const date = d.diagnosis_date ? new Date(d.diagnosis_date).toLocaleDateString('es-ES') : 'Sin fecha';
+            const date = d.diagnosis_date ? new Date(d.diagnosis_date).toLocaleDateString('es-CO') : 'Sin fecha';
             return `${animal?.record || `Animal ID ${d.animal_id}`} (${date})`;
           } catch {
             return `Diagnóstico ID ${d.id}`;
@@ -685,7 +685,7 @@ export async function checkVaccineDependencies(vaccineId: number): Promise<Depen
 
     if (vaccinationsCount > 0) {
       const vaccinationDetails = vaccinations.slice(0, 3).map((v: any) => {
-        const date = v.vaccination_date ? new Date(v.vaccination_date).toLocaleDateString('es-ES') : 'Sin fecha';
+        const date = v.vaccination_date ? new Date(v.vaccination_date).toLocaleDateString('es-CO') : 'Sin fecha';
         return `${date} (ID ${v.id})`;
       });
       const moreText = vaccinationsCount > 3 ? ` y ${vaccinationsCount - 3} más` : '';
@@ -741,7 +741,7 @@ export async function checkFoodTypeDependencies(foodTypeId: number): Promise<Dep
 
     if (controlsCount > 0) {
       const controlDetails = controls.slice(0, 3).map((c: any) => {
-        const date = c.control_date ? new Date(c.control_date).toLocaleDateString('es-ES') : 'Sin fecha';
+        const date = c.control_date ? new Date(c.control_date).toLocaleDateString('es-CO') : 'Sin fecha';
         return `${date} (ID ${c.id})`;
       });
       const moreText = controlsCount > 3 ? ` y ${controlsCount - 3} más` : '';
@@ -980,7 +980,7 @@ export async function checkUserDependencies(userId: number): Promise<DependencyC
 
     if (treatmentsCount > 0) {
       const treatmentDates = treatments.slice(0, 3).map((t: any) => {
-        const date = t.treatment_date ? new Date(t.treatment_date).toLocaleDateString('es-ES') : 'Sin fecha';
+        const date = t.treatment_date ? new Date(t.treatment_date).toLocaleDateString('es-CO') : 'Sin fecha';
         return `${date} (ID ${t.id})`;
       });
       const moreText = treatmentsCount > 3 ? ` y ${treatmentsCount - 3} más` : '';
@@ -1009,7 +1009,7 @@ export async function checkUserDependencies(userId: number): Promise<DependencyC
 
     if (vaccinationsCount > 0) {
       const vaccinationDates = vaccinations.slice(0, 3).map((v: any) => {
-        const date = v.vaccination_date ? new Date(v.vaccination_date).toLocaleDateString('es-ES') : 'Sin fecha';
+        const date = v.vaccination_date ? new Date(v.vaccination_date).toLocaleDateString('es-CO') : 'Sin fecha';
         return `${date} (ID ${v.id})`;
       });
       const moreText = vaccinationsCount > 3 ? ` y ${vaccinationsCount - 3} más` : '';
@@ -1038,7 +1038,7 @@ export async function checkUserDependencies(userId: number): Promise<DependencyC
 
     if (diseasesCount > 0) {
       const diseaseDates = diseases.slice(0, 3).map((d: any) => {
-        const date = d.diagnosis_date ? new Date(d.diagnosis_date).toLocaleDateString('es-ES') : 'Sin fecha';
+        const date = d.diagnosis_date ? new Date(d.diagnosis_date).toLocaleDateString('es-CO') : 'Sin fecha';
         return `${date} (ID ${d.id})`;
       });
       const moreText = diseasesCount > 3 ? ` y ${diseasesCount - 3} más` : '';

@@ -13,6 +13,9 @@ export interface Finca {
   address?: string;
   nit?: string;
   created_at?: string;
+  /** Estado de la sesión actual frente a la finca; ausente si no hay sesión. */
+  is_member?: boolean;
+  already_requested?: boolean;
 }
 
 /**
@@ -29,16 +32,13 @@ export interface LivestockSummary {
 
 /**
  * Public finca detail. Stats are optional: fincas with "minimal" visibility
- * omit them entirely, and membership flags are only present for authenticated
- * callers.
+ * omit them entirely.
  */
 export interface FincaDetail extends Finca {
   animals_count?: number;
   livestock_summary?: LivestockSummary;
   members_count?: number;
   total_fields?: number;
-  is_member?: boolean;
-  already_requested?: boolean;
   /** Galería pública; se sirve desde /finca-images/{id}. */
   images?: FincaImage[];
   last_activity?: string;
@@ -73,7 +73,7 @@ export const fincaService = {
    * Listar fincas públicas disponibles para solicitar membresía
    * No requiere autenticación
    */
-  async getPublicFincas(filters?: FincaSearchFilters) {
+  async getPublicFincas(filters?: FincaSearchFilters, options?: { skipCache?: boolean }) {
     const params = new URLSearchParams();
     if (filters?.search) params.append('search', filters.search);
     if (filters?.type) params.append('type', filters.type);
@@ -84,7 +84,11 @@ export const fincaService = {
     const queryString = params.toString();
     const url = `/fincas/public${queryString ? `?${queryString}` : ''}`;
 
-    const response = await api.get<PaginatedResponse<Finca>>(url);
+    // is_member / already_requested dependen de la sesión: tras enviar una
+    // solicitud hay que releer sin caché para que la tarjeta cambie de estado.
+    const response = options?.skipCache
+      ? await api.get<PaginatedResponse<Finca>>(url, { skipCache: true } as never)
+      : await api.get<PaginatedResponse<Finca>>(url);
     return response.data;
   },
 
@@ -124,7 +128,7 @@ export const fincaService = {
     fincaId: number,
     coords: { latitude: number; longitude: number },
   ) {
-    const response = await api.patch<ApiResponse<Finca>>(`/fincas/${fincaId}`, coords);
+    const response = await api.patch<ApiResponse<Finca>>(`/fincas/${fincaId}/location`, coords);
     return response.data;
   }
 };

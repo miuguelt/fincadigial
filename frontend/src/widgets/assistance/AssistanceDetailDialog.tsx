@@ -2,10 +2,11 @@ import React from 'react';
 import { Dialog, DialogContent } from '@/shared/ui/dialog';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
+import { FitText } from '@/shared/ui/FitText';
 import type { TechnicalAssistanceRequest } from '@/entities/campesino';
 import { getCategoryConfig, STATUS_CONFIG, PRIORITY_CONFIG } from './assistance.constants';
 import { formatDateLong } from './timeUtils';
-import { User, Calendar, MessageCircle, CheckCircle2, Clock } from 'lucide-react';
+import { User, Calendar, MessageCircle, CheckCircle2, Clock, BadgeCheck } from 'lucide-react';
 
 interface AssistanceDetailDialogProps {
   item: TechnicalAssistanceRequest | null;
@@ -16,7 +17,7 @@ interface AssistanceDetailDialogProps {
 
 const STATUS_STEPS = [
   { key: 'open', label: 'Solicitud creada', icon: Clock },
-  { key: 'in_progress', label: 'Técnico asignado', icon: User },
+  { key: 'in_progress', label: 'Veterinario asignado', icon: User },
   { key: 'resolved', label: 'Problema resuelto', icon: CheckCircle2 },
   { key: 'closed', label: 'Cancelada', icon: Clock },
 ];
@@ -48,18 +49,19 @@ export const AssistanceDetailDialog = React.memo<AssistanceDetailDialogProps>(({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto p-0">
-        <div className="p-6 space-y-5">
-          <div className="flex items-start gap-3">
+        <div className="fit-container p-4 sm:p-6 space-y-5 min-w-0">
+          <div className="flex items-start gap-3 min-w-0">
             <div className={`shrink-0 w-10 h-10 rounded-lg ${cat.bg} flex items-center justify-center`}>
               <CatIcon className={`w-5 h-5 ${cat.color}`} />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <h2 className="text-lg font-semibold text-foreground">{item.title}</h2>
-              </div>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge variant={statusCfg.badge} size="sm">{statusCfg.label}</Badge>
-                <Badge variant={priorityCfg.badge} size="sm">{priorityCfg.label}</Badge>
+              <FitText as="h2" maxLines={2} className="block text-lg font-semibold text-foreground leading-snug">
+                {item.title || 'Solicitud sin título'}
+              </FitText>
+              <div className="flex flex-wrap items-center gap-1.5 mt-1.5 min-w-0">
+                <Badge variant={statusCfg.badge} size="sm" className="text-fluid-xs max-w-full">{statusCfg.label}</Badge>
+                <Badge variant={priorityCfg.badge} size="sm" className="text-fluid-xs max-w-full">{priorityCfg.label}</Badge>
+                <span className="text-fluid-xs text-muted-foreground">{cat.label}</span>
               </div>
             </div>
           </div>
@@ -73,19 +75,32 @@ export const AssistanceDetailDialog = React.memo<AssistanceDetailDialogProps>(({
             <h3 className="text-sm font-semibold text-foreground">Información</h3>
             <div className="space-y-2 text-sm">
               {item.requested_at && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Calendar className="w-4 h-4 shrink-0" />
-                  <span>Solicitado: {formatDateLong(item.requested_at)}</span>
+                <div className="flex items-start gap-2 text-muted-foreground min-w-0">
+                  <Calendar className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span className="min-w-0 flex-1">Solicitado: {formatDateLong(item.requested_at)}</span>
                 </div>
               )}
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <User className="w-4 h-4 shrink-0" />
-                <span>Técnico: {(item as any).assignee?.name || (item as any).assignee?.username || 'Sin asignar'}</span>
+              <div className="flex items-start gap-2 text-muted-foreground min-w-0">
+                <User className="w-4 h-4 shrink-0 mt-0.5" />
+                <span className="min-w-0 flex-1">
+                  Veterinario: {item.assignee?.fullname || 'Pendiente de asignación'}
+                </span>
               </div>
+              {item.assignee_credential?.status === 'Verificado' && (
+                <div className="flex items-start gap-2 text-emerald-700 dark:text-emerald-300 min-w-0">
+                  <BadgeCheck className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span className="min-w-0 flex-1 text-xs">
+                    Acreditación profesional cotejada
+                    {item.assignee_credential.specialization
+                      ? ` · ${item.assignee_credential.specialization}`
+                      : ''}
+                  </span>
+                </div>
+              )}
               {item.resolved_at && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <CheckCircle2 className="w-4 h-4 shrink-0" />
-                  <span>Resuelto: {formatDateLong(item.resolved_at)}</span>
+                <div className="flex items-start gap-2 text-muted-foreground min-w-0">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span className="min-w-0 flex-1">Resuelto: {formatDateLong(item.resolved_at)}</span>
                 </div>
               )}
             </div>
@@ -133,7 +148,7 @@ export const AssistanceDetailDialog = React.memo<AssistanceDetailDialogProps>(({
             <div className="border-t border-border/30 pt-4 space-y-2">
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <MessageCircle className="w-4 h-4" />
-                Notas del técnico
+                Respuesta del veterinario
               </h3>
               <p className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">{item.resolution_notes}</p>
             </div>

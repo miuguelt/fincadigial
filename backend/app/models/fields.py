@@ -1,6 +1,43 @@
 from app import db
 import enum
+import re
 from app.models.base_model import BaseModel, ValidationError
+
+_NUMERIC_TOKEN = re.compile(r'[-+]?\d[\d.,]*')
+
+
+def parse_numeric_text(value) -> float:
+    """Extract the first number from free-form text.
+
+    `area` and `capacity` are stored as plain strings, so the database holds
+    values such as "85 hectáreas" or "12,5 ha". A bare float() raises on those
+    and the caller ends up reporting 0, which silently shrinks the reported
+    farm size. Returns 0.0 only when there is really no number to read.
+    """
+    if value is None:
+        return 0.0
+    if isinstance(value, (int, float)):
+        return float(value)
+
+    match = _NUMERIC_TOKEN.search(str(value))
+    if not match:
+        return 0.0
+
+    token = match.group(0).rstrip('.,')
+    if ',' in token and '.' in token:
+        # "1.234,5" (es-CO) vs "1,234.5" (en-US): the last separator is the decimal one.
+        if token.rfind(',') > token.rfind('.'):
+            token = token.replace('.', '').replace(',', '.')
+        else:
+            token = token.replace(',', '')
+    elif ',' in token:
+        token = token.replace(',', '.')
+
+    try:
+        return float(token)
+    except ValueError:
+        return 0.0
+
 
 class LandStatus(enum.Enum):
     """Estados posibles para los campos/potreros"""
@@ -53,19 +90,13 @@ class Fields(BaseModel):
 
     @property
     def capacity_num(self) -> int:
-        """Retorna capacidad como entero (0 si no válida)."""
-        try:
-            return int(self.capacity) if self.capacity else 0
-        except (ValueError, TypeError):
-            return 0
+        """Retorna capacidad como entero (0 si no hay número que leer)."""
+        return int(parse_numeric_text(self.capacity))
 
     @property
     def area_num(self) -> float:
-        """Retorna área como float (0.0 si no válida)."""
-        try:
-            return float(self.area) if self.area else 0.0
-        except (ValueError, TypeError):
-            return 0.0
+        """Retorna área como float (0.0 si no hay número que leer)."""
+        return parse_numeric_text(self.area)
 
     @property
     def occupancy_rate(self) -> float:

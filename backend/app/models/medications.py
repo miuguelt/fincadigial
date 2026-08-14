@@ -4,9 +4,12 @@ from app.models.base_model import BaseModel, ValidationError
 class Medications(BaseModel):
     """Modelo para medicamentos utilizados en tratamientos optimizado para namespaces"""
     __tablename__ = 'medications'
+    __table_args__ = (
+        db.UniqueConstraint('name', 'finca_id', name='uq_medications_name_finca'),
+    )
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)
+    name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(255), nullable=False)
     # Optional metadata fields; nullable to support minimal test fixtures
     indications = db.Column(db.String(255), nullable=True)  # nullable for tests

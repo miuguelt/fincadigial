@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { cn } from '@/shared/ui/cn';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { TreatmentResponse, TreatmentVaccineResponse, TreatmentMedicationResponse } from '@/shared/api/generated/swaggerTypes';
@@ -21,6 +22,10 @@ export const TreatmentSuppliesPanel: React.FC<TreatmentSuppliesPanelProps> = ({
     className
 }) => {
     const { showToast } = useToast();
+    const { goTo, canAccess } = useRoleNavigation();
+
+    // Editar la ficha del insumo lleva al catálogo: sólo se ofrece a quien puede abrirlo.
+    const canEditSupplyCatalog = canAccess('/admin/vaccines') && canAccess('/admin/medications');
 
     // Data State
     const [vaccines, setVaccines] = useState<TreatmentVaccineResponse[]>([]);
@@ -571,7 +576,7 @@ export const TreatmentSuppliesPanel: React.FC<TreatmentSuppliesPanelProps> = ({
                         setViewDetailItem(null);
                         setViewDetailType(null);
                     }}
-                    onEdit={() => {
+                    onEdit={canEditSupplyCatalog ? () => {
                         const itemId = viewDetailItem?.id;
                         if (!itemId) return;
                         const route = viewDetailType === 'vaccine'
@@ -579,8 +584,8 @@ export const TreatmentSuppliesPanel: React.FC<TreatmentSuppliesPanelProps> = ({
                             : `/admin/medications?edit=${itemId}`;
                         setViewDetailItem(null);
                         setViewDetailType(null);
-                        window.location.href = route;
-                    }}
+                        goTo(route);
+                    } : undefined}
                     zIndex={2500}
                 />
             )}

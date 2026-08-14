@@ -6,7 +6,8 @@ import { CRUDColumn, CRUDFormSection, CRUDConfig } from '@/shared/types/crud';
 import { animalDiseasesService } from '@/entities/animal-disease/api/animalDiseases.service';
 import { animalsService } from '@/entities/animal/api/animal.service';
 import { diseaseService } from '@/entities/disease/api/disease.service';
-import { usersService } from '@/entities/user/api/user.service';
+import { fetchAssignableUsers } from '@/entities/user/api/assignableUsers.service';
+import { useAuth } from '@/features/auth/model/useAuth';
 import { ANIMAL_DISEASE_STATUSES } from '@/shared/constants/enums';
 import type { AnimalDiseaseResponse, AnimalDiseaseInput } from '@/shared/api/generated/swaggerTypes';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
@@ -19,6 +20,8 @@ import { SanidadTabs } from '@/widgets/dashboard/treatments/SanidadTabs';
 function AdminAnimalDiseasesPage() {
   const [searchParams] = useSearchParams();
   const preselectedUserId = searchParams.get('user_id');
+  const { user, role } = useAuth() as any;
+  const currentRole = role || user?.role || null;
 
   const [activeFilterTab, setActiveFilterTab] = useState<'todos' | 'activos' | 'criticos' | 'recuperados'>('todos');
   const [stats, setStats] = useState({
@@ -92,9 +95,9 @@ function AdminAnimalDiseasesPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="backdrop-blur-xl rounded-lg border p-4 flex items-center justify-between bg-gradient-to-br from-red-500/10 to-red-600/5 dark:from-red-950/40 dark:to-red-900/10 border-red-500/20 hover:border-red-500/40 shadow-[0_8px_30px_rgba(239,68,68,0.05)] hover:shadow-[0_8px_30px_rgba(239,68,68,0.12)] hover:-translate-y-0.5 transition-all duration-300 group">
           <div className="space-y-1">
-            <span className="text-xs font-bold text-muted-foreground/80 uppercase tracking-wider">Tratamientos Activos</span>
+            <span className="text-xs font-bold text-muted-foreground/80 uppercase tracking-wider">Animales Enfermos</span>
             <div className="text-3xl font-extrabold tracking-tight text-foreground">{stats.active}</div>
-            <p className="text-[10px] text-muted-foreground/70 font-medium">Casos activos y en observación</p>
+            <p className="text-[10px] text-muted-foreground/70 font-medium">Reses enfermas y en observación</p>
           </div>
           <div className="p-3 rounded-xl bg-red-500/10 text-red-500 dark:bg-red-500/20 transition-transform duration-300 group-hover:scale-110">
             <Activity className="h-5 w-5 animate-pulse" />
@@ -103,9 +106,9 @@ function AdminAnimalDiseasesPage() {
 
         <div className="backdrop-blur-xl rounded-lg border p-4 flex items-center justify-between bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 dark:from-emerald-950/40 dark:to-emerald-900/10 border-emerald-500/20 hover:border-emerald-500/40 shadow-[0_8px_30px_rgba(16,185,129,0.05)] hover:shadow-[0_8px_30px_rgba(16,185,129,0.12)] hover:-translate-y-0.5 transition-all duration-300 group">
           <div className="space-y-1">
-            <span className="text-xs font-bold text-muted-foreground/80 uppercase tracking-wider">Altas Médicas</span>
+            <span className="text-xs font-bold text-muted-foreground/80 uppercase tracking-wider">Animales Sanados</span>
             <div className="text-3xl font-extrabold tracking-tight text-foreground">{stats.recovered}</div>
-            <p className="text-[10px] text-muted-foreground/70 font-medium">Pacientes sanados y recuperados</p>
+            <p className="text-[10px] text-muted-foreground/70 font-medium">Reses que ya se curaron</p>
           </div>
           <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500 dark:bg-emerald-500/20 transition-transform duration-300 group-hover:scale-110">
             <CheckCircle2 className="h-5 w-5" />
@@ -114,9 +117,9 @@ function AdminAnimalDiseasesPage() {
 
         <div className="backdrop-blur-xl rounded-lg border p-4 flex items-center justify-between bg-gradient-to-br from-amber-500/10 to-amber-600/5 dark:from-amber-950/40 dark:to-amber-900/10 border-amber-500/20 hover:border-amber-500/40 shadow-[0_8px_30px_rgba(245,158,11,0.05)] hover:shadow-[0_8px_30px_rgba(245,158,11,0.12)] hover:-translate-y-0.5 transition-all duration-300 group">
           <div className="space-y-1">
-            <span className="text-xs font-bold text-muted-foreground/80 uppercase tracking-wider">Casos Críticos</span>
+            <span className="text-xs font-bold text-muted-foreground/80 uppercase tracking-wider">Casos Graves</span>
             <div className="text-3xl font-extrabold tracking-tight text-foreground">{stats.critical}</div>
-            <p className="text-[10px] text-muted-foreground/70 font-medium">Enfermedades de tipo crónico</p>
+            <p className="text-[10px] text-muted-foreground/70 font-medium">Reses muy enfermas (crónico)</p>
           </div>
           <div className="p-3 rounded-xl bg-amber-500/10 text-amber-500 dark:bg-amber-500/20 transition-transform duration-300 group-hover:scale-110">
             <AlertTriangle className="h-5 w-5 animate-bounce" />
@@ -125,9 +128,9 @@ function AdminAnimalDiseasesPage() {
 
         <div className="backdrop-blur-xl rounded-lg border p-4 flex items-center justify-between bg-gradient-to-br from-blue-500/10 to-blue-600/5 dark:from-blue-950/40 dark:to-blue-900/10 border-blue-500/20 hover:border-blue-500/40 shadow-[0_8px_30px_rgba(59,130,246,0.05)] hover:shadow-[0_8px_30px_rgba(59,130,246,0.12)] hover:-translate-y-0.5 transition-all duration-300 group">
           <div className="space-y-1">
-            <span className="text-xs font-bold text-muted-foreground/80 uppercase tracking-wider">Tasa de Recuperación</span>
+            <span className="text-xs font-bold text-muted-foreground/80 uppercase tracking-wider">Porcentaje de Sanados</span>
             <div className="text-3xl font-extrabold tracking-tight text-foreground">{stats.recoveryRate}%</div>
-            <p className="text-[10px] text-muted-foreground/70 font-medium">Porcentaje total de casos resueltos</p>
+            <p className="text-[10px] text-muted-foreground/70 font-medium">De todos los enfermos, cuántos se salvaron</p>
           </div>
           <div className="p-3 rounded-xl bg-blue-500/10 text-blue-500 dark:bg-blue-500/20 transition-transform duration-300 group-hover:scale-110">
             <TrendingUp className="h-5 w-5 animate-pulse" />
@@ -139,10 +142,10 @@ function AdminAnimalDiseasesPage() {
       <div className="flex flex-wrap items-center justify-between gap-3 p-1.5 rounded-lg bg-card/25 border border-border/25 backdrop-blur-md shadow-inner">
         <div className="flex flex-wrap gap-1">
           {[
-            { id: 'todos', label: 'Todos los Casos', count: stats.total, dotColor: 'bg-emerald-600 dark:bg-emerald-400' },
-            { id: 'activos', label: 'Tratamientos Activos', count: stats.active, dotColor: 'bg-red-500' },
-            { id: 'criticos', label: 'Casos Críticos', count: stats.critical, dotColor: 'bg-amber-500' },
-            { id: 'recuperados', label: 'Recuperados / Altas', count: stats.recovered, dotColor: 'bg-emerald-500' }
+            { id: 'todos', label: 'Todos los Registros', count: stats.total, dotColor: 'bg-emerald-600 dark:bg-emerald-400' },
+            { id: 'activos', label: 'Animales Enfermos', count: stats.active, dotColor: 'bg-red-500' },
+            { id: 'criticos', label: 'Casos Graves', count: stats.critical, dotColor: 'bg-amber-500' },
+            { id: 'recuperados', label: 'Sanados / De Alta', count: stats.recovered, dotColor: 'bg-emerald-500' }
           ].map((tab) => {
             const isActive = activeFilterTab === tab.id;
             return (
@@ -170,7 +173,7 @@ function AdminAnimalDiseasesPage() {
         </div>
         <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-muted-foreground px-3 font-semibold">
           <Sparkles className="h-3.5 w-3.5 text-emerald-500 animate-pulse" />
-          <span>Panel de Control de Sanidad</span>
+          <span>Control de Sanidad en la Finca</span>
         </div>
       </div>
     </div>
@@ -187,8 +190,8 @@ function AdminAnimalDiseasesPage() {
   );
 
   const { options: instructorOptions, loading: instructorLoading } = useForeignKeySelect(
-    (p) => usersService.getUsers(p),
-    (u) => ({ value: u.id, label: u.fullname || u.name || `Usuario ${u.id}` })
+    (p) => fetchAssignableUsers(currentRole, p, user),
+    (u) => ({ value: u.id, label: u.fullname })
   );
 
   // Crear mapas de búsqueda optimizados
@@ -216,7 +219,7 @@ function AdminAnimalDiseasesPage() {
 
     {
       key: 'animal_id',
-      label: 'Animal',
+      label: 'Res',
       render: (v) => {
         if (!v) return '-';
         const id = Number(v);
@@ -236,15 +239,15 @@ function AdminAnimalDiseasesPage() {
     },
     {
       key: 'instructor_id',
-      label: 'Instructor',
+      label: 'Encargado',
       render: (v) => {
         if (!v) return '-';
         const id = Number(v);
-        const label = instructorMap.get(id) || `Instructor ${id}`;
+        const label = instructorMap.get(id) || `Encargado ${id}`;
         return <UserLink id={id} label={label} role="Instructor" />;
       }
     },
-    { key: 'diagnosis_date', label: 'Diagnóstico', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-') },
+    { key: 'diagnosis_date', label: 'Fecha detección', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
     {
       key: 'status',
       label: 'Estado',
@@ -287,40 +290,39 @@ function AdminAnimalDiseasesPage() {
       }
     },
     { key: 'notes' as any, label: 'Notas', render: (v) => v || '-' },
-    { key: 'created_at' as any, label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-') },
-    { key: 'updated_at' as any, label: 'Actualizado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-') },
+    { key: 'created_at' as any, label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
+    { key: 'updated_at' as any, label: 'Actualizado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
   ], [animalMap, diseaseMap, instructorMap]);
 
   const formSections: CRUDFormSection<AnimalDiseaseInput & { [k: string]: any }>[] = [
     {
-      title: 'Información Básica',
+      title: 'Datos de la Enfermedad',
       gridCols: 2,
       fields: [
-        { name: 'animal_id' as any, label: 'Animal', type: 'select', required: true, options: animalOptions, placeholder: 'Seleccionar animal', loading: animalLoading },
-        { name: 'disease_id' as any, label: 'Enfermedad', type: 'select', required: true, options: diseaseOptions, placeholder: 'Seleccionar enfermedad', loading: diseaseLoading },
-        { name: 'instructor_id' as any, label: 'Instructor', type: 'select', required: true, options: instructorOptions, placeholder: 'Seleccionar instructor', loading: instructorLoading },
-        { name: 'diagnosis_date' as any, label: 'Fecha de Diagnóstico', type: 'date', required: true },
-        { name: 'status' as any, label: 'Estado', type: 'select', options: ANIMAL_DISEASE_STATUSES as any, placeholder: 'Seleccionar estado', colSpan: 2 },
-        { name: 'notes' as any, label: 'Notas', type: 'textarea', placeholder: 'Observaciones', colSpan: 2 },
+        { name: 'animal_id' as any, label: '¿Cuál res está enferma?', type: 'select', required: true, options: animalOptions, placeholder: 'Seleccione la res', loading: animalLoading },
+        { name: 'disease_id' as any, label: '¿Qué enfermedad tiene?', type: 'select', required: true, options: diseaseOptions, placeholder: 'Seleccione la enfermedad', loading: diseaseLoading },
+        { name: 'instructor_id' as any, label: '¿Quién la está tratando?', type: 'select', required: true, options: instructorOptions, placeholder: 'Seleccione el encargado o veterinario', loading: instructorLoading },
+        { name: 'diagnosis_date' as any, label: '¿Cuándo se dio cuenta?', type: 'date', required: true },
+        { name: 'status' as any, label: '¿Cómo está de salud?', type: 'select', options: ANIMAL_DISEASE_STATUSES as any, placeholder: 'Seleccione el estado', colSpan: 2 },
+        { name: 'notes' as any, label: 'Observaciones o Síntomas', type: 'textarea', placeholder: 'Escriba aquí si la res tiene fiebre, no come, o qué medicamentos se le están dando...', colSpan: 2 },
       ],
     },
   ];
 
   const crudConfig: CRUDConfig<AnimalDiseaseResponse & { [k: string]: any }, AnimalDiseaseInput & { [k: string]: any }> = {
-    title: 'Enfermedades de Animales',
-    entityName: 'Enfermedad de animal',
+    title: 'Registro de Sanidad y Enfermedades',
+    entityName: 'Registro médico',
     columns,
     formSections,
-    searchPlaceholder: 'Buscar enfermedades de animales...',
-    emptyStateMessage: 'No hay enfermedades de animales registradas en esta categoría.',
-    emptyStateDescription: 'Crea un nuevo caso de enfermedad para comenzar.',
+    searchPlaceholder: 'Buscar qué res está enferma...',
+    emptyStateMessage: 'No hay animales enfermos registrados aquí. ¡El ganado está sano!',
+    emptyStateDescription: 'Si alguna res se enferma, anótela aquí para llevar el control.',
     enableDetailModal: true,
     enableCreateModal: true,
     enableEditModal: true,
     enableDelete: true,
     customHeader,
     additionalFilters,
-    autoHeight: true,
     onAfterCreate: async () => {
       await fetchStats();
     },
@@ -352,8 +354,8 @@ function AdminAnimalDiseasesPage() {
           <div className="mt-4 rounded-lg border border-border/50 bg-muted/20 p-3 text-xs sm:text-sm">
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <div><span className="font-semibold">Código:</span> {editingItem.id}</div>
-              <div><span className="font-semibold">Creado:</span> {editingItem.created_at ? new Date(editingItem.created_at as any).toLocaleString("es-ES") : "-"}</div>
-              <div><span className="font-semibold">Actualizado:</span> {editingItem.updated_at ? new Date(editingItem.updated_at as any).toLocaleString("es-ES") : "-"}</div>
+              <div><span className="font-semibold">Creado:</span> {editingItem.created_at ? new Date(editingItem.created_at as any).toLocaleString("es-CO") : "-"}</div>
+              <div><span className="font-semibold">Actualizado:</span> {editingItem.updated_at ? new Date(editingItem.updated_at as any).toLocaleString("es-CO") : "-"}</div>
             </div>
           </div>
         );
@@ -384,22 +386,22 @@ const validateForm = (formData: AnimalDiseaseInput & { [k: string]: any }): stri
   // Validar animal_id: debe ser un número válido > 0
   const animalId = Number(formData.animal_id);
   if (!formData.animal_id || Number.isNaN(animalId) || animalId <= 0) {
-    return '⚠️ Debe seleccionar un animal válido.';
+    return '⚠️ Debe seleccionar qué res está enferma.';
   }
 
   // Validar disease_id: debe ser un número válido > 0
   const diseaseId = Number(formData.disease_id);
   if (!formData.disease_id || Number.isNaN(diseaseId) || diseaseId <= 0) {
-    return '⚠️ Debe seleccionar una enfermedad válida.';
+    return '⚠️ Debe seleccionar la enfermedad que tiene la res.';
   }
 
   // Validar instructor_id: debe ser un número válido > 0
   const instructorId = Number(formData.instructor_id);
   if (!formData.instructor_id || Number.isNaN(instructorId) || instructorId <= 0) {
-    return '⚠️ Debe seleccionar un instructor válido.';
+    return '⚠️ Debe decirnos quién está a cargo de tratar la res.';
   }
 
-  if (!formData.diagnosis_date) return 'La fecha de diagnóstico es obligatoria.';
+  if (!formData.diagnosis_date) return '⚠️ La fecha en que se dio cuenta de la enfermedad es obligatoria.';
   return null;
 };
 

@@ -11,7 +11,7 @@
     "dev:clean": "powershell -ExecutionPolicy Bypass -File C:\\Users\\Miguel\\Documents\\Aplicaciones\\_infrastructure\\devbraind\\scripts\\DEVBRAIN_GUARDIAN.ps1 -Mode Dev -DevPort 3005 -Repair",
     "build": "vite build",
     "lint": "eslint .",
-    "type-check": "tsc -p tsconfig.app.json --noEmit",
+    "type-check": "tsc --noEmit",
     "preview": "vite preview --host --port 5173",
     "test": "vitest",
     "test:run": "vitest run",

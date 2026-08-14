@@ -35,6 +35,8 @@ export default function HeaderCalendarDropdown() {
 	const navigate = useNavigate();
 	const [open, setOpen] = useState(false);
 	const [events, setEvents] = useState<CalendarEvent[]>([]);
+	const [totalCount, setTotalCount] = useState(0);
+	const [countsByDay, setCountsByDay] = useState<Map<string, number>>(new Map());
 	const [month, setMonth] = useState(new Date());
 	const [selected, setSelected] = useState<Date>(new Date());
 
@@ -44,7 +46,18 @@ export default function HeaderCalendarDropdown() {
 			const start = format(subMonths(today, 1), "yyyy-MM-dd");
 			const end = format(addMonths(today, 2), "yyyy-MM-dd");
 			const response = await analyticsService.getGlobalCalendar(start, end);
-			if (response?.events) setEvents(response.events);
+			if (response?.events) {
+				setEvents(response.events);
+				setTotalCount(response.total_count ?? response.events.length);
+				setCountsByDay(
+					new Map(
+						Object.entries(response.counts_by_day ?? {}).map(([key, value]) => [
+							key,
+							Number(value),
+						]),
+					),
+				);
+			}
 		} catch (error) {
 			devLogger.error("Error loading calendar events:", error);
 		}
@@ -68,6 +81,10 @@ export default function HeaderCalendarDropdown() {
 	const todayEvents = useMemo(
 		() => events.filter((e) => isSameDay(new Date(e.start), new Date())),
 		[events],
+	);
+	const todayEventCount = useMemo(
+		() => todayEvents.reduce((total, event) => total + (event.count ?? 1), 0),
+		[todayEvents],
 	);
 
 	const selectedEvents = useMemo(
@@ -93,9 +110,9 @@ export default function HeaderCalendarDropdown() {
 					aria-label="Abrir calendario"
 				>
 					<CalendarDays className="h-4 w-4" />
-					{todayEvents.length > 0 && (
+					{todayEventCount > 0 && (
 						<span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-primary text-[9px] font-bold text-primary-foreground flex items-center justify-center shadow-sm">
-							{todayEvents.length > 9 ? "9+" : todayEvents.length}
+							{todayEventCount > 9 ? "9+" : todayEventCount}
 						</span>
 					)}
 				</button>
@@ -109,7 +126,7 @@ export default function HeaderCalendarDropdown() {
 					<div className="flex items-center justify-between">
 						<h3 className="text-sm font-bold text-foreground">Calendario</h3>
 						<Badge variant="outline" className="text-[10px]">
-							{events.length} eventos
+							{totalCount} eventos
 						</Badge>
 					</div>
 				</div>
@@ -122,6 +139,7 @@ export default function HeaderCalendarDropdown() {
 							onSelect={(d) => d && setSelected(d)}
 							onMonthChange={setMonth}
 							eventsByDay={eventsByDay}
+							totalsByDay={countsByDay}
 						/>
 					</div>
 
@@ -158,7 +176,7 @@ export default function HeaderCalendarDropdown() {
 													/>
 												</div>
 												<div className="flex flex-col min-w-0">
-													<span className="text-xs font-semibold text-foreground truncate">
+											<span className="text-xs font-semibold text-foreground break-words">
 														{event.title}
 													</span>
 													<span

@@ -207,7 +207,7 @@ export default function QuickActionCards() {
                       onChange={(e) => setFormData({ ...formData, animal_id: e.target.value })}
                       required
                     >
-                      <option value="">Buscar en el hato...</option>
+                      <option value="">Buscar en el ganado...</option>
                       {animals?.map((a: any) => (
                         <option key={a.id} value={a.id}>{a.record} - {a.alias || ''}</option>
                       ))}

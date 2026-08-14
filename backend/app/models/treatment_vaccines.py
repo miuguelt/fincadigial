@@ -1,5 +1,9 @@
 from app import db
 from app.models.base_model import BaseModel
+from app.models.treatments import Treatments
+from app.models.vaccines import Vaccines
+from app.models.inventory import InventoryLot
+from app.utils.tenant_context import get_current_finca_id
 
 class TreatmentVaccines(BaseModel):
     """Modelo de relación entre tratamientos y vacunas"""
@@ -39,6 +43,40 @@ class TreatmentVaccines(BaseModel):
                     finca_id=lot.finca_id
                 )
         return instance
+
+    @classmethod
+    def _validate_and_normalize(cls, data, is_update=False, instance_id=None):
+        """Reject links whose treatment, vaccine or lot belong to another finca."""
+        normalized = super()._validate_and_normalize(
+            data, is_update=is_update, instance_id=instance_id
+        )
+        current = cls.query.get(instance_id) if is_update and instance_id else None
+        treatment_id = normalized.get('treatment_id') or getattr(current, 'treatment_id', None)
+        vaccine_id = normalized.get('vaccine_id') or getattr(current, 'vaccine_id', None)
+        lot_id = normalized.get('lot_id') if 'lot_id' in normalized else getattr(current, 'lot_id', None)
+
+        treatment = Treatments.query.get(treatment_id) if treatment_id else None
+        vaccine = Vaccines.query.get(vaccine_id) if vaccine_id else None
+        lot = InventoryLot.query.get(lot_id) if lot_id else None
+        context_finca_id = get_current_finca_id()
+        finca_id = getattr(treatment, 'finca_id', None) or context_finca_id
+        errors = []
+        if not treatment:
+            errors.append('El tratamiento no existe.')
+        if not vaccine:
+            errors.append('La vacuna no existe.')
+        if treatment and context_finca_id is not None and treatment.finca_id != context_finca_id:
+            errors.append('El tratamiento no pertenece a la finca activa.')
+        if treatment and vaccine and treatment.finca_id != vaccine.finca_id:
+            errors.append('El tratamiento y la vacuna deben pertenecer a la misma finca.')
+        if lot_id and not lot:
+            errors.append('El lote de inventario no existe.')
+        if lot and finca_id is not None and lot.finca_id != finca_id:
+            errors.append('El lote de inventario debe pertenecer a la misma finca.')
+        if errors:
+            from app.models.base_model import ValidationError
+            raise ValidationError('; '.join(errors), code='tenant_scope_error', errors=errors)
+        return normalized
 
     # Campos / relaciones para namespaces
     _namespace_fields = ['id', 'treatment_id', 'vaccine_id', 'created_at', 'updated_at']

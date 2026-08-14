@@ -71,7 +71,6 @@ export function useInventoryCrudConfig({
 			enableEditModal: false,
 			enableDelete: true,
 			enableDetailModal: true,
-			autoHeight: true,
 			columns: inventoryColumns,
 			formSections: inventoryFormSections,
 

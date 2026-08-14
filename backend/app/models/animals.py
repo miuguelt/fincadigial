@@ -340,7 +340,11 @@ class Animals(BaseModel):
         if hasattr(self, '_prefetched_alerts'):
             return len(self._prefetched_alerts)
         from app.models.alerts import AnimalAlert
-        return AnimalAlert.query.filter_by(animal_id=self.id, is_read=False).count()
+        return AnimalAlert.query.filter_by(
+            animal_id=self.id,
+            is_read=False,
+            superseded_by_id=None,
+        ).count()
 
     @property
     def max_pending_priority(self):
@@ -361,7 +365,11 @@ class Animals(BaseModel):
             return getattr(p, 'value', p) if p else None
 
         from app.models.alerts import AnimalAlert
-        highest = AnimalAlert.query.filter_by(animal_id=self.id, is_read=False)\
+        highest = AnimalAlert.query.filter_by(
+            animal_id=self.id,
+            is_read=False,
+            superseded_by_id=None,
+        )\
             .order_by(db.case(
                 { 'Crítica': 0, 'Alta': 1, 'Media': 2, 'Baja': 3 },
                 value=AnimalAlert.priority
@@ -626,7 +634,8 @@ class Animals(BaseModel):
             if needs_alert_priority:
                 unread_alerts = db.session.query(AnimalAlert).filter(
                     AnimalAlert.animal_id.in_(animal_ids),
-                    AnimalAlert.is_read.is_(False)
+                    AnimalAlert.is_read.is_(False),
+                    AnimalAlert.superseded_by_id.is_(None),
                 ).all()
                 for alert in unread_alerts:
                     alerts_map.setdefault(alert.animal_id, []).append(alert)
@@ -637,7 +646,8 @@ class Animals(BaseModel):
                     db.func.count(AnimalAlert.id)
                 ).filter(
                     AnimalAlert.animal_id.in_(animal_ids),
-                    AnimalAlert.is_read.is_(False)
+                    AnimalAlert.is_read.is_(False),
+                    AnimalAlert.superseded_by_id.is_(None),
                 ).group_by(AnimalAlert.animal_id).all()
                 alert_counts = {animal_id: count for animal_id, count in count_rows}
 

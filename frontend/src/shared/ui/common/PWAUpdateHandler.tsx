@@ -30,9 +30,7 @@ export function PWAUpdateHandler() {
       showToast('Modo offline activado', 'warning');
     };
 
-    const handleSyncSuccess = (e: Event) => {
-      // @ts-ignore
-      const url = (e as CustomEvent).detail?.url || '';
+    const handleSyncSuccess = () => {
       showToast(`¡Sincronización en segundo plano completada!`, 'success');
     };
 

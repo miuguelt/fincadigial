@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -77,7 +77,7 @@ export const UserCard: React.FC<UserCardProps> = ({
 
             <div>
               <h3
-                className="font-bold text-lg leading-tight text-foreground truncate max-w-[150px]"
+                className="font-bold text-lg leading-tight text-foreground fit-clamp max-w-[150px]"
                 title={user.username}
               >
                 {user.username}
@@ -123,7 +123,7 @@ export const UserCard: React.FC<UserCardProps> = ({
         <div className="space-y-2.5 text-sm text-muted-foreground flex-1">
           <div className="flex items-center gap-2.5 bg-muted/50/50 p-1.5 rounded-md hover:bg-muted/50 transition-colors">
             <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="truncate flex-1" title={user.email}>
+            <span className="fit-clamp flex-1" title={user.email}>
               {user.email || "Sin email"}
             </span>
           </div>
@@ -132,13 +132,13 @@ export const UserCard: React.FC<UserCardProps> = ({
             {user.createdAt && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50/50 p-1.5 rounded-md">
                 <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                <span>{new Date(user.createdAt).toLocaleDateString()}</span>
+                <span>{new Date(user.createdAt).toLocaleDateString('es-CO')}</span>
               </div>
             )}
             {user.lastLogin && (
               <div className="flex items-center gap-2 text-xs text-success bg-success/5/50 p-1.5 rounded-md">
                 <div className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
-                <span>{new Date(user.lastLogin).toLocaleDateString()}</span>
+                <span>{new Date(user.lastLogin).toLocaleDateString('es-CO')}</span>
               </div>
             )}
           </div>

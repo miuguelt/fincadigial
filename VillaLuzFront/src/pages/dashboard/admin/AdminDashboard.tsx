@@ -158,7 +158,7 @@ const AlertItem = memo(({ alert, onMarkRead, onNavigate, colorToClasses, renderI
       <div className="flex items-center justify-between gap-2 mb-1">
         <h4 className="text-sm font-bold text-foreground truncate">{alert.title}</h4>
         <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap">
-          {new Date(alert.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+          {new Date(alert.created_at).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}
         </span>
       </div>
       <p className="text-xs text-muted-foreground leading-relaxed mb-3 line-clamp-2">

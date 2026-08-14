@@ -257,18 +257,18 @@ Los parásitos son una de las principales causas de pérdidas económicas "silen
       duration: '20 min',
       content: `## Diseño del Plan Sanitario Anual
 
-Un plan sanitario bien estructurado es la herramienta más costo-efectiva para mantener la salud del hato.
+Un plan sanitario bien estructurado es la herramienta más costo-efectiva para mantener la salud del ganado.
 
 ### Componentes del plan sanitario
 
 #### 1. Calendario de vacunación
 | Época | Vacuna | Población objetivo | Refuerzo |
 |-------|--------|-------------------|----------|
-| **Ene-Feb** | Aftosa (1er ciclo) | Todo el hato >3 meses | - |
-| **May-Jun** | Aftosa (2do ciclo) | Todo el hato >3 meses | - |
-| **Abr-May** | Carbón bacteridiano | Todo el hato >3 meses | Anual |
-| **Abr-May** | Edema maligno y septicemia | Todo el hato >3 meses | Anual |
-| **Oct-Nov** | Rabia bovina | Todo el hato >3 meses | Anual (zonas de riesgo) |
+| **Ene-Feb** | Aftosa (1er ciclo) | Todo el ganado >3 meses | - |
+| **May-Jun** | Aftosa (2do ciclo) | Todo el ganado >3 meses | - |
+| **Abr-May** | Carbón bacteridiano | Todo el ganado >3 meses | Anual |
+| **Abr-May** | Edema maligno y septicemia | Todo el ganado >3 meses | Anual |
+| **Oct-Nov** | Rabia bovina | Todo el ganado >3 meses | Anual (zonas de riesgo) |
 | **3-8 meses** | Brucelosis (terneras) | Hembras 3-8 meses | Única dosis |
 | **Pre-servicio** | Leptospirosis | Hembras reproductoras | Anual |
 | **Pre-servicio** | IBR-DVB (reproductivas) | Hembras y toros | Anual |
@@ -491,7 +491,7 @@ Las enfermedades reproductivas afectan directamente la rentabilidad al reducir l
             question: '¿Qué es un animal PI en el contexto de DVB?',
             options: ['Animal preñado inmunizado', 'Animal persistentemente infectado', 'Animal parcialmente inmunizado', 'Animal en período de incubación'],
             correctAnswer: 1,
-            explanation: 'PI significa "Persistentemente Infectado". Estos animales nacen infectados y diseminan el virus durante toda su vida. Son la principal fuente de contagio en el hato.',
+            explanation: 'PI significa "Persistentemente Infectado". Estos animales nacen infectados y diseminan el virus durante toda su vida. Son la principal fuente de contagio en el ganado.',
           },
         ],
       },
@@ -762,7 +762,7 @@ Saber actuar en una emergencia puede salvar la vida de un animal y prevenir la p
 ### Protocolo de emergencia paso a paso
 1. **Evaluar**: ¿El animal está en riesgo de vida? ¿Puedo ayudar o necesito veterinario?
 2. **Notificar**: Informar al veterinario responsable de inmediato
-3. **Aislar**: Si se sospecha enfermedad contagiosa, separar del hato
+3. **Aislar**: Si se sospecha enfermedad contagiosa, separar del ganado
 4. **Primeros auxilios**: Solo procedimientos que domines
 5. **Documentar**: Hora de inicio, signos observados, acciones tomadas
 
@@ -840,7 +840,7 @@ El ICA (Instituto Colombiano Agropecuario) es la autoridad sanitaria nacional. C
 - Sin GSMI → decomiso de animales y sanciones
 
 ### Ciclos de vacunación obligatoria
-- **Fiebre aftosa**: 2 ciclos anuales (todo el hato >3 meses)
+- **Fiebre aftosa**: 2 ciclos anuales (todo el ganado >3 meses)
 - **Brucelosis**: Vacunación obligatoria de terneras 3-8 meses
 - **Rabia**: En zonas declaradas de riesgo
 
@@ -899,7 +899,7 @@ El instructor (y todo ciudadano) está obligado a notificar ante el ICA la sospe
     },
     {
       id: 'health-12',
-      title: 'Inspección Sanitaria Diaria del Hato',
+      title: 'Inspección Sanitaria Diaria del Ganado',
       duration: '20 min',
       content: `## Rutina de Inspección y Detección Temprana
 
@@ -946,7 +946,7 @@ Al finalizar la inspección, el instructor debe:
 3. Programar seguimientos (48-72 horas) para animales en observación
 4. Verificar que los registros anteriores tengan cierre adecuado`,
       objectives: [
-        'Establecer una rutina diaria de inspección del hato',
+        'Establecer una rutina diaria de inspección del ganado',
         'Usar la lista de verificación para detección temprana',
         'Implementar el sistema de semáforo sanitario',
         'Registrar hallazgos en la plataforma Villa Luz',
@@ -965,7 +965,7 @@ Al finalizar la inspección, el instructor debe:
             question: '¿Cuál es el signo más temprano de enfermedad en un bovino?',
             options: ['Fiebre alta', 'Aislamiento del grupo', 'Diarrea', 'Pérdida de peso'],
             correctAnswer: 1,
-            explanation: 'El aislamiento del grupo suele ser el signo más temprano de enfermedad. Un animal sano siempre está con el hato.',
+            explanation: 'El aislamiento del grupo suele ser el signo más temprano de enfermedad. Un animal sano siempre está con el ganado.',
           },
           {
             id: 'h12q2',

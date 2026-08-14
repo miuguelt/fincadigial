@@ -38,7 +38,7 @@ export const ControlCard: React.FC<ControlCardProps> = ({
               {status}
             </Badge>
             <span className="text-sm text-muted-foreground">
-              {new Date(control.checkup_date).toLocaleDateString('es-ES')}
+              {new Date(control.checkup_date).toLocaleDateString('es-CO')}
             </span>
           </div>
           <div className="flex items-center gap-1">

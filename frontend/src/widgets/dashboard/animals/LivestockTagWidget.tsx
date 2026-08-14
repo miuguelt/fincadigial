@@ -48,8 +48,10 @@ export function LivestockTagWidget({ animal }: LivestockTagWidgetProps) {
     setNfcStatus('writing');
     
     try {
-      // @ts-ignore - Web NFC is experimental
-      const ndef = new window.NDEFReader();
+      const NDEFReader = (window as unknown as {
+        NDEFReader: new () => { write: (payload: unknown) => Promise<void> };
+      }).NDEFReader;
+      const ndef = new NDEFReader();
       await ndef.write({
         records: [
           { recordType: "url", data: animalUrl },
@@ -75,7 +77,7 @@ export function LivestockTagWidget({ animal }: LivestockTagWidgetProps) {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-sm text-foreground">Identificación Animal</h3>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Digital Tagging v2.5</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Etiquetado Digital v2.5</p>
           </div>
         </div>
 
@@ -144,7 +146,7 @@ export function LivestockTagWidget({ animal }: LivestockTagWidgetProps) {
                 className="rounded-xl font-semibold text-sm h-10 px-6 gap-2 border-primary/20 text-primary hover:bg-primary/10"
                 onClick={downloadQR}
               >
-                <Download className="h-3.5 w-3.5" /> Descargar Tag QR
+                <Download className="h-3.5 w-3.5" /> Descargar código QR
               </Button>
             </motion.div>
           ) : (
@@ -170,13 +172,13 @@ export function LivestockTagWidget({ animal }: LivestockTagWidgetProps) {
 
               <div className="max-w-[240px]">
                 <h4 className="text-sm font-black text-foreground uppercase tracking-tight">
-                  {nfcStatus === 'idle' && "Programar Tag NFC"}
-                  {nfcStatus === 'writing' && "Acerca el Tag al móvil..."}
-                  {nfcStatus === 'success' && "¡Tag Programado!"}
+                  {nfcStatus === 'idle' && "Programar etiqueta NFC"}
+                  {nfcStatus === 'writing' && "Acerca la etiqueta al celular..."}
+                  {nfcStatus === 'success' && "¡Etiqueta programada!"}
                   {nfcStatus === 'error' && "Error o No Soportado"}
                 </h4>
                 <p className="text-[11px] text-muted-foreground font-medium mt-1">
-                  {nfcStatus === 'idle' && "Graba la info del animal en un chip físico para acceso rápido en campo."}
+                  {nfcStatus === 'idle' && "Graba la información del animal en un chip físico para acceso rápido en campo."}
                   {nfcStatus === 'writing' && "Mantén el dispositivo cerca del chip NFC."}
                   {nfcStatus === 'success' && `El registro ${animal.record} se ha grabado correctamente.`}
                   {nfcStatus === 'error' && "Asegúrate de usar un navegador compatible (Chrome Android) y tener el NFC activo."}

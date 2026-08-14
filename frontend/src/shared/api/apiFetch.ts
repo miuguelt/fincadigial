@@ -15,6 +15,8 @@ export async function apiFetch<T = any>(
     skipAuth?: boolean;
     __skipAuthHeader?: boolean;
     disableAuth?: boolean;
+    skipCache?: boolean;
+    skipOffline?: boolean;
   }
 ): Promise<AxiosResponse<T>> {
   // api.request already handles:
@@ -22,6 +24,13 @@ export async function apiFetch<T = any>(
   // 2. Auth re-logging
   // 3. CSRF retries
   // 4. Offline queueing (non-GET)
+  const method = String(config.method || 'GET').toUpperCase();
+  if (method === 'GET' && config.url) {
+    const { url, ...getConfig } = config;
+    // api.get incorpora caché persistente, deduplicación y fallback rápido
+    // cuando la conexión rural desaparece.
+    return api.get<T>(url, getConfig);
+  }
   return api.request<T>(config);
 }
 

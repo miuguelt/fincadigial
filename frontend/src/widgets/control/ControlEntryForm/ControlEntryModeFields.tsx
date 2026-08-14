@@ -14,6 +14,7 @@ import type {
 	ControlEntryFormValues,
 	ControlEntryMode,
 } from "./ControlEntryForm.types";
+import { CONTROL_DESCRIPTION_MAX_LENGTH } from "./controlEntryForm.model";
 
 interface ControlEntryModeFieldsProps {
 	form: UseFormReturn<ControlEntryFormValues>;
@@ -24,6 +25,13 @@ const numberValue = (value: string): number | undefined =>
 	value === "" ? undefined : Number(value);
 
 const WEIGHT_HEALTH_OPTIONS = [
+	{ value: "Sano", label: "Normal", icon: "✅" },
+	{ value: "Regular", label: "Decaído", icon: "⚠️" },
+	{ value: "Malo", label: "Enfermo", icon: "🚨" },
+] as const;
+
+const HEALTH_OPTIONS = [
+	{ value: "Excelente", label: "Muy bien", icon: "✨" },
 	{ value: "Sano", label: "Normal", icon: "✅" },
 	{ value: "Regular", label: "Decaído", icon: "⚠️" },
 	{ value: "Malo", label: "Enfermo", icon: "🚨" },
@@ -40,16 +48,19 @@ export function ControlEntryModeFields({
 	const weightHealthLabelId = useId();
 	const weightHealthErrorId = useId();
 	const weightHealthGroupName = useId();
+	const healthGroupLabelId = useId();
+	const healthGroupErrorId = useId();
+	const healthGroupName = useId();
 	const showHealth = mode !== "weight";
 	const showWeight = mode !== "health";
 	const selectedHealth = form.watch("health_status");
 
 	return (
 		<>
-			<div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-				{showHealth && (
+			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+				{showHealth && mode !== "health" && (
 					<div className="space-y-2">
-						<Label htmlFor={healthId}>Estado de salud</Label>
+						<Label htmlFor={healthId} className="text-sm font-bold">Estado de salud</Label>
 						<Select
 							value={form.watch("health_status")}
 							onValueChange={(value) =>
@@ -60,7 +71,7 @@ export function ControlEntryModeFields({
 								)
 							}
 						>
-							<SelectTrigger id={healthId} className="h-12">
+							<SelectTrigger id={healthId} className="h-12 rounded-xl text-base sm:text-sm">
 								<SelectValue placeholder="Seleccione el estado" />
 							</SelectTrigger>
 							<SelectContent>
@@ -75,13 +86,14 @@ export function ControlEntryModeFields({
 
 				{showWeight && (
 					<div className="space-y-2">
-						<Label htmlFor={weightId}>Peso (kg)</Label>
+						<Label htmlFor={weightId} className="text-sm font-bold">Peso en kilogramos</Label>
 						<Input
 							id={weightId}
 							type="number"
-							step="1"
+							inputMode="decimal"
+							step="0.1"
 							min="0"
-							className="h-12"
+							className="h-12 rounded-xl text-base sm:text-sm"
 							placeholder="Ej: 450"
 							{...form.register("weight", { setValueAs: numberValue })}
 						/>
@@ -104,17 +116,17 @@ export function ControlEntryModeFields({
 						<p className="text-sm text-muted-foreground">
 							Elija lo que observó mientras lo pesaba.
 						</p>
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+						<div className="grid grid-cols-3 gap-2">
 							{WEIGHT_HEALTH_OPTIONS.map((option) => {
 								const selected = selectedHealth === option.value;
 								return (
 									<label
 										key={option.value}
-										className={`flex h-12 cursor-pointer items-center justify-center rounded-xl border-2 px-3 text-base font-bold transition-colors ${
-											selected
-												? "border-emerald-600 bg-emerald-50 text-emerald-800"
-												: "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-										}`}
+									className={`flex min-h-14 cursor-pointer flex-col items-center justify-center rounded-xl border-2 px-1.5 py-2 text-sm font-bold transition-colors ${
+										selected
+											? "border-emerald-600 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-100"
+											: "border-border bg-card text-foreground hover:bg-muted"
+									}`}
 									>
 										<input
 											type="radio"
@@ -135,8 +147,8 @@ export function ControlEntryModeFields({
 											}
 											className="sr-only"
 										/>
-										{option.icon} {selected ? "✓ " : ""}
-										{option.label}
+									<span aria-hidden="true">{option.icon}</span>
+									<span>{option.label}</span>
 									</label>
 								);
 							})}
@@ -155,34 +167,75 @@ export function ControlEntryModeFields({
 
 				{mode === "full" && (
 					<div className="space-y-2">
-						<Label htmlFor={heightId}>Altura (m)</Label>
+						<Label htmlFor={heightId} className="text-sm font-bold">Altura en metros</Label>
 						<Input
 							id={heightId}
 							type="number"
 							step="0.01"
 							min="0"
-							className="h-12"
+							className="h-12 rounded-xl text-base sm:text-sm"
 							placeholder="Ej: 1.5"
 							{...form.register("height", { setValueAs: numberValue })}
 						/>
 					</div>
 				)}
+
+				{mode === "health" && (
+					<fieldset className="space-y-2 sm:col-span-2" aria-describedby={form.formState.errors.health_status ? healthGroupErrorId : undefined}>
+						<legend id={healthGroupLabelId} className="text-sm font-bold">
+							¿Cómo está el animal?
+						</legend>
+						<p className="text-sm text-muted-foreground">Toca la opción que mejor describe lo que viste.</p>
+						<div className="grid grid-cols-2 gap-2">
+							{HEALTH_OPTIONS.map((option) => {
+								const selected = selectedHealth === option.value;
+								return (
+									<label
+										key={option.value}
+										className={`flex min-h-14 cursor-pointer items-center gap-2 rounded-xl border-2 px-3 py-2 text-sm font-bold transition-colors ${
+											selected
+												? "border-emerald-600 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-100"
+												: "border-border bg-card text-foreground hover:bg-muted"
+										}`}
+									>
+										<input
+											type="radio"
+											name={healthGroupName}
+											value={option.value}
+											checked={selected}
+											aria-label={option.label}
+											onChange={() => form.setValue("health_status", option.value, { shouldDirty: true, shouldValidate: true })}
+											className="sr-only"
+										/>
+										<span className="text-lg" aria-hidden="true">{option.icon}</span>
+										<span>{option.label}</span>
+									</label>
+								);
+							})}
+						</div>
+						{form.formState.errors.health_status && (
+							<p id={healthGroupErrorId} className="text-sm text-red-500" role="alert">
+								{form.formState.errors.health_status.message}
+							</p>
+						)}
+					</fieldset>
+				)}
 			</div>
 
 			{showHealth && (
 				<div className="space-y-2">
-					<Label htmlFor={descriptionId}>
+					<Label htmlFor={descriptionId} className="text-sm font-bold">
 						{mode === "health"
-							? "Observaciones"
+							? "¿Qué observaste? (opcional)"
 							: "Tratamientos u observaciones"}
 					</Label>
 					<Textarea
 						id={descriptionId}
-						className="resize-none"
+						className="min-h-24 resize-none rounded-xl text-base sm:text-sm"
 						rows={3}
 						{...form.register("description")}
-						placeholder="Describa síntomas, medicamentos aplicados o cualquier detalle."
-						maxLength={500}
+						placeholder={mode === "health" ? "Ej: no come, cojea o tiene una herida." : "Síntomas, medicamentos o cualquier detalle."}
+						maxLength={CONTROL_DESCRIPTION_MAX_LENGTH}
 					/>
 				</div>
 			)}

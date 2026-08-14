@@ -57,7 +57,7 @@ export const ControlDetailModal: React.FC<ControlDetailModalProps> = ({
               
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground">Fecha de Control</label>
-                <p className="text-base">{new Date(selectedControl.checkup_date).toLocaleDateString('es-ES')}</p>
+                <p className="text-base">{new Date(selectedControl.checkup_date).toLocaleDateString('es-CO')}</p>
               </div>
               
               <div className="space-y-2">

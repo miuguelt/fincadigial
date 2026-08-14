@@ -282,7 +282,6 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
           "h-full bg-transparent flex flex-col overflow-hidden transition-all duration-300",
           isCollapsed ? "w-[64px]" : "w-full"
         )}
-        aria-hidden={!isSidebarOpen ? "true" : "false"}
         role="navigation"
       >
         {/* Selector de Finca y Búsqueda (Top) */}

@@ -44,7 +44,7 @@ import { Button } from "@/shared/ui/button";
 import { cn } from "@/shared/ui/cn";
 import { UserAvatarUpload } from "@/widgets/dashboard/users/UserAvatarUpload";
 import type { UserWithProfile } from "../types";
-import { canMessageUser } from "../utils/user.utils";
+import { getChatAvailability } from "../utils/user.utils";
 import { UserFincaGallery } from "./UserFincaGallery";
 import { useUserDetailPanel } from "./useUserDetailPanel";
 
@@ -171,10 +171,13 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 		filteredActivitiesForTimeline,
 		handleLoadMore,
 	} = useUserDetailPanel(item);
+	const chat = getChatAvailability(item, currentUser, chatContactIds);
 
 	return (
 		<div className="p-2 space-y-6 max-w-full overflow-hidden flex flex-col h-full min-h-0">
-			<div className="relative overflow-hidden rounded-[2.5rem] border border-border/50 bg-gradient-to-br from-card via-card to-primary/5 p-6 sm:p-8 shadow-xl shrink-0">
+			{/* Ficha del usuario, no encabezado de pantalla: radio y relleno del
+			    sistema compacto (ver docs/estandar-pantallas-de-datos.md). */}
+			<div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-card via-card to-primary/5 p-4 sm:p-5 shadow-lg shrink-0">
 				<div className="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
 				<div className="relative z-10 flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
 					<div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
@@ -239,20 +242,23 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 						</div>
 					</div>
 					<div className="flex flex-wrap gap-2 shrink-0">
-						{canMessageUser(item, currentUser, chatContactIds) && (
-							<Button
-								size="sm"
-								variant="outline"
-								onClick={(e) => {
-									e.stopPropagation();
-									if (onStartChat) onStartChat(item);
-									else navigate(`/chat?contactId=${item.id}`);
-								}}
-								className="h-10 rounded-2xl font-bold bg-primary/5 text-primary border-primary/20 hover:bg-primary/10 transition-all duration-300"
-							>
-								<MessageSquare size={16} className="mr-2" /> Enviar Mensaje
-							</Button>
-						)}
+						<Button
+							type="button"
+							size="sm"
+							variant="outline"
+							disabled={!chat.enabled}
+							title={chat.reason}
+							aria-label={chat.reason}
+							onClick={(e) => {
+								e.stopPropagation();
+								if (!chat.enabled) return;
+								if (onStartChat) onStartChat(item);
+								else navigate(`/chat?contactId=${item.id}`);
+							}}
+							className="h-10 rounded-2xl font-bold bg-primary/5 text-primary border-primary/20 hover:bg-primary/10 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-45"
+						>
+							<MessageSquare size={16} className="mr-2" /> Enviar Mensaje
+						</Button>
 					</div>
 				</div>
 			</div>
@@ -276,6 +282,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 					return (
 						<button
 							key={tab.id}
+							type="button"
 							onClick={() => setActiveTab(tab.id as any)}
 							className={cn(
 								"px-5 py-3 border-b-2 font-bold text-sm transition-all duration-200 flex flex-col items-center gap-0.5 whitespace-nowrap",
@@ -565,6 +572,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 								].map((pill) => (
 									<button
 										key={pill.id}
+										type="button"
 										onClick={() => setHistoryFilter(pill.id as any)}
 										className={cn(
 											"text-[10px] font-black uppercase px-2.5 py-1 rounded-lg transition-all",
@@ -621,7 +629,8 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 														)}
 
 														{act.animal_id && (
-															<button
+																	<button
+																		type="button"
 																onClick={() => {
 																	onClose?.();
 																	navigate(`/animals?search=${act.animal_id}`);
@@ -662,6 +671,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 							{hasMore && (
 								<div className="flex justify-center pt-4 border-t border-border/30">
 									<Button
+										type="button"
 										variant="outline"
 										size="sm"
 										onClick={handleLoadMore}
@@ -720,7 +730,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 									</span>
 								</div>
 								<p
-									className="text-sm font-semibold text-foreground truncate mt-2"
+									className="text-sm font-semibold text-foreground fit-clamp mt-2"
 									title={item.email}
 								>
 									{item.email}
@@ -747,7 +757,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 									</span>
 								</div>
 								<p
-									className="text-sm font-bold text-foreground mt-2 truncate"
+									className="text-sm font-bold text-foreground mt-2 fit-clamp"
 									title={item.address || "No registrada"}
 								>
 									{item.address || "No registrada"}
@@ -762,7 +772,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 									</span>
 								</div>
 								<p
-									className="text-sm font-bold text-foreground mt-2 truncate"
+									className="text-sm font-bold text-foreground mt-2 fit-clamp"
 									title={item.finca_name || "Sin finca asignada"}
 								>
 									{item.finca_name || "Sin finca asignada"}

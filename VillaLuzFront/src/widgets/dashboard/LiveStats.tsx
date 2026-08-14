@@ -2,14 +2,14 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
 import {
-  Activity,
-  AlertTriangle,
-  Syringe,
-  MapPin,
-  Wifi,
-  WifiOff,
-  RefreshCw,
-} from "lucide-react";
+  IconActivity,
+  IconAlertTriangle,
+  IconMapPin,
+  IconRefresh,
+  IconSyringe,
+  IconWifi,
+  IconWifiOff,
+} from "@/shared/ui/icons";
 import { getBackendBaseURL } from "@/shared/utils/envConfig";
 
 interface LiveKPIs {
@@ -139,67 +139,69 @@ export function LiveStats() {
     {
       key: "active_animals",
       label: "Animales Activos",
-      icon: Activity,
+      icon: IconActivity,
       color: "text-success",
-      bgColor: "bg-success/5",
+      bgColor: "bg-success-50 border-success-200",
     },
     {
       key: "sick_animals",
       label: "Enfermos",
-      icon: AlertTriangle,
+      icon: IconAlertTriangle,
       color: "text-destructive",
-      bgColor: "bg-destructive/5",
+      bgColor: "bg-danger-50 border-danger-200",
     },
     {
       key: "health_rate",
       label: "Tasa de Salud",
-      icon: Activity,
+      icon: IconActivity,
       color: "text-info",
-      bgColor: "bg-info/5",
+      bgColor: "bg-info-50 border-info-200",
       suffix: "%",
     },
     {
       key: "vaccinations_30d",
       label: "Vacunas (30d)",
-      icon: Syringe,
+      icon: IconSyringe,
       color: "text-purple-600",
       bgColor: "bg-purple-50",
     },
     {
       key: "active_treatments",
       label: "Tratamientos Activos",
-      icon: RefreshCw,
+      icon: IconRefresh,
       color: "text-orange-600",
       bgColor: "bg-orange-50",
     },
     {
       key: "controls_7d",
       label: "Controles (7d)",
-      icon: MapPin,
+      icon: IconMapPin,
       color: "text-teal-600",
       bgColor: "bg-teal-50",
     },
   ];
 
   return (
-    <Card className="w-full">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-lg font-semibold flex items-center gap-2">
-          <Activity className="h-5 w-5" />
-          Estadísticas en Tiempo Real
+    <Card premium={false} hoverable={false} className="w-full shadow-sm">
+      <CardHeader className="flex flex-col gap-4 border-b border-border p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <CardTitle className="flex items-center gap-3 text-lg font-bold sm:text-xl">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-700">
+            <IconActivity size="md" />
+          </span>
+          Estadísticas en tiempo real
         </CardTitle>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {connected ? (
             <Badge
               variant="default"
-              className="bg-success/10 text-success hover:bg-success/10"
+              className="bg-success-600 px-3 py-1 text-white hover:bg-success-600"
             >
-              <Wifi className="h-3 w-3 mr-1" />
+              <IconWifi size="sm" className="mr-1" />
               En vivo
             </Badge>
           ) : (
-            <Badge variant="secondary" className="bg-muted text-muted-foreground">
-              <WifiOff className="h-3 w-3 mr-1" />
+            <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
+              <IconWifiOff size="sm" className="mr-1" />
               Desconectado
             </Badge>
           )}
@@ -210,29 +212,27 @@ export function LiveStats() {
           )}
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-5 sm:p-6">
         {stats?.error ? (
           <div className="p-4 bg-destructive/5 text-destructive rounded-lg text-sm">
             Error: {stats.error}
           </div>
         ) : stats?.kpis ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-3 lg:gap-4">
             {kpiCards.map((kpi) => {
               const value = stats.kpis[kpi.key as keyof LiveKPIs];
-              const Icon = kpi.icon;
-
               return (
                 <div
                   key={kpi.key}
-                  className={`p-4 rounded-lg ${kpi.bgColor} transition-all hover:scale-105`}
+                  className={`rounded-xl border p-4 transition-shadow hover:shadow-sm sm:p-5 ${kpi.bgColor}`}
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <Icon className={`h-4 w-4 ${kpi.color}`} />
-                    <span className="text-sm font-medium text-muted-foreground">
+                  <div className="mb-3 flex items-center gap-2">
+                    <kpi.icon size="sm" className={kpi.color} />
+                    <span className="text-sm font-semibold text-neutral-700">
                       {kpi.label}
                     </span>
                   </div>
-                  <div className={`text-2xl font-bold ${kpi.color}`}>
+                  <div className={`text-2xl font-bold tracking-tight sm:text-3xl ${kpi.color}`}>
                     {typeof value === "number" ? formatNumber(value) : "-"}
                     {kpi.suffix || ""}
                   </div>
@@ -242,7 +242,7 @@ export function LiveStats() {
           </div>
         ) : (
           <div className="flex items-center justify-center h-32 text-muted-foreground">
-            <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+            <IconRefresh size="md" className="mr-2 animate-spin" />
             Cargando estadísticas...
           </div>
         )}

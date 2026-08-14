@@ -99,16 +99,18 @@ class FinancialSummaryResource(Resource):
             if not finca_id:
                 return APIResponse.error("Finca no seleccionada", status_code=400)
 
-            # Sumatoria de Ingresos
+            # Sumatoria de Ingresos (excluye transacciones con soft delete)
             total_income = db.session.query(func.sum(Transaction.amount)).filter(
                 Transaction.finca_id == finca_id,
-                Transaction.transaction_type == TransactionType.Income
+                Transaction.transaction_type == TransactionType.Income,
+                Transaction.is_deleted.is_(False)
             ).scalar() or 0.0
 
-            # Sumatoria de Gastos
+            # Sumatoria de Gastos (excluye transacciones con soft delete)
             total_expense = db.session.query(func.sum(Transaction.amount)).filter(
                 Transaction.finca_id == finca_id,
-                Transaction.transaction_type == TransactionType.Expense
+                Transaction.transaction_type == TransactionType.Expense,
+                Transaction.is_deleted.is_(False)
             ).scalar() or 0.0
 
             # ROI Global

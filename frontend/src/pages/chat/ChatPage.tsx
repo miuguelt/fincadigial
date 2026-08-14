@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Send, MessageCircle, Wifi, WifiOff, Search, X, Smile, Paperclip, FileImage, Download, Server, CheckCircle2, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Send, MessageCircle, Wifi, WifiOff, Search, X, Smile, Paperclip, FileImage, Download, Server, CheckCircle2, RefreshCw, Clock3, Check, CheckCheck } from 'lucide-react';
 import api from '@/shared/api/client';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { OfflineChatService, type ChatMessage as OfflineChatMessage } from '@/shared/api/offline/OfflineChatService';
@@ -40,17 +40,19 @@ const toPageMessage = (message: OfflineChatMessage): ChatMessage => ({
 });
 
 const CONTACTS_CACHE_KEY = 'villaluz.chat.contacts';
+const contactsCacheKey = (userId?: number) =>
+  Number.isFinite(userId) ? `${CONTACTS_CACHE_KEY}:${userId}` : CONTACTS_CACHE_KEY;
 
-const readCachedContacts = (): ChatContact[] => {
+const readCachedContacts = (userId?: number): ChatContact[] => {
   try {
-    return JSON.parse(localStorage.getItem(CONTACTS_CACHE_KEY) || '[]') as ChatContact[];
+    return JSON.parse(localStorage.getItem(contactsCacheKey(userId)) || '[]') as ChatContact[];
   } catch {
     return [];
   }
 };
 
-const writeCachedContacts = (contacts: ChatContact[]) => {
-  try { localStorage.setItem(CONTACTS_CACHE_KEY, JSON.stringify(contacts)); } catch { /* cache opcional */ }
+const writeCachedContacts = (contacts: ChatContact[], userId?: number) => {
+  try { localStorage.setItem(contactsCacheKey(userId), JSON.stringify(contacts)); } catch { /* cache opcional */ }
 };
 
 // Función simple para formatear tiempo relativo
@@ -72,20 +74,20 @@ const formatTimeAgo = (dateString: string): string => {
 
 // Servicios de chat — usan el cliente axios compartido (JWT automático)
 const chatService = {
-  async getContacts(): Promise<ChatContact[]> {
+  async getContacts(userId?: number): Promise<ChatContact[]> {
     try {
       const { data } = await api.get<{ success: boolean; data: ChatContact[] }>('/chat/contacts');
       const contacts = data.data ?? [];
-      writeCachedContacts(contacts);
+      writeCachedContacts(contacts, userId);
       return contacts;
     } catch {
       try {
         const data = await FieldNodeService.get<{ data?: ChatContact[] }>('/chat/contacts');
         const contacts = data.data ?? [];
-        writeCachedContacts(contacts);
+        writeCachedContacts(contacts, userId);
         return contacts;
       } catch {
-        const cached = readCachedContacts();
+        const cached = readCachedContacts(userId);
         if (cached.length > 0) return cached;
         throw new Error('CONTACTS_UNAVAILABLE');
       }
@@ -101,6 +103,8 @@ const chatService = {
     const { data } = await api.post<{ success: boolean; data: ChatMessage }>('/chat/send', {
       recipient_id: recipientId,
       message,
+      client_message_id: globalThis.crypto?.randomUUID?.()
+        ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`,
       ...attachment,
     });
     return data.data;
@@ -185,7 +189,7 @@ export default function ChatPage() {
       setLoading(true);
       setContactsError(null);
       try {
-        const contactsData = await chatService.getContacts();
+        const contactsData = await chatService.getContacts(Number(user?.id));
         setContacts(contactsData);
       } catch {
         setContactsError('No se pudieron cargar los contactos. Verifica tu conexión.');
@@ -195,7 +199,7 @@ export default function ChatPage() {
     };
 
     loadContacts();
-  }, []);
+  }, [user?.id]);
 
   // Permitir abrir el chat directamente sobre la persona elegida desde usuarios.
   useEffect(() => {
@@ -219,6 +223,19 @@ export default function ChatPage() {
     };
 
     loadMessages();
+  }, [selectedContact, user?.id]);
+
+  // Si llega un mensaje de la conversación abierta, el historial se consulta
+  // inmediatamente para marcarlo como leído y emitir el recibo al remitente.
+  useEffect(() => {
+    if (!selectedContact) return;
+    const onRealtime = () => {
+      void chatService.getHistory(selectedContact.id, Number(user?.id))
+        .then(setMessages)
+        .catch(() => undefined);
+    };
+    window.addEventListener('chat-realtime-updated', onRealtime);
+    return () => window.removeEventListener('chat-realtime-updated', onRealtime);
   }, [selectedContact, user?.id]);
 
   useEffect(() => {
@@ -271,7 +288,7 @@ export default function ChatPage() {
       const probe = await FieldNodeService.probe();
       setNodeProbe(probe);
       if (probe.status === 'available') {
-        const contactsData = await chatService.getContacts();
+        const contactsData = await chatService.getContacts(Number(user?.id));
         setContacts(contactsData);
         await OfflineChatService.flushPending();
       }
@@ -310,10 +327,14 @@ export default function ChatPage() {
             newMessage.trim(),
           ).then(toPageMessage)
         })()
-        : await chatService.sendMessage(selectedContact.id, newMessage.trim(), attachmentData || undefined);
+        : await chatService.sendMessage(
+          selectedContact.id,
+          newMessage.trim() || attachmentData?.name || 'Archivo adjunto',
+          attachmentData || undefined,
+        );
 
       if (messageData) {
-        setMessages(prev => [...prev, messageData]);
+        if (!textOnly) setMessages(prev => [...prev, messageData]);
         setNewMessage('');
         setSelectedFile(null);
       }
@@ -365,6 +386,7 @@ export default function ChatPage() {
         <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
             <button
+              type="button"
               onClick={() => navigate(-1)}
               style={{ padding: '8px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', borderRadius: '8px' }}
             >
@@ -446,7 +468,8 @@ export default function ChatPage() {
               <MessageCircle style={{ height: '48px', width: '48px', margin: '0 auto 12px', opacity: 0.4 }} />
               <p style={{ marginBottom: '12px' }}>{contactsError}</p>
               <button
-                onClick={() => { setContactsError(null); setLoading(true); chatService.getContacts().then(setContacts).catch(() => setContactsError('Error al cargar contactos.')).finally(() => setLoading(false)); }}
+                type="button"
+                onClick={() => { setContactsError(null); setLoading(true); chatService.getContacts(Number(user?.id)).then(setContacts).catch(() => setContactsError('Error al cargar contactos.')).finally(() => setLoading(false)); }}
                 style={{ padding: '6px 16px', backgroundColor: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
               >
                 Reintentar
@@ -461,6 +484,7 @@ export default function ChatPage() {
             filteredContacts.map(contact => (
               <button
                 key={contact.id}
+                type="button"
                 onClick={() => setSelectedContact(contact)}
                 style={{
                   width: '100%',
@@ -520,14 +544,14 @@ export default function ChatPage() {
               </div>
             ) : (
               messages.map(message => (
-                <div key={message.id} style={{ display: 'flex', justifyContent: message.sender_id === user?.id ? 'flex-end' : 'flex-start', marginBottom: '16px' }}>
+                <div key={message.id} style={{ display: 'flex', justifyContent: Number(message.sender_id) === Number(user?.id) ? 'flex-end' : 'flex-start', marginBottom: '16px' }}>
                   <div style={{
                     maxWidth: '288px',
                     padding: '8px 16px',
                     borderRadius: '8px',
-                    backgroundColor: message.sender_id === user?.id ? '#3b82f6' : '#f9fafb',
-                    border: message.sender_id === user?.id ? 'none' : '1px solid #e5e7eb',
-                    color: message.sender_id === user?.id ? '#fff' : '#000'
+                    backgroundColor: Number(message.sender_id) === Number(user?.id) ? '#3b82f6' : '#f9fafb',
+                    border: Number(message.sender_id) === Number(user?.id) ? 'none' : '1px solid #e5e7eb',
+                    color: Number(message.sender_id) === Number(user?.id) ? '#fff' : '#000'
                   }}>
                     {message.attachment_url && (
                       <div style={{ marginBottom: '8px' }}>
@@ -555,14 +579,16 @@ export default function ChatPage() {
                         )}
                       </div>
                     )}
-                    <p style={{ fontSize: '14px', wordBreak: 'break-word', margin: 0 }}>{message.message}</p>
+                    <p style={{ fontSize: '14px', overflowWrap: 'break-word', margin: 0 }}>{message.message}</p>
                     <p style={{
                       fontSize: '12px',
                       marginTop: '4px',
-                      color: message.sender_id === user?.id ? 'rgba(255,255,255,0.7)' : '#666'
+                      color: Number(message.sender_id) === Number(user?.id) ? 'rgba(255,255,255,0.7)' : '#666'
                     }}>
                       {formatTimeAgo(message.created_at)}
-                      {message.sender_id === user?.id && message.status === 'pending' ? ' · pendiente' : ''}
+                      {Number(message.sender_id) === Number(user?.id) && message.status === 'pending' && <Clock3 size={12} aria-label="Pendiente" style={{ display: 'inline', marginLeft: 4 }} />}
+                      {Number(message.sender_id) === Number(user?.id) && message.status === 'delivered' && <Check size={12} aria-label="Entregado" style={{ display: 'inline', marginLeft: 4 }} />}
+                      {Number(message.sender_id) === Number(user?.id) && message.status === 'synced' && <CheckCheck size={12} aria-label="Leído" style={{ display: 'inline', marginLeft: 4 }} />}
                     </p>
                   </div>
                 </div>

@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { useToast } from '@/app/providers/ToastContext';
 import { useForm, FieldError } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import { fieldService } from '@/entities/field/api/field.service';
 
 export type FieldFormFields = {
@@ -17,7 +18,7 @@ const mapStateToApi = (state: 'Activo' | 'Inactivo'): 'Disponible' | 'Restringid
 
 export default function FieldForm() {
   const { id } = useParams<{ id?: string }>();
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<FieldFormFields>();
   const { showToast } = useToast();
 
@@ -46,7 +47,7 @@ export default function FieldForm() {
         await fieldService.createField(payload);
         showToast('Campo creado correctamente', 'success');
       }
-      setTimeout(() => navigate('/admin/fields'), 1000);
+      setTimeout(() => goTo('/admin/fields'), 1000);
     } catch (error: any) {
       const msg = error?.response?.data?.message || error?.message || 'Error al guardar campo';
       showToast(msg, 'error');

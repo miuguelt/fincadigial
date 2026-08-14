@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { PawPrint, Activity, AlertTriangle } from 'lucide-react';
 import KPICard from '@/widgets/analytics/KPICard';
 import { AnimalResponse } from '@/shared/api/generated/swaggerTypes';
+import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
 
 interface PremiumAnimalsHeaderProps {
   items: Array<AnimalResponse & { [k: string]: any }>;
@@ -53,41 +54,34 @@ export const PremiumAnimalsHeader: React.FC<PremiumAnimalsHeaderProps> = ({ item
   }, [items, alertCountMap]);
 
   return (
-    <div className="mb-6 space-y-6">
-      {/* Header Premium */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 bg-card/40 backdrop-blur-xl p-6 sm:p-8 rounded-[2.5rem] border border-border/50 shadow-2xl shadow-primary/5">
-        <div className="flex items-center gap-5">
-          <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-xl shadow-indigo-500/20">
-            <PawPrint className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tighter text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-              Gestión de <span className="text-indigo-500">Animales</span>
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground font-medium mt-1">Control de inventario, genética y métricas en tiempo real (Offline-Ready)</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Métricas Resumen */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <KPICard title="Total Animales" value={metrics.totalAnimals} icon="🐄" />
-        <KPICard 
-          title="Distribución (M/H)" 
-          value={`${metrics.percentMales}% / ${metrics.percentFemales}%`} 
-          icon="⚖️" 
-        />
-        <KPICard 
-          title="Animales Activos" 
-          value={metrics.totalVivos} 
-          icon={<Activity className="w-5 h-5" />} 
-        />
-        <KPICard 
-          title="Alertas Pendientes" 
-          value={metrics.totalAlerts} 
-          icon={<AlertTriangle className={metrics.totalAlerts > 0 ? "text-amber-500" : "text-emerald-500"} />} 
-        />
-      </div>
-    </div>
+    <DataScreenHeader
+      icon={<PawPrint className="h-5 w-5 text-white" />}
+      iconClassName="from-indigo-500 to-indigo-600 shadow-indigo-500/20"
+      title={<>Gestión de <span className="text-indigo-500">Animales</span></>}
+      description="Control de inventario, genética y métricas en tiempo real (Offline-Ready)"
+      metrics={
+        <>
+          <KPICard compact title="Total Animales" value={metrics.totalAnimals} icon="🐄" />
+          <KPICard
+            compact
+            title="Distribución (M/H)"
+            value={`${metrics.percentMales}% / ${metrics.percentFemales}%`}
+            icon="⚖️"
+          />
+          <KPICard
+            compact
+            title="Animales Activos"
+            value={metrics.totalVivos}
+            icon={<Activity className="w-4 h-4" />}
+          />
+          <KPICard
+            compact
+            title="Alertas Pendientes"
+            value={metrics.totalAlerts}
+            icon={<AlertTriangle className={`w-4 h-4 ${metrics.totalAlerts > 0 ? "text-amber-500" : "text-emerald-500"}`} />}
+          />
+        </>
+      }
+    />
   );
 };

@@ -163,11 +163,19 @@ class UserFinca(db.Model):
 
         Returns:
             Lista de diccionarios con finca y rol
+
+        Las fincas con soft delete quedan fuera: seguir listándolas permitía
+        cambiarse a una finca ya eliminada y sumaba sus datos a los totales.
         """
-        query = cls.query.filter_by(user_id=user_id)
+        from app.models.finca import Finca
+
+        query = cls.query.join(Finca, Finca.id == cls.finca_id).filter(
+            cls.user_id == user_id,
+            Finca.is_deleted.is_(False)
+        )
 
         if active_only:
-            query = query.filter_by(is_active=True)
+            query = query.filter(cls.is_active.is_(True))
 
         memberships = query.all()
 
@@ -177,6 +185,7 @@ class UserFinca(db.Model):
                 'finca_id': m.finca_id,
                 'finca_name': m.finca.name if m.finca else None,
                 'finca_type': getattr(m.finca.type, 'value', str(m.finca.type)) if m.finca and m.finca.type else None,
+                'finca_is_active': bool(m.finca.is_active) if m.finca else False,
                 'role': m.role,
                 'is_active': m.is_active,
                 'is_primary': m.is_primary,

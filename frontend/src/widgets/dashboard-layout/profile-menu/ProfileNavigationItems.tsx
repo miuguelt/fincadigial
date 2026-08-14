@@ -1,5 +1,11 @@
-import { Bell, CalendarDays, House, MessageCircle, type LucideIcon } from 'lucide-react';
+import type { ElementType } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  IconBellRinging,
+  IconBuildingCottage,
+  IconCalendarEvent,
+  IconMessageCircle,
+} from '@/shared/ui/icons';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { useUnreadMessages } from '@/features/chat/hooks/useUnreadMessages';
 import { useRealtimeNotifications } from '@/shared/hooks/useRealtimeNotifications';
@@ -9,7 +15,7 @@ import { getRolePrefix } from '@/shared/utils/roleRoutes';
 interface MainAccess {
   label: string;
   description: string;
-  icon: LucideIcon;
+  icon: ElementType;
   path: string;
   badge?: number;
 }
@@ -19,26 +25,26 @@ function buildMainAccesses(rolePrefix: string, unreadAlerts: number, unreadMessa
     {
       label: 'Mi finca',
       description: 'Resumen y trabajo de hoy',
-      icon: House,
+      icon: IconBuildingCottage,
       path: `${rolePrefix}/dashboard`,
     },
     {
       label: 'Alertas',
       description: 'Novedades que requieren atención',
-      icon: Bell,
+      icon: IconBellRinging,
       path: '/alerts',
       badge: unreadAlerts,
     },
     {
       label: 'Calendario',
       description: 'Tareas y eventos programados',
-      icon: CalendarDays,
+      icon: IconCalendarEvent,
       path: `${rolePrefix}/calendar`,
     },
     {
       label: 'Mensajes',
       description: 'Conversaciones con el equipo',
-      icon: MessageCircle,
+      icon: IconMessageCircle,
       path: '/chat',
       badge: unreadMessages,
     },

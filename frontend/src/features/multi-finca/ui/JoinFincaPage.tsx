@@ -14,6 +14,7 @@ import {
   membershipService,
 } from "@/entities/user/api/membership.service";
 import { fincaService } from "@/entities/finca/api/finca.service";
+import { readStandardErrorPayload } from "@/shared/api/error-parser";
 import { useNavigate } from "react-router-dom";
 
 import { useToast } from "@/app/providers/ToastContext";
@@ -29,17 +30,17 @@ export const JoinFincaPage: React.FC = () => {
   const [requestingId, setRequestingId] = useState<number | null>(null);
   const [detailFinca, setDetailFinca] = useState<any | null>(null);
   const { refresh } = useNotifications();
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (options?: { skipCache?: boolean }) => {
     setLoading(true);
     try {
-      const fincaListResp = await fincaService.getPublicFincas();
+      const fincaListResp = await fincaService.getPublicFincas(undefined, options);
       setFincas(fincaListResp?.data || []);
       refresh();
     } catch (err) {
       showToast("Error al sincronizar datos de acceso", "error");    } finally {
       setLoading(false);
     }
-  }, [showToast]);
+  }, [refresh, showToast]);
   useEffect(() => {
     loadData();
   }, [loadData]);
@@ -53,8 +54,15 @@ export const JoinFincaPage: React.FC = () => {
       } else {
         showToast(resp.message || "Error al enviar solicitud", "error");
       }
+      // El estado is_member / already_requested lo calcula el backend: hay que
+      // releer el catálogo para que la tarjeta refleje la solicitud enviada.
+      await loadData({ skipCache: true });
     } catch (err: any) {
-      showToast("Error de comunicación", "error");
+      // El backend responde 400 con motivos accionables ("Ya eres miembro de
+      // esta finca", "Ya tienes una solicitud pendiente"): mostrarlos tal cual.
+      const { status, message } = readStandardErrorPayload(err);
+      showToast(message || "Error al enviar solicitud", "error", 8000);
+      if (status === 400) await loadData({ skipCache: true });
     } finally {
       setRequestingId(null);
     }

@@ -96,7 +96,7 @@ export function validatePassword(password: string): PasswordValidationResult {
     score += 20;
   }
 
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+  if (!/[!@#$%^&*()_+\-=\x5B\]{};':"\\|,.<>/?]/.test(password)) {
     errors.push('Debe contener al menos un símbolo especial');
     suggestions.push('Agrega símbolos como !@#$%');
   } else {
@@ -346,13 +346,13 @@ export function containsSQLInjection(input: string): boolean {
   if (!input || typeof input !== 'string') return false;
   
   const sqlPatterns = [
-    /(\%27)|(\')|(\-\-)|(\%23)|(#)/i,
-    /((\%3D)|(=))[^\n]*((\%27)|(\')|(\-\-)|(\%3B)|(;))/i,
+    /(%27)|(')|(--)|(%23)|(#)/i,
+    /((%3D)|(=))[^\n]*((%27)|(')|(--)|(%3B)|(;))/i,
     /\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION|TABLE|FROM|WHERE)\b/i,
-    /(\%27)|(\')|(\-\-)|(\%23)|(#)/i,
-    /(\%22)|(\")/i,
-    /(\%3B)|(;)/i,
-    /(\%3D)|(=)/i,
+    /(%27)|(')|(--)|(%23)|(#)/i,
+    /(%22)|(")/i,
+    /(%3B)|(;)/i,
+    /(%3D)|(=)/i,
   ];
   
   return sqlPatterns.some(pattern => pattern.test(input));

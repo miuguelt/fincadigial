@@ -28,7 +28,7 @@ export function FincaHeroBanner({ className }: { className?: string }) {
   return (
     <section
       className={cn(
-        'relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm',
+        'relative overflow-hidden rounded-3xl border border-border bg-card shadow-sm',
         className,
       )}
       aria-label="Resumen de la finca y el clima"
@@ -36,7 +36,7 @@ export function FincaHeroBanner({ className }: { className?: string }) {
       <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-sky-500 to-amber-500" />
 
       <div className="space-y-4 p-3 pt-4 sm:p-5 sm:pt-5">
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.8fr)] lg:items-start">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(260px,0.8fr)] xl:items-start">
           <FincaIdentity name={hero.fincaName} profile={hero.profile} location={hero.location} />
           <WeatherSlot
             record={current}
@@ -49,7 +49,7 @@ export function FincaHeroBanner({ className }: { className?: string }) {
         </div>
 
         {metrics.length > 0 && (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-[repeat(auto-fit,minmax(130px,1fr))]">
             {metrics.map((item) => (
               <WeatherMetric key={item.key} item={item} />
             ))}

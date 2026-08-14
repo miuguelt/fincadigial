@@ -185,7 +185,7 @@ export function ParentMiniCard({ parentId, parentLabel, gender, onClick }: Paren
         <div className="text-[10px] uppercase tracking-wider font-bold text-white/80 mb-0.5">
           {gender}
         </div>
-        <div className="text-sm font-bold text-white truncate drop-shadow-lg" title={parentLabel}>
+        <div className="text-sm font-bold text-white fit-clamp drop-shadow-lg" title={parentLabel}>
           {parentLabel}
         </div>
       </div>

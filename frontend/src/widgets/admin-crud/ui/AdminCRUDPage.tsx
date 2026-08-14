@@ -24,7 +24,10 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useResource } from '@/shared/hooks/useResource';
 import { useToast } from '@/app/providers/ToastContext';
+import { useAuth } from '@/features/auth/model/useAuth';
 import { useT } from '@/shared/i18n';
+import { normalizeRole } from '@/features/auth/api/auth.service';
+import { resolveEntity, roleCan } from '@/shared/lib/rbac';
 
 // Componentes especializados
 import { CRUDTable } from './CRUDTable';
@@ -41,16 +44,40 @@ import { ErrorState } from '@/widgets/feedback/ErrorState';
 import { SkeletonTable } from '@/widgets/feedback/SkeletonTable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Checkbox } from '@/shared/ui/checkbox';
+import { FloatingScrollArea } from '@/shared/ui/FloatingScrollArea';
 import { Plus } from 'lucide-react';
 import { cn } from '@/shared/ui/cn';
+import { extractValidationErrors, getCrudErrorMessage, getPageSizeOptions, withoutTombstones } from './crudPage.helpers';
 
 // Utilidades
 import { addTombstone, getTombstoneIds, clearExpired } from '@/shared/api/cache/tombstones';
-import { validateFormSections, type FieldErrors } from '@/shared/utils/formValidation';
+import { validateFormSections } from '@/shared/utils/formValidation';
 import { formatValidationToastMessage, mapBackendFieldErrorsToLabels, buildConflictMessage } from '@/shared/utils/validationMessages';
 
 // Interfaces
-import type { CRUDConfig, CRUDFormField } from '../../../shared/types/crud';
+import type { CRUDConfig } from '../../../shared/types/crud';
+import { useCrudFormState } from './hooks/useCrudFormState';
+import { useCrudSelection } from './hooks/useCrudSelection';
+
+const PAGE_SIZE_STORAGE_PREFIX = 'crud:pageSize:';
+
+function readStoredPageSize(entityKey: string): number | null {
+  try {
+    const raw = window.localStorage.getItem(`${PAGE_SIZE_STORAGE_PREFIX}${entityKey}`);
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) && parsed > 0 && parsed <= 1000 ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredPageSize(entityKey: string, size: number): void {
+  try {
+    window.localStorage.setItem(`${PAGE_SIZE_STORAGE_PREFIX}${entityKey}`, String(size));
+  } catch {
+    // Modo privado o cuota llena: la preferencia simplemente no se recuerda.
+  }
+}
 
 export interface AdminCRUDPageProps<T extends { id: number }, TInput extends Record<string, any>> {
   config: CRUDConfig<T, TInput>;
@@ -99,27 +126,18 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<T | null>(null);
   const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState<TInput>(initialFormData);
-  const [formErrors, setFormErrors] = useState<FieldErrors>({});
-  const [formErrorMessages, setFormErrorMessages] = useState<string[]>([]);
+  const {
+    formData,
+    setFormData,
+    formErrors,
+    setFormErrors,
+    formErrorMessages,
+    setFormErrorMessages,
+    resetForm,
+    updateFieldValue,
+  } = useCrudFormState(initialFormData, config);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Selección masiva
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const toggleSelect = useCallback((id: number) => {
-    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
-  }, []);
-  const clearSelection = useCallback(() => setSelectedIds([]), []);
-
-    const updateFieldValue = useCallback((field: CRUDFormField<TInput>, value: any) => {
-    const key = String(field.name);
-    const nextData = { ...(formData as any), [key]: value } as TInput;
-    const validation = validateFormSections(config.formSections || [], nextData as any);
-    setFormErrors(validation.errors);
-    setFormErrorMessages(validation.messages);
-    setFormData(nextData);
-  }, [formData, config.formSections]);
-  
   // Estados para modales
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [detailItem, setDetailItem] = useState<T | null>(null);
@@ -149,9 +167,28 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   // Hooks y utilidades
   const { showToast } = useToast();
   const t = useT();
+  const { role, user } = useAuth() as any;
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const currentRole = normalizeRole(role || user?.role) || String(role || user?.role || '');
+  const permissionEntity = useMemo(
+    () => resolveEntity(config.permissionEntity || config.entityName),
+    [config.permissionEntity, config.entityName],
+  );
+  const canCreate = useMemo(
+    () => config.enableCreateModal !== false && roleCan(currentRole, permissionEntity, 'create'),
+    [config.enableCreateModal, currentRole, permissionEntity],
+  );
+  const canUpdate = useMemo(
+    () => config.enableEditModal !== false && roleCan(currentRole, permissionEntity, 'update'),
+    [config.enableEditModal, currentRole, permissionEntity],
+  );
+  const canDelete = useMemo(
+    () => Boolean(config.enableDelete) && roleCan(currentRole, permissionEntity, 'delete'),
+    [config.enableDelete, currentRole, permissionEntity],
+  );
   
   // Clave de entidad para tombstones persistentes
   const entityKey = useMemo(() => (config.entityName || 'entity').toLowerCase(), [config.entityName]);
@@ -160,7 +197,14 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   useEffect(() => {
     clearExpired(entityKey);
   }, [entityKey]);
-  
+
+  /*
+   * Cuántos registros por página quiere ver ESTE usuario en ESTA pantalla.
+   * Se recuerda entre visitas: quien trabaja con el hato completo no debería
+   * volver a subir el tamaño de página cada vez que entra.
+   */
+  const storedPageSize = useMemo(() => readStoredPageSize(entityKey), [entityKey]);
+
   // Configuración de recursos
   const {
     data: items,
@@ -178,7 +222,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     autoFetch: true,
     initialParams: {
       page: 1,
-      limit: config.defaultLimit || 50,
+      limit: storedPageSize || config.defaultLimit || 50,
       fields: config.defaultFields,
       ...(config.additionalFilters || {})
     },
@@ -209,23 +253,27 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   const totalItems = meta?.total || 0;
   const totalPages = meta?.totalPages || Math.ceil(totalItems / pageSize);
 
-  // Selector de registros por página (null en la config lo desactiva)
-  const pageSizeOptions = config.pageSizeOptions === null
-    ? undefined
-    : (config.pageSizeOptions || [12, 24, 48, 96]);
+  /*
+   * Selector de registros por página (`null` en la config lo desactiva).
+   * El tamaño vigente SIEMPRE entra en la lista: si `defaultLimit` no coincidía
+   * con ninguna opción, el desplegable mostraba la primera y mentía sobre
+   * cuántos registros se están viendo.
+   */
+  const pageSizeOptions = useMemo(() => {
+    return getPageSizeOptions(config, pageSize);
+  }, [config, pageSize]);
+
   const handlePageSizeChange = useCallback((size: number) => {
+    writeStoredPageSize(entityKey, size);
     setLimit?.(size);
     setPage?.(1);
-  }, [setLimit, setPage]);
+  }, [entityKey, setLimit, setPage]);
 
   // Filtrar items para excluir tombstones
   const filteredItems = useMemo(() => {
-    const tombstoneIds = getTombstoneIds(entityKey);
-    return (items || []).filter((i: T) => {
-      const idStr = String((i as any).id);
-      return !tombstoneIds.has(idStr);
-    });
+    return withoutTombstones(items || [], getTombstoneIds(entityKey));
   }, [items, entityKey]);
+  const { selectedIds, toggleSelect, clearSelection, toggleSelectAll } = useCrudSelection(filteredItems);
 
   useEffect(() => {
     if (onItemsChange) {
@@ -233,30 +281,23 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     }
   }, [filteredItems, onItemsChange]);
 
-  const toggleSelectAll = useCallback(() => {
-    setSelectedIds(prev => {
-      const allIds = (filteredItems || []).map((i: T) => (i as any).id as number);
-      return prev.length === allIds.length ? [] : allIds;
-    });
-  }, [filteredItems]);
-  
   // Handlers
   const openCreate = useCallback(() => {
+    if (!canCreate) return;
     setEditingItem(null);
-    setFormData(JSON.parse(JSON.stringify(initialFormData)));
-    setFormErrors({});
-    setFormErrorMessages([]);
+    resetForm();
     setIsModalOpen(true);
-  }, [initialFormData]);
+  }, [canCreate, resetForm]);
   
   const openEdit = useCallback((item: T) => {
+    if (!canUpdate) return;
     setEditingItem(item);
     const formValues = mapResponseToForm ? mapResponseToForm(item) : (item as unknown as TInput);
     setFormData(formValues);
     setFormErrors({});
     setFormErrorMessages([]);
     setIsModalOpen(true);
-  }, [mapResponseToForm]);
+  }, [canUpdate, mapResponseToForm, setFormData, setFormErrors, setFormErrorMessages]);
   
   const openDetail = useCallback((item: T) => {
     if (externalOnOpenDetail) {
@@ -271,6 +312,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   }, [filteredItems, externalOnOpenDetail]);
   
   const openDeleteConfirm = useCallback(async (id: number) => {
+    if (!canDelete) return;
     setTargetId(id);
     setConfirmOpen(true);
     setIsCheckingDependencies(true);
@@ -295,7 +337,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     } finally {
       setIsCheckingDependencies(false);
     }
-  }, [service]);
+  }, [canDelete, service]);
   
   const handleModalClose = useCallback(() => {
     if (editingItem?.id) {
@@ -307,9 +349,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       lastClosedEditIdRef.current = null;
     }
     setIsModalOpen(false);
-    setFormData(JSON.parse(JSON.stringify(initialFormData)));
-    setFormErrors({});
-    setFormErrorMessages([]);
+    resetForm();
     setEditingItem(null);
     
     const sp = new URLSearchParams(searchParams);
@@ -321,10 +361,15 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     } else if (location.pathname.includes('form')) {
       navigate(-1);
     }
-  }, [initialFormData, searchParams, setSearchParams, navigate, location.pathname, editingItem]);
+  }, [searchParams, setSearchParams, navigate, location.pathname, editingItem, resetForm]);
   
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (editingItem?.id ? !canUpdate : !canCreate) {
+      showToast('No tienes permisos para realizar esta acción.', 'error');
+      return;
+    }
 
     const validation = validateFormSections(config.formSections || [], formData as any);
     if (validation.messages.length > 0) {
@@ -409,21 +454,8 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
         }
       }, 300);
     } catch (error: any) {
-      let errorMessage = `${t('crud.save_error', 'Error al guardar')} ${config.entityName.toLowerCase()}`;
-      
-      if (error?.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error?.response?.data?.detail) {
-        errorMessage = error.response.data.detail;
-      } else if (error?.message) {
-        errorMessage = error.message;
-      }
-      
-      const validationErrors =
-        (error as any)?.validationErrors ||
-        (error as any)?.details?.validation_errors ||
-        (error as any)?.details?.errors ||
-        error?.response?.data?.errors;
+      let errorMessage = getCrudErrorMessage(error, `${t('crud.save_error', 'Error al guardar')} ${config.entityName.toLowerCase()}`);
+      const validationErrors = extractValidationErrors(error);
 
       if (validationErrors && typeof validationErrors === 'object') {
         try {
@@ -485,10 +517,10 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     } finally {
       setSaving(false);
     }
-  }, [formData, validateForm, editingItem, updateItem, createItem, setPage, meta, handleModalClose, refetch, config.entityName, config.formSections, t, showToast, setFormErrors, setFormErrorMessages, formErrorMessages]);
+  }, [canCreate, canUpdate, formData, validateForm, editingItem, updateItem, createItem, setPage, meta, handleModalClose, refetch, config, service, t, showToast, setFormErrors, setFormErrorMessages, formErrorMessages]);
   
   const handleConfirmDelete = useCallback(async () => {
-    if (targetId == null) return;
+    if (targetId == null || !canDelete) return;
     
     const idToDelete = targetId;
     setConfirmOpen(false);
@@ -554,7 +586,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       
       showToast(errorMessage, 'error');
     }
-  }, [targetId, deleteItem, entityKey, isDetailOpen, detailItem, isModalOpen, editingItem, filteredItems, currentPage, setPage, refetch, config.entityName, showToast]);
+  }, [canDelete, targetId, deleteItem, entityKey, isDetailOpen, detailItem, isModalOpen, editingItem, filteredItems, currentPage, setPage, refetch, config.entityName, service, showToast]);
   
   // Sincronizar búsqueda con URL - solo cuando el usuario escribe
   useEffect(() => {
@@ -583,25 +615,26 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     if (searchQuery !== search) {
       setSearchQuery(search);
     }
-  }, [searchParams]);
+  }, [searchParams, searchQuery]);
 
   const handleUpdateCell = useCallback(async (item: T, key: string, value: any) => {
+    if (!canUpdate) return;
     await updateItem(item.id, { [key]: value } as any);
-  }, [updateItem]);
+  }, [canUpdate, updateItem]);
 
   // Auto-open create modal via ?create=1
   useEffect(() => {
-    if (config.enableCreateModal !== false) {
+    if (canCreate) {
       const c = searchParams.get('create');
       if (c && !isModalOpen) {
         openCreate();
       }
     }
-  }, [searchParams, config.enableCreateModal, isModalOpen, openCreate]);
+  }, [searchParams, canCreate, isModalOpen, openCreate]);
   
   // Auto-open edit modal via ?edit=ID
   useEffect(() => {
-    if (config.enableEditModal !== false) {
+    if (canUpdate) {
       const e = searchParams.get('edit');
       if (!e) {
         suppressEditAutoOpenRef.current = false;
@@ -637,7 +670,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
         }
       }
     }
-  }, [searchParams, config.enableEditModal, isModalOpen, editingItem, service, openEdit, showToast, t, setSearchParams]);
+  }, [searchParams, canUpdate, isModalOpen, editingItem, service, openEdit, showToast, t, setSearchParams]);
   
   // Header con búsqueda y botones
   const header = (
@@ -651,7 +684,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           searchPlaceholder={config.searchPlaceholder}
-          onOpenCreate={config.enableCreateModal !== false ? openCreate : undefined}
+          onOpenCreate={canCreate ? openCreate : undefined}
           customToolbar={config.customToolbar}
         />
       }
@@ -695,32 +728,41 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   
   // Empty state
   const empty = (filteredItems?.length || 0) === 0;
-  
+
+  /*
+   * Estándar de pantallas de datos §1.1: con filas en pantalla, el bloque de
+   * contexto (métricas, pestañas, filtros) viaja DENTRO del área con scroll
+   * para no restarle alto a la tabla. Excepciones:
+   *  - estado vacío: no hay alto que ganar, el encabezado se queda arriba;
+   *  - `renderGrouped`: la vista agrupada gestiona su propio scroll.
+   */
+  const usesScrollableHeader = Boolean(config.customHeader) && !empty && !config.renderGrouped;
+
   return (
     <AppLayout
       header={header}
       className={cn(
-        "px-2 sm:px-3 lg:px-4 pt-0 pb-0 max-w-full min-h-0 flex flex-col",
+        "px-3 sm:px-4 lg:px-6 pt-3 sm:pt-4 max-w-full min-h-0 flex flex-col",
         // renderGrouped (tableros) gestiona su propio scroll: necesita la altura completa.
-        (config.viewMode === 'cards' || config.autoHeight) && !config.renderGrouped ? "h-auto" : "h-full"
+        (config.viewMode === 'cards' || config.autoHeight) && !config.renderGrouped ? "h-auto pb-6" : "h-full pb-0"
       )}
       contentClassName={cn(
-        "space-y-0 flex flex-col",
+        "space-y-4 sm:space-y-5 flex flex-col",
         (config.viewMode === 'cards' || config.autoHeight) && !config.renderGrouped ? "h-auto" : "flex-1 min-h-0"
       )}
     >
-      {config.customHeader && (
+      {config.customHeader && !usesScrollableHeader && (
         <div className="flex-shrink-0">
           {config.customHeader}
         </div>
       )}
-      
+
       {empty ? (
         <EmptyState
           title={config.emptyStateMessage || `${t('state.empty.title', 'Sin datos')}: ${config.entityName}`}
           description={config.emptyStateDescription || t('state.empty.description', 'Crea el primer registro para comenzar.')}
           icon={config.emptyStateIcon}
-          action={config.enableCreateModal !== false && (
+          action={canCreate && (
             <button onClick={openCreate} aria-label={`${t('common.create', 'Crear')} ${config.entityName.toLowerCase()}`}>
               <Plus className="h-4 w-4 mr-2" />
               {t('common.create', 'Crear')} {config.entityName.toLowerCase()}
@@ -729,15 +771,17 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
         />
       ) : config.viewMode === 'cards' ? (
         <div className="flex flex-col flex-1 min-h-0 mt-1">
-          <div className={cn(
-            "flex-1 min-h-0 rounded-xl",
-            config.renderGrouped
-              ? "flex flex-col overflow-hidden"
-              : "overflow-y-auto p-2 sm:p-3 lg:p-4 pb-6"
-          )}>
-            {config.renderGrouped ? (
-              config.renderGrouped(filteredItems)
-            ) : (
+          {config.renderGrouped ? (
+            <div className="flex-1 min-h-0 rounded-xl flex flex-col overflow-hidden">
+              {config.renderGrouped(filteredItems)}
+            </div>
+          ) : (
+            <FloatingScrollArea
+              containerClassName="flex-1 rounded-xl"
+              horizontal={false}
+              className="p-2 sm:p-3 lg:p-4 pb-20 md:pb-24"
+            >
+              {usesScrollableHeader && config.customHeader}
               <div className={`grid ${config.cardGridClassName || 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'} gap-3 sm:gap-4 lg:gap-5 auto-rows-fr`}>
                 {filteredItems.map((item) => {
                   const firstCol = config.columns[0];
@@ -775,10 +819,10 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
                       )}
                       {!config.renderCard && (
                         <CardHeader className="py-3 flex-shrink-0 border-b border-border/30">
-                          <CardTitle className="text-sm font-semibold truncate" title={titleText}>{titleText}</CardTitle>
+                          <CardTitle className="text-sm font-semibold fit-clamp" title={titleText}>{titleText}</CardTitle>
                         </CardHeader>
                       )}
-                      <CardContent className={config.renderCard ? 'p-0 flex-1 flex flex-col min-h-0 overflow-hidden' : 'py-2.5 px-3 flex-1 flex flex-col min-h-0 overflow-hidden'}>
+                      <CardContent className={config.renderCard ? '!p-0 w-full min-w-0 flex-1 flex flex-col min-h-0 overflow-hidden' : 'py-2.5 px-3 flex-1 flex flex-col min-h-0 overflow-hidden'}>
                         {config.renderCard ? (
                           config.renderCard(item, (target) => {
                             if (config.enableDetailModal !== false) openDetail(target);
@@ -790,7 +834,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
                               return (
                                 <div key={String(col.key)} className="min-w-0 space-y-1">
                                   <div className="text-muted-foreground font-medium text-[10px] uppercase tracking-wide">{col.label}</div>
-                                  <div className="truncate font-medium text-foreground" title={String(raw ?? '-')}>{String(raw ?? '-')}</div>
+                                  <div className="fit-clamp font-medium text-foreground" title={String(raw ?? '-')}>{String(raw ?? '-')}</div>
                                 </div>
                               );
                             })}
@@ -801,8 +845,8 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
                   );
                 })}
               </div>
-            )}
-          </div>
+            </FloatingScrollArea>
+          )}
 
           {!config.hidePagination && (
             <CRUDPagination
@@ -812,7 +856,6 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
               onPageChange={setPage || ((_page: number) => {})}
               loading={loading}
               hasSelection={selectedIds.length > 0}
-              floating={false}
               pageSize={pageSize}
               pageSizeOptions={pageSizeOptions}
               onPageSizeChange={handlePageSizeChange}
@@ -821,20 +864,21 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
         </div>
       ) : (
         <>
-          <div className="bg-card/95 backdrop-blur-sm border border-border/30 rounded-lg shadow-lg overflow-hidden flex-1 flex flex-col min-h-0 mt-1">
+          <div className="bg-card/95 backdrop-blur-sm border border-border/30 rounded-xl shadow-lg overflow-hidden flex-1 flex flex-col min-h-0 mt-1">
             <CRUDTable
+              headerSlot={usesScrollableHeader ? config.customHeader : undefined}
               items={filteredItems}
               columns={config.columns}
               config={config}
               onOpenDetail={config.enableDetailModal !== false ? openDetail : undefined}
-              onOpenEdit={config.enableEditModal !== false ? openEdit : undefined}
-              onOpenDelete={config.enableDelete ? openDeleteConfirm : undefined}
+              onOpenEdit={canUpdate ? openEdit : undefined}
+              onOpenDelete={canDelete ? openDeleteConfirm : undefined}
               enhancedHover={enhancedHover}
               refreshing={refreshing}
               selectedIds={selectedIds}
               onToggleSelect={toggleSelect}
               onToggleSelectAll={toggleSelectAll}
-              onUpdateCell={handleUpdateCell}
+              onUpdateCell={canUpdate ? handleUpdateCell : undefined}
             />
           </div>
 
@@ -846,7 +890,6 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
               onPageChange={setPage || ((_page: number) => {})}
               loading={loading}
               hasSelection={selectedIds.length > 0}
-              floating={false}
               pageSize={pageSize}
               pageSizeOptions={pageSizeOptions}
               onPageSizeChange={handlePageSizeChange}
@@ -861,7 +904,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       )}
       
       {/* Create/Edit Modal */}
-      {(config.enableCreateModal !== false || config.enableEditModal !== false) && (
+      {(canCreate || canUpdate) && (
         <CRUDForm
           isOpen={isModalOpen}
           onOpenChange={handleModalClose}
@@ -887,7 +930,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
           title={detailItem ? `Detalle del ${config.entityName}${config.showIdInDetailTitle === false ? '' : `: ${detailItem.id}`}` : `Detalle del ${config.entityName}`}
           item={detailItem}
           config={config}
-          onEdit={config.enableEditModal !== false ? openEdit : undefined}
+          onEdit={canUpdate ? openEdit : undefined}
           customDetailContent={customDetailContent}
           showDetailTimestamps={config.showDetailTimestamps}
           showIdInDetailTitle={config.showIdInDetailTitle}
@@ -899,7 +942,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       )}
       
       {/* Confirm Delete Dialog */}
-      <ConfirmDeleteDialog
+      {canDelete && <ConfirmDeleteDialog
         open={confirmOpen}
         onOpenChange={(open) => {
           setConfirmOpen(open);
@@ -917,7 +960,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
         entityName={config.entityName}
         loadingDependencies={isCheckingDependencies}
         dependencyInfo={dependencyInfo}
-      />
+      />}
     </AppLayout>
   );
 }

@@ -1,4 +1,5 @@
 import React from "react";
+import { FitText } from "@/shared/ui/FitText";
 
 /**
  * PageHeader: encabezado consistente para páginas.
@@ -30,6 +31,34 @@ export interface PageHeaderProps {
   dense?: boolean;
   // Opcional: clases extra para el <h1>
   titleClassName?: string;
+}
+
+/** Título y descripción, ambos ajustados al ancho disponible. */
+function TitleBlock({
+  title,
+  description,
+  titleClasses,
+}: {
+  title: string;
+  description?: string;
+  titleClasses: string;
+}) {
+  return (
+    <div className="min-w-0 flex-1 space-y-1.5">
+      <FitText as="h1" minScale={0.7} className={titleClasses}>
+        {title}
+      </FitText>
+      {description ? (
+        <FitText
+          as="p"
+          minScale={0.8}
+          className="text-sm sm:text-base text-muted-foreground transition-colors duration-200"
+        >
+          {description}
+        </FitText>
+      ) : null}
+    </div>
+  );
 }
 
 export function PageHeader({
@@ -65,16 +94,9 @@ export function PageHeader({
         </div>
       ) : null}
       <div className={wrapperClasses}>
-        <div className="space-y-1.5">
-          <h1 className={titleClasses}>{title}</h1>
-          {description ? (
-            <p className="text-sm sm:text-base text-muted-foreground transition-colors duration-200">
-              {description}
-            </p>
-          ) : null}
-        </div>
+        <TitleBlock title={title} description={description} titleClasses={titleClasses} />
         {actions ? (
-          <div className="flex items-center gap-3">{actions}</div>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">{actions}</div>
         ) : null}
       </div>
     </header>

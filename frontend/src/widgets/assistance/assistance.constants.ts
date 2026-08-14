@@ -27,8 +27,8 @@ export function getCategoryConfig(value: string) {
 }
 
 export const STATUS_CONFIG: Record<string, StatusConfigItem> = {
-  open: { label: 'Esperando técnico', badge: 'warning', color: 'text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-900/30' },
-  in_progress: { label: 'Técnico asignado', badge: 'info', color: 'text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-900/30' },
+  open: { label: 'Esperando veterinario', badge: 'warning', color: 'text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-900/30' },
+  in_progress: { label: 'Veterinario asignado', badge: 'info', color: 'text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-900/30' },
   resolved: { label: 'Resuelta', badge: 'success', color: 'text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-900/30' },
   closed: { label: 'Cancelada', badge: 'neutral', color: 'text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-800/30' },
 };

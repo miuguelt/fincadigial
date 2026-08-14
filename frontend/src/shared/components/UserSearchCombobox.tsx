@@ -74,7 +74,7 @@ export function UserSearchCombobox({
           aria-expanded={open}
           className={cn("w-full justify-between h-11 px-3 bg-[var(--color-surface)] border-[var(--color-border)]", className)}
         >
-          <div className="flex items-center gap-2 truncate">
+          <div className="flex items-center gap-2 fit-clamp">
             {selectedUser ? (
               <>
                 <div className="w-6 h-6 rounded-full overflow-hidden bg-[var(--color-surface-raised)]">

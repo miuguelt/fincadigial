@@ -1,4 +1,4 @@
-﻿import { AlertTriangle, XCircle, Info, CheckCircle } from 'lucide-react';
+import { AlertTriangle, XCircle, Info, CheckCircle } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 
 export interface AlertCardData {
@@ -90,7 +90,7 @@ const AlertCard = ({ alert, onAction }: AlertCardProps) => {
 
           <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             {alert.animal_record && <span className="font-medium">Animal: {alert.animal_record}</span>}
-            {alert.created_at && <span>{new Date(alert.created_at).toLocaleString('es-ES')}</span>}
+            {alert.created_at && <span>{new Date(alert.created_at).toLocaleString('es-CO')}</span>}
           </div>
 
           {alert.action_required && onAction && (

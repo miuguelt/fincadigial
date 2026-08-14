@@ -3,6 +3,17 @@ from datetime import date, datetime
 from app.services.export_excel_helpers import _fmt_date, _fmt_enum
 
 
+def _fmt_num_co(value, decimals: int = 2) -> str:
+    """Format a number using es-CO separators: 2.500.000,00."""
+    formatted = f"{value:,.{decimals}f}"
+    return formatted.replace(',', '\x00').replace('.', ',').replace('\x00', '.')
+
+
+def _fmt_money_co(value) -> str:
+    """Format an amount as Colombian currency: $2.500.000,00."""
+    return f"${_fmt_num_co(value, 2)}"
+
+
 
 def _build_bulk_health_pdf(animal_ids):
     from fpdf import FPDF
@@ -626,17 +637,19 @@ def _build_multi_finca_general_pdf(fincas_data, user_fullname):
     total_milk = sum(f['total_milk'] for f in fincas_data)
     total_income = sum(f['total_income'] for f in fincas_data)
     total_expenses = sum(f['total_expenses'] for f in fincas_data)
-    net_balance = total_income - total_expenses
+    # Suma de los balances ya redondeados por finca, para que el consolidado
+    # coincida al centavo con la columna "Neto" de la tabla de abajo.
+    net_balance = sum(f['net_balance'] for f in fincas_data)
 
     # Grid de Resumen
     pdf.set_font('Helvetica', '', 10)
     pdf.cell(45, 7, f"Total Fincas: {total_fincas}")
-    pdf.cell(45, 7, f"Total Animales: {total_animals:,}")
-    pdf.cell(45, 7, f"Total Leche: {total_milk:,.1f} L")
+    pdf.cell(45, 7, f"Total Animales: {_fmt_num_co(total_animals, 0)}")
+    pdf.cell(45, 7, f"Total Leche: {_fmt_num_co(total_milk, 1)} L")
     pdf.ln()
-    pdf.cell(45, 7, f"Total Ingresos: ${total_income:,.2f}")
-    pdf.cell(45, 7, f"Total Egresos: ${total_expenses:,.2f}")
-    pdf.cell(45, 7, f"Balance Consolidado: ${net_balance:,.2f}")
+    pdf.cell(60, 7, f"Total Ingresos: {_fmt_money_co(total_income)}")
+    pdf.cell(60, 7, f"Total Egresos: {_fmt_money_co(total_expenses)}")
+    pdf.cell(60, 7, f"Balance Consolidado: {_fmt_money_co(net_balance)}")
     pdf.ln(10)
 
     # Tabla Comparativa de Fincas
@@ -668,12 +681,11 @@ def _build_multi_finca_general_pdf(fincas_data, user_fullname):
 
         pdf.cell(35, 7, finca_name, border=1, fill=fill)
         pdf.cell(35, 7, location, border=1, fill=fill)
-        pdf.cell(20, 7, f"{f['total_animals']:,}", border=1, fill=fill, align='C')
-        pdf.cell(22, 7, f"{f['total_milk']:,.1f}", border=1, fill=fill, align='R')
-        pdf.cell(23, 7, f"${f['total_income']:,.2f}", border=1, fill=fill, align='R')
-        pdf.cell(23, 7, f"${f['total_expenses']:,.2f}", border=1, fill=fill, align='R')
-        net = f['total_income'] - f['total_expenses']
-        pdf.cell(22, 7, f"${net:,.2f}", border=1, fill=fill, align='R')
+        pdf.cell(20, 7, _fmt_num_co(f['total_animals'], 0), border=1, fill=fill, align='C')
+        pdf.cell(22, 7, _fmt_num_co(f['total_milk'], 1), border=1, fill=fill, align='R')
+        pdf.cell(23, 7, _fmt_money_co(f['total_income']), border=1, fill=fill, align='R')
+        pdf.cell(23, 7, _fmt_money_co(f['total_expenses']), border=1, fill=fill, align='R')
+        pdf.cell(22, 7, _fmt_money_co(f['net_balance']), border=1, fill=fill, align='R')
         pdf.ln()
 
     return bytes(pdf.output())
@@ -717,11 +729,13 @@ def _build_finca_detail_pdf(finca, stats, user_fullname):
     pdf.set_font('Helvetica', 'B', 10)
     pdf.cell(45, 7, "Tipo de Finca:")
     pdf.set_font('Helvetica', '', 10)
-    pdf.cell(45, 7, finca.type.value if finca.type else 'Educativa')
+    pdf.cell(45, 7, finca.type.value if finca.type else 'Sin tipo')
     pdf.set_font('Helvetica', 'B', 10)
     pdf.cell(45, 7, "Total Animales:")
     pdf.set_font('Helvetica', '', 10)
-    pdf.cell(45, 7, f"{stats['total_animals']:,} (Machos: {stats['total_males']:,}, Hembras: {stats['total_females']:,})")
+    pdf.cell(90, 7, f"{_fmt_num_co(stats['total_animals'], 0)} "
+                    f"(Machos: {_fmt_num_co(stats['total_males'], 0)}, "
+                    f"Hembras: {_fmt_num_co(stats['total_females'], 0)})")
     pdf.ln()
 
     pdf.set_font('Helvetica', 'B', 10)
@@ -731,13 +745,14 @@ def _build_finca_detail_pdf(finca, stats, user_fullname):
     pdf.set_font('Helvetica', 'B', 10)
     pdf.cell(45, 7, "Área Total:")
     pdf.set_font('Helvetica', '', 10)
-    pdf.cell(45, 7, f"{stats['total_area']:,.2f} ha")
+    pdf.cell(45, 7, f"{_fmt_num_co(stats['total_area'], 2)} ha")
     pdf.ln()
 
     pdf.set_font('Helvetica', 'B', 10)
     pdf.cell(45, 7, "Producción de Leche:")
     pdf.set_font('Helvetica', '', 10)
-    pdf.cell(45, 7, f"{stats['total_milk']:,.1f} L (Promedio: {stats['avg_milk']:,.1f} L)")
+    pdf.cell(90, 7, f"{_fmt_num_co(stats['total_milk'], 1)} L "
+                    f"(Promedio por ordeño registrado: {_fmt_num_co(stats['avg_milk'], 1)} L)")
     pdf.ln(10)
 
     # Información Financiera
@@ -745,14 +760,14 @@ def _build_finca_detail_pdf(finca, stats, user_fullname):
     pdf.cell(0, 8, 'Balance Financiero', ln=True)
     pdf.ln(2)
 
-    net_balance = stats['total_income'] - stats['total_expenses']
+    net_balance = stats['net_balance']
     pdf.set_font('Helvetica', '', 10)
-    pdf.cell(60, 7, f"Total Ingresos: ${stats['total_income']:,.2f}")
-    pdf.cell(60, 7, f"Total Egresos: ${stats['total_expenses']:,.2f}")
+    pdf.cell(60, 7, f"Total Ingresos: {_fmt_money_co(stats['total_income'])}")
+    pdf.cell(60, 7, f"Total Egresos: {_fmt_money_co(stats['total_expenses'])}")
 
     pdf.set_font('Helvetica', 'B', 10)
     pdf.set_text_color(0, 100, 0) if net_balance >= 0 else pdf.set_text_color(150, 0, 0)
-    pdf.cell(60, 7, f"Balance Neto: ${net_balance:,.2f}")
+    pdf.cell(60, 7, f"Balance Neto: {_fmt_money_co(net_balance)}")
     pdf.set_text_color(0)
     pdf.ln(10)
 
@@ -780,10 +795,11 @@ def _build_finca_detail_pdf(finca, stats, user_fullname):
         if len(desc) > 35:
             desc = desc[:32] + '...'
 
-        pdf.cell(25, 7, tx['date'], border=1, fill=fill, align='C')
-        pdf.cell(25, 7, 'Ingreso' if tx['type'] == 'Income' else 'Gasto', border=1, fill=fill, align='C')
+        # tx['type'] ya viene con el valor del enum en español ("Ingreso"/"Gasto").
+        pdf.cell(25, 7, _fmt_date(tx['date']), border=1, fill=fill, align='C')
+        pdf.cell(25, 7, tx['type'], border=1, fill=fill, align='C')
         pdf.cell(40, 7, tx['category'], border=1, fill=fill)
-        pdf.cell(30, 7, f"${tx['amount']:,.2f}", border=1, fill=fill, align='R')
+        pdf.cell(30, 7, _fmt_money_co(tx['amount']), border=1, fill=fill, align='R')
         pdf.cell(60, 7, desc, border=1, fill=fill)
         pdf.ln()
 

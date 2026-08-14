@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
 import { membershipService, MembershipRequest } from '@/entities/user/api/membership.service';
+import { useCallback } from 'react';
 import { useToast } from '@/shared/hooks/use-toast';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
@@ -15,7 +16,7 @@ const MembershipRequestsPage = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     setLoading(true);
     try {
       const response = await membershipService.getPendingRequests();
@@ -30,11 +31,11 @@ const MembershipRequestsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     fetchRequests();
-  }, []);
+  }, [fetchRequests]);
 
   const handleApprove = async (requestId: number, requestedRole: string) => {
     try {
@@ -158,7 +159,7 @@ const MembershipRequestsPage = () => {
                       </div>
                     </TableCell>
                     <TableCell className="max-w-xs">
-                      <p className="text-sm text-muted-foreground italic truncate" title={request.message}>
+                      <p className="text-sm text-muted-foreground italic fit-clamp" title={request.message}>
                         {request.message || 'Sin mensaje adicional'}
                       </p>
                     </TableCell>

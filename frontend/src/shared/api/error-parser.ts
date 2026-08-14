@@ -121,11 +121,11 @@ export function formatMessageFromCode(input: {
   }
 
   if (code === 'ADMIN_ROLE_REQUIRED') {
-    return 'No tiene permisos para realizar esta accion.';
+    return 'No tiene permisos para realizar esta acción.';
   }
 
   if (code === 'CSRF_ERROR') {
-    return 'Falta CSRF o la sesion expiro. Recargue la pagina e intente nuevamente.';
+    return 'Falta CSRF o la sesión expiró. Recargue la página e intente nuevamente.';
   }
 
   if (code === 'CONFLICT') {

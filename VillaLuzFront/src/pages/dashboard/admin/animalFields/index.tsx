@@ -60,12 +60,12 @@ function AdminAnimalFieldsPage() {
     {
       key: 'assignment_date',
       label: 'Fecha Asignación',
-      render: (v) => v ? new Date(v as string).toLocaleDateString('es-ES') : '-'
+      render: (v) => v ? new Date(v as string).toLocaleDateString('es-CO') : '-'
     },
     {
       key: 'removal_date',
       label: 'Fecha Retiro',
-      render: (v) => v ? new Date(v as string).toLocaleDateString('es-ES') : '-'
+      render: (v) => v ? new Date(v as string).toLocaleDateString('es-CO') : '-'
     },
     {
       key: 'notes',
@@ -79,7 +79,7 @@ function AdminAnimalFieldsPage() {
     {
       key: 'created_at' as any,
       label: 'Creado',
-      render: (v) => v ? new Date(v as string).toLocaleDateString('es-ES') : '-'
+      render: (v) => v ? new Date(v as string).toLocaleDateString('es-CO') : '-'
     },
   ], [animalMap, fieldMap]);
 

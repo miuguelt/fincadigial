@@ -15,12 +15,12 @@ export const FoodTypeLink: React.FC<{ id: number | string; label: string }> = ({
       {
         key: 'sowing_date',
         label: 'Fecha de Siembra',
-        render: (value) => (value ? new Date(value).toLocaleDateString('es-ES') : '-'),
+        render: (value) => (value ? new Date(value).toLocaleDateString('es-CO') : '-'),
       },
       {
         key: 'harvest_date',
         label: 'Fecha de Cosecha',
-        render: (value) => (value ? new Date(value).toLocaleDateString('es-ES') : '-'),
+        render: (value) => (value ? new Date(value).toLocaleDateString('es-CO') : '-'),
       },
       { key: 'area', label: 'Área' },
       { key: 'handlings', label: 'Manejos' },
@@ -28,7 +28,7 @@ export const FoodTypeLink: React.FC<{ id: number | string; label: string }> = ({
       {
         key: 'created_at',
         label: 'Creado',
-        render: (value) => (value ? new Date(value).toLocaleDateString('es-ES') : '-'),
+        render: (value) => (value ? new Date(value).toLocaleDateString('es-CO') : '-'),
       },
     ]}
   />

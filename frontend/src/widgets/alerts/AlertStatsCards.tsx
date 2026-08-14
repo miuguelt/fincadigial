@@ -4,15 +4,22 @@ import type { AlertStats } from '@/entities/alert/api/alert.service';
 
 interface AlertStatsCardsProps {
   stats: AlertStats | null;
+  /** Total real del servidor (meta.pagination.total_items), no el largo de la página. */
   total?: number;
   unreadCount: number;
   criticalCount: number;
 }
 
 export function AlertStatsCards({ stats, total = 0, unreadCount, criticalCount }: AlertStatsCardsProps) {
-  const totalAlerts = stats?.total || total;
+  // Todas las métricas salen de la misma fuente. Mezclar el total del servidor con
+  // conteos locales sobre una página truncada producía porcentajes negativos.
+  const totalAlerts = stats?.total ?? total;
+  const unread = stats ? stats.unread : unreadCount;
+  const critical = stats ? stats.criticalUnread : criticalCount;
   const typeCount = Object.keys(stats?.by_type || {}).length;
-  const readRate = totalAlerts > 0 ? Math.round(((totalAlerts - unreadCount) / totalAlerts) * 100) : 100;
+  const readRate = totalAlerts > 0
+    ? Math.min(100, Math.max(0, Math.round(((totalAlerts - unread) / totalAlerts) * 100)))
+    : 100;
 
   const cards = [
     {
@@ -29,25 +36,25 @@ export function AlertStatsCards({ stats, total = 0, unreadCount, criticalCount }
     {
       key: 'unread',
       label: 'Sin Leer',
-      value: unreadCount,
+      value: unread,
       icon: AlertCircle,
-      gradient: unreadCount > 0 ? 'from-amber-500/15 to-orange-500/10' : 'from-green-500/10 to-emerald-500/10',
-      borderGlow: unreadCount > 0 ? 'border-amber-200/80 dark:border-amber-800/60' : 'border-success/30/80 dark:border-green-800/60',
-      iconBg: unreadCount > 0 ? 'bg-gradient-to-br from-amber-500 to-orange-600' : 'bg-gradient-to-br from-green-500 to-emerald-600',
-      textColor: unreadCount > 0 ? 'text-warning dark:text-amber-300' : 'text-success dark:text-green-300',
-      badge: unreadCount > 0 ? { label: `${readRate}% leídas`, up: false } : { label: 'Al día ✓', up: true },
+      gradient: unread > 0 ? 'from-amber-500/15 to-orange-500/10' : 'from-green-500/10 to-emerald-500/10',
+      borderGlow: unread > 0 ? 'border-amber-200/80 dark:border-amber-800/60' : 'border-success/30/80 dark:border-green-800/60',
+      iconBg: unread > 0 ? 'bg-gradient-to-br from-amber-500 to-orange-600' : 'bg-gradient-to-br from-green-500 to-emerald-600',
+      textColor: unread > 0 ? 'text-warning dark:text-amber-300' : 'text-success dark:text-green-300',
+      badge: unread > 0 ? { label: `${readRate}% leídas`, up: false } : { label: 'Al día ✓', up: true },
     },
     {
       key: 'critical',
       label: 'Críticas',
-      value: criticalCount,
+      value: critical,
       icon: AlertTriangle,
-      gradient: criticalCount > 0 ? 'from-red-500/15 to-rose-500/10' : 'from-slate-500/10 to-gray-500/10',
-      borderGlow: criticalCount > 0 ? 'border-red-300/80 dark:border-red-800/60' : 'border-border/80 dark:border-border/60',
-      iconBg: criticalCount > 0 ? 'bg-gradient-to-br from-red-500 to-rose-600' : 'bg-gradient-to-br from-slate-400 to-slate-500',
-      textColor: criticalCount > 0 ? 'text-destructive dark:text-red-300' : 'text-muted-foreground dark:text-muted-foreground',
-      badge: criticalCount > 0 ? { label: 'Requiere atención', up: false } : null,
-      pulse: criticalCount > 0,
+      gradient: critical > 0 ? 'from-red-500/15 to-rose-500/10' : 'from-slate-500/10 to-gray-500/10',
+      borderGlow: critical > 0 ? 'border-red-300/80 dark:border-red-800/60' : 'border-border/80 dark:border-border/60',
+      iconBg: critical > 0 ? 'bg-gradient-to-br from-red-500 to-rose-600' : 'bg-gradient-to-br from-slate-400 to-slate-500',
+      textColor: critical > 0 ? 'text-destructive dark:text-red-300' : 'text-muted-foreground dark:text-muted-foreground',
+      badge: critical > 0 ? { label: 'Requiere atención', up: false } : null,
+      pulse: critical > 0,
     },
     {
       key: 'types',

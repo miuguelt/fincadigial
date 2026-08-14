@@ -262,7 +262,7 @@ export const MeshMonitor: React.FC = () => {
           </p>
           <p className="text-[10px] text-muted-foreground mt-1">
             {syncState?.lastSyncAt
-              ? `Último paso: ${new Date(syncState.lastSyncAt).toLocaleTimeString()}`
+              ? `Último paso: ${new Date(syncState.lastSyncAt).toLocaleTimeString('es-CO')}`
               : "Sin pasar datos aún"}
           </p>
         </div>

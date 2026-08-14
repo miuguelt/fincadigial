@@ -23,10 +23,10 @@ const ForgotPassword = () => {
         const message = typeof raw === "string" ? raw : "";
         const normalized = message.toLowerCase();
         if (normalized.includes("token") && (normalized.includes("ausente") || normalized.includes("missing"))) {
-            return "No pudimos validar la solicitud. Recarga la pagina e intenta de nuevo.";
+            return "No pudimos validar la solicitud. Recarga la página e intenta de nuevo.";
         }
         if (normalized.includes("csrf")) {
-            return "No pudimos validar la solicitud. Recarga la pagina e intenta de nuevo.";
+            return "No pudimos validar la solicitud. Recarga la página e intenta de nuevo.";
         }
         return message || "Ocurrio un error al procesar tu solicitud. Intentalo de nuevo.";
     };
@@ -47,7 +47,7 @@ const ForgotPassword = () => {
             const response = await recoverAccount(identifier.trim());
             const expiresIn = response?.expires_in ? ` Vencimiento aprox.: ${(response.expires_in / 60).toFixed(0)} min.` : "";
             const emailHint = response?.email_hint ? ` Enviamos un correo a ${response.email_hint}.` : "";
-            setSuccessMessage(response?.message || `Si tus datos existen en el sistema, te enviamos instrucciones para restablecer tu contrasena.${emailHint}${expiresIn}`);
+            setSuccessMessage(response?.message || `Si tus datos existen en el sistema, te enviamos instrucciones para restablecer tu contraseña.${emailHint}${expiresIn}`);
         } catch (err: any) {
             setError(resolveErrorMessage(err));
         } finally {

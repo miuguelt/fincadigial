@@ -1,5 +1,6 @@
 import { useState, useEffect, ReactNode, useRef } from 'react';
 import { MilkStats } from '../MilkStats';
+import { useCallback } from 'react';
 import { MilkEntryFormWidget } from '../MilkEntryForm';
 import { MilkTrendChart } from '../MilkTrendChart';
 import { MilkQualityAlerts } from '../MilkQualityAlerts';
@@ -29,7 +30,7 @@ export function MilkDashboard({ fincaId, tableComponent }: MilkDashboardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
       const [daily, weekly] = await Promise.all([
@@ -51,7 +52,7 @@ export function MilkDashboard({ fincaId, tableComponent }: MilkDashboardProps) {
         if (total < 10) {
           generatedAlerts.push({
             id: 'low-production',
-            animal_record: 'Hato completo',
+            animal_record: 'Ganado completo',
             type: 'low_production',
             severity: 'warning',
             message: 'Producción diaria por debajo de lo esperado',
@@ -67,11 +68,11 @@ export function MilkDashboard({ fincaId, tableComponent }: MilkDashboardProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [fincaId, showToast]);
 
   useEffect(() => {
     loadData();
-  }, [fincaId]);
+  }, [loadData]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

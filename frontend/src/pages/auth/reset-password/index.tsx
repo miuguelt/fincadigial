@@ -28,13 +28,13 @@ const ResetPassword = () => {
         const message = typeof raw === "string" ? raw : "";
         const normalized = message.toLowerCase();
         if (normalized.includes("token") && (normalized.includes("ausente") || normalized.includes("missing"))) {
-            return "El enlace de restablecimiento no es valido o ya expiro. Solicita uno nuevo.";
+            return "El enlace de restablecimiento no es válido o ya expiró. Solicita uno nuevo.";
         }
         if (normalized.includes("csrf")) {
             return "No pudimos validar el enlace. Solicita uno nuevo.";
         }
         if (normalized.includes("expir")) {
-            return "El enlace de restablecimiento expiro. Solicita uno nuevo.";
+            return "El enlace de restablecimiento expiró. Solicita uno nuevo.";
         }
         return message || "Ocurrio un error al procesar tu solicitud. El token pudo expirar.";
     };
@@ -49,17 +49,17 @@ const ResetPassword = () => {
         e.preventDefault();
 
         if (!resetToken) {
-            setError("No se puede restablecer la contrasena sin un token valido.");
+            setError("No se puede restablecer la contraseña sin un token válido.");
             return;
         }
 
         if (password.length < 8) {
-            setError("La contrasena debe tener al menos 8 caracteres.");
+            setError("La contraseña debe tener al menos 8 caracteres.");
             return;
         }
 
         if (password !== confirmPassword) {
-            setError("Las contrasenas no coinciden.");
+            setError("Las contraseñas no coinciden.");
             return;
         }
 
@@ -70,7 +70,7 @@ const ResetPassword = () => {
         try {
             const response = await resetPassword(resetToken, password);
             const needsRelogin = response?.should_clear_auth ? " Debes iniciar sesión nuevamente." : "";
-            setSuccessMessage(response.message || `Tu contrasena ha sido restablecida con exito.${needsRelogin}`);
+            setSuccessMessage(response.message || `Tu contraseña ha sido restablecida con éxito.${needsRelogin}`);
             setTimeout(() => {
                 navigate("/login");
             }, 3000);

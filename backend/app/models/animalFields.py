@@ -98,11 +98,13 @@ class AnimalFields(BaseModel):
         ).all()
 
         animals_already_in_field = set()
+        origin_field_ids = set()
         for assignment in active_assignments:
             if assignment.field_id == field_id:
                 animals_already_in_field.add(assignment.animal_id)
             else:
                 assignment.removal_date = assignment_date_obj
+                origin_field_ids.add(assignment.field_id)
 
         animals_to_transfer = [a_id for a_id in owned_ids if a_id not in animals_already_in_field]
 
@@ -149,6 +151,8 @@ class AnimalFields(BaseModel):
             'reactivated': [a for a in existing_on_target],
             'skipped_animal_ids': sorted(animals_already_in_field),
             'total_requested': len(animal_ids),
+            # Origen y destino: son los potreros cuyo conteo y estado cambian.
+            'affected_field_ids': sorted(origin_field_ids | {field_id}),
         }
 
     @classmethod
@@ -174,11 +178,17 @@ class AnimalFields(BaseModel):
             removal_date_obj = removal_date
 
         from app.models.animals import Animals
+        requested_ids = {int(a_id) for a_id in animal_ids}
         owned_animals = db.session.query(Animals.id).filter(
-            Animals.id.in_(animal_ids),
+            Animals.id.in_(requested_ids),
             Animals.finca_id == finca_id
         ).all()
-        owned_ids = [a.id for a in owned_animals]
+        owned_ids = {a.id for a in owned_animals}
+
+        # Antes se ignoraban en silencio los IDs ajenos y el retiro se reportaba
+        # como exitoso aunque faltaran animales. Falla igual que el traslado.
+        if owned_ids != requested_ids:
+            raise ValidationError("Uno o más animales no pertenecen a esta finca o no existen")
 
         active_assignments = cls.query.filter(
             cls.animal_id.in_(owned_ids),
@@ -186,11 +196,20 @@ class AnimalFields(BaseModel):
             cls.finca_id == finca_id
         ).all()
 
+        affected_field_ids = set()
         for assignment in active_assignments:
             assignment.removal_date = removal_date_obj
+            affected_field_ids.add(assignment.field_id)
+
+        removed_ids = {assignment.animal_id for assignment in active_assignments}
 
         logger.info(f"Retirados {len(active_assignments)} animales de sus potreros en fecha {removal_date_obj}")
-        return active_assignments
+        return {
+            'assignments': active_assignments,
+            'skipped_animal_ids': sorted(owned_ids - removed_ids),
+            'total_requested': len(requested_ids),
+            'affected_field_ids': sorted(affected_field_ids),
+        }
 
     @classmethod
     def create(cls, commit=True, **kwargs):

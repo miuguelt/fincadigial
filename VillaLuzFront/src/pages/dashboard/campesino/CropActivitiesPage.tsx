@@ -6,8 +6,9 @@ import { Button } from '@/shared/ui/button';
 
 import {
   Plus, X, Loader2, RefreshCw, Search,
-  Droplets, Sprout, Wheat, Bug, FileText, ChevronDown,
+  Droplets, Sprout, Bug, FileText, ChevronDown,
 } from 'lucide-react';
+import { Wheat } from '@/shared/ui/icons';
 import { useToast } from '@/app/providers/ToastContext';
 
 // ── Config de tipos de actividad ────────────────────────────────────────────

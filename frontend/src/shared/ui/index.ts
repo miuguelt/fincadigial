@@ -11,6 +11,7 @@ export * from "./combobox";
 export * from "./command";
 export * from "./dialog";
 export * from "./dropdown-menu";
+export * from "./FitText";
 export * from "./form";
 export * from "./Icon";
 export * from "./icons";

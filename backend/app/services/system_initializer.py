@@ -125,13 +125,13 @@ def run_core_initialization():
             {"name": "Intramamaria", "description": "Administración a través del pezón (uñas)."},
         ]
         for r in routes:
-            if not RouteAdministration.query.filter_by(name=r["name"]).first():
-                db.session.add(RouteAdministration(**r))
+            if not RouteAdministration.query.filter_by(name=r["name"], finca_id=default_finca.id).first():
+                db.session.add(RouteAdministration(**r, finca_id=default_finca.id))
                 logger.info(f"Ruta de administración creada: {r['name']}")
 
         db.session.flush()
-        im_route = RouteAdministration.query.filter_by(name="Intramuscular").first()
-        sc_route = RouteAdministration.query.filter_by(name="Subcutánea").first()
+        im_route = RouteAdministration.query.filter_by(name="Intramuscular", finca_id=default_finca.id).first()
+        sc_route = RouteAdministration.query.filter_by(name="Subcutánea", finca_id=default_finca.id).first()
 
         # 3. Enfermedades Comunes (Ganadería Colombiana)
         diseases_data = [
@@ -144,14 +144,14 @@ def run_core_initialization():
             {"name": "Anaplasmosis/Babesiosis", "symptoms": "Anemia, ictericia, fiebre", "details": "Hemoparásitos transmitidos por garrapatas."},
         ]
         for dd in diseases_data:
-            if not Diseases.query.filter_by(name=dd["name"]).first():
-                db.session.add(Diseases(**dd))
+            if not Diseases.query.filter_by(name=dd["name"], finca_id=default_finca.id).first():
+                db.session.add(Diseases(**dd, finca_id=default_finca.id))
                 logger.info(f"Enfermedad registrada: {dd['name']}")
 
         db.session.flush()
-        aftosa_dis = Diseases.query.filter_by(name="Fiebre Aftosa").first()
-        brucelosis_dis = Diseases.query.filter_by(name="Brucelosis").first()
-        clostridiosis_dis = Diseases.query.filter_by(name="Clostridiosis").first()
+        aftosa_dis = Diseases.query.filter_by(name="Fiebre Aftosa", finca_id=default_finca.id).first()
+        brucelosis_dis = Diseases.query.filter_by(name="Brucelosis", finca_id=default_finca.id).first()
+        clostridiosis_dis = Diseases.query.filter_by(name="Clostridiosis", finca_id=default_finca.id).first()
 
         # 4. Vacunas del Plan Sanitario Nacional
         vaccines_data = [
@@ -163,8 +163,8 @@ def run_core_initialization():
              "vaccination_interval": "Anual", "type": VaccineType.Toxoide, "national_plan": "No", "target_disease_id": clostridiosis_dis.id if clostridiosis_dis else None},
         ]
         for vd in vaccines_data:
-            if not Vaccines.query.filter_by(name=vd["name"]).first():
-                db.session.add(Vaccines(**vd))
+            if not Vaccines.query.filter_by(name=vd["name"], finca_id=default_finca.id).first():
+                db.session.add(Vaccines(**vd, finca_id=default_finca.id))
                 logger.info(f"Vacuna registrada: {vd['name']}")
 
         # 5. Medicamentos Básicos
@@ -174,8 +174,8 @@ def run_core_initialization():
             {"name": "Complejo B + B12", "description": "Reconstituyente vitamínico.", "route_administration_id": im_route.id if im_route else None},
         ]
         for md in meds_data:
-            if not Medications.query.filter_by(name=md["name"]).first():
-                db.session.add(Medications(**md))
+            if not Medications.query.filter_by(name=md["name"], finca_id=default_finca.id).first():
+                db.session.add(Medications(**md, finca_id=default_finca.id))
                 logger.info(f"Medicamento registrado: {md['name']}")
 
         db.session.commit()
@@ -188,10 +188,21 @@ def run_core_initialization():
 
 def initialize_finca_defaults(finca_id: int):
     """
-    Asegura que una finca tenga todas las configuraciones predeterminadas (alertas, etc.)
+    Asegura que una finca tenga alertas y catálogos base tenant-scoped.
     """
     try:
         seed_default_configs_for_finca(finca_id)
-        logger.info(f"Configuraciones predeterminadas aplicadas a finca {finca_id}")
+        from app.services.catalog_initializer import seed_catalogs_for_finca
+        seed_catalogs_for_finca(finca_id)
+        logger.info(f"Configuraciones y catálogos predeterminados aplicados a finca {finca_id}")
     except Exception as e:
         logger.error(f"Error al inicializar defaults para finca {finca_id}: {e}")
+
+
+def initialize_all_finca_defaults():
+    """Reconcile idempotently the baseline for every existing finca."""
+    try:
+        for finca in Finca.query.order_by(Finca.id).all():
+            initialize_finca_defaults(finca.id)
+    except Exception as e:
+        logger.error(f"Error al inicializar defaults de todas las fincas: {e}")

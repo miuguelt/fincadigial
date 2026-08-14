@@ -1,6 +1,5 @@
 import React from "react";
 import { MoreVertical, List } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { SpeciesResponse } from "@/shared/api/generated/swaggerTypes";
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 
 interface SpeciesActionsMenuProps {
   species: SpeciesResponse;
@@ -16,11 +16,11 @@ interface SpeciesActionsMenuProps {
 export const SpeciesActionsMenu: React.FC<SpeciesActionsMenuProps> = ({
   species,
 }) => {
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
 
   const handleViewBreeds = () => {
     // Navegar a la página de razas con el filtro de species_id
-    navigate(
+    goTo(
       `/admin/breeds?species_id=${species.id}&species_name=${encodeURIComponent(species.name)}`,
     );
   };

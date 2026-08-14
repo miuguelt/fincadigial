@@ -43,10 +43,10 @@ export const PendingJoinRequests: React.FC<PendingJoinRequestsProps> = ({
 											<IconUserPlus size={21} />
 										</div>
 										<div className="min-w-0">
-											<h3 className="truncate font-bold text-foreground">
+											<h3 className="fit-clamp font-bold text-foreground">
 												{request.sender_name || "Usuario"}
 											</h3>
-											<p className="truncate text-sm text-muted-foreground">
+											<p className="fit-clamp text-sm text-muted-foreground">
 												quiere unirse a {request.finca_name || "la finca"}
 											</p>
 										</div>

@@ -198,7 +198,7 @@ export const GenericModal: React.FC<GenericModalProps> = ({
 
   const modalClasses = cn(
     // Base: móvil fullscreen sheet, escritorio centrado
-    'max-sm:fixed max-sm:inset-0 max-sm:w-screen max-sm:max-w-none max-sm:h-dvh max-sm:rounded-none max-sm:border-0',
+    'max-sm:fixed max-sm:inset-0 max-sm:top-0 max-sm:left-0 max-sm:translate-x-0 max-sm:translate-y-0 max-sm:w-full max-sm:w-screen max-sm:max-w-none max-sm:h-dvh max-sm:rounded-none max-sm:border-0',
     '!flex !flex-col !p-0 !gap-0',
     'bg-card',
     'shadow-2xl shadow-black/20 dark:shadow-black/40',

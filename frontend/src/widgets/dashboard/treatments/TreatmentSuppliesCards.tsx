@@ -107,9 +107,9 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                                         {/* Cabecera del item: Nombre, ID y botón de eliminar */}
                                         <div className="flex items-start justify-between gap-2">
                                             <div className="flex flex-col min-w-0">
-                                                <div className="font-bold text-foreground/90 truncate group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors flex items-center gap-1.5">
+                                                <div className="font-bold text-foreground/90 fit-clamp group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors flex items-center gap-1.5">
                                                     <Syringe className="w-3.5 h-3.5 flex-shrink-0 opacity-70 text-cyan-600 dark:text-cyan-400" />
-                                                    <span className="truncate" title={fullVacc?.name || v.vaccine_name || ''}>
+                                                    <span className="fit-clamp" title={fullVacc?.name || v.vaccine_name || ''}>
                                                         {fullVacc?.name || v.vaccine_name || `Vacuna #${v.vaccine_id}`}
                                                     </span>
                                                 </div>
@@ -118,7 +118,7 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                                                         #{v.vaccine_id}
                                                     </Badge>
                                                     {fullVacc?.type && (
-                                                        <span className="text-[10px] text-muted-foreground px-2 border-l border-border/50 truncate">
+                                                        <span className="text-[10px] text-muted-foreground px-2 border-l border-border/50 fit-clamp">
                                                             {fullVacc.type}
                                                         </span>
                                                     )}
@@ -153,17 +153,17 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                                         <div className="grid grid-cols-3 gap-2 text-[11px] text-muted-foreground bg-cyan-50/30 dark:bg-cyan-950/10 rounded-md p-2 border border-cyan-100/40 dark:border-cyan-900/10">
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-[9px] uppercase opacity-60 font-bold tracking-wider text-cyan-800 dark:text-cyan-400 mb-0.5">Dosis</span>
-                                                <span className="font-semibold text-foreground truncate" title={v.dose || '-'}>{v.dose || '-'}</span>
+                                                <span className="font-semibold text-foreground fit-clamp" title={v.dose || '-'}>{v.dose || '-'}</span>
                                             </div>
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-[9px] uppercase opacity-60 font-bold tracking-wider text-cyan-800 dark:text-cyan-400 mb-0.5">Vía</span>
-                                                <span className="font-semibold text-foreground truncate" title={(v.vaccine_id && vaccineRouteMap[Number(v.vaccine_id)]) || '-'}>
+                                                <span className="font-semibold text-foreground fit-clamp" title={(v.vaccine_id && vaccineRouteMap[Number(v.vaccine_id)]) || '-'}>
                                                     {(v.vaccine_id && vaccineRouteMap[Number(v.vaccine_id)]) || '-'}
                                                 </span>
                                             </div>
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-[9px] uppercase opacity-60 font-bold tracking-wider text-cyan-800 dark:text-cyan-400 mb-0.5">Intervalo</span>
-                                                <span className="font-semibold text-foreground truncate" title={fullVacc?.vaccination_interval ? `${fullVacc.vaccination_interval} días` : '-'}>
+                                                <span className="font-semibold text-foreground fit-clamp" title={fullVacc?.vaccination_interval ? `${fullVacc.vaccination_interval} días` : '-'}>
                                                     {fullVacc?.vaccination_interval ? `${fullVacc.vaccination_interval} días` : '-'}
                                                 </span>
                                             </div>
@@ -211,9 +211,9 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                                         {/* Cabecera del item: Nombre, ID y botón de eliminar */}
                                         <div className="flex items-start justify-between gap-2">
                                             <div className="flex flex-col min-w-0">
-                                                <div className="font-bold text-foreground/90 truncate group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors flex items-center gap-1.5">
+                                                <div className="font-bold text-foreground/90 fit-clamp group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors flex items-center gap-1.5">
                                                     <Pill className="w-3.5 h-3.5 flex-shrink-0 opacity-70 text-purple-600 dark:text-purple-400" />
-                                                    <span className="truncate" title={fullMed?.name || m.medication_name || ''}>
+                                                    <span className="fit-clamp" title={fullMed?.name || m.medication_name || ''}>
                                                         {fullMed?.name || m.medication_name || `Med. #${m.medication_id}`}
                                                     </span>
                                                 </div>
@@ -222,7 +222,7 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                                                         #{m.medication_id}
                                                     </Badge>
                                                     {fullMed?.concentration && (
-                                                        <span className="text-[10px] text-muted-foreground px-2 border-l border-border/50 truncate">
+                                                        <span className="text-[10px] text-muted-foreground px-2 border-l border-border/50 fit-clamp">
                                                             {fullMed.concentration}
                                                         </span>
                                                     )}
@@ -257,15 +257,15 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                                         <div className="grid grid-cols-3 gap-2 text-[11px] text-muted-foreground bg-purple-50/30 dark:bg-purple-950/10 rounded-md p-2 border border-purple-100/40 dark:border-purple-900/10">
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-[9px] uppercase opacity-60 font-bold tracking-wider text-purple-800 dark:text-purple-400 mb-0.5">Dosis</span>
-                                                <span className="font-semibold text-foreground truncate" title={m.dosage || m.dose || '-'}>{m.dosage || m.dose || '-'}</span>
+                                                <span className="font-semibold text-foreground fit-clamp" title={m.dosage || m.dose || '-'}>{m.dosage || m.dose || '-'}</span>
                                             </div>
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-[9px] uppercase opacity-60 font-bold tracking-wider text-purple-800 dark:text-purple-400 mb-0.5">Frecuencia</span>
-                                                <span className="font-semibold text-foreground truncate" title={m.frequency || '-'}>{m.frequency || '-'}</span>
+                                                <span className="font-semibold text-foreground fit-clamp" title={m.frequency || '-'}>{m.frequency || '-'}</span>
                                             </div>
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-[9px] uppercase opacity-60 font-bold tracking-wider text-purple-800 dark:text-purple-400 mb-0.5">Duración</span>
-                                                <span className="font-semibold text-foreground truncate" title={m.duration_days ? `${m.duration_days} días` : '-'}>
+                                                <span className="font-semibold text-foreground fit-clamp" title={m.duration_days ? `${m.duration_days} días` : '-'}>
                                                     {m.duration_days ? `${m.duration_days} días` : '-'}
                                                 </span>
                                             </div>

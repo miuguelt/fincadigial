@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useForm, FieldError } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import { geneticImprovementsService } from '@/entities/genetic-improvement/api/geneticImprovements.service';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
 
@@ -14,7 +15,7 @@ export type GeneticImprovementFormFields = {
 
 export default function GeneticImprovementForm() {
   const { id } = useParams<{ id?: string }>();
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<GeneticImprovementFormFields>();
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export default function GeneticImprovementForm() {
       } else {
         await geneticImprovementsService.createGeneticImprovement(data);
       }
-      navigate('/admin/genetic_improvements');
+      goTo('/admin/genetic_improvements');
     } catch (error: any) {
       const msg = error?.response?.data?.message || error?.message || 'Error al guardar mejora genética';
       alert(msg);
@@ -83,12 +84,12 @@ export default function GeneticImprovementForm() {
       </div>
       <div>
         <label>Descripción</label>
-        <textarea {...register('description')} />
+        <textarea {...register('description')}></textarea>
         {renderError(errors.description)}
       </div>
       <div>
         <label>Resultado esperado</label>
-        <textarea {...register('expected_result')} />
+        <textarea {...register('expected_result')}></textarea>
         {renderError(errors.expected_result)}
       </div>
       <button type="submit" disabled={isSubmitting}>{id ? 'Actualizar' : 'Crear'} mejora genética</button>

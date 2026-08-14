@@ -82,8 +82,11 @@ const AlertsPanel = () => {
                   { key: 'Media', color: 'text-warning', bg: 'bg-warning/5 dark:bg-amber-950/20', border: 'border-amber-200 dark:border-amber-800' },
                   { key: 'Baja', color: 'text-info', bg: 'bg-info/5 dark:bg-blue-950/20', border: 'border-info/30 dark:border-blue-800' },
                 ].map((cfg) => {
+                  // El backend emite la clave sin tilde ('critica'); la etiqueta sí la lleva.
                   const key = cfg.key.toLowerCase();
-                  const count = data.statistics.by_priority?.[key] ?? 0;
+                  const asciiKey = key === 'crítica' ? 'critica' : key;
+                  const byPriority = data.statistics.by_priority ?? {};
+                  const count = byPriority[key] ?? byPriority[asciiKey] ?? 0;
                   return (
                     <div
                       key={cfg.key}

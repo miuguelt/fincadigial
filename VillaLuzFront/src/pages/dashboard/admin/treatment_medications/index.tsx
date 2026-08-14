@@ -97,8 +97,8 @@ function AdminTreatmentMedicationsPage() {
         );
       }
     },
-    { key: 'created_at' as any, label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-') },
-    { key: 'updated_at' as any, label: 'Actualizado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-') },
+    { key: 'created_at' as any, label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
+    { key: 'updated_at' as any, label: 'Actualizado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
   ], [treatmentMap, medicationMap]);
 
   const formSections: CRUDFormSection<TreatmentMedicationInput & { [k: string]: any }>[] = [

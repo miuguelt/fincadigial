@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { ForeignKeyLink } from '@/shared/ui/common/ForeignKeyLink';
 import { medicationsService } from '@/entities/medication/api/medications.service';
 import { Badge } from '@/shared/ui/badge';
@@ -50,8 +50,8 @@ export const MedicationLink: React.FC<{ id: number | string; label: string }> = 
             )}
             <SectionCard title="Información del Sistema">
               <div className={modalStyles.fieldsGrid}>
-                <InfoField label="Creado" value={item.created_at ? new Date(item.created_at).toLocaleDateString('es-ES') : '-'} />
-                <InfoField label="Actualizado" value={item.updated_at ? new Date(item.updated_at).toLocaleDateString('es-ES') : '-'} />
+                <InfoField label="Creado" value={item.created_at ? new Date(item.created_at).toLocaleDateString('es-CO') : '-'} />
+                <InfoField label="Actualizado" value={item.updated_at ? new Date(item.updated_at).toLocaleDateString('es-CO') : '-'} />
               </div>
             </SectionCard>
           </div>

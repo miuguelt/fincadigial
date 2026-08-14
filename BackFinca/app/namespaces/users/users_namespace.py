@@ -315,7 +315,7 @@ class GlobalUsersResource(Resource):
 class UserApprovalStatus(Resource):
     @users_ns.doc(
         'update_approval_status',
-        description='Cambiar el estado de aprobación de un usuario (Administrador/Instructor)',
+        description='Cambiar el estado de aprobación de un usuario (Administrador/Instructor/Propietario)',
         security=['Bearer']
     )
     @jwt_required()
@@ -325,9 +325,9 @@ class UserApprovalStatus(Resource):
             current_role = jwt_data.get('role')
             current_user_id = int(jwt_data.get('id', 0))
 
-            if current_role not in ('Administrador', 'Instructor'):
+            if current_role not in ('Administrador', 'Instructor', 'Propietario'):
                 return APIResponse.forbidden(
-                    'Se requiere rol de Administrador o Instructor para esta operación'
+                    'Se requiere rol de Administrador, Instructor o Propietario para esta operación'
                 )
 
             data = flask.request.get_json() or {}
@@ -538,3 +538,115 @@ class UserPublicCreate(Resource):
             db.session.rollback()
             logger.error('Error en creación pública de usuario: %s', e, exc_info=True)
             return APIResponse.error('Error interno del servidor', details={'error': str(e)}, status_code=500)
+
+
+@users_ns.route('/me/export-data')
+class ExportUserDataResource(Resource):
+    @users_ns.doc('export_user_data', description='[Derecho ARCO - Portabilidad] Exportar todos los datos personales e historia clínica registrados por el usuario conforme a la Ley 1581 de 2012 y GDPR', security=['Bearer'])
+    @jwt_required()
+    def get(self):
+        try:
+            from datetime import datetime
+            current_user_id = int(get_jwt().get('id'))
+            user = User.query.get(current_user_id)
+            if not user:
+                return APIResponse.not_found('Usuario no encontrado')
+
+            data_export = {
+                'user_profile': user.to_namespace_dict(),
+                'habeas_data_status': {
+                    'accepted': bool(user.habeas_data_accepted),
+                    'accepted_at': user.habeas_data_accepted_at.isoformat() if user.habeas_data_accepted_at else None,
+                    'terms_accepted': bool(user.terms_accepted),
+                    'terms_accepted_at': user.terms_accepted_at.isoformat() if user.terms_accepted_at else None,
+                },
+                'professional_verification': {
+                    'professional_card': user.professional_card,
+                    'professional_specialty': user.professional_specialty,
+                    'is_verified': bool(user.is_verified_professional),
+                    'verification_date': user.verification_date.isoformat() if user.verification_date else None,
+                },
+                'exported_at': datetime.utcnow().isoformat(),
+                'legal_notice': 'Copia certificada de datos personales expedida bajo el marco de la Ley 1581 de 2012 (Habeas Data Colombia) y Reglamento General de Protección de Datos (GDPR).'
+            }
+
+            return APIResponse.success(
+                data=data_export,
+                message='Expediente de datos personales generado exitosamente.'
+            )
+        except Exception as e:
+            logger.exception('Error al exportar datos del usuario: %s', e)
+            return APIResponse.error('Error al generar expediente de datos personales', details={'error': str(e)})
+
+
+@users_ns.route('/me/request-deletion')
+class RequestDataDeletionResource(Resource):
+    @users_ns.doc('request_data_deletion', description='[Derecho ARCO - Supresión] Solicitar la supresión o anonimización de datos personales', security=['Bearer'])
+    @jwt_required()
+    def post(self):
+        try:
+            from datetime import datetime
+            current_user_id = int(get_jwt().get('id'))
+            user = User.query.get(current_user_id)
+            if not user:
+                return APIResponse.not_found('Usuario no encontrado')
+
+            # Registrar solicitud de supresión revocando consentimiento
+            user.status = False
+            user.habeas_data_accepted = False
+            user.approval_status = 'Suspended'
+            db.session.commit()
+
+            return APIResponse.success(
+                data={
+                    'user_id': user.id,
+                    'status': 'Solicitud registrada',
+                    'requested_at': datetime.utcnow().isoformat()
+                },
+                message='Su solicitud de supresión/anonimización de datos ha sido registrada. Su cuenta ha sido suspendida para procesamiento legal en 10-15 días hábiles conforme a la Ley 1581 de 2012.'
+            )
+        except Exception as e:
+            db.session.rollback()
+            logger.exception('Error al registrar solicitud de supresión: %s', e)
+            return APIResponse.error('Error al procesar solicitud de supresión', details={'error': str(e)})
+
+
+@users_ns.route('/me/consent')
+class UserConsentResource(Resource):
+    @users_ns.doc('update_user_consent', description='Actualizar estado del consentimiento de Habeas Data y Términos y Condiciones', security=['Bearer'])
+    @jwt_required()
+    def post(self):
+        try:
+            from datetime import datetime
+            current_user_id = int(get_jwt().get('id'))
+            user = User.query.get(current_user_id)
+            if not user:
+                return APIResponse.not_found('Usuario no encontrado')
+
+            data = flask.request.get_json() or {}
+            habeas = bool(data.get('habeas_data_accepted', False))
+            terms = bool(data.get('terms_accepted', False))
+
+            if habeas:
+                user.habeas_data_accepted = True
+                user.habeas_data_accepted_at = datetime.utcnow()
+            if terms:
+                user.terms_accepted = True
+                user.terms_accepted_at = datetime.utcnow()
+
+            db.session.commit()
+
+            return APIResponse.success(
+                data={
+                    'habeas_data_accepted': user.habeas_data_accepted,
+                    'habeas_data_accepted_at': user.habeas_data_accepted_at.isoformat() if user.habeas_data_accepted_at else None,
+                    'terms_accepted': user.terms_accepted,
+                    'terms_accepted_at': user.terms_accepted_at.isoformat() if user.terms_accepted_at else None,
+                },
+                message='Consentimiento actualizado correctamente.'
+            )
+        except Exception as e:
+            db.session.rollback()
+            logger.exception('Error al actualizar consentimiento: %s', e)
+            return APIResponse.error('Error al actualizar consentimiento', details={'error': str(e)})
+

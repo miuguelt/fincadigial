@@ -25,6 +25,7 @@ export interface User {
   /** Active farm aliases returned by older and newer session payloads. */
   active_finca_id?: number;
   current_finca_id?: number;
+  is_system_admin?: boolean;
   finca?: { id: number; name?: string };
   fincas?: Array<{ id: number; name: string; role: string }>;
   avatar_url?: string | null;

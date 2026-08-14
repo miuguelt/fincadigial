@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { GenericModal } from '@/shared/ui/common/GenericModal';
 import { campesinoServices, CropActivity } from '@/entities/campesino';
 import { cropPlotsService } from '@/entities/campesino/api/campesino.service';
 import { Button } from '@/shared/ui/button';
@@ -277,7 +278,7 @@ const CropActivitiesPage: React.FC = () => {
                                 <div className="flex items-center gap-2">
                                   <span className="font-bold text-sm">{cfg.emoji} {cfg.label}</span>
                                   {plotName && (
-                                    <span className="text-[11px] opacity-70 truncate">· {plotName}</span>
+                                    <span className="text-[11px] opacity-70 fit-clamp">· {plotName}</span>
                                   )}
                                 </div>
                                 {activity.description && (
@@ -316,160 +317,141 @@ const CropActivitiesPage: React.FC = () => {
       </div>
 
       {/* ── MODAL: Registrar labor ─────────────────────────────── */}
-      <AnimatePresence>
-        {showForm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4"
-            onClick={e => { if (e.target === e.currentTarget) setShowForm(false); }}
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 60 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 60 }}
-              className="bg-card rounded-lg shadow-2xl w-full max-w-md max-h-[85vh] overflow-y-auto"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between p-5 border-b sticky top-0 bg-card z-10">
-                <h2 className="font-bold text-lg">Registrar Labor</h2>
-                <button onClick={() => setShowForm(false)} className="p-2 rounded-xl hover:bg-muted">
-                  <X className="w-5 h-5" />
+      <GenericModal
+        isOpen={showForm}
+        onOpenChange={(val) => !val && setShowForm(false)}
+        title="Registrar Labor"
+        size="md"
+        themeColor="blue"
+        enableBackdropBlur
+      >
+        <div className="space-y-4 pt-2">
+          {/* Selector de tipo */}
+          <div>
+            <p className="text-sm font-medium text-foreground mb-2">¿Qué hice?</p>
+            <div className="grid grid-cols-3 gap-2">
+              {ACTIVITY_TYPES.map(t => (
+                <button
+                  key={t.value}
+                  onClick={() => setForm(f => ({ ...f, activity_type: t.value }))}
+                  className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 transition-all text-xs font-semibold ${
+                    form.activity_type === t.value ? `${t.border} ${t.color}` : 'border-border bg-background text-muted-foreground'
+                  }`}
+                >
+                  <span className="text-xl">{t.emoji}</span>
+                  {t.label}
                 </button>
-              </div>
+              ))}
+            </div>
+          </div>
 
-              <div className="p-5 space-y-4">
-                {/* Selector de tipo */}
-                <div>
-                  <p className="text-sm font-medium text-foreground mb-2">¿Qué hice?</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {ACTIVITY_TYPES.map(t => (
-                      <button
-                        key={t.value}
-                        onClick={() => setForm(f => ({ ...f, activity_type: t.value }))}
-                        className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 transition-all text-xs font-semibold ${
-                          form.activity_type === t.value ? `${t.border} ${t.color}` : 'border-border bg-background text-muted-foreground'
-                        }`}
-                      >
-                        <span className="text-xl">{t.emoji}</span>
-                        {t.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+          {/* Fecha */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">📅 ¿Cuándo?</label>
+            <input
+              type="date" value={form.activity_date}
+              onChange={e => setForm(f => ({ ...f, activity_date: e.target.value }))}
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+            />
+          </div>
 
-                {/* Fecha */}
+          {/* Parcela */}
+          {plots.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">🌱 ¿En qué parcela?</label>
+              <select
+                value={form.crop_plot_id}
+                onChange={e => setForm(f => ({ ...f, crop_plot_id: e.target.value }))}
+                className="w-full px-3 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+              >
+                <option value="">Sin parcela específica</option>
+                {plots.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+              </select>
+            </div>
+          )}
+
+          {/* Descripción */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">¿Qué hizo exactamente?</label>
+            <textarea
+              rows={2}
+              placeholder="Ej: Rié el cultivo de maíz por 2 horas..."
+              value={form.description}
+              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 resize-none"
+            />
+          </div>
+
+          {/* Detalles adicionales (colapsable) */}
+          <button
+            onClick={() => setShowDetails(v => !v)}
+            className="w-full flex items-center justify-between py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <span>+ Agregar insumos y costo (opcional)</span>
+            <ChevronDown className={`w-4 h-4 transition-transform ${showDetails ? 'rotate-180' : ''}`} />
+          </button>
+
+          <AnimatePresence>
+            {showDetails && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden space-y-3"
+              >
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">📅 ¿Cuándo?</label>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">📦 Insumo utilizado</label>
                   <input
-                    type="date" value={form.activity_date}
-                    onChange={e => setForm(f => ({ ...f, activity_date: e.target.value }))}
+                    type="text" placeholder="Ej: Urea, Herbicida, Semilla"
+                    value={form.input_name}
+                    onChange={e => setForm(f => ({ ...f, input_name: e.target.value }))}
                     className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
                   />
                 </div>
-
-                {/* Parcela */}
-                {plots.length > 0 && (
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">🌱 ¿En qué parcela?</label>
-                    <select
-                      value={form.crop_plot_id}
-                      onChange={e => setForm(f => ({ ...f, crop_plot_id: e.target.value }))}
-                      className="w-full px-3 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-                    >
-                      <option value="">Sin parcela específica</option>
-                      {plots.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
-                    </select>
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-foreground mb-1.5">Cantidad</label>
+                    <input
+                      type="number" min="0" step="0.01" placeholder="0"
+                      value={form.quantity}
+                      onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))}
+                      className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                    />
                   </div>
-                )}
-
-                {/* Descripción */}
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">¿Qué hizo exactamente?</label>
-                  <textarea
-                    rows={2}
-                    placeholder="Ej: Rié el cultivo de maíz por 2 horas..."
-                    value={form.description}
-                    onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 resize-none"
-                  />
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-foreground mb-1.5">Unidad</label>
+                    <input
+                      type="text" placeholder="kg, litros, bultos"
+                      value={form.unit}
+                      onChange={e => setForm(f => ({ ...f, unit: e.target.value }))}
+                      className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                    />
+                  </div>
                 </div>
-
-                {/* Detalles adicionales (colapsable) */}
-                <button
-                  onClick={() => setShowDetails(v => !v)}
-                  className="w-full flex items-center justify-between py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <span>+ Agregar insumos y costo (opcional)</span>
-                  <ChevronDown className={`w-4 h-4 transition-transform ${showDetails ? 'rotate-180' : ''}`} />
-                </button>
-
-                <AnimatePresence>
-                  {showDetails && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden space-y-3"
-                    >
-                      <div>
-                        <label className="block text-sm font-medium text-foreground mb-1.5">📦 Insumo utilizado</label>
-                        <input
-                          type="text" placeholder="Ej: Urea, Herbicida, Semilla"
-                          value={form.input_name}
-                          onChange={e => setForm(f => ({ ...f, input_name: e.target.value }))}
-                          className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-                        />
-                      </div>
-                      <div className="flex gap-3">
-                        <div className="flex-1">
-                          <label className="block text-sm font-medium text-foreground mb-1.5">Cantidad</label>
-                          <input
-                            type="number" min="0" step="0.01" placeholder="0"
-                            value={form.quantity}
-                            onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))}
-                            className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <label className="block text-sm font-medium text-foreground mb-1.5">Unidad</label>
-                          <input
-                            type="text" placeholder="kg, litros, bultos"
-                            value={form.unit}
-                            onChange={e => setForm(f => ({ ...f, unit: e.target.value }))}
-                            className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-foreground mb-1.5">💰 Costo ($)</label>
-                        <input
-                          type="number" min="0" step="100" placeholder="0"
-                          value={form.cost}
-                          onChange={e => setForm(f => ({ ...f, cost: e.target.value }))}
-                          className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">Si ingresa un costo, se creará un registro financiero automáticamente.</p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className="px-5 pb-5">
-                <Button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 text-base font-bold"
-                >
-                  {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Guardando...</> : '✅ Guardar Labor'}
-                </Button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">💰 Costo ($)</label>
+                  <input
+                    type="number" min="0" step="100" placeholder="0"
+                    value={form.cost}
+                    onChange={e => setForm(f => ({ ...f, cost: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Si ingresa un costo, se creará un registro financiero automáticamente.</p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <div className="pt-2 pb-4">
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 text-base font-bold"
+            >
+              {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Guardando...</> : '✅ Guardar Labor'}
+            </Button>
+          </div>
+        </div>
+      </GenericModal>
     </div>
   );
 };

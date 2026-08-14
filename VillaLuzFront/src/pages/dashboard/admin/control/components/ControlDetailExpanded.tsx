@@ -23,7 +23,7 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
   const [loadingHistory, setLoadingHistory] = useState(true);
 
   const checkupDate = (item as any)?.checkup_date ?? (item as any)?.control_date;
-  const formattedDate = checkupDate ? new Date(checkupDate as string).toLocaleDateString('es-ES') : '-';
+  const formattedDate = checkupDate ? new Date(checkupDate as string).toLocaleDateString('es-CO') : '-';
   const healthStatus = (item as any)?.health_status ?? (item as any)?.healt_status ?? '-';
   const description = (item as any)?.description ?? (item as any)?.observations;
 
@@ -83,7 +83,7 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
   const chartControlData = controlHistory.map(c => {
     const d = (c as any).checkup_date || (c as any).control_date;
     return {
-      fecha: d ? new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }) : '',
+      fecha: d ? new Date(d).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit' }) : '',
       peso: c.weight ? Number(c.weight) : null,
       altura: c.height ? Number(c.height) : null,
     };
@@ -91,7 +91,7 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
 
   // Formatear datos para el gráfico de leche (litros)
   const chartMilkData = milkHistory.map(m => ({
-    fecha: m.date ? new Date(m.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }) : '',
+    fecha: m.date ? new Date(m.date).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit' }) : '',
     litros: m.liters ? Number(m.liters) : 0,
   }));
 
@@ -152,8 +152,8 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
               
               <SectionCard title="Información del Sistema">
                 <div className="grid grid-cols-2 gap-4">
-                  <InfoField label="Registrado el" value={item.created_at ? new Date(item.created_at).toLocaleDateString('es-ES') : '-'} />
-                  <InfoField label="Modificado el" value={item.updated_at ? new Date(item.updated_at).toLocaleDateString('es-ES') : '-'} />
+                  <InfoField label="Registrado el" value={item.created_at ? new Date(item.created_at).toLocaleDateString('es-CO') : '-'} />
+                  <InfoField label="Modificado el" value={item.updated_at ? new Date(item.updated_at).toLocaleDateString('es-CO') : '-'} />
                 </div>
               </SectionCard>
             </div>
@@ -203,7 +203,7 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
                   controlHistory.slice().reverse().map((c: any, index) => (
                     <div key={c.id || index} className="flex justify-between items-center p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 border text-xs">
                       <div className="font-semibold text-muted-foreground">
-                        {new Date(c.checkup_date || c.control_date).toLocaleDateString('es-ES')}
+                        {new Date(c.checkup_date || c.control_date).toLocaleDateString('es-CO')}
                       </div>
                       <div className="flex gap-3 text-right">
                         <span className="font-bold text-emerald-600">{c.weight ? `${Number(c.weight).toFixed(1)} kg` : '-'}</span>
@@ -262,7 +262,7 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
                     <div key={m.id || index} className="flex justify-between items-center p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 border text-xs">
                       <div>
                         <div className="font-semibold text-muted-foreground">
-                          {new Date(m.date).toLocaleDateString('es-ES')}
+                          {new Date(m.date).toLocaleDateString('es-CO')}
                         </div>
                         <div className="text-[10px] text-muted-foreground">Sesión: {m.milking_session}</div>
                       </div>

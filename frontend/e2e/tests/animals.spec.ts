@@ -62,8 +62,6 @@ test.describe('Gestión de Animales', () => {
   });
 
   test('debería mostrar detalles de un animal', async ({ authenticatedPage }) => {
-    const animalsPage = new AnimalsPage(authenticatedPage);
-
     // Click en primer animal
     const firstRow = authenticatedPage.locator('[data-testid="animal-row"]').first();
     await firstRow.click();

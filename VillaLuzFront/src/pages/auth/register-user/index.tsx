@@ -414,6 +414,27 @@ const RegisterUserPage: React.FC = () => {
                   </select>
                 </div>
 
+                {formData.role === 'Veterinario' && (
+                  <div className="space-y-2 p-3 bg-blue-50/60 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <Label htmlFor="professional_card" className="text-sm font-medium text-blue-900 dark:text-blue-200">
+                      Tarjeta Profesional (COMVEZCOL) *
+                    </Label>
+                    <Input
+                      id="professional_card"
+                      name="professional_card"
+                      type="text"
+                      placeholder="Ej: TP-12345 o COMVEZCOL-98765"
+                      value={(formData as any).professional_card || ''}
+                      onChange={handleInputChange}
+                      disabled={loading}
+                      className="font-mono text-sm uppercase bg-white dark:bg-slate-900"
+                    />
+                    <p className="text-[11px] text-blue-700 dark:text-blue-400">
+                      🔒 Su Tarjeta Profesional será validada por administración. Sus datos personales sensibles (cédula, teléfono) permanecen resguardados bajo Habeas Data.
+                    </p>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-sm font-medium flex items-center gap-2">
                     <Lock className="h-4 w-4 text-muted-foreground" />
@@ -467,6 +488,20 @@ const RegisterUserPage: React.FC = () => {
                   {getFieldError('confirmPassword') && (
                     <p className="text-destructive text-xs">{getFieldError('confirmPassword')}</p>
                   )}
+                </div>
+
+                {/* Consentimiento de Tratamiento de Datos (Habeas Data) & Salvedades Legales */}
+                <div className="pt-2">
+                  <label className="flex items-start gap-2 cursor-pointer text-xs text-slate-600 dark:text-slate-400">
+                    <input
+                      type="checkbox"
+                      required
+                      className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    />
+                    <span>
+                      Acepto la <strong>Política de Tratamiento de Datos Personales (Habeas Data Ley 1581)</strong> y los <strong>Términos y Salvedades Legales</strong> de protección al desarrollador.
+                    </span>
+                  </label>
                 </div>
 
                 <Button

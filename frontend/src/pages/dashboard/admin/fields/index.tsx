@@ -13,11 +13,11 @@ import { FieldDetailsModal } from '@/widgets/analytics/FieldDetailsModal';
 import { FoodTypeLink } from '@/entities/food-type/ui';
 import { MapPin, PawPrint, Map as MapIcon, Activity, LayoutDashboard, Info } from 'lucide-react';
 import KPICard from '@/widgets/analytics/KPICard';
+import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
 import { cn } from '@/shared/ui/cn';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { Card, CardContent, CardFooter } from '@/shared/ui/card';
-import { BoardViewPotreros } from '@/widgets/dashboard/animals/BoardViewPotreros';
-import { animalsService } from '@/entities/animal/api/animal.service';
+import { PotrerosBoardPage } from '@/features/potreros';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Badge } from '@/shared/ui/badge';
 
@@ -220,13 +220,13 @@ const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVer
       premium={true}
       hoverable={true}
       className={cn(
-        "flex flex-col h-full w-full border-l-[6px] transition-all duration-500",
+        "flex h-fit min-h-0 w-full self-start flex-col border-l-[6px] transition-all duration-500",
         borderClasses,
         "hover:shadow-[0_30px_60px_-12px_rgba(0,0,0,0.4),0_18px_36px_-18px_rgba(0,0,0,0.4)]",
         "group/potrero"
       )}
     >
-      <CardContent className="flex flex-col flex-1 p-5 gap-4 relative overflow-hidden">
+      <CardContent className="!p-4 flex flex-col gap-3 relative overflow-hidden">
         {/* Glow effect on hover */}
         <div className="absolute -inset-x-20 -top-20 h-40 bg-gradient-to-b from-white/5 to-transparent opacity-0 group-hover/potrero:opacity-100 transition-opacity duration-700 pointer-events-none" />
         
@@ -235,7 +235,7 @@ const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVer
             <div className="flex items-center gap-2 min-w-0">
               <span className={cn("w-2.5 h-2.5 rounded-full shrink-0 animate-pulse", getStateSemaphore(potrero.state).dot)} />
               <h3
-                className="font-black text-lg text-foreground tracking-tight truncate group-hover/potrero:text-primary transition-colors"
+                className="font-black text-lg text-foreground tracking-tight fit-clamp group-hover/potrero:text-primary transition-colors"
                 title={potrero.name || 'Sin nombre'}
               >
                 {potrero.name || 'Sin nombre'}
@@ -243,7 +243,7 @@ const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVer
             </div>
             <div className="flex items-center gap-1.5 mt-1.5 text-[10px] font-black text-muted-foreground uppercase tracking-wider opacity-60 min-w-0">
               <MapPin className="h-3 w-3 shrink-0" />
-              <span className="truncate">{potrero.ubication || potrero.location || 'Sin ubicación'}</span>
+              <span className="fit-clamp">{potrero.ubication || potrero.location || 'Sin ubicación'}</span>
             </div>
           </div>
           <Badge variant="secondary" className="font-mono font-black text-[10px] px-2 bg-white/5 border-white/10 text-muted-foreground/60 shrink-0 whitespace-nowrap">
@@ -251,8 +251,8 @@ const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVer
           </Badge>
         </div>
 
-        <div className="bg-white/5 backdrop-blur-md rounded-[2rem] p-5 border border-white/5 group-hover/potrero:border-white/10 group-hover/potrero:bg-white/10 transition-all duration-500 relative z-10">
-          <div className="flex justify-between items-end gap-3 mb-4">
+        <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/5 group-hover/potrero:border-white/10 group-hover/potrero:bg-white/10 transition-all duration-500 relative z-10">
+          <div className="flex justify-between items-end gap-3 mb-3">
              <div className="min-w-0">
                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-wider block mb-1 opacity-70 whitespace-nowrap">Carga Biológica</span>
                <div className="flex items-baseline gap-1.5 whitespace-nowrap">
@@ -280,30 +280,30 @@ const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVer
             />
           </div>
           
-          <p className="mt-4 text-[10px] font-black text-muted-foreground/50 uppercase tracking-wider flex items-center gap-2 min-w-0 group-hover/potrero:text-muted-foreground transition-colors">
+          <p className="mt-3 text-[10px] font-black text-muted-foreground/50 uppercase tracking-wider flex items-center gap-2 min-w-0 group-hover/potrero:text-muted-foreground transition-colors">
              <Info className={cn("h-3.5 w-3.5 shrink-0", palette.text)} />
-             <span className="truncate">
+             <span className="fit-clamp">
                {remainingText} {isEstimated && <span className="text-[8px] opacity-40 font-bold">(Estimado por área)</span>}
              </span>
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3 relative z-10">
-          <div className="bg-white/5 rounded-lg p-3.5 border border-white/5 group-hover/potrero:bg-white/10 transition-colors min-w-0">
+          <div className="bg-white/5 rounded-lg p-3 border border-white/5 group-hover/potrero:bg-white/10 transition-colors min-w-0">
             <span className="text-[8px] font-black text-muted-foreground uppercase tracking-wider block mb-1.5 opacity-60 whitespace-nowrap">Extensión</span>
             <span className="text-sm font-black text-foreground flex items-baseline gap-1 whitespace-nowrap overflow-hidden">
-              <span className="truncate">{area ? area.value : '—'}</span>
+              <span className="fit-clamp">{area ? area.value : '—'}</span>
               {area?.unit && <span className="text-[10px] opacity-40 shrink-0">{area.unit}</span>}
             </span>
           </div>
-          <div className="bg-white/5 rounded-lg p-3.5 border border-white/5 group-hover/potrero:bg-white/10 transition-colors min-w-0">
+          <div className="bg-white/5 rounded-lg p-3 border border-white/5 group-hover/potrero:bg-white/10 transition-colors min-w-0">
             <span className="text-[8px] font-black text-muted-foreground uppercase tracking-wider block mb-1.5 opacity-60 whitespace-nowrap">Suministro</span>
-            <span className="text-sm font-black text-foreground truncate block" title={foodTypeLabel}>{foodTypeLabel || '—'}</span>
+            <span className="text-sm font-black text-foreground fit-clamp block" title={foodTypeLabel}>{foodTypeLabel || '—'}</span>
           </div>
         </div>
       </CardContent>
 
-      <CardFooter className="p-0 border-t border-white/5 bg-white/5 overflow-hidden relative z-10">
+      <CardFooter className="!p-0 border-t border-white/5 bg-white/5 overflow-hidden relative z-10">
         <button
           onClick={(e) => { e.stopPropagation(); onOpenDetail?.(potrero); }}
           className="flex-1 flex items-center justify-center gap-2.5 h-12 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground hover:text-primary hover:bg-white/5 transition-all active:scale-95"
@@ -412,64 +412,91 @@ const PremiumFieldsHeader: React.FC<{
   }
 
   return (
-    <div className="mb-6 space-y-6">
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 bg-card/40 backdrop-blur-xl p-6 sm:p-8 rounded-[2.5rem] border border-border/50 shadow-2xl shadow-primary/5">
-        <div className="flex items-center gap-5">
-          <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl bg-gradient-to-br from-success-500 to-success-600 flex items-center justify-center shadow-xl shadow-success-500/20">
-            <MapIcon className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tighter text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-              Gestión de <span className="text-success-500">Potreros</span>
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground font-medium mt-1">Administra y monitorea la ocupación de tus campos (Offline-Ready)</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <KPICard title="Capacidad Total" value={metrics.totalCapacity} icon="📊" />
-        <KPICard title="Animales Ubicados" value={metrics.totalAnimals} icon="🐄" />
-        <KPICard title="Ocupación Promedio" value={`${metrics.averageOccupation}%`} icon="📈" />
-        <KPICard title="Espacios Disponibles" value={metrics.availableSpots} icon="✅" />
-      </div>
-    </div>
+    <DataScreenHeader
+      icon={<MapIcon className="h-5 w-5 text-white" />}
+      iconClassName="from-success-500 to-success-600 shadow-success-500/20"
+      title={<>Gestión de <span className="text-success-500">Potreros</span></>}
+      description="Administra y monitorea la ocupación de tus campos (Offline-Ready)"
+      metrics={
+        <>
+          <KPICard compact title="Capacidad Total" value={metrics.totalCapacity} icon="📊" />
+          <KPICard compact title="Animales Ubicados" value={metrics.totalAnimals} icon="🐄" />
+          <KPICard compact title="Ocupación Promedio" value={`${metrics.averageOccupation}%`} icon="📈" />
+          <KPICard compact title="Espacios Disponibles" value={metrics.availableSpots} icon="✅" />
+        </>
+      }
+    />
   );
 };
 
 // ─── Página principal ─────────────────────────────────────────────────────────
-function AdminFieldsPage() {
+/**
+ * Selector de vista compartido: la rotación se monta como página propia y
+ * necesita los mismos botones para volver a la tabla o a las tarjetas.
+ */
+const FieldsViewSwitcher: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [viewMode, setViewMode] = useGlobalViewMode();
+  const isRotationView = searchParams.get('view') === 'rotation';
+
+  const goToCrudView = (mode: 'table' | 'cards') => {
+    const params = new URLSearchParams(searchParams);
+    params.delete('view');
+    const query = params.toString();
+    navigate(query ? `?${query}` : '?');
+    setViewMode(mode);
+  };
+
+  return (
+    <div className="flex items-center gap-1">
+      <Button
+        variant={!isRotationView && viewMode === 'table' ? 'primary' : 'outline'}
+        size="sm"
+        className="h-9 px-3 text-sm"
+        onClick={() => goToCrudView('table')}
+        aria-label="Vista en tabla"
+      >
+        Tabla
+      </Button>
+      <Button
+        variant={!isRotationView && viewMode === 'cards' ? 'primary' : 'outline'}
+        size="sm"
+        className="h-9 px-3 text-sm"
+        onClick={() => goToCrudView('cards')}
+        aria-label="Vista en tarjetas"
+      >
+        Tarjetas
+      </Button>
+      <Button
+        variant={isRotationView ? 'primary' : 'outline'}
+        size="sm"
+        className="h-9 gap-2 px-3 text-sm"
+        onClick={() => {
+          const params = new URLSearchParams(searchParams);
+          params.set('view', 'rotation');
+          navigate(`?${params.toString()}`);
+        }}
+        aria-label="Vista Rotación"
+      >
+        <LayoutDashboard size={16} />
+        Rotación
+      </Button>
+    </div>
+  );
+};
+
+function FieldsCrudPage() {
   const { userRole, user: _user } = useAuth() as any;
   const isCampesino = userRole === 'Operario' || userRole === 'Aprendiz';
-  
-  const [foodTypeOptions, setFoodTypeOptions] = useState<Array<{ value: number; label: string }>>([]);
-  const [viewMode, setViewMode] = useGlobalViewMode();
-  
-  // Detectar modo rotación (query param ?view=rotation)
-  const [searchParams] = useSearchParams();
-  const isRotationView = searchParams.get('view') === 'rotation';
-  const effectiveViewMode = isRotationView ? 'cards' : viewMode;
 
+  const [foodTypeOptions, setFoodTypeOptions] = useState<Array<{ value: number; label: string }>>([]);
+  const [viewMode] = useGlobalViewMode();
+  
   const [isAnimalsOpen, setIsAnimalsOpen] = useState(false);
   const [modalField, setModalField] = useState<FieldResponse | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [detailField, setDetailField] = useState<FieldResponse | null>(null);
-
-  // Cargar animales para el tablero de rotación
-  const [allAnimals, setAllAnimals] = useState<any[]>([]);
-  useEffect(() => {
-    if (isRotationView) {
-      (async () => {
-        try {
-          const res = await animalsService.getAnimalsPaginated({ limit: 2000 });
-          setAllAnimals(res.data || []);
-        } catch (e) {
-          console.warn('Error fetching animals for rotation board', e);
-        }
-      })();
-    }
-  }, [isRotationView]);
 
   const openAnimalsForField = useCallback(async (field: FieldResponse & { [k: string]: any }) => {
     setModalField(field);
@@ -488,21 +515,6 @@ function AdminFieldsPage() {
   }, [foodTypeOptions]);
 
   // ... (keep columns definition) ...
-
-  // ─── Renderizado del Tablero de Rotación ──────────────────────────────────
-  const renderRotationBoard = () => {
-    return (
-      <div className="flex min-h-0 flex-1 flex-col">
-        <BoardViewPotreros
-          animals={allAnimals}
-          breedOptions={[]}
-          fatherOptions={[]}
-          motherOptions={[]}
-          onAnimalClick={(animal) => navigate(`/admin/animals/${animal.id}`)}
-        />
-      </div>
-    );
-  };
 
   // ─── Columnas de tabla ────────────────────────────────────────────────────
   const columns: CRUDColumn<FieldResponse & { [k: string]: any }>[] = useMemo(
@@ -594,7 +606,7 @@ function AdminFieldsPage() {
         key: 'created_at',
         label: 'Creado',
         sortable: true,
-        render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-'),
+        render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-'),
       },
     ],
     [foodTypeMap, openAnimalsForField]
@@ -625,7 +637,7 @@ function AdminFieldsPage() {
     customHeader: (
       <PremiumFieldsHeader
         items={currentItems}
-        compact={isRotationView || effectiveViewMode === 'table'}
+        compact={viewMode === 'table'}
       />
     ),
     themeColor: 'emerald',
@@ -750,61 +762,12 @@ function AdminFieldsPage() {
   const crudConfigLocal = {
     ...crudConfig,
     formSections: formSectionsLocal,
-    viewMode: effectiveViewMode,
+    viewMode,
     renderCard: renderFieldCard,
-    renderGrouped: isRotationView ? renderRotationBoard : undefined,
-    // El tablero de rotación trae sus propios datos (2000 animales): paginar no aplica.
-    hidePagination: isRotationView,
     // Tres tarjetas por fila en escritorio: por debajo de ~320px de ancho la tarjeta
     // parte el nombre y las métricas; por encima de 3 columnas se queda en ese umbral.
-    cardGridClassName: 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 lg:gap-6',
-    customToolbar: (
-      <div className="flex items-center gap-1">
-        <Button
-          variant={effectiveViewMode === 'table' ? 'primary' : 'outline'}
-          size="sm"
-          className="h-8 px-3 text-[11px] font-black uppercase tracking-widest"
-          onClick={() => {
-            const params = new URLSearchParams(searchParams);
-            params.delete('view');
-            navigate(`?${params.toString()}`);
-            setViewMode('table');
-          }}
-          aria-label="Vista en tabla"
-        >
-          Tabla
-        </Button>
-        <Button
-          variant={effectiveViewMode === 'cards' && !isRotationView ? 'primary' : 'outline'}
-          size="sm"
-          className="h-8 px-3 text-[11px] font-black uppercase tracking-widest"
-          onClick={() => {
-            const params = new URLSearchParams(searchParams);
-            params.delete('view');
-            navigate(`?${params.toString()}`);
-            setViewMode('cards');
-          }}
-          aria-label="Vista en tarjetas"
-        >
-          Tarjetas
-        </Button>
-        <Button
-          variant={isRotationView ? 'primary' : 'outline'}
-          size="sm"
-          className="h-8 px-3 text-[11px] font-black uppercase tracking-widest gap-2"
-          onClick={() => {
-            const params = new URLSearchParams(searchParams);
-            params.set('view', 'rotation');
-            navigate(`?${params.toString()}`);
-            setViewMode('cards');
-          }}
-          aria-label="Vista Rotación"
-        >
-          <LayoutDashboard size={14} />
-          Rotación
-        </Button>
-      </div>
-    ),
+    cardGridClassName: 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 lg:gap-6 !auto-rows-max',
+    customToolbar: <FieldsViewSwitcher />,
     customActions: isCampesino ? undefined : (record: any) => (
       <div className="flex items-center gap-1">
         <FieldActionsMenu field={record as FieldResponse} />
@@ -843,6 +806,20 @@ function AdminFieldsPage() {
       />
     </>
   );
+}
+
+/**
+ * `?view=rotation` muestra el tablero de potreros, que carga su propio
+ * inventario completo en lugar de la página paginada del CRUD.
+ */
+function AdminFieldsPage() {
+  const [searchParams] = useSearchParams();
+
+  if (searchParams.get('view') === 'rotation') {
+    return <PotrerosBoardPage viewSwitcher={<FieldsViewSwitcher />} />;
+  }
+
+  return <FieldsCrudPage />;
 }
 
 export default AdminFieldsPage;

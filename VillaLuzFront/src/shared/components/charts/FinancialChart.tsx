@@ -1,4 +1,4 @@
-﻿import { useMemo } from 'react';
+import { useMemo } from 'react';
 import {
   BarChart,
   Bar,
@@ -131,7 +131,7 @@ export function FinancialChart({
           <div className="text-right">
             <p className="text-muted-foreground">Balance</p>
             <p className={`font-bold text-lg ${balance >= 0 ? 'text-success' : 'text-destructive'}`}>
-              ${balance.toLocaleString()}
+              ${balance.toLocaleString('es-CO')}
             </p>
           </div>
         </div>
@@ -165,7 +165,7 @@ export function FinancialChart({
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '6px',
                   }}
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                  formatter={(value: number) => [`$${value.toLocaleString('es-CO')}`, '']}
                   labelFormatter={(label) =>
                     new Date(label).toLocaleDateString('es-CO', { dateStyle: 'medium' })
                   }
@@ -192,7 +192,7 @@ export function FinancialChart({
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '6px',
                   }}
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                  formatter={(value: number) => [`$${value.toLocaleString('es-CO')}`, '']}
                 />
                 <Legend />
                 <Bar dataKey="income" name="Ingresos" fill="#10b981" radius={[4, 4, 0, 0]} />
@@ -227,7 +227,7 @@ export function FinancialChart({
                       border: '1px solid hsl(var(--border))',
                       borderRadius: '6px',
                     }}
-                    formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                    formatter={(value: number) => [`$${value.toLocaleString('es-CO')}`, '']}
                   />
                   <Legend />
                 </PieChart>

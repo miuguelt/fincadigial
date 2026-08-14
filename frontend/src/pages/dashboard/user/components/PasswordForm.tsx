@@ -19,7 +19,7 @@ import {
 } from "../utils/profile.schemas";
 
 const PASSWORD_POLICY_HELP =
-	"La nueva contrasena debe tener minimo 8 caracteres e incluir al menos 1 mayuscula y 1 minuscula. Ejemplo: Abcdefgh";
+	"La nueva contraseña debe tener mínimo 8 caracteres e incluir al menos 1 mayúscula y 1 minúscula. Ejemplo: Abcdefgh";
 
 export const BubbleMessage = ({
 	message,
@@ -89,10 +89,10 @@ export const PasswordLiveRequirements = ({
 
 	return (
 		<div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-			<Item ok={lengthOk} text="Minimo 8 caracteres" />
-			<Item ok={uppercaseOk} text="Incluye 1 mayuscula" />
-			<Item ok={lowercaseOk} text="Incluye 1 minuscula" />
-			<Item ok={matchOk} text="Confirmacion coincide" />
+			<Item ok={lengthOk} text="Mínimo 8 caracteres" />
+			<Item ok={uppercaseOk} text="Incluye 1 mayúscula" />
+			<Item ok={lowercaseOk} text="Incluye 1 minúscula" />
+			<Item ok={matchOk} text="Confirmación coincide" />
 		</div>
 	);
 };
@@ -202,12 +202,12 @@ export const PasswordForm = ({ logout }: { logout: () => void }) => {
 				payload?.details?.errors;
 
 			const fieldMap: Record<string, keyof PasswordFormValues> = {
-				current_password: "currentPassword",
-				new_password: "newPassword",
-				confirm_password: "confirmPassword",
-				currentPassword: "currentPassword",
-				newPassword: "newPassword",
-				confirmPassword: "confirmPassword",
+				current_password: `currentPassword`,
+				new_password: `newPassword`,
+				confirm_password: `confirmPassword`,
+				currentPassword: `currentPassword`,
+				newPassword: `newPassword`,
+				confirmPassword: `confirmPassword`,
 			};
 
 			if (responseErrors && typeof responseErrors === "object") {

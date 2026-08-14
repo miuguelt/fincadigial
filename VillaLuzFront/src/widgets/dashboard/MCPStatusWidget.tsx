@@ -1,4 +1,4 @@
-﻿/**
+/**
  * MCPStatusWidget
  *
  * Widget del dashboard que muestra el estado de los servicios MCP de DevBrain.
@@ -217,7 +217,7 @@ export const MCPStatusWidget: React.FC = () => {
             </div>
             <p className="text-[10px] text-muted-foreground mt-2">
               Última actualización:{" "}
-              {new Date(healthData.timestamp).toLocaleTimeString()}
+              {new Date(healthData.timestamp).toLocaleTimeString('es-CO')}
             </p>
           </motion.div>
         )}

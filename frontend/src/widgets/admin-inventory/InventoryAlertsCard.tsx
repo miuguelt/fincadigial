@@ -113,7 +113,7 @@ export function InventoryAlertsCard({
 											key={lot.id}
 											className="flex items-baseline justify-between gap-2 text-xs"
 										>
-											<span className="truncate font-semibold">
+											<span className="fit-clamp font-semibold">
 												{lotName(lot)}
 											</span>
 											<span className="shrink-0 text-muted-foreground">

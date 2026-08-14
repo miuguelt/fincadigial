@@ -97,10 +97,10 @@ const AdminDashboardOverview: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-full bg-background p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="min-h-full bg-background p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto overflow-x-hidden">
       {/* Header Premium con Stats Integrados */}
       <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-background to-background border border-border shadow-sm">
-        <div className="p-6 sm:p-8 relative z-10 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+        <div className="p-6 sm:p-8 relative z-10 flex flex-col 2xl:flex-row justify-between items-start 2xl:items-center gap-6">
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-3 mb-2">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-text-primary tracking-tight">
@@ -115,7 +115,7 @@ const AdminDashboardOverview: React.FC = () => {
 
           {/* Quick Stats Compactos en el Header */}
           {!isLoading && dashboardStats && (
-            <div className="flex flex-wrap md:flex-nowrap gap-3 w-full xl:w-auto">
+            <div className="flex flex-wrap gap-3 w-full xl:w-auto">
               {quickStats.map((stat, index) => {
                 const Icon = stat.icon;
                 return (
@@ -125,7 +125,7 @@ const AdminDashboardOverview: React.FC = () => {
                     </div>
                     <div>
                       <p className={`text-xl sm:text-2xl font-black ${stat.color} leading-none`}>{stat.value}</p>
-                      <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-text-secondary opacity-80 mt-1 truncate max-w-[80px] sm:max-w-[100px]">{stat.label}</p>
+                      <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-text-secondary opacity-80 mt-1 fit-clamp max-w-[80px] sm:max-w-[100px]">{stat.label}</p>
                     </div>
                   </div>
                 );
@@ -235,7 +235,7 @@ const AdminDashboardOverview: React.FC = () => {
                 <div className="w-1.5 h-5 bg-primary rounded-full mr-2" />
                 Accesos de Gestión
               </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,_minmax(120px,_1fr))] gap-3 sm:gap-4">
                 <button
                   onClick={() => navigate('/admin/users')}
                   className="group p-4 bg-background border border-border rounded-lg hover:border-primary hover:bg-primary/5 transition-all text-center flex flex-col items-center"

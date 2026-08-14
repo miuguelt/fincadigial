@@ -16,7 +16,7 @@ import React from 'react';
  * - Tablet (768-1023px): text-sm, padding medio
  * - Desktop (>=1024px): text-sm/text-base, padding generoso
  */
-// eslint-disable-next-line react-refresh/only-export-components
+ 
 export const modalStyles = {
   // Espaciado
   spacing: {

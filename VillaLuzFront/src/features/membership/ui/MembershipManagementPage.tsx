@@ -5,7 +5,7 @@ import { InviteForm } from '@/features/invitations/ui/InviteForm';
 import { PendingRequests } from '@/features/invitations/ui/PendingRequests';
 import { JoinFincaForm } from '@/features/membership';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
-import { FaUserPlus, FaInbox, FaSignInAlt } from 'react-icons/fa';
+import { IconUserPlus as FaUserPlus, IconInbox as FaInbox, IconLogin as FaSignInAlt } from '@/shared/ui/icons';
 
 export const MembershipManagementPage = () => {
   const auth = useContext(AuthContext);

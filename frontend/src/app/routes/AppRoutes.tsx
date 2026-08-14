@@ -1,6 +1,9 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
+import PermissionRoute from './PermissionRoute';
+import RoutePermissionBoundary from './RoutePermissionBoundary';
+import SystemAdminRoute from './SystemAdminRoute';
 
 // Import pages using lazy loading for better performance
 const LandingPage = lazy(() => import('@/pages/landing/index'));
@@ -112,49 +115,102 @@ const MultiFincaAnalytics = lazy(() => import('@/pages/dashboard/admin/analytics
 import { useAuth } from '@/features/auth/model/useAuth';
 import LoadingScreen from '@/shared/ui/common/LoadingScreen';
 
-// Helper for generating common routes for different roles
+// Helper for generating common routes for different roles.
+// Cada pantalla queda detrás del permiso de la entidad que consulta al entrar,
+// para no montar vistas que el backend rechazaría con 403 (ver shared/lib/rbac).
 const renderRoleRoutes = (prefix: string) => (
   <>
     <Route path={`${prefix}/analytics/executive`} element={<DashboardExecutive />} />
     <Route path={`${prefix}/analytics/fields`} element={<FieldsPage />} />
     <Route path={`${prefix}/analytics/reports`} element={<CustomReports />} />
     <Route path={`${prefix}/analytics/ica-compliance`} element={<ICADashboard />} />
-    <Route path={`${prefix}/users`} element={<AdminUsersPage />} />
-    <Route path={`${prefix}/users/global`} element={<AdminGlobalUsersPage />} />
-    <Route path={`${prefix}/membership`} element={<AdminMembershipPage />} />
-    <Route path={`${prefix}/fincas`} element={<FincasAdminPage />} />
-    <Route path={`${prefix}/user-approval`} element={<AdminUserApprovalPage />} />
-    <Route path={`${prefix}/data-overview`} element={<AdminDataOverviewPage />} />
-    <Route path={`${prefix}/animals`} element={<AdminAnimalsPage />} />
-    <Route path={`${prefix}/animals/:id`} element={<AdminAnimalsPage />} />
-    <Route path={`${prefix}/fields`} element={<AdminFieldsPage />} />
-    <Route path={`${prefix}/vaccines`} element={<AdminVaccinesPage />} />
-    <Route path={`${prefix}/vaccinations`} element={<AdminVaccinationsPage />} />
-    <Route path={`${prefix}/medications`} element={<AdminMedicationsPage />} />
-    <Route path={`${prefix}/diseases`} element={<AdminDiseasesPage />} />
-    <Route path={`${prefix}/treatment_medications`} element={<AdminTreatmentMedicationsPage />} />
-    <Route path={`${prefix}/treatment_vaccines`} element={<AdminTreatmentVaccinesPage />} />
-    <Route path={`${prefix}/treatments/analytics`} element={<AdminTreatmentAnalyticsPage />} />
-    <Route path={`${prefix}/treatments`} element={<AdminTreatmentsPage />} />
-    <Route path={`${prefix}/treatments/form`} element={<AdminTreatmentFormPage />} />
-    <Route path={`${prefix}/treatments/form/:id`} element={<AdminTreatmentFormPage />} />
-    <Route path={`${prefix}/treatments/detail/:id`} element={<AdminTreatmentDetailPage />} />
-    <Route path={`${prefix}/controls`} element={<AdminControlPage />} />
-    <Route path={`${prefix}/animal-fields`} element={<AdminAnimalFieldsPage />} />
-    <Route path={`${prefix}/disease-animals`} element={<AdminAnimalDiseasesPage />} />
-    <Route path={`${prefix}/genetic-improvements`} element={<AdminGeneticImprovementsPage />} />
-    <Route path={`${prefix}/species`} element={<AdminSpeciesPage />} />
-    <Route path={`${prefix}/breeds`} element={<AdminBreedsPage />} />
-    <Route path={`${prefix}/food-types`} element={<AdminFoodTypesPage />} />
-    <Route path={`${prefix}/inventory`} element={<AdminInventoryPage />} />
-    <Route path={`${prefix}/reproduction`} element={<AdminReproductionPage />} />
-    <Route path={`${prefix}/reproduction/fertility`} element={<FertilityDashboard />} />
-    <Route path={`${prefix}/reproduction/sire-performance`} element={<SirePerformance />} />
-    <Route path={`${prefix}/growth`} element={<AdminGrowthPage />} />
-    <Route path={`${prefix}/regulatory-reports`} element={<RegulatoryReportsPage />} />
-    <Route path={`${prefix}/reports`} element={<ReportsPage />} />
-    <Route path={`${prefix}/milk-production`} element={<AdminMilkProductionPage />} />
-    <Route path={`${prefix}/tasks`} element={<AdminTasksPage />} />
+    {/* Personal y configuración de la finca: solo Administrador y Propietario */}
+    <Route element={<ProtectedRoute allowedRoles={['Administrador', 'Propietario']} />}>
+      <Route path={`${prefix}/users`} element={<AdminUsersPage />} />
+      <Route path={`${prefix}/membership`} element={<AdminMembershipPage />} />
+      <Route path={`${prefix}/user-approval`} element={<AdminUserApprovalPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="inventory" />}>
+      <Route path={`${prefix}/data-overview`} element={<AdminDataOverviewPage />} />
+      <Route path={`${prefix}/inventory`} element={<AdminInventoryPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="animals" />}>
+      <Route path={`${prefix}/animals`} element={<AdminAnimalsPage />} />
+      <Route path={`${prefix}/animals/:id`} element={<AdminAnimalsPage />} />
+      <Route path={`${prefix}/growth`} element={<AdminGrowthPage />} />
+      <Route path={`${prefix}/reproduction`} element={<AdminReproductionPage />} />
+      <Route path={`${prefix}/reproduction/fertility`} element={<FertilityDashboard />} />
+      <Route path={`${prefix}/reproduction/sire-performance`} element={<SirePerformance />} />
+      <Route path={`${prefix}/regulatory-reports`} element={<RegulatoryReportsPage />} />
+      <Route path={`${prefix}/reports`} element={<ReportsPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="fields" />}>
+      <Route path={`${prefix}/fields`} element={<AdminFieldsPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="vaccines" />}>
+      <Route path={`${prefix}/vaccines`} element={<AdminVaccinesPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="vaccinations" />}>
+      <Route path={`${prefix}/vaccinations`} element={<AdminVaccinationsPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="medications" />}>
+      <Route path={`${prefix}/medications`} element={<AdminMedicationsPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="diseases" />}>
+      <Route path={`${prefix}/diseases`} element={<AdminDiseasesPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="treatment-medications" />}>
+      <Route path={`${prefix}/treatment_medications`} element={<AdminTreatmentMedicationsPage />} />
+      <Route path={`${prefix}/treatment_medications/form`} element={<AdminTreatmentMedicationsFormPage />} />
+      <Route path={`${prefix}/treatment_medications/form/:id`} element={<AdminTreatmentMedicationsFormPage />} />
+      <Route path={`${prefix}/treatment_medications/detail/:id`} element={<AdminTreatmentMedicationsDetailPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="treatment-vaccines" />}>
+      <Route path={`${prefix}/treatment_vaccines`} element={<AdminTreatmentVaccinesPage />} />
+      <Route path={`${prefix}/treatment_vaccines/form`} element={<AdminTreatmentVaccinesFormPage />} />
+      <Route path={`${prefix}/treatment_vaccines/form/:id`} element={<AdminTreatmentVaccinesFormPage />} />
+      <Route path={`${prefix}/treatment_vaccines/detail/:id`} element={<AdminTreatmentVaccinesDetailPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="treatments" />}>
+      <Route path={`${prefix}/treatments/analytics`} element={<AdminTreatmentAnalyticsPage />} />
+      <Route path={`${prefix}/treatments`} element={<AdminTreatmentsPage />} />
+      <Route path={`${prefix}/treatments/form`} element={<AdminTreatmentFormPage />} />
+      <Route path={`${prefix}/treatments/form/:id`} element={<AdminTreatmentFormPage />} />
+      <Route path={`${prefix}/treatments/detail/:id`} element={<AdminTreatmentDetailPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="controls" />}>
+      <Route path={`${prefix}/controls`} element={<AdminControlPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="animal-fields" />}>
+      <Route path={`${prefix}/animal-fields`} element={<AdminAnimalFieldsPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="animal-diseases" />}>
+      <Route path={`${prefix}/disease-animals`} element={<AdminAnimalDiseasesPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="genetic-improvements" />}>
+      <Route path={`${prefix}/genetic-improvements`} element={<AdminGeneticImprovementsPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="species" />}>
+      <Route path={`${prefix}/species`} element={<AdminSpeciesPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="breeds" />}>
+      <Route path={`${prefix}/breeds`} element={<AdminBreedsPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="food_types" />}>
+      <Route path={`${prefix}/food-types`} element={<AdminFoodTypesPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="food_types" action="create" />}>
+      <Route path={`${prefix}/food-types/create`} element={<FoodTypesCreatePage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="food_types" action="update" />}>
+      <Route path={`${prefix}/food-types/edit/:id`} element={<FoodTypesEditPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="milk-production" />}>
+      <Route path={`${prefix}/milk-production`} element={<AdminMilkProductionPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="tasks" />}>
+      <Route path={`${prefix}/tasks`} element={<AdminTasksPage />} />
+    </Route>
     <Route path={`${prefix}/calendar`} element={<CalendarPage />} />
     <Route path={`${prefix}/tools/frame-calculator`} element={<FrameScoreCalculator />} />
     <Route path={`${prefix}/tools/ration-calculator`} element={<RationCalculator />} />
@@ -202,7 +258,8 @@ const AppRoutes = () => {
 
         {/* Protected Routes */}
         <Route element={<DashboardLayout />}>
-          <Route element={<ProtectedRoute allowedRoles={['Administrador', 'Instructor', 'Aprendiz', 'Propietario', 'Capataz', 'Veterinario', 'Operario']} />}>
+          <Route element={<RoutePermissionBoundary />}>
+            <Route element={<ProtectedRoute allowedRoles={['Administrador', 'Instructor', 'Aprendiz', 'Propietario', 'Capataz', 'Veterinario', 'Operario']} />}>
             <Route path="/dashboard" element={<RoleDashboardRedirect />} />
             <Route path="/profile" element={<UserProfilePage />} />
             <Route path="/select-finca" element={<JoinFincaPage />} />
@@ -210,24 +267,36 @@ const AppRoutes = () => {
             <Route path="/fincas/crear" element={<Navigate to="/dashboard?modal=create-finca" replace />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/alerts" element={<AlertsPage />} />
+            <Route path="/scanner" element={<AnimalScannerPage />} />
+            <Route path="/admin/scanner" element={<Navigate to="/scanner" replace />} />
+            <Route path="/instructor/scanner" element={<Navigate to="/scanner" replace />} />
+            <Route path="/veterinario/scanner" element={<Navigate to="/scanner" replace />} />
           </Route>
           <Route element={<ProtectedRoute allowedRoles={['Administrador', 'Propietario', 'Capataz']} />}>
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/administrador/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="/administrador" element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="/admin/chat" element={<ChatPage />} />
-            <Route path="/admin/scanner" element={<AnimalScannerPage />} />
             <Route path="/admin/analytics/executive" element={<DashboardExecutive />} />
             <Route path="/admin/analytics/fields" element={<FieldsPage />} />
             <Route path="/admin/analytics/reports" element={<CustomReports />} />
             <Route path="/admin/analytics/ica-compliance" element={<ICADashboard />} />
             <Route path="/admin/analytics/multi-finca" element={<MultiFincaAnalytics />} />
             <Route path="/admin/financial" element={<FinancialDashboard />} />
-            <Route path="/admin/users" element={<AdminUsersPage />} />
-            <Route path="/admin/users/global" element={<AdminGlobalUsersPage />} />
-            <Route path="/admin/user-approval" element={<AdminUserApprovalPage />} />
-            <Route path="/admin/membership" element={<AdminMembershipPage />} />
-<Route path="/admin/fincas" element={<FincasAdminPage />} />
+            {/* Gestión de usuarios: el backend solo permite /users a Administrador y Propietario */}
+            <Route element={<ProtectedRoute allowedRoles={['Administrador', 'Propietario']} />}>
+              <Route path="/admin/users" element={<AdminUsersPage />} />
+              <Route path="/admin/user-approval" element={<AdminUserApprovalPage />} />
+            </Route>
+            {/* Membresías de la finca activa */}
+            <Route element={<ProtectedRoute allowedRoles={['Administrador', 'Propietario']} />}>
+              <Route path="/admin/membership" element={<AdminMembershipPage />} />
+            </Route>
+            {/* Catálogos transversales: exclusivos del administrador maestro */}
+            <Route element={<SystemAdminRoute />}>
+              <Route path="/admin/users/global" element={<AdminGlobalUsersPage />} />
+              <Route path="/admin/fincas" element={<FincasAdminPage />} />
+            </Route>
             <Route path="/admin/animals" element={<AdminAnimalsPage />} />
             <Route path="/admin/animals/:id" element={<AdminAnimalsPage />} />
             <Route path="/admin/fields" element={<AdminFieldsPage />} />
@@ -250,9 +319,14 @@ const AppRoutes = () => {
             <Route path="/admin/base_model" element={<AdminBaseModelPage />} />
             <Route path="/admin/route_administration" element={<AdminRouteAdministrationPage />} />
             <Route path="/admin/vaccinations" element={<AdminVaccinationsPage />} />
-            <Route path="/admin/vaccines" element={<AdminVaccinesPage />} />
+            {/* La lectura de catálogos es general; las acciones de escritura siguen el RBAC. */}
+            <Route element={<PermissionRoute entity="vaccines" />}>
+              <Route path="/admin/vaccines" element={<AdminVaccinesPage />} />
+            </Route>
             <Route path="/admin/diseases" element={<AdminDiseasesPage />} />
-            <Route path="/admin/medications" element={<AdminMedicationsPage />} />
+            <Route element={<PermissionRoute entity="medications" />}>
+              <Route path="/admin/medications" element={<AdminMedicationsPage />} />
+            </Route>
             <Route path="/admin/food-types" element={<AdminFoodTypesPage />} />
             <Route path="/admin/food-types/create" element={<FoodTypesCreatePage />} />
             <Route path="/admin/food-types/edit/:id" element={<FoodTypesEditPage />} />
@@ -302,17 +376,15 @@ const AppRoutes = () => {
           <Route element={<ProtectedRoute allowedRoles={['Instructor', 'Veterinario', 'Administrador']} />}>
             <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
             <Route path="/veterinario/dashboard" element={<VeterinarioDashboard />} />
-            <Route path="/instructor/scanner" element={<AnimalScannerPage />} />
-            <Route path="/veterinario/scanner" element={<AnimalScannerPage />} />
             <Route path="/instructor/courses" element={<CourseListPage />} />
             <Route path="/instructor/courses/:slug" element={<CourseDetailPage />} />
             <Route path="/instructor/courses/:slug/lessons/:lessonId" element={<LessonPage />} />
-            <Route path="/instructor/user-approval" element={<AdminUserApprovalPage />} />
+            {/* La bandeja de aprobación consume /users/<id>/approval-status, accesible por Administrador e Instructor */}
+            <Route element={<ProtectedRoute allowedRoles={['Administrador', 'Instructor']} />}>
+              <Route path="/instructor/user-approval" element={<AdminUserApprovalPage />} />
+            </Route>
             {renderRoleRoutes('/instructor')}
             {renderRoleRoutes('/veterinario')}
-          </Route>
-          <Route element={<ProtectedRoute allowedRoles={['Administrador', 'Propietario', 'Capataz', 'Operario']} />}>
-            <Route path="/scanner" element={<AnimalScannerPage />} />
           </Route>
           {/* Módulo Campesino - Accesible para todos los roles */}
           <Route element={<ProtectedRoute allowedRoles={['Administrador', 'Propietario', 'Capataz', 'Instructor', 'Veterinario', 'Aprendiz', 'Operario']} />}>
@@ -327,6 +399,7 @@ const AppRoutes = () => {
             <Route path="/campesino/weather" element={<WeatherDashboardPage />} />
             <Route path="/campesino/market-offers" element={<MarketOffersPage />} />
             <Route path="/campesino/technical-assistance" element={<TechnicalAssistancePage />} />
+            </Route>
           </Route>
         </Route>
         <Route path="*" element={<NotFoundPage />} />

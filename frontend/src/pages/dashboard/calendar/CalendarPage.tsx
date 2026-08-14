@@ -28,8 +28,20 @@ export default function CalendarPage() {
 	const [typeFilter, setTypeFilter] = useState<string>("all");
 	const [view, setView] = useState<CalendarViewMode>("mes");
 
-	const { events, loading, error, reload, eventsByDay, countByType } =
-		useFarmCalendar(month);
+	const {
+		events,
+		loading,
+		error,
+		dayError,
+		dayLoading,
+		isOffline,
+		totalCount,
+		countsByDay,
+		selectedDayAlertTotal,
+		reload,
+		eventsByDay,
+		countByType,
+	} = useFarmCalendar(month, selected);
 
 	const filteredEvents = useMemo(
 		() =>
@@ -45,6 +57,24 @@ export default function CalendarPage() {
 	);
 
 	const selectedDayEvents = filteredByDay.get(dayKey(selected)) ?? [];
+	const selectedKey = dayKey(selected);
+	const selectedSummaryAlertCount =
+		events.find(
+			(event) =>
+				event.type === "alert" &&
+				event.is_summary &&
+				event.start.split("T")[0] === selectedKey,
+		)?.count ?? 0;
+	const selectedDayTotal =
+		typeFilter === "all"
+			? (countsByDay.get(selectedKey) ?? selectedDayEvents.length)
+			: typeFilter === "alert"
+				? selectedDayAlertTotal || selectedSummaryAlertCount
+				: selectedDayEvents.length;
+	const filteredEventCount =
+		typeFilter === "all"
+			? totalCount
+			: (countByType.get(typeFilter) ?? filteredEvents.length);
 
 	const goToday = () => {
 		const today = new Date();
@@ -61,7 +91,7 @@ export default function CalendarPage() {
 			<CalendarToolbar
 				month={month}
 				selected={selected}
-				eventCount={filteredEvents.length}
+				eventCount={filteredEventCount}
 				loading={loading}
 				view={view}
 				onViewChange={setView}
@@ -75,7 +105,17 @@ export default function CalendarPage() {
 				onSelect={setTypeFilter}
 			/>
 
-			{error ? (
+			{(isOffline || (error && events.length > 0)) && (
+				<div
+					className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100"
+					role="status"
+				>
+					📡 Mostrando la última información guardada. Se actualizará
+					automáticamente cuando regrese la señal.
+				</div>
+			)}
+
+			{error && events.length === 0 ? (
 				<EmptyStateSimple
 					icon="📡"
 					title="No se pudo cargar el calendario"
@@ -114,12 +154,16 @@ export default function CalendarPage() {
 							onSelect={setSelected}
 							onMonthChange={setMonth}
 							eventsByDay={filteredByDay}
+							totalsByDay={typeFilter === "all" ? countsByDay : undefined}
 						/>
 					</div>
 					<div className="rounded-xl sm:rounded-2xl border border-border/60 bg-card p-2 sm:p-4 shadow-sm lg:sticky lg:top-4 lg:max-h-[calc(100vh-8rem)] flex flex-col min-h-[200px] sm:min-h-[280px]">
 						<DayEventsPanel
 							day={selected}
 							events={selectedDayEvents}
+							totalEvents={selectedDayTotal}
+							loading={dayLoading}
+							error={dayError}
 							onOpenAnimal={openAnimal}
 						/>
 					</div>

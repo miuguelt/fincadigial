@@ -88,29 +88,34 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
   }, [currentPage, totalPages]);
   
   const visiblePages = getVisiblePages();
-  
-  return (
+
+  /*
+   * Variante flotante: la barra sale del flujo para no robarle ~65 px de alto a
+   * la tabla. Se centra sobre el ÁREA DE CONTENIDO, no sobre el viewport, de ahí
+   * `--app-content-left` (el ancho que reserva el menú lateral, publicado por
+   * DashboardLayout). `--app-floating-*` la apaga mientras el cajón del menú
+   * cubre la pantalla en móvil.
+   *
+   * `bottom-7` deja libre la franja inferior donde flota la barra de
+   * desplazamiento horizontal de la tabla. Si se baja, la tapa.
+   */
+  const bar = (
     <div className={cn(
+      "pointer-events-auto w-fit max-w-full transition-all duration-300 ease-out",
       floating
-        ? "fixed left-1/2 -translate-x-1/2 max-w-[95vw] z-[100]"
-        : "relative z-20 mx-auto my-3 w-fit max-w-[calc(100%-1rem)] shrink-0",
-      "pointer-events-auto transition-all duration-300 ease-out",
-      floating
-        ? hasSelection
-          ? "bottom-14 sm:bottom-16 scale-90 sm:scale-95 opacity-65 hover:opacity-100 focus-within:opacity-100 shadow-md hover:shadow-xl"
-          : "bottom-2 sm:bottom-3 scale-90 sm:scale-95 opacity-65 hover:opacity-100 focus-within:opacity-100 shadow-md hover:shadow-xl"
+        ? "opacity-90 hover:opacity-100 focus-within:opacity-100 shadow-xl hover:shadow-2xl"
         : "scale-100 opacity-100 shadow-sm",
-      "bg-card/50 dark:bg-slate-900/50 text-card-foreground dark:text-white/90 backdrop-blur-md border border-border/30 dark:border-white/10 hover:bg-card/90 dark:hover:bg-slate-900/90 hover:border-border/60 transition-all duration-300 rounded-full px-1 sm:px-2 py-0.5 sm:py-1"
+      "bg-slate-900/90 dark:bg-slate-900/95 text-white backdrop-blur-xl border border-white/15 dark:border-white/10 hover:border-white/25 rounded-full px-1.5 sm:px-2.5 py-0.5"
     )}>
-      <div className="px-2 py-0.5 sm:px-3 sm:py-1">
-        <div className="flex justify-between items-center text-[11px] sm:text-xs gap-2 sm:gap-3">
-          {/* Información de paginación con badge elegante */}
+      <div className="px-1 py-0.5 sm:px-2 sm:py-0.5">
+        <div className="flex justify-between items-center text-[10px] sm:text-xs gap-1.5 sm:gap-2.5">
+          {/* Información de paginación con badge compacto */}
           <div className="font-medium flex items-center shrink-0">
-            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-[11px] sm:text-xs border border-primary/20">
+            <span className="whitespace-nowrap px-2 py-0.5 rounded-full bg-primary/20 text-white font-bold text-[10px] sm:text-xs border border-primary/30">
               Pág. {currentPage} / {Math.max(totalPages, 1)}
             </span>
-            <span className="ml-2 hidden md:inline text-[11px] text-muted-foreground font-medium">
-              ({totalItems} {totalItems === 1 ? 'registro' : 'registros'})
+            <span className="ml-1.5 hidden md:inline text-[10px] sm:text-[11px] text-white/70 font-medium">
+              ({totalItems} {totalItems === 1 ? 'reg.' : 'registros'})
             </span>
           </div>
           
@@ -124,9 +129,9 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
               disabled={loading || currentPage <= 1}
               aria-label={t('common.first', 'Primera')}
               title={t('common.first', 'Primera')}
-              className="hidden sm:inline-flex items-center justify-center h-7 w-7 sm:h-8 sm:w-8 text-sm font-medium text-foreground/80 hover:bg-muted dark:text-white/80 dark:hover:bg-white/10 rounded-full transition-colors disabled:opacity-30"
+              className="hidden sm:inline-flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 p-0 text-xs font-medium text-white/80 hover:bg-white/15 hover:text-white rounded-full transition-colors disabled:opacity-30"
             >
-              <ChevronsLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
+              <ChevronsLeft className="h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden />
             </Button>
 
             {/* Botón anterior */}
@@ -136,17 +141,17 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={loading || currentPage <= 1}
               aria-label={t('common.previous', 'Anterior')}
-              className="inline-flex items-center justify-center h-7 w-7 sm:h-8 sm:w-8 text-sm font-medium text-foreground/80 hover:bg-muted dark:text-white/80 dark:hover:bg-white/10 rounded-full transition-colors disabled:opacity-30"
+              className="inline-flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 p-0 text-xs font-medium text-white/80 hover:bg-white/15 hover:text-white rounded-full transition-colors disabled:opacity-30"
             >
-              <ChevronLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
+              <ChevronLeft className="h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden />
             </Button>
             
             {/* Números de página */}
-            <div className="hidden sm:flex items-center gap-1">
+            <div className="hidden sm:flex items-center gap-0.5">
               {visiblePages.map((page, index) => (
                 <React.Fragment key={index}>
                   {page === '...' ? (
-                    <span className="px-1.5 py-1 text-muted-foreground">...</span>
+                    <span className="px-1 text-white/50 text-[10px]">...</span>
                   ) : (
                     <Button
                       variant={currentPage === page ? "primary" : "ghost"}
@@ -154,10 +159,10 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
                       onClick={() => handlePageChange(page as number)}
                       disabled={loading}
                       className={cn(
-                        "h-7 w-7 sm:h-8 sm:w-8 text-xs font-bold rounded-full transition-all",
+                        "h-6 w-6 sm:h-7 sm:w-7 p-0 text-[11px] font-bold rounded-full transition-all",
                         currentPage === page 
-                          ? "bg-primary text-white shadow-md shadow-primary/25 scale-105" 
-                          : "text-foreground/80 hover:bg-muted dark:text-white/80 dark:hover:bg-white/10"
+                          ? "bg-primary text-white shadow-sm scale-105" 
+                          : "text-white/80 hover:bg-white/15 hover:text-white"
                       )}
                     >
                       {page}
@@ -167,8 +172,9 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
               ))}
             </div>
             
-            {/* Paginación simplificada para móviles */}
-            <div className="sm:hidden text-xs text-muted-foreground font-bold px-1">
+            {/* Paginación simplificada para móviles. `whitespace-nowrap`: a 320 px
+                el flex comprimía la caja y "1 / 1" se partía en tres renglones. */}
+            <div className="sm:hidden whitespace-nowrap text-[10px] text-white/80 font-bold px-1">
               {currentPage} / {totalPages}
             </div>
             
@@ -179,9 +185,9 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={loading || currentPage >= totalPages}
               aria-label={t('common.next', 'Siguiente')}
-              className="inline-flex items-center justify-center h-7 w-7 sm:h-8 sm:w-8 text-sm font-medium text-foreground/80 hover:bg-muted dark:text-white/80 dark:hover:bg-white/10 rounded-full transition-colors disabled:opacity-30"
+              className="inline-flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 p-0 text-xs font-medium text-white/80 hover:bg-white/15 hover:text-white rounded-full transition-colors disabled:opacity-30"
             >
-              <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
+              <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden />
             </Button>
 
             {/* Última página */}
@@ -192,26 +198,26 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
               disabled={loading || currentPage >= totalPages}
               aria-label={t('common.last', 'Última')}
               title={t('common.last', 'Última')}
-              className="hidden sm:inline-flex items-center justify-center h-7 w-7 sm:h-8 sm:w-8 text-sm font-medium text-foreground/80 hover:bg-muted dark:text-white/80 dark:hover:bg-white/10 rounded-full transition-colors disabled:opacity-30"
+              className="hidden sm:inline-flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 p-0 text-xs font-medium text-white/80 hover:bg-white/15 hover:text-white rounded-full transition-colors disabled:opacity-30"
             >
-              <ChevronsRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
+              <ChevronsRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden />
             </Button>
 
             {/* Selector de registros por página */}
             {pageSizeOptions && pageSizeOptions.length > 0 && onPageSizeChange && (
               <>
-                <span className="mx-1 hidden h-4 w-px bg-border dark:bg-white/15 sm:block" aria-hidden />
+                <span className="mx-1 hidden h-3.5 w-px bg-white/20 sm:block" aria-hidden />
                 <select
                   value={pageSize}
                   onChange={(e) => onPageSizeChange(Number(e.target.value))}
                   disabled={loading}
                   aria-label="Registros por página"
                   title="Registros por página"
-                  className="hidden sm:block h-7 sm:h-8 rounded-full border border-border bg-background dark:bg-slate-800 px-2 text-[11px] font-bold text-foreground dark:text-white outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary/60 disabled:opacity-30"
+                  className="hidden sm:block h-6 sm:h-7 rounded-full border border-white/20 bg-slate-800/90 px-2 text-[10px] sm:text-[11px] font-bold text-white outline-none transition-colors hover:bg-slate-700/90 focus-visible:ring-2 focus-visible:ring-primary/60 disabled:opacity-30"
                 >
                   {pageSizeOptions.map((size) => (
-                    <option key={size} value={size} className="bg-popover text-popover-foreground">
-                      {size}
+                    <option key={size} value={size} className="bg-slate-900 text-white">
+                      {size >= 1000 ? `${size} (Ver todos)` : `${size} / pág.`}
                     </option>
                   ))}
                 </select>
@@ -219,6 +225,33 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
             )}
           </div>
         </div>
+      </div>
+    </div>
+  );
+
+  if (!floating) {
+    return <div className="relative z-20 mx-auto my-1.5 flex w-full shrink-0 justify-center">{bar}</div>;
+  }
+
+  return (
+    <div
+      className={cn(
+        'pointer-events-none fixed z-[100] flex -translate-x-1/2 justify-center px-2',
+        hasSelection ? 'bottom-16 sm:bottom-[4.5rem]' : 'bottom-7 sm:bottom-8',
+      )}
+      style={{
+        left: 'calc(50% + var(--app-content-left, 0px) / 2)',
+        maxWidth: 'calc(100vw - var(--app-content-left, 0px) - 1rem)',
+        opacity: 'var(--app-floating-opacity, 1)',
+      }}
+    >
+      {/* El envoltorio no intercepta el ratón (las filas de debajo siguen siendo
+          clicables); solo la píldora lo hace, y se apaga con el cajón abierto. */}
+      <div
+        className="w-fit max-w-full"
+        style={{ pointerEvents: 'var(--app-floating-events, auto)' as React.CSSProperties['pointerEvents'] }}
+      >
+        {bar}
       </div>
     </div>
   );

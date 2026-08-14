@@ -145,7 +145,7 @@ export const TreatmentMobileCard: React.FC<TreatmentMobileCardProps> = ({
 				<div className="flex items-center justify-between gap-2 mb-2">
 					<div className="flex items-center gap-2 min-w-0 flex-1">
 						<span className="text-lg" role="img" aria-label="animal">🐄</span>
-						<span className="font-bold text-sm sm:text-base text-foreground truncate">
+						<span className="font-bold text-sm sm:text-base text-foreground fit-clamp">
 							{animalLabel}
 						</span>
 					</div>
@@ -167,7 +167,7 @@ export const TreatmentMobileCard: React.FC<TreatmentMobileCardProps> = ({
 				{dosisDisplay !== "—" && (
 					<div className="flex items-center gap-2 mb-3">
 						<span className="text-base" role="img" aria-label="dosage">💊</span>
-						<p className="text-xs sm:text-sm text-muted-foreground font-medium truncate">
+						<p className="text-xs sm:text-sm text-muted-foreground font-medium fit-clamp">
 							{dosisDisplay}
 						</p>
 					</div>

@@ -57,6 +57,7 @@ const ThemeSelector: React.FC = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          type="button"
           variant="outline"
           size="sm"
           className="flex items-center gap-2 bg-card text-card-foreground border-border hover:bg-accent hover:text-accent-foreground transition-colors"
@@ -115,23 +116,23 @@ const ThemeSelector: React.FC = () => {
               {/* Preview de colores del tema */}
               <div className="flex items-center gap-1 mt-2 ml-11">
                 <div
-                  className="w-3 h-3 rounded-full border border-border shadow-sm bg-[hsl(var(--primary))]`"
+                  className="w-3 h-3 rounded-full border border-border shadow-sm bg-[hsl(var(--primary))]"
                   title="Color primario"
                 />
                 <div
-                  className="w-3 h-3 rounded-full border border-border shadow-sm bg-[hsl(var(--secondary))]`"
+                  className="w-3 h-3 rounded-full border border-border shadow-sm bg-[hsl(var(--secondary))]"
                   title="Color secundario"
                 />
                 <div
-                  className="w-3 h-3 rounded-full border border-border shadow-sm bg-[hsl(var(--accent))]`"
+                  className="w-3 h-3 rounded-full border border-border shadow-sm bg-[hsl(var(--accent))]"
                   title="Color de acento"
                 />
                 <div
-                  className="w-3 h-3 rounded-full border border-border shadow-sm bg-[hsl(var(--success))]`"
+                  className="w-3 h-3 rounded-full border border-border shadow-sm bg-[hsl(var(--success))]"
                   title="Color de éxito"
                 />
                 <div
-                  className="w-3 h-3 rounded-full border border-border shadow-sm bg-[hsl(var(--warning))]`"
+                  className="w-3 h-3 rounded-full border border-border shadow-sm bg-[hsl(var(--warning))]"
                   title="Color de advertencia"
                 />
               </div>

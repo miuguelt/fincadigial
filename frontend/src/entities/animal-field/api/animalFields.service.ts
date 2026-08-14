@@ -97,6 +97,9 @@ export class AnimalFieldsService extends BaseService<AnimalFieldResponse> {
         `${data.animal_ids.length} animales trasladados exitosamente`,
       );
       await this.clearCache();
+      // El traslado cambia la ocupación del potrero y la ubicación del animal:
+      // sin esto las tarjetas seguían mostrando el conteo anterior.
+      await BaseService.clearCacheFor('fields', 'animals');
       return result;
     } catch (e: any) {
       return {
@@ -115,6 +118,7 @@ export class AnimalFieldsService extends BaseService<AnimalFieldResponse> {
         `${data.animal_ids.length} animales retirados exitosamente`,
       );
       await this.clearCache();
+      await BaseService.clearCacheFor('fields', 'animals');
       return result;
     } catch (e: any) {
       return {

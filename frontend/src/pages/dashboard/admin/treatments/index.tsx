@@ -69,7 +69,7 @@ const AdminTreatmentsPage: React.FC = () => {
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <InfoField label="Diagnóstico" value={(item as any).diagnosis || '-'} fullWidth />
-              <InfoField label="Fecha Inicio" value={item.treatment_date ? new Date(item.treatment_date).toLocaleDateString('es-ES') : '-'} />
+              <InfoField label="Fecha Inicio" value={item.treatment_date ? new Date(item.treatment_date).toLocaleDateString('es-CO') : '-'} />
               <InfoField label="Dosis" value={(item as any).dosis || '-'} />
               <InfoField label="Frecuencia" value={(item as any).frequency || '-'} />
             </div>
@@ -128,7 +128,7 @@ const AdminTreatmentsPage: React.FC = () => {
     {
       key: 'treatment_date' as any,
       label: 'Fecha',
-      render: (v) => (v ? new Date(String(v)).toLocaleDateString('es-ES') : '-')
+      render: (v) => (v ? new Date(String(v)).toLocaleDateString('es-CO') : '-')
     },
     {
       key: 'diagnosis' as any,
@@ -152,7 +152,7 @@ const AdminTreatmentsPage: React.FC = () => {
     {
       key: 'created_at' as any,
       label: 'Creado',
-      render: (v) => (v ? new Date(String(v)).toLocaleString('es-ES') : '-')
+      render: (v) => (v ? new Date(String(v)).toLocaleString('es-CO') : '-')
     },
   ], [animalMap, openAssociations]);
 
@@ -188,6 +188,8 @@ const AdminTreatmentsPage: React.FC = () => {
     searchPlaceholder: 'Buscar tratamientos...',
     emptyStateMessage: 'No hay tratamientos registrados.',
     emptyStateDescription: 'Crea el primer registro para comenzar.',
+    defaultLimit: 100,
+    pageSizeOptions: [15, 30, 50, 100, 250, 500, 1000],
     enableDetailModal: true,
     enableCreateModal: true,
     enableEditModal: true,

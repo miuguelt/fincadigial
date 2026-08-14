@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Image as ImageIcon, Upload, X, ZoomIn, Download, Star, Trash2, MoreVertical, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
@@ -981,7 +981,7 @@ export function ImageManager({
                 `${(selectedImage.file_size / 1024).toFixed(2)} KB - ${selectedImage.mime_type
                 } - Subida el ${new Date(
                   selectedImage.created_at
-                ).toLocaleDateString('es-ES')}`}
+                ).toLocaleDateString('es-CO')}`}
             </DialogDescription>
           </DialogHeader>
 

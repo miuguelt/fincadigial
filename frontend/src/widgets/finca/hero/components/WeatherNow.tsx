@@ -34,7 +34,7 @@ export function WeatherNow({ record, refreshing, onRefresh }: Props) {
       : Math.round(record.temperature_celsius);
 
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-border bg-card/70 px-3 py-3 backdrop-blur-sm sm:px-4">
+    <div className="flex items-center gap-3 rounded-2xl border border-border bg-card/70 px-3 py-3 backdrop-blur-sm sm:px-4">
       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:h-14 sm:w-14">
         <Icon className="h-7 w-7 sm:h-8 sm:w-8" aria-hidden="true" />
       </span>
@@ -44,8 +44,8 @@ export function WeatherNow({ record, refreshing, onRefresh }: Props) {
           {temperature}
           <span className="align-top text-lg font-bold sm:text-xl">°C</span>
         </p>
-        <p className="mt-1 truncate text-sm font-semibold text-foreground/80">{description}</p>
-        <p className="truncate text-[11px] text-muted-foreground">
+        <p className="mt-1 fit-clamp text-sm font-semibold text-foreground/80">{description}</p>
+        <p className="fit-clamp text-[11px] text-muted-foreground">
           Medido{' '}
           {new Date(record.recorded_at).toLocaleString('es-CO', {
             day: 'numeric',

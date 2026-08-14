@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { treatmentsService } from '@/entities/treatment/api/treatments.service';
+import { useCallback } from 'react';
 import { animalsService } from '@/entities/animal/api/animal.service';
 import { HealthInterventionWizard } from '@/widgets/dashboard/treatments/HealthInterventionWizard';
 import { Button } from '@/shared/ui/button';
@@ -15,7 +16,7 @@ const CampesinoHealthDashboard: React.FC = () => {
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [search, setSearch] = useState('');
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [tRes, aRes] = await Promise.all([
@@ -37,11 +38,11 @@ const CampesinoHealthDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const filteredTreatments = treatments.filter(t => {
     if (!search) return true;
@@ -55,7 +56,7 @@ const CampesinoHealthDashboard: React.FC = () => {
   });
 
   return (
-    <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="min-h-full p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto overflow-x-hidden">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gradient-to-r from-emerald-900 to-emerald-700 p-6 rounded-lg text-white shadow-lg">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
@@ -114,7 +115,7 @@ const CampesinoHealthDashboard: React.FC = () => {
                       <div>
                         <div className="text-xs font-semibold text-emerald-600 mb-1 flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
-                          {new Date(t.treatment_date || t.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {new Date(t.treatment_date || t.created_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </div>
                         <h3 className="font-bold text-lg">
                           {t.diagnosis || 'Intervención General'}
@@ -141,7 +142,7 @@ const CampesinoHealthDashboard: React.FC = () => {
                           <div className="flex items-center gap-1.5 text-xs font-medium bg-amber-50 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200 px-2 py-1 rounded-md">
                             <Syringe className="w-3 h-3" />
                             En retiro hasta el{' '}
-                            {new Date(t.withdrawal_end_date).toLocaleDateString('es-ES', {
+                            {new Date(t.withdrawal_end_date).toLocaleDateString('es-CO', {
                               day: 'numeric',
                               month: 'short',
                             })}

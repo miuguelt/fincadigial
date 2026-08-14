@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
@@ -57,13 +57,13 @@ export function AnimalModal({
 
   const gender = animal.sex || animal.gender;
   const birthDate = animal.birth_date
-    ? new Date(animal.birth_date).toLocaleDateString('es-ES')
+    ? new Date(animal.birth_date).toLocaleDateString('es-CO')
     : '-';
   const createdAt = animal.created_at
-    ? new Date(animal.created_at).toLocaleString('es-ES')
+    ? new Date(animal.created_at).toLocaleString('es-CO')
     : '-';
   const updatedAt = animal.updated_at
-    ? new Date(animal.updated_at).toLocaleString('es-ES')
+    ? new Date(animal.updated_at).toLocaleString('es-CO')
     : '-';
   const ageMonths = animal.age_in_months ?? '-';
   const ageDays = animal.age_in_days ?? '-';

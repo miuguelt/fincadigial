@@ -114,7 +114,7 @@ const CampesinoHealthDashboard: React.FC = () => {
                       <div>
                         <div className="text-xs font-semibold text-emerald-600 mb-1 flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
-                          {new Date(t.treatment_date || t.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {new Date(t.treatment_date || t.created_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </div>
                         <h3 className="font-bold text-lg">
                           {t.diagnosis || 'Intervención General'}

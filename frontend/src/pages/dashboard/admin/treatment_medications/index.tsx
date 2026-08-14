@@ -6,7 +6,13 @@ import { treatmentsService } from '@/entities/treatment/api/treatments.service';
 import { medicationsService } from '@/entities/medication/api/medications.service';
 import type { TreatmentMedicationResponse, TreatmentMedicationInput } from '@/shared/api/generated/swaggerTypes';
 import { MedicationLink } from '@/entities/medication/ui';
+import { TreatmentLink } from '@/entities/treatment';
 import { SanidadTabs } from '@/widgets/dashboard/treatments/SanidadTabs';
+
+// Las listas de apoyo alimentan los selects del formulario y las etiquetas de los
+// chips; con el límite por defecto (según dispositivo) los registros altos caían
+// siempre al texto genérico "Tratamiento N" / "Medicamento N".
+const OPTIONS_PAGE_SIZE = 1000;
 
 function AdminTreatmentMedicationsPage() {
   const [treatmentOptions, setTreatmentOptions] = React.useState<Array<{ value: number; label: string }>>([]);
@@ -19,11 +25,11 @@ function AdminTreatmentMedicationsPage() {
       setLoading(true);
       try {
         const [treatmentsResult, medicationsResult] = await Promise.all([
-          treatmentsService.getTreatments?.().catch((e) => {
+          treatmentsService.getTreatments?.({ page: 1, limit: OPTIONS_PAGE_SIZE }).catch((e) => {
             console.warn('[treatment_medications] No se pudieron cargar tratamientos', e);
             return null;
           }),
-          medicationsService.getMedications?.().catch((e) => {
+          medicationsService.getMedications?.({ page: 1, limit: OPTIONS_PAGE_SIZE }).catch((e) => {
             console.warn('[treatment_medications] No se pudieron cargar medicamentos', e);
             return null;
           })
@@ -34,7 +40,8 @@ function AdminTreatmentMedicationsPage() {
           const items = (treatmentsResult as any)?.data || treatmentsResult || [];
           setTreatmentOptions((items || []).map((t: any) => ({
             value: t.id,
-            label: t.diagnosis || `Tratamiento ${t.id}`
+            // El backend expone el diagnóstico en 'description'; 'diagnosis' es el alias heredado.
+            label: t.description || t.diagnosis || `Tratamiento ${t.id}`
           })));
         }
 
@@ -76,11 +83,7 @@ function AdminTreatmentMedicationsPage() {
         if (!v) return '-';
         const id = Number(v);
         const label = treatmentMap.get(id) || `Tratamiento ${id}`;
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300">
-            <span>🩺</span> {label}
-          </span>
-        );
+        return <TreatmentLink id={id} label={label} />;
       }
     },
     {
@@ -90,15 +93,11 @@ function AdminTreatmentMedicationsPage() {
         if (!v) return '-';
         const id = Number(v);
         const label = medicationMap.get(id) || `Medicamento ${id}`;
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300">
-            <span>💊</span> <MedicationLink id={id} label={label} />
-          </span>
-        );
+        return <MedicationLink id={id} label={label} />;
       }
     },
-    { key: 'created_at' as any, label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-') },
-    { key: 'updated_at' as any, label: 'Actualizado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-') },
+    { key: 'created_at' as any, label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
+    { key: 'updated_at' as any, label: 'Actualizado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
   ], [treatmentMap, medicationMap]);
 
   const formSections: CRUDFormSection<TreatmentMedicationInput & { [k: string]: any }>[] = [

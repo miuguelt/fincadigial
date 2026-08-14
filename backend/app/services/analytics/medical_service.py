@@ -45,12 +45,24 @@ class MedicalAnalyticsService:
                 q = q.filter(col <= end_date)
             return q
 
-        treatments   = _apply_date(Treatments.query.filter_by(animal_id=animal_id),        Treatments.treatment_date      ).order_by(desc(Treatments.treatment_date      )).limit(limit).all()
-        vaccinations = _apply_date(Vaccinations.query.filter_by(animal_id=animal_id),       Vaccinations.vaccination_date  ).order_by(desc(Vaccinations.vaccination_date  )).limit(limit).all()
-        controls     = _apply_date(Control.query.filter_by(animal_id=animal_id),            Control.checkup_date           ).order_by(desc(Control.checkup_date           )).limit(limit).all()
-        genetics     = _apply_date(GeneticImprovements.query.filter_by(animal_id=animal_id), GeneticImprovements.date      ).order_by(desc(GeneticImprovements.date        )).limit(limit).all()
-        diseases     = AnimalDiseases.query.filter_by(animal_id=animal_id).order_by(desc(AnimalDiseases.diagnosis_date)).limit(limit).all()
-        alerts_q     = AnimalAlert.query.filter_by(animal_id=animal_id).order_by(desc(AnimalAlert.triggered_at)).limit(20).all()
+        # Base queries kept unlimited so `summary` can COUNT the real history
+        # instead of echoing back the page size.
+        treatments_q   = _apply_date(Treatments.query.filter_by(animal_id=animal_id),         Treatments.treatment_date)
+        vaccinations_q = _apply_date(Vaccinations.query.filter_by(animal_id=animal_id),       Vaccinations.vaccination_date)
+        controls_q     = _apply_date(Control.query.filter_by(animal_id=animal_id),            Control.checkup_date)
+        genetics_q     = _apply_date(GeneticImprovements.query.filter_by(animal_id=animal_id), GeneticImprovements.date)
+        diseases_q     = AnimalDiseases.query.filter_by(animal_id=animal_id)
+        alerts_base_q  = AnimalAlert.query.filter_by(
+            animal_id=animal_id,
+            superseded_by_id=None,
+        )
+
+        treatments   = treatments_q.order_by(desc(Treatments.treatment_date)).limit(limit).all()
+        vaccinations = vaccinations_q.order_by(desc(Vaccinations.vaccination_date)).limit(limit).all()
+        controls     = controls_q.order_by(desc(Control.checkup_date)).limit(limit).all()
+        genetics     = genetics_q.order_by(desc(GeneticImprovements.date)).limit(limit).all()
+        diseases     = diseases_q.order_by(desc(AnimalDiseases.diagnosis_date)).limit(limit).all()
+        alerts_q     = alerts_base_q.order_by(desc(AnimalAlert.triggered_at)).limit(20).all()
 
         timeline = []
 
@@ -109,12 +121,12 @@ class MedicalAnalyticsService:
                 'weight': animal.weight,
             },
             'summary': {
-                'total_treatments':   len(treatments),
-                'total_vaccinations': len(vaccinations),
-                'total_controls':     len(controls),
-                'total_reproductive': len(genetics),
-                'total_diseases':     len(diseases),
-                'unread_alerts':      sum(1 for a in alerts_q if not a.is_read),
+                'total_treatments':   treatments_q.count(),
+                'total_vaccinations': vaccinations_q.count(),
+                'total_controls':     controls_q.count(),
+                'total_reproductive': genetics_q.count(),
+                'total_diseases':     diseases_q.count(),
+                'unread_alerts':      alerts_base_q.filter(AnimalAlert.is_read.is_(False)).count(),
             },
             'ica_compliance': ica_ok,
             'alerts': [

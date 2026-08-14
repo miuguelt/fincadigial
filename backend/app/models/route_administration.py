@@ -4,9 +4,13 @@ from app.models.base_model import BaseModel, ValidationError
 class RouteAdministration(BaseModel):
     """Modelo para rutas de administración de medicamentos"""
     __tablename__ = 'route_administrations'
+    __table_args__ = (
+        db.UniqueConstraint('name', 'finca_id', name='uq_route_administrations_name_finca'),
+    )
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    name = db.Column(db.String(50), nullable=False, unique=True)
+    name = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
     status = db.Column(db.Boolean, nullable=False, default=True)
     finca_id = db.Column(db.Integer, db.ForeignKey('finca.id'), nullable=False)
 

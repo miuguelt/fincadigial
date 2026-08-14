@@ -9,6 +9,7 @@ import pytest
 
 BASE = "/api/v1"
 ADMIN = "Administrador"
+PROPIETARIO = "Propietario"
 
 
 def _post(client, path, json_data, headers):
@@ -867,6 +868,24 @@ class TestUsersCRUD:
         }, token_for(ADMIN))
         resp = _put(client, f"/users/{uid}", {"fullname": "Usuario Updated"}, token_for(ADMIN))
         assert resp.status_code == 200
+
+    def test_approval_status_permissions(self, client, token_for, finca_id):
+        import random
+        rand = random.randint(100_000, 999_999)
+        uid = _create_id(client, "/users", {
+            "identification": rand, "fullname": "Usuario Pending Approval",
+            "email": f"appr_{rand}@test.villaluz", "phone": f"320{rand:06d}",
+            "password": "TestPass123!", "role": "Operario",
+            "approval_status": "Pending", "finca_id": finca_id
+        }, token_for(ADMIN))
+
+        # Propietario can approve
+        resp_prop = _patch(client, f"/users/{uid}/approval-status", {"approval_status": "Approved"}, token_for(PROPIETARIO))
+        assert resp_prop.status_code == 200
+
+        # Admin can reject
+        resp_admin = _patch(client, f"/users/{uid}/approval-status", {"approval_status": "Rejected"}, token_for(ADMIN))
+        assert resp_admin.status_code == 200
 
 
 # ---------------------------------------------------------------------------

@@ -7,6 +7,7 @@ import KPICard from '@/widgets/analytics/KPICard';
 import FieldDetailsModal from '@/widgets/analytics/FieldDetailsModal';
 import { Search, Map } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
 
 /**
  * Página de gestión de potreros con analytics (Premium UI)
@@ -51,25 +52,12 @@ const FieldsPage: React.FC = () => {
 
   return (
     <div className="min-h-full bg-background/50 p-4 sm:p-6 lg:p-8 space-y-8 overflow-x-hidden">
-      {/* Header Premium */}
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 bg-card/40 backdrop-blur-xl p-6 sm:p-8 rounded-[2.5rem] border border-border/50 shadow-2xl shadow-primary/5"
-      >
-        <div className="flex items-center gap-5">
-          <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl bg-gradient-to-br from-success-500 to-success-600 flex items-center justify-center shadow-xl shadow-success-500/20">
-            <Map className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tighter text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-              Gestión de <span className="text-success-500">Potreros</span>
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground font-medium mt-1">Administra y monitorea la ocupación de tus potreros</p>
-          </div>
-        </div>
-      </motion.div>
+      <DataScreenHeader
+        icon={<Map className="h-5 w-5 text-white" />}
+        iconClassName="from-success-500 to-success-600 shadow-success-500/20"
+        title={<>Gestión de <span className="text-success-500">Potreros</span></>}
+        description="Administra y monitorea la ocupación de tus potreros"
+      />
 
       {/* Métricas Resumen */}
       {occupation && (
@@ -96,8 +84,8 @@ const FieldsPage: React.FC = () => {
       >
         <div className="w-full xl:w-2/3">
           {occupation && occupation.fields && (
-            <div className="bg-card/40 backdrop-blur-xl rounded-[2.5rem] border border-border/50 shadow-2xl shadow-primary/5 p-6 sm:p-8">
-              <h2 className="text-lg font-black text-foreground mb-6">Distribución de Carga</h2>
+            <div className="bg-card/40 backdrop-blur-xl rounded-2xl border border-border/50 shadow-lg shadow-primary/5 px-4 py-3">
+              <h2 className="text-sm font-black text-foreground mb-3">Distribución de Carga</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {occupation.fields.map((fieldStat: any, index: number) => {
                   const rate = fieldStat.occupation_rate;
@@ -111,7 +99,7 @@ const FieldsPage: React.FC = () => {
                       transition={{ duration: 0.4, delay: 0.1 * index }}
                       className="p-5 bg-background/50 rounded-lg border border-border/50 shadow-sm hover:shadow-md transition-all group"
                     >
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 group-hover:text-foreground transition-colors truncate">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 group-hover:text-foreground transition-colors fit-clamp">
                         {fieldStat.name}
                       </h3>
                       <div className="flex items-baseline justify-between mb-3">

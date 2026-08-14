@@ -29,7 +29,7 @@ export const membershipService = {
    * Obtener solicitudes pendientes para la finca actual
    */
   async getPendingRequests() {
-    const response = await api.get<ApiResponse<MembershipRequest[]>>('/membership/pending');
+    const response = await api.get<ApiResponse<MembershipRequest[]>>('/membership/pending', { skipCache: true } as any);
     return response.data;
   },
 
@@ -53,7 +53,7 @@ export const membershipService = {
    * Obtener contador de solicitudes pendientes
    */
   async getPendingCount() {
-    const response = await api.get<ApiResponse<{ count: number }>>('/membership/pending/count');
+    const response = await api.get<ApiResponse<{ count: number }>>('/membership/pending/count', { skipCache: true } as any);
     return response.data;
   },
 
@@ -61,7 +61,7 @@ export const membershipService = {
    * Obtener solicitudes pendientes e invitaciones recibidas
    */
   async getPendingGestions() {
-    const response = await api.get<ApiResponse<{ requests_to_approve: any[]; invitations_received: any[] }>>('/membership/requests/pending');
+    const response = await api.get<ApiResponse<{ requests_to_approve: any[]; invitations_received: any[] }>>('/membership/requests/pending', { skipCache: true } as any);
     return response.data;
   },
 

@@ -190,6 +190,7 @@ const AppRoutes = () => {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
+        <Route path="/reports" element={<Navigate to="/admin/reports" replace />} />
         <Route path="/invite/:token" element={<InviteAcceptPage />} />
 
         {/* Protected Routes */}

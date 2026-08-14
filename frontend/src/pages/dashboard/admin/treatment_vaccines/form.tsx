@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useForm, FieldError } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import { treatmentVaccinesService } from '@/entities/treatment-vaccine/api/treatmentVaccines.service';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
 
@@ -20,7 +21,7 @@ export type TreatmentVaccineFormFields = {
 
 export default function TreatmentVaccineForm() {
   const { id } = useParams<{ id?: string }>();
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<TreatmentVaccineFormFields>();
 
   useEffect(() => {
@@ -49,7 +50,7 @@ export default function TreatmentVaccineForm() {
         await treatmentVaccinesService.createTreatmentVaccine(data);
       }
       // Redirigir a la ruta válida sin el prefijo /dashboard
-      navigate('/admin/treatment_vaccines');
+      goTo('/admin/treatment_vaccines');
     } catch (error: any) {
       const msg = error?.response?.data?.message || error?.message || 'Error al guardar vacuna de tratamiento';
       alert(msg);
@@ -153,7 +154,7 @@ export default function TreatmentVaccineForm() {
       </div>
       <div>
         <label>Notas</label>
-        <textarea {...register('notes')} />
+        <textarea {...register('notes')}></textarea>
         {renderError(errors.notes)}
       </div>
       <button type="submit" disabled={isSubmitting}>{id ? 'Actualizar' : 'Crear'} vacuna de tratamiento</button>

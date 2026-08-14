@@ -22,7 +22,13 @@ const routeConfig: Record<string, string> = {
   'membership': 'Mi Finca y Permisos',
   'tasks': 'Herramientas',
   'data-overview': 'Ajustes',
-  'dashboard': 'Mi Finca'
+  'dashboard': 'Mi Finca',
+  'courses': 'Capacitación',
+  'lessons': 'Lecciones',
+  'basics': 'Manejo Básico',
+  'health': 'Sanidad Animal',
+  'records': 'Registro ICA',
+  'registro-operativo': 'Mi registro diario',
 };
 
 export const Breadcrumbs: React.FC = () => {
@@ -50,14 +56,15 @@ export const Breadcrumbs: React.FC = () => {
     <>
       {/* Vista Móvil: Flecha atrás + Nivel actual */}
       <div className="flex sm:hidden items-center gap-2">
-        <button 
+        <button
+          type="button"
           onClick={() => navigate(-1)}
           className="p-1.5 rounded-lg bg-muted hover:bg-muted/80 text-muted-foreground transition-colors"
           aria-label="Volver"
         >
           <Icons.IconChevronLeft size={16} />
         </button>
-        <span className="text-sm font-bold text-foreground truncate max-w-[150px]">
+        <span className="text-sm font-bold text-foreground fit-clamp max-w-[150px]">
           {currentLabel}
         </span>
       </div>
@@ -79,7 +86,7 @@ export const Breadcrumbs: React.FC = () => {
               <React.Fragment key={value}>
                 <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40" />
                 <li className={cn(
-                  "truncate max-w-[100px] sm:max-w-[150px]",
+                  "fit-clamp max-w-[100px] sm:max-w-[150px]",
                   last ? "font-bold text-foreground" : "text-muted-foreground hover:text-primary transition-colors"
                 )}>
                   {last ? (

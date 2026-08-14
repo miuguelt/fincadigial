@@ -75,7 +75,15 @@ class WeatherCurrent(Resource):
 
             result = WeatherDataService.update_finca_weather(finca_id)
             if not result.get("success"):
-                return APIResponse.error(result.get("error", "Error obteniendo datos"))
+                error_msg = result.get("error", "Error obteniendo datos")
+                if "coordenadas" in error_msg.lower():
+                    return APIResponse.success({
+                        "record": None,
+                        "alerts_generated": 0,
+                        "forecast": {"timezone": None, "daily": [], "hourly": []},
+                        "no_coordinates": True,
+                    }, message="Finca sin coordenadas configuradas")
+                return APIResponse.error(error_msg)
 
             record_id = result.get("record_id")
             record = WeatherRecord.query.get(record_id) if record_id else None

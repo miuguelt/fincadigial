@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { MoreVertical, PawPrint } from "lucide-react";
 import {
   DropdownMenu,
@@ -125,7 +125,7 @@ export const BreedActionsMenu: React.FC<BreedActionsMenuProps> = ({
                 </span>
                 <span className="text-muted-foreground">
                   {animal.birth_date
-                    ? new Date(animal.birth_date).toLocaleDateString("es-ES")
+                    ? new Date(animal.birth_date).toLocaleDateString("es-CO")
                     : "-"}
                 </span>
               </div>
@@ -150,7 +150,7 @@ export const BreedActionsMenu: React.FC<BreedActionsMenuProps> = ({
                 <span className="font-medium text-foreground">Creado:</span>
                 <span className="text-muted-foreground">
                   {animal.created_at
-                    ? new Date(animal.created_at).toLocaleDateString("es-ES")
+                    ? new Date(animal.created_at).toLocaleDateString("es-CO")
                     : "-"}
                 </span>
               </div>

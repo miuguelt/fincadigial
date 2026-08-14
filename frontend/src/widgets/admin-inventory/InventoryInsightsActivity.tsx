@@ -47,11 +47,11 @@ export function InventoryMovementsCard({
 										)}
 									/>
 									<div className="min-w-0 flex-1">
-										<p className="truncate text-sm font-semibold">
+										<p className="fit-clamp text-sm font-semibold">
 											{movement.movement_type} ·{" "}
 											{movement.lot?.lot_number || `Lote #${movement.lot_id}`}
 										</p>
-										<p className="truncate text-xs text-muted-foreground">
+										<p className="fit-clamp text-xs text-muted-foreground">
 											{formatLongDateColombia(movement.created_at)}
 											{movement.reference_type
 												? ` · ${movement.reference_type}`
@@ -131,7 +131,7 @@ export function InventoryAutonomyCard({
 									className="flex items-center gap-3 py-2 first:pt-0 last:pb-0"
 								>
 									<div className="min-w-0 flex-1">
-										<p className="truncate text-sm font-semibold">
+										<p className="fit-clamp text-sm font-semibold">
 											{item.product}
 										</p>
 										<p className="text-xs text-muted-foreground">

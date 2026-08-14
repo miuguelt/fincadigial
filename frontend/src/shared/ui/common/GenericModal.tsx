@@ -1,4 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
+ 
 import React from 'react';
 import {
   Dialog,
@@ -204,7 +204,7 @@ export const GenericModal: React.FC<GenericModalProps> = ({
 
   const modalClasses = cn(
     // Base: móvil fullscreen sheet, escritorio centrado
-    'max-sm:fixed max-sm:inset-0 max-sm:w-screen max-sm:max-w-none max-sm:h-dvh max-sm:rounded-none max-sm:border-0',
+    'max-sm:fixed max-sm:inset-0 max-sm:top-0 max-sm:left-0 max-sm:translate-x-0 max-sm:translate-y-0 max-sm:w-full max-sm:w-screen max-sm:max-w-none max-sm:h-dvh max-sm:rounded-none max-sm:border-0',
     '!flex !flex-col !p-0 !gap-0',
     'bg-card',
     'shadow-2xl shadow-black/20 dark:shadow-black/40',
@@ -277,19 +277,19 @@ export const GenericModal: React.FC<GenericModalProps> = ({
               </div>
             )}
             {title ? (
-              <DialogTitle
-                id={titleId}
-                className={cn(
-                  "text-base sm:text-lg font-bold leading-none text-left text-white flex flex-col justify-center flex-1 min-w-0"
-                )}
-              >
-                <span className="flex-1 min-w-0 truncate drop-shadow-md">{title}</span>
+              <div className="min-w-0 flex-1 text-left">
+                <DialogTitle
+                  id={titleId}
+                  className="break-words pr-1 text-base font-bold leading-tight text-white drop-shadow-md sm:text-lg"
+                >
+                  {title}
+                </DialogTitle>
                 {subtitle && (
-                  <span className="mt-0.5 truncate text-xs font-normal text-white/80 drop-shadow-sm">
+                  <p className="mt-1 break-words text-xs font-normal leading-snug text-white/85 drop-shadow-sm">
                     {subtitle}
-                  </span>
+                  </p>
                 )}
-              </DialogTitle>
+              </div>
             ) : (
               <DialogTitle id={titleId} className="sr-only">
                 Modal

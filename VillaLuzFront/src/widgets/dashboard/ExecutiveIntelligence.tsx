@@ -229,7 +229,7 @@ export const ExecutiveIntelligence: React.FC = () => {
             <p className="text-[10px] font-bold text-muted-foreground/70">
               Última sincronización del Gateway:{" "}
               <span className="text-white">
-                {new Date().toLocaleTimeString()}
+                {new Date().toLocaleTimeString('es-CO')}
               </span>
             </p>
           </div>

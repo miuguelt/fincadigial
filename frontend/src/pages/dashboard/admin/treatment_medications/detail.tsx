@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import { treatmentMedicationService as treatmentMedicationsService } from '@/entities/treatment-medication/api/treatmentMedication.service';
 
 export default function TreatmentMedicationDetail() {
   const { id } = useParams<{ id: string }>();
+  const { rolePath } = useRoleNavigation();
   const [item, setItem] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -33,7 +35,7 @@ export default function TreatmentMedicationDetail() {
       <div><b>Días duración:</b> {item.duration_days}</div>
       <div><b>Vía administración:</b> {item.administration_route}</div>
       <div><b>Notas:</b> {item.notes}</div>
-      <Link to="/admin/treatment_medications">Volver</Link>
+      <Link to={rolePath('/admin/treatment_medications')}>Volver</Link>
     </div>
   );
 }

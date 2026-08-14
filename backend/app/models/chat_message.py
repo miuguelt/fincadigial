@@ -3,7 +3,6 @@ from datetime import datetime
 
 class ChatMessage(db.Model):
     __tablename__ = 'chat_messages'
-
     id = db.Column(db.Integer, primary_key=True)
     finca_id = db.Column(db.Integer, db.ForeignKey('finca.id'), nullable=False, index=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -27,11 +26,19 @@ class ChatMessage(db.Model):
             'sender_name': self.sender.fullname if self.sender else 'Usuario',
             'recipient_id': self.recipient_id,
             'recipient_name': self.recipient.fullname if self.recipient else 'Usuario',
+            # Estos metadatos se adjuntan al objeto durante la solicitud. No
+            # exigen alterar instalaciones existentes de PostgreSQL.
+            'client_message_id': getattr(self, 'client_message_id', None),
             'message': self.message,
             'attachment_url': self.attachment_url,
             'attachment_type': self.attachment_type,
             'attachment_name': self.attachment_name,
             'is_read': self.is_read,
+            'read_at': (
+                getattr(self, 'read_at', None).isoformat()
+                if getattr(self, 'read_at', None)
+                else None
+            ),
             'created_at': self.created_at.isoformat()
         }
 

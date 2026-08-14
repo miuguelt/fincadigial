@@ -2,7 +2,14 @@
 RBAC - Control de Acceso Basado en Roles
 ========================================
 
-Utilidades para gestionar permisos granulares por rol y entidad.
+Matriz de permisos granulares por rol y entidad.
+
+Estrategia: las escrituras usan default-deny. La lectura de datos operativos
+está disponible para todos los roles conocidos; usuarios y seguridad requieren
+un permiso explícito.
+Las entidades del Módulo Campesino son públicas para usuarios autenticados.
+
+Acciones válidas: read, create, update, delete
 """
 
 from functools import wraps
@@ -12,121 +19,269 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Definición de permisos por rol (Configuración Centralizada)
-# Formato: { 'Rol': { 'entidad': ['action1', 'action2'] } }
+_ACTIONS_READ = ['read']
+_ACTIONS_READ_CREATE = ['read', 'create']
+_ACTIONS_READ_CREATE_UPDATE = ['read', 'create', 'update']
+_ACTIONS_READ_CREATE_UPDATE_DELETE = ['read', 'create', 'update', 'delete']
+_ACTIONS_NONE = []
+
+HEALTH_ENTITIES = frozenset({
+    'vaccinations', 'treatments', 'controls', 'animal-diseases',
+    'diseases', 'medications', 'vaccines', 'treatment-medications',
+    'treatment-vaccines', 'treatment-recommendations',
+})
+
+CAMPESINO_ENTITIES = frozenset({
+    'crop-plots', 'crop-activities', 'water-sources', 'water-measurements',
+    'climate-risks', 'market-offers', 'technical-assistance', 'offline-learning',
+})
+
+SECURITY_ENTITIES = frozenset({'users', 'security'})
+
+# Datos personales de terceros: la matrícula profesional completa y el motivo de
+# un rechazo solo los ve el titular y quien coteja. El resumen público de la
+# insignia viaja por /professional-credentials/user/<id>/badge, fuera de esta
+# matriz, con la matrícula enmascarada.
+PERSONAL_DATA_ENTITIES = frozenset({'professional-credentials'})
+
+# Lectura: política general. Todo rol autenticado y conocido puede LEER cualquier
+# entidad operativa de la finca; solo las entidades sensibles siguen bajo
+# default-deny por rol. Evita 403 arbitrarios cuando una entidad nueva no se
+# agregó a la matriz de cada rol (la matriz de abajo rige create/update/delete).
+READ_RESTRICTED_ENTITIES = SECURITY_ENTITIES | PERSONAL_DATA_ENTITIES
+
 ROLE_PERMISSIONS = {
-    'Administrador': '*', # Acceso total
-    'Propietario': '*',   # Acceso total
+    'Administrador': '*',
+    'Propietario': '*',
+
     'Capataz': {
-        'animals': ['read', 'create', 'update'],
-        'fields': ['read', 'create', 'update'],
-        'animal-fields': ['read', 'create', 'update'],
-        'breeds': ['read'],
-        'species': ['read'],
-        'vaccinations': ['read', 'create'],
-        'treatments': ['read', 'create'],
-        'controls': ['read', 'create'],
-        'users': [], # Bloqueado en tests
-        'fincas': ['read'],
-        'inventory': ['read', 'create', 'update'],
-        'infrastructure': ['read', 'create', 'update'],
-        'tasks': ['read', 'create', 'update'],
+        'animals': _ACTIONS_READ_CREATE_UPDATE,
+        'animal-diseases': _ACTIONS_READ_CREATE_UPDATE,
+        'animal-fields': _ACTIONS_READ_CREATE_UPDATE,
+        'animal-groups': _ACTIONS_READ_CREATE_UPDATE,
+        'breeds': _ACTIONS_READ,
+        'controls': _ACTIONS_READ_CREATE,
+        'diseases': _ACTIONS_READ,
+        'fields': _ACTIONS_READ_CREATE_UPDATE,
+        'finca-location': _ACTIONS_READ_CREATE_UPDATE,
+        'fincas': _ACTIONS_READ,
+        'food_types': _ACTIONS_READ,
+        'genetic-improvements': _ACTIONS_READ_CREATE,
+        'infrastructure': _ACTIONS_READ_CREATE_UPDATE,
+        'inventory': _ACTIONS_READ_CREATE_UPDATE,
+        'lactation-cycles': _ACTIONS_READ_CREATE_UPDATE,
+        'management-plans': _ACTIONS_READ,
+        'milk-production': _ACTIONS_READ_CREATE_UPDATE,
+        'operational': _ACTIONS_READ_CREATE_UPDATE,
+        'production-targets': _ACTIONS_READ_CREATE_UPDATE,
+        'route-administrations': _ACTIONS_READ,
+        'species': _ACTIONS_READ,
+        'tasks': _ACTIONS_READ_CREATE_UPDATE,
+        'treatment-medications': _ACTIONS_READ_CREATE,
+        'treatment-recommendations': _ACTIONS_READ_CREATE,
+        'treatment-vaccines': _ACTIONS_READ_CREATE,
+        'treatments': _ACTIONS_READ_CREATE,
+        'users': _ACTIONS_NONE,
+        'vaccinations': _ACTIONS_READ_CREATE,
     },
+
     'Veterinario': {
-        'animals': [], # Bloqueado en tests (no es health path)
-        'vaccinations': ['read', 'create'], # update bloqueado en tests
-        'treatments': ['read', 'create', 'update'],
-        'controls': ['read', 'create', 'update'],
-        'animal-diseases': ['read', 'create', 'update'],
-        'vaccines': ['read'],
-        'medications': ['read'],
-        'fincas': ['read'],
-        'inventory': ['read', 'create', 'update'],
+        'animal-analytics': _ACTIONS_NONE,
+        'animals': _ACTIONS_READ,
+        'animal-diseases': _ACTIONS_READ_CREATE_UPDATE,
+        'animal-fields': _ACTIONS_READ,
+        'animal-groups': _ACTIONS_READ,
+        'breeds': _ACTIONS_READ,
+        'controls': _ACTIONS_READ_CREATE_UPDATE,
+        'diseases': _ACTIONS_READ_CREATE_UPDATE,
+        'fields': _ACTIONS_READ,
+        'fincas': _ACTIONS_READ,
+        'food_types': _ACTIONS_READ,
+        'inventory': _ACTIONS_READ_CREATE_UPDATE,
+        'lactation-cycles': _ACTIONS_READ_CREATE_UPDATE,
+        'medications': _ACTIONS_READ,
+        'milk-production': _ACTIONS_READ_CREATE_UPDATE,
+        'production-targets': _ACTIONS_READ,
+        'route-administrations': _ACTIONS_READ,
+        'species': _ACTIONS_READ,
+        'tasks': _ACTIONS_READ_CREATE_UPDATE_DELETE,
+        'treatment-medications': _ACTIONS_READ_CREATE_UPDATE,
+        'treatment-recommendations': _ACTIONS_READ_CREATE_UPDATE,
+        'treatment-vaccines': _ACTIONS_READ_CREATE_UPDATE,
+        'treatments': _ACTIONS_READ_CREATE_UPDATE,
+        'vaccinations': _ACTIONS_READ_CREATE,
+        'vaccines': _ACTIONS_READ,
     },
+
     'Instructor': {
-        'animals': ['read'],
-        'vaccinations': ['read', 'create'],
-        'treatments': ['read', 'create'],
-        'controls': ['read', 'create'],
-        'breeds': ['read'],
-        'species': ['read'],
-        'fincas': ['read'],
+        'animals': _ACTIONS_READ,
+        'animal-diseases': _ACTIONS_READ,
+        'animal-fields': _ACTIONS_READ,
+        'animal-groups': _ACTIONS_READ,
+        'breeds': _ACTIONS_READ,
+        'controls': _ACTIONS_READ_CREATE,
+        'diseases': _ACTIONS_READ,
+        'fields': _ACTIONS_READ,
+        'fincas': _ACTIONS_READ,
+        'food_types': _ACTIONS_READ,
+        'lactation-cycles': _ACTIONS_READ_CREATE,
+        'milk-production': _ACTIONS_READ_CREATE,
+        'route-administrations': _ACTIONS_READ,
+        'species': _ACTIONS_READ,
+        'tasks': _ACTIONS_READ_CREATE_UPDATE_DELETE,
+        'treatment-medications': _ACTIONS_READ_CREATE,
+        'treatment-recommendations': _ACTIONS_READ_CREATE,
+        'treatment-vaccines': _ACTIONS_READ_CREATE,
+        'treatments': _ACTIONS_READ_CREATE,
+        'vaccinations': _ACTIONS_READ_CREATE,
+        'vaccines': _ACTIONS_NONE,
     },
+
     'Operario': {
-        'animals': ['read'],
-        'controls': ['read', 'create'],
-        'animal-fields': ['read', 'create'], # Traslados
-        'fields': ['read'],
-        'fincas': ['read'],
-        'tasks': ['read', 'update'], # Operario puede ver y marcar tareas como completas (update)
-        'inventory': ['read'],
-        'breeds': ['read'],
-        'species': ['read'],
-        'vaccinations': ['read'],
-        'treatments': ['read'],
-        'animal-diseases': ['read'],
-        'genetic-improvements': ['read'],
-        'vaccines': ['read'],
-        'medications': ['read'],
-        'food_types': ['read'],
+        'animals': _ACTIONS_READ,
+        'animal-diseases': _ACTIONS_READ,
+        'animal-fields': _ACTIONS_READ_CREATE,
+        'animal-groups': _ACTIONS_READ,
+        'breeds': _ACTIONS_READ,
+        'controls': _ACTIONS_READ_CREATE,
+        'diseases': _ACTIONS_READ,
+        'fields': _ACTIONS_READ,
+        'fincas': _ACTIONS_READ,
+        'food_types': _ACTIONS_READ,
+        'genetic-improvements': _ACTIONS_READ,
+        'inventory': _ACTIONS_READ,
+        'lactation-cycles': _ACTIONS_READ,
+        'medications': _ACTIONS_READ,
+        'milk-production': _ACTIONS_READ_CREATE,
+        'operational': _ACTIONS_READ_CREATE,
+        'route-administrations': _ACTIONS_READ,
+        'species': _ACTIONS_READ,
+        'tasks': ['read', 'update'],
+        'treatment-medications': _ACTIONS_READ,
+        'treatment-recommendations': _ACTIONS_READ,
+        'treatment-vaccines': _ACTIONS_READ,
+        'treatments': _ACTIONS_READ,
+        'vaccinations': _ACTIONS_READ,
+        'vaccines': _ACTIONS_READ,
     },
+
     'Aprendiz': {
-        'animals': ['read'],
-        'animal-fields': ['read'],
-        'fields': ['read'],
-        'breeds': ['read'],
-        'species': ['read'],
-        'vaccinations': ['read'],
-        'treatments': ['read'],
-        'controls': ['read'],
-        'fincas': ['read'],
-        'tasks': ['read'],
-        'inventory': ['read'],
-        'animal-diseases': ['read'],
-        'genetic-improvements': ['read'],
-        'vaccines': ['read'],
-        'medications': ['read'],
-        'food_types': ['read'],
-    }
+        'animals': _ACTIONS_READ,
+        'animal-diseases': _ACTIONS_READ,
+        'animal-fields': _ACTIONS_READ,
+        'animal-groups': _ACTIONS_READ,
+        'breeds': _ACTIONS_READ,
+        'controls': _ACTIONS_READ,
+        'diseases': _ACTIONS_READ,
+        'fields': _ACTIONS_READ,
+        'fincas': _ACTIONS_READ,
+        'food_types': _ACTIONS_READ,
+        'genetic-improvements': _ACTIONS_READ,
+        'inventory': _ACTIONS_READ,
+        'lactation-cycles': _ACTIONS_READ,
+        'medications': _ACTIONS_READ,
+        'milk-production': _ACTIONS_READ,
+        'production-targets': _ACTIONS_READ,
+        'route-administrations': _ACTIONS_READ,
+        'species': _ACTIONS_READ,
+        'tasks': _ACTIONS_READ,
+        'treatment-medications': _ACTIONS_READ,
+        'treatment-recommendations': _ACTIONS_READ,
+        'treatment-vaccines': _ACTIONS_READ,
+        'treatments': _ACTIONS_READ,
+        'vaccinations': _ACTIONS_READ,
+        'vaccines': _ACTIONS_READ,
+    },
 }
 
+_ENTITY_ALIASES = {
+    'control': 'controls',
+    'vaccine': 'vaccines',
+    'medication': 'medications',
+    'breed': 'breeds',
+    'specie': 'species',
+    'food_type': 'food_types',
+    'food-type': 'food_types',
+    'food-types': 'food_types',
+    'disease': 'diseases',
+    'animal_disease': 'animal-diseases',
+    'animal-disease': 'animal-diseases',
+    'disease-animals': 'animal-diseases',
+    'genetic-improvement': 'genetic-improvements',
+    'genetic_improvement': 'genetic-improvements',
+    'genetic_improvements': 'genetic-improvements',
+    'milk_production': 'milk-production',
+    'milk-production': 'milk-production',
+    'lactation_cycle': 'lactation-cycles',
+    'lactation-cycle': 'lactation-cycles',
+    'lactation_cycles': 'lactation-cycles',
+    'production_target': 'production-targets',
+    'production-target': 'production-targets',
+    'production_targets': 'production-targets',
+    'treatment_medication': 'treatment-medications',
+    'treatment-medications': 'treatment-medications',
+    'treatment_medications': 'treatment-medications',
+    'treatment_vaccine': 'treatment-vaccines',
+    'treatment-vaccines': 'treatment-vaccines',
+    'treatment_vaccines': 'treatment-vaccines',
+    'treatment_recommendation': 'treatment-recommendations',
+    'treatment-recommendations': 'treatment-recommendations',
+    'treatment_recommendations': 'treatment-recommendations',
+    'animal_group': 'animal-groups',
+    'animal-groups': 'animal-groups',
+    'management_plan': 'management-plans',
+    'management-plan': 'management-plans',
+    'management_plans': 'management-plans',
+    'operational_cost': 'operational',
+    'operational-cost': 'operational',
+    'operational_costs': 'operational',
+    'route_administration': 'route-administrations',
+    'route-administration': 'route-administrations',
+    'route_administrations': 'route-administrations',
+    'producer_profile': 'producer-profiles',
+    'producer-profiles': 'producer-profiles',
+    'professional_credential': 'professional-credentials',
+    'professional-credential': 'professional-credentials',
+    'professional_credentials': 'professional-credentials',
+    # Nombres heredados en singular usados por pantallas antiguas.
+    'animal': 'animals',
+    'field': 'fields',
+    'task': 'tasks',
+    'user': 'users',
+    'treatment': 'treatments',
+    'vaccination': 'vaccinations',
+    'finca': 'fincas',
+}
+
+_CANONICAL_ROLES = {role.casefold(): role for role in ROLE_PERMISSIONS}
+
+
+def _resolve_entity(entity: str) -> str:
+    normalized = str(entity or '').strip().lower()
+    return _ENTITY_ALIASES.get(normalized, normalized)
+
+
+def _resolve_role(role: str) -> str:
+    """Accept enum values and harmless casing/whitespace differences in JWT claims."""
+    raw_role = getattr(role, 'value', role)
+    normalized = str(raw_role or '').strip()
+    return _CANONICAL_ROLES.get(normalized.casefold(), normalized)
+
+
 def has_permission(role: str, entity: str, action: str) -> bool:
-    """Verifica si un rol tiene permiso para una acción sobre una entidad."""
-    if not role:
+    role = _resolve_role(role)
+    action = str(action or '').strip().lower()
+    if not role or not action:
         return False
 
-    # Normalizaciones y equivalencias de entidades (singular / plural)
-    entity_aliases = {
-        'control': 'controls',
-        'vaccine': 'vaccines',
-        'medication': 'medications',
-        'breed': 'breeds',
-        'specie': 'species',
-        'food_type': 'food_types',
-        'food-type': 'food_types',
-        'animal_disease': 'animal-diseases',
-        'animal-disease': 'animal-diseases',
-        'genetic-improvement': 'genetic-improvements',
-        'genetic_improvement': 'genetic-improvements'
-    }
-    entity = entity_aliases.get(entity, entity)
+    entity = _resolve_entity(entity)
 
-    # Módulo Campesino - Público para todos los usuarios autenticados
-    campesino_entities = {
-        'crop-plots',
-        'crop-activities',
-        'water-sources',
-        'water-measurements',
-        'climate-risks',
-        'market-offers',
-        'technical-assistance',
-        'offline-learning'
-    }
-    if entity in campesino_entities:
+    if entity in CAMPESINO_ENTITIES:
         return True
 
     perms = ROLE_PERMISSIONS.get(role)
     if not perms:
+        logger.warning("RBAC: Rol desconocido '%s' para entidad '%s' (action=%s)", role, entity, action)
         return False
 
     if perms == '*':
@@ -135,30 +290,37 @@ def has_permission(role: str, entity: str, action: str) -> bool:
     if not isinstance(perms, dict):
         return False
 
-    entity_perms = perms.get(entity, [])
-    result = entity_perms == '*' or action in entity_perms
-    return result
+    explicit_perms = perms.get(entity)
+
+    # Lectura general para entidades no sensibles: solo se deniega si el rol la
+    # tiene vetada de forma explícita (lista vacía). Entidad no listada => lectura.
+    if action == 'read' and entity not in READ_RESTRICTED_ENTITIES:
+        return explicit_perms != _ACTIONS_NONE
+
+    entity_perms = explicit_perms or []
+    return entity_perms == '*' or action in entity_perms
+
 
 def get_rbac_error_code(role: str, entity: str, action: str) -> str:
-    """Retorna un código de error específico para RBAC basado en el contexto para compatibilidad con tests."""
+    role = _resolve_role(role)
+    entity = _resolve_entity(entity)
 
-    # Prioridad: Roles restringidos por dominio (Veterinario/Instructor)
     if role == 'Veterinario':
-        if entity in ['animals', 'users', 'security']:
+        if entity in SECURITY_ENTITIES:
             return 'VET_HEALTH_ONLY'
-        return 'VET_CREATE_ONLY'
+        if entity in HEALTH_ENTITIES:
+            return 'VET_CREATE_ONLY'
+        return 'VET_HEALTH_ONLY'
 
     if role == 'Instructor':
         if entity == 'animals':
-            if action == 'create':
-                return 'INSTRUCTOR_HEALTH_ONLY'
-            return 'INSTRUCTOR_NO_MODIFY'
-        if entity in ['security', 'users']:
+            return 'INSTRUCTOR_HEALTH_ONLY' if action == 'create' else 'INSTRUCTOR_NO_MODIFY'
+        if entity in SECURITY_ENTITIES:
             return 'INSTRUCTOR_NO_USERS'
         return 'INSTRUCTOR_NO_MODIFY'
 
     if role == 'Aprendiz':
-        if entity in ['security', 'users']:
+        if entity in SECURITY_ENTITIES:
             return 'APRENDIZ_NO_USERS'
         return 'READONLY_ROLE'
 
@@ -170,27 +332,30 @@ def get_rbac_error_code(role: str, entity: str, action: str) -> str:
         return 'CAPATAZ_EDIT_LIMITED'
 
     if role == 'Operario':
-        if entity in ['security', 'users']:
+        if entity in SECURITY_ENTITIES:
             return 'OPERARIO_NO_USERS'
-        if action == 'create' and entity not in ['controls', 'animal-fields']:
+        if action == 'create' and entity not in {'controls', 'animal-fields'}:
             return 'OPERARIO_POST_LIMITED'
         return 'OPERARIO_LIMITED'
 
     return 'INSUFFICIENT_PERMISSIONS'
 
+
 def require_permission(entity: str, action: str):
-    """Decorador para proteger endpoints basado en RBAC."""
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             try:
                 verify_jwt_in_request()
                 jwt_data = get_jwt()
-                role = jwt_data.get('role')
+                role = jwt_data.get('role') or ''
 
                 if not has_permission(role, entity, action):
                     error_code = get_rbac_error_code(role, entity, action)
-                    logger.warning(f"RBAC: Usuario con rol {role} intentó realizar {action} en {entity} -> {error_code}")
+                    logger.warning(
+                        "RBAC DENIED: role=%s entity=%s action=%s code=%s",
+                        role, entity, action, error_code,
+                    )
                     return APIResponse.error(
                         message=f"No tienes permisos para realizar esta acción ({action} en {entity})",
                         status_code=403,

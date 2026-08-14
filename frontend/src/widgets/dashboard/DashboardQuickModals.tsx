@@ -75,7 +75,7 @@ export function DashboardQuickModals({
 				.catch(devLogger.error);
 		}
 		setSuccessItem(null); // Reset success on open new modal
-	}, [modalType]);
+	}, [breeds.length, femaleAnimals.length, modalType]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();

@@ -30,6 +30,8 @@ interface CalendarMonthGridProps {
 	onSelect: (day: Date) => void;
 	onMonthChange: (month: Date) => void;
 	eventsByDay: Map<string, CalendarEvent[]>;
+	/** Conteo real por día aunque sólo se hayan cargado tarjetas resumidas. */
+	totalsByDay?: Map<string, number>;
 }
 
 /** Colores de los puntos de un día: máximo 3, priorizando lo urgente. */
@@ -48,6 +50,7 @@ export function CalendarMonthGrid({
 	onSelect,
 	onMonthChange,
 	eventsByDay,
+	totalsByDay,
 }: CalendarMonthGridProps) {
 	const weeks = useMemo(() => {
 		const start = startOfWeek(startOfMonth(month), { locale: es });
@@ -75,7 +78,7 @@ export function CalendarMonthGrid({
 				>
 					<ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
 				</button>
-				<h3 className="text-sm sm:text-lg font-bold text-foreground capitalize truncate px-1">
+				<h3 className="text-sm sm:text-lg font-bold text-foreground capitalize fit-clamp px-1">
 					{format(month, "MMMM yyyy", { locale: es })}
 				</h3>
 				<button
@@ -108,6 +111,12 @@ export function CalendarMonthGrid({
 							const key = dayKey(day);
 							const dayEvents = eventsByDay.get(key) ?? [];
 							const dots = dotColors(dayEvents);
+							const representedTotal =
+								totalsByDay?.get(key) ??
+								dayEvents.reduce(
+									(total, event) => total + (event.count ?? 1),
+									0,
+								);
 							const inMonth = isSameMonth(day, month);
 							const isSelected = isSameDay(day, selected);
 							const today = isToday(day);
@@ -150,9 +159,9 @@ export function CalendarMonthGrid({
 													style={{ backgroundColor: color }}
 												/>
 											))}
-											{dayEvents.length > 3 && (
+											{representedTotal > 3 && (
 												<span className="text-[7px] sm:text-[8px] leading-none font-bold text-muted-foreground ml-0.5">
-													+{dayEvents.length - 3}
+													+{representedTotal - 3}
 												</span>
 											)}
 										</span>

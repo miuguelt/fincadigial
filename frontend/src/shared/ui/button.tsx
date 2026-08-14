@@ -1,4 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
+ 
 import React from "react";
 import { cn } from "./cn";
 import { Spinner } from "./spinner";

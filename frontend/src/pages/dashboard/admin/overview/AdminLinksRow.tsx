@@ -38,7 +38,7 @@ export function AdminLinksRow() {
   return (
     <section>
       <SectionHeading icon={Library} title="Administración" subtitle="Configuración y consulta, fuera de la operación diaria" />
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-[repeat(auto-fit,_minmax(120px,_1fr))]">
         {LINKS.map(({ label, description, icon: Icon, path }) => (
           <button
             key={path}
@@ -48,7 +48,7 @@ export function AdminLinksRow() {
           >
             <Icon className="h-4 w-4 text-primary" />
             <span className="text-xs font-bold leading-tight text-foreground">{label}</span>
-            <span className="text-[11px] leading-tight text-muted-foreground">{description}</span>
+            <span className="break-words text-[11px] leading-tight text-muted-foreground">{description}</span>
           </button>
         ))}
       </div>

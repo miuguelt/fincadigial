@@ -22,7 +22,7 @@ const columns: CRUDColumn<DiseaseResponse & { [k: string]: any }>[] = [
   },
   { key: 'symptoms', label: 'Síntomas', render: (v) => v || '-' },
   { key: 'details', label: 'Detalles', render: (_v, item) => (item as any).details ?? (item as any).description ?? '-' },
-  { key: 'created_at', label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-') },
+  { key: 'created_at', label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
 ];
 
 // Tipo de formulario alineado con el backend

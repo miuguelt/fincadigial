@@ -9,12 +9,12 @@ interface HealthSectionProps {
 
 export function HealthSection({ form }: HealthSectionProps) {
 	return (
-		<section className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 shadow-sm sm:p-5">
+		<section className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 shadow-sm sm:p-5 dark:border-amber-800 dark:bg-amber-950/30">
 			<fieldset>
-				<legend className="text-xl font-bold text-amber-950">
+				<legend className="text-xl font-bold text-amber-950 dark:text-amber-100">
 					<span aria-hidden="true">3. 🩺</span> ¿Cómo ve al animal?
 				</legend>
-				<p id="corral-health-help" className="mb-4 mt-1 text-sm text-amber-900">
+				<p id="corral-health-help" className="mb-4 mt-1 text-sm text-amber-900 dark:text-amber-200">
 					Escoja una opción según lo que observa hoy. Este paso es obligatorio.
 				</p>
 				<div
@@ -33,7 +33,7 @@ export function HealthSection({ form }: HealthSectionProps) {
 								className={`min-h-32 rounded-xl border-2 p-3 text-center transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-500/40 active:scale-[0.98] ${
 									selected
 										? `${status.selectedClass} ring-2 ring-offset-2`
-										: "border-gray-200 bg-white text-gray-700 hover:border-amber-300 hover:bg-amber-50"
+										: "border-border bg-card text-foreground hover:border-amber-300 hover:bg-amber-50 dark:hover:border-amber-700 dark:hover:bg-amber-950/40"
 								}`}
 							>
 								<span aria-hidden="true" className="block text-3xl">
@@ -52,7 +52,7 @@ export function HealthSection({ form }: HealthSectionProps) {
 				{form.healthStatus === "" && (
 					<p
 						id="corral-health-required"
-						className="mt-3 rounded-lg bg-amber-100 px-3 py-2 text-sm font-semibold text-amber-950"
+						className="mt-3 rounded-lg bg-amber-100 px-3 py-2 text-sm font-semibold text-amber-950 dark:bg-amber-950/60 dark:text-amber-100"
 						role="status"
 					>
 						Seleccione cómo ve al animal para poder guardar.
@@ -63,12 +63,12 @@ export function HealthSection({ form }: HealthSectionProps) {
 			{form.showTreatment && (
 				<div
 					id="corral-treatment"
-					className="mt-5 rounded-xl border-2 border-red-200 bg-red-50 p-4 sm:p-5"
+					className="mt-5 rounded-xl border-2 border-red-200 bg-red-50 p-4 sm:p-5 dark:border-red-900 dark:bg-red-950/40"
 				>
-					<h4 className="text-lg font-bold text-red-900">
+					<h4 className="text-lg font-bold text-red-900 dark:text-red-200">
 						💊 Remedio aplicado <span className="font-normal">(opcional)</span>
 					</h4>
-					<p className="mb-4 mt-1 text-sm text-red-800">
+					<p className="mb-4 mt-1 text-sm text-red-800 dark:text-red-300">
 						Si anota un remedio, complete el nombre, la dosis y la frecuencia.
 					</p>
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -79,7 +79,7 @@ export function HealthSection({ form }: HealthSectionProps) {
 								placeholder="Ejemplo: vitamina o antibiótico"
 								value={form.treatmentDesc}
 								onChange={(event) => form.setTreatmentDesc(event.target.value)}
-								className="h-14 border-red-200 bg-white text-base"
+								className="h-14 border-red-200 bg-card text-base dark:border-red-900"
 							/>
 						</div>
 						<div className="space-y-2">
@@ -89,7 +89,7 @@ export function HealthSection({ form }: HealthSectionProps) {
 								placeholder="Ejemplo: 10 ml o 1 pastilla"
 								value={form.treatmentDosis}
 								onChange={(event) => form.setTreatmentDosis(event.target.value)}
-								className="h-14 border-red-200 bg-white text-base"
+								className="h-14 border-red-200 bg-card text-base dark:border-red-900"
 							/>
 						</div>
 						<div className="space-y-2">
@@ -103,7 +103,7 @@ export function HealthSection({ form }: HealthSectionProps) {
 								onChange={(event) =>
 									form.setTreatmentFrequency(event.target.value)
 								}
-								className="h-14 border-red-200 bg-white text-base"
+								className="h-14 border-red-200 bg-card text-base dark:border-red-900"
 							/>
 						</div>
 					</div>

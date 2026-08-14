@@ -5,11 +5,20 @@ import { CRUDConfig, CRUDColumn, CRUDFormSection } from '@/shared/types/crud';
 import { Badge } from '@/shared/ui/badge';
 import { IconCalendar } from '@/shared/ui/icons';
 import { formatDateColombia } from '@/shared/utils/dateUtils';
-import { usersService } from '@/entities/user/api/user.service';
 import { animalService } from '@/entities/animal/api/animal.service';
 import { fieldService } from '@/entities/field/api/field.service';
+import { fetchAssignableUsers } from '@/entities/user/api/assignableUsers.service';
+import { useAuth } from '@/features/auth/model/useAuth';
 
 const TasksPage: React.FC = () => {
+  const { user, role } = useAuth() as any;
+  const currentRole = role || user?.role || null;
+
+  const loadAssignees = React.useCallback(async () => {
+    const people = await fetchAssignableUsers(currentRole, { limit: 1000 }, user);
+    return people.map((p) => ({ label: p.fullname, value: p.id }));
+  }, [currentRole, user]);
+
   const initialFormData: Partial<Task> = {
     title: '',
     description: '',
@@ -122,10 +131,7 @@ const TasksPage: React.FC = () => {
           name: 'assigned_to',
           label: 'Asignar a',
           type: 'select',
-          loadOptions: async () => {
-            const users = await usersService.getAll();
-            return users.map((u: any) => ({ label: u.username || u.fullname || u.identification, value: u.id }));
-          }
+          loadOptions: loadAssignees,
         } as any,
         {
           name: 'animal_id',
@@ -154,7 +160,7 @@ const TasksPage: React.FC = () => {
 
   const config: CRUDConfig<Task, Partial<Task>> = {
     entityName: 'Tarea',
-    title: 'Gestión de Tareas Operativas',
+    title: 'Tareas de la finca',
     searchPlaceholder: 'Buscar tareas...',
     columns,
     formSections,

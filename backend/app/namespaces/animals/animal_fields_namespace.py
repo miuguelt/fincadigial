@@ -1,11 +1,14 @@
 from flask_restx import Resource
 import flask
 from flask_jwt_extended import jwt_required
-from datetime import datetime
+from datetime import date, datetime
 from app.models.animalFields import AnimalFields
+from app.models.base_model import ValidationError
 from app import db
+from app.services.operational.field_occupancy_service import sync_field_occupancy
 from app.utils.namespace_helpers import create_optimized_namespace, _cache_clear
 from app.utils.response_handler import APIResponse
+from app.utils.tenant_context import get_current_finca_id
 
 animal_fields_ns = create_optimized_namespace(
     'animal-fields',
@@ -14,6 +17,16 @@ animal_fields_ns = create_optimized_namespace(
     path='/animal-fields',
     rbac_entity='animal-fields'
 )
+
+def _as_date(value) -> date:
+    """Lee la fecha del cuerpo; si viene rota, usa hoy (igual que el modelo)."""
+    if isinstance(value, date):
+        return value
+    try:
+        return date.fromisoformat(str(value).split('T', maxsplit=1)[0])
+    except (ValueError, TypeError):
+        return date.today()
+
 
 @animal_fields_ns.route('/transfer')
 class AnimalFieldTransferResource(Resource):
@@ -35,6 +48,14 @@ class AnimalFieldTransferResource(Resource):
                 return APIResponse.validation_error({'field_id': 'Se requiere ID del potrero de destino'})
 
             outcome = AnimalFields.batch_transfer(animal_ids, field_id, date_val, notes)
+
+            # El potrero que recibe y el que entrega cambian de ocupación, de
+            # estado y de fecha de pastoreo: la tarjeta lee esos tres datos.
+            updated_fields = sync_field_occupancy(
+                outcome['affected_field_ids'],
+                _as_date(date_val),
+                get_current_finca_id(),
+            )
 
             db.session.commit()
 
@@ -61,8 +82,12 @@ class AnimalFieldTransferResource(Resource):
                     'transferred_count': len(moved),
                     'skipped_count': len(skipped),
                     'skipped_animal_ids': skipped,
+                    'fields': updated_fields,
                 },
             )
+        except ValidationError as e:
+            db.session.rollback()
+            return APIResponse.error(str(e), status_code=400)
         except Exception as e:
             db.session.rollback()
             return APIResponse.error(f'Error en traslado masivo: {str(e)}')
@@ -83,17 +108,41 @@ class AnimalFieldBulkRemoveResource(Resource):
             if not animal_ids or not isinstance(animal_ids, list):
                 return APIResponse.validation_error({'animal_ids': 'Se requiere lista de IDs de animales'})
 
-            results = AnimalFields.batch_remove(animal_ids, date_val)
+            outcome = AnimalFields.batch_remove(animal_ids, date_val)
+
+            updated_fields = sync_field_occupancy(
+                outcome['affected_field_ids'],
+                _as_date(date_val),
+                get_current_finca_id(),
+            )
+
             db.session.commit()
 
             _cache_clear('AnimalFields')
             _cache_clear('Animals')
             _cache_clear('Fields')
 
+            removed = outcome['assignments']
+            skipped = outcome['skipped_animal_ids']
+
+            message = f'{len(removed)} animales retirados de sus potreros exitosamente'
+            if skipped:
+                message += f' ({len(skipped)} ya estaban sin potrero)'
+
             return APIResponse.success(
-                data=[r.to_namespace_dict() for r in results],
-                message=f'{len(results)} animales retirados de sus potreros exitosamente'
+                data=[r.to_namespace_dict() for r in removed],
+                message=message,
+                meta={
+                    'total_requested': outcome['total_requested'],
+                    'removed_count': len(removed),
+                    'skipped_count': len(skipped),
+                    'skipped_animal_ids': skipped,
+                    'fields': updated_fields,
+                },
             )
+        except ValidationError as e:
+            db.session.rollback()
+            return APIResponse.error(str(e), status_code=400)
         except Exception as e:
             db.session.rollback()
             return APIResponse.error(f'Error en retiro masivo: {str(e)}')

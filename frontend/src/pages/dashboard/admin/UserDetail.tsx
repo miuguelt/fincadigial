@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
-import { ArrowLeft, User, Mail, Phone, MapPin, Calendar, Shield, Building2, TrendingUp, PlusCircle, Activity, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, MapPin, Calendar, Shield, Building2, TrendingUp, PlusCircle, Activity, CheckCircle2, BadgeCheck } from 'lucide-react';
 import { ClimbingBoxLoader } from 'react-spinners';
+import { UserCredentialBadge } from '@/entities/professional-credential/ui/UserCredentialBadge';
+import { CredentialReviewPanel } from '@/features/professional-credential-review/ui/CredentialReviewPanel';
 
 const UserDetail = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -74,6 +76,7 @@ const UserDetail = () => {
                     {isActive ? 'Activo' : 'Inactivo'}
                   </Badge>
                   <span className="text-sm text-muted-foreground font-mono flex items-center gap-1.5"><Shield className="w-3.5 h-3.5"/> {user.role}</span>
+                  <UserCredentialBadge userId={user.id} role={user.role} />
                 </div>
               </div>
             </div>
@@ -109,6 +112,16 @@ const UserDetail = () => {
                   <Building2 className="w-4 h-4 mr-2" />
                   Fincas y Rendimiento
                 </TabsTrigger>
+                {/* El cotejo solo aplica al rol que firma actos clínicos. */}
+                {user.role === 'Veterinario' && (
+                  <TabsTrigger
+                    value="credential"
+                    className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-success data-[state=active]:shadow-none rounded-none px-0 font-medium text-muted-foreground data-[state=active]:text-foreground h-14"
+                  >
+                    <BadgeCheck className="w-4 h-4 mr-2" />
+                    Acreditación
+                  </TabsTrigger>
+                )}
               </TabsList>
             </div>
             
@@ -154,13 +167,13 @@ const UserDetail = () => {
                            <div>
                              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Registro</p>
                              <p className="font-medium text-sm text-foreground">
-                               {user.created_at ? new Date(user.created_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'No disponible'}
+                               {user.created_at ? new Date(user.created_at).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }) : 'No disponible'}
                              </p>
                            </div>
                            <div>
                              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Actualizado</p>
                              <p className="font-medium text-sm text-foreground">
-                               {user.updated_at ? new Date(user.updated_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'No disponible'}
+                               {user.updated_at ? new Date(user.updated_at).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }) : 'No disponible'}
                              </p>
                            </div>
                        </CardContent>
@@ -281,6 +294,20 @@ const UserDetail = () => {
                  </div>
                )}
             </TabsContent>
+
+            {user.role === 'Veterinario' && (
+              <TabsContent value="credential" className="p-6 m-0 animate-in fade-in-50 duration-500">
+                <div className="mb-6">
+                  <h3 className="text-xl font-bold text-foreground">Acreditación profesional</h3>
+                  <p className="text-muted-foreground text-sm mt-1 [overflow-wrap:break-word]">
+                    Coteja los datos declarados contra el registro público de COMVEZCOL. Villa Luz
+                    no acredita el ejercicio profesional: solo deja constancia de que tú
+                    verificaste esa coincidencia y en qué fecha.
+                  </p>
+                </div>
+                <CredentialReviewPanel userId={user.id} userName={user.fullname} />
+              </TabsContent>
+            )}
           </Tabs>
         </CardContent>
       </Card>

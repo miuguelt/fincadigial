@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useForm, FieldError } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import { foodTypesService } from '@/entities/food-type/api/foodTypes.service';
 import { Plus, Edit } from 'lucide-react';
 
@@ -10,7 +11,7 @@ export type FoodTypeFormFields = {
 
 export default function FoodTypeForm() {
   const { id } = useParams<{ id?: string }>();
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<FoodTypeFormFields>();
 
   useEffect(() => {
@@ -28,7 +29,7 @@ export default function FoodTypeForm() {
       } else {
         await foodTypesService.createFoodType({ food_type: data.food_type });
       }
-      navigate('/admin/food-types');
+      goTo('/admin/food-types');
     } catch (error: any) {
       const msg = error?.response?.data?.message || error?.message || 'Error al guardar tipo de alimento';
       alert(msg);

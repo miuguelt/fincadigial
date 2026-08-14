@@ -18,11 +18,11 @@ export function ProfileSummary({
 }) {
   return (
     <div className="px-3 py-2">
-      <p className="truncate text-sm font-black text-foreground">{fullname || 'Mi cuenta'}</p>
-      <p className="truncate text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+      <p className="fit-clamp text-sm font-black text-foreground">{fullname || 'Mi cuenta'}</p>
+      <p className="fit-clamp text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
         {role}
       </p>
-      {fincaName && <p className="mt-1 truncate text-xs text-muted-foreground">{fincaName}</p>}
+      {fincaName && <p className="mt-1 fit-clamp text-xs text-muted-foreground">{fincaName}</p>}
     </div>
   );
 }
@@ -62,7 +62,7 @@ export function LogoutItem({ onLogout }: { onLogout?: () => void }) {
       className={`${PROFILE_ITEM} text-destructive focus:bg-destructive focus:text-white`}
     >
       <LogOut className="h-4 w-4" />
-      Salir
+      Cerrar sesión
     </DropdownMenuItem>
   );
 }

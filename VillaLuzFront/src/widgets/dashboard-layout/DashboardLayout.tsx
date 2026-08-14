@@ -37,7 +37,7 @@ const DashboardLayout: React.FC = () => {
       */}
       {showSidebar && (
         <div
-          aria-hidden={!isSidebarOpen}
+          inert={!isSidebarOpen ? "" : undefined}
           className={cn(
             'fixed z-[1050] transition-all duration-500 ease-out',
             // Posicionamiento flotante con gaps elegantes

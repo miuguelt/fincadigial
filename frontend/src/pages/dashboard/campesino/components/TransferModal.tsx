@@ -111,6 +111,7 @@ export function TransferModal({
 				| {
 						transferred_count?: number;
 						skipped_count?: number;
+						fields?: Array<{ id: number; animal_count?: number }>;
 				  }
 				| undefined;
 
@@ -137,12 +138,17 @@ export function TransferModal({
 			// Disparar evento global para que todos los componentes refresquen
 			window.dispatchEvent(new CustomEvent("animal-fields:updated"));
 
-			// Mostrar animación de éxito con conteos
+			// Mostrar animación de éxito con conteos. El conteo nuevo lo manda el
+			// backend ya recalculado; sumar 1 al viejo fallaba si otra persona
+			// había movido ganado a ese potrero mientras tanto.
+			const reportedTarget = meta?.fields?.find(
+				(f) => Number(f.id) === Number(transferForm.fieldId),
+			);
 			setSuccessData({
 				animalName,
 				targetFieldName,
 				targetFieldOldCount,
-				targetFieldNewCount: targetFieldOldCount + 1,
+				targetFieldNewCount: reportedTarget?.animal_count ?? targetFieldOldCount + 1,
 			});
 
 			setTransferForm({ animalId: "", fieldId: "", date: getTodayColombia() });

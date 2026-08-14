@@ -255,7 +255,8 @@ class GlobalUsersResource(Resource):
         """
         try:
             jwt_data = get_jwt()
-            if jwt_data.get('role') != 'Administrador':
+            from app.utils.tenant_context import is_system_admin_identity
+            if not is_system_admin_identity(jwt_data.get('role'), jwt_data.get('identification')):
                 return APIResponse.error('No tiene permisos para acceder a la vista global', status_code=403)
 
             from sqlalchemy.orm import joinedload
@@ -290,8 +291,10 @@ class GlobalUsersResource(Resource):
             for user in users:
                 user_data = user.to_namespace_dict()
                 fincas_enriched = []
+                associated_finca_ids = set()
                 for uf in uf_by_user.get(user.id, []):
                     if uf.finca:
+                        associated_finca_ids.add(uf.finca.id)
                         fincas_enriched.append({
                             'id': uf.finca.id,
                             'name': uf.finca.name,
@@ -300,6 +303,17 @@ class GlobalUsersResource(Resource):
                             'is_active': uf.is_active,
                             'is_primary': uf.is_primary,
                         })
+                # Compatibilidad con instalaciones anteriores a UserFinca:
+                # una finca directa también debe verse en el catálogo maestro.
+                if user.finca and user.finca.id not in associated_finca_ids:
+                    fincas_enriched.append({
+                        'id': user.finca.id,
+                        'name': user.finca.name,
+                        'type': user.finca.type.value if user.finca.type else None,
+                        'role': getattr(user.role, 'value', str(user.role)),
+                        'is_active': bool(user.status),
+                        'is_primary': True,
+                    })
                 user_data['fincas'] = fincas_enriched
                 result.append(user_data)
 
@@ -315,7 +329,7 @@ class GlobalUsersResource(Resource):
 class UserApprovalStatus(Resource):
     @users_ns.doc(
         'update_approval_status',
-        description='Cambiar el estado de aprobación de un usuario (Administrador/Instructor)',
+        description='Cambiar el estado de aprobación de un usuario (Administrador/Instructor/Propietario)',
         security=['Bearer']
     )
     @jwt_required()
@@ -325,9 +339,9 @@ class UserApprovalStatus(Resource):
             current_role = jwt_data.get('role')
             current_user_id = int(jwt_data.get('id', 0))
 
-            if current_role not in ('Administrador', 'Instructor'):
+            if current_role not in ('Administrador', 'Instructor', 'Propietario'):
                 return APIResponse.forbidden(
-                    'Se requiere rol de Administrador o Instructor para esta operación'
+                    'Se requiere rol de Administrador, Instructor o Propietario para esta operación'
                 )
 
             data = flask.request.get_json() or {}

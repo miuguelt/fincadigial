@@ -305,6 +305,13 @@ class Config:
     CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL') or _CELERY_REDIS_URL
     CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND') or _CELERY_REDIS_URL
 
+    # Health-check probe. ``control.inspect()`` is a broker broadcast that burns
+    # its full timeout unless ``limit`` is reached first, so keep the expected
+    # worker count in sync with the deployment or /health slows down again.
+    CELERY_INSPECT_TIMEOUT = float(os.getenv('CELERY_INSPECT_TIMEOUT', '1.5'))
+    CELERY_STATUS_TTL_SECONDS = float(os.getenv('CELERY_STATUS_TTL_SECONDS', '30'))
+    CELERY_EXPECTED_WORKERS = int(os.getenv('CELERY_EXPECTED_WORKERS', '1'))
+
     # -----------------------
     # Rate Limiting
     # -----------------------

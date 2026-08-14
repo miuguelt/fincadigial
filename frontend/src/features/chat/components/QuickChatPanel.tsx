@@ -1,6 +1,8 @@
 import {
 	AlertCircle,
 	Clock3,
+	Check,
+	CheckCheck,
 	ExternalLink,
 	Loader2,
 	MessageSquare,
@@ -275,7 +277,7 @@ export const QuickChatPanel: React.FC<QuickChatPanelProps> = ({
 					</div>
 
 					<div className="min-w-0 flex-1">
-						<p className="truncate font-black text-foreground leading-tight">
+						<p className="fit-clamp font-black text-foreground leading-tight">
 							{contact.fullname}
 						</p>
 						<div className="flex items-center gap-2">
@@ -375,9 +377,15 @@ export const QuickChatPanel: React.FC<QuickChatPanelProps> = ({
 													)}
 												>
 													{formatTime(message.createdAt)}
-													{mine && message.status === "pending" && (
-														<Clock3 size={10} />
-													)}
+											{mine && message.status === "pending" && (
+												<Clock3 size={10} aria-label="Pendiente" />
+											)}
+											{mine && message.status === "delivered" && (
+												<Check size={10} aria-label="Entregado" />
+											)}
+											{mine && message.status === "synced" && (
+												<CheckCheck size={10} aria-label="Leído" />
+											)}
 												</p>
 											</div>
 										</div>
@@ -441,6 +449,7 @@ export const QuickChatPanel: React.FC<QuickChatPanelProps> = ({
 						/>
 
 						<Button
+							type="button"
 							size="sm"
 							disabled={!draft.trim() || sending}
 							onClick={() => void handleSend()}

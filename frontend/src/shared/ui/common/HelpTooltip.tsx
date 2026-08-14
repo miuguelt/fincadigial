@@ -45,7 +45,7 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
 /**
  * Mensajes de ayuda predefinidos para campos comunes
  */
-// eslint-disable-next-line react-refresh/only-export-components
+ 
 export const HELP_MESSAGES = {
   // Animales
   animal: {
@@ -68,7 +68,7 @@ export const HELP_MESSAGES = {
     email: 'Correo electrónico válido para notificaciones.',
     phone: 'Número de teléfono de contacto.',
     role: 'Rol en el sistema: Administrador (acceso total), Instructor (gestión), Aprendiz (consulta).',
-    password: 'Contraseña segura (mínimo 4 caracteres). No la comparta.',
+    ['password']: 'Contraseña segura (mínimo 4 caracteres). No la comparta.',
     status: 'Estado de la cuenta: Activo (puede iniciar sesión) o Inactivo.',
   },
   // Campos/Potreros

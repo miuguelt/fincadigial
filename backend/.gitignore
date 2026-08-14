@@ -192,6 +192,7 @@ cython_debug/
 # excepto las migraciones manuales que deben viajar con el despliegue.
 /migrations/versions/*
 !/migrations/versions/perf001_runtime_query_indexes.py
+!/migrations/versions/perf002_calendar_alert_indexes.py
 /migrations/__pycache__/
 
 /scripts

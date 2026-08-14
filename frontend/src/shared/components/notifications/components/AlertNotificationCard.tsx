@@ -99,7 +99,7 @@ export const AlertNotificationCard = memo(function AlertNotificationCard({
             </span>
           )}
           {isUnread && (
-            <span className="w-2 h-2 rounded-full bg-primary shadow-[0_0_4px_hsl(var(--color-primary))]" />
+            <span className="w-2 h-2 rounded-full bg-primary shadow-[0_0_4px_var(--color-primary)]" />
           )}
         </div>
       </div>

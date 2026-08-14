@@ -10,8 +10,8 @@ import {
   Users,
   Wifi,
   MapPin,
-  Smartphone
 } from 'lucide-react';
+import { IconDeviceMobile as Smartphone } from '@/shared/ui/icons';
 import { motion } from 'framer-motion';
 import { MCPStatusIndicator } from '@/widgets/dashboard/MCPStatusWidget';
 import { MeshMonitor } from '@/widgets/dashboard/MeshMonitor';

@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { SectionCard, InfoField, modalStyles } from '@/shared/ui/common/ModalStyles';
 import { getStatusBadgeClass } from '@/shared/utils/badgeStyles';
 import { AnimalLink } from '@/entities/animal/ui';
+import { parseDateOnlyLocal } from '../controlPage.utils';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar
@@ -23,7 +24,8 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
   const [loadingHistory, setLoadingHistory] = useState(true);
 
   const checkupDate = (item as any)?.checkup_date ?? (item as any)?.control_date;
-  const formattedDate = checkupDate ? new Date(checkupDate as string).toLocaleDateString('es-ES') : '-';
+  const formattedCheckupDate = checkupDate ? parseDateOnlyLocal(String(checkupDate)) : null;
+  const formattedDate = formattedCheckupDate?.toLocaleDateString('es-CO') ?? '-';
   const healthStatus = (item as any)?.health_status ?? (item as any)?.healt_status ?? '-';
   const description = (item as any)?.description ?? (item as any)?.observations;
 
@@ -83,7 +85,7 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
   const chartControlData = controlHistory.map(c => {
     const d = (c as any).checkup_date || (c as any).control_date;
     return {
-      fecha: d ? new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }) : '',
+      fecha: d ? parseDateOnlyLocal(String(d))?.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit' }) ?? '' : '',
       peso: c.weight ? Number(c.weight) : null,
       altura: c.height ? Number(c.height) : null,
     };
@@ -91,71 +93,71 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
 
   // Formatear datos para el gráfico de leche (litros)
   const chartMilkData = milkHistory.map(m => ({
-    fecha: m.date ? new Date(m.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }) : '',
+    fecha: m.date ? parseDateOnlyLocal(String(m.date))?.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit' }) ?? '' : '',
     litros: m.liters ? Number(m.liters) : 0,
   }));
 
   return (
-    <div className="flex flex-col gap-6 h-full max-h-[85vh] overflow-y-auto px-4 py-2">
+    <div className="flex flex-col gap-4 py-1 sm:gap-6 sm:px-1">
       
       {/* Resumen del Control Actual */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-muted/20 border p-4 rounded-lg">
-        <div className="flex items-center gap-4">
-          <div className="text-4xl">🐄</div>
+      <div className="flex flex-col gap-3 rounded-xl border bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-2xl dark:bg-emerald-950/60">🐄</div>
           <div>
-            <div className="text-sm text-muted-foreground font-semibold uppercase tracking-wider">Detalle del Control</div>
-            <h2 className="text-xl font-bold text-foreground">
+            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Revisión registrada</div>
+            <h2 className="break-words text-lg font-extrabold text-foreground sm:text-xl">
               {item.animal_id ? <AnimalLink id={item.animal_id} label={animalLabel} /> : '-'}
             </h2>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Badge className={`text-sm px-3 py-1 ${getHealthBadgeClass(healthStatus)}`}>
-            Salud: {healthStatus}
+        <div className="flex flex-wrap gap-2">
+          <Badge className={`px-3 py-1 text-sm ${getHealthBadgeClass(healthStatus)}`}>
+            {healthStatus}
           </Badge>
-          <Badge variant="outline" className="text-sm px-3 py-1 font-semibold">
-            📅 {formattedDate}
+          <Badge variant="outline" className="px-3 py-1 text-sm font-semibold">
+            {formattedDate}
           </Badge>
         </div>
       </div>
 
       {/* Tabs para explorar historiales y gráficos */}
       <Tabs defaultValue="detalles" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 max-w-lg mx-auto mb-6 bg-muted p-1 rounded-xl">
-          <TabsTrigger value="detalles" className="text-sm py-2">ℹ️ Detalles</TabsTrigger>
-          <TabsTrigger value="historial-fisico" className="text-sm py-2">⚖️ Peso y Talla</TabsTrigger>
-          <TabsTrigger value="historial-leche" className="text-sm py-2">🥛 Historial Leche</TabsTrigger>
+        <TabsList className="sticky top-0 z-10 mb-4 grid h-auto w-full grid-cols-3 rounded-xl border border-border bg-muted p-1 sm:mx-auto sm:max-w-lg">
+          <TabsTrigger value="detalles" aria-label="Datos de la revisión" className="min-h-11 px-1 text-xs font-bold sm:text-sm">Revisión</TabsTrigger>
+          <TabsTrigger value="historial-fisico" aria-label="Historial de peso y talla" className="min-h-11 px-1 text-xs font-bold sm:text-sm">Peso</TabsTrigger>
+          <TabsTrigger value="historial-leche" aria-label="Historial de leche" className="min-h-11 px-1 text-xs font-bold sm:text-sm">Leche</TabsTrigger>
         </TabsList>
 
         {/* CONTENIDO 1: DETALLES ACTUALES */}
-        <TabsContent value="detalles" className="mt-0 space-y-6">
+        <TabsContent value="detalles" className="mt-0 space-y-4">
           <div className={modalStyles.twoColGrid}>
             <div className="space-y-4">
-              <SectionCard title="Información Básica">
+              <SectionCard title="Lo que se registró">
                 <div className="space-y-3">
-                  <InfoField label="ID Registro" value={`#${item.id}`} />
-                  <InfoField label="Fecha de Chequeo" value={formattedDate} valueSize="large" />
+                  <InfoField label="Fecha de la revisión" value={formattedDate} valueSize="large" />
                   {description && (
-                    <InfoField label="Descripción / Observaciones" value={description} />
+                    <InfoField label="Observación" value={description} />
                   )}
                 </div>
               </SectionCard>
             </div>
 
             <div className="space-y-4">
-              <SectionCard title="Métricas del Chequeo">
+              <SectionCard title="Medidas">
                 <div className="grid grid-cols-2 gap-4">
                   <InfoField label="Peso Actual" value={item.weight != null ? `${Number(item.weight).toFixed(1)} kg` : '-'} valueSize="xlarge" />
                   <InfoField label="Altura Actual" value={item.height != null ? `${Number(item.height).toFixed(1)} m` : '-'} valueSize="xlarge" />
                 </div>
               </SectionCard>
               
-              <SectionCard title="Información del Sistema">
-                <div className="grid grid-cols-2 gap-4">
-                  <InfoField label="Registrado el" value={item.created_at ? new Date(item.created_at).toLocaleDateString('es-ES') : '-'} />
-                  <InfoField label="Modificado el" value={item.updated_at ? new Date(item.updated_at).toLocaleDateString('es-ES') : '-'} />
+              <details className="rounded-xl border border-border bg-muted/20">
+                <summary className="cursor-pointer px-4 py-3 text-sm font-bold">Datos del sistema</summary>
+                <div className="grid grid-cols-1 gap-4 border-t border-border p-4 min-[380px]:grid-cols-2">
+                  <InfoField label="Registro" value={`#${item.id}`} />
+                  <InfoField label="Guardado el" value={item.created_at ? new Date(item.created_at).toLocaleDateString('es-CO', { timeZone: 'America/Bogota' }) : '-'} />
                 </div>
-              </SectionCard>
+              </details>
             </div>
           </div>
         </TabsContent>
@@ -203,7 +205,7 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
                   controlHistory.slice().reverse().map((c: any, index) => (
                     <div key={c.id || index} className="flex justify-between items-center p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 border text-xs">
                       <div className="font-semibold text-muted-foreground">
-                        {new Date(c.checkup_date || c.control_date).toLocaleDateString('es-ES')}
+                        {parseDateOnlyLocal(String(c.checkup_date || c.control_date))?.toLocaleDateString('es-CO') ?? '-'}
                       </div>
                       <div className="flex gap-3 text-right">
                         <span className="font-bold text-emerald-600">{c.weight ? `${Number(c.weight).toFixed(1)} kg` : '-'}</span>
@@ -262,7 +264,7 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
                     <div key={m.id || index} className="flex justify-between items-center p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 border text-xs">
                       <div>
                         <div className="font-semibold text-muted-foreground">
-                          {new Date(m.date).toLocaleDateString('es-ES')}
+                          {parseDateOnlyLocal(String(m.date))?.toLocaleDateString('es-CO') ?? '-'}
                         </div>
                         <div className="text-[10px] text-muted-foreground">Sesión: {m.milking_session}</div>
                       </div>

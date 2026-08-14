@@ -77,7 +77,7 @@ function ImageThumbnail({
 				</div>
 			)}
 			<div className="absolute bottom-0 left-0 right-0 p-1.5 bg-gradient-to-t from-black/70 to-transparent">
-				<p className="text-[10px] text-white truncate">
+				<p className="text-[10px] text-white fit-clamp">
 					{(image.file_size / 1024).toFixed(0)} KB
 				</p>
 			</div>

@@ -19,6 +19,10 @@ export function ControlStats({
   isLoading = false,
   simple = false,
 }: ControlStatsProps) {
+  const gridClass = simple
+    ? 'grid-cols-1 min-[360px]:grid-cols-2 sm:grid-cols-3'
+    : 'grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-4';
+
   const stats = [
     {
       title: simple ? 'Revisiones del mes' : 'Revisiones del mes',
@@ -73,9 +77,9 @@ export function ControlStats({
 
   if (isLoading) {
     return (
-      <div className={cn("grid gap-3 md:gap-4", simple ? "grid-cols-3" : "grid-cols-2 lg:grid-cols-4")}>
+      <div className={cn('grid gap-3 md:gap-4', gridClass)}>
         {stats.map((_, i) => (
-          <Card key={i} className="animate-pulse border-l-4 border-l-gray-200">
+          <Card key={i} className={cn('animate-pulse border-l-4 border-l-gray-200', simple && 'last:min-[360px]:col-span-2 last:sm:col-span-1')}>
             <CardContent className="p-3 md:p-4">
               <div className="h-3 bg-gray-200 rounded w-2/3 mb-2" />
               <div className="h-6 bg-gray-200 rounded w-1/2" />
@@ -87,34 +91,35 @@ export function ControlStats({
   }
 
   return (
-    <div className={cn("grid gap-3 md:gap-4", simple ? "grid-cols-3" : "grid-cols-2 lg:grid-cols-4")}>
+    <div className={cn('grid gap-3 md:gap-4', gridClass)}>
       {stats.map((stat, index) => (
         <Card
           key={index}
           className={cn(
-            "relative overflow-hidden border-0 border-l-4 shadow-sm hover:shadow-md transition-all duration-300 bg-gradient-to-br",
+            'relative overflow-hidden border-0 border-l-4 shadow-sm hover:shadow-md transition-all duration-300 bg-gradient-to-br',
+            simple && 'last:min-[360px]:col-span-2 last:sm:col-span-1',
             stat.accentColor,
             stat.gradient
           )}
         >
-          <CardContent className="p-3 md:p-4 flex flex-col justify-between h-full min-h-[90px]">
-            <div className="flex items-start justify-between gap-1">
+          <CardContent className="flex h-full min-h-[104px] flex-col justify-between p-3 md:p-4">
+            <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-[11px] md:text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <p className="break-words text-xs font-bold leading-snug text-muted-foreground">
                   {stat.title}
                 </p>
-                <div className="flex items-baseline gap-1 mt-1 md:mt-2">
+                <div className="mt-2 flex flex-wrap items-baseline gap-x-1 gap-y-0.5">
                   <span className={cn('text-2xl md:text-[28px] font-black tracking-tight', stat.color)}>
                     {stat.value}
                   </span>
                   {stat.unit && (
-                    <span className="text-[10px] md:text-xs font-medium text-gray-400">
+                    <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">
                       {stat.unit}
                     </span>
                   )}
                 </div>
                 {(stat as any).emptyHint && (
-                  <p className="text-[10px] text-gray-400 mt-1 italic leading-tight">
+                  <p className="mt-1 break-words text-xs leading-snug text-muted-foreground">
                     {(stat as any).emptyHint}
                   </p>
                 )}

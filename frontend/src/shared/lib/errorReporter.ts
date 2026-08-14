@@ -12,7 +12,7 @@ interface ErrorEvent {
   userId?: number;
 }
 
-let batch: ErrorEvent[] = [];
+const batch: ErrorEvent[] = [];
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
 
 function flush() {

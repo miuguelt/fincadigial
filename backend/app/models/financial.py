@@ -8,11 +8,19 @@ class TransactionType(_enum.Enum):
     Expense = 'Gasto'
 
 class TransactionCategory(_enum.Enum):
+    # Postgres stores the member NAME; the API exposes the value.
+    # Adding members requires a migration (see fin001_tx_cat).
     Milk = 'Venta de Leche'
     Animal = 'Venta de Animal'
+    Cheese = 'Venta de Queso'
+    Crop = 'Venta de Cosecha'
     Medication = 'Medicamentos'
     Food = 'Alimento'
+    Agriculture = 'Insumos Agrícolas'
     Service = 'Servicios Veterinarios'
+    Labor = 'Mano de Obra'
+    Transport = 'Transporte'
+    Maintenance = 'Mantenimiento'
     Other = 'Otros'
 
 class Transaction(BaseModel):

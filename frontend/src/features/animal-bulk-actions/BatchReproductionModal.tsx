@@ -207,7 +207,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
               <IconDna className="h-5 w-5 text-white" />
             </div>
             <div className="min-w-0">
-              <DialogTitle className="text-xl font-bold tracking-tight text-white flex items-center gap-3 truncate drop-shadow-sm">
+              <DialogTitle className="text-xl font-bold tracking-tight text-white flex items-center gap-3 fit-clamp drop-shadow-sm">
                 Gestión Reproductiva Masiva
                 <Badge className="bg-white/20 text-white font-bold text-[10px] px-2.5 py-0.5 rounded-[var(--radius-full)] border-white/10 shadow-sm">
                   {selectedAnimalIds.length} Sujetos
@@ -275,7 +275,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
                         <div className="relative z-10 min-w-0">
                           <p
                             className={cn(
-                              "text-sm font-bold truncate transition-colors",
+                              "text-sm font-bold fit-clamp transition-colors",
                               isSelected ? "text-primary animate-pulse" : "text-foreground",
                             )}
                           >
@@ -519,7 +519,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
                             <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40 mb-1">
                               Evento Activo
                             </p>
-                            <h5 className={cn("text-xl font-bold truncate", selectedEventInfo.color)}>
+                            <h5 className={cn("text-xl font-bold fit-clamp", selectedEventInfo.color)}>
                               {selectedEventInfo.label}
                             </h5>
                           </div>

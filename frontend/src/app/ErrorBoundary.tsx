@@ -116,7 +116,7 @@ function ErrorScreen({
           <div style={{ color: '#64748b', marginBottom: '.25rem', fontSize: '.7rem', textTransform: 'uppercase', letterSpacing: '.08em' }}>
             ID: {errorId}
           </div>
-          <div style={{ color: '#f87171', wordBreak: 'break-word' }}>
+          <div style={{ color: '#f87171', overflowWrap: 'anywhere' }}>
             {error?.message || 'Error desconocido'}
           </div>
         </div>

@@ -3,6 +3,14 @@
 /// <reference types="react-dom" />
 /// <reference types="node" />
 
+import 'react';
+
+declare module 'react' {
+  interface HTMLAttributes<T> {
+    inert?: string | boolean | undefined;
+  }
+}
+
 // Web Bluetooth API Types
 interface BluetoothRequestDeviceFilter {
   services?: BluetoothServiceUUID[];

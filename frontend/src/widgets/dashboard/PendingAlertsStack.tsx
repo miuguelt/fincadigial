@@ -1,8 +1,8 @@
 import { ChevronRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { useRealtimeNotifications } from "@/shared/hooks/useRealtimeNotifications";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 
 const priorityOrder: Record<string, number> = {
 	Crítica: 0,
@@ -42,7 +42,7 @@ const priorityStyle: Record<
 };
 
 export function PendingAlertsStack({ maxAlerts = 5 }: { maxAlerts?: number }) {
-	const navigate = useNavigate();
+	const { goTo } = useRoleNavigation();
 	const { notifications } = useRealtimeNotifications({ loadHistorical: true });
 
 	const pending = notifications
@@ -65,7 +65,7 @@ export function PendingAlertsStack({ maxAlerts = 5 }: { maxAlerts?: number }) {
 				return (
 					<button
 						key={alert.id}
-						onClick={() => navigate("/admin/alerts")}
+						onClick={() => goTo("/admin/alerts")}
 						className={cn(
 							"w-full flex items-start gap-3 p-3 rounded-xl border text-left transition-all",
 							"hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99]",

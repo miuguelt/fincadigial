@@ -248,14 +248,17 @@ export const useBatchFieldTransfer = (
 				const meta = (response as any).meta as
 					| {
 							transferred_count?: number;
+							removed_count?: number;
 							skipped_count?: number;
 							total_requested?: number;
 							skipped_animal_ids?: number[];
+							fields?: Array<{ id: number; animal_count?: number }>;
 					  }
 					| undefined;
 
+				// El retiro reporta `removed_count`; el traslado, `transferred_count`.
 				const transferredCount =
-					meta?.transferred_count ??
+					(removed ? meta?.removed_count : meta?.transferred_count) ??
 					(Array.isArray(response.data) ? response.data.length : 0);
 				const skippedCount = meta?.skipped_count ?? 0;
 				const fieldName = selectedField?.name ?? "el potrero de destino";
@@ -309,6 +312,11 @@ export const useBatchFieldTransfer = (
 				const freshFields = getItemsFromResponse<Field>(freshResp);
 				setFields(freshFields);
 				const destField = freshFields.find((f) => f.id === selectedFieldId);
+				// El backend devuelve el conteo recalculado del potrero tocado; es
+				// más fiable que el listado, que puede llegar de una página en caché.
+				const reportedDestination = meta?.fields?.find(
+					(f) => Number(f.id) === selectedFieldId,
+				);
 
 				setSuccessData({
 					transferredCount,
@@ -316,7 +324,8 @@ export const useBatchFieldTransfer = (
 					fieldName: fieldName || (destField?.name ?? ""),
 					fieldId: selectedFieldId,
 					oldCount: selectedField?.animal_count ?? 0,
-					newCount: destField?.animal_count ?? 0,
+					newCount:
+						reportedDestination?.animal_count ?? destField?.animal_count ?? 0,
 					totalRequested: selectedAnimalIds.length,
 				});
 

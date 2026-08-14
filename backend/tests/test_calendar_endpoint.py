@@ -12,6 +12,7 @@ from datetime import date, datetime, timedelta
 from app import db
 from app.models import Breeds, Species
 from app.models.animals import Animals, AnimalStatus, Sex
+from app.models.alerts import AnimalAlert, AlertPriority, AlertType
 from app.models.diseases import Diseases
 from app.models.route_administration import RouteAdministration
 from app.models.tasks import Tasks
@@ -152,3 +153,68 @@ class TestCalendarEventosFuturos:
         )
         assert resp.status_code == 200
         assert resp.get_json()["data"]["count"] == 0
+
+
+class TestCalendarAlertVolume:
+    """El calendario no debe materializar todas las alertas del periodo."""
+
+    @staticmethod
+    def _seed_alerts(headers, total=60):
+        from flask_jwt_extended import decode_token
+
+        token_str = headers["Authorization"].split(" ")[1]
+        finca_id = decode_token(token_str)["finca_id"]
+        now = datetime.now().replace(microsecond=0)
+        for index in range(total):
+            db.session.add(AnimalAlert(
+                animal_id=None,
+                finca_id=finca_id,
+                alert_type=AlertType.PREDICTIVE,
+                message=f"Alerta de volumen {index}",
+                priority=(
+                    AlertPriority.CRITICAL
+                    if index % 2 == 0
+                    else AlertPriority.HIGH
+                ),
+                is_read=False,
+                triggered_at=now,
+            ))
+        db.session.commit()
+        return now.date()
+
+    def test_resumen_agrupa_alertas_por_dia(self, client, token_for):
+        headers = token_for("Administrador")
+        event_date = self._seed_alerts(headers)
+
+        resp = client.get(
+            f"{BASE}/analytics/calendar/?start_date={event_date}"
+            f"&end_date={event_date}",
+            headers=headers,
+        )
+
+        assert resp.status_code == 200
+        data = resp.get_json()["data"]
+        alert_events = [event for event in data["events"] if event["type"] == "alert"]
+        assert len(alert_events) == 1
+        assert alert_events[0]["is_summary"] is True
+        assert alert_events[0]["count"] == 60
+        assert data["counts_by_type"]["alert"] == 60
+        assert data["total_count"] == 60
+
+    def test_detalle_respeta_limite(self, client, token_for):
+        headers = token_for("Administrador")
+        event_date = self._seed_alerts(headers)
+
+        resp = client.get(
+            f"{BASE}/analytics/calendar/?start_date={event_date}"
+            f"&end_date={event_date}&alert_mode=details"
+            "&alert_limit=10&only_alerts=true",
+            headers=headers,
+        )
+
+        assert resp.status_code == 200
+        data = resp.get_json()["data"]
+        assert len(data["events"]) == 10
+        assert data["alerts"]["total"] == 60
+        assert data["alerts"]["loaded"] == 10
+        assert data["alerts"]["truncated"] is True

@@ -16,7 +16,7 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4 text-white">Contacto</h3>
             <p className="text-sm opacity-90">Dirección: Velez, Santander</p>
-            <p className="text-sm opacity-90">Email: info@fincavillaluz.edu.co</p>
+            <p className="text-sm opacity-90">Correo: info@fincavillaluz.edu.co</p>
             <p className="text-sm opacity-90">Teléfono: (57) 123 456 7890</p>
           </div>
           <div>

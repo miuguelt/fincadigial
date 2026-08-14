@@ -85,7 +85,7 @@ export function NotificationCenter() {
                         mainTab === 'alertas' ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
                     )}
                 >
-                    Alertas del Hato
+                    Alertas del Ganado
                     {unreadAlerts > 0 && <Badge variant="destructive" className="h-4 px-1 min-w-[1rem] text-[8px]">{unreadAlerts}</Badge>}
                 </button>
                 <button
@@ -105,7 +105,7 @@ export function NotificationCenter() {
           {mainTab === 'alertas' ? (
             <div className="p-3 space-y-2">
               {notifications.length === 0 ? (
-                <EmptyNotifications icon={<CheckCircle size={48} />} title="Todo tranquilo" description="No hay novedades sanitarias en el hato por ahora." />
+                <EmptyNotifications icon={<CheckCircle size={48} />} title="Todo tranquilo" description="No hay novedades sanitarias en el ganado por ahora." />
               ) : (
                 notifications.map((n) => (
                   <div key={n.id} className={cn("p-4 rounded-[1.5rem] border transition-all", n.read ? "bg-muted/10 border-transparent opacity-60" : "bg-background border-border/40 shadow-sm")}>
@@ -149,7 +149,7 @@ export function NotificationCenter() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-xs font-black uppercase tracking-tighter text-muted-foreground">{r.farm_name}</p>
-                                        <p className="text-sm font-bold text-foreground truncate">{r.type === 'INVITE' ? `De: ${r.user_name}` : 'Solicitud de unión'}</p>
+                                        <p className="text-sm font-bold text-foreground fit-clamp">{r.type === 'INVITE' ? `De: ${r.user_name}` : 'Solicitud de unión'}</p>
                                         {r.message && <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 italic italic-muted">"{r.message}"</p>}
                                         
                                         {accesoTab === 'recibidas' && r.status === 'pending' && (

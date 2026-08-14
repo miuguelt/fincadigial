@@ -63,9 +63,9 @@ export default function SystemGuidesTab() {
 				url: `/system/guides/content?path=${encodeURIComponent(guide.full_path)}`,
 				method: "GET",
 			} as any);
-			setContent(res?.data?.data?.content ?? "# No content");
+			setContent(res?.data?.data?.content ?? "# Sin contenido");
 		} catch {
-			setContent("# Error loading content");
+			setContent("# Error al cargar el contenido");
 		} finally {
 			setLoadingContent(false);
 		}
@@ -76,7 +76,7 @@ export default function SystemGuidesTab() {
 			<div className="w-80 flex-shrink-0 space-y-3">
 				<div className="flex items-center justify-between">
 					<h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-						Documentation{" "}
+						Documentación{" "}
 						<span className="text-xs font-normal text-muted-foreground">
 							({guides.length})
 						</span>
@@ -111,8 +111,8 @@ export default function SystemGuidesTab() {
 								: "bg-card text-muted-foreground border-border",
 						)}
 					>
-						All
-					</button>
+					Todas
+				</button>
 					{categories.map((c) => (
 						<button
 							key={c}
@@ -137,18 +137,18 @@ export default function SystemGuidesTab() {
 						>
 							<div className="flex items-center gap-2">
 								<FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-								<span className="text-xs font-medium truncate">
+								<span className="text-xs font-medium fit-clamp">
 									{g.name.replace(".md", "")}
 								</span>
 							</div>
-							<p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+							<p className="text-[10px] text-muted-foreground mt-0.5 fit-clamp">
 								{g.path}
 							</p>
 						</button>
 					))}
 					{filtered.length === 0 && (
 						<p className="text-xs text-muted-foreground text-center py-8">
-							No guides found
+							No se encontraron guías
 						</p>
 					)}
 				</div>
@@ -169,10 +169,10 @@ export default function SystemGuidesTab() {
 					) : (
 						<div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
 							<Book className="h-12 w-12 opacity-30" />
-							<p className="text-sm font-medium">Select a guide to view</p>
-							<p className="text-xs">
-								Browse documentation from the left panel
-							</p>
+						<p className="text-sm font-medium">Selecciona una guía para verla</p>
+						<p className="text-xs">
+							Explora la documentación en el panel izquierdo
+						</p>
 						</div>
 					)}
 				</div>

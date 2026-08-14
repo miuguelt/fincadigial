@@ -13,9 +13,10 @@ import MilkProductionPage from '../milk_production';
 import { GenericModal } from '@/shared/ui/common/GenericModal';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
 import { AnimalLink } from '@/entities/animal/ui';
-import { LayoutDashboard, Milk, Heart } from 'lucide-react';
+import { ChevronRight, Heart, LayoutDashboard, Milk, Scale, Stethoscope } from 'lucide-react';
 import { TaskIndicator } from './components/TaskIndicator';
 import { useControlsSummary } from './hooks/useControlsSummary';
+import { formatControlPageDate, parseDateOnlyLocal } from './controlPage.utils';
 import {
   buildCrudConfig, serviceAdapter, initialFormData,
   mapResponseToForm, validateControlForm, makeCustomDetailContent,
@@ -26,11 +27,11 @@ const AdminControlPage = () => {
   const isCampesino = userRole === 'Operario' || userRole === 'Aprendiz';
   const fincaId = user?.finca_id;
   const [animalOptions, setAnimalOptions] = useState<{ value: number; label: string }[]>([]);
-  const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useGlobalViewMode();
   const [isMilkModalOpen, setIsMilkModalOpen] = useState(false);
   const [isControlModalOpen, setIsControlModalOpen] = useState(false);
   const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('resumen');
 
   const summary = useControlsSummary(fincaId);
 
@@ -41,17 +42,14 @@ const AdminControlPage = () => {
   useEffect(() => {
     let mounted = true;
     (async () => {
-      setLoading(true);
       try {
-        const list = await animalsService.getAll({ page: 1, page_size: 1000 } as any);
+        const list = await animalsService.getAll({ page: 1, page_size: 500 } as any);
         const raw: any = list;
         const arr: any[] = Array.isArray(raw) ? raw : (raw?.items ?? raw?.data ?? raw?.results ?? []);
         const options = arr.map((a: any) => ({ value: a.id, label: a.record || `ID ${a.id}` }));
         if (mounted) setAnimalOptions(options);
       } catch {
         if (mounted) setAnimalOptions([]);
-      } finally {
-        if (mounted) setLoading(false);
       }
     })();
     return () => { mounted = false; };
@@ -70,62 +68,127 @@ const AdminControlPage = () => {
     }},
     { key: 'checkup_date', label: 'Fecha de Chequeo', render: (_v: any, item: any) => {
       const d = item?.checkup_date ?? item?.control_date;
-      return d ? new Date(d as string).toLocaleDateString('es-ES') : '-';
+      const parsed = d ? parseDateOnlyLocal(String(d)) : null;
+      return parsed ? parsed.toLocaleDateString('es-CO') : '-';
     }},
     { key: 'weight', label: 'Peso', render: (v: any) => (v != null ? `${Number(v).toFixed(1)} kg` : '-') },
     { key: 'height', label: 'Altura', render: (v: any) => (v != null ? `${Number(v).toFixed(1)} m` : '-') },
     { key: 'health_status', label: 'Estado de Salud', render: (_v: any, item: any) => item?.health_status ?? item?.healt_status ?? '-' },
     { key: 'description', label: 'Descripción', render: (_v: any, item: any) => item?.description ?? item?.observations ?? '-' },
-    { key: 'created_at', label: 'Creado', render: (v: any) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-') },
+    { key: 'created_at', label: 'Creado', render: (v: any) => (v ? new Date(v as string).toLocaleDateString('es-CO', { timeZone: 'America/Bogota' }) : '-') },
   ], [animalMap]);
 
-  const todayFormatted = new Date(getTodayColombia()).toLocaleDateString('es-ES', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  });
+  const todayFormatted = formatControlPageDate(getTodayColombia());
 
   const noMilkToday = !summary.loading && summary.dailyLiters === 0;
   const hasSickAnimals = summary.sickAnimals > 0;
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Cargando...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleMilkSuccess = () => {
+    setIsMilkModalOpen(false);
+    summary.refresh();
+  };
+
+  const notifyControlsSaved = () => {
+    summary.refresh();
+    if (typeof window !== 'undefined') {
+      // The quick-entry modals use the same service as the CRUD list, but the
+      // list has its own resource cache. Invalidate both refresh channels so a
+      // successful save is visible without a full page reload.
+      window.dispatchEvent(new CustomEvent('server-resource-changed', {
+        detail: { endpoint: 'control' },
+      }));
+      window.dispatchEvent(new CustomEvent('crud:refetch'));
+    }
+  };
+
+  const handleControlSuccess = () => {
+    setIsControlModalOpen(false);
+    notifyControlsSaved();
+  };
+
+  const handleWeightSuccess = () => {
+    setIsWeightModalOpen(false);
+    notifyControlsSaved();
+  };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Header global: visible en todas las pestañas */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Registro de la Finca</h1>
-          <p className="text-xs sm:text-sm text-gray-500 mt-0.5 capitalize">{todayFormatted}</p>
+    <div className="space-y-4 pb-24 sm:space-y-6 sm:pb-8">
+      <section
+        aria-labelledby="registro-diario-title"
+        className="rounded-2xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5"
+      >
+        <div className="mb-4">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">
+            Trabajo de hoy
+          </p>
+          <h1 id="registro-diario-title" className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
+            Registro diario
+          </h1>
+          <p className="mt-1 text-sm font-medium capitalize text-muted-foreground">{todayFormatted}</p>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            Elige una tarea. Solo pediremos los datos necesarios para guardarla desde el campo.
+          </p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <Button onClick={() => setIsMilkModalOpen(true)} className="h-12 sm:h-11 px-6 text-sm font-bold rounded-xl shadow-md bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto">🥛 Registrar ordeño</Button>
-          <Button onClick={() => setIsWeightModalOpen(true)} className="h-12 sm:h-11 px-4 text-sm font-bold rounded-xl shadow-md bg-amber-600 hover:bg-amber-700 text-white w-full sm:w-auto">🐄 Pesar animal</Button>
-          <Button onClick={() => setIsControlModalOpen(true)} className="h-12 sm:h-11 px-6 text-sm font-bold rounded-xl shadow-md bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto">🏥 Registrar novedad</Button>
-        </div>
-      </div>
 
-      {/* Tabs de navegación */}
-      <Tabs defaultValue="resumen" className="w-full">
-        <TabsList className="flex w-full overflow-x-auto justify-start border-b border-gray-200 bg-transparent h-auto p-0 rounded-none pb-px mb-4 scrollbar-none">
-          <TabsTrigger value="resumen" className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none bg-transparent rounded-none px-4 py-3 font-semibold text-gray-500">
-            <LayoutDashboard className="w-4 h-4 mr-2" />
-            ¿Cómo vamos hoy?
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3" role="group" aria-label="Acciones rápidas de campo">
+          <button
+            type="button"
+            onClick={() => setIsMilkModalOpen(true)}
+            className="col-span-2 flex min-h-16 items-center gap-3 rounded-xl bg-blue-700 px-4 py-3 text-left text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 active:scale-[0.99] sm:col-span-1"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15">
+              <Milk className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-base font-extrabold leading-tight">Registrar ordeño</span>
+              <span className="mt-0.5 block text-xs text-blue-100">Litros y turno</span>
+            </span>
+            <ChevronRight className="h-5 w-5 shrink-0" aria-hidden="true" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsWeightModalOpen(true)}
+            className="flex min-h-20 items-center gap-2 rounded-xl border-2 border-amber-300 bg-amber-50 px-3 py-3 text-left text-amber-950 transition hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 active:scale-[0.99] dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100 dark:hover:bg-amber-950/60 sm:min-h-16"
+          >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-200/80 dark:bg-amber-800/70">
+              <Scale className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-extrabold leading-tight sm:text-base">Pesar animal</span>
+              <span className="mt-0.5 hidden text-xs text-amber-800 min-[440px]:block dark:text-amber-200">Peso de hoy</span>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsControlModalOpen(true)}
+            className="flex min-h-20 items-center gap-2 rounded-xl border-2 border-emerald-300 bg-emerald-50 px-3 py-3 text-left text-emerald-950 transition hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 active:scale-[0.99] dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-100 dark:hover:bg-emerald-950/60 sm:min-h-16"
+          >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-200/80 dark:bg-emerald-800/70">
+              <Stethoscope className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-extrabold leading-tight sm:text-base">Reportar salud</span>
+              <span className="mt-0.5 hidden text-xs text-emerald-800 min-[440px]:block dark:text-emerald-200">Síntomas o novedad</span>
+            </span>
+          </button>
+        </div>
+      </section>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="mb-4 grid h-auto w-full grid-cols-3 rounded-xl border border-border bg-muted/70 p-1">
+          <TabsTrigger value="resumen" aria-label="Resumen de hoy" className="min-h-12 min-w-0 gap-1 rounded-lg px-1.5 py-2 text-xs font-bold text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:text-sm">
+            <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
+            Hoy
           </TabsTrigger>
-          <TabsTrigger value="leche" className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:shadow-none bg-transparent rounded-none px-4 py-3 font-semibold text-gray-500">
-            <Milk className="w-4 h-4 mr-2" />
-            🥛 Ordeño
+          <TabsTrigger value="leche" aria-label="Historial de ordeños" className="min-h-12 min-w-0 gap-1 rounded-lg px-1.5 py-2 text-xs font-bold text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-blue-700 data-[state=active]:shadow-sm dark:data-[state=active]:text-blue-300 sm:text-sm">
+            <Milk className="h-4 w-4" aria-hidden="true" />
+            Ordeños
           </TabsTrigger>
-          <TabsTrigger value="salud" className="data-[state=active]:border-b-2 data-[state=active]:border-emerald-600 data-[state=active]:text-emerald-600 data-[state=active]:shadow-none bg-transparent rounded-none px-4 py-3 font-semibold text-gray-500">
-            <Heart className="w-4 h-4 mr-2" />
-            🏥 Revisiones
+          <TabsTrigger value="salud" aria-label="Revisiones de salud" className="min-h-12 min-w-0 gap-1 rounded-lg px-1.5 py-2 text-xs font-bold text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm dark:data-[state=active]:text-emerald-300 sm:text-sm">
+            <Heart className="h-4 w-4" aria-hidden="true" />
+            Salud
           </TabsTrigger>
         </TabsList>
 
@@ -134,36 +197,42 @@ const AdminControlPage = () => {
           <TaskIndicator
             noMilkToday={noMilkToday} hasSickAnimals={hasSickAnimals}
             sickAnimals={summary.sickAnimals}
+            milkKnown={!summary.milkUnavailable}
+            controlsKnown={!summary.controlsUnavailable}
             onRegisterMilk={() => setIsMilkModalOpen(true)}
-            onScrollToHealth={() => {
-              const tab = document.querySelector('[data-value="salud"]') as HTMLButtonElement;
-              tab?.click();
-            }}
+            onScrollToHealth={() => setActiveTab('salud')}
           />
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5">
-            <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Milk className="h-5 w-5 text-blue-500" />
-              🥛 Leche de hoy
-            </h2>
-            <MilkStats dailyLiters={summary.dailyLiters} weeklyAverage={summary.weeklyAverage} trendPercentage={summary.trendPercentage} animalsMilked={summary.animalsMilked} isLoading={summary.loading} simple />
-          </div>
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+            <section className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5">
+              <h2 className="mb-4 flex items-center gap-2 text-lg font-bold">
+                <Milk className="h-5 w-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+                Ordeño de hoy
+              </h2>
+              <MilkStats dailyLiters={summary.dailyLiters} weeklyAverage={summary.weeklyAverage} trendPercentage={summary.trendPercentage} animalsMilked={summary.animalsMilked} isLoading={summary.loading} simple />
+            </section>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5">
-            <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Heart className="h-5 w-5 text-emerald-500" />
-              🏥 Salud de la finca
-            </h2>
-            <ControlStats totalControls={summary.totalControls} sickAnimals={summary.sickAnimals} recentTreatments={summary.recentTreatments} healthyPercentage={summary.healthyPercentage} isLoading={summary.loading} simple />
+            <section className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5">
+              <h2 className="mb-4 flex items-center gap-2 text-lg font-bold">
+                <Heart className="h-5 w-5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                Salud del ganado
+              </h2>
+              <ControlStats totalControls={summary.totalControls} sickAnimals={summary.sickAnimals} recentTreatments={summary.recentTreatments} healthyPercentage={summary.healthyPercentage} isLoading={summary.loading} simple />
+            </section>
           </div>
         </TabsContent>
 
         {/* PESTAÑA 2: Ordeño */}
         <TabsContent value="leche" className="mt-0">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-4 sm:px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="text-base font-bold text-gray-800">Toda la leche</h2>
-              <Button onClick={() => setIsMilkModalOpen(true)} size="sm" className="h-9 px-3 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white">🥛 Registrar ordeño</Button>
+          <div className="overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+            <div className="flex flex-col gap-3 border-b border-border px-4 py-4 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between sm:px-5">
+              <div>
+                <h2 className="text-base font-bold">Historial de ordeños</h2>
+                <p className="mt-0.5 text-xs text-muted-foreground">Consulta litros, vaca y turno registrados.</p>
+              </div>
+              <Button onClick={() => setIsMilkModalOpen(true)} size="sm" className="min-h-11 w-full bg-blue-700 px-4 text-sm font-bold text-white hover:bg-blue-800 min-[420px]:w-auto">
+                <Milk className="mr-2 h-4 w-4" aria-hidden="true" /> Registrar ordeño
+              </Button>
             </div>
             <div className="p-0"><MilkProductionPage /></div>
           </div>
@@ -171,10 +240,15 @@ const AdminControlPage = () => {
 
         {/* PESTAÑA 3: Revisiones */}
         <TabsContent value="salud" className="mt-0">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-4 sm:px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="text-base font-bold text-gray-800">Todas las revisiones</h2>
-              <Button onClick={() => setIsControlModalOpen(true)} size="sm" className="h-9 px-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white">🏥 Registrar novedad</Button>
+          <div className="overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+            <div className="flex flex-col gap-3 border-b border-border px-4 py-4 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between sm:px-5">
+              <div>
+                <h2 className="text-base font-bold">Revisiones de salud</h2>
+                <p className="mt-0.5 text-xs text-muted-foreground">Primero se muestran los animales que necesitan atención.</p>
+              </div>
+              <Button onClick={() => setIsControlModalOpen(true)} size="sm" className="min-h-11 w-full bg-emerald-700 px-4 text-sm font-bold text-white hover:bg-emerald-800 min-[420px]:w-auto">
+                <Stethoscope className="mr-2 h-4 w-4" aria-hidden="true" /> Reportar salud
+              </Button>
             </div>
             <div className="p-0">
               <ControlDashboard tableComponent={
@@ -193,22 +267,56 @@ const AdminControlPage = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Modal pesaje rápido */}
-      <GenericModal isOpen={isWeightModalOpen} onOpenChange={setIsWeightModalOpen} title="Pesar animal" themeColor="amber" size="lg" enableBackdropBlur>
-        <div className="p-2 text-sm text-gray-500 mb-4">Registra el peso de un animal rápidamente.</div>
+      <GenericModal
+        isOpen={isWeightModalOpen}
+        onOpenChange={setIsWeightModalOpen}
+        title="Registrar peso"
+        subtitle="Animal, peso y cómo se veía"
+        description="Formulario corto para registrar el pesaje de un animal."
+        icon={<Scale className="h-4 w-4 text-white" aria-hidden="true" />}
+        themeColor="amber"
+        size="md"
+        variant="compact"
+        bodyClassName="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 pb-0 pt-3 sm:px-5 sm:pt-4"
+        enableBackdropBlur
+      >
         <ControlEntryFormWidget
-          onSuccess={() => setIsWeightModalOpen(false)}
+          mode="weight"
+          onSuccess={handleWeightSuccess}
           onCancel={() => setIsWeightModalOpen(false)}
         />
       </GenericModal>
 
-      {/* Modales globales */}
-      <GenericModal isOpen={isMilkModalOpen} onOpenChange={setIsMilkModalOpen} title="Registrar ordeño" themeColor="blue" size="lg" enableBackdropBlur>
-        <MilkEntryFormWidget onSuccess={() => setIsMilkModalOpen(false)} onCancel={() => setIsMilkModalOpen(false)} />
+      <GenericModal
+        isOpen={isMilkModalOpen}
+        onOpenChange={setIsMilkModalOpen}
+        title="Registrar ordeño"
+        subtitle="Vaca, litros y turno"
+        description="Formulario para registrar la producción de leche del día."
+        icon={<Milk className="h-4 w-4 text-white" aria-hidden="true" />}
+        themeColor="blue"
+        size="md"
+        variant="compact"
+        bodyClassName="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 pb-0 pt-3 sm:px-5 sm:pt-4"
+        enableBackdropBlur
+      >
+        <MilkEntryFormWidget onSuccess={handleMilkSuccess} onCancel={() => setIsMilkModalOpen(false)} />
       </GenericModal>
 
-      <GenericModal isOpen={isControlModalOpen} onOpenChange={setIsControlModalOpen} title="Registrar novedad de salud" themeColor="emerald" size="lg" enableBackdropBlur>
-        <ControlEntryFormWidget onSuccess={() => setIsControlModalOpen(false)} onCancel={() => setIsControlModalOpen(false)} />
+      <GenericModal
+        isOpen={isControlModalOpen}
+        onOpenChange={setIsControlModalOpen}
+        title="Reportar novedad de salud"
+        subtitle="Animal, estado y observación"
+        description="Formulario corto para reportar síntomas o cambios de salud."
+        icon={<Stethoscope className="h-4 w-4 text-white" aria-hidden="true" />}
+        themeColor="emerald"
+        size="md"
+        variant="compact"
+        bodyClassName="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 pb-0 pt-3 sm:px-5 sm:pt-4"
+        enableBackdropBlur
+      >
+        <ControlEntryFormWidget mode="health" onSuccess={handleControlSuccess} onCancel={() => setIsControlModalOpen(false)} />
       </GenericModal>
     </div>
   );

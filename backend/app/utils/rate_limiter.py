@@ -79,6 +79,20 @@ def rate_limit_handler(request_limit):
     return resp
 
 
+# limits builds its own redis client from the storage_uri, so the resilient
+# defaults in utils.redis_client never reach it. Without a health check, any
+# pooled socket closed by Memurai's ``timeout`` raises
+# ConnectionError("Connection closed by server") on the next rate-limit hit.
+# limits forwards these straight to redis.from_url().
+_LIMITER_STORAGE_OPTIONS = {
+    "socket_connect_timeout": 5,
+    "socket_timeout": 10,
+    "socket_keepalive": True,
+    "retry_on_timeout": True,
+    "health_check_interval": 15,
+}
+
+
 def init_rate_limiter(app):
     global _GLOBAL_LIMITER, _RATE_LIMITER_STORAGE_OK
     if _GLOBAL_LIMITER is not None:
@@ -121,6 +135,7 @@ def init_rate_limiter(app):
             default_limits=["50000 per day", "5000 per hour", "500 per minute", "50 per second"],
             on_breach=rate_limit_handler,
             storage_uri=storage_uri,
+            storage_options=dict(_LIMITER_STORAGE_OPTIONS),
             headers_enabled=True,
             swallow_errors=True,
             in_memory_fallback_enabled=True,

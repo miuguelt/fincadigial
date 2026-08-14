@@ -154,13 +154,13 @@ const UserDetail = () => {
                            <div>
                              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Registro</p>
                              <p className="font-medium text-sm text-foreground">
-                               {user.created_at ? new Date(user.created_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'No disponible'}
+                               {user.created_at ? new Date(user.created_at).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }) : 'No disponible'}
                              </p>
                            </div>
                            <div>
                              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Actualizado</p>
                              <p className="font-medium text-sm text-foreground">
-                               {user.updated_at ? new Date(user.updated_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'No disponible'}
+                               {user.updated_at ? new Date(user.updated_at).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }) : 'No disponible'}
                              </p>
                            </div>
                        </CardContent>

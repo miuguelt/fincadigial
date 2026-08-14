@@ -37,6 +37,7 @@ export interface CRUDFormField<T = any> {
   validation?: {
     min?: number;
     max?: number;
+    step?: number;
     pattern?: string;
     message?: string;
   };
@@ -70,6 +71,8 @@ export interface CRUDFormSection<T = any> {
   title: string;
   fields: CRUDFormField<T>[];
   gridCols?: number;
+  /** Oculta toda la sección cuando devuelve false. */
+  showIf?: (data: T) => boolean;
 }
 
 // ⚠️ COMPONENTE CRÍTICO - NO ELIMINAR SIN REVISIÓN
@@ -80,6 +83,8 @@ export interface CRUDFormSection<T = any> {
 export interface CRUDConfig<T = any, TInput = any> {
   title: string;
   entityName: string;
+  /** Entidad RBAC; si se omite se resuelve desde `entityName`. */
+  permissionEntity?: string;
   entityNamePlural?: string;
   columns: CRUDColumn<T>[];
   formSections?: CRUDFormSection<TInput>[];

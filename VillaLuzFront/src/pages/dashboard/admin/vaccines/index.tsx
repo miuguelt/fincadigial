@@ -112,7 +112,7 @@ function AdminVaccinesPage() {
       }
     },
     { key: 'national_plan', label: 'Plan Nacional', render: (v) => v ? 'Sí' : 'No' },
-    { key: 'created_at' as any, label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-') },
+    { key: 'created_at' as any, label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
   ], [routeMap, diseaseMap]);
 
   const formSections: CRUDFormSection<VaccineInput & { [k: string]: any }>[] = [

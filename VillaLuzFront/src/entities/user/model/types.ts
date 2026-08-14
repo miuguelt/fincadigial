@@ -24,6 +24,13 @@ export interface User {
   finca_name?: string;
   fincas?: Array<{ id: number; name: string; role: string }>;
   avatar_url?: string | null;
+  professional_card?: string;
+  professional_specialty?: string;
+  is_verified_professional?: boolean;
+  verification_document_url?: string;
+  verification_date?: string;
+  habeas_data_accepted?: boolean;
+  terms_accepted?: boolean;
 }
 
 export interface AuthContextType {

@@ -12,7 +12,7 @@ export function useCourseProgress() {
           return parsed;
         }
       }
-    } catch {}
+    } catch { /* Invalid or unavailable local data falls back to empty progress. */ }
     return {
       courseId,
       completedLessons: [],
@@ -64,7 +64,7 @@ export function useCourseProgress() {
           result[courseId] = getProgress(courseId);
         }
       }
-    } catch {}
+    } catch { /* Unavailable storage returns the progress collected so far. */ }
     return result;
   };
 

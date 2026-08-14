@@ -9,7 +9,7 @@ const columns: CRUDColumn<RouteAdministrationResponse & { [k: string]: any }>[] 
   { key: 'name', label: 'Nombre' },
   { key: 'description', label: 'Descripción', render: (v) => v || '-' },
   { key: 'status', label: 'Estado', render: (v) => (v ? 'Activa' : 'Inactiva') },
-  { key: 'created_at', label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '-') },
+  { key: 'created_at', label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
 ];
 
 // Secciones del formulario

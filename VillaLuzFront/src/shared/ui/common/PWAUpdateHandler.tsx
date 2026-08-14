@@ -1,8 +1,8 @@
-﻿import  { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import { useToast } from '@/app/providers/ToastContext';
-import { WifiOff, RefreshCw, Download } from 'lucide-react';
+import { IconWifiOff, IconRefresh, IconDownload } from '@/shared/ui/icons';
 
 export function PWAUpdateHandler() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
@@ -82,7 +82,7 @@ export function PWAUpdateHandler() {
         <div className="fixed bottom-4 right-4 z-50 animate-fade-in">
           <Card className="w-64 shadow-lg border-orange-200 bg-orange-50">
             <CardContent className="p-3 flex items-center space-x-2">
-              <WifiOff className="h-4 w-4 text-orange-600" />
+              <IconWifiOff className="h-4 w-4 text-orange-600" />
               <div className="flex-1">
                 <p className="text-sm font-medium text-orange-800">Modo Offline</p>
                 <p className="text-xs text-orange-600">Trabajando con datos cacheados</p>
@@ -102,7 +102,7 @@ export function PWAUpdateHandler() {
       <Card className="w-80 shadow-xl border-info/30 bg-info/5">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center space-x-2 text-info">
-            <Download className="h-4 w-4" />
+            <IconDownload className="h-4 w-4" />
             <span>Actualización Disponible</span>
           </CardTitle>
           <CardDescription className="text-xs text-info">
@@ -118,9 +118,9 @@ export function PWAUpdateHandler() {
               className="flex-1 bg-info hover:bg-blue-700"
             >
               {isUpdating ? (
-                <RefreshCw className="h-3 w-3 animate-spin mr-1" />
+                <IconRefresh className="h-3 w-3 animate-spin mr-1" />
               ) : (
-                <Download className="h-3 w-3 mr-1" />
+                <IconDownload className="h-3 w-3 mr-1" />
               )}
               {isUpdating ? 'Actualizando...' : 'Actualizar Ahora'}
             </Button>

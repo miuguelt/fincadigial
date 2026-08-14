@@ -21,7 +21,7 @@ export const HEALTH_OPTIONS: HealthOption[] = [
 		description: "Activo y comiendo bien",
 		icon: "🌟",
 		selectedClass:
-			"bg-green-100 border-green-500 text-green-900 ring-green-500",
+			"bg-green-100 border-green-500 text-green-900 ring-green-500 dark:bg-green-950/60 dark:text-green-100",
 	},
 	{
 		id: "Sano",
@@ -29,7 +29,7 @@ export const HEALTH_OPTIONS: HealthOption[] = [
 		description: "Sin cambios ni señales raras",
 		icon: "✅",
 		selectedClass:
-			"bg-emerald-100 border-emerald-500 text-emerald-900 ring-emerald-500",
+			"bg-emerald-100 border-emerald-500 text-emerald-900 ring-emerald-500 dark:bg-emerald-950/60 dark:text-emerald-100",
 	},
 	{
 		id: "Regular",
@@ -37,14 +37,15 @@ export const HEALTH_OPTIONS: HealthOption[] = [
 		description: "Se ve diferente o sin ánimo",
 		icon: "⚠️",
 		selectedClass:
-			"bg-yellow-100 border-yellow-500 text-yellow-900 ring-yellow-500",
+			"bg-yellow-100 border-yellow-500 text-yellow-900 ring-yellow-500 dark:bg-yellow-950/60 dark:text-yellow-100",
 	},
 	{
 		id: "Malo",
 		label: "Enfermo",
 		description: "Necesita atención",
 		icon: "🚨",
-		selectedClass: "bg-red-100 border-red-500 text-red-900 ring-red-500",
+		selectedClass:
+			"bg-red-100 border-red-500 text-red-900 ring-red-500 dark:bg-red-950/60 dark:text-red-100",
 	},
 ];
 

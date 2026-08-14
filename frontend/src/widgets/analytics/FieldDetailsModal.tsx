@@ -24,6 +24,8 @@ import { Button } from '@/shared/ui/button';
 import { cn } from '@/shared/ui/cn';
 import { GenericModal } from '@/shared/ui/common/GenericModal';
 import { AnimalCard } from '@/widgets/dashboard/animals/AnimalCard';
+import { AnimalModal } from '@/widgets/dashboard/animals/AnimalModal';
+import { AnimalModalContent } from '@/widgets/dashboard/animals/AnimalModalContent';
 
 type FieldDetailsTab = 'overview' | 'animals' | 'stats';
 
@@ -126,6 +128,27 @@ export const FieldDetailsModal: React.FC<FieldDetailsModalProps> = ({
   );
 
   const resolvedId = currentFieldId ?? propField?.id ?? (fieldId ? Number(fieldId) : undefined);
+
+  const [animalDetailStack, setAnimalDetailStack] = useState<{id: number; data: any}[]>([]);
+
+  const handleOpenAnimalDetail = async (animal: any) => {
+    const id = Number(animal.id || animal.animal_id);
+    if (!id) return;
+    setAnimalDetailStack((prev) => [...prev, { id, data: animal }]);
+    try {
+      const full = await animalService.getById(String(id));
+      setAnimalDetailStack((prev) => {
+        const nextStack = [...prev];
+        const idx = nextStack.findIndex((i) => i.id === id);
+        if (idx >= 0) {
+          nextStack[idx] = { ...nextStack[idx], data: full };
+        }
+        return nextStack;
+      });
+    } catch (error) {
+      console.error('Error loading animal details:', error);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) setActiveTab(initialTab);
@@ -362,6 +385,7 @@ export const FieldDetailsModal: React.FC<FieldDetailsModalProps> = ({
   if (!f) return null;
 
   return (
+    <>
     <GenericModal
       isOpen={isOpen}
       onOpenChange={(open) => !open && onClose()}
@@ -515,12 +539,12 @@ export const FieldDetailsModal: React.FC<FieldDetailsModalProps> = ({
                     breedLabel={getBreedLabel(animal)}
                     fatherLabel={getFatherLabel(animal)}
                     motherLabel={getMotherLabel(animal)}
-                    onCardClick={() => navigate(`/admin/animals?detail=${animal.id}`)}
+                    onCardClick={() => handleOpenAnimalDetail(animal)}
                     actions={
                       <div className="flex w-full items-center gap-2">
                         <Button variant="outline" size="sm" className="h-8 flex-1 justify-center gap-2" onClick={(event) => {
                           event.stopPropagation();
-                          navigate(`/admin/animals?detail=${animal.id}`);
+                          handleOpenAnimalDetail(animal);
                         }}>
                           <Users className="h-3.5 w-3.5" />
                           {animalLabel(animal)}
@@ -597,7 +621,7 @@ export const FieldDetailsModal: React.FC<FieldDetailsModalProps> = ({
                     {group.rows.map(([label, count]) => (
                       <div key={label}>
                         <div className="mb-1 flex items-center justify-between gap-2 text-sm">
-                          <span className="truncate text-foreground">{label}</span>
+                          <span className="fit-clamp text-foreground">{label}</span>
                           <span className="font-bold">{count}</span>
                         </div>
                         <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -613,6 +637,31 @@ export const FieldDetailsModal: React.FC<FieldDetailsModalProps> = ({
         </div>
       )}
     </GenericModal>
+
+    {animalDetailStack.map((stacked, index) => {
+      const selectedAnimal = stacked.data;
+      return (
+        <AnimalModal
+          key={`stacked-${stacked.id}-${index}`}
+          isOpen={true}
+          onClose={() => setAnimalDetailStack((prev) => prev.slice(0, -1))}
+          animal={selectedAnimal}
+          breedLabel={getBreedLabel(selectedAnimal)}
+          fatherLabel={getFatherLabel(selectedAnimal)}
+          motherLabel={getMotherLabel(selectedAnimal)}
+        >
+          <AnimalModalContent 
+            animal={selectedAnimal}
+            breedLabel={getBreedLabel(selectedAnimal)}
+            fatherLabel={getFatherLabel(selectedAnimal)}
+            motherLabel={getMotherLabel(selectedAnimal)}
+            onFatherClick={(id) => handleOpenAnimalDetail({ id })}
+            onMotherClick={(id) => handleOpenAnimalDetail({ id })}
+          />
+        </AnimalModal>
+      );
+    })}
+    </>
   );
 };
 

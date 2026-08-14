@@ -1,4 +1,4 @@
-﻿import React, { useMemo, forwardRef } from 'react';
+import React, { useMemo, forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardStatsCard, DashboardStatsGrid } from '@/widgets/dashboard/DashboardStatsCard';
 import { useCompleteDashboardStats, getStatValue, KpiCardSummary } from '@/features/dashboard/model/useCompleteDashboardStats';
@@ -8,6 +8,7 @@ import { Badge } from '@/shared/ui/badge';
 import { Alert, AlertDescription } from '@/shared/ui/alert';
 import { getStatusBadgeClass } from '@/shared/utils/badgeStyles';
 import { SkeletonCard } from '@/shared/ui/skeleton';
+import { FincaHeroBanner } from '@/widgets/finca/hero';
 import {
   Heart,
   Activity,
@@ -98,6 +99,7 @@ const InstructorDashboard: React.FC = () => {
   return (
     <div className="bg-background px-4 pt-0 pb-6 sm:pb-8">
       <div className="w-full max-w-7xl mx-auto space-y-6">
+        <FincaHeroBanner />
         {/* Header */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
           <div>
@@ -109,7 +111,7 @@ const InstructorDashboard: React.FC = () => {
             </p>
             {lastUpdated && (
               <p className="text-xs text-muted-foreground mt-1">
-                Última actualización: {lastUpdated.toLocaleTimeString()}
+                Última actualización: {lastUpdated.toLocaleTimeString('es-CO')}
               </p>
             )}
         </div>
@@ -180,7 +182,7 @@ const InstructorDashboard: React.FC = () => {
         {/* KPIs clave de salud y operación */}
         {!loading && kpiCards.length > 0 && (
           <div>
-            <h2 className="text-lg font-semibold mb-3">KPIs del hato (últimos 30 días)</h2>
+            <h2 className="text-lg font-semibold mb-3">KPIs del ganado (últimos 30 días)</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-4">
               {kpiCards.map((card) => {
                 // Para el instructor todos los KPIs son informativos; las tasas negativas (mortalidad)

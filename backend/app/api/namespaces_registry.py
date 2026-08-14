@@ -83,6 +83,7 @@ def register_namespaces(api):
     from ..namespaces.farm.infrastructure_namespace import infrastructure_ns
     from ..namespaces.farm.management_plans_namespace import management_plans_ns
     from ..namespaces.users.producer_profiles_namespace import producer_profiles_ns
+    from ..namespaces.users.professional_credentials_namespace import professional_credentials_ns
     from ..namespaces.farm.campesino_namespace import (
         crop_plots_ns,
         crop_activities_ns,
@@ -186,6 +187,7 @@ def register_namespaces(api):
     api.add_namespace(offline_learning_ns)
     api.add_namespace(management_plans_ns)
     api.add_namespace(producer_profiles_ns)
+    api.add_namespace(professional_credentials_ns)
     api.add_namespace(kb_ns, path='/knowledge_base')
     api.add_namespace(search_ns)
     api.add_namespace(enums_ns, path='/enums')

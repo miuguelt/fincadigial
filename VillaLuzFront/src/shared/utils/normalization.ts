@@ -24,7 +24,7 @@ export function normalizeDisplayValue(value: any): string {
         if (d.getHours() === 0 && d.getMinutes() === 0 && d.getSeconds() === 0) {
           return d.toISOString().slice(0,10);
         }
-        return d.toLocaleString();
+        return d.toLocaleString('es-CO');
       }
     }
     return trimmed;

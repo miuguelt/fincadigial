@@ -38,7 +38,7 @@ class SystemAlerts(Resource):
             priority_filter = flask.request.args.get('priority')
             animal_id = flask.request.args.get('animal_id')
             is_read = flask.request.args.get('is_read')
-            limit = int(flask.request.args.get('limit', 50))
+            limit = min(max(int(flask.request.args.get('limit', 50) or 50), 1), 200)
 
             from app.models.system_content import SystemContent
 
@@ -55,23 +55,30 @@ class SystemAlerts(Resource):
                 'baja':    AlertPriority.LOW,
             }
 
-            query = _tf(AnimalAlert.query, AnimalAlert)
+            # Scope query: tenant + priority + animal filters. Read state is NOT applied
+            # here so `unread` always counts against the same universe as `total`.
+            scope_query = _tf(
+                AnimalAlert.query.filter(AnimalAlert.superseded_by_id.is_(None)),
+                AnimalAlert,
+            )
             if priority_filter:
                 pf_lower = priority_filter.lower()
                 if pf_lower == 'urgente':
                     # Alias: Alta + Crítica juntas
-                    query = query.filter(
+                    scope_query = scope_query.filter(
                         AnimalAlert.priority.in_([AlertPriority.HIGH, AlertPriority.CRITICAL])
                     )
                 elif pf_lower in _PRIORITY_MAP:
-                    query = query.filter(AnimalAlert.priority == _PRIORITY_MAP[pf_lower])
+                    scope_query = scope_query.filter(AnimalAlert.priority == _PRIORITY_MAP[pf_lower])
                 # Si no coincide, no se filtra (devuelve todas)
             if animal_id:
-                query = query.filter_by(animal_id=animal_id)
-            if is_read is not None:
-                query = query.filter_by(is_read=is_read.lower() == 'true')
+                scope_query = scope_query.filter_by(animal_id=animal_id)
 
-            db_alerts = query.order_by(AnimalAlert.triggered_at.desc()).limit(limit).all()
+            page_query = scope_query
+            if is_read is not None:
+                page_query = page_query.filter_by(is_read=is_read.lower() == 'true')
+
+            db_alerts = page_query.order_by(AnimalAlert.triggered_at.desc()).limit(limit).all()
 
             formatted = [
                 {
@@ -91,24 +98,76 @@ class SystemAlerts(Resource):
                 for a in db_alerts
             ]
 
+            # Aggregates run over the whole scope, never over the truncated page:
+            # `len(formatted)` would just echo back `limit`.
+            from sqlalchemy import func
+
+            total_count = scope_query.count()
+            unread_count = scope_query.filter(AnimalAlert.is_read.is_(False)).count()
+
+            def _enum_value(raw):
+                return raw.value if hasattr(raw, 'value') else str(raw)
+
+            priority_counts = {}
+            for raw_priority, count in (
+                scope_query.with_entities(AnimalAlert.priority, func.count(AnimalAlert.id))
+                .group_by(AnimalAlert.priority)
+                .all()
+            ):
+                priority_counts[_enum_value(raw_priority).lower()] = int(count)
+
+            unread_priority_counts = {}
+            for raw_priority, count in (
+                scope_query.filter(AnimalAlert.is_read.is_(False))
+                .with_entities(AnimalAlert.priority, func.count(AnimalAlert.id))
+                .group_by(AnimalAlert.priority)
+                .all()
+            ):
+                unread_priority_counts[_enum_value(raw_priority).lower()] = int(count)
+
+            by_type = {}
+            for raw_type, count in (
+                scope_query.with_entities(AnimalAlert.alert_type, func.count(AnimalAlert.id))
+                .group_by(AnimalAlert.alert_type)
+                .all()
+            ):
+                by_type[_enum_value(raw_type)] = int(count)
+
+            critical = priority_counts.get('crítica', 0) or priority_counts.get('critica', 0)
+            high = priority_counts.get('alta', 0)
+            medium = priority_counts.get('media', 0)
+            low = priority_counts.get('baja', 0)
+            critical_unread = (
+                unread_priority_counts.get('crítica', 0) or unread_priority_counts.get('critica', 0)
+            )
+
             stats = {
-                'total': len(formatted),
-                'unread': sum(1 for a in formatted if not a['is_read']),
+                'total': total_count,
+                'unread': unread_count,
+                'returned': len(formatted),
+                'critical': critical,
+                'critical_unread': critical_unread,
+                'high': high,
+                'medium': medium,
+                'low': low,
+                'by_type': by_type,
                 'by_priority': {
-                    'critica': sum(1 for a in formatted if a['priority'] == 'crítica'),
-                    'alta': sum(1 for a in formatted if a['priority'] == 'alta'),
-                    'media': sum(1 for a in formatted if a['priority'] == 'media'),
-                    'baja': sum(1 for a in formatted if a['priority'] == 'baja'),
-                    # Alias para compatibilidad con código legado
-                    'high': sum(1 for a in formatted if a['priority'] in ['alta', 'crítica']),
-                    'medium': sum(1 for a in formatted if a['priority'] == 'media'),
-                    'low': sum(1 for a in formatted if a['priority'] == 'baja'),
+                    'critica': critical,
+                    # Alias acentuado: los clientes derivan la clave de la etiqueta 'Crítica'.
+                    'crítica': critical,
+                    'alta': high,
+                    'media': medium,
+                    'baja': low,
+                    # Alias para compatibilidad con código legado (high = alta + crítica)
+                    'high': high + critical,
+                    'medium': medium,
+                    'low': low,
                 },
             }
 
             return APIResponse.success(
                 data={'alerts': formatted, 'statistics': stats, 'generated_at': datetime.now().isoformat()},
-                message=f'Se recuperaron {len(formatted)} alertas',
+                message=f'Se recuperaron {len(formatted)} de {total_count} alertas',
             )
         except Exception as e:
             return APIResponse.error(message='Error interno del servidor', status_code=500, details={'error': str(e)})

@@ -6,7 +6,7 @@ import flask
 logger = logging.getLogger(__name__)
 
 @celery.task(name="app.tasks.alert_tasks.evaluate_all_alerts")
-def evaluate_all_alerts():
+def evaluate_all_alerts(finca_id=None):
     """
     Ejecuta el motor de alertas en background a través de Celery.
     Esto permite escalabilidad multi-worker sin problemas de concurrencia.
@@ -20,13 +20,33 @@ def evaluate_all_alerts():
     except RuntimeError:
         pass
 
+    lock = None
     try:
-        results = AlertEngine.evaluate_all()
+        from app.extensions import redis_client
+
+        if redis_client is not None:
+            lock = redis_client.lock(
+                f'villaluz:tasks:evaluate_all_alerts:{finca_id or "global"}',
+                timeout=2 * 60 * 60,
+                blocking_timeout=0,
+            )
+            if not lock.acquire(blocking=False):
+                logger.info("Evaluación de alertas omitida: ya existe una ejecución activa")
+                return {'status': 'skipped', 'reason': 'already_running'}
+
+        results = AlertEngine.evaluate_all(finca_id=finca_id)
         logger.info(f"Evaluación de alertas finalizada: {results}")
         return results
     except Exception as e:
         logger.error(f"Error en la ejecución de AlertEngine en Celery: {e}")
         raise
+    finally:
+        if lock is not None:
+            try:
+                if lock.owned():
+                    lock.release()
+            except Exception:
+                logger.warning("No se pudo liberar el lock de evaluación de alertas", exc_info=True)
 
 @celery.task(name="app.tasks.alert_tasks.broadcast_live_kpis")
 def broadcast_live_kpis():

@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Image as ImageIcon, Upload, X, ZoomIn, Download, Star, Trash2, MoreVertical, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
@@ -466,7 +466,7 @@ export function ImageManager({
           }, 800);
         } catch (error) {
           if (process.env.NODE_ENV !== 'production') {
-            console.warn('[ImageManager] Error emitiendo evento de actualizaci¢n', error);
+            console.warn('[ImageManager] Error emitiendo evento de actualización', error);
           }
         }
       } else {
@@ -675,7 +675,7 @@ export function ImageManager({
                       )}
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
-                      <p className="text-xs text-white truncate">
+                      <p className="text-xs text-white fit-clamp">
                         {filePreview.file.name}
                       </p>
                       <p className="text-xs text-white/70">
@@ -950,7 +950,7 @@ export function ImageManager({
 
                 {/* Info del archivo */}
                 <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                  <p className="text-xs text-white truncate" title={image.filename}>
+                  <p className="text-xs text-white fit-clamp" title={image.filename}>
                     {image.filename}
                   </p>
                   <p className="text-xs text-white/70">
@@ -981,7 +981,7 @@ export function ImageManager({
                 `${(selectedImage.file_size / 1024).toFixed(2)} KB - ${selectedImage.mime_type
                 } - Subida el ${new Date(
                   selectedImage.created_at
-                ).toLocaleDateString('es-ES')}`}
+                ).toLocaleDateString('es-CO')}`}
             </DialogDescription>
           </DialogHeader>
 

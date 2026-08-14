@@ -158,7 +158,7 @@ export const ExecutiveDemographics: React.FC<ExecutiveDemographicsProps> = ({
                 return (
                   <div key={index}>
                     <div className="flex items-center justify-between text-xs font-semibold text-foreground mb-1">
-                      <span className="truncate max-w-[70%]">{nombre}</span>
+                      <span className="fit-clamp max-w-[70%]">{nombre}</span>
                       <span>{cantidad}</span>
                     </div>
                     <div className="w-full bg-muted/50 rounded-full h-1.5">

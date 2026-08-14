@@ -3,7 +3,8 @@ import { PageResult } from '@/shared/types/common.types';
 import { extractListFromResponse } from './listExtractor';
 import { normalizePagination } from './responseNormalizer';
 import type { PaginatedResponse } from '@/shared/api/generated/swaggerTypes';
-import { getDefaultLimitByDevice } from '@/shared/utils/viewportUtils';
+import { buildListParams } from '@/shared/api/list-params';
+import { registerService } from '@/shared/api/service-registry';
 import {
   getIndexedDBCache,
   setIndexedDBCache,
@@ -11,6 +12,7 @@ import {
 } from '@/shared/api/cache/indexedDBCache';
 import { isDevMode } from '@/shared/utils/viteEnv';
 import { offlineQueue } from '@/shared/api/offline/offlineQueue';
+import { getCacheScope } from '@/shared/api/cache-scope';
 
 const __DEV__ = isDevMode();
 
@@ -51,11 +53,12 @@ export class BaseService<T> {
       ...options,
     };
     this.cache = new Map();
+    registerService(endpoint, this);
   }
 
   protected getCacheKey(params?: Record<string, any>): string {
     const sortedParams = params ? JSON.stringify(Object.fromEntries(Object.entries(params).sort())) : '';
-    return `${this.endpoint}:${sortedParams}`;
+    return `${getCacheScope()}:${this.endpoint}:${sortedParams}`;
   }
 
   protected async getFromCache(key: string): Promise<T | T[] | PageResult<T> | PaginatedResponse<T> | null> {
@@ -93,7 +96,7 @@ export class BaseService<T> {
 
   public async clearCache(): Promise<void> {
     this.cache.clear();
-    const prefix = `service:${this.endpoint}`;
+    const prefix = `service:${getCacheScope()}:${this.endpoint}`;
     try {
       await invalidateIndexedDBCacheByPrefix(prefix);
     } catch (err) {
@@ -328,6 +331,9 @@ export class BaseService<T> {
       data: payload,
       ...config,
     });
+    if (method !== 'GET') {
+      await this.clearCache();
+    }
     return response.data?.data || response.data || response;
   }
 
@@ -354,7 +360,7 @@ export class BaseService<T> {
       if (typeof window !== 'undefined') {
         defaultLimit = getDefaultLimitByDevice();
       }
-    } catch (e) {}
+    } catch { /* Browser capability detection falls back to the default limit. */ }
 
     return {
       page: page ?? rest.page ?? 1,

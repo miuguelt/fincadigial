@@ -4,6 +4,7 @@ import { RefreshCw, Syringe, ClipboardList } from 'lucide-react';
 import { GenericModal } from '@/shared/ui/common/GenericModal';
 import { Button } from '@/shared/ui/button';
 import { useToast } from '@/app/providers/ToastContext';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import { TreatmentResponse, TreatmentVaccineResponse, TreatmentMedicationResponse } from '@/shared/api/generated/swaggerTypes';
 import { vaccinesService } from '@/entities/vaccine/api/vaccines.service';
 import { medicationsService } from '@/entities/medication/api/medications.service';
@@ -28,6 +29,10 @@ export const TreatmentSuppliesModal: React.FC<TreatmentSuppliesModalProps> = ({
     zIndex
 }) => {
     const { showToast } = useToast();
+    const { goTo, canAccess } = useRoleNavigation();
+
+    // Editar la ficha del insumo lleva al catálogo: sólo se ofrece a quien puede abrirlo.
+    const canEditSupplyCatalog = canAccess('/admin/vaccines') && canAccess('/admin/medications');
 
     // Data State
     const [vaccines, setVaccines] = useState<TreatmentVaccineResponse[]>([]);
@@ -608,7 +613,7 @@ export const TreatmentSuppliesModal: React.FC<TreatmentSuppliesModalProps> = ({
                             >
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
                                     <InfoField label="Diagnóstico" value={treatment.diagnosis || '-'} fullWidth />
-                                    <InfoField label="Fecha" value={treatment.treatment_date ? new Date(treatment.treatment_date).toLocaleDateString('es-ES') : '-'} />
+                                    <InfoField label="Fecha" value={treatment.treatment_date ? new Date(treatment.treatment_date).toLocaleDateString('es-CO') : '-'} />
                                     <InfoField
                                         label="Estado"
                                         value={treatment.status || 'Iniciado'}
@@ -761,21 +766,19 @@ export const TreatmentSuppliesModal: React.FC<TreatmentSuppliesModalProps> = ({
                         setViewDetailItem(null);
                         setViewDetailType(null);
                     }}
-                    onEdit={() => {
-                        // Navigate to the appropriate admin page for editing
+                    onEdit={canEditSupplyCatalog ? () => {
                         const itemId = viewDetailItem?.id;
                         if (!itemId) return;
 
-                        // Determine the admin route based on type
+                        // El catálogo vive bajo el prefijo del rol activo, no siempre bajo /admin.
                         const route = viewDetailType === 'vaccine'
                             ? `/admin/vaccines?edit=${itemId}`
                             : `/admin/medications?edit=${itemId}`;
 
-                        // Close modal and navigate
                         setViewDetailItem(null);
                         setViewDetailType(null);
-                        window.location.href = route;
-                    }}
+                        goTo(route);
+                    } : undefined}
                     zIndex={(zIndex || 2000) + 500}
                 />
             )}

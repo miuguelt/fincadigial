@@ -98,12 +98,9 @@ const InventoryPage: React.FC = () => {
             name: 'medication_id',
             label: 'Medicamento',
             type: 'select',
-            // @ts-ignore - Propiedad condicional en el widget
             dependsOn: 'product_type',
-            // @ts-ignore - Propiedad condicional en el widget
             showIf: (data: InventoryLotInput) => data.product_type === 'Medicamento',
             required: true,
-            // @ts-ignore - Propiedad condicional en el widget
             loadOptions: async () => {
               const meds = await medicationsService.getAll();
               return meds.map((m: any) => ({ label: m.name, value: m.id }));
@@ -113,12 +110,9 @@ const InventoryPage: React.FC = () => {
             name: 'vaccine_id',
             label: 'Vacuna',
             type: 'select',
-            // @ts-ignore - Propiedad condicional en el widget
             dependsOn: 'product_type',
-            // @ts-ignore - Propiedad condicional en el widget
             showIf: (data: InventoryLotInput) => data.product_type === 'Vacuna',
             required: true,
-            // @ts-ignore - Propiedad condicional en el widget
             loadOptions: async () => {
               const vacs = await vaccinesService.getAll();
               return vacs.map((v: any) => ({ label: v.name, value: v.id }));
@@ -141,8 +135,7 @@ const InventoryPage: React.FC = () => {
             label: 'Cantidad Inicial',
             type: 'number',
             required: true,
-            // @ts-ignore
-            min: 0,
+            validation: { min: 0 },
           },
           {
             name: 'unit',
@@ -161,8 +154,7 @@ const InventoryPage: React.FC = () => {
             name: 'min_stock',
             label: 'Stock Mínimo (Alerta)',
             type: 'number',
-            // @ts-ignore
-            min: 0,
+            validation: { min: 0 },
           },
         ]
       },
@@ -178,8 +170,7 @@ const InventoryPage: React.FC = () => {
             name: 'unit_cost',
             label: 'Costo Unitario',
             type: 'number',
-            // @ts-ignore
-            min: 0,
+            validation: { min: 0 },
           },
           {
             name: 'entry_date',
@@ -194,10 +185,9 @@ const InventoryPage: React.FC = () => {
         ]
       }
     ],
-    enableEdit: true,
+    enableEditModal: true,
     enableDelete: true,
-    // @ts-ignore
-    enableDetail: true,
+    enableDetailModal: true,
     customHeader: <div className="mt-4"><SanidadTabs /></div>,
   };
 

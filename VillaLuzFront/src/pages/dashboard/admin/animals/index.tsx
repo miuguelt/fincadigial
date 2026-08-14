@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Edit } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit, Map } from 'lucide-react';
 import { AdminCRUDPage } from '@/widgets/admin-crud';
 import type { CRUDColumn, CRUDFormSection, CRUDConfig } from '../../../../shared/types/crud';
 import { animalsService } from '@/entities/animal/api/animal.service';
@@ -28,7 +28,6 @@ import { BoardViewPotreros } from '@/widgets/dashboard/animals/BoardViewPotreros
 import { AnimalImagePreUpload } from '@/widgets/dashboard/animals/AnimalImagePreUpload';
 import { animalImageService } from '@/entities/animal/api/animalImage.service';
 import { useToast } from '@/app/providers/ToastContext';
-import { fieldService } from '@/entities/field/api/field.service';
 import {
   BatchActionToolbar,
   BatchWeightModal,
@@ -157,67 +156,6 @@ const initialFormData: Partial<AnimalInput> = {
   idFather: undefined,
   idMother: undefined,
   notes: '',
-};
-
-import { Map as MapIcon, Activity, Users, ClipboardCheck, CheckCircle2 } from 'lucide-react';
-import KPICard from '@/widgets/analytics/KPICard';
-
-const AnimalsPotrerosHeader: React.FC = () => {
-  const [fields, setFields] = useState<any[]>([]);
-  const [_loading, _setLoading] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fieldService.getPaginated({ limit: 1000 });
-        setFields(res.data || []);
-      } catch (e) {
-        console.warn('Error fetching fields for header', e);
-      } finally {
-        _setLoading(false);
-      }
-    })();
-  }, []);
-
-  const metrics = useMemo(() => {
-    let totalCapacity = 0;
-    let totalAnimals = 0;
-    fields.forEach(f => {
-      totalCapacity += parseInt(f.capacity || '0') || 0;
-      totalAnimals += f.animal_count || 0;
-    });
-    return {
-      totalCapacity,
-      totalAnimals,
-      occupation: totalCapacity > 0 ? Math.round((totalAnimals / totalCapacity) * 100) : 0,
-      available: Math.max(0, totalCapacity - totalAnimals)
-    };
-  }, [fields]);
-
-  return (
-    <div className="mb-8 space-y-6">
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 bg-card/40 backdrop-blur-xl p-6 sm:p-8 rounded-[2.5rem] border border-border/50 shadow-2xl shadow-primary/5">
-        <div className="flex items-center gap-5">
-          <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-lg bg-gradient-to-br from-primary to-primary-600 flex items-center justify-center shadow-xl shadow-primary/20">
-            <MapIcon className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tighter text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-              Rotación en <span className="text-primary">Potreros</span>
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground font-medium mt-1">Gestión visual y estratégica de la carga animal</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <KPICard title="Capacidad Total" value={metrics.totalCapacity} icon={<Users className="text-primary" />} />
-        <KPICard title="Animales en Campo" value={metrics.totalAnimals} icon={<Activity className="text-rose-500" />} />
-        <KPICard title="Ocupación" value={`${metrics.occupation}%`} icon={<ClipboardCheck className="text-amber-500" />} />
-        <KPICard title="Cupos Libres" value={metrics.available} icon={<CheckCircle2 className="text-emerald-500" />} />
-      </div>
-    </div>
-  );
 };
 
 function AdminAnimalsPage() {
@@ -461,7 +399,7 @@ function AdminAnimalsPage() {
     {
       key: 'birth_date',
       label: 'Nacimiento',
-      render: (v: any) => v ? new Date(v as string).toLocaleDateString('es-ES') : '-'
+      render: (v: any) => v ? new Date(v as string).toLocaleDateString('es-CO') : '-'
     },
     {
       key: 'weight',
@@ -503,7 +441,7 @@ function AdminAnimalsPage() {
     {
       key: 'created_at',
       label: 'Creado',
-      render: (v: any) => v ? new Date(v as string).toLocaleDateString('es-ES') : '-'
+      render: (v: any) => v ? new Date(v as string).toLocaleDateString('es-CO') : '-'
     },
   ];
 
@@ -626,13 +564,10 @@ function AdminAnimalsPage() {
   };
 
   // Renderizar vista agrupada por potreros (drag-and-drop)
-  const renderGroupedAnimals = (items: AnimalResponse[]) => {
+  const renderGroupedAnimals = (_items: AnimalResponse[]) => {
     return (
       <BoardViewPotreros
-        animals={items}
         breedOptions={breedOptions}
-        fatherOptions={fatherOptions}
-        motherOptions={motherOptions}
         onAnimalClick={(animal) => {
           navigate(`/admin/animals/${animal.id}`);
         }}
@@ -729,7 +664,7 @@ function AdminAnimalsPage() {
     renderCard: renderAnimalCard,
     renderGrouped: vista === 'potreros' ? renderGroupedAnimals : undefined,
     cardGridClassName: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6',
-    customHeader: vista === 'potreros' ? <AnimalsPotrerosHeader /> : undefined,
+    customHeader: undefined,
     customToolbar: (
       <div className="flex items-center gap-1">
         <Button
@@ -778,7 +713,7 @@ function AdminAnimalsPage() {
           }}
           aria-label="Vista Potreros"
         >
-          <MapIcon size={14} />
+          <Map size={14} />
           <span className="hidden sm:inline">Potreros</span>
         </Button>
       </div>
@@ -1109,7 +1044,7 @@ function AdminAnimalsPage() {
               record: item.record || `ID-${item.id}`,
               breedLabel,
               gender: item.gender || item.sex || undefined,
-              birthDate: item.birth_date ? new Date(item.birth_date).toLocaleDateString('es-ES') : undefined
+              birthDate: item.birth_date ? new Date(item.birth_date).toLocaleDateString('es-CO') : undefined
             };
           })}
           onSuccess={() => {

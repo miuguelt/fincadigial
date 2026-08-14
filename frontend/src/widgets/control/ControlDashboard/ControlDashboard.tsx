@@ -1,5 +1,6 @@
 import { useState, useEffect, ReactNode } from 'react';
 import { ControlStats } from '../ControlStats';
+import { useCallback } from 'react';
 import { controlService } from '@/entities/control/api/control.service';
 import { useToast } from '@/app/providers/ToastContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
@@ -22,7 +23,7 @@ export function ControlDashboard({ tableComponent }: ControlDashboardProps) {
   });
   const [activeTab, setActiveTab] = useState(tableComponent ? 'table' : 'overview');
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
       const data: any = await controlService.getPaginated({ page: 1, limit: 1000 });
@@ -53,11 +54,11 @@ export function ControlDashboard({ tableComponent }: ControlDashboardProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [showToast]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const hasNoData = !isLoading && statsData.totalControls === 0;
 
@@ -122,7 +123,7 @@ export function ControlDashboard({ tableComponent }: ControlDashboardProps) {
                   <Heart className="h-12 w-12 text-gray-300 mb-3" />
                   <h3 className="text-base font-bold text-gray-700 mb-1">Sin registros de salud</h3>
                   <p className="text-sm text-gray-500 max-w-md">
-                    Los datos de salud del hato aparecerán aquí cuando registres los primeros controles veterinarios.
+                    Los datos de salud del ganado aparecerán aquí cuando registres los primeros controles veterinarios.
                   </p>
                 </div>
               ) : (
@@ -130,7 +131,7 @@ export function ControlDashboard({ tableComponent }: ControlDashboardProps) {
                   <div>
                     <div className="flex items-center gap-2">
                       <Heart className="h-5 w-5 text-blue-500" />
-                      <h3 className="text-base md:text-lg font-bold text-gray-800">Resumen de Salud del Hato</h3>
+                      <h3 className="text-base md:text-lg font-bold text-gray-800">Resumen de Salud del Ganado</h3>
                     </div>
                     <p className="text-sm text-gray-500 mt-2 max-w-lg">
                       {statsData.sickAnimals > 0

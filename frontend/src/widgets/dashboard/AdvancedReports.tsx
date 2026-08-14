@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 
 const AdvancedReports: React.FC = () => {
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
 
   useEffect(() => {
-    navigate('/admin/reports', { replace: true });
-  }, [navigate]);
+    goTo('/admin/reports', { replace: true });
+  }, [goTo]);
 
   return null;
 };

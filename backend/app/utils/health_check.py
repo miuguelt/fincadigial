@@ -3,6 +3,8 @@ Sistema de health checks para monitoreo del sistema VillaLuz.
 Versión corregida usando flask.Flask-RESTX Resource clases.
 """
 
+import os
+import threading
 import time
 import psutil
 from datetime import datetime, UTC
@@ -15,6 +17,51 @@ logger = logging.getLogger(__name__)
 
 # Crear namespace para health checks
 health_ns = Namespace('health', description='Health checks del sistema')
+
+# ── Celery probe tuning ─────────────────────────────────────────────────────
+# ``control.inspect()`` is a broker broadcast: without ``limit`` it always burns
+# the whole timeout even after every worker has replied.  Running ping() and
+# stats() at 3s each made GET /api/v1/health cost a fixed ~6s, and the telemetry
+# widget polls it every few seconds — hence the stream of
+# "Slow flask.request ...ms GET /api/v1/health" warnings in the log.
+_CELERY_INSPECT_TIMEOUT = float(os.getenv('CELERY_INSPECT_TIMEOUT', '1.5'))
+_CELERY_STATUS_TTL_SECONDS = float(os.getenv('CELERY_STATUS_TTL_SECONDS', '30'))
+# Workers expected to be alive.  Used as the broadcast ``limit`` so the probe
+# returns as soon as they all answer; raise it when scaling out or the census
+# gets capped at this value.
+_CELERY_EXPECTED_WORKERS = int(os.getenv('CELERY_EXPECTED_WORKERS', '1'))
+
+_celery_probe_lock = threading.Lock()
+_celery_status_cache = {'value': None, 'expires_at': 0.0}
+
+
+def _celery_setting(key: str, default):
+    """Valor de ``app.config`` si hay contexto Flask; si no, el de entorno."""
+    try:
+        import flask
+        if flask.has_app_context():
+            value = flask.current_app.config.get(key)
+            if value is not None:
+                return value
+    except Exception:
+        pass
+    return default
+
+
+def _current_worker_hostname():
+    """Nombre del worker si este proceso está ejecutando una tarea Celery.
+
+    With ``--pool=solo`` the main process runs the task inline and cannot answer
+    its own inspect broadcast.  Without this detection the check saw zero
+    workers from inside the worker itself and self-healing emitted
+    ``WORKERS_WARNING_EMITTED`` on every cycle, always a false positive.
+    """
+    try:
+        from celery import current_task
+        return getattr(getattr(current_task, 'request', None), 'hostname', None)
+    except Exception:
+        return None
+
 
 class HealthChecker:
     def __init__(self, db=None, cache=None):
@@ -148,38 +195,96 @@ class HealthChecker:
                 'timestamp': datetime.now(UTC).isoformat()
             }
 
-    def check_celery(self):
-        """Verificar estado de Celery, workers activos y métricas de performance."""
+    def check_celery(self, use_cache=True):
+        """Verificar estado de Celery, workers activos y métricas de performance.
+
+        El resultado se reutiliza durante ``CELERY_STATUS_TTL_SECONDS`` porque
+        cada sondeo es una difusión por el broker: sin caché el widget de
+        telemetría pagaba ese coste en cada poll. Usa ``use_cache=False`` para
+        forzar una lectura fresca.
+        """
+        cached = _celery_status_cache['value']
+        if use_cache and cached is not None and time.time() < _celery_status_cache['expires_at']:
+            return cached
+
+        # Only one probe at a time.  If another thread is already broadcasting,
+        # serve the previous value instead of queueing a redundant broadcast;
+        # block only when there is nothing to serve yet or the caller demanded
+        # a fresh reading.
+        if not _celery_probe_lock.acquire(blocking=cached is None or not use_cache):
+            return cached
+        try:
+            cached = _celery_status_cache['value']
+            if use_cache and cached is not None and time.time() < _celery_status_cache['expires_at']:
+                return cached
+
+            result = self._probe_celery()
+            ttl = float(_celery_setting('CELERY_STATUS_TTL_SECONDS', _CELERY_STATUS_TTL_SECONDS))
+            _celery_status_cache['value'] = result
+            _celery_status_cache['expires_at'] = time.time() + ttl
+            return result
+        finally:
+            _celery_probe_lock.release()
+
+    def _probe_celery(self):
+        """Difusión real por el broker para censar workers y leer sus métricas."""
         try:
             from celery import current_app as celery_app
 
-            # Intentar obtener workers activos y sus estadísticas
-            # timeout muy corto para no bloquear el health check
-            # A 200 ms reply window is too aggressive for a worker sharing a
-            # local Memurai instance with cache, SSE and the result backend.
-            # It turns healthy workers into false warnings during brief Redis
-            # contention and makes the scheduled self-healing task noisy.
-            inspector = celery_app.control.inspect(timeout=1.0)
-            ping_res = inspector.ping()
-            stats_res = inspector.stats()
+            timeout = float(_celery_setting('CELERY_INSPECT_TIMEOUT', _CELERY_INSPECT_TIMEOUT))
+            limit = int(_celery_setting('CELERY_EXPECTED_WORKERS', _CELERY_EXPECTED_WORKERS)) or None
+            inspector = celery_app.control.inspect(timeout=timeout, limit=limit)
 
-            workers_count = len(ping_res) if ping_res else 0
+            # stats() already carries every worker name, so it doubles as the
+            # census; ping() only runs when stats comes back empty.  That keeps
+            # the healthy path at a single broadcast instead of two.
+            try:
+                stats_res = inspector.stats() or {}
+            except Exception as exc:
+                logger.warning(f"Celery stats falló de forma transitoria: {exc}")
+                stats_res = {}
+
+            worker_names = list(stats_res)
+            if not worker_names:
+                try:
+                    worker_names = list(inspector.ping() or {})
+                except Exception as exc:
+                    logger.warning(f"Celery ping falló de forma transitoria: {exc}")
+
+            self_hostname = _current_worker_hostname()
+            if self_hostname and self_hostname not in worker_names:
+                worker_names.append(self_hostname)
 
             worker_details = {}
-            if stats_res:
-                for worker_name, stats in stats_res.items():
-                    # Extraer métricas de uso de recursos si están disponibles
-                    rusage = stats.get('rusage', {})
+            for worker_name in worker_names:
+                stats = stats_res.get(worker_name)
+                # A worker that errors out replies with a string instead of the
+                # stats mapping, and a self-detected worker has no reply at all;
+                # treat both as online but without metrics rather than blowing
+                # up the whole health check.
+                if not isinstance(stats, dict):
                     worker_details[worker_name] = {
                         'status': 'online',
-                        'processed': stats.get('total', {}).get('total', 0),
-                        'memory_usage_mb': round(rusage.get('maxrss', 0) / 1024, 2) if rusage.get('maxrss') else 0,
-                        'concurrency': stats.get('pool', {}).get('max-concurrency', 0)
+                        'detail': str(stats) if stats is not None else 'sin métricas',
                     }
+                    continue
+                # Extraer métricas de uso de recursos si están disponibles
+                rusage = stats.get('rusage')
+                rusage = rusage if isinstance(rusage, dict) else {}
+                total = stats.get('total')
+                total = total if isinstance(total, dict) else {}
+                pool = stats.get('pool')
+                pool = pool if isinstance(pool, dict) else {}
+                worker_details[worker_name] = {
+                    'status': 'online',
+                    'processed': total.get('total', 0),
+                    'memory_usage_mb': round(rusage.get('maxrss', 0) / 1024, 2) if rusage.get('maxrss') else 0,
+                    'concurrency': pool.get('max-concurrency', 0)
+                }
 
             return {
-                'status': 'healthy' if workers_count > 0 else 'warning',
-                'workers_active': workers_count,
+                'status': 'healthy' if worker_names else 'warning',
+                'workers_active': len(worker_names),
                 'worker_details': worker_details,
                 'timestamp': datetime.now(UTC).isoformat()
             }

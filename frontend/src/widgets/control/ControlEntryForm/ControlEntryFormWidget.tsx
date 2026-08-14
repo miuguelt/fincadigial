@@ -41,6 +41,9 @@ export function ControlEntryFormWidget({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const copy = MODE_COPY[mode];
   const checkupDate = defaultDate || getTodayColombia();
+  const submitColor = mode === 'weight'
+    ? 'bg-amber-600 text-white hover:bg-amber-700'
+    : 'bg-emerald-700 text-white hover:bg-emerald-800';
 
   const form = useForm<ControlEntryFormValues>({
     resolver: zodResolver(getControlEntrySchema(mode)),
@@ -62,25 +65,31 @@ export function ControlEntryFormWidget({
   };
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-      <ControlEntryCommonFields
-        form={form}
-        animals={animals ?? []}
-        loadingAnimals={loadingAnimals}
-      />
+    <form
+      onSubmit={form.handleSubmit(onSubmit)}
+      className="flex min-h-full flex-col gap-5"
+      aria-busy={isSubmitting}
+    >
+      <div className="space-y-5">
+        <ControlEntryCommonFields
+          form={form}
+          animals={animals ?? []}
+          loadingAnimals={loadingAnimals}
+        />
 
-      <ControlEntryModeFields form={form} mode={mode} />
+        <ControlEntryModeFields form={form} mode={mode} />
+      </div>
 
-      <div className="flex gap-4 pt-2">
+      <div className="sticky bottom-0 z-10 mt-auto grid grid-cols-2 gap-2 border-t border-border bg-card px-3 py-3 -mx-3 sm:-mx-5 sm:px-5">
         {onCancel && (
-          <Button type="button" variant="outline" className="w-1/3 h-12" onClick={onCancel}>
+          <Button type="button" variant="outline" className="min-h-12 w-full font-bold" onClick={onCancel} disabled={isSubmitting}>
             Cancelar
           </Button>
         )}
         <Button
           type="submit"
-          disabled={isSubmitting}
-          className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-700"
+          disabled={isSubmitting || loadingAnimals}
+          className={`min-h-12 w-full font-bold ${onCancel ? '' : 'col-span-2'} ${submitColor}`}
         >
           {isSubmitting ? (
             <>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { usersService } from '@/entities/user/api/user.service';
+import { useCallback } from 'react';
 import type { UserResponse } from '@/shared/api/generated/swaggerTypes';
 import { useToast } from '@/shared/hooks/use-toast';
 import { Button } from '@/shared/ui/button';
@@ -18,12 +19,13 @@ const UserApprovalPage = () => {
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const { toast } = useToast();
 
-  const fetchPendingUsers = async () => {
+  const fetchPendingUsers = useCallback(async () => {
     setLoading(true);
     try {
       const response = await usersService.getUsers({
         approval_status: 'Pending',
         limit: 100,
+        cache_bust: Date.now(),
       });
       setUsers((response as any).data ?? []);
     } catch (error) {
@@ -36,11 +38,11 @@ const UserApprovalPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     fetchPendingUsers();
-  }, []);
+  }, [fetchPendingUsers]);
 
   const handleApprove = async (userId: number) => {
     setActionLoading(userId);
@@ -52,10 +54,12 @@ const UserApprovalPage = () => {
         variant: 'default',
       });
       setUsers((prev) => prev.filter((u) => u.id !== userId));
-    } catch (error) {
+    } catch (error: any) {
+      const status = error?.status || error?.response?.status;
+      if (status === 403 || status === 401) return;
       toast({
         title: 'Error',
-        description: 'No se pudo aprobar el usuario.',
+        description: error?.response?.data?.message || error?.message || 'No se pudo aprobar el usuario.',
         variant: 'destructive',
       });
     } finally {
@@ -73,10 +77,12 @@ const UserApprovalPage = () => {
         variant: 'default',
       });
       setUsers((prev) => prev.filter((u) => u.id !== userId));
-    } catch (error) {
+    } catch (error: any) {
+      const status = error?.status || error?.response?.status;
+      if (status === 403 || status === 401) return;
       toast({
         title: 'Error',
-        description: 'No se pudo rechazar el usuario.',
+        description: error?.response?.data?.message || error?.message || 'No se pudo rechazar el usuario.',
         variant: 'destructive',
       });
     } finally {

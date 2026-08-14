@@ -58,7 +58,7 @@ test.describe('Multi-Finca', () => {
     expect(fincaNameAfter).toBe(fincaName);
   });
 
-  test('debería mostrar dashboard según tipo de finca', async ({ authenticatedPage, loginAs }) => {
+  test('debería mostrar dashboard según tipo de finca', async ({ authenticatedPage }) => {
     // El dashboard debería adaptarse según si es finca tradicional o educativa
     const dashboardPage = new DashboardPage(authenticatedPage);
 

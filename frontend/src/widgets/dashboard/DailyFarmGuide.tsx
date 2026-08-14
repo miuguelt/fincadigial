@@ -1,6 +1,6 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import { useAnalytics } from "@/features/reporting/model/useAnalytics";
+import { useRoleNavigation } from "@/features/auth/model/useRoleNavigation";
 import {
   CheckCircle,
   AlertTriangle,
@@ -44,7 +44,7 @@ function getPriorityBg(priority: string): string {
 }
 
 const DailyFarmGuide: React.FC = () => {
-  const navigate = useNavigate();
+  const { goTo, canAccess } = useRoleNavigation();
   const { useAlerts } = useAnalytics();
 
   // Obtener las alertas más urgentes del día (críticas y altas, máx 7)
@@ -72,7 +72,7 @@ const DailyFarmGuide: React.FC = () => {
     <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-sm">
       {/* Header */}
       <div className="px-6 py-5 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-transparent border-b border-border">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h2 className="text-xl font-black text-text-primary tracking-tight">
               🌅 Guía del Día
@@ -123,7 +123,7 @@ const DailyFarmGuide: React.FC = () => {
               <button
                 key={alert.id || idx}
                 onClick={() =>
-                  navigate(
+                  goTo(
                     actionRoutes[alert.type] ||
                       "/admin/analytics/executive",
                   )
@@ -132,10 +132,10 @@ const DailyFarmGuide: React.FC = () => {
               >
                 {getPriorityIcon(alert.priority)}
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-text-secondary uppercase tracking-wider">
+                  <p className="fit-clamp text-xs font-bold text-text-secondary uppercase tracking-wider">
                     {alert.type} · {alert.animal_record || "Finca"}
                   </p>
-                  <p className="text-sm font-medium text-text-primary truncate mt-0.5">
+                  <p className="text-sm font-medium text-text-primary fit-clamp mt-0.5">
                     {alert.message}
                   </p>
                 </div>
@@ -145,7 +145,7 @@ const DailyFarmGuide: React.FC = () => {
 
             {totalUrgent > 7 && (
               <button
-                onClick={() => navigate("/admin/analytics/executive")}
+                onClick={() => goTo("/admin/analytics/executive")}
                 className="w-full text-center text-sm font-semibold text-primary py-2 hover:underline"
               >
                 Ver {totalUrgent - 7} alertas más →
@@ -164,10 +164,10 @@ const DailyFarmGuide: React.FC = () => {
             { label: "🐄 Reproducción", path: "/admin/reproduction" },
             { label: "💊 Tratamientos", path: "/admin/treatments" },
             { label: "📦 Inventario", path: "/admin/inventory" },
-          ].map((link) => (
+          ].filter((link) => canAccess(link.path)).map((link) => (
             <button
               key={link.path}
-              onClick={() => navigate(link.path)}
+              onClick={() => goTo(link.path)}
               className="px-3 py-1.5 text-xs font-medium bg-surface border border-border rounded-lg hover:bg-state-hover transition-colors text-text-secondary"
             >
               {link.label}

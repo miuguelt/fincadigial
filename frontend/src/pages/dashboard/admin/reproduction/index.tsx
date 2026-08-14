@@ -125,7 +125,7 @@ const ReproductionPage: React.FC = () => {
         key: 'notes',
         label: 'Observaciones',
         render: (val: any) => val ? (
-          <span className="text-xs text-muted-foreground max-w-[185px] truncate block" title={val}>
+          <span className="text-xs text-muted-foreground max-w-[185px] fit-clamp block" title={val}>
             {val}
           </span>
         ) : '---'
@@ -140,7 +140,6 @@ const ReproductionPage: React.FC = () => {
             label: 'Hembra',
             type: 'select',
             required: true,
-            // @ts-ignore
             loadOptions: async () => {
               const animals = await animalService.getAll({ sex: 'Hembra' });
               return animals.map(a => ({ label: `${a.record} - ${a.name || ''}`, value: a.id }));
@@ -168,7 +167,6 @@ const ReproductionPage: React.FC = () => {
       },
       {
         title: 'Inseminación / Servicio',
-        // @ts-ignore
         showIf: (data: ReproductiveEventInput) => data.event_type === 'Inseminacion',
         fields: [
           {
@@ -185,7 +183,6 @@ const ReproductionPage: React.FC = () => {
             name: 'sire_id',
             label: 'Macho (Padre)',
             type: 'select',
-            // @ts-ignore
             loadOptions: async () => {
               const animals = await animalService.getAll({ sex: 'Macho' });
               return animals.map(a => ({ label: `${a.record} - ${a.name || ''}`, value: a.id }));
@@ -195,7 +192,6 @@ const ReproductionPage: React.FC = () => {
       },
       {
         title: 'Diagnóstico',
-        // @ts-ignore
         showIf: (data: ReproductiveEventInput) => data.event_type === 'Diagnostico',
         fields: [
           {
@@ -212,22 +208,19 @@ const ReproductionPage: React.FC = () => {
       },
       {
         title: 'Información del Parto',
-        // @ts-ignore
         showIf: (data: ReproductiveEventInput) => data.event_type === 'Parto',
         fields: [
           {
             name: 'alive_count',
             label: 'Crías Vivas',
             type: 'number',
-            // @ts-ignore
-            min: 0,
+            validation: { min: 0 },
           },
           {
             name: 'dead_count',
             label: 'Crías Muertas',
             type: 'number',
-            // @ts-ignore
-            min: 0,
+            validation: { min: 0 },
           },
           {
             name: 'complications',
@@ -247,10 +240,9 @@ const ReproductionPage: React.FC = () => {
         ]
       }
     ],
-    enableEdit: true,
+    enableEditModal: true,
     enableDelete: true,
-    // @ts-ignore
-    enableDetail: true,
+    enableDetailModal: true,
     themeColor: 'purple',
   };
 

@@ -47,9 +47,9 @@ export default function SystemLogsTab() {
 				method: "GET",
 			} as any);
 			const d = res?.data?.data;
-			setContent(d?.lines?.join("") ?? d?.content ?? "Empty log");
+			setContent(d?.lines?.join("") ?? d?.content ?? "Registro vacío");
 		} catch {
-			setContent("Error loading log");
+			setContent("Error al cargar el registro");
 		} finally {
 			setLoadingContent(false);
 		}
@@ -73,7 +73,7 @@ export default function SystemLogsTab() {
 			<div className="w-72 flex-shrink-0 space-y-3">
 				<div className="flex items-center justify-between">
 					<h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-						Log Files
+						Archivos de registro
 					</h2>
 					<Button
 						variant="ghost"
@@ -90,7 +90,7 @@ export default function SystemLogsTab() {
 					<Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
 					<input
 						className="w-full h-9 border bg-form-input pl-8 pr-3 text-xs"
-						placeholder="Filter logs..."
+						placeholder="Filtrar registros..."
 						value={searchTerm}
 						onChange={(e) => setSearchTerm(e.target.value)}
 					/>
@@ -107,7 +107,7 @@ export default function SystemLogsTab() {
 									: "bg-card text-muted-foreground border-border",
 							)}
 						>
-							{c || "All"}
+							{c || "Todos"}
 						</button>
 					))}
 				</div>
@@ -124,7 +124,7 @@ export default function SystemLogsTab() {
 							)}
 						>
 							<div className="flex items-center justify-between gap-1">
-								<span className="font-medium truncate">{l.name}</span>
+								<span className="font-medium fit-clamp">{l.name}</span>
 								<Badge
 									variant="outline"
 									className={cn(
@@ -138,13 +138,13 @@ export default function SystemLogsTab() {
 							<div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
 								<span>{l.size_kb} KB</span>
 								<span>·</span>
-								<span>{new Date(l.modified).toLocaleDateString()}</span>
+								<span>{new Date(l.modified).toLocaleDateString('es-CO')}</span>
 							</div>
 						</button>
 					))}
 					{filteredLogs.length === 0 && (
 						<p className="text-xs text-muted-foreground text-center py-8">
-							No logs found
+							No se encontraron registros
 						</p>
 					)}
 				</div>
@@ -175,7 +175,7 @@ export default function SystemLogsTab() {
 						<div className="flex-1 overflow-auto p-4">
 							{loadingContent ? (
 								<div className="flex items-center justify-center h-full text-muted-foreground">
-									Loading...
+									Cargando...
 								</div>
 							) : (
 								<pre className="text-xs font-mono leading-relaxed whitespace-pre-wrap">
@@ -187,8 +187,8 @@ export default function SystemLogsTab() {
 				) : (
 					<div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
 						<Terminal className="h-12 w-12 opacity-30" />
-						<p className="text-sm font-medium">Select a log file</p>
-						<p className="text-xs">Choose from the list on the left</p>
+						<p className="text-sm font-medium">Selecciona un archivo de registro</p>
+						<p className="text-xs">Elígelo de la lista de la izquierda</p>
 					</div>
 				)}
 			</div>

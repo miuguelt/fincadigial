@@ -46,15 +46,15 @@ const UserHistory = () => {
   const userGenetics = genetics.filter((g: any) => g.user.identification === userId).map((g: any) => ({
     animalCode: g.animal.code,
     type: g.type,
-    date: new Date(g.date).toLocaleDateString(),
+    date: new Date(g.date).toLocaleDateString('es-CO'),
     description: g.description,
   }));
 
   const userAnimalFields = animalFields.filter((af: any) => af.animal.user?.identification === userId).map((af: any) => ({
     animalCode: af.animal.code,
     field: af.field.name,
-    entryDate: new Date(af.entry_date).toLocaleDateString(),
-    exitDate: new Date(af.exit_date).toLocaleDateString(),
+    entryDate: new Date(af.entry_date).toLocaleDateString('es-CO'),
+    exitDate: new Date(af.exit_date).toLocaleDateString('es-CO'),
   }));
 
   if (!user) {
@@ -71,7 +71,7 @@ const UserHistory = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p><strong>Email:</strong> {user.email}</p>
+          <p><strong>Correo electrónico:</strong> {user.email}</p>
           <p><strong>Teléfono:</strong> {user.phone}</p>
           <p><strong>Identificación:</strong> {user.identification}</p>
         </CardContent>

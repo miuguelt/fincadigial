@@ -15,7 +15,7 @@ export const inventoryColumns: CRUDColumn<InventoryLotResponse>[] = [
 			// así que `product_name` siempre viene resuelto.
 			return (
 				<div className="flex flex-col items-start">
-					<span className="font-bold text-foreground inline-flex max-w-full items-center gap-1.5 truncate">
+					<span className="font-bold text-foreground inline-flex max-w-full items-center gap-1.5 fit-clamp">
 						<span>{isVaccine ? "💉" : "💊"}</span> {val}
 					</span>
 					<span className="mt-1 inline-flex w-fit text-[10px] uppercase font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">

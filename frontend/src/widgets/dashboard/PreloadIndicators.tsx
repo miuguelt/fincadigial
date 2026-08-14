@@ -177,7 +177,7 @@ export const PreloadIndicators: React.FC<PreloadIndicatorsProps> = ({
             {/* Información de estado */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-foreground truncate">
+                <p className="text-sm font-medium text-foreground fit-clamp">
                   {statusInfo.message}
                 </p>
                 <div className="flex items-center space-x-2 ml-2">
@@ -269,7 +269,7 @@ export const PreloadIndicators: React.FC<PreloadIndicatorsProps> = ({
                   <Database
                     className={`w-6 h-6 mx-auto mb-1 ${moduleProgress.dashboard ? "text-success" : "text-muted-foreground"}`}
                   />
-                  <p className="text-xs font-medium">Dashboard</p>
+                  <p className="text-xs font-medium">Panel</p>
                   <p className="text-xs text-muted-foreground">
                     {moduleProgress.dashboard ? "Completado" : "Cargando..."}
                   </p>
@@ -340,7 +340,7 @@ export const PreloadIndicators: React.FC<PreloadIndicatorsProps> = ({
 
       {/* Mensaje de estado */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-foreground truncate">
+        <p className="text-sm font-medium text-foreground fit-clamp">
           {statusInfo.message}
         </p>
         <p className="text-xs text-muted-foreground">{progress}% completado</p>
