@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import {
   IconHealthAlert,
-  IconHealthCheck,
   IconMilk,
   IconRoute as IconRouteCattle,
   IconTag,
@@ -57,6 +56,16 @@ export const OFFLINE_STORAGE_KEY = 'campesino:pending_sync';
 
 export const QUICK_ACTIONS: QuickAction[] = [
   {
+    id: 'sos-veterinario',
+    label: 'SOS Veterinario',
+    sublabel: 'Asistencia rápida',
+    icon: Headset,
+    path: '/campesino/technical-assistance?sos=1',
+    color: 'from-rose-600 to-red-700',
+    glow: 'shadow-rose-300 dark:shadow-rose-950',
+    requiresOnline: true,
+  },
+  {
     id: 'new-labor',
     label: 'Registrar Labor',
     sublabel: 'Agricultura y ganadería',
@@ -78,10 +87,10 @@ export const QUICK_ACTIONS: QuickAction[] = [
   },
   {
     id: 'health-alert',
-    label: 'Enfermedad',
-    sublabel: 'Reportar síntomas',
+    label: 'Salud animal',
+    sublabel: 'Pendientes y registros',
     icon: IconHealthAlert,
-    path: '/campesino/registro-operativo?modal=disease',
+    path: '/campesino/health',
     color: 'from-rose-500 to-red-600',
     glow: 'shadow-rose-200 dark:shadow-rose-900',
     requiresOnline: false,
@@ -94,11 +103,10 @@ export const TOOL_GROUPS: ToolGroup[] = [
     color: 'text-emerald-700 dark:text-emerald-300',
     border: 'border-emerald-200 dark:border-emerald-800/40',
     tools: [
-      { id: 'registro', title: 'Registro Unificado', description: 'Agricultura, ganadería y más', icon: IconClipboardList, path: '/campesino/registro-operativo', bg: 'bg-gradient-to-br from-emerald-50/70 to-emerald-100/30 dark:from-emerald-950/20 dark:to-emerald-900/10 border-emerald-200/60 dark:border-emerald-800/40 hover:border-emerald-300 dark:hover:border-emerald-700', emoji: '📋', requiresOnline: false },
+      { id: 'health', title: 'Salud animal', description: 'Registrar novedades y tratamientos', icon: IconHealthAlert, path: '/campesino/health', bg: 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/40 hover:border-emerald-300 dark:hover:border-emerald-700', emoji: '', requiresOnline: false },
       { id: 'milk', title: 'Registrar Ordeño', description: 'Producción diaria de leche', icon: IconMilk, path: '/campesino/registro-operativo?modal=milk', bg: 'bg-gradient-to-br from-amber-50/70 to-amber-100/30 dark:from-amber-950/20 dark:to-amber-900/10 border-amber-200/60 dark:border-amber-800/40 hover:border-amber-300 dark:hover:border-amber-700', emoji: '', requiresOnline: false },
       { id: 'transfer', title: 'Trasladar Ganado', description: 'Mover animales entre potreros', icon: IconRouteCattle, path: '/campesino/registro-operativo?modal=transfer', bg: 'bg-gradient-to-br from-orange-50/70 to-orange-100/30 dark:from-orange-950/20 dark:to-orange-900/10 border-orange-200/60 dark:border-orange-800/40 hover:border-orange-300 dark:hover:border-orange-700', emoji: '️', requiresOnline: false },
-      { id: 'disease', title: 'Reportar Enfermedad', description: 'Avisar sobre animales enfermos', icon: IconHealthAlert, path: '/campesino/registro-operativo?modal=disease', bg: 'bg-gradient-to-br from-rose-50/70 to-rose-100/30 dark:from-rose-950/20 dark:to-rose-900/10 border-rose-200/60 dark:border-rose-800/40 hover:border-rose-300 dark:hover:border-rose-700', emoji: '', requiresOnline: false },
-      { id: 'treatment', title: 'Aplicar Tratamiento', description: 'Registrar medicinas y vacunas', icon: IconHealthCheck, path: '/campesino/registro-operativo?modal=treatment', bg: 'bg-gradient-to-br from-purple-50/70 to-purple-100/30 dark:from-purple-950/20 dark:to-purple-900/10 border-purple-200/60 dark:border-purple-800/40 hover:border-purple-300 dark:hover:border-purple-700', emoji: '', requiresOnline: false },
+      { id: 'registro', title: 'Registro diario', description: 'Agricultura, ganadería y cuentas', icon: IconClipboardList, path: '/campesino/registro-operativo', bg: 'bg-surface border-border hover:border-primary', emoji: '📋', requiresOnline: false },
     ],
   },
   {

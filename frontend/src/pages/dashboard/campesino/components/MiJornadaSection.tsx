@@ -37,6 +37,22 @@ function getPriorityBg(priority: string): string {
 	return "border-l-blue-400 bg-blue-50/50 dark:bg-blue-950/20";
 }
 
+/**
+ * Una jornada no cabe en cuatro cifras. Pasado el tope se muestra "99+" y el
+ * número exacto queda en el `title`: un contador de 3.506 no dice qué hacer
+ * hoy, sólo enseña a ignorar la sección.
+ */
+const ALERT_BADGE_CAP = 99;
+
+/** Por encima de este atraso la lista deja de ser una jornada y hay que decirlo. */
+const BACKLOG_THRESHOLD = 20;
+
+function alertBadge(count: number): string {
+	return count > ALERT_BADGE_CAP ? `${ALERT_BADGE_CAP}+` : String(count);
+}
+
+const formatCount = (count: number) => count.toLocaleString("es-CO");
+
 export const MiJornadaSection: React.FC = () => {
 	const navigate = useNavigate();
 	const { useAlerts } = useAnalytics();
@@ -85,13 +101,19 @@ export const MiJornadaSection: React.FC = () => {
 				{!isLoading && totalUrgent > 0 && (
 					<div className="flex gap-2">
 						{criticalCount > 0 && (
-							<span className="px-2.5 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs font-bold rounded-full">
-								{criticalCount} críticas
+							<span
+								title={`${formatCount(criticalCount)} alertas críticas acumuladas`}
+								className="px-2.5 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs font-bold rounded-full"
+							>
+								{alertBadge(criticalCount)} críticas
 							</span>
 						)}
 						{highCount > 0 && (
-							<span className="px-2.5 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-bold rounded-full">
-								{highCount} altas
+							<span
+								title={`${formatCount(highCount)} alertas altas acumuladas`}
+								className="px-2.5 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-bold rounded-full"
+							>
+								{alertBadge(highCount)} altas
 							</span>
 						)}
 					</div>
@@ -129,7 +151,7 @@ export const MiJornadaSection: React.FC = () => {
 							>
 								{getPriorityIcon(alert.priority)}
 								<div className="flex-1 min-w-0">
-									<p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+									<p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
 										{alert.type} · {alert.animal_record || "Finca"}
 									</p>
 									<p className="text-sm font-medium text-foreground fit-clamp mt-0.5">
@@ -140,13 +162,22 @@ export const MiJornadaSection: React.FC = () => {
 							</button>
 						))}
 
-						{totalUrgent > 5 && (
+						{/* El atraso no se esconde, pero tampoco se disfraza de plan del
+						    día: se nombra como lo que es y se dice por dónde empezar. */}
+						{totalUrgent > BACKLOG_THRESHOLD && (
+							<p className="px-1 pt-1 text-xs text-muted-foreground">
+								Hay {formatCount(totalUrgent)} alertas acumuladas, más de las que caben en un
+								día. Empieza por las críticas de arriba.
+							</p>
+						)}
+
+						{totalUrgent > topAlerts.length && (
 							<button
 								type="button"
 								onClick={() => navigate("/campesino/health")}
 								className="w-full text-center text-sm font-semibold text-primary py-2 hover:bg-primary/5 rounded-xl transition-colors"
 							>
-								Ver {totalUrgent - 5} alertas más →
+								Ver todas las alertas →
 							</button>
 						)}
 					</>
@@ -161,8 +192,8 @@ export const MiJornadaSection: React.FC = () => {
 					},
 					{ label: "⚕️ Salud", path: "/campesino/health" },
 					{ label: "🌤️ Clima", path: "/campesino/weather" },
-					{ label: "📅 Calendario", path: "/campesino/calendario" },
-					{ label: "📋 Tareas", path: "/campesino/tasks" },
+					{ label: "📋 Registro diario", path: "/campesino/registro-operativo" },
+					{ label: "🧑‍🌾 Ayuda técnica", path: "/campesino/technical-assistance" },
 				].map((link) => (
 					<button
 						type="button"
