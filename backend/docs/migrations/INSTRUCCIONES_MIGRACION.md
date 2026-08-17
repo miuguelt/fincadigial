@@ -20,8 +20,13 @@ Agrega índices en los campos `updated_at` y `created_at` de **todas** las tabla
 ### Usar MySQL Workbench o cliente MySQL:
 
 ```bash
-mysql -h enlinea.sbs -P 3311 -u fincau -p finca < add_performance_indexes.sql
+mysql -h <DB_HOST> -P <DB_PORT> -u <DB_USER> -p <DB_NAME> < add_performance_indexes.sql
 ```
+
+> Los valores reales de `<DB_HOST>`, `<DB_PORT>`, `<DB_USER>` y `<DB_NAME>` salen
+> del `.env` local o de Windows Credential Manager; nunca se escriben en la
+> documentación. La opción `-p` sin valor pide la contraseña de forma interactiva:
+> no la pases en la línea de comandos, porque queda en el historial del shell.
 
 ### O copiar y pegar en la consola MySQL:
 
@@ -109,12 +114,16 @@ SHOW INDEX FROM diseases WHERE Key_name LIKE 'ix_%';
 
 ### "Access denied"
 
-❌ Verificar que el usuario `fincau` tiene permisos de `INDEX`:
+❌ Verificar que el usuario de la aplicación tiene permisos de `INDEX`:
 
 ```sql
-GRANT INDEX ON finca.* TO 'fincau'@'%';
+GRANT INDEX ON <DB_NAME>.* TO '<DB_USER>'@'<HOST_PERMITIDO>';
 FLUSH PRIVILEGES;
 ```
+
+Otorga el permiso al host concreto desde el que se conecta la aplicación. Un
+comodín `'%'` habilita el acceso desde cualquier origen y amplía el daño de
+cualquier credencial que se filtre.
 
 ### "Table doesn't exist"
 

@@ -1,212 +1,154 @@
 import { useCallback } from 'react';
 import type { BaseService } from '@/shared/api/base-service';
-import { UseResourceResult } from './types';
+import {
+  __endpointBackoffUntil,
+  __resourceInflight,
+  __resourceLastFetchAt,
+} from './resourceRegistry';
+import { buildMeta, capToPageLimit, filterDeleted, mergeRecentItems } from './resourceMerge';
+import type { UseResourceResult } from './types';
 
-// Global registries
-export const __resourceRefetchers = new Set<() => Promise<any>>();
-export const __resourceInflight = new Map<string, Promise<any>>();
-export const __resourceLastFetchAt = new Map<string, number>();
-export const __endpointBackoffUntil = new Map<string, number>();
+// Se reexportan porque las pruebas de integracion limpian estos registros entre
+// casos. Deben ser los mismos objetos que usa el hook, no una copia.
+export { __endpointBackoffUntil, __resourceInflight, __resourceLastFetchAt } from './resourceRegistry';
 
-if (typeof window !== 'undefined') {
-  (window as any).__resourceRefetchers = __resourceRefetchers;
-  (window as any).__resourceInflight = __resourceInflight;
-  (window as any).__resourceLastFetchAt = __resourceLastFetchAt;
-  (window as any).__endpointBackoffUntil = __endpointBackoffUntil;
-}
+/** Una busqueda que tarda 1,5 s en salir se siente rota; el resto puede esperar. */
+const SEARCH_THROTTLE_MS = 500;
+const DEFAULT_THROTTLE_MS = 1500;
 
-export async function refetchAllResources(): Promise<void> {
-  const fns = Array.from(__resourceRefetchers);
-  await Promise.allSettled(
-    fns.map((fn) => {
-      try { return fn(); } catch { return Promise.resolve(); }
-    })
-  );
-}
-
-export function registerResourceRefetch(fn: () => Promise<any>): () => void {
-  __resourceRefetchers.add(fn);
-  return () => {
-    __resourceRefetchers.delete(fn);
-  };
-}
-
-function buildPaginatedResponse<T>(items: T[], params?: Record<string, any>) {
-  const limit = Number(params?.limit ?? items.length ?? 10);
-  const page = Number(params?.page ?? 1);
-  return {
-    data: items,
-    total: items.length,
-    page,
-    limit,
-    totalPages: Math.max(1, Math.ceil(items.length / Math.max(1, limit))),
-    hasNextPage: false,
-    hasPreviousPage: page > 1,
-    rawMeta: { page_size: limit, totalPages: Math.max(1, Math.ceil(items.length / Math.max(1, limit))) }
-  };
-}
-
-async function fetchServicePage<T>(service: BaseService<T>, params?: Record<string, any>) {
-  const paginatedFn = (service as any)?.getPaginated;
-  if (typeof paginatedFn === 'function') {
-    return paginatedFn.call(service, params);
-  }
-  const allFn = (service as any)?.getAll;
-  if (typeof allFn === 'function') {
-    const items = await allFn.call(service, params);
-    return buildPaginatedResponse<T>(Array.isArray(items) ? items : [], params);
-  }
-  throw new Error(`El servicio ${String((service as any)?.endpoint || service.constructor?.name || 'desconocido')} no expone getPaginated ni getAll`);
-}
-
-export function useResourceRefetch<T extends { id?: number | string }, P extends Record<string, any>>(
-  service: BaseService<T>,
-  data: T[],
-  setData: React.Dispatch<React.SetStateAction<T[]>>,
-  setMeta: React.Dispatch<React.SetStateAction<UseResourceResult<T, P>["meta"]>>,
-  setRefreshing: React.Dispatch<React.SetStateAction<boolean>>,
-  safeExecute: <R>(fn: (signal: AbortSignal) => Promise<R>) => Promise<R | undefined>,
-  buildEffectiveParams: () => Record<string, any> | undefined,
-  prefix: string,
-  generateKey: (prefix: string, params: any) => string,
-  getCache: (key: string) => any,
-  setCache: (key: string, data: any, ttl: number) => void,
-  cacheTTL: number | undefined,
-  cache: boolean,
-  map: (<R>(items: R[]) => R[]) | undefined,
-  lastParamsRef: React.MutableRefObject<P | undefined>,
-  abortControllerRef: React.MutableRefObject<AbortController>,
-  skipCacheUntilRef: React.MutableRefObject<number>,
+interface RefetchDeps<T, P extends Record<string, any>> {
+  service: BaseService<T>;
+  data: T[];
+  setData: React.Dispatch<React.SetStateAction<T[]>>;
+  setMeta: React.Dispatch<React.SetStateAction<UseResourceResult<T, P>['meta']>>;
+  setRefreshing: React.Dispatch<React.SetStateAction<boolean>>;
+  safeExecute: <R>(fn: () => Promise<R>) => Promise<R | undefined>;
+  buildEffectiveParams: () => Record<string, any> | undefined;
+  prefix: string;
+  generateKey: (prefix: string, params: any) => string;
+  getCache: <R>(key: string) => R | null | undefined;
+  setCache: (key: string, data: any, ttl?: number) => void;
+  cacheTTL: number | undefined;
+  cache: boolean;
+  map: (<R>(items: R[]) => R[]) | undefined;
+  searchQP: string | undefined;
+  lastParamsRef: React.MutableRefObject<P | undefined>;
+  cancelSourceRef: React.MutableRefObject<any>;
+  skipCacheUntilRef: React.MutableRefObject<number>;
   tracker: {
     recentlyCreatedIds: React.MutableRefObject<Set<string>>;
     recentlyCreatedItems: React.MutableRefObject<Map<string, T>>;
     recentlyDeletedIds: React.MutableRefObject<Set<string>>;
     applyStableOrder: (list: T[], currentData: T[]) => T[];
-  }
+  };
+  createCancelSource: () => any;
+}
+
+/**
+ * Trae la lista y la deja consistente con lo que el usuario ya ve.
+ *
+ * El orden importa: caché persistente primero para pintar rápido, luego un
+ * refresco en segundo plano deduplicado por clave, y siempre reconciliando
+ * contra los items creados o eliminados hace poco.
+ */
+export function useResourceRefetch<T extends { id?: number | string }, P extends Record<string, any>>(
+  deps: RefetchDeps<T, P>
 ) {
+  const {
+    service, data, setData, setMeta, setRefreshing, safeExecute, buildEffectiveParams,
+    prefix, generateKey, getCache, setCache, cacheTTL, cache, map, searchQP,
+    lastParamsRef, cancelSourceRef, skipCacheUntilRef, tracker, createCancelSource,
+  } = deps;
+
   const { recentlyCreatedIds, recentlyCreatedItems, recentlyDeletedIds, applyStableOrder } = tracker;
+
+  const reconcile = useCallback(
+    (serverList: T[], respLimit: unknown, paramLimit: unknown) => {
+      const { merged, missing } = mergeRecentItems<T>({
+        serverList,
+        currentData: data,
+        recentlyCreatedIds: recentlyCreatedIds.current,
+        recentlyCreatedItems: recentlyCreatedItems.current,
+      });
+      const capped = capToPageLimit(merged, missing.length, Number(respLimit ?? paramLimit) || undefined);
+      return filterDeleted(capped, recentlyDeletedIds.current);
+    },
+    [data, recentlyCreatedIds, recentlyCreatedItems, recentlyDeletedIds]
+  );
 
   const refetch = useCallback(async (params?: P): Promise<T[]> => {
     lastParamsRef.current = params || lastParamsRef.current;
     const effective = buildEffectiveParams();
     const cacheKey = generateKey(prefix, effective);
     const nowTs = Date.now();
-    const lastTs = __resourceLastFetchAt.get(cacheKey) || 0;
+
     const backoffUntil = __endpointBackoffUntil.get(prefix) || 0;
-
     if (backoffUntil && nowTs < backoffUntil) return data;
-    if (nowTs - lastTs < 1500) return data;
 
-    try { abortControllerRef.current.abort('Refetching: cancel previous request'); } catch { /* noop */ }
-    abortControllerRef.current = new AbortController();
-    const effectiveWithToken = { ...(effective || {}), signal: abortControllerRef.current.signal } as any;
+    const throttleMs = searchQP ? SEARCH_THROTTLE_MS : DEFAULT_THROTTLE_MS;
+    if (nowTs - (__resourceLastFetchAt.get(cacheKey) || 0) < throttleMs) return data;
+
+    try { cancelSourceRef.current.cancel('Refetching: cancel previous request'); } catch { /* noop */ }
+    cancelSourceRef.current = createCancelSource();
+    const requestParams = { ...(effective || {}), cancelToken: cancelSourceRef.current.token } as any;
 
     __resourceLastFetchAt.set(cacheKey, nowTs);
 
     const hasData = Array.isArray(data) && data.length > 0;
     if (hasData) setRefreshing(true);
 
-    try {
-      const now = Date.now();
-      const shouldSkipCache = now < skipCacheUntilRef.current;
-      const shouldUseCache = cache && !shouldSkipCache;
-      if (shouldSkipCache) effectiveWithToken.cache_bust = Date.now();
+    const hasPaging = Boolean(effective && (effective.page !== undefined || effective.limit !== undefined));
+    const supportsPaging = hasPaging && typeof (service as any).getPaginated === 'function';
 
-      if (shouldUseCache) {
-        const cached = getCache(cacheKey);
+    /** Trae del servidor y deja estado + caché consistentes. Devuelve la lista mostrada. */
+    const fetchAndApply = async (callParams: any): Promise<T[]> => {
+      if (supportsPaging) {
+        const resp: any = await (service as any).getPaginated(callParams);
+        const items: T[] = (resp?.data ?? resp) as T[];
+        const serverList = map ? map(items) : items;
+        const mergedList = reconcile(serverList, resp?.limit, callParams?.limit);
+
+        setData(applyStableOrder(mergedList, data));
+        setMeta(buildMeta(resp, callParams, mergedList));
+
+        if (cache) {
+          setCache(
+            cacheKey,
+            { items: serverList, meta: buildMeta(resp, callParams, serverList), timestamp: Date.now() },
+            cacheTTL
+          );
+        }
+        return mergedList;
+      }
+
+      const list = await service.getAll(callParams);
+      const serverList = map ? map(list) : list;
+      const mergedList = reconcile(serverList, undefined, undefined);
+
+      setData(applyStableOrder(mergedList, data));
+      setMeta(null);
+      if (cache) setCache(cacheKey, { data: serverList, timestamp: Date.now() }, cacheTTL);
+      return mergedList;
+    };
+
+    try {
+      const shouldSkipCache = Date.now() < skipCacheUntilRef.current;
+      if (shouldSkipCache) requestParams.cache_bust = Date.now();
+
+      if (cache && !shouldSkipCache) {
+        const cached = getCache<{ items?: T[]; data?: T[]; meta?: any; timestamp?: number }>(cacheKey);
         if (cached && cached.timestamp) {
           const items = (cached.items || cached.data || []) as T[];
           const finalList = map ? map(items) : items;
           setData(finalList);
-          if (cached.meta) {
-            setMeta({
-              page: Number(cached.meta.page ?? effective?.page ?? 1),
-              limit: Number(cached.meta.limit ?? effective?.limit ?? finalList.length ?? 10),
-              total: Number(cached.meta.total ?? finalList.length ?? 0),
-              totalPages: cached.meta.totalPages,
-              hasNextPage: cached.meta.hasNextPage,
-              hasPreviousPage: cached.meta.hasPreviousPage,
-              rawMeta: cached.meta.rawMeta,
-            });
-          } else {
-            setMeta(null);
-          }
+          setMeta(cached.meta ? buildMeta(cached.meta, effective, finalList) : null);
 
+          // Revalidar en segundo plano sin bloquear la interfaz.
           const isOnline = typeof navigator === 'undefined' ? true : navigator.onLine !== false;
           if (isOnline && !__resourceInflight.has(cacheKey)) {
-            const bgParams = { ...effectiveWithToken, cache_bust: Date.now() };
-            const bgPromise = safeExecute(async (signal) => {
-              const bgWithSignal = { ...bgParams, signal };
-              const hasPaging = effective && (effective.page !== undefined || effective.limit !== undefined);
-              if (hasPaging) {
-                const resp: any = await fetchServicePage(service, bgWithSignal);
-                const items: T[] = (resp?.data ?? resp) as T[];
-                const serverList = map ? map(items) : items;
-
-                const serverIds = new Set(serverList.map(item => String((item as any)?.id)));
-                const missingRecentItems: T[] = [];
-                for (const recentId of Array.from(recentlyCreatedIds.current)) {
-                  if (!serverIds.has(recentId)) {
-                    let localItem = recentlyCreatedItems.current.get(recentId);
-                    if (!localItem) localItem = data.find(item => String((item as any)?.id) === recentId);
-                    if (localItem) missingRecentItems.push(localItem as T);
-                  }
-                }
-                let mergedList = missingRecentItems.length > 0 ? [...missingRecentItems, ...serverList] : serverList;
-                const effectiveLimit = Number(resp?.limit ?? effectiveWithToken?.limit);
-                if (missingRecentItems.length > 0 && effectiveLimit && mergedList.length > effectiveLimit) {
-                  mergedList = mergedList.slice(0, effectiveLimit);
-                }
-                if (recentlyDeletedIds.current.size > 0) {
-                  mergedList = mergedList.filter(item => !recentlyDeletedIds.current.has(String((item as any)?.id)));
-                }
-
-                setData(applyStableOrder(mergedList, data));
-                setMeta({
-                  page: Number(resp?.page ?? effectiveWithToken?.page ?? 1),
-                  limit: Number(resp?.limit ?? effectiveWithToken?.limit ?? mergedList.length ?? 10),
-                  total: Number(resp?.total ?? mergedList.length ?? 0),
-                  totalPages: resp?.totalPages,
-                  hasNextPage: resp?.hasNextPage,
-                  hasPreviousPage: resp?.hasPreviousPage,
-                  rawMeta: resp?.rawMeta,
-                });
-                setCache(cacheKey, {
-                  items: mergedList,
-                  meta: {
-                    page: Number(resp?.page ?? effectiveWithToken?.page ?? 1),
-                    limit: Number(resp?.limit ?? effectiveWithToken?.limit ?? mergedList.length ?? 10),
-                    total: Number(resp?.total ?? mergedList.length ?? 0),
-                    totalPages: resp?.totalPages,
-                    hasNextPage: resp?.hasNextPage,
-                    hasPreviousPage: resp?.hasPreviousPage,
-                    rawMeta: resp?.rawMeta,
-                  },
-                  timestamp: Date.now(),
-                  includesLocalRecent: missingRecentItems.length > 0,
-                  recentIds: Array.from(recentlyCreatedIds.current)
-                }, cacheTTL ?? 0);
-              } else {
-                const list = await service.getAll(bgWithSignal);
-                const serverList = map ? map(list) : list;
-
-                const serverIds = new Set(serverList.map(item => String((item as any)?.id)));
-                const missingRecentItems: T[] = [];
-                for (const recentId of Array.from(recentlyCreatedIds.current)) {
-                  if (!serverIds.has(recentId)) {
-                    let localItem = recentlyCreatedItems.current.get(recentId);
-                    if (!localItem) localItem = data.find(item => String((item as any)?.id) === recentId);
-                    if (localItem) missingRecentItems.push(localItem as T);
-                  }
-                }
-                const mergedList = missingRecentItems.length > 0 ? [...missingRecentItems, ...serverList] : serverList;
-                setData(applyStableOrder(mergedList, data));
-                setMeta(null);
-                setCache(cacheKey, { data: mergedList, timestamp: Date.now(), includesLocalRecent: missingRecentItems.length > 0, recentIds: Array.from(recentlyCreatedIds.current) }, cacheTTL ?? 0);
-              }
-            });
+            const bgPromise = safeExecute(() => fetchAndApply({ ...requestParams, cache_bust: Date.now() }));
             __resourceInflight.set(cacheKey, bgPromise as Promise<any>);
-            void bgPromise.finally(() => { __resourceInflight.delete(cacheKey); }).catch(() => {});
+            void bgPromise.finally(() => { __resourceInflight.delete(cacheKey); }).catch(() => { /* noop */ });
           }
           return finalList;
         }
@@ -214,97 +156,26 @@ export function useResourceRefetch<T extends { id?: number | string }, P extends
 
       let fetchPromise = __resourceInflight.get(cacheKey);
       if (!fetchPromise) {
-        fetchPromise = safeExecute(async (signal) => {
-          const effectiveWithSignal = { ...effectiveWithToken, signal };
-          const hasPaging = effective && (effective.page !== undefined || effective.limit !== undefined);
-          if (hasPaging) {
-            const resp: any = await fetchServicePage(service, effectiveWithSignal);
-            const items: T[] = (resp?.data ?? resp) as T[];
-            const serverList = map ? map(items) : items;
-
-            const serverIds = new Set(serverList.map(item => String((item as any)?.id)));
-            const missingRecentItems: T[] = [];
-            for (const recentId of Array.from(recentlyCreatedIds.current)) {
-              if (!serverIds.has(recentId)) {
-                let localItem = recentlyCreatedItems.current.get(recentId);
-                if (!localItem) localItem = data.find(item => String((item as any)?.id) === recentId);
-                if (localItem) missingRecentItems.push(localItem as T);
-              }
-            }
-
-            let mergedList = missingRecentItems.length > 0 ? [...missingRecentItems, ...serverList] : serverList;
-            const effectiveLimit = Number(resp?.limit ?? effectiveWithToken?.limit);
-            if (missingRecentItems.length > 0 && effectiveLimit && mergedList.length > effectiveLimit) {
-              mergedList = mergedList.slice(0, effectiveLimit);
-            }
-            if (recentlyDeletedIds.current.size > 0) {
-              mergedList = mergedList.filter(item => !recentlyDeletedIds.current.has(String((item as any)?.id)));
-            }
-
-            setData(applyStableOrder(mergedList, data));
-            setMeta({
-              page: Number(resp?.page ?? effectiveWithToken?.page ?? 1),
-              limit: Number(resp?.limit ?? effectiveWithToken?.limit ?? mergedList.length ?? 10),
-              total: Number(resp?.total ?? mergedList.length ?? 0),
-              totalPages: resp?.totalPages,
-              hasNextPage: resp?.hasNextPage,
-              hasPreviousPage: resp?.hasPreviousPage,
-              rawMeta: resp?.rawMeta,
-            });
-
-            if (cache) {
-              setCache(cacheKey, {
-                items: serverList,
-                meta: {
-                  page: Number(resp?.page ?? effectiveWithToken?.page ?? 1),
-                  limit: Number(resp?.limit ?? effectiveWithToken?.limit ?? serverList.length ?? 10),
-                  total: Number(resp?.total ?? serverList.length ?? 0),
-                  totalPages: resp?.totalPages,
-                  hasNextPage: resp?.hasNextPage,
-                  hasPreviousPage: resp?.hasPreviousPage,
-                  rawMeta: resp?.rawMeta,
-                },
-                timestamp: Date.now()
-              }, cacheTTL ?? 0);
-            }
-            return mergedList;
-          }
-
-          const list = await service.getAll(effectiveWithSignal);
-          const serverList = map ? map(list) : list;
-
-          const serverIds = new Set(serverList.map(item => String((item as any)?.id)));
-          const missingRecentItems: T[] = [];
-          for (const recentId of Array.from(recentlyCreatedIds.current)) {
-            if (!serverIds.has(recentId)) {
-              let localItem = recentlyCreatedItems.current.get(recentId);
-              if (!localItem) localItem = data.find(item => String((item as any)?.id) === recentId);
-              if (localItem) missingRecentItems.push(localItem as T);
-            }
-          }
-          let mergedList = missingRecentItems.length > 0 ? [...missingRecentItems, ...serverList] : serverList;
-          if (recentlyDeletedIds.current.size > 0) {
-            mergedList = mergedList.filter(item => !recentlyDeletedIds.current.has(String((item as any)?.id)));
-          }
-
-          setData(applyStableOrder(mergedList, data));
-          setMeta(null);
-          if (cache) setCache(cacheKey, { data: serverList, timestamp: Date.now() }, cacheTTL ?? 0);
-          return mergedList;
-        });
+        fetchPromise = safeExecute(() => fetchAndApply(requestParams));
         __resourceInflight.set(cacheKey, fetchPromise as Promise<any>);
       }
 
       try {
         const result = await fetchPromise;
+        // undefined = petición cancelada: conservar lo que ya se muestra.
         return result === undefined ? data : result;
       } finally {
         __resourceInflight.delete(cacheKey);
       }
     } finally {
       if (hasData) setRefreshing(false);
+      // skipCacheUntil no se resetea aquí: expira solo por timestamp.
     }
-  }, [buildEffectiveParams, cache, cacheTTL, data, generateKey, getCache, map, prefix, safeExecute, service, setCache, setData, setMeta, setRefreshing, lastParamsRef, abortControllerRef, skipCacheUntilRef, recentlyCreatedIds, recentlyCreatedItems, recentlyDeletedIds, applyStableOrder]);
+  }, [
+    applyStableOrder, buildEffectiveParams, cache, cacheTTL, data, generateKey,
+    getCache, map, prefix, reconcile, safeExecute, searchQP, service, setCache, setData, setMeta,
+    setRefreshing, lastParamsRef, cancelSourceRef, skipCacheUntilRef, createCancelSource,
+  ]);
 
   return { refetch };
 }

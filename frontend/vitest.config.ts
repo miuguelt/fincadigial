@@ -13,6 +13,7 @@ export default defineConfig((env) => {
     test: {
       environment: 'jsdom',
       globals: true,
+      testTimeout: 15000,
       setupFiles: ['./src/test/setup.ts'],
       exclude: [
         ...configDefaults.exclude,

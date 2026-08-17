@@ -3,14 +3,14 @@
  *
  * Modal para registrar una ENTRADA de stock en un lote existente.
  * Crea un InventoryMovement tipo "Entrada" — NO modifica el lote directamente.
- * Esto preserva la trazabilidad completa de movimientos para estadísticas.
+ * Esto preserva la trazabilidad completa de movimientos para estadísticas y auditoría.
  */
 
-import { Package, TrendingUp, TriangleAlert } from "lucide-react";
+import { CheckCircle2, Plus, TrendingUp, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 import { inventoryService } from "@/entities/inventory/api/inventory.service";
 import type { InventoryLotResponse } from "@/shared/api/generated/swaggerTypes";
-import { useToast } from "@/shared/hooks/use-toast";
+import { useToast } from "@/app/providers/ToastContext";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import {
@@ -29,8 +29,10 @@ interface InventoryRestockModalProps {
 	lot: InventoryLotResponse | null;
 	open: boolean;
 	onClose: () => void;
-	onSuccess: () => void;
+	onSuccess?: () => void;
 }
+
+const QUICK_INCREMENTS = [5, 10, 20, 50, 100];
 
 export function InventoryRestockModal({
 	lot,
@@ -38,7 +40,7 @@ export function InventoryRestockModal({
 	onClose,
 	onSuccess,
 }: InventoryRestockModalProps) {
-	const { toast } = useToast();
+	const { showToast } = useToast();
 	const [quantity, setQuantity] = useState<string>("");
 	const [notes, setNotes] = useState<string>("");
 	const [saving, setSaving] = useState(false);
@@ -49,16 +51,18 @@ export function InventoryRestockModal({
 		onClose();
 	};
 
+	const handleQuickAdd = (amount: number) => {
+		const currentVal = parseInt(quantity, 10) || 0;
+		setQuantity(String(currentVal + amount));
+	};
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!lot) return;
 
 		const qty = parseInt(quantity, 10);
 		if (isNaN(qty) || qty <= 0) {
-			toast({
-				description: "La cantidad debe ser un número mayor a 0.",
-				variant: "destructive",
-			});
+			showToast("La cantidad a ingresar debe ser un número mayor a 0.", "error");
 			return;
 		}
 
@@ -71,17 +75,29 @@ export function InventoryRestockModal({
 				reference_type: "restock_manual",
 				notes: notes.trim() || undefined,
 			});
-			toast({
-				description: `✅ Entrada de ${qty} ${lot.unit} registrada para lote ${lot.lot_number}. Stock actualizado.`,
-			});
+
+			const productName = lot.product_name || `Lote ${lot.lot_number}`;
+			showToast(
+				`✅ Se registraron +${qty} ${lot.unit} para ${productName}. Nuevo stock: ${lot.current_quantity + qty} ${lot.unit}.`,
+				"success"
+			);
+
+			// Disparar evento global para que la tabla CRUD y las alertas se refresquen
+			if (typeof window !== "undefined") {
+				window.dispatchEvent(new CustomEvent("crud:refetch"));
+				window.dispatchEvent(new CustomEvent("inventory:updated"));
+			}
+
 			setQuantity("");
 			setNotes("");
-			onSuccess();
+			onSuccess?.();
 			onClose();
 		} catch (err: any) {
 			const msg =
-				err?.message || "No se pudo registrar el movimiento. Intente de nuevo.";
-			toast({ description: msg, variant: "destructive" });
+				err?.response?.data?.message ||
+				err?.message ||
+				"No se pudo registrar la entrada de stock. Intente de nuevo.";
+			showToast(msg, "error");
 		} finally {
 			setSaving(false);
 		}
@@ -89,129 +105,180 @@ export function InventoryRestockModal({
 
 	if (!lot) return null;
 
-	const newStock = lot.current_quantity + (parseInt(quantity, 10) || 0);
+	const qtyNum = parseInt(quantity, 10) || 0;
+	const currentStock = Number(lot.current_quantity) || 0;
+	const newStock = currentStock + qtyNum;
 
 	return (
 		<Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
-			<DialogContent className="sm:max-w-md">
-				<DialogHeader>
-					<DialogTitle className="flex items-center gap-2 text-lg">
-						<TrendingUp className="h-5 w-5 text-emerald-500" />
-						Registrar entrada de stock
-					</DialogTitle>
-					<DialogDescription>
-						Se creará un movimiento de{" "}
-						<span className="font-semibold text-foreground">Entrada</span> para
-						mantener la trazabilidad completa del inventario.
-					</DialogDescription>
-				</DialogHeader>
-
-				{/* Resumen del lote seleccionado */}
-				<div className="rounded-xl border border-border/60 bg-muted/40 p-4 space-y-2">
-					<div className="flex items-center gap-2">
-						<Package className="h-4 w-4 text-muted-foreground" />
-						<span className="font-semibold text-sm text-foreground">
-							{lot.product_name || "---"}
-						</span>
-						<Badge variant="outline" className="font-mono text-xs">
-							{lot.lot_number}
-						</Badge>
-					</div>
-					<div className="flex items-center gap-4 text-sm text-muted-foreground">
-						<span>
-							Stock actual:{" "}
-							<span
-								className={`font-bold ${lot.is_low_stock ? "text-destructive" : "text-foreground"}`}
-							>
-								{lot.current_quantity} {lot.unit}
-							</span>
-						</span>
-						{lot.is_low_stock && (
-							<span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 text-xs">
-								<TriangleAlert className="h-3 w-3" />
-								Stock bajo
-							</span>
-						)}
-					</div>
-					{lot.supplier && (
-						<span className="text-xs text-muted-foreground">
-							Proveedor: {lot.supplier}
-						</span>
-					)}
+			<DialogContent className="sm:max-w-lg p-0 overflow-hidden border-border/80 shadow-2xl">
+				{/* Cabecera atractiva con tono esmeralda */}
+				<div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-5 text-white">
+					<DialogHeader>
+						<DialogTitle className="flex items-center gap-2 text-xl font-black text-white">
+							<div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm shadow-sm">
+								<TrendingUp className="h-5 w-5 text-white" />
+							</div>
+							Registrar Entrada de Stock
+						</DialogTitle>
+						<DialogDescription className="text-emerald-100 text-xs mt-1">
+							Suma frascos o dosis al lote existente manteniendo la trazabilidad histórica de la finca.
+						</DialogDescription>
+					</DialogHeader>
 				</div>
 
-				<form onSubmit={handleSubmit} className="space-y-4">
-					{/* Cantidad a ingresar */}
-					<div className="space-y-1.5">
-						<Label htmlFor="restock-qty" className="font-medium">
-							Cantidad a ingresar{" "}
-							<span className="text-muted-foreground font-normal">
-								({lot.unit})
-							</span>
-						</Label>
-						<Input
-							id="restock-qty"
-							type="number"
-							min={1}
-							step={1}
-							placeholder="Ej: 50"
-							value={quantity}
-							onChange={(e) => setQuantity(e.target.value)}
-							required
-							autoFocus
-							className="text-lg font-semibold"
-						/>
-					</div>
-
-					{/* Preview del nuevo stock */}
-					{quantity && parseInt(quantity, 10) > 0 && (
-						<div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-4 py-2.5 flex items-center justify-between">
-							<span className="text-sm text-emerald-700 dark:text-emerald-300">
-								Nuevo stock total
-							</span>
-							<span className="font-black text-emerald-600 dark:text-emerald-400 text-lg">
-								{newStock} {lot.unit}
-							</span>
+				<div className="p-5 space-y-4">
+					{/* Tarjeta de información del lote seleccionado */}
+					<div className="rounded-xl border border-border/70 bg-muted/40 p-4 space-y-3 shadow-sm">
+						<div className="flex items-start justify-between gap-3">
+							<div className="space-y-1">
+								<span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+									Insumo / Producto
+								</span>
+								<h4 className="font-black text-base text-foreground flex items-center gap-2">
+									<span>{lot.product_type === "Vacuna" ? "💉" : "💊"}</span>
+									{lot.product_name || "Producto sin nombre"}
+								</h4>
+							</div>
+							<div className="text-right space-y-1">
+								<span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+									N° Lote
+								</span>
+								<div>
+									<Badge variant="outline" className="font-mono text-xs font-bold px-2 py-0.5">
+										{lot.lot_number}
+									</Badge>
+								</div>
+							</div>
 						</div>
-					)}
 
-					{/* Observaciones opcionales */}
-					<div className="space-y-1.5">
-						<Label htmlFor="restock-notes" className="font-medium">
-							Observaciones{" "}
-							<span className="text-muted-foreground font-normal">
-								(opcional)
-							</span>
-						</Label>
-						<Textarea
-							id="restock-notes"
-							placeholder="Ej: Compra factura #123, proveedor Distribuciones Norte..."
-							value={notes}
-							onChange={(e) => setNotes(e.target.value)}
-							rows={2}
-							className="resize-none"
-						/>
+						<div className="flex items-center justify-between border-t border-border/50 pt-2.5 text-xs">
+							<div className="flex items-center gap-2">
+								<span className="text-muted-foreground">Stock actual en bodega:</span>
+								<span
+									className={`font-black text-sm ${
+										lot.is_low_stock ? "text-destructive" : "text-foreground"
+									}`}
+								>
+									{currentStock} {lot.unit}
+								</span>
+								{lot.is_low_stock && (
+									<span className="inline-flex items-center gap-1 rounded bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-bold text-rose-600 dark:text-rose-400">
+										<TriangleAlert className="h-3 w-3" /> Bajo
+									</span>
+								)}
+							</div>
+							{lot.supplier && (
+								<span className="text-muted-foreground truncate max-w-[180px]">
+									Prov: {lot.supplier}
+								</span>
+							)}
+						</div>
 					</div>
 
-					<DialogFooter className="gap-2 pt-1">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={handleClose}
-							disabled={saving}
-						>
-							Cancelar
-						</Button>
-						<Button
-							type="submit"
-							disabled={saving || !quantity || parseInt(quantity, 10) <= 0}
-							className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
-						>
-							<TrendingUp className="h-4 w-4" />
-							{saving ? "Registrando…" : "Registrar entrada"}
-						</Button>
-					</DialogFooter>
-				</form>
+					<form onSubmit={handleSubmit} className="space-y-4">
+						{/* Cantidad a ingresar */}
+						<div className="space-y-2">
+							<Label htmlFor="restock-qty" className="font-bold text-sm text-foreground flex items-center justify-between">
+								<span>¿Cuántas unidades llegaron?</span>
+								<span className="text-xs font-normal text-muted-foreground">
+									Unidad: <strong className="text-foreground">{lot.unit}</strong>
+								</span>
+							</Label>
+							<Input
+								id="restock-qty"
+								type="number"
+								min={1}
+								step={1}
+								placeholder={`Ej: 50`}
+								value={quantity}
+								onChange={(e) => setQuantity(e.target.value)}
+								required
+								autoFocus
+								className="text-xl font-black h-12 text-center tracking-wider bg-background border-2 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/20"
+							/>
+
+							{/* Botones de incremento rápido (+5, +10, +20, +50, +100) */}
+							<div className="flex flex-wrap items-center gap-1.5 pt-1">
+								<span className="text-[11px] font-semibold text-muted-foreground mr-1">
+									Suma rápida:
+								</span>
+								{QUICK_INCREMENTS.map((amt) => (
+									<Button
+										key={amt}
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => handleQuickAdd(amt)}
+										className="h-7 px-2.5 text-xs font-bold rounded-lg border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 active:scale-95"
+									>
+										<Plus className="h-3 w-3 mr-0.5" />
+										{amt}
+									</Button>
+								))}
+							</div>
+						</div>
+
+						{/* Previsualización del stock final */}
+						{qtyNum > 0 && (
+							<div className="rounded-xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-emerald-500/15 border border-emerald-500/30 p-3.5 flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+								<div className="space-y-0.5">
+									<div className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+										<CheckCircle2 className="h-4 w-4 text-emerald-600" />
+										Nuevo Stock Disponible
+									</div>
+									<div className="text-[11px] text-muted-foreground">
+										{currentStock} (anterior) + {qtyNum} (entrada)
+									</div>
+								</div>
+								<div className="text-right">
+									<span className="font-black text-2xl text-emerald-700 dark:text-emerald-300">
+										{newStock}
+									</span>{" "}
+									<span className="text-xs font-bold text-emerald-800 dark:text-emerald-400">
+										{lot.unit}
+									</span>
+								</div>
+							</div>
+						)}
+
+						{/* Observaciones opcionales */}
+						<div className="space-y-1.5">
+							<Label htmlFor="restock-notes" className="font-medium text-xs text-foreground">
+								Observaciones o Comprobante{" "}
+								<span className="text-muted-foreground font-normal">(Opcional)</span>
+							</Label>
+							<Textarea
+								id="restock-notes"
+								placeholder="Ej: Factura #1234 de Agropecuaria El Triunfo, compra mensual..."
+								value={notes}
+								onChange={(e) => setNotes(e.target.value)}
+								rows={2}
+								className="resize-none text-xs"
+							/>
+						</div>
+
+						<DialogFooter className="gap-2 pt-2 sm:justify-end">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={handleClose}
+								disabled={saving}
+								className="h-11 px-5 font-semibold"
+							>
+								Cancelar
+							</Button>
+							<Button
+								type="submit"
+								disabled={saving || qtyNum <= 0}
+								className="h-11 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-black gap-2 shadow-md hover:shadow-lg transition-all"
+							>
+								<TrendingUp className="h-4 w-4" />
+								{saving ? "Registrando…" : `Guardar Entrada (+${qtyNum || 0} ${lot.unit})`}
+							</Button>
+						</DialogFooter>
+					</form>
+				</div>
 			</DialogContent>
 		</Dialog>
 	);

@@ -41,6 +41,7 @@ export function useRegistroOperativo() {
   const [historyRecords, setHistoryRecords] = useState<HistoryRecord[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [historyError, setHistoryError] = useState(false);
+  const [withdrawalAnimals, setWithdrawalAnimals] = useState<Record<number | string, { endDate: string; description?: string }>>({});
 
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [savingForm, setSavingForm] = useState(false);
@@ -124,6 +125,22 @@ export function useRegistroOperativo() {
         financialService.getAll({ limit: 100, sort_by: 'date', sort_dir: 'desc' }).catch(() => []),
         controlService.getAll({ limit: 100, sort_by: 'checkup_date', sort_dir: 'desc' }).catch(() => []),
       ]);
+      const treatmentsList = asList(treatmentsResp);
+      const todayMs = new Date().setHours(0, 0, 0, 0);
+      const wMap: Record<number | string, { endDate: string; description?: string }> = {};
+      treatmentsList.forEach((t: any) => {
+        if (t.animal_id && t.withdrawal_end_date) {
+          const endMs = new Date(t.withdrawal_end_date).getTime();
+          if (endMs >= todayMs) {
+            wMap[t.animal_id] = {
+              endDate: t.withdrawal_end_date,
+              description: t.description || t.diagnosis || 'Tratamiento',
+            };
+          }
+        }
+      });
+      setWithdrawalAnimals(wMap);
+
       setHistoryRecords(buildHistoryRecords(
         { milk: milkResp, transfers: fieldsAssResp, diseases: diseasesAssResp, treatments: treatmentsResp, finance: financeResp, controls: controlResp },
         { animals, fields, diseases, medications },
@@ -152,11 +169,11 @@ export function useRegistroOperativo() {
     activeModal, savingForm,
     cropActivities, plots, loadingCrops, cropsError,
     animals: animalOptions, fields, diseases, medications, loadingMaster,
-    historyRecords, loadingHistory, historyError,
+    historyRecords, loadingHistory, historyError, withdrawalAnimals,
     milkForm, setMilkForm, transferForm, setTransferForm,
     diseaseForm, setDiseaseForm, treatmentForm, setTreatmentForm,
     financeForm, setFinanceForm, controlForm, setControlForm,
-    openModal, closeModal, loadCropData, loadHistoryRecords,
+    openModal, closeModal, loadCropData, loadMasterData, loadHistoryRecords,
     handleMilkingSubmit: wrap(handleMilkingSubmit),
     handleTransferSubmit: wrap(handleTransferSubmit),
     handleDiseaseSubmit: wrap(handleDiseaseSubmit),

@@ -1,4 +1,3 @@
-import { PackagePlus } from "lucide-react";
 import { useMemo } from "react";
 import type { InventoryLotStatus } from "@/entities/inventory/api/inventory.service";
 import type {
@@ -6,6 +5,7 @@ import type {
 	InventoryLotResponse,
 } from "@/shared/api/generated/swaggerTypes";
 import type { CRUDConfig } from "@/shared/types/crud";
+import { InventoryFarmerGuide } from "@/widgets/admin-inventory/InventoryFarmerGuide";
 import { InventoryFilterChips } from "@/widgets/admin-inventory/InventoryFilterChips";
 import type { InventoryFilters } from "@/widgets/admin-inventory/InventoryFilters";
 import { InventoryInsights } from "@/widgets/admin-inventory/InventoryInsights";
@@ -36,22 +36,6 @@ export interface UseInventoryCrudConfigArgs {
 	openRestock: (lot: InventoryLotResponse) => void;
 }
 
-const Legend = () => (
-	<div className="flex items-center gap-2 rounded-lg border border-sky-500/20 bg-sky-500/5 px-3 py-2 text-xs text-sky-700 dark:text-sky-300">
-		<PackagePlus className="h-3.5 w-3.5 shrink-0" />
-		<span>
-			<span className="font-semibold text-emerald-700 dark:text-emerald-400">
-				↑ Stock
-			</span>{" "}
-			repone unidades del mismo lote (mismo vencimiento).{" "}
-			<span className="font-semibold">📦 Nuevo lote</span> crea un lote distinto
-			heredando producto, unidad y proveedor — úsalo cuando el lote se acabe o
-			venza. Selecciona un lote en la tabla para reponerlo desde la barra
-			inferior.
-		</span>
-	</div>
-);
-
 export function useInventoryCrudConfig({
 	filters,
 	chipCounts,
@@ -64,13 +48,15 @@ export function useInventoryCrudConfig({
 > {
 	return useMemo(
 		() => ({
-			entityName: "Lote de Inventario",
-			title: "Inventario de Insumos",
-			searchPlaceholder: "Buscar por producto, lote, proveedor o notas...",
-			// Sin modal de edición — los lotes no se editan, se crean movimientos
+			entityName: "Lote de Insumo",
+			title: "Inventario de Insumos y Medicamentos",
+			searchPlaceholder: "Buscar por lote o proveedor, insumo o notas...",
+			// Sin modal de edición — los lotes no se editan directamente, se crean movimientos para auditoría
 			enableEditModal: false,
 			enableDelete: true,
 			enableDetailModal: true,
+			showDetailTimestamps: true,
+			showIdInDetailTitle: false,
 			columns: inventoryColumns,
 			formSections: inventoryFormSections,
 
@@ -86,10 +72,10 @@ export function useInventoryCrudConfig({
 			),
 
 			customActions: (item, options) => (
-				<>
+				<div className="flex items-center gap-1">
 					<InventoryRestockAction lot={item} onRestock={openRestock} />
 					<InventoryNewLotAction lot={item} openCreate={options?.openCreate} />
-				</>
+				</div>
 			),
 
 			detailActions: (item, { openCreate, close }) => (
@@ -101,18 +87,18 @@ export function useInventoryCrudConfig({
 			),
 
 			customToolbar: (
-				<div className="space-y-2">
+				<div className="space-y-2.5 w-full">
 					<InventoryFilterChips
 						filters={filters}
 						onChange={applyFilters}
 						counts={chipCounts}
 					/>
-					<Legend />
+					<InventoryFarmerGuide />
 				</div>
 			),
 
 			customHeader: (
-				<div className="mt-4">
+				<div className="mt-4 space-y-3">
 					<InventoryInsights
 						activeStatus={filters.status}
 						onSelectStatus={toggleStatus}

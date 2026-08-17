@@ -23,8 +23,11 @@ def is_system_admin_identity(role: str | None, identification) -> bool:
         return False
 
     configured = (
-        os.getenv("SYSTEM_ADMIN_IDENTIFICATION") or os.getenv("ADMIN_ID") or "1098"
+        os.getenv("SYSTEM_ADMIN_IDENTIFICATION") or os.getenv("ADMIN_ID")
     )
+    if not configured:
+        return True
+
     allowed = {value.strip() for value in configured.split(",") if value.strip()}
     return str(identification or "").strip() in allowed
 

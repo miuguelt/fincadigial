@@ -591,6 +591,16 @@ class MembershipPendingDirect(Resource):
             ).all()
             managed_finca_ids = [m.finca_id for m in admin_memberships]
 
+            current_user = db.session.get(User, user_id)
+            if (
+                current_user
+                and current_user.finca_id
+                and getattr(current_user.role, "value", str(current_user.role))
+                in ADMIN_ROLES
+            ):
+                if current_user.finca_id not in managed_finca_ids:
+                    managed_finca_ids.append(current_user.finca_id)
+
             if not managed_finca_ids:
                 return APIResponse.success(data=[])
             incoming = JoinRequest.query.filter(
@@ -643,6 +653,16 @@ class MembershipPendingCountDirect(Resource):
                 UserFinca.user_id == user_id, UserFinca.role.in_(ADMIN_ROLES)
             ).all()
             managed_finca_ids = [m.finca_id for m in admin_memberships]
+
+            current_user = db.session.get(User, user_id)
+            if (
+                current_user
+                and current_user.finca_id
+                and getattr(current_user.role, "value", str(current_user.role))
+                in ADMIN_ROLES
+            ):
+                if current_user.finca_id not in managed_finca_ids:
+                    managed_finca_ids.append(current_user.finca_id)
 
             if not managed_finca_ids:
                 return APIResponse.success(data={"count": 0})

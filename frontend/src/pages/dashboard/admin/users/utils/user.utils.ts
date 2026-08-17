@@ -35,6 +35,15 @@ export const daysSince = (value?: string | null) => {
 	return Math.max(0, Math.floor((Date.now() - date.getTime()) / 86_400_000));
 };
 
+/**
+ * El backend devuelve `status` como booleano, como "1" o como 1 segun el
+ * endpoint, asi que la comparacion directa no basta.
+ */
+export const isUserActive = (user: UserWithProfile) =>
+	typeof user.status === "boolean"
+		? user.status
+		: user.status === "1" || user.status === 1;
+
 export const getUserFincas = (user: UserWithProfile) => {
 	const fincas = Array.isArray(user.fincas) ? user.fincas : [];
 	if (fincas.length > 0) return fincas;

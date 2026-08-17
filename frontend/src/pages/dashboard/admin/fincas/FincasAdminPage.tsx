@@ -1,7 +1,7 @@
 import React from 'react';
 import { AdminCRUDPage } from '@/widgets/admin-crud';
 import type { CRUDConfig } from '../../../../shared/types/crud';
-import { apiClient } from '@/shared/api/client';
+import { BaseService } from '@/shared/api/base-service';
 import { Users } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
@@ -76,6 +76,14 @@ export const fincaFormDefaults: FarmAdminInput = {
   is_active: true,
 };
 
+class FincasAdminService extends BaseService<FarmAdminRecord> {
+  constructor() {
+    super('fincas');
+  }
+}
+
+export const fincasAdminService = new FincasAdminService();
+
 const FincasAdminPage: React.FC = () => {
   const [inviteDialogOpen, setInviteDialogOpen] = React.useState(false);
   const [selectedFincaId, setSelectedFincaId] = React.useState<number | null>(null);
@@ -103,14 +111,7 @@ const FincasAdminPage: React.FC = () => {
             </Button>
           )
         }}
-        service={{
-          getAll: (params: Record<string, unknown>) => apiClient.get('/api/v1/fincas', { params }).then(r => r.data),
-          getPaginated: (params: Record<string, unknown>) => apiClient.get('/api/v1/fincas', { params }).then(r => r.data),
-          getById: (id: number | string) => apiClient.get(`/api/v1/fincas/${id}`).then(r => r.data),
-          create: (data: FarmAdminInput) => apiClient.post('/api/v1/fincas', data).then(r => r.data),
-          update: (id: number | string, data: FarmAdminInput) => apiClient.put(`/api/v1/fincas/${id}`, data).then(r => r.data),
-          delete: (id: number | string) => apiClient.delete(`/api/v1/fincas/${id}`).then(r => r.data),
-        }}
+        service={fincasAdminService}
         initialFormData={fincaFormDefaults}
       />
 

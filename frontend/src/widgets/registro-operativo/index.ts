@@ -12,6 +12,8 @@ export { DiseaseModal } from './modals/DiseaseModal';
 export { TreatmentModal } from './modals/TreatmentModal';
 export { FinanceModal } from './modals/FinanceModal';
 export { ControlModal } from './modals/ControlModal';
+export { CorralRapidoModal } from './modals/CorralRapidoModal';
+export { AnimalExitModal } from '@/widgets/animals/AnimalExitModal';
 export {
   ACTIVITY_TYPES, getActivityCfg,
   CATEGORIAS_INGRESO, CATEGORIAS_GASTO, getFinanceCategories,

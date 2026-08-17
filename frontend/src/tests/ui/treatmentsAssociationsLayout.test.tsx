@@ -80,7 +80,7 @@ describe('Tratamientos: Insumos layout', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <ToastProvider>
-          <MemoryRouter>
+          <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <AdminTreatmentsPage />
           </MemoryRouter>
         </ToastProvider>
@@ -93,13 +93,17 @@ describe('Tratamientos: Insumos layout', () => {
 
     const btns = screen.getAllByRole('button', { name: /ver insumos/i })
     fireEvent.click(btns[0])
+
+    await waitFor(() => {
+      expect(screen.getByText(/Detalle del Tratamiento/i)).toBeInTheDocument()
+    })
   })
 
   it('el flujo de eliminacion requiere confirmacion (doble clic)', async () => {
     render(
       <QueryClientProvider client={queryClient}>
         <ToastProvider>
-          <MemoryRouter>
+          <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <AdminTreatmentsPage />
           </MemoryRouter>
         </ToastProvider>

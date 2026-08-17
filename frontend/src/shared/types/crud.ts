@@ -102,12 +102,12 @@ export interface CRUDConfig<T = any, TInput = any> {
   customToolbar?: ReactNode;
   customActions?: (
     item: T,
-    options?: { openCreate?: () => void },
+    options?: { openCreate?: (prefill?: any) => void; openEdit?: (item: T) => void },
   ) => ReactNode;
   /** Acciones extra dentro del modal de detalle. */
   detailActions?: (
     item: T,
-    handlers: { openCreate?: () => void; close?: () => void },
+    handlers: { openCreate?: (prefill?: any) => void; close?: () => void },
   ) => ReactNode;
   viewMode?: 'table' | 'cards';
   autoHeight?: boolean;

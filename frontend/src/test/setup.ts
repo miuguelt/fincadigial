@@ -1,6 +1,31 @@
+import React from 'react'
 import '@testing-library/jest-dom'
+import 'fake-indexeddb/auto'
 import { beforeAll, afterEach, afterAll, vi } from 'vitest'
 import { server } from '../tests/mocks/mocks/server'
+
+// Mock de ResponsiveContainer de recharts para evitar warnings de dimensión 0 en JSDOM
+vi.mock('recharts', async (importOriginal) => {
+  const original = await importOriginal<typeof import('recharts')>();
+  return {
+    ...original,
+    ResponsiveContainer: ({ children, width = 500, height = 300, ...props }: any) => {
+      const w = typeof width === 'number' ? width : 500;
+      const h = typeof height === 'number' ? height : 300;
+      return React.createElement(
+        'div',
+        {
+          className: 'recharts-responsive-container',
+          style: { width: '100%', height: '100%' },
+          ...props,
+        },
+        React.isValidElement(children)
+          ? React.cloneElement(children as React.ReactElement<any>, { width: w, height: h })
+          : children
+      );
+    },
+  };
+});
 
 // Hacer compatible jest con vi de vitest
 if (typeof globalThis !== 'undefined') {

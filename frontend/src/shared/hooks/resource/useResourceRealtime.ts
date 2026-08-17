@@ -23,6 +23,9 @@ export function useResourceRealtime(
       pollTimerRef.current = null;
     }
     pollTimerRef.current = setInterval(() => {
+      // No consultar en una pestaña oculta ni sin red: gasta batería y cuota.
+      if (document.visibilityState === 'hidden' || navigator.onLine === false) return;
+      // Tampoco durante una escritura: sobrescribiría la actualización optimista.
       if (crudInProgressRef.current) return;
       skipCacheUntilRef.current = Date.now() + 5000;
       void refetch().catch(() => {});

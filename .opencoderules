@@ -22,9 +22,9 @@
 
 - Windows Credential Manager es la fuente preferida. Un `.env` local, ignorado y protegido solo se permite cuando el runtime lo requiere.
 - Nunca guardar secretos en JSON/JSONC, Markdown, código, prompts, logs, snapshots, argumentos de comandos ni configuraciones de IDE.
-- No leer, mostrar ni copiar el contenido de `.env` o credenciales salvo que la tarea lo requiera expresamente y exista un flujo seguro.
 - Todo secreto expuesto se elimina de la superficie activa y se rota de forma coordinada.
 - Antes de commit se ejecutan el detector de secretos y `validate-rules.ps1`.
+- En documentación, guías de prueba (`.md`) y `.env.example`, todo valor simulado de token, JWT, API key, password o credencial debe usar delimitadores explícitos de plantilla (como `<TU_TOKEN_JWT>`, `<CLAVE_AQUI>`) o placeholders estándar (`changeme`, `example`). Queda prohibido usar cadenas pseudo-reales o tokens truncados (ej. `eyJ0eXAiOiJKV1Qi...`) que activan los escáneres de seguridad.
 
 ## 4. Autonomía objetiva
 

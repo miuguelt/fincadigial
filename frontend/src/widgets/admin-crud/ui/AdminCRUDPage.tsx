@@ -126,6 +126,19 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<T | null>(null);
   const [saving, setSaving] = useState(false);
+  const [isOffline, setIsOffline] = useState(() => (typeof navigator !== 'undefined' ? !navigator.onLine : false));
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   const {
     formData,
     setFormData,
@@ -281,13 +294,18 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     }
   }, [filteredItems, onItemsChange]);
 
-  // Handlers
-  const openCreate = useCallback(() => {
+  const openCreate = useCallback((prefill?: Partial<TInput>) => {
     if (!canCreate) return;
     setEditingItem(null);
-    resetForm();
+    if (prefill && typeof prefill === 'object' && !(prefill as any).nativeEvent) {
+      setFormData({ ...initialFormData, ...prefill });
+      setFormErrors({});
+      setFormErrorMessages([]);
+    } else {
+      resetForm();
+    }
     setIsModalOpen(true);
-  }, [canCreate, resetForm]);
+  }, [canCreate, initialFormData, resetForm, setFormData, setFormErrors, setFormErrorMessages]);
 
   const openEdit = useCallback((item: T) => {
     if (!canUpdate) return;
@@ -685,7 +703,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           searchPlaceholder={config.searchPlaceholder}
-          onOpenCreate={canCreate ? openCreate : undefined} createLabel={`${t('common.create', 'Crear')} ${config.entityName.toLowerCase()}`}
+          onOpenCreate={canCreate ? () => openCreate() : undefined} createLabel={`${t('common.create', 'Crear')} ${config.entityName.toLowerCase()}`}
           customToolbar={config.customToolbar}
         />
       }
@@ -711,8 +729,31 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     );
   }
 
-  // Error state
-  if (error) {
+  // Error state: solo mostrar pantalla de error completa si NO hay datos locales y estamos online
+  if (error && (!filteredItems || filteredItems.length === 0) && !loading) {
+    if (isOffline) {
+      return (
+        <AppLayout
+          header={header}
+          className="px-2 sm:px-3 pt-1 sm:pt-2 pb-0 max-w-full min-h-0"
+          contentClassName="space-y-0"
+        >
+          <EmptyState
+            title="Sin conexión al servidor"
+            description="Actualmente no hay señal de internet y no se encontraron registros previos guardados en este dispositivo. Conéctese una vez para precargar la base de datos de la finca."
+            action={
+              <button
+                type="button"
+                onClick={() => refetch()}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
+              >
+                Reintentar conexión
+              </button>
+            }
+          />
+        </AppLayout>
+      );
+    }
     return (
       <AppLayout
         header={header}
@@ -721,7 +762,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       >
         <ErrorState
           message={String(error)}
-          onRetry={() => window.location.reload()}
+          onRetry={() => refetch()}
         />
       </AppLayout>
     );
@@ -752,6 +793,20 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
         (config.viewMode === 'cards' || config.autoHeight) && !config.renderGrouped ? "h-auto" : "flex-1 min-h-0"
       )}
     >
+      {isOffline && (
+        <div className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs sm:text-sm rounded-lg shadow-sm animate-in fade-in duration-300">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-2.5 w-2.5 relative flex-shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+            </span>
+            <span>
+              <strong>Modo de campo (Sin internet):</strong> Operando con datos guardados localmente. Los registros nuevos o modificaciones se guardarán en este dispositivo y se sincronizarán al recuperar cobertura.
+            </span>
+          </div>
+        </div>
+      )}
+
       {config.customHeader && !usesScrollableHeader && (
         <div className="flex-shrink-0">
           {config.customHeader}
@@ -764,7 +819,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
           description={config.emptyStateDescription || t('state.empty.description', 'Crea el primer registro para comenzar.')}
           icon={config.emptyStateIcon}
           action={canCreate && (
-            <button onClick={openCreate} aria-label={`${t('common.create', 'Crear')} registro desde el estado vacío`}>
+            <button onClick={() => openCreate()} aria-label={`${t('common.create', 'Crear')} registro desde el estado vacío`}>
               <Plus className="h-4 w-4 mr-2" />
               {t('common.create', 'Crear')} {config.entityName.toLowerCase()}
             </button>
@@ -870,7 +925,12 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
               headerSlot={usesScrollableHeader ? config.customHeader : undefined}
               items={filteredItems}
               columns={config.columns}
-              config={config}
+              config={{
+                ...config,
+                customActions: config.customActions
+                  ? (item: T) => config.customActions!(item, { openCreate })
+                  : undefined
+              }}
               onOpenDetail={config.enableDetailModal !== false ? openDetail : undefined}
               onOpenEdit={canUpdate ? openEdit : undefined}
               onOpenDelete={canDelete ? openDeleteConfirm : undefined}

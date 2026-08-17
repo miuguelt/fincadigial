@@ -6,3 +6,4 @@ export { AnimalImageGallery } from './AnimalImageGallery';
 export { AnimalImageManager } from './AnimalImageManager';
 export { AnimalImageBanner } from './AnimalImageBanner';
 export { AlertsSection } from './AlertsSection';
+export { AnimalExitModal } from '@/widgets/animals/AnimalExitModal';

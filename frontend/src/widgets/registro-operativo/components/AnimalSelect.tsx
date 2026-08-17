@@ -11,12 +11,18 @@ interface AnimalSelectProps {
   ringClass?: string;
   allowEmpty?: boolean;
   emptyLabel?: string;
+  /** Mapeo de animales con periodo de retiro sanitario activo */
+  withdrawalAnimals?: Record<number | string, { endDate: string; description?: string }>;
 }
 
-export function animalLabel(animal: any): string {
+export function animalLabel(animal: any, withdrawalInfo?: { endDate: string; description?: string }): string {
   if (!animal) return '';
   const breed = animal.breed?.name || animal.breed_name;
-  return breed ? `${animal.record} · ${breed}` : String(animal.record ?? `Animal ${animal.id}`);
+  const base = breed ? `${animal.record} · ${breed}` : String(animal.record ?? `Animal ${animal.id}`);
+  if (withdrawalInfo) {
+    return `${base} ⚠️ [EN RETIRO hasta ${withdrawalInfo.endDate}]`;
+  }
+  return base;
 }
 
 /**
@@ -33,6 +39,7 @@ export function AnimalSelect({
   ringClass = 'focus:ring-emerald-500/30',
   allowEmpty = false,
   emptyLabel = '— Ninguno / General —',
+  withdrawalAnimals,
 }: AnimalSelectProps) {
   const [query, setQuery] = useState('');
   const selectId = useId();
@@ -41,8 +48,8 @@ export function AnimalSelect({
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
     if (!term) return animals;
-    return animals.filter(a => animalLabel(a).toLowerCase().includes(term));
-  }, [animals, query]);
+    return animals.filter(a => animalLabel(a, withdrawalAnimals?.[a.id]).toLowerCase().includes(term));
+  }, [animals, query, withdrawalAnimals]);
 
   // El animal ya elegido debe seguir presente aunque el filtro lo excluya,
   // o el `select` se vaciaría visualmente sin que el usuario lo tocara.
@@ -85,7 +92,7 @@ export function AnimalSelect({
       >
         <option value="">{allowEmpty ? emptyLabel : '— Seleccione —'}</option>
         {options.map(a => (
-          <option key={a.id} value={a.id}>{animalLabel(a)}</option>
+          <option key={a.id} value={a.id}>{animalLabel(a, withdrawalAnimals?.[a.id])}</option>
         ))}
       </select>
 

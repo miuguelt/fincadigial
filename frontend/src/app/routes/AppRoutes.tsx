@@ -90,6 +90,7 @@ const ClimateAlertsPage = lazy(() => import('@/pages/dashboard/campesino/Climate
 const WeatherDashboardPage = lazy(() => import('@/pages/dashboard/campesino/WeatherDashboardPage'));
 const MarketOffersPage = lazy(() => import('@/pages/dashboard/campesino/MarketOffersPage'));
 const TechnicalAssistancePage = lazy(() => import('@/pages/dashboard/campesino/TechnicalAssistancePage'));
+const CampesinoEstadisticasPage = lazy(() => import('@/pages/dashboard/campesino/estadisticas/CampesinoEstadisticasPage'));
 
 // Calculadoras y herramientas
 const FrameScoreCalculator = lazy(() => import('@/features/cattle/ui/FrameScoreCalculator'));
@@ -399,6 +400,7 @@ const AppRoutes = () => {
             <Route path="/campesino/weather" element={<WeatherDashboardPage />} />
             <Route path="/campesino/market-offers" element={<MarketOffersPage />} />
             <Route path="/campesino/technical-assistance" element={<TechnicalAssistancePage />} />
+            <Route path="/campesino/estadisticas" element={<CampesinoEstadisticasPage />} />
             </Route>
           </Route>
         </Route>

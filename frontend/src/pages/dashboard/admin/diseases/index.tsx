@@ -4,6 +4,7 @@ import { diseaseService } from '@/entities/disease/api/disease.service';
 import { animalDiseasesService } from '@/entities/animal-disease/api/animalDiseases.service';
 import type { DiseaseResponse } from '@/shared/api/generated/swaggerTypes';
 import { SanidadTabs } from '@/widgets/dashboard/treatments/SanidadTabs';
+import { DiseaseDetailModalContent } from './components/DiseaseDetailModalContent';
 
 // Columnas de la tabla (width numérico -> w-{n})
 const columns: CRUDColumn<DiseaseResponse & { [k: string]: any }>[] = [
@@ -108,6 +109,7 @@ const AdminDiseasesPage = () => (
     initialFormData={initialFormData}
     mapResponseToForm={mapResponseToForm}
     validateForm={validateForm}
+    customDetailContent={(item) => <DiseaseDetailModalContent disease={item} />}
     realtime={true}
     pollIntervalMs={0}
     refetchOnFocus={false}

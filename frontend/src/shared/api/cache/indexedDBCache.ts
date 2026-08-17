@@ -59,6 +59,7 @@ export async function setIndexedDBCache<T>(
   data: T,
   ttl?: number
 ): Promise<void> {
+  if (!isIndexedDBSupported()) return;
   try {
     const db = await openDB();
     const transaction = db.transaction(STORE_NAME, 'readwrite');
@@ -79,8 +80,10 @@ export async function setIndexedDBCache<T>(
     });
 
     db.close();
-  } catch (error) {
-    console.warn('[IndexedDBCache] Error al guardar:', error);
+  } catch (error: any) {
+    if (error?.message !== 'IndexedDB not available') {
+      console.warn('[IndexedDBCache] Error al guardar:', error);
+    }
     // No lanzar error - degradar silenciosamente a memoria
   }
 }
@@ -92,6 +95,7 @@ export async function getIndexedDBCache<T>(
   key: string,
   options?: { allowStaleWhenOffline?: boolean; offlineGraceMs?: number }
 ): Promise<T | null> {
+  if (!isIndexedDBSupported()) return null;
   try {
     const db = await openDB();
     const transaction = db.transaction(STORE_NAME, 'readonly');
@@ -124,8 +128,10 @@ export async function getIndexedDBCache<T>(
     }
 
     return entry.data as T;
-  } catch (error) {
-    console.warn('[IndexedDBCache] Error al leer:', error);
+  } catch (error: any) {
+    if (error?.message !== 'IndexedDB not available') {
+      console.warn('[IndexedDBCache] Error al leer:', error);
+    }
     return null;
   }
 }
@@ -134,6 +140,7 @@ export async function getIndexedDBCache<T>(
  * Elimina una entrada del cache
  */
 export async function deleteIndexedDBCache(key: string): Promise<void> {
+  if (!isIndexedDBSupported()) return;
   try {
     const db = await openDB();
     const transaction = db.transaction(STORE_NAME, 'readwrite');
@@ -146,8 +153,10 @@ export async function deleteIndexedDBCache(key: string): Promise<void> {
     });
 
     db.close();
-  } catch (error) {
-    console.warn('[IndexedDBCache] Error al eliminar:', error);
+  } catch (error: any) {
+    if (error?.message !== 'IndexedDB not available') {
+      console.warn('[IndexedDBCache] Error al eliminar:', error);
+    }
   }
 }
 
@@ -157,6 +166,7 @@ export async function deleteIndexedDBCache(key: string): Promise<void> {
 export async function invalidateIndexedDBCacheByPrefix(
   prefix: string
 ): Promise<void> {
+  if (!isIndexedDBSupported()) return;
   try {
     const db = await openDB();
     const transaction = db.transaction(STORE_NAME, 'readwrite');
@@ -179,8 +189,10 @@ export async function invalidateIndexedDBCacheByPrefix(
 
     await Promise.all(deletePromises);
     db.close();
-  } catch (error) {
-    console.warn('[IndexedDBCache] Error al invalidar por prefijo:', error);
+  } catch (error: any) {
+    if (error?.message !== 'IndexedDB not available') {
+      console.warn('[IndexedDBCache] Error al invalidar por prefijo:', error);
+    }
   }
 }
 
@@ -190,6 +202,7 @@ export async function invalidateIndexedDBCacheByPrefix(
 export async function clearExpiredIndexedDBCache(
   options?: { allowStaleWhenOffline?: boolean; offlineGraceMs?: number }
 ): Promise<number> {
+  if (!isIndexedDBSupported()) return 0;
   try {
     const db = await openDB();
     const transaction = db.transaction(STORE_NAME, 'readwrite');
@@ -229,8 +242,10 @@ export async function clearExpiredIndexedDBCache(
 
     db.close();
     return deletedCount;
-  } catch (error) {
-    console.warn('[IndexedDBCache] Error al limpiar expirados:', error);
+  } catch (error: any) {
+    if (error?.message !== 'IndexedDB not available') {
+      console.warn('[IndexedDBCache] Error al limpiar expirados:', error);
+    }
     return 0;
   }
 }
@@ -239,6 +254,7 @@ export async function clearExpiredIndexedDBCache(
  * Limpia TODO el cache (útil para debugging o logout)
  */
 export async function clearAllIndexedDBCache(): Promise<void> {
+  if (!isIndexedDBSupported()) return;
   try {
     const db = await openDB();
     const transaction = db.transaction(STORE_NAME, 'readwrite');
@@ -251,8 +267,10 @@ export async function clearAllIndexedDBCache(): Promise<void> {
     });
 
     db.close();
-  } catch (error) {
-    console.warn('[IndexedDBCache] Error al limpiar todo:', error);
+  } catch (error: any) {
+    if (error?.message !== 'IndexedDB not available') {
+      console.warn('[IndexedDBCache] Error al limpiar todo:', error);
+    }
   }
 }
 
@@ -260,6 +278,7 @@ export async function clearAllIndexedDBCache(): Promise<void> {
  * Obtiene el tamaño estimado del cache (número de entradas)
  */
 export async function getIndexedDBCacheSize(): Promise<number> {
+  if (!isIndexedDBSupported()) return 0;
   try {
     const db = await openDB();
     const transaction = db.transaction(STORE_NAME, 'readonly');
@@ -273,8 +292,10 @@ export async function getIndexedDBCacheSize(): Promise<number> {
 
     db.close();
     return count;
-  } catch (error) {
-    console.warn('[IndexedDBCache] Error al obtener tamaño:', error);
+  } catch (error: any) {
+    if (error?.message !== 'IndexedDB not available') {
+      console.warn('[IndexedDBCache] Error al obtener tamaño:', error);
+    }
     return 0;
   }
 }

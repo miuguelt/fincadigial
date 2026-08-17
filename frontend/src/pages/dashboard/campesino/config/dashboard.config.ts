@@ -7,6 +7,7 @@ import {
   Leaf,
   ShoppingBag,
   Sprout,
+  BarChart3,
 } from 'lucide-react';
 import {
   IconHealthAlert,
@@ -103,6 +104,7 @@ export const TOOL_GROUPS: ToolGroup[] = [
     color: 'text-emerald-700 dark:text-emerald-300',
     border: 'border-emerald-200 dark:border-emerald-800/40',
     tools: [
+      { id: 'stats', title: 'Estadísticas del Hato', description: 'Termómetro, peso, pastos y calculadoras', icon: BarChart3, path: '/campesino/estadisticas', bg: 'bg-gradient-to-br from-teal-50/70 to-emerald-100/30 dark:from-teal-950/20 dark:to-emerald-900/10 border-teal-200/60 dark:border-teal-800/40 hover:border-teal-300 dark:hover:border-teal-700', emoji: '📊', requiresOnline: false },
       { id: 'health', title: 'Salud animal', description: 'Registrar novedades y tratamientos', icon: IconHealthAlert, path: '/campesino/health', bg: 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/40 hover:border-emerald-300 dark:hover:border-emerald-700', emoji: '', requiresOnline: false },
       { id: 'milk', title: 'Registrar Ordeño', description: 'Producción diaria de leche', icon: IconMilk, path: '/campesino/registro-operativo?modal=milk', bg: 'bg-gradient-to-br from-amber-50/70 to-amber-100/30 dark:from-amber-950/20 dark:to-amber-900/10 border-amber-200/60 dark:border-amber-800/40 hover:border-amber-300 dark:hover:border-amber-700', emoji: '', requiresOnline: false },
       { id: 'transfer', title: 'Trasladar Ganado', description: 'Mover animales entre potreros', icon: IconRouteCattle, path: '/campesino/registro-operativo?modal=transfer', bg: 'bg-gradient-to-br from-orange-50/70 to-orange-100/30 dark:from-orange-950/20 dark:to-orange-900/10 border-orange-200/60 dark:border-orange-800/40 hover:border-orange-300 dark:hover:border-orange-700', emoji: '️', requiresOnline: false },

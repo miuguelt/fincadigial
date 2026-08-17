@@ -21,6 +21,8 @@ import {
   TreatmentModal,
   FinanceModal,
   ControlModal,
+  CorralRapidoModal,
+  AnimalExitModal,
 } from '@/widgets/registro-operativo';
 import { IconMilk } from '@/shared/icons/cattle';
 
@@ -39,12 +41,12 @@ const RegistroOperativoPage: React.FC = () => {
     activeModal, savingForm,
     cropActivities, plots, loadingCrops, cropsError,
     animals, fields, diseases, medications,
-    historyRecords, loadingHistory, historyError,
+    historyRecords, loadingHistory, historyError, withdrawalAnimals,
     milkForm, setMilkForm, transferForm, setTransferForm,
     diseaseForm, setDiseaseForm, treatmentForm, setTreatmentForm,
     financeForm, setFinanceForm, controlForm, setControlForm,
     openModal, closeModal,
-    loadCropData, loadHistoryRecords,
+    loadCropData, loadMasterData, loadHistoryRecords,
     handleMilkingSubmit, handleTransferSubmit, handleDiseaseSubmit, handleTreatmentSubmit, handleFinanceSubmit, handleControlSubmit,
     INITIAL_CROP_FORM,
   } = useRegistroOperativo();
@@ -207,12 +209,14 @@ const RegistroOperativoPage: React.FC = () => {
       />
 
       <CropActivityModal open={showCropForm} onClose={() => setShowCropForm(false)} initialForm={{ ...INITIAL_CROP_FORM, activity_type: cropFormType }} plots={plots} onSave={loadCropData} />
-      <MilkModal open={activeModal === 'milk'} onClose={closeModal} form={milkForm} setForm={setMilkForm} animals={animals} saving={savingForm} onSubmit={handleMilkingSubmit} />
+      <MilkModal open={activeModal === 'milk'} onClose={closeModal} form={milkForm} setForm={setMilkForm} animals={animals} withdrawalAnimals={withdrawalAnimals} saving={savingForm} onSubmit={handleMilkingSubmit} />
       <TransferModal open={activeModal === 'transfer'} onClose={closeModal} form={transferForm} setForm={setTransferForm} animals={animals} fields={fields} saving={savingForm} onSubmit={handleTransferSubmit} />
       <DiseaseModal open={activeModal === 'disease'} onClose={closeModal} form={diseaseForm} setForm={setDiseaseForm} animals={animals} diseases={diseases} saving={savingForm} onSubmit={handleDiseaseSubmit} />
       <TreatmentModal open={activeModal === 'treatment'} onClose={closeModal} form={treatmentForm} setForm={setTreatmentForm} animals={animals} medications={medications} saving={savingForm} onSubmit={handleTreatmentSubmit} />
       <FinanceModal open={activeModal === 'finance'} onClose={closeModal} form={financeForm} setForm={setFinanceForm} animals={animals} saving={savingForm} onSubmit={handleFinanceSubmit} />
       <ControlModal open={activeModal === 'control'} onClose={closeModal} form={controlForm} setForm={setControlForm} animals={animals} saving={savingForm} onSubmit={handleControlSubmit} />
+      <CorralRapidoModal open={activeModal === 'corral-rapido'} onClose={closeModal} animals={animals} fields={fields} onSuccess={loadHistoryRecords} />
+      <AnimalExitModal open={activeModal === 'exit'} onClose={closeModal} animals={animals} onSuccess={() => { loadMasterData(); loadHistoryRecords(); }} />
     </div>
   );
 };

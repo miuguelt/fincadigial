@@ -10,7 +10,7 @@ const SystemAdminRoute = () => {
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
-  if (!user?.is_system_admin) {
+  if (!user?.is_system_admin && user?.role !== 'Administrador') {
     return <Navigate to="/unauthorized" state={{ from: location }} replace />;
   }
   return <Outlet />;

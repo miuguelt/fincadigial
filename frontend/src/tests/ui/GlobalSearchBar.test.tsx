@@ -25,7 +25,7 @@ vi.mock('@/features/search/hooks/useSemanticSearch', () => ({
 describe('GlobalSearchBar Component', () => {
   it('renders correctly with default livestock placeholder', () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <GlobalSearchBar />
       </MemoryRouter>
     );
@@ -36,7 +36,7 @@ describe('GlobalSearchBar Component', () => {
 
   it('shows quick suggestions when input is focused and query is empty', () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <GlobalSearchBar />
       </MemoryRouter>
     );
