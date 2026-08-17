@@ -1,4 +1,3 @@
-
 services:
   villaluz-frontend:
     build:
@@ -35,18 +34,18 @@ services:
       - DB_ENGINE=postgresql+psycopg2
       - DB_HOST=villaluz_postgres
       - DB_PORT=5432
-      - DB_USER=villaluz
-      - DB_PASSWORD=villaluz_pass
-      - DB_NAME=finca_db
+      - DB_USER=${DB_USER:-villaluz}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME:-finca_db}
       - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - JWT_COOKIE_DOMAIN=localhost
       - JWT_COOKIE_SECURE=false
       - JWT_COOKIE_SAMESITE=Lax
       - CORS_ORIGINS=http://localhost:3003,http://127.0.0.1:3003,https://localhost:3003,https://127.0.0.1:3003,http://localhost:3005,http://127.0.0.1:3005,https://localhost:3005,https://127.0.0.1:3005,http://localhost:3000
-      - REDIS_URL=redis://:${REDIS_PASSWORD:-villaluz_redis_pass}@redis:6379/0
-      - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD:-villaluz_redis_pass}@redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD:-villaluz_redis_pass}@redis:6379/0
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/0}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
       - API_BASE_URL_NO_VERSION=http://localhost:8093
       - BACKEND_URL=http://localhost:8093
     networks:
@@ -68,13 +67,13 @@ services:
       - DB_ENGINE=postgresql+psycopg2
       - DB_HOST=villaluz_postgres
       - DB_PORT=5432
-      - DB_USER=villaluz
-      - DB_PASSWORD=villaluz_pass
-      - DB_NAME=finca_db
+      - DB_USER=${DB_USER:-villaluz}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME:-finca_db}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - REDIS_URL=redis://:${REDIS_PASSWORD:-villaluz_redis_pass}@redis:6379/0
-      - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD:-villaluz_redis_pass}@redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD:-villaluz_redis_pass}@redis:6379/0
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/0}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
     networks:
       - villaluz-network
     depends_on:
@@ -96,13 +95,13 @@ services:
       - DB_ENGINE=postgresql+psycopg2
       - DB_HOST=villaluz_postgres
       - DB_PORT=5432
-      - DB_USER=villaluz
-      - DB_PASSWORD=villaluz_pass
-      - DB_NAME=finca_db
+      - DB_USER=${DB_USER:-villaluz}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME:-finca_db}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - REDIS_URL=redis://:${REDIS_PASSWORD:-villaluz_redis_pass}@redis:6379/0
-      - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD:-villaluz_redis_pass}@redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD:-villaluz_redis_pass}@redis:6379/0
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/0}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
     networks:
       - villaluz-network
     depends_on:
@@ -120,10 +119,10 @@ services:
 #    restart: always
 #    command: --log-bin=binlog --expire-logs-days=7
 #    environment:
-#      - MYSQL_DATABASE=finca_db
-#      - MYSQL_USER=villaluz
-#      - MYSQL_PASSWORD=villaluz_pass
-#      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-root_pass}
+#      - MYSQL_DATABASE=${MYSQL_DATABASE:-finca_db}
+#      - MYSQL_USER=${MYSQL_USER:-villaluz}
+#      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+#      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
 #    ports:
 #      - "3307:3306"
 #    networks:
@@ -131,7 +130,7 @@ services:
 #    volumes:
 #      - mysql_data:/var/lib/mysql
 #    healthcheck:
-#      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "villaluz", "-pvillaluz_pass"]
+#      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "${MYSQL_USER:-villaluz}", "-p${MYSQL_PASSWORD}"]
 #      interval: 10s
 #      timeout: 5s
 #      retries: 5
@@ -140,7 +139,7 @@ services:
     image: redis:7-alpine
     container_name: villaluz_redis
     restart: unless-stopped
-    command: redis-server --requirepass ${REDIS_PASSWORD:-villaluz_redis_pass}
+    command: redis-server --requirepass ${REDIS_PASSWORD}
     networks:
       - villaluz-network
     ports:
@@ -148,7 +147,7 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-villaluz_redis_pass}", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -161,8 +160,8 @@ services:
 #    environment:
 #      - DB_SERVER=db
 #      - DB_PORT=3306
-#      - DB_USER=villaluz
-#      - DB_PASS=villaluz_pass
+#      - DB_USER=${DB_USER}
+#      - DB_PASS=${DB_PASSWORD}
 #      - DB_NAMES=finca_db
 #      - DB_DUMP_TARGET=/backups
 #      - DB_DUMP_FREQUENCY=1440
@@ -170,11 +169,6 @@ services:
 #      - DB_DUMP_KEEP_FILES=7
 #    volumes:
 #      - backup_data:/backups
-##    depends_on:
-##      db:
-##        condition: service_healthy
-#    networks:
-#      - villaluz-network
 
 networks:
   villaluz-network:

@@ -55,7 +55,7 @@ Ejemplo:
 {
   "identification": 12345678,
   "fullname": "Juan Perez",
-  "password": "Testpass123",
+  "password": "<PASSWORD>",
   "email": "juan.perez@example.com",
   "phone": "3001112222",
   "role": "Instructor",

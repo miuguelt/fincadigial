@@ -222,7 +222,7 @@ curl http://localhost:8081/api/v1/navigation/quick-access | python -m json.tool
 # Primero, obtener token JWT
 curl -X POST http://localhost:8081/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"identification":"99999999","password":"tu_password"}'
+  -d '{"identification":"<IDENTIFICACION>","password":"<CONTRASEÑA>"}'
 
 # Usar el token en las siguientes peticiones
 TOKEN="<tu_token_aqui>"
@@ -268,7 +268,7 @@ Buscar las nuevas secciones:
 flask db upgrade
 
 # Opción B: Usar variable de entorno
-export DATABASE_URL="mysql+pymysql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>:<DB_PORT>/<DB_NAME>"
+export DATABASE_URL="postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
 flask db upgrade head
 ```
 

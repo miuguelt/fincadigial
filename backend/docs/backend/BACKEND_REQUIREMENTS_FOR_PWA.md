@@ -34,16 +34,16 @@ Crea un archivo `.env` en la raíz del proyecto con:
 FLASK_ENV=production  # development | production | testing
 
 # ============================================================
-# BASE DE DATOS (MySQL)
+# BASE DE DATOS
 # ============================================================
-DB_HOST=enlinea.sbs
-DB_PORT=3311
-DB_NAME=finca
-DB_USER=fincau
-DB_PASSWORD=tu_password_seguro_aqui
+DB_HOST=127.0.0.1
+DB_PORT=5434
+DB_NAME=finca_db
+DB_USER=villaluz_user
+DB_PASSWORD=<CONTRASEÑA_SEGURA_BD>
 
 # O usar URI completa:
-# SQLALCHEMY_DATABASE_URI=mysql+pymysql://user:pass@host:port/dbname
+# SQLALCHEMY_DATABASE_URI=postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
 
 # ============================================================
 # REDIS (OBLIGATORIO para PWA)
@@ -67,11 +67,11 @@ TEST_REDIS_URL=redis://localhost:6379/2
 # ============================================================
 # CRÍTICO: Debe ser una clave segura de al menos 64 caracteres
 # Generar con: openssl rand -hex 32
-JWT_SECRET_KEY=tu_clave_super_secreta_de_64_caracteres_minimo_aqui_123456789
+JWT_SECRET_KEY=<GENERAR_CLAVE_JWT_HEX_64_CARACTERES>
 
 # Dominio de cookies (para producción)
 # Ejemplo: .tudominio.com (el punto inicial permite subdominios)
-JWT_COOKIE_DOMAIN=.enlinea.sbs
+JWT_COOKIE_DOMAIN=.tudominio.com
 
 # HTTPS obligatorio en producción
 JWT_COOKIE_SECURE=True
@@ -85,14 +85,14 @@ JWT_COOKIE_SAMESITE=None
 # Lista de orígenes permitidos (separados por coma)
 # Debe incluir TODOS los dominios desde donde se accede al PWA
 
-CORS_ORIGINS=https://finca.enlinea.sbs,https://app.tudominio.com,http://localhost:5173
+CORS_ORIGINS=https://app.tudominio.com,http://localhost:5173
 
 # ============================================================
 # URLs del Sistema
 # ============================================================
-API_BASE_URL=https://finca.enlinea.sbs/api/v1
-FRONTEND_URL=https://finca.enlinea.sbs
-BACKEND_URL=https://finca.enlinea.sbs
+API_BASE_URL=https://app.tudominio.com/api/v1
+FRONTEND_URL=https://app.tudominio.com
+BACKEND_URL=https://app.tudominio.com
 
 # ============================================================
 # SEGURIDAD
@@ -101,7 +101,7 @@ BACKEND_URL=https://finca.enlinea.sbs
 RATE_LIMIT_ENABLED=True
 
 # Secret key para Flask (sesiones)
-SECRET_KEY=otra_clave_super_secreta_diferente_a_jwt
+SECRET_KEY=<GENERAR_CLAVE_FLASK_HEX_64_CARACTERES>
 
 # ============================================================
 # LOGGING (Opcional pero recomendado)
@@ -176,7 +176,7 @@ save 300 10
 save 60 10000
 
 # Password (OBLIGATORIO en producción)
-requirepass tu_password_redis_seguro
+requirepass <CONTRASEÑA_REDIS_SEGURA>
 ```
 
 **¿Por qué Redis es OBLIGATORIO?**
@@ -403,7 +403,7 @@ GET    /api/v1/{resource}?since=...    # Sincronización delta
 python run_migration.py
 
 # Opción 2: SQL directo
-mysql -h enlinea.sbs -P 3311 -u fincau -p finca < add_performance_indexes.sql
+psql -h <DB_HOST> -p <DB_PORT> -U <DB_USER> -d <DB_NAME> -f add_performance_indexes.sql
 ```
 
 **Esto crea índices en `updated_at` y `created_at` que aceleran:**
@@ -645,7 +645,7 @@ sudo systemctl status finca-api
 # deploy.sh
 
 # 1. Backup DB
-mysqldump -h enlinea.sbs -P 3311 -u fincau -p finca > backup_$(date +%Y%m%d).sql
+pg_dump -h <DB_HOST> -p <DB_PORT> -U <DB_USER> -d <DB_NAME> > backup_$(date +%Y%m%d).sql
 
 # 2. Pull código
 git pull origin main

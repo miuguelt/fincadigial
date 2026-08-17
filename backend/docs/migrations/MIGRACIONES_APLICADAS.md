@@ -88,7 +88,7 @@ Las migraciones de base de datos han sido aplicadas exitosamente. Se crearon **8
 sqlalchemy.url = %(DATABASE_URL)s
 
 # DESPUÉS (conexión directa):
-sqlalchemy.url = mysql+pymysql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>:<DB_PORT>/<DB_NAME>
+sqlalchemy.url = postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
 ```
 
 ### 2. Eliminación de Migración Conflictiva

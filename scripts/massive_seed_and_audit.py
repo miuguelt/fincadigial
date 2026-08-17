@@ -94,7 +94,7 @@ def run_massive_seed_and_audit():
                         email=u_email,
                         phone=u_phone,
                         role=random.choice(list(Role)),
-                        password=generate_password_hash("Pass123!"),
+                        password=generate_password_hash(get_seed_password()),
                         status=True,
                         finca_id=default_finca.id,
                     )

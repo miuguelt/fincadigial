@@ -106,7 +106,7 @@ curl http://localhost:8081/api/v1/navigation/quick-access
 # Login como admin (ajustar credenciales según tu usuario)
 curl -X POST http://localhost:8081/api/v1/auth/login `
   -H "Content-Type: application/json" `
-  -d '{"identification":"99999999","password":"admin123"}'
+  -d '{"identification":"<IDENTIFICACION>","password":"<CONTRASEÑA>"}'
 ```
 
 **Guardar el token de la respuesta**:
@@ -114,7 +114,7 @@ curl -X POST http://localhost:8081/api/v1/auth/login `
 {
   "success": true,
   "data": {
-    "access_token": "eyJ0eXAiOiJKV1QiLCJhb...",  // ← COPIAR ESTO
+    "access_token": "<TU_TOKEN_JWT_AQUI>",  // ← COPIAR ESTO
     "user": { ... }
   }
 }
@@ -124,7 +124,7 @@ curl -X POST http://localhost:8081/api/v1/auth/login `
 
 ```powershell
 # PowerShell
-$token = "eyJ0eXAiOiJKV1QiLCJhb..."  # Tu token aquí
+$token = "<TU_TOKEN_JWT_AQUI>"  # Tu token aquí
 $headers = @{
     "Authorization" = "Bearer $token"
     "Content-Type" = "application/json"

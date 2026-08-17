@@ -99,9 +99,9 @@ python run.py
 # 2. Abre en tu navegador
 dashboard_example.html
 
-# 3. Credenciales por defecto:
-#    Usuario: admin
-#    Contraseña: admin123
+# 3. Credenciales de acceso:
+#    Usuario: <ADMIN_USER>
+#    Contraseña: <ADMIN_PASSWORD>
 ```
 
 ### Opción 2: Script Python
@@ -118,13 +118,13 @@ python test_dashboard_stats.py
 
 ```bash
 # 1. Login
-curl -X POST http://localhost:5000/api/v1/auth/login \
+curl -X POST http://localhost:8081/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username": "admin", "password": "admin123"}'
+  -d '{"identification": "<ADMIN_IDENTIFICATION>", "password": "<ADMIN_PASSWORD>"}'
 
 # 2. Copiar el token y usarlo
-curl -X GET http://localhost:5000/api/v1/analytics/dashboard/complete \
-  -H "Authorization: Bearer TU_TOKEN_AQUI" \
+curl -X GET http://localhost:8081/api/v1/analytics/dashboard/complete \
+  -H "Authorization: Bearer <TU_TOKEN_AQUI>" \
   -H "Content-Type: application/json"
 ```
 

@@ -13,10 +13,12 @@ BASE_URL = "http://localhost:8081/api/v1"
 def test_login():
     """Probar login y obtener token."""
     print("=== TEST: LOGIN ===")
+    admin_id = os.getenv("ADMIN_IDENTIFICATION", "1098")
+    admin_pass = os.getenv("ADMIN_PASSWORD", "")
     try:
         response = requests.post(
             f"{BASE_URL}/auth/login",
-            json={"identifier": 1098, "password": "Admin1234!"},
+            json={"identifier": int(admin_id) if admin_id.isdigit() else admin_id, "password": admin_pass},
         )
         print(f"Status: {response.status_code}")
         if response.status_code == 200:

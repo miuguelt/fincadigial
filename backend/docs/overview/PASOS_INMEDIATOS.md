@@ -246,11 +246,11 @@ flask db upgrade
 services.msc  # Buscar MySQL
 
 # Verificar credenciales en .env
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=tu_base_de_datos
-DB_USER=tu_usuario
-DB_PASSWORD=tu_contraseña
+DB_HOST=127.0.0.1
+DB_PORT=5434
+DB_NAME=<DB_NAME>
+DB_USER=<DB_USER>
+DB_PASSWORD=<DB_PASSWORD>
 ```
 
 ### Aplicación no inicia
