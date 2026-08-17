@@ -31,11 +31,11 @@ const UserIdentityCell = ({ user }: { user: UserWithProfile }) => {
         {user.fullname?.charAt(0) || <UserIcon className="h-5 w-5" />}
       </div>
       <div className="flex flex-col min-w-0">
-        <span className="font-bold text-foreground group-hover:text-emerald-600 transition-colors truncate">
+        <span className="font-bold text-foreground group-hover:text-emerald-600 transition-colors fit-clamp">
           {user.fullname}
         </span>
         <div className="flex flex-col gap-0.5 mt-0.5">
-          <span className="text-[11px] text-muted-foreground flex items-center gap-1.5 truncate">
+          <span className="text-[11px] text-muted-foreground flex items-center gap-1.5 fit-clamp">
             <Mail className="h-3 w-3 text-primary shrink-0 opacity-70" /> {user.email}
           </span>
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
@@ -78,8 +78,8 @@ const UserFincasCell = ({ user }: { user: UserWithProfile }) => {
           title={`${f.name || f.finca_name} - Rol: ${f.role}`}
         >
           <Building2 className="h-3 w-3 text-emerald-600 shrink-0" />
-          <span className="font-bold text-foreground/80 truncate max-w-[110px]">{f.name || f.finca_name}</span>
-          <span className="text-[10px] text-muted-foreground uppercase">• {f.role}</span>
+          <span className="font-bold text-foreground/80 fit-clamp max-w-[110px]">{f.name || f.finca_name}</span>
+          <span className="text-[11px] text-muted-foreground uppercase">• {f.role}</span>
           {f.is_active && <div className="h-1.5 w-1.5 bg-emerald-500 rounded-full shrink-0" title="Activa" />}
         </div>
       ))}
