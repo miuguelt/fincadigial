@@ -68,7 +68,12 @@ export function InventorySummaryMetrics({
 		: "Stock actual × costo unitario";
 
 	return (
-		<div className="grid grid-cols-1 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+		/*
+		 * `auto-fit` con `minmax(min(100%, 190px), 1fr)`: la tira decide cuántas
+		 * columnas caben por el ancho real disponible —no por el del viewport—,
+		 * así que sirve igual en una barra lateral abierta que a 2560 px.
+		 */
+		<div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))]">
 			<InventoryMetric
 				icon={Package}
 				label="Lotes registrados"

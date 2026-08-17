@@ -3,7 +3,12 @@ import { fetchActivityStats } from "@/features/activity";
 import { usersService } from "@/entities/user/api/user.service";
 import { devLogger } from "@/shared/utils/devLogger";
 import type { UserWithProfile } from "../types";
-import { daysSince, getAccessStatus, getUserFincas } from "../utils/user.utils";
+import {
+	daysSince,
+	getAccessStatus,
+	getUserFincas,
+	isUserActive,
+} from "../utils/user.utils";
 
 type ActivityStats = {
 	window?: { days?: number };
@@ -85,19 +90,22 @@ export const useUserDetailPanel = (item: UserWithProfile) => {
 	const activityLimit = 8;
 
 	const fincas = useMemo(() => getUserFincas(item), [item]);
-	const linkedDays = useMemo(
+	const accountAgeDays = useMemo(
 		() => daysSince(item.created_at),
 		[item.created_at],
 	);
+	const fincaStartDate = useMemo(() => {
+		const membershipDates = fincas
+			.map((finca) => finca.created_at)
+			.filter((date): date is string => Boolean(date));
+		return membershipDates.sort()[0] || null;
+	}, [fincas]);
+	const fincaAgeDays = useMemo(() => daysSince(fincaStartDate), [fincaStartDate]);
 	const access = useMemo(
 		() => getAccessStatus(item.approval_status),
 		[item.approval_status],
 	);
-	const isActive = useMemo(
-		() =>
-			typeof item.status === "boolean" ? item.status : item.status === "1",
-		[item.status],
-	);
+	const isActive = useMemo(() => isUserActive(item), [item]);
 
 	// Fetch paginated activities for timeline
 	useEffect(() => {
@@ -119,7 +127,7 @@ export const useUserDetailPanel = (item: UserWithProfile) => {
 					} else {
 						setActivities((prev) => [...prev, ...newActivities]);
 					}
-					const total = res.total_items || 0;
+					const total = res.total_items ?? newActivities.length;
 					setTotalActivities(total);
 					setHasMore(activityPage * activityLimit < total);
 				}
@@ -358,7 +366,8 @@ export const useUserDetailPanel = (item: UserWithProfile) => {
 		historyFilter,
 		setHistoryFilter,
 		fincas,
-		linkedDays,
+		accountAgeDays,
+		fincaAgeDays,
 		access,
 		isActive,
 		controlsCount,

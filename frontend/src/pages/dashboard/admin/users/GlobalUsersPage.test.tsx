@@ -346,6 +346,8 @@ describe('GlobalUsersPage', () => {
     expect(screen.getByRole('heading', { name: 'Administrador Sistema' })).toBeInTheDocument();
     expect(screen.getAllByText('Finca Villa Luz').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Administrador').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Cuenta activa').length).toBeGreaterThan(0);
+    expect(screen.queryByText('En Finca')).not.toBeInTheDocument();
     expect(await screen.findByRole('group', { name: 'Eventos en los últimos 30 días' })).toHaveTextContent('12');
     expect(screen.getByRole('group', { name: 'Animales atendidos en los últimos 30 días' })).toHaveTextContent('7');
   });

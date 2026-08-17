@@ -1,11 +1,9 @@
 import {
-	Activity,
 	AlertTriangle,
 	BarChart2,
 	BadgeCheck,
 	Building2,
 	CalendarClock,
-	Clock,
 	Edit3,
 	ExternalLink,
 	FileText,
@@ -167,7 +165,8 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 		historyFilter,
 		setHistoryFilter,
 		fincas,
-		linkedDays,
+		accountAgeDays,
+		fincaAgeDays,
 		access,
 		isActive,
 		distributionData,
@@ -176,6 +175,8 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 		handleLoadMore,
 	} = useUserDetailPanel(item);
 	const chat = getChatAvailability(item, currentUser, chatContactIds);
+	const primaryFinca = fincas.find((finca) => finca.is_primary) || fincas[0];
+	const activeFincasCount = fincas.filter((finca) => finca.is_active !== false).length;
 
 	return (
 		<div className="p-2 space-y-6 max-w-full overflow-hidden flex flex-col h-full min-h-0">
@@ -239,9 +240,26 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 													: "bg-muted-foreground",
 											)}
 										/>
-										{isActive ? "En Finca" : "Fuera"}
+										{isActive ? "Cuenta activa" : "Cuenta inactiva"}
 									</div>
+									{access && (
+										<Badge
+											variant="outline"
+											className={cn(
+												"rounded-full border px-2.5 py-0.5 text-[11px] font-bold uppercase",
+												access.color,
+											)}
+										>
+											Acceso {access.label}
+										</Badge>
+									)}
 								</div>
+								<p className="max-w-[38rem] text-xs font-medium text-muted-foreground">
+									{item.email || "Sin correo registrado"}
+									{primaryFinca && (
+										<> · {primaryFinca.finca_name || primaryFinca.name || "Sin finca principal"}</>
+									)}
+								</p>
 							</div>
 						</div>
 					</div>
@@ -267,13 +285,17 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 				</div>
 			</div>
 
-			<div className="flex border-b border-border/40 overflow-x-auto scrollbar-none gap-2 pb-px shrink-0">
+			<div
+				role="tablist"
+				aria-label="Secciones del perfil"
+				className="flex border-b border-border/40 overflow-x-auto scrollbar-none gap-2 pb-px shrink-0"
+			>
 				{[
-					{ id: "performance", label: "📊 Desempeño", desc: "KPIs y Gráficos" },
+					{ id: "performance", label: "📊 Actividad", desc: "Resumen y gráficos" },
 					{
 						id: "history",
-						label: "🩺 Historial de Campo",
-						desc: "Controles e Inyecciones",
+						label: "🧾 Historial",
+						desc: "Trazabilidad del usuario",
 					},
 					{
 						id: "fincas",
@@ -287,7 +309,10 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 						<button
 							key={tab.id}
 							type="button"
+							role="tab"
 							onClick={() => setActiveTab(tab.id as any)}
+							aria-selected={isActiveTab}
+							aria-label={`${tab.label.replace(/^\S+\s/, "")} — ${tab.desc}`}
 							className={cn(
 								"px-5 py-3 border-b-2 font-bold text-sm transition-all duration-200 flex flex-col items-center gap-0.5 whitespace-nowrap",
 								isActiveTab
@@ -320,9 +345,11 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 							<div className="bg-card border border-border/40 p-6 rounded-[2.5rem] shadow-sm flex flex-col">
-								<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-4 border-b border-border/30 pb-3">
-									<BarChart2 size={16} className="text-primary" /> Distribución
-									de Operaciones
+								<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex flex-wrap items-center gap-2 mb-4 border-b border-border/30 pb-3">
+									<BarChart2 size={16} className="text-primary" /> Operaciones registradas
+									<span className="text-[11px] font-semibold normal-case tracking-normal text-muted-foreground/80">
+										{hasRecentStats ? `Últimos ${recentStatsDays} días` : "Actividad visible reciente"}
+									</span>
 								</h3>
 								<div className="h-56 w-full flex items-center justify-center">
 									{loadingStats ? (
@@ -387,9 +414,11 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 							</div>
 
 							<div className="bg-card border border-border/40 p-6 rounded-[2.5rem] shadow-sm flex flex-col">
-								<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-4 border-b border-border/30 pb-3">
-									<TrendingUp size={16} className="text-primary" /> Frecuencia
-									de Actividad
+								<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex flex-wrap items-center gap-2 mb-4 border-b border-border/30 pb-3">
+									<TrendingUp size={16} className="text-primary" /> Frecuencia de actividad
+									<span className="text-[11px] font-semibold normal-case tracking-normal text-muted-foreground/80">
+										{hasRecentStats ? `Últimos ${recentStatsDays} días` : "Actividad visible reciente"}
+									</span>
 								</h3>
 								<div className="h-56 w-full flex items-center justify-center">
 									{loadingStats ? (
@@ -694,12 +723,12 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 								</div>
 								<p
 									className="text-sm font-bold text-foreground mt-2 fit-clamp"
-									title={item.finca_name || "Sin finca asignada"}
+									title={primaryFinca?.finca_name || primaryFinca?.name || "Sin finca asignada"}
 								>
-									{item.finca_name || "Sin finca asignada"}
+									{primaryFinca?.finca_name || primaryFinca?.name || "Sin finca asignada"}
 								</p>
 								<p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mt-0.5">
-									{item.finca_type || "Sin tipo"}
+									{primaryFinca?.finca_type || primaryFinca?.type || "Sin tipo"}
 								</p>
 							</div>
 
@@ -717,6 +746,9 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 											Multi-finca
 										</span>
 									)}
+								</p>
+								<p className="text-[11px] font-semibold text-muted-foreground mt-1">
+									{activeFincasCount} activas · {fincas.length - activeFincasCount} inactivas
 								</p>
 							</div>
 
@@ -767,7 +799,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 									variant="secondary"
 									className="font-black uppercase py-0.5 px-3 rounded-full text-[11px]"
 								>
-									Creado: {localFormatDateTime(item.created_at).split(",")[0]}
+									Cuenta creada: {localFormatDateTime(item.created_at).split(",")[0]}
 								</Badge>
 								<Badge
 									variant="outline"
@@ -779,14 +811,22 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 									)}
 								>
 									<BadgeCheck size={11} />
-									{isActive ? "Trabajando en finca" : "Fuera de servicio"}
+									{isActive ? "Cuenta activa" : "Cuenta inactiva"}
 								</Badge>
-								{linkedDays !== null && (
+								{accountAgeDays !== null && (
 									<Badge
 										variant="secondary"
 										className="font-black uppercase py-0.5 px-3 rounded-full text-[11px]"
 									>
-										{linkedDays} días vinculado
+										{accountAgeDays} días desde el registro
+									</Badge>
+								)}
+								{fincaAgeDays !== null && (
+									<Badge
+										variant="secondary"
+										className="font-black uppercase py-0.5 px-3 rounded-full text-[11px]"
+									>
+										{fincaAgeDays} días desde la primera membresía
 									</Badge>
 								)}
 							</div>

@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import { Card, CardContent } from "@/shared/ui/card";
 import { cn } from "@/shared/ui/cn";
+import { FitText } from "@/shared/ui/FitText";
 
 export const inventoryNumber = new Intl.NumberFormat("es-CO");
 type IconType = ComponentType<{ className?: string }>;
@@ -27,13 +28,19 @@ export function InventoryMetric({
 }) {
 	const body = (
 		<div className="flex items-start justify-between gap-3 text-left">
-			<div>
+			<div className="min-w-0 flex-1">
 				<p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
 					{label}
 				</p>
-				<p className={cn("mt-1 text-xl font-black sm:text-2xl", className)}>
+				{/* La cifra se encoge antes que partirse: "$ 364.000" no puede
+				    quedar como "$ 364.00" y un "0" en el renglón siguiente. */}
+				<FitText
+					as="p"
+					minScale={0.7}
+					className={cn("mt-1 text-xl font-black sm:text-2xl", className)}
+				>
 					{value}
-				</p>
+				</FitText>
 				<p className="mt-1 text-xs text-muted-foreground">{detail}</p>
 				{onClick && (
 					<p className="mt-1 text-[11px] font-bold text-primary">

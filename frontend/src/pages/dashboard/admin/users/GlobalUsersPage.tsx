@@ -94,7 +94,7 @@ const GlobalUsersPage = () => {
       <Dialog open={Boolean(selectedUser)} onOpenChange={(open) => !open && setSelectedUser(null)}>
         <DialogContent
           fullWidth
-          className="max-w-5xl max-h-[92vh] overflow-y-auto p-4 sm:p-6 bg-card border-border/80 shadow-2xl rounded-2xl"
+          className="h-[92dvh] max-h-[92dvh] min-h-0 max-w-6xl overflow-hidden bg-card p-3 shadow-2xl border-border/80 rounded-2xl sm:p-4"
         >
           <DialogHeader className="sr-only">
             <DialogTitle>Perfil Completo de {selectedUser?.fullname}</DialogTitle>

@@ -2,11 +2,11 @@ import {
 	Activity,
 	CalendarCheck2,
 	Layers,
+	Loader2,
 	PawPrint,
 	Sparkles,
 } from "lucide-react";
 import type React from "react";
-import { Loader2 } from "lucide-react";
 
 interface UserActivityOverviewProps {
 	fincaCount: number;
@@ -114,7 +114,7 @@ export const UserActivityOverview: React.FC<UserActivityOverviewProps> = ({
 						>
 							<div className="flex items-start justify-between gap-3">
 								<Icon className={`h-5 w-5 shrink-0 ${metric.iconClassName}`} />
-								<span className="text-right text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+								<span className="text-right text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
 									{metric.note}
 								</span>
 							</div>

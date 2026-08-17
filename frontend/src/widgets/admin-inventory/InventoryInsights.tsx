@@ -17,13 +17,18 @@ import {
 const COLLAPSE_KEY = "inventory:insights:collapsed";
 
 function useCollapsed() {
-	const [collapsed, setCollapsed] = useState(false);
+	/*
+	 * Plegado de entrada: las cuatro tarjetas de detalle ocupaban ~500 px y
+	 * dejaban la tabla —la razón de la pantalla— fuera del primer pantallazo.
+	 * La tira de indicadores sigue visible; el detalle se pide.
+	 */
+	const [collapsed, setCollapsed] = useState(true);
 
 	useEffect(() => {
 		try {
-			setCollapsed(localStorage.getItem(COLLAPSE_KEY) === "1");
+			setCollapsed(localStorage.getItem(COLLAPSE_KEY) !== "0");
 		} catch {
-			/* almacenamiento no disponible: se mantiene expandido */
+			/* almacenamiento no disponible: se mantiene plegado */
 		}
 	}, []);
 
@@ -79,7 +84,7 @@ export function InventoryInsights({
 	return (
 		<section
 			aria-labelledby="inventory-insights-title"
-			className="space-y-3 px-0 pb-4 pt-3"
+			className="space-y-2.5 px-0 pb-2 pt-1"
 		>
 			<div className="flex items-start justify-between gap-3">
 				<InventorySummaryIntro summary={summary} />

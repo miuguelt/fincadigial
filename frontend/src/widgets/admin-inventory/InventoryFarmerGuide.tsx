@@ -35,12 +35,12 @@ export function InventoryFarmerGuide() {
 
 	return (
 		<div className="rounded-xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-sky-500/5 to-emerald-500/10 p-3.5 shadow-sm transition-all duration-300">
-			<div className="flex items-center justify-between gap-3">
-				<div className="flex items-center gap-2.5">
+			<div className="flex flex-wrap items-center justify-between gap-3">
+				<div className="flex min-w-0 flex-1 items-center gap-2.5">
 					<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-sm shrink-0">
 						<HelpCircle className="h-4 w-4" />
 					</div>
-					<div>
+					<div className="min-w-0">
 						<h3 className="text-sm font-black text-foreground flex items-center gap-2">
 							🌾 Guía de Campo: ¿Cómo reabastecer tus insumos y medicamentos?
 						</h3>
@@ -69,7 +69,7 @@ export function InventoryFarmerGuide() {
 			</div>
 
 			{!collapsed && (
-				<div className="mt-3.5 grid gap-3 border-t border-emerald-500/20 pt-3 text-xs sm:grid-cols-3">
+				<div className="mt-3.5 grid gap-3 border-t border-emerald-500/20 pt-3 text-xs [grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))]">
 					{/* Opción 1: Entrar Stock */}
 					<div className="rounded-lg border border-emerald-500/20 bg-background/80 p-3 space-y-1.5 shadow-sm">
 						<div className="flex items-center gap-1.5 font-bold text-emerald-700 dark:text-emerald-400 text-xs uppercase tracking-wide">

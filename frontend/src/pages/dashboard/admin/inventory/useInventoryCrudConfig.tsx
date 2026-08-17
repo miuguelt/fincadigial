@@ -86,24 +86,33 @@ export function useInventoryCrudConfig({
 				/>
 			),
 
+			/*
+			 * Los chips son el único control que debe seguir visible mientras se
+			 * recorre la tabla, así que viven en el encabezado fijo. Van en fila
+			 * propia (`row`): colgados del grupo de acciones empujaban el ancho del
+			 * encabezado más allá del viewport.
+			 */
+			toolbarPlacement: "row",
 			customToolbar: (
-				<div className="space-y-2.5 w-full">
-					<InventoryFilterChips
-						filters={filters}
-						onChange={applyFilters}
-						counts={chipCounts}
-					/>
-					<InventoryFarmerGuide />
-				</div>
+				<InventoryFilterChips
+					filters={filters}
+					onChange={applyFilters}
+					counts={chipCounts}
+				/>
 			),
 
+			/*
+			 * Navegación, guía y análisis viajan dentro del área con scroll: son
+			 * contexto, no controles, y ahí no le restan alto a la tabla.
+			 */
 			customHeader: (
-				<div className="mt-4 space-y-3">
+				<div className="space-y-3 pb-1">
+					<SanidadTabs />
+					<InventoryFarmerGuide />
 					<InventoryInsights
 						activeStatus={filters.status}
 						onSelectStatus={toggleStatus}
 					/>
-					<SanidadTabs />
 				</div>
 			),
 		}),

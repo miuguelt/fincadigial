@@ -281,6 +281,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
           onOpenCreate={canCreate ? () => openCreate() : undefined}
           createLabel={`${t('common.create', 'Crear')} ${config.entityName.toLowerCase()}`}
           customToolbar={config.customToolbar}
+          toolbarPlacement={config.toolbarPlacement}
         />
       }
     />

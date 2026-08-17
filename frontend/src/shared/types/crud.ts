@@ -100,6 +100,12 @@ export interface CRUDConfig<T = any, TInput = any> {
   checkDependencies?: boolean;
   customHeader?: ReactNode;
   customToolbar?: ReactNode;
+  /**
+   * Dónde se pinta `customToolbar`: `inline` (por defecto) junto al botón de
+   * crear, para controles cortos; `row` en una fila propia de ancho completo,
+   * para bloques anchos como una barra de chips.
+   */
+  toolbarPlacement?: 'inline' | 'row';
   customActions?: (
     item: T,
     options?: { openCreate?: (prefill?: any) => void; openEdit?: (item: T) => void },

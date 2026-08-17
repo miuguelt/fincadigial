@@ -96,7 +96,14 @@ export function PageHeader({
       <div className={wrapperClasses}>
         <TitleBlock title={title} description={description} titleClasses={titleClasses} />
         {actions ? (
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">{actions}</div>
+          /*
+           * `min-w-0` en vez de `shrink-0`: un slot de acciones ancho —una barra
+           * de búsqueda con chips— ya no puede empujar el encabezado más allá
+           * del viewport ni dejar el título en una columna de una letra. Las
+           * acciones cortas siguen midiendo lo que miden porque `flex` no las
+           * encoge por debajo de su contenido salvo que falte sitio.
+           */
+          <div className="flex min-w-0 flex-wrap items-center gap-2 sm:flex-[2] sm:gap-3 sm:justify-end">{actions}</div>
         ) : null}
       </div>
     </header>
