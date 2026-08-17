@@ -21,7 +21,9 @@ export const FastInventoryAction: React.FC = () => {
     const fetchLots = async () => {
       try {
         const data = await inventoryService.getLots({ limit: 10 });
-        setLots(data);
+        setLots(data.filter((lot) =>
+          !lot.is_expired && Number(lot.available_quantity ?? lot.current_quantity) > 0,
+        ));
       } catch (error) {
         console.error("Error al cargar lotes:", error);
       }
@@ -34,16 +36,15 @@ export const FastInventoryAction: React.FC = () => {
     setLoading(true);
 
     try {
-      // 1. Registrar localmente para actualización instantánea de UI
-      recordMovement(selectedLot.id, quantity, "Salida");
-
-      // 2. Enviar al backend (se encola si está offline)
+      // El servidor es la fuente autoritativa. Actualizamos el estado local
+      // sólo después de confirmar el movimiento.
       await inventoryService.createMovement({
         lot_id: selectedLot.id,
         quantity: quantity,
-        type: "Salida",
+        movement_type: "Salida",
         notes: "Registro rápido desde campo (PWA Offline)",
-      } as any);
+      });
+      recordMovement(selectedLot.id, quantity, "Salida");
 
       setSuccess(true);
       setTimeout(() => {

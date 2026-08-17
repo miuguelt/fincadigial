@@ -97,7 +97,7 @@ export default function QuickTransfer() {
         await animalFieldsService.createAnimalField(payload);
         showToast('Traslado registrado exitosamente', 'success');
       }
-      emitDataRefresh('animal-fields');
+      if (isOnline) emitDataRefresh('animal-fields');
       handleClose();
     } catch (error) {
       console.error('Error creating transfer:', error);

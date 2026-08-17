@@ -132,3 +132,8 @@ if ($Json) {
 if ($FailOnViolations -and $violations.Count -gt 0) {
     exit 1
 }
+
+# Salida explícita: sin ella el script heredaba el código de rg, que devuelve 1
+# cuando no encuentra coincidencias. El gate reportaba 'clean' y salía con 1, así
+# que cualquier hook o CI encadenado veía un fallo permanente.
+exit 0

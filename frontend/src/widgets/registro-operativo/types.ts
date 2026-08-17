@@ -41,6 +41,8 @@ export interface TreatmentFormData {
   date: string;
   description: string;
   observations?: string;
+  lotId: string;
+  inventoryQuantity: string;
 }
 
 export interface ActivityConfig {

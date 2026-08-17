@@ -85,9 +85,10 @@ export default function QuickTreatment() {
     const payload = {
       animal_id: animalId,
       medication_id: medicationId,
-      dose,
+      dosis: dose,
+      frequency: 'Dosis única',
       treatment_date: date,
-      description: 'Tratamiento rápido' // description requerido por el backend
+      description: 'Tratamiento rápido',
     };
 
     try {
@@ -100,7 +101,7 @@ export default function QuickTreatment() {
         await treatmentsService.createTreatment(payload);
         showToast('Tratamiento registrado exitosamente', 'success');
       }
-      emitDataRefresh('treatments');
+      if (isOnline) emitDataRefresh('treatments');
       handleClose();
     } catch (error) {
       console.error('Error creating treatment:', error);

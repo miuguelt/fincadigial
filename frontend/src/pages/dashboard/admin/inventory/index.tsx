@@ -24,9 +24,24 @@ const InventoryPage: React.FC = () => {
 	const [restockLot, setRestockLot] = useState<InventoryLotResponse | null>(null);
 	const [isRestockOpen, setIsRestockOpen] = useState(false);
 
-	const { useSummary } = useInventory();
+	const { useSummary, invalidateInventoryQueries } = useInventory();
 	const summaryQuery = useSummary();
 	const summary = summaryQuery.data;
+
+	const refreshInventoryData = useCallback(async () => {
+		// Primero se limpia la fuente de datos; luego React Query vuelve a pedir
+		// los indicadores, para no revalidar contra el valor anterior en memoria.
+		await inventoryService.clearCache();
+		await invalidateInventoryQueries();
+
+		if (typeof window !== "undefined") {
+			window.dispatchEvent(
+				new CustomEvent("server-resource-changed", {
+					detail: { endpoint: "inventory/lots", force: true },
+				}),
+			);
+		}
+	}, [invalidateInventoryQueries]);
 
 	const chipCounts: InventoryChipCounts | undefined = useMemo(() => {
 		if (!summary) return undefined;
@@ -67,6 +82,7 @@ const InventoryPage: React.FC = () => {
 		applyFilters,
 		toggleStatus,
 		openRestock,
+		onInventoryChanged: refreshInventoryData,
 	});
 
 	const queryParams = useMemo(() => toQueryParams(filters), [filters]);
@@ -95,9 +111,7 @@ const InventoryPage: React.FC = () => {
 				lot={restockLot}
 				open={isRestockOpen}
 				onClose={closeRestock}
-				onSuccess={() => {
-					summaryQuery.refetch();
-				}}
+				onSuccess={refreshInventoryData}
 			/>
 		</>
 	);

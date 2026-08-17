@@ -53,6 +53,7 @@ def register_namespaces(api):
     from ..namespaces.core.activity_namespace import activity_ns
     from ..namespaces.core.alerts_namespace import alerts_ns
     from ..namespaces.farm.inventory_namespace import inventory_ns
+    from ..namespaces.farm.inventory_insights_namespace import inventory_insights_ns
     from ..namespaces.animals.reproduction_namespace import reproduction_ns
     from ..namespaces.finanzas.exports_namespace import exports_ns
     from ..namespaces.animals.growth_namespace import growth_ns
@@ -158,6 +159,7 @@ def register_namespaces(api):
     # api.add_namespace(activity_ns, path='/activity-log')
     api.add_namespace(alerts_ns)
     api.add_namespace(inventory_ns)
+    api.add_namespace(inventory_insights_ns)
     api.add_namespace(animal_movements_ns)
     api.add_namespace(finca_images_ns)
     api.add_namespace(treatment_recommendations_ns)

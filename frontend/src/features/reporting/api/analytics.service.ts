@@ -13,6 +13,17 @@ import type { CalendarResponse } from '@/widgets/calendar/model/calendar.types';
 const MICROCACHE_TTL_MS = 600; // ventana corta
 const microCache = new Map<string, { ts: number; data: any }>();
 const inFlightRequests = new Map<string, Promise<any>>();
+
+export function invalidateAnalyticsCache(): void {
+	microCache.clear();
+}
+
+if (typeof window !== 'undefined') {
+	window.addEventListener('server-resource-changed', (event) => {
+		const detail = (event as CustomEvent<{ endpoint?: unknown; local?: unknown }>).detail || {};
+		if (detail.endpoint || detail.local === true) invalidateAnalyticsCache();
+	});
+}
 const stableStringify = (obj: any) => {
 	if (!obj || typeof obj !== 'object') return '';
 	const keys = Object.keys(obj).sort();

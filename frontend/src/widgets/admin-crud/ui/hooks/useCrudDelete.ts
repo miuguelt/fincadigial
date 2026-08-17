@@ -31,6 +31,7 @@ interface UseCrudDeleteArgs<T extends { id: number }> {
   setPage?: (page: number) => void;
   refetch: () => Promise<any>;
   onDeleted: (id: number) => void;
+  onAfterDelete?: (id: number) => Promise<void> | void;
   showToast: (message: string, type?: ToastType, duration?: number) => void;
 }
 
@@ -43,7 +44,7 @@ interface UseCrudDeleteArgs<T extends { id: number }> {
 export function useCrudDelete<T extends { id: number }>(args: UseCrudDeleteArgs<T>) {
   const {
     config, service, entityKey, canDelete, deleteItem, items,
-    currentPage, setPage, refetch, onDeleted, showToast,
+    currentPage, setPage, refetch, onDeleted, onAfterDelete, showToast,
   } = args;
 
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -104,6 +105,14 @@ export function useCrudDelete<T extends { id: number }>(args: UseCrudDeleteArgs<
       addTombstone(entityKey, String(idToDelete), TOMBSTONE_TTL_MS);
       onDeleted(idToDelete);
 
+      if (onAfterDelete) {
+        try {
+          await onAfterDelete(idToDelete);
+        } catch (err) {
+          console.error('Error in onAfterDelete hook:', err);
+        }
+      }
+
       // Si la página se queda sin filas, retroceder una.
       if (items.length - 1 === 0 && currentPage > 1 && setPage) {
         setPage(currentPage - 1);
@@ -132,7 +141,7 @@ export function useCrudDelete<T extends { id: number }>(args: UseCrudDeleteArgs<
     }
   }, [
     canDelete, targetId, deleteItem, entityKey, items, currentPage, setPage,
-    refetch, config.entityName, service, showToast, onDeleted, resetConfirmState,
+    refetch, config.entityName, service, showToast, onDeleted, onAfterDelete, resetConfirmState,
   ]);
 
   return {

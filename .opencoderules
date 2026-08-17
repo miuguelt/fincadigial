@@ -58,6 +58,14 @@
 - Aplicar el estilo, pruebas, linters y `AGENTS.md` específicos del proyecto.
 - **TDD Autónomo Obligatorio**: Al desarrollar una nueva lógica de negocio, función o corregir un bug, el agente debe escribir primero la prueba unitaria (Test) que demuestre el comportamiento esperado, y confirmar que falla, antes de escribir o modificar el código de la aplicación para hacerla pasar.
 
+### 5.1 Consistencia de datos y fuente autoritativa
+
+- La base de datos o servicio persistente es la fuente autoritativa. Toda escritura confirmada (`POST`, `PUT`, `PATCH`, `DELETE` o mutación equivalente) debe invalidar o refrescar todas las capas de datos afectadas del cliente: caché HTTP o persistente, cachés de servicios, estado global, listados, estadísticas, búsquedas, reportes y vistas derivadas.
+- Las mutaciones deben pasar por una estrategia central de sincronización o emitir un evento de recurso con endpoint, método y marca de refresco forzado. No basta con actualizar el estado del componente que inició la operación, porque el mismo dato puede alimentar varias pantallas.
+- Las operaciones offline solo pueden publicar un dato como confirmado después de la confirmación del servidor o nodo de sincronización y la reconciliación del estado local. Encolar una operación no autoriza a refrescar la interfaz como si ya estuviera persistida.
+- Las consultas desmontadas deben quedar invalidables y revalidar al remontar o al volver a estar activas. Toda caché derivada debe tener una ruta explícita de invalidación asociada a las escrituras que la pueden modificar.
+- Toda corrección o nueva capacidad de consistencia debe incluir una prueba de regresión que falle antes del cambio, documentación en `docs/architecture/` cuando cruce módulos y verificación proporcional con pruebas, type-check, lint y build disponibles en el proyecto.
+
 ## 6. Arquitectura modular AI-first
 
 - Antes de crear una funcionalidad o hacer un refactor estructural, identificar responsabilidades, límites, dependencias y criterios de cambio. Consultar Codebase Memory, verificar los archivos exactos y elegir el patrón más simple que resuelva las fuerzas reales del problema; documentar en `docs/architecture/` la decisión y sus alternativas cuando afecte más de un módulo.

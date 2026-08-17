@@ -83,7 +83,7 @@ export default function OperarioDashboard() {
 
   const {
     activeModal, savingForm,
-    animals, fields, diseases, medications,
+    animals, fields, diseases, medications, inventoryLots,
     transferForm, setTransferForm,
     diseaseForm, setDiseaseForm, treatmentForm, setTreatmentForm,
     controlForm, setControlForm,
@@ -268,7 +268,7 @@ export default function OperarioDashboard() {
       {/* Modales Operativos Reutilizados */}
       <TransferModal open={activeModal === 'transfer'} onClose={closeModal} form={transferForm} setForm={setTransferForm} animals={animals} fields={fields} saving={savingForm} onSubmit={handleTransferSubmit} />
       <DiseaseModal open={activeModal === 'disease'} onClose={closeModal} form={diseaseForm} setForm={setDiseaseForm} animals={animals} diseases={diseases} saving={savingForm} onSubmit={handleDiseaseSubmit} />
-      <TreatmentModal open={activeModal === 'treatment'} onClose={closeModal} form={treatmentForm} setForm={setTreatmentForm} animals={animals} medications={medications} saving={savingForm} onSubmit={handleTreatmentSubmit} />
+      <TreatmentModal open={activeModal === 'treatment'} onClose={closeModal} form={treatmentForm} setForm={setTreatmentForm} animals={animals} medications={medications} inventoryLots={inventoryLots} saving={savingForm} onSubmit={handleTreatmentSubmit} />
       <ControlModal open={activeModal === 'control'} onClose={closeModal} form={controlForm} setForm={setControlForm} animals={animals} saving={savingForm} onSubmit={handleControlSubmit} />
 
       </div>

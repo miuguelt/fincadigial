@@ -13,6 +13,7 @@ import { animalDiseasesService } from '@/entities/animal-disease/api/animalDisea
 import { treatmentsService } from '@/entities/treatment/api/treatments.service';
 import { financialService } from '@/entities/financial/api/financial.service';
 import { controlService } from '@/entities/control/api/control.service';
+import { inventoryService } from '@/entities/inventory/api/inventory.service';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
 import { useLivestockSubmit } from './useLivestockSubmit';
 import { asList, buildHistoryRecords } from './buildHistoryRecords';
@@ -36,6 +37,7 @@ export function useRegistroOperativo() {
   const [fields, setFields] = useState<any[]>([]);
   const [diseases, setDiseases] = useState<any[]>([]);
   const [medications, setMedications] = useState<any[]>([]);
+  const [inventoryLots, setInventoryLots] = useState<any[]>([]);
   const [loadingMaster, setLoadingMaster] = useState(true);
 
   const [historyRecords, setHistoryRecords] = useState<HistoryRecord[]>([]);
@@ -49,7 +51,7 @@ export function useRegistroOperativo() {
   const [milkForm, setMilkForm] = useState<MilkFormData>({ animalId: '', liters: '', session: 'Mañana', date: getTodayColombia(), notes: '' });
   const [transferForm, setTransferForm] = useState<TransferFormData>({ animalId: '', fieldId: '', date: getTodayColombia() });
   const [diseaseForm, setDiseaseForm] = useState<DiseaseFormData>({ animalId: '', diseaseId: '', status: 'Activo', date: getTodayColombia(), notes: '' });
-  const [treatmentForm, setTreatmentForm] = useState<TreatmentFormData>({ animalId: '', medicationId: '', dose: '', frequency: 'Dosis única', date: getTodayColombia(), description: '', observations: '' });
+  const [treatmentForm, setTreatmentForm] = useState<TreatmentFormData>({ animalId: '', medicationId: '', dose: '', frequency: 'Dosis única', date: getTodayColombia(), description: '', observations: '', lotId: '', inventoryQuantity: '' });
   const [financeForm, setFinanceForm] = useState<FinanceFormData>({ transaction_type: 'Gasto', category: 'Alimento', animalId: '', amount: '', date: getTodayColombia(), description: '' });
   const [controlForm, setControlForm] = useState<ControlFormData>({ animalId: '', weight: '', height: '', health_status: 'Bueno', checkup_date: getTodayColombia(), description: '' });
 
@@ -98,16 +100,19 @@ export function useRegistroOperativo() {
   const loadMasterData = useCallback(async () => {
     setLoadingMaster(true);
     try {
-      const [animalsResp, fieldsResp, diseasesResp, medsResp] = await Promise.all([
+      const [animalsResp, fieldsResp, diseasesResp, medsResp, inventoryResp] = await Promise.all([
         animalsService.getAnimals({ limit: 300, status: 'Vivo' }),
         fieldService.getFields({ limit: 100 }),
         diseaseService.getDiseases({ limit: 100 }),
-        medicationsService.getMedications({ limit: 100 })
+        medicationsService.getMedications({ limit: 100 }),
+        inventoryService.getLots({ limit: 300 })
       ]);
       setAnimals(asList(animalsResp));
       setFields(asList(fieldsResp));
       setDiseases(asList(diseasesResp));
       setMedications(asList(medsResp));
+      // Los lotes se filtran en el formulario por el medicamento seleccionado.
+      setInventoryLots(asList(inventoryResp));
     } catch { showToast('Error al cargar datos del ganado', 'error'); }
     finally { setLoadingMaster(false); }
   }, [showToast]);
@@ -168,7 +173,7 @@ export function useRegistroOperativo() {
   return {
     activeModal, savingForm,
     cropActivities, plots, loadingCrops, cropsError,
-    animals: animalOptions, fields, diseases, medications, loadingMaster,
+    animals: animalOptions, fields, diseases, medications, inventoryLots, loadingMaster,
     historyRecords, loadingHistory, historyError, withdrawalAnimals,
     milkForm, setMilkForm, transferForm, setTransferForm,
     diseaseForm, setDiseaseForm, treatmentForm, setTreatmentForm,

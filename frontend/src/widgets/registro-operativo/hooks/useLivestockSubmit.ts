@@ -90,6 +90,9 @@ export function useLivestockSubmit(
   ) => {
     if (!treatmentForm.animalId || !treatmentForm.medicationId || !treatmentForm.dose) { showToast('Complete animal, medicamento y dosis', 'error'); return false; }
     if (!treatmentForm.frequency) { showToast('Indique cada cuánto se aplica', 'error'); return false; }
+    if ((treatmentForm.lotId && !treatmentForm.inventoryQuantity) || (!treatmentForm.lotId && treatmentForm.inventoryQuantity)) {
+      showToast('Seleccione lote y cantidad, o deje ambos vacíos', 'error'); return false;
+    }
     if (isFutureDate(treatmentForm.date)) { showToast('La fecha del tratamiento no puede ser futura', 'error'); return false; }
     setSavingForm(true);
     const description = treatmentForm.description?.trim() || 'Tratamiento registrado desde el campo';
@@ -106,9 +109,12 @@ export function useLivestockSubmit(
       observations: treatmentForm.observations || undefined,
     };
     const medicationId = Number(treatmentForm.medicationId);
+    const inventoryLink = treatmentForm.lotId && treatmentForm.inventoryQuantity
+      ? { lot_id: Number(treatmentForm.lotId), quantity: Number(treatmentForm.inventoryQuantity) }
+      : {};
     try {
       if (!isOnline) {
-        await offlineQueue.enqueue('POST', 'treatments', payload);
+        await offlineQueue.enqueue('POST', 'treatments', { ...payload, medication_id: medicationId, ...inventoryLink });
         showToast('Guardado sin señal. Vincule el medicamento al recuperar cobertura.', 'success');
         closeModal(); loadHistoryRecords(); return true;
       }
@@ -120,7 +126,7 @@ export function useLivestockSubmit(
         closeModal(); loadHistoryRecords(); return true;
       }
       try {
-        await treatmentMedicationService.createTreatmentMedication({ treatment_id: treatmentId, medication_id: medicationId } as any);
+        await treatmentMedicationService.createTreatmentMedication({ treatment_id: treatmentId, medication_id: medicationId, ...inventoryLink } as any);
         showToast('Tratamiento registrado', 'success');
       } catch {
         showToast('Tratamiento guardado, pero falló el vínculo con el medicamento', 'error');

@@ -43,7 +43,7 @@ const RegistroOperativoPage: React.FC = () => {
   const {
     activeModal, savingForm,
     cropActivities, plots, loadingCrops, cropsError,
-    animals, fields, diseases, medications,
+    animals, fields, diseases, medications, inventoryLots,
     historyRecords, loadingHistory, historyError, withdrawalAnimals,
     milkForm, setMilkForm, transferForm, setTransferForm,
     diseaseForm, setDiseaseForm, treatmentForm, setTreatmentForm,
@@ -215,7 +215,7 @@ const RegistroOperativoPage: React.FC = () => {
       <MilkModal open={activeModal === 'milk'} onClose={closeModal} form={milkForm} setForm={setMilkForm} animals={animals} withdrawalAnimals={withdrawalAnimals} saving={savingForm} onSubmit={handleMilkingSubmit} />
       <TransferModal open={activeModal === 'transfer'} onClose={closeModal} form={transferForm} setForm={setTransferForm} animals={animals} fields={fields} saving={savingForm} onSubmit={handleTransferSubmit} />
       <DiseaseModal open={activeModal === 'disease'} onClose={closeModal} form={diseaseForm} setForm={setDiseaseForm} animals={animals} diseases={diseases} saving={savingForm} onSubmit={handleDiseaseSubmit} />
-      <TreatmentModal open={activeModal === 'treatment'} onClose={closeModal} form={treatmentForm} setForm={setTreatmentForm} animals={animals} medications={medications} saving={savingForm} onSubmit={handleTreatmentSubmit} />
+      <TreatmentModal open={activeModal === 'treatment'} onClose={closeModal} form={treatmentForm} setForm={setTreatmentForm} animals={animals} medications={medications} inventoryLots={inventoryLots} saving={savingForm} onSubmit={handleTreatmentSubmit} />
       <FinanceModal open={activeModal === 'finance'} onClose={closeModal} form={financeForm} setForm={setFinanceForm} animals={animals} saving={savingForm} onSubmit={handleFinanceSubmit} />
       <ControlModal open={activeModal === 'control'} onClose={closeModal} form={controlForm} setForm={setControlForm} animals={animals} saving={savingForm} onSubmit={handleControlSubmit} />
       <CorralRapidoModal open={activeModal === 'corral-rapido'} onClose={closeModal} animals={animals} fields={fields} onSuccess={loadHistoryRecords} />

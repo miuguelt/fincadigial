@@ -22,7 +22,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, []);
 
   const getProjectedQuantity = useCallback((lot: InventoryLotResponse) => {
-    const baseQuantity = typeof lot.quantity === 'string' ? parseFloat(lot.quantity) : (lot.quantity || 0);
+    const baseQuantity = Number(lot.available_quantity ?? lot.current_quantity) || 0;
     const adjustment = projectedAdjustments[lot.id] || 0;
     return baseQuantity + adjustment;
   }, [projectedAdjustments]);

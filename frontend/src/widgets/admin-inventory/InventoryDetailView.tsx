@@ -29,6 +29,7 @@ export function InventoryDetailView({
 }: InventoryDetailViewProps) {
 	const isVaccine = lot.product_type === "Vacuna";
 	const currentStock = Number(lot.current_quantity) || 0;
+	const usableStock = Number(lot.available_quantity ?? (lot.is_expired ? 0 : currentStock)) || 0;
 	const initialStock = Number(lot.quantity) || currentStock;
 	const minStock = Number(lot.min_stock) || 5;
 	const unitCost = Number(lot.unit_cost) || 0;
@@ -86,7 +87,7 @@ export function InventoryDetailView({
 
 					<div className="w-full">
 						<InventoryStockProgressBar
-							currentQuantity={currentStock}
+							currentQuantity={usableStock}
 							initialQuantity={initialStock}
 							minStock={minStock}
 							unit={lot.unit}
@@ -100,7 +101,7 @@ export function InventoryDetailView({
 						<div className="space-y-0.5">
 							<span className="text-muted-foreground font-medium">Stock Actual:</span>
 							<div className="font-black text-sm text-foreground">
-								{currentStock} {lot.unit}
+									{usableStock} {lot.unit}
 							</div>
 						</div>
 						<div className="space-y-0.5">
@@ -108,6 +109,10 @@ export function InventoryDetailView({
 							<div className="font-bold text-sm text-foreground">
 								{initialStock} {lot.unit}
 							</div>
+						</div>
+						<div className="space-y-0.5">
+							<span className="text-muted-foreground font-medium">Stock Físico:</span>
+							<div className="font-bold text-sm text-foreground">{currentStock} {lot.unit}</div>
 						</div>
 						<div className="space-y-0.5">
 							<span className="text-muted-foreground font-medium">Mínimo de Alerta:</span>
@@ -187,7 +192,7 @@ export function InventoryDetailView({
 						<div className="space-y-1 text-xs">
 							<div className="flex items-center justify-between">
 								<span className="text-muted-foreground">Proveedor:</span>
-								<span className="font-bold text-foreground truncate max-w-[170px]">
+								<span className="font-bold text-foreground fit-clamp max-w-[170px]">
 									{lot.supplier || "No especificado"}
 								</span>
 							</div>

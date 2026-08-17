@@ -78,7 +78,7 @@ export default function QuickControl() {
         await controlService.createControl(payload);
         showToast('Control registrado exitosamente', 'success');
       }
-      emitDataRefresh('controls');
+      if (isOnline) emitDataRefresh('control');
       handleClose();
     } catch (error) {
       console.error('Error creating control:', error);

@@ -1,243 +1,30 @@
-import { getCookie } from '@/shared/utils/cookieUtils';
-import { apiFetch } from '@/shared/api/apiFetch';
-import { toRelativeApiPath } from '@/shared/api/urlUtils';
 import { API_CONFIG } from '@/shared/api/config';
-import { ConflictResolver } from './ConflictResolver';
+import { toRelativeApiPath } from '@/shared/api/urlUtils';
+import { emitDataRefresh } from '@/shared/utils/dataRefresh';
 import { FieldNodeService } from './FieldNodeService';
+import { dbDelete, dbGetAll, dbPut } from './queue/queueDb';
+import { resolveQueueConflicts } from './queue/queueConflicts';
+import {
+  getDeviceId,
+  getFincaId,
+  getPullCursorKey,
+  inferEntityFromUrl,
+  inferOperation,
+} from './queue/queueIdentity';
+import { fetchPullBatch } from './queue/queuePull';
+import { applyOperationFailure, sendOperation } from './queue/queueSync';
+import { MAX_RETRIES, type QueuedOperation } from './queue/types';
 
-export interface QueuedOperation {
-  id: string;
-  timestamp: number;
-  method: 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-  url: string;
-  data?: any;
-  headers?: Record<string, string>;
-  retries: number;
-  maxRetries: number;
-  nextAttemptAt?: number;
-  status: 'pending' | 'syncing' | 'failed' | 'completed';
-  error?: string;
-  originDeviceId?: string; // ID del dispositivo que generó el cambio
-  syncVersion?: number;    // Para control de conflictos (timestamp o vector)
-
-  // Campos para Protocolo Sync v2 (compatibilidad con backend)
-  entityType?: string;
-  entityId?: string;
-  operation?: string;
-  payload?: any;
-  baseVersion?: number;
-  logicalClock?: number;
-  priority?: number;
-}
-
-const DB_NAME = 'VillaLuzQueue';
-const DB_VERSION = 1;
-const QUEUE_STORE = 'offlineQueue';
-// La falta de cobertura no es un fallo permanente. La operación permanece
-// pendiente durante días y sólo se elimina después de una respuesta exitosa.
-// El backoff de la aplicación evita reintentos agresivos mientras no haya ruta.
-const MAX_RETRIES = Number.MAX_SAFE_INTEGER;
-/** Último cursor recibido de /sync/pull, para pedir sólo lo nuevo. */
-const PULL_CURSOR_KEY_PREFIX = 'villaluz_sync_pull_cursor';
-/** Operación del protocolo sync v2 -> verbo HTTP con el que se reencola. */
-const OPERATION_METHODS: Record<string, QueuedOperation['method']> = {
-  create: 'POST',
-  update: 'PUT',
-  patch: 'PATCH',
-  delete: 'DELETE',
-};
-
-// ─────────────────────────────────────────────────────────────
-// Helpers de mapeo de URL a Entidad
-// ─────────────────────────────────────────────────────────────
-
-function inferEntityFromUrl(url: string): { entityType: string; entityId?: string } {
-  const parts = url.split('/');
-  // Buscar la parte después de /api/v1/ o similar
-  const apiIndex = parts.findIndex(p => p === 'v1' || p === 'api');
-  const entityPart = apiIndex !== -1 ? parts[apiIndex + 1] : parts[parts.length - 2] || 'unknown';
-
-  // Si el último componente es un número o UUID, es el entityId
-  const lastPart = parts[parts.length - 1];
-  const isId = lastPart && (
-    !isNaN(Number(lastPart)) ||
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(lastPart)
-  );
-
-  return {
-    entityType: entityPart.replace(/-/g, '_'),
-    entityId: isId ? lastPart : undefined
-  };
-}
-
-function inferOperation(method: string): string {
-  switch (method.toUpperCase()) {
-    case 'POST': return 'create';
-    case 'PUT': return 'update';
-    case 'PATCH': return 'patch';
-    case 'DELETE': return 'delete';
-    default: return 'unknown';
-  }
-}
-
-// ─────────────────────────────────────────────────────────────
-// IndexedDB helpers (misma DB que el cache HTTP, store separado)
-// ─────────────────────────────────────────────────────────────
-
-// ─────────────────────────────────────────────────────────────
+export type { QueuedOperation } from './queue/types';
+export { resolveQueueConflicts } from './queue/queueConflicts';
 
 /**
- * Conexión única a la cola. Antes cada lectura o escritura abría una conexión
- * nueva y no la cerraba: en una sesión larga sin cobertura se acumulaban
- * cientos de conexiones vivas, y cualquier `deleteDatabase` o cambio de versión
- * del esquema quedaba bloqueado indefinidamente por ellas.
- */
-let queueDbPromise: Promise<IDBDatabase> | null = null;
-
-function openQueueDB(): Promise<IDBDatabase> {
-  if (queueDbPromise) return queueDbPromise;
-
-  queueDbPromise = new Promise<IDBDatabase>((resolve, reject) => {
-    if (typeof indexedDB === 'undefined') {
-      reject(new Error('IndexedDB not available'));
-      return;
-    }
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onerror = () => reject(req.error);
-    req.onsuccess = () => {
-      const db = req.result;
-      // Si otra pestaña pide borrar o migrar la base, soltamos la conexión en
-      // vez de bloquearla, y la siguiente operación la reabre.
-      db.onversionchange = () => {
-        db.close();
-        queueDbPromise = null;
-      };
-      db.onclose = () => {
-        queueDbPromise = null;
-      };
-      resolve(db);
-    };
-    req.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains(QUEUE_STORE)) {
-        const store = db.createObjectStore(QUEUE_STORE, { keyPath: 'id' });
-        store.createIndex('status', 'status', { unique: false });
-        store.createIndex('timestamp', 'timestamp', { unique: false });
-      }
-    };
-  }).catch((error) => {
-    queueDbPromise = null;
-    throw error;
-  });
-
-  return queueDbPromise;
-}
-
-async function dbGetAll(): Promise<QueuedOperation[]> {
-  try {
-    const db = await openQueueDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(QUEUE_STORE, 'readonly');
-      const req = tx.objectStore(QUEUE_STORE).getAll();
-      req.onsuccess = () => resolve(req.result as QueuedOperation[]);
-      req.onerror = () => reject(req.error);
-    });
-  } catch {
-    return [];
-  }
-}
-
-async function dbPut(op: QueuedOperation): Promise<void> {
-  try {
-    const db = await openQueueDB();
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction(QUEUE_STORE, 'readwrite');
-      const req = tx.objectStore(QUEUE_STORE).put(op);
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
-    });
-  } catch { /* noop */ }
-}
-
-async function dbDelete(id: string): Promise<void> {
-  try {
-    const db = await openQueueDB();
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction(QUEUE_STORE, 'readwrite');
-      const req = tx.objectStore(QUEUE_STORE).delete(id);
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
-    });
-  } catch { /* noop */ }
-}
-
-// ─────────────────────────────────────────────────────────────
-// OfflineQueue
-// ─────────────────────────────────────────────────────────────
-
-/**
- * Aplica Last Write Wins sobre las operaciones que mutan el mismo recurso.
+ * Cola de escrituras pendientes cuando la finca se queda sin conexión.
  *
- * Dos dispositivos sin cobertura pueden editar el mismo animal; al reconectar,
- * enviar ambas ediciones en orden de cola hacía que la más vieja sobrescribiera
- * a la más reciente. Sólo sobrevive la de mayor syncVersion, y el descarte
- * queda registrado en ConflictResolver para que el administrador lo audite.
- *
- * Los POST quedan fuera: crean recursos distintos aunque compartan URL.
+ * Coordina persistencia (`queue/queueDb`), resolución de conflictos
+ * (`queue/queueConflicts`), envío (`queue/queueSync`) y descarga de cambios de
+ * otros dispositivos (`queue/queuePull`).
  */
-export function resolveQueueConflicts(operations: QueuedOperation[]): {
-  survivors: QueuedOperation[];
-  discarded: QueuedOperation[];
-} {
-  const byResource = new Map<string, QueuedOperation>();
-  const survivors: QueuedOperation[] = [];
-  const discarded: QueuedOperation[] = [];
-
-  for (const op of operations) {
-    if (op.method === 'POST') {
-      survivors.push(op);
-      continue;
-    }
-
-    const key = `${op.method}:${op.url}`;
-    const existing = byResource.get(key);
-    if (!existing) {
-      byResource.set(key, op);
-      continue;
-    }
-
-    const { winner, loser } = ConflictResolver.resolve(existing, op);
-    byResource.set(key, winner);
-    discarded.push(loser);
-  }
-
-  survivors.push(...byResource.values());
-  // Conservar el orden de encolado original entre las supervivientes.
-  survivors.sort((a, b) => operations.indexOf(a) - operations.indexOf(b));
-  return { survivors, discarded };
-}
-
-const GET_DEVICE_ID = () => {
-  let id = localStorage.getItem('villaluz_device_id');
-  if (!id) {
-    id = `dev-${Math.random().toString(36).substr(2, 9)}`;
-    localStorage.setItem('villaluz_device_id', id);
-  }
-  return id;
-};
-
-function getFincaId(): number {
-  try {
-    return parseInt(localStorage.getItem('villaluz_finca_id') || '0', 10) || 0;
-  } catch {
-    return 0;
-  }
-}
-
-function getPullCursorKey(fincaId: number, deviceId: string): string {
-  return `${PULL_CURSOR_KEY_PREFIX}:${fincaId}:${deviceId}`;
-}
-
 class OfflineQueue {
   private isSyncing = false;
   private syncCallbacks: Array<(success: boolean, operation: QueuedOperation) => void> = [];
@@ -268,7 +55,7 @@ class OfflineQueue {
       retries: 0,
       maxRetries: MAX_RETRIES,
       status: 'pending',
-      originDeviceId: GET_DEVICE_ID(),
+      originDeviceId: getDeviceId(),
       syncVersion: Date.now(),
       entityType,
       entityId,
@@ -313,111 +100,68 @@ class OfflineQueue {
     if (pending.length === 0) return;
 
     this.isSyncing = true;
+    let appliedServerChanges = false;
 
     try {
-
-    const { survivors, discarded } = resolveQueueConflicts(pending);
-    for (const loser of discarded) {
-      await dbDelete(loser.id);
-      this.notifyCallbacks(true, { ...loser, status: 'completed' });
-    }
-
-    for (const operation of survivors) {
-      if (operation.status === 'syncing') continue;
-      if (operation.nextAttemptAt && operation.nextAttemptAt > Date.now()) continue;
-
-      operation.status = 'syncing';
-      await dbPut(operation);
-
-      try {
-        const headers: Record<string, string> = {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          ...(operation.headers || {}),
-        };
-
-        const csrfToken = getCookie('csrf_access_token') ?? undefined;
-        if (csrfToken) {
-          headers['X-CSRF-Token'] = headers['X-CSRF-Token'] || csrfToken;
-          headers['X-CSRF-TOKEN'] = headers['X-CSRF-TOKEN'] || csrfToken;
-        }
-
-        let res: { status: number };
-        try {
-          const primary = await apiFetch({
-            url: toRelativeApiPath(operation.url),
-            method: operation.method,
-            data: operation.data,
-            headers,
-            withCredentials: true,
-            validateStatus: () => true,
-            // Avoid re-enqueue loops if replay still fails
-            skipOffline: true,
-          } as any);
-          res = primary;
-        } catch (primaryError) {
-          if (!hasFieldNode) throw primaryError;
-
-          // A device may have LAN reachability but no internet. Replay the
-          // original domain mutation through the node, preserving method and
-          // endpoint instead of only depositing an unapplied oplog record.
-          await FieldNodeService.mutate(
-            operation.method,
-            toRelativeApiPath(operation.url),
-            operation.data,
-          );
-          res = { status: 200 };
-        }
-
-        if (res.status >= 200 && res.status < 300) {
-          operation.nextAttemptAt = undefined;
-          await dbDelete(operation.id);
-          this.notifyCallbacks(true, { ...operation, status: 'completed' });
-        } else {
-          throw new Error(`HTTP ${res.status}`);
-        }
-      } catch (error: any) {
-        operation.retries++;
-        operation.error = error.message || 'Error desconocido';
-
-        const esErrorAuth = /401|403|unauthorized|forbidden|token.*expired|csrf/i.test(error.message || '');
-
-        if (esErrorAuth) {
-          operation.status = 'failed';
-          operation.error = 'Sesión expirada - Requiring login';
-          await dbPut(operation);
-          this.notifyCallbacks(false, operation);
-          try {
-            if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('sync-auth-error', { detail: { operationId: operation.id } }));
-            }
-          } catch { /* noop */ }
-          continue;
-        }
-
-        if (operation.retries >= operation.maxRetries) {
-          operation.status = 'failed';
-          await dbPut(operation);
-          this.notifyCallbacks(false, operation);
-        } else {
-          const backoffMs = Math.min(5 * 60 * 1000, 1000 * (2 ** Math.min(operation.retries, 8)));
-          operation.nextAttemptAt = Date.now() + backoffMs;
-          operation.status = 'pending';
-          await dbPut(operation);
-        }
+      const { survivors, discarded } = resolveQueueConflicts(pending);
+      for (const loser of discarded) {
+        await dbDelete(loser.id);
+        this.notifyCallbacks(true, { ...loser, status: 'completed' });
       }
-    }
 
+      for (const operation of survivors) {
+        if (operation.status === 'syncing') continue;
+        if (operation.nextAttemptAt && operation.nextAttemptAt > Date.now()) continue;
+
+        const applied = await this.replayOperation(operation, hasFieldNode);
+        if (applied) appliedServerChanges = true;
+      }
     } finally {
       this.isSyncing = false;
     }
 
     const remaining = await this.getPendingCount();
+    if (appliedServerChanges) emitDataRefresh();
     try {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('offline-queue-synced', { detail: { remaining } }));
       }
     } catch { /* noop */ }
+  }
+
+  /** Reenvía una operación y actualiza su estado. Devuelve true si el servidor la aplicó. */
+  private async replayOperation(operation: QueuedOperation, hasFieldNode: boolean): Promise<boolean> {
+    operation.status = 'syncing';
+    await dbPut(operation);
+
+    try {
+      const res = await sendOperation(operation, hasFieldNode);
+
+      if (res.status >= 200 && res.status < 300) {
+        operation.nextAttemptAt = undefined;
+        await dbDelete(operation.id);
+        this.notifyCallbacks(true, { ...operation, status: 'completed' });
+        return true;
+      }
+
+      throw new Error(`HTTP ${res.status}`);
+    } catch (error: any) {
+      const outcome = applyOperationFailure(operation, error);
+      await dbPut(operation);
+
+      if (outcome === 'auth') {
+        this.notifyCallbacks(false, operation);
+        try {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('sync-auth-error', { detail: { operationId: operation.id } }));
+          }
+        } catch { /* noop */ }
+      } else if (outcome === 'failed') {
+        this.notifyCallbacks(false, operation);
+      }
+
+      return false;
+    }
   }
 
   onSyncResult(callback: (success: boolean, operation: QueuedOperation) => void): () => void {
@@ -548,7 +292,7 @@ class OfflineQueue {
    */
   async pullFromServer(limit = 100): Promise<{ received: number; hasMore: boolean }> {
     const fincaId = getFincaId();
-    const deviceId = GET_DEVICE_ID();
+    const deviceId = getDeviceId();
     if (!fincaId || !deviceId) {
       return { received: 0, hasMore: false };
     }
@@ -557,50 +301,17 @@ class OfflineQueue {
     const lastCursor = parseInt(localStorage.getItem(cursorKey) || '0', 10);
 
     try {
-      let responseBody: any;
-      try {
-        const response = await apiFetch({
-          url: '/sync/pull',
-          method: 'POST',
-          data: { finca_id: fincaId, device_id: deviceId, last_cursor: lastCursor, limit },
-        } as any);
-        responseBody = (response as any).data;
-      } catch (primaryError) {
-        if (!FieldNodeService.getUrl()) throw primaryError;
-        responseBody = await FieldNodeService.post('/sync/pull', {
-          finca_id: fincaId,
-          device_id: deviceId,
-          last_cursor: lastCursor,
-          limit,
-        });
+      const batch = await fetchPullBatch({ fincaId, deviceId, lastCursor, limit });
+
+      for (const op of batch.operations) {
+        await this.addOperation(op);
       }
 
-      const body = responseBody?.data ?? responseBody ?? {};
-      const operations: any[] = body.operations ?? [];
-
-      for (const op of operations) {
-        await this.addOperation({
-          id: op.operation_id,
-          timestamp: Date.parse(op.created_at_device || op.created_at || '') || Date.now(),
-          method: OPERATION_METHODS[op.operation] || op.method || 'POST',
-          url: op.url || (op.entity_type ? `/${String(op.entity_type).replace(/_/g, '-')}` : ''),
-          data: op.payload,
-          retries: 0,
-          maxRetries: MAX_RETRIES,
-          status: 'pending',
-          entityType: op.entity_type,
-          entityId: op.entity_id,
-          originDeviceId: op.origin_device_id,
-          syncVersion: op.logical_clock,
-          receivedFrom: op.origin_device_id,
-        } as QueuedOperation & { receivedFrom?: string });
+      if (batch.nextCursor) {
+        localStorage.setItem(cursorKey, batch.nextCursor);
       }
 
-      if (body.next_cursor) {
-        localStorage.setItem(cursorKey, String(body.next_cursor));
-      }
-
-      return { received: operations.length, hasMore: Boolean(body.has_more) };
+      return { received: batch.operations.length, hasMore: batch.hasMore };
     } catch {
       return { received: 0, hasMore: false };
     }

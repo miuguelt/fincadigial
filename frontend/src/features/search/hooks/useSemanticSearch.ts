@@ -1,5 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { semanticSearchService, SearchResult, UnifiedSearchResponse } from '../api/semanticSearch.service';
+import { MIN_SEARCH_QUERY_LENGTH } from '../model/searchConstants';
+
+export { MIN_SEARCH_QUERY_LENGTH } from '../model/searchConstants';
 
 export type SearchCategory = 'all' | 'animals' | 'fields' | 'records' | 'supplies' | 'tasks';
 
@@ -9,7 +12,7 @@ interface UseSemanticSearchOptions {
 }
 
 export function useSemanticSearch(options: UseSemanticSearchOptions = {}) {
-  const { debounceMs = 120, minQueryLength = 1 } = options;
+  const { debounceMs = 120, minQueryLength = MIN_SEARCH_QUERY_LENGTH } = options;
 
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<SearchCategory>('all');

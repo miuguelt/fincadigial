@@ -29,7 +29,7 @@ interface InventoryRestockModalProps {
 	lot: InventoryLotResponse | null;
 	open: boolean;
 	onClose: () => void;
-	onSuccess?: () => void;
+	onSuccess?: () => void | Promise<void>;
 }
 
 const QUICK_INCREMENTS = [5, 10, 20, 50, 100];
@@ -52,7 +52,7 @@ export function InventoryRestockModal({
 	};
 
 	const handleQuickAdd = (amount: number) => {
-		const currentVal = parseInt(quantity, 10) || 0;
+		const currentVal = parseFloat(quantity) || 0;
 		setQuantity(String(currentVal + amount));
 	};
 
@@ -60,7 +60,7 @@ export function InventoryRestockModal({
 		e.preventDefault();
 		if (!lot) return;
 
-		const qty = parseInt(quantity, 10);
+		const qty = parseFloat(quantity);
 		if (isNaN(qty) || qty <= 0) {
 			showToast("La cantidad a ingresar debe ser un número mayor a 0.", "error");
 			return;
@@ -78,19 +78,13 @@ export function InventoryRestockModal({
 
 			const productName = lot.product_name || `Lote ${lot.lot_number}`;
 			showToast(
-				`✅ Se registraron +${qty} ${lot.unit} para ${productName}. Nuevo stock: ${lot.current_quantity + qty} ${lot.unit}.`,
+				`✅ Se registraron +${qty} ${lot.unit} para ${productName}. Nuevo stock: ${newStock} ${lot.unit}.`,
 				"success"
 			);
 
-			// Disparar evento global para que la tabla CRUD y las alertas se refresquen
-			if (typeof window !== "undefined") {
-				window.dispatchEvent(new CustomEvent("crud:refetch"));
-				window.dispatchEvent(new CustomEvent("inventory:updated"));
-			}
-
 			setQuantity("");
 			setNotes("");
-			onSuccess?.();
+			await onSuccess?.();
 			onClose();
 		} catch (err: any) {
 			const msg =
@@ -163,13 +157,13 @@ export function InventoryRestockModal({
 									{currentStock} {lot.unit}
 								</span>
 								{lot.is_low_stock && (
-									<span className="inline-flex items-center gap-1 rounded bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-bold text-rose-600 dark:text-rose-400">
+									<span className="inline-flex items-center gap-1 rounded bg-rose-500/10 px-1.5 py-0.5 text-[11px] font-bold text-rose-600 dark:text-rose-400">
 										<TriangleAlert className="h-3 w-3" /> Bajo
 									</span>
 								)}
 							</div>
 							{lot.supplier && (
-								<span className="text-muted-foreground truncate max-w-[180px]">
+								<span className="text-muted-foreground fit-clamp max-w-[180px]">
 									Prov: {lot.supplier}
 								</span>
 							)}
@@ -189,7 +183,7 @@ export function InventoryRestockModal({
 								id="restock-qty"
 								type="number"
 								min={1}
-								step={1}
+								step={0.001}
 								placeholder={`Ej: 50`}
 								value={quantity}
 								onChange={(e) => setQuantity(e.target.value)}

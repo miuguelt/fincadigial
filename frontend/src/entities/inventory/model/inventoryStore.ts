@@ -42,7 +42,7 @@ class InventoryStore {
     const lot = this.state.lots[lotId];
     if (!lot) return 0;
 
-    const baseQuantity = typeof lot.quantity === 'string' ? parseFloat(lot.quantity) : (lot.quantity || 0);
+    const baseQuantity = Number(lot.available_quantity ?? lot.current_quantity) || 0;
     const adjustment = this.state.projectedAdjustments[lotId] || 0;
 
     return baseQuantity + adjustment;

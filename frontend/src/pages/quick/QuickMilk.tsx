@@ -89,7 +89,7 @@ export default function QuickMilk() {
         await api.post('/milk-production', payload);
         showToast('Producción de leche registrada correctamente.', 'success');
       }
-      emitDataRefresh('milk-production');
+      if (isOnline) emitDataRefresh('milk-production');
       handleClose();
     } catch {
       showToast('No se pudo guardar. Intenta de nuevo.', 'error');

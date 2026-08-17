@@ -16,6 +16,23 @@ class UsersService extends BaseService<UserResponse> {
     return this.getById(id);
   }
 
+  async getUserFincas(id: number | string): Promise<{ fincas?: Array<Record<string, any>>; count?: number }> {
+    return this.customRequest(`${id}/fincas`, 'GET');
+  }
+
+  async getUserProfileById(id: number | string): Promise<UserResponse & { fincas?: Array<Record<string, any>> }> {
+    const user = await this.getById(id) as UserResponse & { fincas?: Array<Record<string, any>> };
+    if (Array.isArray(user.fincas)) return user;
+
+    try {
+      const memberships = await this.getUserFincas(id);
+      return { ...user, fincas: memberships?.fincas || [] };
+    } catch {
+      // El perfil base sigue siendo útil si el endpoint de membresías no está disponible.
+      return user;
+    }
+  }
+
   /**
    * Feed de actividad de un usuario (GET /users/<id>/activity).
    * Devuelve la envoltura completa porque el panel de detalle necesita tanto

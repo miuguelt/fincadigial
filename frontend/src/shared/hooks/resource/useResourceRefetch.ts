@@ -6,7 +6,7 @@ import {
   __resourceLastFetchAt,
 } from './resourceRegistry';
 import { buildMeta, capToPageLimit, filterDeleted, mergeRecentItems } from './resourceMerge';
-import type { UseResourceResult } from './types';
+import type { ResourceRefetchOptions, UseResourceResult } from './types';
 
 // Se reexportan porque las pruebas de integracion limpian estos registros entre
 // casos. Deben ser los mismos objetos que usa el hook, no una copia.
@@ -76,7 +76,8 @@ export function useResourceRefetch<T extends { id?: number | string }, P extends
     [data, recentlyCreatedIds, recentlyCreatedItems, recentlyDeletedIds]
   );
 
-  const refetch = useCallback(async (params?: P): Promise<T[]> => {
+  const refetch = useCallback(async (params?: P, options?: ResourceRefetchOptions): Promise<T[]> => {
+    const force = options?.force === true;
     lastParamsRef.current = params || lastParamsRef.current;
     const effective = buildEffectiveParams();
     const cacheKey = generateKey(prefix, effective);
@@ -86,7 +87,7 @@ export function useResourceRefetch<T extends { id?: number | string }, P extends
     if (backoffUntil && nowTs < backoffUntil) return data;
 
     const throttleMs = searchQP ? SEARCH_THROTTLE_MS : DEFAULT_THROTTLE_MS;
-    if (nowTs - (__resourceLastFetchAt.get(cacheKey) || 0) < throttleMs) return data;
+    if (!force && nowTs - (__resourceLastFetchAt.get(cacheKey) || 0) < throttleMs) return data;
 
     try { cancelSourceRef.current.cancel('Refetching: cancel previous request'); } catch { /* noop */ }
     cancelSourceRef.current = createCancelSource();
@@ -132,7 +133,7 @@ export function useResourceRefetch<T extends { id?: number | string }, P extends
     };
 
     try {
-      const shouldSkipCache = Date.now() < skipCacheUntilRef.current;
+      const shouldSkipCache = force || Date.now() < skipCacheUntilRef.current;
       if (shouldSkipCache) requestParams.cache_bust = Date.now();
 
       if (cache && !shouldSkipCache) {

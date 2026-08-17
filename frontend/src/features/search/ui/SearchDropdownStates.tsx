@@ -76,6 +76,18 @@ export const SearchShortcutsState = ({ onNavigate }: { onNavigate: (url: string)
   </div>
 );
 
+export const SearchTooShortState = () => (
+  <div className="p-8 text-center">
+    <span className="mx-auto mb-2.5 flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+      <Search className="h-5 w-5" />
+    </span>
+    <p className="text-sm font-semibold text-foreground">Escribe al menos 2 caracteres</p>
+    <p className="mx-auto mt-1 max-w-[300px] text-xs text-muted-foreground">
+      Usa el número de arete, el nombre del potrero o una palabra del registro que buscas
+    </p>
+  </div>
+);
+
 export const SearchEmptyState = ({ query }: { query: string }) => (
   <div className="p-8 text-center">
     <span className="mx-auto mb-2.5 flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground">

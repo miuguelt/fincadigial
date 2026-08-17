@@ -1,8 +1,7 @@
 import flask
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from datetime import date, timedelta
-from sqlalchemy import func, and_
+from datetime import date
 
 from app import db
 from app.models.inventory import (
@@ -13,6 +12,7 @@ from app.models.inventory import (
 )
 from app.models.base_model import ValidationError
 from app.utils.response_handler import APIResponse
+from app.services.inventory_service import InventoryService, InventoryStockError
 
 inventory_ns = Namespace(
     "inventory", description="📦 Gestión de Inventario de Medicamentos y Vacunas"
@@ -31,8 +31,8 @@ lot_input_model = inventory_ns.model(
             description="ID de la vacuna (si product_type=Vacuna)"
         ),
         "lot_number": fields.String(required=True, description="Número de lote"),
-        "quantity": fields.Integer(required=True, description="Cantidad inicial"),
-        "current_quantity": fields.Integer(
+        "quantity": fields.Float(required=True, description="Cantidad inicial"),
+        "current_quantity": fields.Float(
             description="Cantidad actual (por defecto igual a quantity)"
         ),
         "unit": fields.String(
@@ -56,7 +56,7 @@ movement_input_model = inventory_ns.model(
         "movement_type": fields.String(
             required=True, enum=["Entrada", "Salida", "Ajuste", "Baja"]
         ),
-        "quantity": fields.Integer(
+        "quantity": fields.Float(
             required=True, description="Cantidad (siempre positivo)"
         ),
         "reference_type": fields.String(
@@ -76,20 +76,12 @@ def _parse_int_param(name, default=1, min_val=1):
     return max(min_val, val or default)
 
 
-def _apply_movement_to_lot(
-    lot: InventoryLot, movement_type: MovementType, quantity: int
-):
-    if movement_type in (MovementType.Salida, MovementType.Baja):
-        if lot.current_quantity < quantity:
-            raise ValidationError(
-                f"Stock insuficiente: disponible {lot.current_quantity}, solicitado {quantity}",
-                code="insufficient_stock",
-            )
-        lot.current_quantity -= quantity
-    elif movement_type == MovementType.Entrada:
-        lot.current_quantity += quantity
-    elif movement_type == MovementType.Ajuste:
-        lot.current_quantity = quantity
+def _current_actor_id():
+    try:
+        identity = get_jwt_identity()
+        return int(identity) if identity else None
+    except (TypeError, ValueError):
+        return None
 
 
 # --- Resources ---
@@ -167,7 +159,7 @@ class InventoryLotList(Resource):
             data["entry_date"] = date.today().isoformat()
 
         try:
-            lot = InventoryLot.create(**data)
+            lot = InventoryService.create_lot(data, actor_id=_current_actor_id())
         except ValidationError as e:
             return APIResponse.error(
                 e.message, status_code=400, details={"errors": e.errors}
@@ -222,7 +214,15 @@ class InventoryLotDetail(Resource):
         lot = InventoryLot.get_by_id(lot_id)
         if not lot:
             return APIResponse.error("Lote no encontrado", status_code=404)
-        if lot.movements.count() > 0:
+        # The opening entry is part of the lot creation transaction and does
+        # not by itself make an untouched lot undeletable.
+        has_operational_movements = (
+            lot.movements.filter(
+                InventoryMovement.reference_type != "lot_entry"
+            ).count()
+            > 0
+        )
+        if has_operational_movements:
             return APIResponse.error(
                 "No se puede eliminar: el lote tiene movimientos registrados",
                 status_code=409,
@@ -299,36 +299,22 @@ class InventoryMovementList(Resource):
                 f"movement_type inválido: {mv_type_raw}", status_code=400
             )
 
-        lot = InventoryLot.get_by_id(lot_id)
-        if not lot:
+        if not InventoryLot.get_by_id(lot_id):
             return APIResponse.error("Lote no encontrado", status_code=404)
 
         try:
-            qty_int = int(quantity)
-            _apply_movement_to_lot(lot, mv_type, qty_int)
-
-            actor_id = None
-            try:
-                identity = get_jwt_identity()
-                if identity:
-                    actor_id = int(identity)
-            except Exception:
-                pass
-
-            movement = InventoryMovement(
-                lot_id=lot_id,
-                movement_type=mv_type,
-                quantity=qty_int,
+            movement = InventoryService.register_movement(
+                lot_id,
+                mv_type,
+                quantity,
                 reference_type=data.get("reference_type"),
                 reference_id=data.get("reference_id"),
                 notes=data.get("notes"),
-                actor_id=actor_id,
-                finca_id=lot.finca_id,
+                actor_id=_current_actor_id(),
             )
-            db.session.add(movement)
-            lot.save()
-            db.session.refresh(movement)
 
+        except InventoryStockError as e:
+            return APIResponse.error(e.message, status_code=400)
         except ValidationError as e:
             return APIResponse.error(e.message, status_code=400)
         except Exception as e:
@@ -342,150 +328,34 @@ class InventoryMovementList(Resource):
         )
 
 
-@inventory_ns.route("/summary")
-class InventorySummary(Resource):
+@inventory_ns.route("/lots/<int:lot_id>/dispose-expired")
+class InventoryExpiredLotDisposal(Resource):
     @jwt_required()
-    def get(self):
-        """Resumen de stock actual: total de lotes, por tipo, alertas."""
-        from app.utils.tenant_context import apply_tenant_filter
-
-        today = date.today()
-        expiry_threshold = today + timedelta(days=30)
-
-        lot_q = apply_tenant_filter(InventoryLot.query, InventoryLot)
-
-        total_lots = lot_q.count()
-        med_lots = lot_q.filter_by(product_type=ProductType.Medicamento).count()
-        vac_lots = lot_q.filter_by(product_type=ProductType.Vacuna).count()
-
-        expired = lot_q.filter(InventoryLot.expiry_date < today).count()
-        expiring_soon = lot_q.filter(
-            and_(
-                InventoryLot.expiry_date >= today,
-                InventoryLot.expiry_date <= expiry_threshold,
+    def post(self, lot_id):
+        """Dar de baja el saldo físico de un lote vencido una sola vez."""
+        if not InventoryLot.get_by_id(lot_id):
+            return APIResponse.error("Lote no encontrado", status_code=404)
+        try:
+            movement = InventoryService.dispose_expired_lot(
+                lot_id, actor_id=_current_actor_id()
             )
-        ).count()
-
-        low_stock_lots = [
-            lot for lot in lot_q.all() if lot.is_low_stock and not lot.is_expired
-        ]
-
-        total_value_q = apply_tenant_filter(
-            db.session.query(
-                func.sum(InventoryLot.current_quantity * InventoryLot.unit_cost)
-            ),
-            InventoryLot,
-        )
-
-        total_value = (
-            total_value_q.filter(InventoryLot.unit_cost.isnot(None)).scalar() or 0
-        )
-
-        # Parte de ese valor que ya está inmovilizada en lotes vencidos.
-        expired_value_q = apply_tenant_filter(
-            db.session.query(
-                func.sum(InventoryLot.current_quantity * InventoryLot.unit_cost)
-            ),
-            InventoryLot,
-        )
-        expired_value = (
-            expired_value_q.filter(
-                InventoryLot.unit_cost.isnot(None),
-                InventoryLot.expiry_date < today,
-            ).scalar()
-            or 0
-        )
-
-        movement_q = apply_tenant_filter(InventoryMovement.query, InventoryMovement)
-        recent_movements = (
-            movement_q.order_by(InventoryMovement.created_at.desc()).limit(5).all()
-        )
-
+        except InventoryStockError as e:
+            status = 404 if e.code == "lot_not_found" else 400
+            return APIResponse.error(e.message, status_code=status)
+        except Exception as e:
+            db.session.rollback()
+            return APIResponse.error(str(e), status_code=500)
         return APIResponse.success(
-            data={
-                "total_lots": total_lots,
-                "medication_lots": med_lots,
-                "vaccine_lots": vac_lots,
-                "expired_lots": expired,
-                "expiring_soon_lots": expiring_soon,
-                "low_stock_lots": len(low_stock_lots),
-                "total_estimated_value": round(float(total_value), 2),
-                "expired_value": round(float(expired_value), 2),
-                "recent_movements": [
-                    m.to_namespace_dict(include_relations=True)
-                    for m in recent_movements
-                ],
-            },
-            message="Resumen de inventario",
+            data=movement.to_namespace_dict(include_relations=True),
+            message="Lote vencido dado de baja",
+            status_code=201,
         )
 
 
-@inventory_ns.route("/alerts")
-class InventoryAlerts(Resource):
-    @jwt_required()
-    @inventory_ns.doc(
-        "inventory_alerts",
-        params={
-            "expiry_days": "Días para alerta de vencimiento (default: 30)",
-            "limit": "Máximo de lotes por grupo; los contadores siguen siendo totales",
-        },
-    )
-    def get(self):
-        """Lotes con vencimiento próximo o stock bajo."""
-        from app.utils.tenant_context import apply_tenant_filter
-
-        today = date.today()
-        expiry_days = flask.request.args.get("expiry_days", default=30, type=int)
-        limit = flask.request.args.get("limit", type=int)
-        expiry_threshold = today + timedelta(days=max(1, expiry_days))
-
-        lot_q = apply_tenant_filter(InventoryLot.query, InventoryLot)
-
-        expired = (
-            lot_q.filter(InventoryLot.expiry_date < today)
-            .order_by(InventoryLot.expiry_date)
-            .all()
-        )
-
-        expiring = (
-            lot_q.filter(
-                and_(
-                    InventoryLot.expiry_date >= today,
-                    InventoryLot.expiry_date <= expiry_threshold,
-                )
-            )
-            .order_by(InventoryLot.expiry_date)
-            .all()
-        )
-
-        low_stock = [
-            lot for lot in lot_q.all() if lot.is_low_stock and not lot.is_expired
-        ]
-
-        # El recorte es sólo de presentación: los contadores de summary siguen
-        # reflejando el total real de lotes afectados.
-        def _shown(lots):
-            return lots[:limit] if limit and limit > 0 else lots
-
-        return APIResponse.success(
-            data={
-                "expired": [
-                    lot.to_namespace_dict(include_relations=True)
-                    for lot in _shown(expired)
-                ],
-                "expiring_soon": [
-                    lot.to_namespace_dict(include_relations=True)
-                    for lot in _shown(expiring)
-                ],
-                "low_stock": [
-                    lot.to_namespace_dict(include_relations=True)
-                    for lot in _shown(low_stock)
-                ],
-                "summary": {
-                    "expired_count": len(expired),
-                    "expiring_soon_count": len(expiring),
-                    "low_stock_count": len(low_stock),
-                },
-            },
-            message="Alertas de inventario",
-        )
+__all__ = (
+    "inventory_ns",
+    "InventoryLotList",
+    "InventoryLotDetail",
+    "InventoryMovementList",
+    "InventoryExpiredLotDisposal",
+)

@@ -14,6 +14,7 @@ export interface InventorySummary {
   total_estimated_value: number;
   /** Parte del valor total que está inmovilizada en lotes ya vencidos. */
   expired_value: number;
+  usable_estimated_value?: number;
   recent_movements: InventoryMovementResponse[];
 }
 
@@ -63,6 +64,10 @@ class InventoryService extends BaseService<InventoryLotResponse> {
     return this.customRequest<InventoryAlerts>('../alerts', 'GET', undefined, {
       params: { expiry_days: expiryDays, ...(limit ? { limit } : {}) }
     });
+  }
+
+  async disposeExpiredLot(lotId: number): Promise<InventoryMovementResponse> {
+    return this.customRequest<InventoryMovementResponse>(`../lots/${lotId}/dispose-expired`, 'POST');
   }
 }
 

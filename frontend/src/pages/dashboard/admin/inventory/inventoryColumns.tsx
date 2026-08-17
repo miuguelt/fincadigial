@@ -15,9 +15,9 @@ export const inventoryColumns: CRUDColumn<InventoryLotResponse>[] = [
 				<div className="flex flex-col items-start gap-1 py-0.5">
 					<span className="font-bold text-foreground inline-flex max-w-full items-center gap-1.5 text-xs sm:text-sm">
 						<span className="text-base">{isVaccine ? "💉" : "💊"}</span>
-						<span className="truncate">{val || item.product_name || "---"}</span>
+						<span className="fit-clamp">{val || item.product_name || "---"}</span>
 					</span>
-					<span className="inline-flex w-fit text-[10px] uppercase font-black text-emerald-800 dark:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 rounded tracking-wider">
+					<span className="inline-flex w-fit text-[11px] uppercase font-black text-emerald-800 dark:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 rounded tracking-wider">
 						{item.product_type}
 					</span>
 				</div>
@@ -41,7 +41,7 @@ export const inventoryColumns: CRUDColumn<InventoryLotResponse>[] = [
 		render: (_val: any, item: InventoryLotResponse) => (
 			<div className="py-1">
 				<InventoryStockProgressBar
-					currentQuantity={item.current_quantity}
+				currentQuantity={item.available_quantity ?? (item.is_expired ? 0 : item.current_quantity)}
 					initialQuantity={item.quantity}
 					minStock={item.min_stock}
 					unit={item.unit}
@@ -61,13 +61,13 @@ export const inventoryColumns: CRUDColumn<InventoryLotResponse>[] = [
 					{val ? formatDateColombia(val) : "---"}
 				</span>
 				{item.is_expired ? (
-					<span className="inline-flex items-center gap-1 text-[10px] uppercase font-black text-destructive bg-destructive/10 border border-destructive/20 w-fit px-1.5 py-0.2 rounded">
+					<span className="inline-flex items-center gap-1 text-[11px] uppercase font-black text-destructive bg-destructive/10 border border-destructive/20 w-fit px-1.5 py-0.2 rounded">
 						⛔ Vencido
 					</span>
 				) : item.days_to_expiry !== undefined &&
 					item.days_to_expiry > 0 &&
 					item.days_to_expiry <= 30 ? (
-					<span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 w-fit px-1.5 py-0.2 rounded">
+					<span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 w-fit px-1.5 py-0.2 rounded">
 						⚠️ Vence en {item.days_to_expiry}d
 					</span>
 				) : (
@@ -83,7 +83,7 @@ export const inventoryColumns: CRUDColumn<InventoryLotResponse>[] = [
 		label: "Proveedor",
 		width: 170,
 		render: (val: any) => (
-			<span className={val ? "text-xs font-medium text-foreground truncate max-w-[150px] inline-block" : "text-xs text-muted-foreground/70 italic"}>
+			<span className={val ? "text-xs font-medium text-foreground fit-clamp max-w-[150px] inline-block" : "text-xs text-muted-foreground/70 italic"}>
 				{val || "No registrado"}
 			</span>
 		),

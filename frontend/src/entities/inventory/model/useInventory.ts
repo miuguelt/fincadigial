@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { inventoryService } from '../api/inventory.service';
 import { inventoryAnalyticsService } from '../api/inventory-analytics.service';
@@ -5,6 +6,11 @@ import type { InventoryLotInput, InventoryMovementInput } from '@/shared/api/gen
 
 export const useInventory = () => {
   const queryClient = useQueryClient();
+
+  const invalidateInventoryQueries = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: ['inventory'] }),
+    [queryClient],
+  );
 
   const useLots = (params?: Record<string, any>) =>
     useQuery({
@@ -38,16 +44,12 @@ export const useInventory = () => {
 
   const createLot = useMutation({
     mutationFn: (data: InventoryLotInput) => inventoryService.create(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['inventory', 'lots'] }),
+    onSuccess: () => invalidateInventoryQueries(),
   });
 
   const createMovement = useMutation({
     mutationFn: (data: InventoryMovementInput) => inventoryService.createMovement(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['inventory', 'movements'] });
-      queryClient.invalidateQueries({ queryKey: ['inventory', 'lots'] });
-      queryClient.invalidateQueries({ queryKey: ['inventory', 'summary'] });
-    },
+    onSuccess: () => invalidateInventoryQueries(),
   });
 
   return {
@@ -58,5 +60,6 @@ export const useInventory = () => {
     useMovements,
     createLot,
     createMovement,
+    invalidateInventoryQueries,
   };
 };

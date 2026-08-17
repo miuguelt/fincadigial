@@ -15,6 +15,7 @@ import {
 } from "@/widgets/admin-inventory/InventoryNewLotAction";
 import { InventoryReplenishBar } from "@/widgets/admin-inventory/InventoryReplenishBar";
 import { InventoryRestockAction } from "@/widgets/admin-inventory/InventoryRestockAction";
+import { InventoryDisposeExpiredAction } from "@/widgets/admin-inventory/InventoryDisposeExpiredAction";
 import { SanidadTabs } from "@/widgets/dashboard/treatments/SanidadTabs";
 import { inventoryColumns } from "./inventoryColumns";
 import { inventoryFormSections } from "./inventoryForm";
@@ -34,6 +35,7 @@ export interface UseInventoryCrudConfigArgs {
 	applyFilters: (next: InventoryFilters) => void;
 	toggleStatus: (status: InventoryLotStatus) => void;
 	openRestock: (lot: InventoryLotResponse) => void;
+	onInventoryChanged: () => Promise<void>;
 }
 
 export function useInventoryCrudConfig({
@@ -42,6 +44,7 @@ export function useInventoryCrudConfig({
 	applyFilters,
 	toggleStatus,
 	openRestock,
+	onInventoryChanged,
 }: UseInventoryCrudConfigArgs): CRUDConfig<
 	InventoryLotResponse,
 	InventoryLotInput
@@ -59,6 +62,9 @@ export function useInventoryCrudConfig({
 			showIdInDetailTitle: false,
 			columns: inventoryColumns,
 			formSections: inventoryFormSections,
+			onAfterCreate: onInventoryChanged,
+			onAfterUpdate: onInventoryChanged,
+			onAfterDelete: onInventoryChanged,
 
 			// Selección para elegir el lote por acabarse y reponerlo
 			enableSelection: true,
@@ -73,6 +79,7 @@ export function useInventoryCrudConfig({
 
 			customActions: (item, options) => (
 				<div className="flex items-center gap-1">
+					<InventoryDisposeExpiredAction lot={item} onSuccess={onInventoryChanged} />
 					<InventoryRestockAction lot={item} onRestock={openRestock} />
 					<InventoryNewLotAction lot={item} openCreate={options?.openCreate} />
 				</div>
@@ -116,6 +123,13 @@ export function useInventoryCrudConfig({
 				</div>
 			),
 		}),
-		[applyFilters, chipCounts, filters, openRestock, toggleStatus],
+		[
+			applyFilters,
+			chipCounts,
+			filters,
+			onInventoryChanged,
+			openRestock,
+			toggleStatus,
+		],
 	);
 }

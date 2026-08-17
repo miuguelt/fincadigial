@@ -136,7 +136,9 @@ export function useResource<
   }, []);
 
   // Refetch global al recuperar la red.
-  useEffect(() => registerResourceRefetch(() => refetch(undefined as any).catch(() => {})), [refetch]);
+  useEffect(() => registerResourceRefetch(
+    (options) => refetch(undefined as any, options).catch(() => {}),
+  ), [refetch]);
 
   return {
     data, loading, error, refetch, createItem, updateItem, deleteItem, setData, meta,

@@ -10,7 +10,10 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/shared/ui/tooltip";
-import { buildReplenishPrefill, needsReplenish } from "./inventoryReplenish";
+import {
+	buildReplenishPrefill,
+	getInventoryAttentionReason,
+} from "./inventoryReplenish";
 
 type OpenCreate = (prefill?: Partial<InventoryLotInput>) => void;
 
@@ -24,7 +27,14 @@ export function InventoryNewLotAction({
 }) {
 	if (!openCreate) return null;
 
-	const urgent = needsReplenish(lot);
+	const attentionReason = getInventoryAttentionReason(lot);
+	const urgent = attentionReason !== null;
+	const urgentMessage =
+		attentionReason === "expired"
+			? "Este lote está vencido — registrar un lote nuevo para reemplazarlo"
+			: attentionReason === "out_of_stock"
+				? "Este lote está agotado — registrar un lote nuevo para reponerlo"
+				: "Este lote está por debajo del mínimo — registrar un lote nuevo";
 
 	return (
 		<TooltipProvider>
@@ -51,7 +61,7 @@ export function InventoryNewLotAction({
 				<TooltipContent side="top">
 					<p className="text-xs font-medium">
 						{urgent
-							? "⚠️ Este lote se está agotando — registrar nuevo lote físico de este producto"
+							? `⚠️ ${urgentMessage}`
 							: "📦 Registrar nuevo lote físico con fecha de vencimiento diferente"}
 					</p>
 				</TooltipContent>

@@ -139,7 +139,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
 
   // Refrescos disparados por otras pantallas.
   useEffect(() => {
-    const handleRefetch = () => { refetch(); };
+    const handleRefetch = () => { void refetch(undefined, { force: true }); };
     window.addEventListener('crud:refetch', handleRefetch);
     window.addEventListener('animal-fields:updated', handleRefetch);
     return () => {
@@ -259,13 +259,22 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     openDeleteConfirm, handleConfirmDelete, resetConfirmState,
   } = useCrudDelete<T>({
     config, service, entityKey, canDelete, deleteItem,
-    items: filteredItems, currentPage, setPage, refetch, onDeleted, showToast,
+    items: filteredItems, currentPage, setPage, refetch, onDeleted,
+    onAfterDelete: config.onAfterDelete,
+    showToast,
   });
 
   const handleUpdateCell = useCallback(async (item: T, key: string, value: any) => {
     if (!canUpdate) return;
-    await updateItem(item.id, { [key]: value } as any);
-  }, [canUpdate, updateItem]);
+    const updated = await updateItem(item.id, { [key]: value } as any);
+    if (config.onAfterUpdate) {
+      try {
+        await config.onAfterUpdate(updated);
+      } catch (err) {
+        console.error('Error in onAfterUpdate hook:', err);
+      }
+    }
+  }, [canUpdate, config, updateItem]);
 
   const header = (
     <PageHeader

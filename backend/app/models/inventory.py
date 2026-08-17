@@ -1,8 +1,10 @@
 import enum as _enum
 from datetime import date
+from decimal import Decimal, InvalidOperation
+
 from app import db
 from app.models.base_model import BaseModel, ValidationError
-from sqlalchemy import Index
+from sqlalchemy import Index, Numeric
 
 
 class ProductType(_enum.Enum):
@@ -33,8 +35,11 @@ class InventoryLot(BaseModel):
     )
     vaccine_id = db.Column(db.Integer, db.ForeignKey("vaccines.id"), nullable=True)
     lot_number = db.Column(db.String(100), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
-    current_quantity = db.Column(db.Integer, nullable=False)
+    # Inventory is measured in the unit printed on the package. It can be a
+    # whole dose, but it can also be ml, grams or kg, so integer storage loses
+    # real field consumption.
+    quantity = db.Column(Numeric(12, 3), nullable=False)
+    current_quantity = db.Column(Numeric(12, 3), nullable=False)
     unit = db.Column(db.String(50), nullable=False)
     expiry_date = db.Column(db.Date, nullable=False)
     entry_date = db.Column(db.Date, nullable=False, default=date.today)
@@ -111,6 +116,24 @@ class InventoryLot(BaseModel):
         ProductType.Vacuna: "vaccine_id",
     }
 
+    @staticmethod
+    def _normalize_quantity(value, field_name):
+        if value is None:
+            return value
+        try:
+            normalized = Decimal(str(value))
+        except (InvalidOperation, TypeError, ValueError) as exc:
+            raise ValidationError(
+                f"El campo '{field_name}' debe ser numérico",
+                code="validation_error",
+            ) from exc
+        if normalized < 0:
+            raise ValidationError(
+                f"El campo '{field_name}' no puede ser negativo",
+                code="validation_error",
+            )
+        return normalized.quantize(Decimal("0.001"))
+
     @classmethod
     def _validate_and_normalize(cls, data, is_update=False, instance_id=None):
         """Exige que el lote apunte al producto que declara su product_type.
@@ -120,6 +143,10 @@ class InventoryLot(BaseModel):
         a una vacuna).
         """
         normalized = super()._validate_and_normalize(data, is_update, instance_id)
+
+        for field in ("quantity", "current_quantity"):
+            if field in normalized:
+                normalized[field] = cls._normalize_quantity(normalized[field], field)
 
         product_type = normalized.get("product_type")
         if product_type is None:
@@ -147,14 +174,24 @@ class InventoryLot(BaseModel):
         return self.expiry_date < date.today()
 
     @property
+    def is_usable(self):
+        """Whether the physical stock may be used by an application."""
+        return not self.is_expired and self.current_quantity > 0
+
+    @property
+    def available_quantity(self):
+        """Usable stock; expired stock remains physical until written off."""
+        return Decimal("0.000") if self.is_expired else self.current_quantity
+
+    @property
     def days_to_expiry(self):
         return (self.expiry_date - date.today()).days
 
     @property
     def is_low_stock(self):
-        if self.min_stock is None:
+        if self.min_stock is None or self.is_expired:
             return False
-        return self.current_quantity <= self.min_stock
+        return self.available_quantity <= self.min_stock
 
     @property
     def product_name(self):
@@ -169,6 +206,8 @@ class InventoryLot(BaseModel):
             include_relations=include_relations, depth=depth, fields=fields
         )
         data["is_expired"] = self.is_expired
+        data["is_usable"] = self.is_usable
+        data["available_quantity"] = float(self.available_quantity)
         data["days_to_expiry"] = self.days_to_expiry
         data["is_low_stock"] = self.is_low_stock
         data["product_name"] = self.product_name
@@ -186,7 +225,9 @@ class InventoryMovement(BaseModel):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     lot_id = db.Column(db.Integer, db.ForeignKey("inventory_lots.id"), nullable=False)
     movement_type = db.Column(db.Enum(MovementType), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
+    quantity = db.Column(Numeric(12, 3), nullable=False)
+    balance_before = db.Column(Numeric(12, 3), nullable=True)
+    balance_after = db.Column(Numeric(12, 3), nullable=True)
     reference_type = db.Column(db.String(50), nullable=True)
     reference_id = db.Column(db.Integer, nullable=True)
     notes = db.Column(db.String(500), nullable=True)
@@ -201,6 +242,8 @@ class InventoryMovement(BaseModel):
         "lot_id",
         "movement_type",
         "quantity",
+        "balance_before",
+        "balance_after",
         "reference_type",
         "reference_id",
         "notes",

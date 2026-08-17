@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { RefreshCw, Search, X } from 'lucide-react';
 import { cn } from '@/shared/ui/cn';
 import { useSemanticSearch } from '@/features/search/hooks/useSemanticSearch';
+import { MIN_SEARCH_QUERY_LENGTH } from '../model/searchConstants';
 import { useSearchDropdown } from '../model/useSearchDropdown';
 import { SearchCategoryFilter, SearchFooter, type CategoryOption } from './SearchChrome';
 import {
@@ -19,6 +20,7 @@ import {
   SearchErrorState,
   SearchLoadingState,
   SearchShortcutsState,
+  SearchTooShortState,
 } from './SearchDropdownStates';
 import { SearchResultRow } from './SearchResultRow';
 
@@ -51,7 +53,7 @@ export const GlobalSearchBar: FC<GlobalSearchBarProps> = ({
     error,
     clear,
     retry,
-  } = useSemanticSearch({ debounceMs: 120, minQueryLength: 1 });
+  } = useSemanticSearch({ debounceMs: 120, minQueryLength: MIN_SEARCH_QUERY_LENGTH });
 
   const dropdown = useSearchDropdown({
     resultUrlAt: (index) => (index >= 0 ? filteredResults[index]?.url : undefined),
@@ -82,7 +84,8 @@ export const GlobalSearchBar: FC<GlobalSearchBarProps> = ({
     [allResults, results],
   );
 
-  const hasQuery = query.trim().length >= 1;
+  const hasQuery = query.trim().length >= MIN_SEARCH_QUERY_LENGTH;
+  const hasText = query.trim().length > 0;
   const showCategories = hasQuery && !loading && !error && allResults.length > 0;
 
   return (
@@ -175,9 +178,10 @@ export const GlobalSearchBar: FC<GlobalSearchBarProps> = ({
               >
                 {loading && <SearchLoadingState />}
                 {!loading && error && <SearchErrorState error={error} onRetry={retry} />}
-                {!loading && !error && !hasQuery && (
+                {!loading && !error && !hasText && (
                   <SearchShortcutsState onNavigate={dropdown.navigate} />
                 )}
+                {!loading && !error && hasText && !hasQuery && <SearchTooShortState />}
                 {!loading && !error && hasQuery && filteredResults.length === 0 && (
                   <SearchEmptyState query={query} />
                 )}

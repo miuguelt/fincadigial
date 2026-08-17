@@ -17,6 +17,7 @@ import { ChevronRight, Heart, LayoutDashboard, Milk, Scale, Stethoscope } from '
 import { TaskIndicator } from './components/TaskIndicator';
 import { useControlsSummary } from './hooks/useControlsSummary';
 import { formatControlPageDate, parseDateOnlyLocal } from './controlPage.utils';
+import { emitDataRefresh } from '@/shared/utils/dataRefresh';
 import {
   buildCrudConfig, serviceAdapter, initialFormData,
   mapResponseToForm, validateControlForm, makeCustomDetailContent,
@@ -94,10 +95,7 @@ const AdminControlPage = () => {
       // The quick-entry modals use the same service as the CRUD list, but the
       // list has its own resource cache. Invalidate both refresh channels so a
       // successful save is visible without a full page reload.
-      window.dispatchEvent(new CustomEvent('server-resource-changed', {
-        detail: { endpoint: 'control' },
-      }));
-      window.dispatchEvent(new CustomEvent('crud:refetch'));
+      emitDataRefresh('control');
     }
   };
 

@@ -43,6 +43,9 @@ export const semanticSearchService = {
       url: `/search?q=${encodeURIComponent(query)}&limit=${limit}`,
       method: 'GET',
       signal,
+      // Search results can contain links to records changed in another session.
+      // Revalidate online instead of opening a stale cached detail URL.
+      skipCache: true,
     } as any);
     const unwrapped = unwrapApi<UnifiedSearchResponse>(response);
     return {
@@ -64,6 +67,7 @@ export const semanticSearchService = {
       url: `/search/animals?q=${encodeURIComponent(query)}&limit=${limit}&include_inactive=${includeInactive}`,
       method: 'GET',
       signal,
+      skipCache: true,
     } as any);
     const data = unwrapApi<{ results: SearchResult[] }>(response);
     return data?.results ?? [];

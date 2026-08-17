@@ -71,7 +71,7 @@ export default function QuickWater() {
         await api.post('/water-measurements', payload);
         showToast('Medición de agua registrada correctamente.', 'success');
       }
-      emitDataRefresh('water-measurements');
+      if (isOnline) emitDataRefresh('water-measurements');
       handleClose();
     } catch {
       showToast('No se pudo guardar el registro.', 'error');

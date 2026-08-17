@@ -11,7 +11,7 @@ import { getTodayColombia } from '@/shared/utils/dateUtils';
 import { AnimalLink } from '@/entities/animal/ui';
 import { VaccineLink } from '@/entities/vaccine/ui';
 import { UserLink } from '@/entities/user/ui';
-import { SanidadTabs } from '@/widgets/dashboard/treatments/SanidadTabs';
+import VaccinationInsights from './VaccinationInsights';
 
 // Mapear respuesta a formulario
 const mapResponseToForm = (item: VaccinationResponse & { [k: string]: any }): VaccinationInput & { [k: string]: any } => ({
@@ -220,7 +220,7 @@ function AdminVaccinationsPage() {
     enableCreateModal: true,
     enableEditModal: true,
     enableDelete: true,
-    customHeader: <div className="mt-4"><SanidadTabs /></div>,
+    customHeader: <VaccinationInsights />,
   };
 
   // Crear initialFormData con usuario preseleccionado si existe

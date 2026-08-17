@@ -6,6 +6,17 @@ import type {
 /** Meses de vida útil por defecto para el lote de reposición. */
 const DEFAULT_SHELF_LIFE_MONTHS = 12;
 
+export type InventoryAttentionReason =
+	| "expired"
+	| "out_of_stock"
+	| "low_stock";
+
+export interface InventoryAttentionCounts {
+	expired: number;
+	out_of_stock: number;
+	low_stock: number;
+}
+
 const toDateInput = (value: unknown): string => {
 	if (!value) return "";
 	return typeof value === "string" ? value.split("T")[0] : String(value);
@@ -61,9 +72,36 @@ export function buildReplenishPrefill(
 	} as Partial<InventoryLotInput>;
 }
 
-/** Un lote "se está acabando" si está bajo mínimo, agotado o ya vencido. */
-export function needsReplenish(lot: InventoryLotResponse): boolean {
-	return Boolean(
-		lot.is_low_stock || lot.is_expired || Number(lot.current_quantity) <= 0,
+/** Clasifica el motivo que requiere atención en un lote visible. */
+export function getInventoryAttentionReason(
+	lot: InventoryLotResponse,
+): InventoryAttentionReason | null {
+	const isExpired =
+	lot.is_expired === true ||
+	(typeof lot.days_to_expiry === "number" && lot.days_to_expiry < 0);
+	if (isExpired) return "expired";
+
+	const currentQuantity = Number(lot.current_quantity);
+	if (currentQuantity <= 0) return "out_of_stock";
+	if (lot.is_low_stock) return "low_stock";
+	return null;
+}
+
+/** Cuenta los motivos de atención sin mezclar vencimiento con bajo stock. */
+export function countInventoryAttention(
+	lots: InventoryLotResponse[],
+): InventoryAttentionCounts {
+	return lots.reduce<InventoryAttentionCounts>(
+		(counts, lot) => {
+			const reason = getInventoryAttentionReason(lot);
+			if (reason) counts[reason] += 1;
+			return counts;
+		},
+		{ expired: 0, out_of_stock: 0, low_stock: 0 },
 	);
+}
+
+/** Un lote requiere reposición si está vencido, agotado o bajo mínimo. */
+export function needsReplenish(lot: InventoryLotResponse): boolean {
+	return getInventoryAttentionReason(lot) !== null;
 }

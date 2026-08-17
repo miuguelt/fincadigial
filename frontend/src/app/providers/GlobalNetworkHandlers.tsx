@@ -4,6 +4,7 @@ import { useAuth } from '@/features/auth/model/useAuth';
 import { parseChatRealtimeEvent } from '@/features/chat/model/chatEvents';
 import { hasSessionCookies } from '@/shared/utils/cookieUtils';
 import { refetchAllResources } from '@/shared/hooks/useResource';
+import { queryClient } from '@/app/bootstrap/queryClient';
 import { OfflineChatService } from '@/shared/api/offline/OfflineChatService';
 import sse, { closeSSE, connectSSE } from '@/lib/events';
 import { claimLeadership, publishEvent, subscribeBridge } from '@/lib/eventsBridge';
@@ -56,7 +57,7 @@ function useNetworkToasts(showToast: ReturnType<typeof useToast>['showToast']): 
     const onOnline = async () => {
       try {
         showToast('Conexión restablecida. Sincronizando operaciones y refrescando datos…', 'info');
-        await refetchAllResources();
+        await refetchAllResources({ force: true });
         showToast('Datos actualizados tras recuperar la red.', 'success');
       } catch (error) {
         console.warn('[Network] Error al refrescar datos tras reconexión', error);
@@ -81,6 +82,41 @@ function useNetworkToasts(showToast: ReturnType<typeof useToast>['showToast']): 
       window.removeEventListener('offline-queue-flushed', onQueueFlushed);
     };
   }, [showToast]);
+}
+
+/**
+ * Mantiene sincronizadas las dos capas de datos de la aplicación:
+ * useResource (CRUD genérico/cache propio) y React Query (consultas/estadísticas).
+ * Se agrupan eventos cercanos porque una operación puede tocar varias entidades.
+ */
+function useDataConsistencyEvents(): void {
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const scheduleRefresh = () => {
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+      refreshTimerRef.current = setTimeout(() => {
+        refreshTimerRef.current = null;
+        void Promise.allSettled([
+          queryClient.invalidateQueries({ refetchType: 'active' }),
+          refetchAllResources({ force: true }),
+        ]);
+      }, 75);
+    };
+
+    const onResourceChanged = (event: Event) => {
+      const detail = (event as CustomEvent<{ endpoint?: unknown; local?: unknown }>).detail || {};
+      // Los eventos SSE de chat no traen endpoint; no deben invalidar toda la app.
+      if (!detail.endpoint && detail.local !== true) return;
+      scheduleRefresh();
+    };
+
+    window.addEventListener('server-resource-changed', onResourceChanged);
+    return () => {
+      window.removeEventListener('server-resource-changed', onResourceChanged);
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+    };
+  }, []);
 }
 
 function useRateLimitToast(showToast: ReturnType<typeof useToast>['showToast']): void {
@@ -196,6 +232,7 @@ export function GlobalNetworkHandlers(): null {
   const { isAuthenticated, user } = useAuth();
   const userId = Number(user?.id);
   useNetworkToasts(showToast);
+  useDataConsistencyEvents();
   useRateLimitToast(showToast);
   useServerEvents(
     isAuthenticated,

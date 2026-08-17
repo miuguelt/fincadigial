@@ -1,9 +1,9 @@
 ﻿import { useEffect, useRef } from 'react';
-import { UseResourceOptions } from './types';
+import type { ResourceRefetchOptions, UseResourceOptions } from './types';
 
 export function useResourceRealtime(
   options: UseResourceOptions,
-  refetch: () => Promise<any>,
+  refetch: (params?: any, options?: ResourceRefetchOptions) => Promise<any>,
   crudInProgressRef: React.MutableRefObject<boolean>,
   skipCacheUntilRef: React.MutableRefObject<number>,
   endpointPrefix: string
@@ -73,11 +73,12 @@ export function useResourceRealtime(
     })();
     const onResourceChanged = (e: Event) => {
       const detail = (e as CustomEvent).detail || {};
-      const slug = String(detail?.endpoint || '');
-      if (!slug || slug !== endpointSlug) return;
+      const endpoint = String(detail?.endpoint || '').replace(/\/$/, '');
+      const eventSlug = endpoint.split('/').filter(Boolean).pop();
+      if (!endpoint || (endpoint !== endpointPrefix && eventSlug !== endpointSlug)) return;
       if (crudInProgressRef.current) return;
       skipCacheUntilRef.current = Date.now() + 5000;
-      void refetch().catch(() => {});
+      void refetch(undefined, { force: true }).catch(() => {});
     };
     const onGlobalChange = () => {
       if (crudInProgressRef.current) return;

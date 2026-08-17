@@ -87,8 +87,27 @@ class Treatments(BaseModel):
     )
 
     @classmethod
-    def create(cls, **kwargs):
-        instance = super().create(**kwargs)
+    def create(cls, commit=True, **kwargs):
+        # A quick/offline treatment may carry its medication and inventory
+        # selection in the same payload. Persist the treatment and bridge
+        # together so the bridge can apply the stock exit atomically.
+        medication_id = kwargs.pop("medication_id", None)
+        lot_id = kwargs.pop("lot_id", None)
+        quantity = kwargs.pop("quantity", 0)
+        instance = super().create(commit=False, **kwargs)
+        if medication_id:
+            from app.models.treatment_medications import TreatmentMedications
+
+            TreatmentMedications.create(
+                commit=False,
+                treatment_id=instance.id,
+                medication_id=medication_id,
+                lot_id=lot_id,
+                quantity=quantity,
+            )
+        if commit:
+            db.session.commit()
+            db.session.refresh(instance)
         if instance and instance.finca_id:
             from app.models.livestock_summary import LivestockSummary
 
@@ -105,9 +124,21 @@ class Treatments(BaseModel):
             summary.recalculate()
         return updated_instance
 
-    def delete(self, commit=True):
+    def delete(self, commit=True, hard_delete=False):
         f_id = self.finca_id
-        result = super().delete(commit=commit)
+        try:
+            # A treatment is the business event that owns these applications.
+            # Removing it must reverse every linked stock exit as well.
+            for application in self.medication_treatments.all():
+                application.delete(commit=False, hard_delete=hard_delete)
+            for application in self.vaccines_treatments.all():
+                application.delete(commit=False, hard_delete=hard_delete)
+            result = super().delete(commit=False, hard_delete=hard_delete)
+            if commit:
+                db.session.commit()
+        except Exception:
+            db.session.rollback()
+            raise
         if f_id:
             from app.models.livestock_summary import LivestockSummary
 

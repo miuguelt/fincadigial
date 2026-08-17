@@ -104,7 +104,7 @@ export default function QuickDisease() {
         await animalDiseasesService.createAnimalDisease(payload);
         showToast('Enfermedad registrada exitosamente', 'success');
       }
-      emitDataRefresh('animal-diseases');
+      if (isOnline) emitDataRefresh('animal-diseases');
       handleClose();
     } catch (error) {
       console.error('Error creating disease:', error);

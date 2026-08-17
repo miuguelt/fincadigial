@@ -145,6 +145,7 @@ export interface CRUDConfig<T = any, TInput = any> {
   preDeleteCheck?: (id: number) => Promise<{ hasDependencies: boolean; dependencies?: any[] }>;
   onAfterCreate?: (item: any) => Promise<void> | void;
   onAfterUpdate?: (item: any) => Promise<void> | void;
+  onAfterDelete?: (id: number) => Promise<void> | void;
   cardGridClassName?: string;
   themeColor?: 'blue' | 'cyan' | 'teal' | 'emerald' | 'purple' | 'indigo' | 'red' | 'amber' | 'slate';
   detailTabs?: Array<{

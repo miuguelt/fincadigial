@@ -14,6 +14,11 @@ export function registerService(endpoint: string, service: CacheableService): vo
   services.set(endpoint, service);
 }
 
+/** Invalida todos los snapshots de servicios antes de refrescar consultas derivadas. */
+export async function clearAllServiceCaches(): Promise<void> {
+  await Promise.all(Array.from(services.values()).map((service) => service.clearCache()));
+}
+
 /**
  * Invalida la caché de otros recursos que una mutación deja obsoletos.
  *

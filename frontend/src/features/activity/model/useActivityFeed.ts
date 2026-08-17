@@ -117,6 +117,18 @@ export function useActivityFeed(
     return () => controller.abort();
   }, [enabled, load]);
 
+  useEffect(() => {
+    if (!enabled) return;
+    const handleDataChanged = (event: Event) => {
+      const detail = (event as CustomEvent<{ endpoint?: unknown; local?: unknown }>).detail || {};
+      if (!detail.endpoint && detail.local !== true) return;
+      cacheRef.current.clear();
+      void load();
+    };
+    window.addEventListener('server-resource-changed', handleDataChanged);
+    return () => window.removeEventListener('server-resource-changed', handleDataChanged);
+  }, [enabled, load]);
+
   const refetch = useCallback(() => {
     cacheRef.current.delete(cacheKey);
     load();

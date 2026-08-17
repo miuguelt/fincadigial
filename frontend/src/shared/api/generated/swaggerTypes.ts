@@ -484,12 +484,17 @@ export interface VaccinationResponse {
 export interface TreatmentMedicationInput {
   treatment_id: number;
   medication_id: number;
+  lot_id?: number;
+  quantity?: number;
 }
 
 export interface TreatmentMedicationResponse {
   id: number;
   treatment_id: number;
   medication_id: number;
+  lot_id?: number;
+  quantity?: number;
+  lot?: Partial<InventoryLotResponse>;
   treatment_diagnosis?: string;
   medication_name?: string;
   created_at?: string;
@@ -500,6 +505,8 @@ export interface TreatmentVaccineInput {
   treatment_id: number;
   vaccine_id: number;
   dose: string;
+  lot_id?: number;
+  quantity?: number;
   application_site?: string;
   batch_number?: string;
   expiry_date?: string;
@@ -515,6 +522,9 @@ export interface TreatmentVaccineResponse {
   treatment_id: number;
   vaccine_id: number;
   dose: string;
+  lot_id?: number;
+  quantity?: number;
+  lot?: Partial<InventoryLotResponse>;
   application_site?: string;
   batch_number?: string;
   expiry_date?: string;
@@ -719,6 +729,8 @@ export interface InventoryLotResponse extends InventoryLotInput {
   is_expired?: boolean;
   days_to_expiry?: number;
   is_low_stock?: boolean;
+  is_usable?: boolean;
+  available_quantity?: number;
   product_name?: string;
   created_at?: string;
   updated_at?: string;
@@ -738,6 +750,8 @@ export interface InventoryMovementInput {
 export interface InventoryMovementResponse extends InventoryMovementInput {
   id: number;
   created_at: string;
+  balance_before?: number;
+  balance_after?: number;
   actor_id?: number;
   actor_name?: string;
   lot?: Partial<InventoryLotResponse>;

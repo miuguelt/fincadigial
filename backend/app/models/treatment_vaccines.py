@@ -1,8 +1,9 @@
 from app import db
-from app.models.base_model import BaseModel
+from app.models.base_model import BaseModel, ValidationError
 from app.models.treatments import Treatments
 from app.models.vaccines import Vaccines
-from app.models.inventory import InventoryLot
+from app.models.inventory import InventoryLot, ProductType
+from app.services.inventory_service import InventoryService
 from app.utils.tenant_context import get_current_finca_id
 
 
@@ -22,7 +23,7 @@ class TreatmentVaccines(BaseModel):
     lot_id = db.Column(
         db.Integer, db.ForeignKey("inventory_lots.id"), nullable=True
     )  # Vínculo opcional al lote
-    quantity = db.Column(db.Float, default=0.0)  # Cantidad exacta consumida
+    quantity = db.Column(db.Numeric(12, 3), default=0.0)  # Cantidad exacta consumida
 
     # Relaciones
     treatments = db.relationship(
@@ -34,30 +35,104 @@ class TreatmentVaccines(BaseModel):
     )
 
     @classmethod
-    def create(cls, **kwargs):
-        """Sobrescribe creación para descontar inventario automáticamente"""
-        instance = super().create(**kwargs)
-        if instance.lot_id and instance.quantity > 0:
-            from app.models.inventory import (
-                InventoryLot,
-                InventoryMovement,
-                MovementType,
+    def create(cls, commit=True, **kwargs):
+        """Create the application and its stock exit in one transaction."""
+        instance = super().create(commit=False, **kwargs)
+        try:
+            InventoryService.reconcile_consumption(
+                "TreatmentVaccine",
+                instance.id,
+                new_lot_id=instance.lot_id,
+                new_quantity=instance.quantity,
+                commit=False,
             )
-
-            lot = InventoryLot.query.get(instance.lot_id)
-            if lot:
-                lot.current_quantity -= instance.quantity
-                # Registrar movimiento de inventario
-                InventoryMovement.create(
-                    lot_id=lot.id,
-                    movement_type=MovementType.Salida,
-                    quantity=instance.quantity,
-                    reference_type="TreatmentVaccine",
-                    reference_id=instance.id,
-                    notes=f"Consumo en tratamiento ID {instance.treatment_id}",
-                    finca_id=lot.finca_id,
-                )
+            if commit:
+                db.session.commit()
+                db.session.refresh(instance)
+        except Exception:
+            db.session.rollback()
+            raise
         return instance
+
+    def update(self, commit=True, **kwargs):
+        old_lot_id, old_quantity = self.lot_id, self.quantity
+        updated = super().update(commit=False, **kwargs)
+        try:
+            InventoryService.reconcile_consumption(
+                "TreatmentVaccine",
+                self.id,
+                old_lot_id=old_lot_id,
+                old_quantity=old_quantity,
+                new_lot_id=self.lot_id,
+                new_quantity=self.quantity,
+                commit=False,
+            )
+            if commit:
+                db.session.commit()
+                db.session.refresh(updated)
+        except Exception:
+            db.session.rollback()
+            raise
+        return updated
+
+    def delete(self, commit=True, hard_delete=False):
+        if self.is_deleted:
+            return True
+        try:
+            result = super().delete(commit=False, hard_delete=hard_delete)
+            InventoryService.reconcile_consumption(
+                "TreatmentVaccine",
+                self.id,
+                old_lot_id=self.lot_id,
+                old_quantity=self.quantity,
+                commit=False,
+            )
+            if commit:
+                db.session.commit()
+            return result
+        except Exception:
+            db.session.rollback()
+            raise
+
+    @classmethod
+    def bulk_create(cls, items_data):
+        try:
+            instances = [cls.create(commit=False, **data) for data in items_data]
+            db.session.commit()
+            return instances
+        except Exception:
+            db.session.rollback()
+            raise
+
+    @classmethod
+    def bulk_update(cls, updates_data):
+        try:
+            instances = []
+            for data in updates_data:
+                instance = cls.get_by_id(data.get("id"))
+                if instance:
+                    changes = {k: v for k, v in data.items() if k != "id"}
+                    instances.append(instance.update(commit=False, **changes))
+            db.session.commit()
+            return instances
+        except Exception:
+            db.session.rollback()
+            raise
+
+    @classmethod
+    def bulk_delete(cls, ids, hard_delete=False):
+        count = 0
+        try:
+            for item_id in ids:
+                instance = cls.get_by_id(item_id)
+                if instance:
+                    instance.delete(commit=False, hard_delete=hard_delete)
+                    count += 1
+            db.session.commit()
+            return count
+        except Exception:
+            db.session.rollback()
+            raise
 
     @classmethod
     def _validate_and_normalize(cls, data, is_update=False, instance_id=None):
@@ -102,19 +177,36 @@ class TreatmentVaccines(BaseModel):
             errors.append("El lote de inventario no existe.")
         if lot and finca_id is not None and lot.finca_id != finca_id:
             errors.append("El lote de inventario debe pertenecer a la misma finca.")
+        quantity = normalized.get("quantity", getattr(current, "quantity", 0) or 0)
+        try:
+            if float(quantity) < 0:
+                errors.append("La cantidad consumida no puede ser negativa.")
+            if float(quantity) > 0 and not lot_id:
+                errors.append("Debe indicar el lote cuando registra un consumo.")
+        except (TypeError, ValueError):
+            errors.append("La cantidad consumida debe ser numérica.")
+        if lot and vaccine and lot.product_type == ProductType.Vacuna and lot.vaccine_id != vaccine.id:
+            errors.append("El lote no corresponde a la vacuna seleccionada.")
         if errors:
-            from app.models.base_model import ValidationError
-
             raise ValidationError(
                 "; ".join(errors), code="tenant_scope_error", errors=errors
             )
         return normalized
 
     # Campos / relaciones para namespaces
-    _namespace_fields = ["id", "treatment_id", "vaccine_id", "created_at", "updated_at"]
+    _namespace_fields = [
+        "id",
+        "treatment_id",
+        "vaccine_id",
+        "lot_id",
+        "quantity",
+        "created_at",
+        "updated_at",
+    ]
     _namespace_relations = {
         "treatments": {"fields": ["id", "treatment_date", "animal_id"], "depth": 1},
         "vaccines": {"fields": ["id", "name", "type"], "depth": 1},
+        "lot": {"fields": ["id", "lot_number", "current_quantity", "unit"], "depth": 1},
     }
     # Configuraciones del modelo base
     _filterable_fields = ["treatment_id", "vaccine_id"]

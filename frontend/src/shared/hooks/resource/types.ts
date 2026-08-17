@@ -14,11 +14,16 @@ export interface UseResourceOptions<P extends Record<string, any> = any> {
   refetchOnReconnect?: boolean;   // Refrescar al reconectar red (default true)
 }
 
+export interface ResourceRefetchOptions {
+  /** Ignora el throttle y las capas de caché para reflejar una escritura confirmada. */
+  force?: boolean;
+}
+
 export interface UseResourceResult<T, P extends Record<string, any>> {
   data: T[];
   loading: boolean;
   error: string | null;
-  refetch: (params?: P) => Promise<T[]>;
+  refetch: (params?: P, options?: ResourceRefetchOptions) => Promise<T[]>;
   createItem: (payload: Partial<T>) => Promise<T | null>;
   updateItem: (id: number | string, payload: Partial<T>) => Promise<T | null>;
   deleteItem: (id: number | string) => Promise<boolean>;

@@ -43,7 +43,9 @@ class InventoryAnalyticsService:
             if name not in stock_map:
                 stock_map[name] = 0
                 unit_map[name] = lot.unit
-            stock_map[name] += lot.current_quantity
+            # Expired stock remains physical until a Baja, but it cannot
+            # contribute to the days of usable autonomy.
+            stock_map[name] += lot.available_quantity
 
         # Consumption
         for mov in movements:

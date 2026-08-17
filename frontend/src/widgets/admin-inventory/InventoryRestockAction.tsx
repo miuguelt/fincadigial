@@ -16,6 +16,8 @@ export function InventoryRestockAction({
 	lot: InventoryLotResponse;
 	onRestock: (lot: InventoryLotResponse) => void;
 }) {
+	if (lot.is_expired) return null;
+
 	return (
 		<TooltipProvider>
 			<Tooltip>
