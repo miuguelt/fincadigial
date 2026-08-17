@@ -2,6 +2,7 @@ import React from 'react';
 import { CRUDForm } from './CRUDForm';
 import { DetailModal, ConfirmDeleteDialog } from './CRUDModals';
 import type { DependencyInfo } from './hooks/useCrudDelete';
+import type { CRUDFormField } from '@/shared/types/crud';
 
 interface CRUDPageModalsProps<T extends { id: number }, TInput extends Record<string, any>> {
   config: any;
@@ -17,7 +18,7 @@ interface CRUDPageModalsProps<T extends { id: number }, TInput extends Record<st
   formData: TInput;
   setFormData: React.Dispatch<React.SetStateAction<TInput>>;
   formErrors: Record<string, string>;
-  updateFieldValue: (key: string, value: any) => void;
+  updateFieldValue: (field: CRUDFormField<TInput>, value: any) => void;
   onSubmit: (e: React.FormEvent) => void;
   saving: boolean;
   additionalFormContent?: (formData: TInput, editingItem: T | null) => React.ReactNode;

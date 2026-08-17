@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import type { ToastType } from '@/app/providers/ToastContext';
 import { validateFormSections } from '@/shared/utils/formValidation';
 import {
   buildConflictMessage,
@@ -41,7 +42,7 @@ interface UseCrudSubmitArgs<T extends { id: number }, TInput> {
   setPage?: (page: number) => void;
   refetch: () => Promise<any>;
   onSuccess: () => void;
-  showToast: (message: string, kind: string) => void;
+  showToast: (message: string, type?: ToastType, duration?: number) => void;
   t: (key: string, fallback: string) => string;
 }
 

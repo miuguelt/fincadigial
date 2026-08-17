@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import type { ToastType } from '@/app/providers/ToastContext';
 import { addTombstone } from '@/shared/api/cache/tombstones';
 
 /** El backend puede seguir devolviendo lo borrado; se oculta mientras tanto. */
@@ -30,7 +31,7 @@ interface UseCrudDeleteArgs<T extends { id: number }> {
   setPage?: (page: number) => void;
   refetch: () => Promise<any>;
   onDeleted: (id: number) => void;
-  showToast: (message: string, kind: string) => void;
+  showToast: (message: string, type?: ToastType, duration?: number) => void;
 }
 
 /**
