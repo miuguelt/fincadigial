@@ -34,13 +34,13 @@ function parseBackendMatrix(source: string): ParsedMatrix {
     const line = rawLine.trim();
     if (!line || line.startsWith('#')) continue;
 
-    const wildcard = line.match(/^'([\w]+)':\s*'\*'/);
+    const wildcard = line.match(/^["']([\w]+)["']:\s*["']\*["']/);
     if (wildcard) {
       matrix[wildcard[1]] = '*';
       continue;
     }
 
-    const roleOpen = line.match(/^'([\w]+)':\s*\{$/);
+    const roleOpen = line.match(/^["']([\w]+)["']:\s*\{$/);
     if (roleOpen) {
       currentRole = roleOpen[1];
       matrix[currentRole] = {};
@@ -54,18 +54,18 @@ function parseBackendMatrix(source: string): ParsedMatrix {
 
     if (!currentRole) continue;
 
-    const namedEntry = line.match(/^'([\w-]+)':\s*(_ACTIONS_[A-Z_]+)/);
+    const namedEntry = line.match(/^["']([\w-]+)["']:\s*(_ACTIONS_[A-Z_]+)/);
     if (namedEntry) {
       (matrix[currentRole] as Record<string, string[]>)[namedEntry[1]] =
         ACTION_ALIASES[namedEntry[2]];
       continue;
     }
 
-    const inlineEntry = line.match(/^'([\w-]+)':\s*\[([^\]]*)\]/);
+    const inlineEntry = line.match(/^["']([\w-]+)["']:\s*\[([^\]]*)\]/);
     if (inlineEntry) {
       const actions = inlineEntry[2]
         .split(',')
-        .map((a) => a.trim().replace(/'/g, ''))
+        .map((a) => a.trim().replace(/["']/g, ''))
         .filter(Boolean);
       (matrix[currentRole] as Record<string, string[]>)[inlineEntry[1]] = actions;
     }

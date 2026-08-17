@@ -69,7 +69,7 @@ eliminó y las barras de `::-webkit-scrollbar` siempre ocupan layout.
 con la clase `.no-native-scrollbar` y **pinta el pulgar por encima del
 contenido**, en posición absoluta. Coste de layout: cero. El pulgar está siempre
 visible cuando hay desbordamiento, sube de contraste al pasar el puntero por la
-caja o al desplazar, y se arrastra con el ratón en ambos ejes.
+caja o al desplazar, y se arrastra con el mouse en ambos ejes.
 
 El scroll sigue siendo **nativo**: rueda, teclado, trackpad y gestos táctiles no
 se tocan. Lo único propio es el pulgar.

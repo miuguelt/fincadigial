@@ -271,7 +271,7 @@ export const OptimizedDashboardProvider: React.FC<{
  * Hook personalizado para facilitar el uso del OptimizedDashboard
  * Proporciona acceso al estado y acciones comunes
  */
- 
+
 export const useOptimizedDashboard = () => {
   const appState = useAppState();
 

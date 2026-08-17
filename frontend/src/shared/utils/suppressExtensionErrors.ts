@@ -1,7 +1,7 @@
 /**
  * Workaround para errores de extensiones de Chrome que interceptan requests
  * y causan mensajes de error falsos positivos en la consola.
- * 
+ *
  * @see https://bugs.chromium.org/p/chromium/issues/detail?id=1234567
  */
 
@@ -11,7 +11,7 @@ export function suppressChromeExtensionErrors() {
   // Silenciar errores de extensiones en unhandledrejection
   window.addEventListener('unhandledrejection', (event) => {
     const msg = event?.reason?.message || event?.reason?.toString?.() || '';
-    
+
     // Patrones conocidos de errores de extensiones de Chrome
     const extensionErrorPatterns = [
       'message channel closed',
@@ -22,7 +22,7 @@ export function suppressChromeExtensionErrors() {
       'The message port closed',
     ];
 
-    const isExtensionError = extensionErrorPatterns.some(pattern => 
+    const isExtensionError = extensionErrorPatterns.some(pattern =>
       msg.includes(pattern)
     );
 

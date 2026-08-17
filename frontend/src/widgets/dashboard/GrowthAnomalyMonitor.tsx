@@ -68,7 +68,7 @@ export const GrowthAnomalyMonitor: React.FC = () => {
           </CardTitle>{" "}
           <Badge
             variant="outline"
-            className="font-black text-[10px] uppercase tracking-widest bg-primary/5"
+            className="font-black text-[11px] uppercase tracking-widest bg-primary/5"
           >
             {" "}
             IA Activa{" "}
@@ -123,7 +123,7 @@ export const GrowthAnomalyMonitor: React.FC = () => {
                         {anomaly.animal_name}
                       </span>{" "}
                       <Badge
-                        className={`text-[9px] font-black uppercase px-1.5 py-0 border ${getSeverityColor(anomaly.severity)}`}
+                        className={`text-[11px] font-black uppercase px-1.5 py-0 border ${getSeverityColor(anomaly.severity)}`}
                       >
                         {" "}
                         {anomaly.severity}{" "}

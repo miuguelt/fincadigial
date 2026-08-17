@@ -32,7 +32,7 @@ export const isProduction = (): boolean => {
 // URL base del backend según el entorno
 export const getBackendBaseURL = (): string => {
   const env = getEnvironment();
-  
+
   // Si hay variable de entorno específica, usarla
   if (ENV.VITE_API_BASE_URL) {
     return ENV.VITE_API_BASE_URL;
@@ -50,7 +50,7 @@ export const getBackendBaseURL = (): string => {
   } catch {
     // Ignorar errores de acceso a window en entornos SSR/tests
   }
-  
+
   // URLs por defecto según el entorno
   switch (env) {
     case 'production':
@@ -108,7 +108,7 @@ export const getBackendDocsURL = (): string => {
   if (ENV.VITE_BACKEND_DOCS_URL) {
     return ENV.VITE_BACKEND_DOCS_URL;
   }
-  
+
   // Generar URL de docs basada en el backend URL
   const backendUrl = getBackendBaseURL();
   return `${backendUrl}/docs`;
@@ -123,12 +123,12 @@ export const getBackendHealthURL = (): string => {
 // URL del frontend según el entorno
 export const getFrontendURL = (): string => {
   const env = getEnvironment();
-  
+
   // Si hay variable de entorno específica, usarla
   if (ENV.VITE_FRONTEND_URL) {
     return ENV.VITE_FRONTEND_URL;
   }
-  
+
   // URLs por defecto según el entorno
   switch (env) {
     case 'production':
@@ -143,7 +143,7 @@ export const getFrontendURL = (): string => {
 // Configuración de cookies según el entorno
 export const getCookieConfig = () => {
   const env = getEnvironment();
-  
+
   return {
     secure: env === 'production',
     sameSite: 'none' as const,
@@ -155,7 +155,7 @@ export const getCookieConfig = () => {
 // Configuración de logging según el entorno
 export const getLogLevel = (): 'debug' | 'info' | 'warn' | 'error' => {
   const env = getEnvironment();
-  
+
   switch (env) {
     case 'development':
       return 'debug';

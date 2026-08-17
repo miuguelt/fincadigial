@@ -52,7 +52,7 @@ export const CreateControlModal: React.FC<CreateControlModalProps> = ({
               </SelectContent>
             </Select>
           </div>
-          
+
           <div className="space-y-2">
             <label className="text-sm font-medium">Fecha de Control *</label>
             <Input
@@ -61,7 +61,7 @@ export const CreateControlModal: React.FC<CreateControlModalProps> = ({
               onChange={(e) => handleInputChange('checkup_date', e.target.value)}
             />
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Peso (kg)</label>
@@ -72,7 +72,7 @@ export const CreateControlModal: React.FC<CreateControlModalProps> = ({
                 onChange={(e) => handleInputChange('weight', parseFloat(e.target.value))}
               />
             </div>
-            
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Altura (m)</label>
               <Input
@@ -83,7 +83,7 @@ export const CreateControlModal: React.FC<CreateControlModalProps> = ({
               />
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <label className="text-sm font-medium">Estado de Salud *</label>
             <Select value={formData.health_status} onValueChange={(value) => handleInputChange('health_status', value)}>
@@ -99,7 +99,7 @@ export const CreateControlModal: React.FC<CreateControlModalProps> = ({
               </SelectContent>
             </Select>
           </div>
-          
+
           <div className="space-y-2">
             <label className="text-sm font-medium">Descripción</label>
             <Textarea
@@ -132,4 +132,3 @@ export const CreateControlModal: React.FC<CreateControlModalProps> = ({
     </Dialog>
   );
 };
-

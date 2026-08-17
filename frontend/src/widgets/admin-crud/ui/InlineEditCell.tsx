@@ -92,7 +92,7 @@ export function InlineEditCell({
 
   if (isEditing) {
     return (
-      <div 
+      <div
         className="flex items-center gap-1 w-full min-w-[120px]"
         onClick={(e) => e.stopPropagation()}
       >
@@ -124,7 +124,7 @@ export function InlineEditCell({
             className="flex-1 px-2 py-1 text-xs rounded-lg border border-primary/50 bg-background text-foreground shadow-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition duration-150"
           />
         )}
-        
+
         {saving ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin text-primary flex-shrink-0" />
         ) : (

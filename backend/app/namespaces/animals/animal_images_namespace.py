@@ -12,78 +12,78 @@ from app.utils.file_storage import (
     delete_animal_image,
     get_public_url,
     validate_image_count,
-    allowed_file
+    allowed_file,
 )
 
 logger = logging.getLogger(__name__)
 
 # Crear namespace
 animal_images_ns = Namespace(
-    'animal-images',
-    description='Operaciones con imágenes de animales',
-    path='/animal-images'
+    "animal-images",
+    description="Operaciones con imágenes de animales",
+    path="/animal-images",
 )
 
 # Modelos para documentación
-image_model = animal_images_ns.model('AnimalImage', {
-    'id': fields.Integer(description='ID de la imagen'),
-    'animal_id': fields.Integer(required=True, description='ID del animal'),
-    'filename': fields.String(description='Nombre del archivo'),
-    'filepath': fields.String(description='Ruta del archivo'),
-    'file_size': fields.Integer(description='Tamaño del archivo en bytes'),
-    'mime_type': fields.String(description='Tipo MIME del archivo'),
-    'is_primary': fields.Boolean(description='Si es la imagen principal'),
-    'url': fields.String(description='URL pública de la imagen'),
-    'created_at': fields.DateTime(description='Fecha de creación')
-})
+image_model = animal_images_ns.model(
+    "AnimalImage",
+    {
+        "id": fields.Integer(description="ID de la imagen"),
+        "animal_id": fields.Integer(required=True, description="ID del animal"),
+        "filename": fields.String(description="Nombre del archivo"),
+        "filepath": fields.String(description="Ruta del archivo"),
+        "file_size": fields.Integer(description="Tamaño del archivo en bytes"),
+        "mime_type": fields.String(description="Tipo MIME del archivo"),
+        "is_primary": fields.Boolean(description="Si es la imagen principal"),
+        "url": fields.String(description="URL pública de la imagen"),
+        "created_at": fields.DateTime(description="Fecha de creación"),
+    },
+)
 
 
-@animal_images_ns.route('/upload')
+@animal_images_ns.route("/upload")
 class ImageUpload(Resource):
     @jwt_required()
     @animal_images_ns.doc(
-        description='Subir múltiples imágenes para un animal',
+        description="Subir múltiples imágenes para un animal",
         params={
-            'animal_id': 'ID del animal (form field)',
-            'files': 'Archivos de imagen (multipart/form-data)'
-        }
+            "animal_id": "ID del animal (form field)",
+            "files": "Archivos de imagen (multipart/form-data)",
+        },
     )
     def post(self):
         """Subir múltiples imágenes para un animal"""
         try:
             # Obtener animal_id del formulario
-            animal_id = flask.request.form.get('animal_id', type=int)
+            animal_id = flask.request.form.get("animal_id", type=int)
             if not animal_id:
                 return APIResponse.error(
-                    message='El campo animal_id es requerido',
-                    status_code=400
+                    message="El campo animal_id es requerido", status_code=400
                 )
 
             # Validar que el animal existe
             animal = Animals.query.get(animal_id)
             if not animal:
                 return APIResponse.error(
-                    message=f'Animal con ID {animal_id} no encontrado',
-                    status_code=404
+                    message=f"Animal con ID {animal_id} no encontrado", status_code=404
                 )
 
             # Validar cantidad de imágenes actuales
-            max_images = flask.current_app.config.get('MAX_IMAGES_PER_ANIMAL', 20)
+            max_images = flask.current_app.config.get("MAX_IMAGES_PER_ANIMAL", 20)
             is_valid, current_count = validate_image_count(animal_id, max_images)
 
             # Obtener archivos
-            files = flask.request.files.getlist('files')
+            files = flask.request.files.getlist("files")
             if not files or len(files) == 0:
                 return APIResponse.error(
-                    message='No se proporcionaron archivos',
-                    status_code=400
+                    message="No se proporcionaron archivos", status_code=400
                 )
 
             # Validar que no exceda el máximo
             if current_count + len(files) > max_images:
                 return APIResponse.error(
-                    message=f'Excede el límite de {max_images} imágenes por animal. Actualmente tiene {current_count} imágenes.',
-                    status_code=400
+                    message=f"Excede el límite de {max_images} imágenes por animal. Actualmente tiene {current_count} imágenes.",
+                    status_code=400,
                 )
 
             uploaded_images = []
@@ -96,22 +96,24 @@ class ImageUpload(Resource):
             for file in files:
                 try:
                     # Validar archivo
-                    if not file or file.filename == '':
-                        errors.append({'filename': 'unknown', 'error': 'Archivo vacío'})
+                    if not file or file.filename == "":
+                        errors.append({"filename": "unknown", "error": "Archivo vacío"})
                         continue
 
                     if not allowed_file(file.filename):
-                        errors.append({
-                            'filename': file.filename,
-                            'error': 'Tipo de archivo no permitido'
-                        })
+                        errors.append(
+                            {
+                                "filename": file.filename,
+                                "error": "Tipo de archivo no permitido",
+                            }
+                        )
                         continue
 
                     # Leer bytes y validar integridad
                     raw_bytes = file.read()
                     ok, err_msg = is_valid_image(raw_bytes)
                     if not ok:
-                        errors.append({'filename': file.filename, 'error': err_msg})
+                        errors.append({"filename": file.filename, "error": err_msg})
                         continue
 
                     # ── Optimización WebP (reduce tamaño 40-70%) ──────────────────
@@ -121,51 +123,56 @@ class ImageUpload(Resource):
                         )
                         optimized = True
                     except Exception as img_err:
-                        logger.warning("No se pudo convertir a WebP (%s): %s — usando original", file.filename, img_err)
+                        logger.warning(
+                            "No se pudo convertir a WebP (%s): %s — usando original",
+                            file.filename,
+                            img_err,
+                        )
                         optimized = False
 
                     import io
 
                     # Guardar archivo — si ya fue optimizado a WebP, saltamos Pillow
                     if optimized:
-                        webp_filename = file.filename.rsplit('.', 1)[0] + '.webp'
+                        webp_filename = file.filename.rsplit(".", 1)[0] + ".webp"
                         file_info = save_animal_image(
-                            io.BytesIO(webp_bytes), animal_id,
-                            skip_pillow=True, generate_thumbnail=False,
-                            filename=webp_filename
+                            io.BytesIO(webp_bytes),
+                            animal_id,
+                            skip_pillow=True,
+                            generate_thumbnail=False,
+                            filename=webp_filename,
                         )
-                        file_info['mime_type'] = 'image/webp'
+                        file_info["mime_type"] = "image/webp"
                     else:
                         file_info = save_animal_image(file, animal_id)
 
                     # Crear registro en BD
                     image = AnimalImages(
                         animal_id=animal_id,
-                        filename=file_info['filename'],
-                        filepath=file_info['filepath'],
-                        thumbnail_path=file_info.get('thumb_path'),
-                        file_size=file_info['file_size'],
-                        mime_type='image/webp' if optimized else file_info['mime_type'],
-                        is_primary=False
+                        filename=file_info["filename"],
+                        filepath=file_info["filepath"],
+                        thumbnail_path=file_info.get("thumb_path"),
+                        file_size=file_info["file_size"],
+                        mime_type="image/webp" if optimized else file_info["mime_type"],
+                        is_primary=False,
                     )
 
                     db.session.add(image)
                     db.session.flush()
 
-                    uploaded_images.append({
-                        'id': image.id,
-                        'filename': image.filename,
-                        'url': get_public_url(image.filepath),
-                        'size': image.file_size,
-                        'optimized': optimized,
-                    })
+                    uploaded_images.append(
+                        {
+                            "id": image.id,
+                            "filename": image.filename,
+                            "url": get_public_url(image.filepath),
+                            "size": image.file_size,
+                            "optimized": optimized,
+                        }
+                    )
 
                 except Exception as e:
                     logger.error(f"Error procesando archivo {file.filename}: {str(e)}")
-                    errors.append({
-                        'filename': file.filename,
-                        'error': str(e)
-                    })
+                    errors.append({"filename": file.filename, "error": str(e)})
 
             # Commit si hubo al menos una imagen exitosa
             if uploaded_images:
@@ -173,7 +180,7 @@ class ImageUpload(Resource):
 
                 # Si es la primera imagen del animal, marcarla como principal
                 if current_count == 0 and len(uploaded_images) > 0:
-                    first_image = AnimalImages.query.get(uploaded_images[0]['id'])
+                    first_image = AnimalImages.query.get(uploaded_images[0]["id"])
                     if first_image:
                         first_image.is_primary = True
                         db.session.commit()
@@ -183,38 +190,37 @@ class ImageUpload(Resource):
 
             # Preparar respuesta
             response_data = {
-                'uploaded': uploaded_images,
-                'total_uploaded': len(uploaded_images),
-                'total_errors': len(errors),
-                'errors': errors if errors else None
+                "uploaded": uploaded_images,
+                "total_uploaded": len(uploaded_images),
+                "total_errors": len(errors),
+                "errors": errors if errors else None,
             }
 
             if len(uploaded_images) > 0:
-                message = f'{len(uploaded_images)} imagen(es) subida(s) exitosamente'
+                message = f"{len(uploaded_images)} imagen(es) subida(s) exitosamente"
                 if errors:
-                    message += f' ({len(errors)} error(es))'
+                    message += f" ({len(errors)} error(es))"
                 return APIResponse.success(data=response_data, message=message)
             else:
                 # Usar details para evitar errores por argumento inesperado en APIResponse.error
                 return APIResponse.error(
-                    message='No se pudo subir ninguna imagen',
+                    message="No se pudo subir ninguna imagen",
                     details=response_data,
-                    status_code=400
+                    status_code=400,
                 )
 
         except Exception as e:
             db.session.rollback()
             logger.error(f"Error en upload de imágenes: {str(e)}")
             return APIResponse.error(
-                message=f'Error al subir imágenes: {str(e)}',
-                status_code=500
+                message=f"Error al subir imágenes: {str(e)}", status_code=500
             )
 
 
-@animal_images_ns.route('/<int:animal_id>')
+@animal_images_ns.route("/<int:animal_id>")
 class AnimalImagesList(Resource):
     @jwt_required()
-    @animal_images_ns.doc(description='Obtener todas las imágenes de un animal')
+    @animal_images_ns.doc(description="Obtener todas las imágenes de un animal")
     def get(self, animal_id):
         """Obtener todas las imágenes de un animal"""
         try:
@@ -222,42 +228,50 @@ class AnimalImagesList(Resource):
             animal = Animals.query.get(animal_id)
             if not animal:
                 return APIResponse.error(
-                    message=f'Animal con ID {animal_id} no encontrado',
-                    status_code=404
+                    message=f"Animal con ID {animal_id} no encontrado", status_code=404
                 )
 
             # Obtener imágenes ordenadas (primero la principal, luego por fecha)
-            images = AnimalImages.query.filter_by(animal_id=animal_id)\
-                .order_by(AnimalImages.is_primary.desc(), AnimalImages.created_at.desc())\
+            images = (
+                AnimalImages.query.filter_by(animal_id=animal_id)
+                .order_by(
+                    AnimalImages.is_primary.desc(), AnimalImages.created_at.desc()
+                )
                 .all()
+            )
 
             # Serializar con URLs públicas
             images_data = [image.to_namespace_dict() for image in images]
 
             # Incluir origen del servidor para frontend (construcción de recursos)
-            server_origin = (flask.request.host_url or '').rstrip('/') if flask.request else flask.current_app.config.get('API_BASE_URL_NO_VERSION', '').rstrip('/')
+            server_origin = (
+                (flask.request.host_url or "").rstrip("/")
+                if flask.request
+                else flask.current_app.config.get("API_BASE_URL_NO_VERSION", "").rstrip(
+                    "/"
+                )
+            )
             return APIResponse.success(
                 data={
-                    'animal_id': animal_id,
-                    'total': len(images_data),
-                    'images': images_data,
-                    'base_url': server_origin
+                    "animal_id": animal_id,
+                    "total": len(images_data),
+                    "images": images_data,
+                    "base_url": server_origin,
                 },
-                message=f'{len(images_data)} imagen(es) encontrada(s)'
+                message=f"{len(images_data)} imagen(es) encontrada(s)",
             )
 
         except Exception as e:
             logger.error(f"Error obteniendo imágenes del animal {animal_id}: {str(e)}")
             return APIResponse.error(
-                message=f'Error al obtener imágenes: {str(e)}',
-                status_code=500
+                message=f"Error al obtener imágenes: {str(e)}", status_code=500
             )
 
 
-@animal_images_ns.route('/image/<int:image_id>')
+@animal_images_ns.route("/image/<int:image_id>")
 class AnimalImageDetail(Resource):
     @jwt_required()
-    @animal_images_ns.doc(description='Eliminar una imagen específica')
+    @animal_images_ns.doc(description="Eliminar una imagen específica")
     def delete(self, image_id):
         """Eliminar una imagen"""
         try:
@@ -265,8 +279,7 @@ class AnimalImageDetail(Resource):
             image = AnimalImages.query.get(image_id)
             if not image:
                 return APIResponse.error(
-                    message=f'Imagen con ID {image_id} no encontrada',
-                    status_code=404
+                    message=f"Imagen con ID {image_id} no encontrada", status_code=404
                 )
 
             animal_id = image.animal_id
@@ -282,31 +295,32 @@ class AnimalImageDetail(Resource):
 
             # Si era la imagen principal, asignar otra como principal
             if was_primary:
-                next_image = AnimalImages.query.filter_by(animal_id=animal_id)\
-                    .order_by(AnimalImages.created_at.desc())\
+                next_image = (
+                    AnimalImages.query.filter_by(animal_id=animal_id)
+                    .order_by(AnimalImages.created_at.desc())
                     .first()
+                )
                 if next_image:
                     next_image.is_primary = True
                     db.session.commit()
 
             return APIResponse.success(
-                message='Imagen eliminada exitosamente',
-                data={'id': image_id, 'animal_id': animal_id}
+                message="Imagen eliminada exitosamente",
+                data={"id": image_id, "animal_id": animal_id},
             )
 
         except Exception as e:
             db.session.rollback()
             logger.error(f"Error eliminando imagen {image_id}: {str(e)}")
             return APIResponse.error(
-                message=f'Error al eliminar imagen: {str(e)}',
-                status_code=500
+                message=f"Error al eliminar imagen: {str(e)}", status_code=500
             )
 
 
-@animal_images_ns.route('/image/<int:image_id>/set-primary')
+@animal_images_ns.route("/image/<int:image_id>/set-primary")
 class SetPrimaryImage(Resource):
     @jwt_required()
-    @animal_images_ns.doc(description='Establecer una imagen como principal')
+    @animal_images_ns.doc(description="Establecer una imagen como principal")
     def put(self, image_id):
         """Establecer una imagen como principal del animal"""
         try:
@@ -314,27 +328,27 @@ class SetPrimaryImage(Resource):
             image = AnimalImages.query.get(image_id)
             if not image:
                 return APIResponse.error(
-                    message=f'Imagen con ID {image_id} no encontrada',
-                    status_code=404
+                    message=f"Imagen con ID {image_id} no encontrada", status_code=404
                 )
 
             # Quitar marca de principal a todas las imágenes del animal
-            AnimalImages.query.filter_by(animal_id=image.animal_id)\
-                .update({'is_primary': False})
+            AnimalImages.query.filter_by(animal_id=image.animal_id).update(
+                {"is_primary": False}
+            )
 
             # Marcar esta imagen como principal
             image.is_primary = True
             db.session.commit()
 
             return APIResponse.success(
-                message='Imagen establecida como principal',
-                data=image.to_namespace_dict()
+                message="Imagen establecida como principal",
+                data=image.to_namespace_dict(),
             )
 
         except Exception as e:
             db.session.rollback()
             logger.error(f"Error estableciendo imagen principal {image_id}: {str(e)}")
             return APIResponse.error(
-                message=f'Error al establecer imagen principal: {str(e)}',
-                status_code=500
+                message=f"Error al establecer imagen principal: {str(e)}",
+                status_code=500,
             )

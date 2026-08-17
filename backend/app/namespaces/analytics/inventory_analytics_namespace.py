@@ -4,9 +4,12 @@ from app.services.analytics.inventory_analytics_service import InventoryAnalytic
 from app.utils.tenant_context import get_current_finca_id
 from app.utils.response_handler import APIResponse
 
-inventory_analytics_ns = Namespace('analytics/inventory', description='📊 Analítica de Inventario')
+inventory_analytics_ns = Namespace(
+    "analytics/inventory", description="📊 Analítica de Inventario"
+)
 
-@inventory_analytics_ns.route('/autonomy')
+
+@inventory_analytics_ns.route("/autonomy")
 class InventoryAutonomy(Resource):
     @jwt_required()
     def get(self):

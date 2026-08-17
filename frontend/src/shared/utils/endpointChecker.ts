@@ -26,7 +26,7 @@ const endpoints: EndpointTest[] = [
   // Endpoints de autenticación
   { name: 'Health Check', endpoint: 'health', method: 'GET' },
   { name: 'Login', endpoint: 'auth/login', method: 'POST', testData: { identification: 'test', password: 'test' } },
-  
+
   // Endpoints principales (requieren autenticación)
   { name: 'Animals', endpoint: 'animals', method: 'GET', requiresAuth: true },
   { name: 'Animal Status', endpoint: 'animals/status', method: 'GET', requiresAuth: true },
@@ -60,16 +60,16 @@ interface TestResult {
 
 export const checkAllEndpoints = async (skipAuth: boolean = false): Promise<TestResult[]> => {
   const results: TestResult[] = [];
-  
+
   console.group('🔍 Verificando conectividad con finca.enlinea.sbs');
   console.log(`🌐 Base URL (api.defaults): ${api.defaults.baseURL}`);
   // Removed redundant resolvedApiBaseURL log
   console.log(`⏰ Timeout: ${api.defaults.timeout}ms`);
   console.log('\n');
-  
+
   for (const test of endpoints) {
     const startTime = Date.now();
-    
+
     try {
       // Saltar endpoints que requieren autenticación si se especifica
       if (skipAuth && test.requiresAuth) {
@@ -81,9 +81,9 @@ export const checkAllEndpoints = async (skipAuth: boolean = false): Promise<Test
         });
         continue;
       }
-      
+
       let response;
-      
+
       if (test.method === 'GET') {
         if (test.endpoint === 'health') {
           // Usar base root desde variable de entorno
@@ -94,9 +94,9 @@ export const checkAllEndpoints = async (skipAuth: boolean = false): Promise<Test
       } else if (test.method === 'POST') {
         response = await apiFetch({ url: test.endpoint, method: 'POST', data: test.testData || {} } as any);
       }
-      
+
       const responseTime = Date.now() - startTime;
-      
+
       results.push({
         name: test.name,
         endpoint: test.endpoint,
@@ -105,14 +105,14 @@ export const checkAllEndpoints = async (skipAuth: boolean = false): Promise<Test
         responseTime,
         message: `✅ OK (${response!.status})`
       });
-      
+
       console.log(`✅ ${test.name}: ${response!.status} (${responseTime}ms)`);
-      
+
     } catch (error: any) {
       const responseTime = Date.now() - startTime;
       const statusCode = error.response?.status;
       const errorMessage = error.response?.data?.message || error.message;
-      
+
       results.push({
         name: test.name,
         endpoint: test.endpoint,
@@ -122,38 +122,38 @@ export const checkAllEndpoints = async (skipAuth: boolean = false): Promise<Test
         error: errorMessage,
         message: `❌ Error ${statusCode || 'Network'}: ${errorMessage}`
       });
-      
+
       console.error(`❌ ${test.name}: ${statusCode || 'Network Error'} (${responseTime}ms) - ${errorMessage}`);
     }
   }
-  
+
   console.groupEnd();
   return results;
 };
 
 export const checkCriticalEndpoints = async (): Promise<TestResult[]> => {
-  const criticalEndpoints = endpoints.filter(e => 
+  const criticalEndpoints = endpoints.filter(e =>
     ['Health Check', 'Login', 'Animals', 'Users', 'Fields'].includes(e.name)
   );
-  
+
   const results: TestResult[] = [];
-  
+
   console.group('🎯 Verificando endpoints críticos');
-  
+
   for (const test of criticalEndpoints) {
     const startTime = Date.now();
-    
+
     try {
       let response;
-      
+
       if (test.method === 'GET') {
         response = await apiFetch({ url: test.endpoint, method: 'GET' } as any);
       } else if (test.method === 'POST') {
         response = await apiFetch({ url: test.endpoint, method: 'POST', data: test.testData || {} } as any);
       }
-      
+
       const responseTime = Date.now() - startTime;
-      
+
       results.push({
         name: test.name,
         endpoint: test.endpoint,
@@ -162,14 +162,14 @@ export const checkCriticalEndpoints = async (): Promise<TestResult[]> => {
         responseTime,
         message: `✅ OK`
       });
-      
+
       console.log(`✅ ${test.name}: OK (${responseTime}ms)`);
-      
+
     } catch (error: any) {
       const responseTime = Date.now() - startTime;
       const statusCode = error.response?.status;
       const errorMessage = error.response?.data?.message || error.message;
-      
+
       results.push({
         name: test.name,
         endpoint: test.endpoint,
@@ -179,11 +179,11 @@ export const checkCriticalEndpoints = async (): Promise<TestResult[]> => {
         error: errorMessage,
         message: `❌ Error`
       });
-      
+
       console.error(`❌ ${test.name}: ${statusCode || 'Network Error'} - ${errorMessage}`);
     }
   }
-  
+
   console.groupEnd();
   return results;
 };
@@ -193,12 +193,12 @@ export const generateConnectivityReport = (results: TestResult[]): string => {
   const successful = results.filter(r => r.status === 'success').length;
   const errors = results.filter(r => r.status === 'error').length;
   const skipped = results.filter(r => r.status === 'skipped').length;
-  
+
   const avgResponseTime = results
     .filter(r => r.responseTime)
-    .reduce((acc, r) => acc + (r.responseTime || 0), 0) / 
+    .reduce((acc, r) => acc + (r.responseTime || 0), 0) /
     results.filter(r => r.responseTime).length;
-  
+
   return `
 📊 REPORTE DE CONECTIVIDAD - finca.enlinea.sbs
 ${'='.repeat(60)}
@@ -211,15 +211,15 @@ ${'='.repeat(60)}
   • Tiempo promedio de respuesta: ${avgResponseTime.toFixed(0)}ms
 
 📋 Detalles por endpoint:
-${results.map(r => 
+${results.map(r =>
   `  ${r.status === 'success' ? '✅' : r.status === 'error' ? '❌' : '⏭️'} ${r.name}: ${r.message}`
 ).join('\n')}
 
-${errors > 0 ? 
+${errors > 0 ?
   `⚠️  ENDPOINTS CON PROBLEMAS:\n${results
     .filter(r => r.status === 'error')
     .map(r => `  • ${r.name} (${r.endpoint}): ${r.error}`)
-    .join('\n')}\n` : 
+    .join('\n')}\n` :
   '✅ Todos los endpoints están funcionando correctamente\n'
 }
 ${'='.repeat(60)}

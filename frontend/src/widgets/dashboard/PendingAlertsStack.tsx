@@ -84,7 +84,7 @@ export function PendingAlertsStack({ maxAlerts = 5 }: { maxAlerts?: number }) {
 								<Badge
 									variant="outline"
 									className={cn(
-										"h-4 text-[8px] font-bold px-1 border-0",
+										"h-4 text-[11px] font-bold px-1 border-0",
 										style.dot,
 										"text-white",
 									)}

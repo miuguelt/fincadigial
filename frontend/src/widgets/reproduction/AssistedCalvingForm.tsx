@@ -11,10 +11,10 @@ import { useAnimals } from '@/entities/animal/model/useAnimals';
 import { animalService } from '@/entities/animal/api/animal.service';
 import { Baby, Info } from 'lucide-react';
 
-export default function AssistedCalvingForm({ 
-  motherId, 
-  onComplete 
-}: { 
+export default function AssistedCalvingForm({
+  motherId,
+  onComplete
+}: {
   motherId?: number;
   onComplete?: () => void;
 }) {
@@ -51,7 +51,7 @@ export default function AssistedCalvingForm({
       // 1. Crear el evento de parto para la madre
       const eventNotes = `Parto asistido. Complicaciones: ${formData.complications || 'Ninguna'}. ` +
         `Placenta expulsada: ${formData.placenta_expelled ? 'Sí' : 'No'}.`;
-      
+
       const eventRes = await reproductionService.create({
         animal_id: Number(formData.animal_id),
         event_type: 'Parto',
@@ -94,7 +94,7 @@ export default function AssistedCalvingForm({
       }
 
       showToast('Planilla de parto guardada con éxito', 'success');
-      
+
       // Reset form
       setFormData({
         animal_id: motherId ? motherId.toString() : '',
@@ -108,7 +108,7 @@ export default function AssistedCalvingForm({
         vitality: 'Vigoroso',
         complications: '',
       });
-      
+
       if (onComplete) onComplete();
     } catch (error: any) {
       showToast(error.message || 'Error al guardar el parto', 'error');
@@ -128,16 +128,16 @@ export default function AssistedCalvingForm({
           Registro detallado post-parto y datos iniciales del ternero
         </p>
       </div>
-      
+
       <form onSubmit={handleSubmit} className="space-y-6">
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* --- SECCIÓN MADRE --- */}
           <div className="space-y-5 bg-card/50 p-5 sm:p-6 rounded-lg border border-border shadow-sm">
             <h3 className="font-bold text-foreground/80 border-b border-border/50 pb-3 text-lg flex items-center gap-2">
               Datos de la Madre
             </h3>
-            
+
             <div className="space-y-3">
               <Label htmlFor="mother_id" className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Vaca (Madre)</Label>
               <Select
@@ -172,8 +172,8 @@ export default function AssistedCalvingForm({
 
             <div className="pt-2">
               <label className="flex items-center space-x-3 cursor-pointer p-3 rounded-xl hover:bg-muted/50 border border-transparent hover:border-border transition-colors">
-                <Checkbox 
-                  id="placenta" 
+                <Checkbox
+                  id="placenta"
                   checked={formData.placenta_expelled}
                   onCheckedChange={(c) => handleChange('placenta_expelled', c)}
                   className="h-5 w-5 rounded-md"
@@ -199,7 +199,7 @@ export default function AssistedCalvingForm({
             <h3 className="font-bold text-blue-700 dark:text-blue-400 border-b border-blue-500/20 pb-3 text-lg flex items-center gap-2">
               Datos de la Cría
             </h3>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-3">
                 <Label htmlFor="offspring_record" className="text-xs font-bold text-muted-foreground uppercase tracking-wider">ID Prov. / Orejera</Label>
@@ -261,8 +261,8 @@ export default function AssistedCalvingForm({
 
             <div className="space-y-1 pt-2">
               <label className="flex items-center space-x-3 cursor-pointer p-3 rounded-xl hover:bg-blue-500/10 border border-transparent hover:border-blue-500/20 transition-colors">
-                <Checkbox 
-                  id="colostrum" 
+                <Checkbox
+                  id="colostrum"
                   checked={formData.colostrum_intake}
                   onCheckedChange={(c) => handleChange('colostrum_intake', c)}
                   className="h-5 w-5 rounded-md"
@@ -270,8 +270,8 @@ export default function AssistedCalvingForm({
                 <span className="font-medium text-sm">Toma de Calostro Confirmada (1-4h)</span>
               </label>
               <label className="flex items-center space-x-3 cursor-pointer p-3 rounded-xl hover:bg-blue-500/10 border border-transparent hover:border-blue-500/20 transition-colors">
-                <Checkbox 
-                  id="navel" 
+                <Checkbox
+                  id="navel"
                   checked={formData.navel_disinfected}
                   onCheckedChange={(c) => handleChange('navel_disinfected', c)}
                   className="h-5 w-5 rounded-md"

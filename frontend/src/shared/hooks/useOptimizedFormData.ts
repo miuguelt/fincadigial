@@ -15,7 +15,7 @@ export function useOptimizedFormData() {
   ): { data: T[] | null; needsFetch: boolean } => {
     const cacheKey = generateKey(entityName);
     const cachedData = getCache<T[]>(cacheKey);
-    
+
     return {
       data: cachedData,
       needsFetch: !cachedData
@@ -30,18 +30,18 @@ export function useOptimizedFormData() {
   } => {
     const results: Record<string, any[]> = {};
     const missing: string[] = [];
-    
+
     entityNames.forEach(entityName => {
       const cacheKey = generateKey(entityName);
       const cachedData = getCache<any[]>(cacheKey);
-      
+
       if (cachedData) {
         results[entityName] = cachedData;
       } else {
         missing.push(entityName);
       }
     });
-    
+
     return {
       allCached: missing.length === 0,
       missingEntities: missing,
@@ -60,11 +60,11 @@ export function useOptimizedFormData() {
  */
 export function useFormDataEntities() {
   const { checkMultipleEntities } = useOptimizedFormData();
-  
+
   // Entidades comunes en formularios
   const commonEntities = useMemo(() => [
     'animals',
-    'users', 
+    'users',
     'diseases',
     'species',
     'breeds',
@@ -72,15 +72,15 @@ export function useFormDataEntities() {
     'medications',
     'vaccines'
   ], []);
-  
+
   const checkCommonEntities = useCallback(() => {
     return checkMultipleEntities(commonEntities);
   }, [checkMultipleEntities, commonEntities]);
-  
+
   const checkSpecificEntities = useCallback((entities: string[]) => {
     return checkMultipleEntities(entities);
   }, [checkMultipleEntities]);
-  
+
   return {
     checkCommonEntities,
     checkSpecificEntities,
@@ -94,7 +94,7 @@ export function useFormDataEntities() {
 export function useSmartDataLoader() {
   const { getCache } = useCache();
   const { generateKey } = useCacheKey();
-  
+
   // Función para determinar qué hooks necesitan hacer fetch
   const optimizeHookLoading = useCallback((hookConfigs: Array<{
     entityName: string;
@@ -107,26 +107,26 @@ export function useSmartDataLoader() {
       priority: 'high' | 'medium' | 'low';
       hookFunction: () => any;
     }> = [];
-    
+
     // Ordenar por prioridad
     const sortedConfigs = hookConfigs.sort((a, b) => {
       const priorityOrder = { high: 3, medium: 2, low: 1 };
       return priorityOrder[b.priority] - priorityOrder[a.priority];
     });
-    
+
     sortedConfigs.forEach(config => {
       const cacheKey = generateKey(config.entityName);
       const cachedData = getCache(cacheKey);
-      
+
       optimizedHooks.push({
         ...config,
         shouldLoad: !cachedData
       });
     });
-    
+
     return optimizedHooks;
   }, [getCache, generateKey]);
-  
+
   return {
     optimizeHookLoading
   };
@@ -138,12 +138,12 @@ export function useSmartDataLoader() {
 export function useCacheDebug() {
   const { getCache } = useCache();
   const { generateKey } = useCacheKey();
-  
+
   const getCacheStats = useCallback((entityNames: string[]) => {
     const stats = entityNames.map(entityName => {
       const cacheKey = generateKey(entityName);
       const cachedData = getCache(cacheKey);
-      
+
       return {
         entity: entityName,
         cached: !!cachedData,
@@ -151,10 +151,10 @@ export function useCacheDebug() {
         itemCount: Array.isArray(cachedData) ? cachedData.length : 0
       };
     });
-    
+
     return stats;
   }, [getCache, generateKey]);
-  
+
   const logCacheStats = useCallback((entityNames: string[]) => {
     const stats = getCacheStats(entityNames);
     console.group('🚀 Cache Statistics');
@@ -163,7 +163,7 @@ export function useCacheDebug() {
     });
     console.groupEnd();
   }, [getCacheStats]);
-  
+
   return {
     getCacheStats,
     logCacheStats

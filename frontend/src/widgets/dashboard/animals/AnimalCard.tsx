@@ -111,7 +111,7 @@ function MetricCell({ metric, index, columns }: { metric: Metric; index: number;
     >
       <div className="flex items-center gap-1 text-[var(--color-text-muted)]">
         {metric.icon}
-        <span className="whitespace-nowrap text-[9px] font-bold uppercase tracking-wide">
+        <span className="whitespace-nowrap text-[11px] font-bold uppercase tracking-wide">
           {metric.label}
         </span>
       </div>
@@ -121,7 +121,7 @@ function MetricCell({ metric, index, columns }: { metric: Metric; index: number;
       >
         {metric.value}
         {metric.unit && (
-          <span className="ml-0.5 text-[10px] font-semibold text-[var(--color-text-muted)]">
+          <span className="ml-0.5 text-[11px] font-semibold text-[var(--color-text-muted)]">
             {metric.unit}
           </span>
         )}
@@ -301,7 +301,7 @@ export function AnimalCard({
         <div className="pointer-events-none absolute inset-x-2 bottom-2 flex items-end justify-between gap-2">
           <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-black/70 px-2 py-1 backdrop-blur-sm">
             <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: statusColor }} />
-            <span className="whitespace-nowrap text-[9px] font-bold uppercase tracking-wider text-white">
+            <span className="whitespace-nowrap text-[11px] font-bold uppercase tracking-wider text-white">
               {status}
             </span>
           </div>
@@ -313,7 +313,7 @@ export function AnimalCard({
               title={field ?? undefined}
             >
               <IconMapPin size={10} className="shrink-0" />
-              <span className="fit-clamp text-[9px] font-bold uppercase tracking-tight">
+              <span className="fit-clamp text-[11px] font-bold uppercase tracking-tight">
                 {field}
               </span>
             </div>
@@ -342,7 +342,7 @@ export function AnimalCard({
             <div className="mt-1 flex min-w-0 items-center gap-1.5">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: breedColor }} />
               <span
-                className="fit-clamp text-[10px] font-semibold uppercase tracking-wide"
+                className="fit-clamp text-[11px] font-semibold uppercase tracking-wide"
                 style={{ color: breedColor }}
               >
                 {breed}
@@ -357,7 +357,7 @@ export function AnimalCard({
               title={`${alertCount} ${alertCount === 1 ? 'alerta pendiente' : 'alertas pendientes'}`}
             >
               <IconAlertTriangle size={10} className="shrink-0" />
-              <span className="text-[10px] font-black leading-none">{alertCount}</span>
+              <span className="text-[11px] font-black leading-none">{alertCount}</span>
             </div>
           )}
 

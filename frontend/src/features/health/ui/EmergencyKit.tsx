@@ -85,7 +85,7 @@ export const EmergencyKit: React.FC = () => {
               <h1 className="text-sm font-black uppercase tracking-tight">
                 Botiquín de Emergencia
               </h1>{" "}
-              <p className="text-[8px] font-bold text-rose-100 uppercase tracking-widest">
+              <p className="text-[11px] font-bold text-rose-100 uppercase tracking-widest">
                 Protocolos de Salud Rural
               </p>{" "}
             </div>{" "}
@@ -138,7 +138,7 @@ export const EmergencyKit: React.FC = () => {
                       <h3 className="text-sm font-black text-foreground uppercase fit-clamp">
                         {disease.name}
                       </h3>{" "}
-                      <p className="text-[10px] font-medium text-muted-foreground line-clamp-1 italic">
+                      <p className="text-[11px] font-medium text-muted-foreground line-clamp-1 italic">
                         {disease.symptoms || "Sin descripción de síntomas"}
                       </p>{" "}
                     </div>{" "}
@@ -190,7 +190,7 @@ export const EmergencyKit: React.FC = () => {
                   {" "}
                   <div className="space-y-3">
                     {" "}
-                    <p className="text-[10px] font-semibold text-sm text-muted-foreground">
+                    <p className="text-[11px] font-semibold text-sm text-muted-foreground">
                       Síntomas comunes
                     </p>{" "}
                     <p className="text-sm font-medium leading-relaxed text-muted-foreground dark:text-muted-foreground">
@@ -202,7 +202,7 @@ export const EmergencyKit: React.FC = () => {
                     <div className="flex items-center gap-2 text-emerald-700">
                       {" "}
                       <IconBolt size="sm" className="fill-emerald-500" />{" "}
-                      <span className="text-[10px] font-semibold text-sm">
+                      <span className="text-[11px] font-semibold text-sm">
                         Tratamiento Recomendado
                       </span>{" "}
                     </div>{" "}
@@ -217,12 +217,12 @@ export const EmergencyKit: React.FC = () => {
                     {" "}
                     <div className="flex items-center justify-between">
                       {" "}
-                      <span className="text-[10px] font-semibold text-sm text-muted-foreground">
+                      <span className="text-[11px] font-semibold text-sm text-muted-foreground">
                         Insumos en Bodega
                       </span>{" "}
                       <Badge
                         variant="outline"
-                        className="text-[8px] border-border"
+                        className="text-[11px] border-border"
                       >
                         STOCK REAL
                       </Badge>{" "}
@@ -246,7 +246,7 @@ export const EmergencyKit: React.FC = () => {
                                 {item.product_name}
                               </span>{" "}
                             </div>{" "}
-                            <span className="text-[10px] font-black text-emerald-600">
+                            <span className="text-[11px] font-black text-emerald-600">
                               {item.quantity} {item.unit}
                             </span>{" "}
                           </div>
@@ -259,7 +259,7 @@ export const EmergencyKit: React.FC = () => {
                     </div>{" "}
                   </div>{" "}
                   <Button
-                    className="w-full h-10 rounded-lg bg-card text-white font-black uppercase text-[10px] tracking-widest gap-2"
+                    className="w-full h-10 rounded-lg bg-card text-white font-black uppercase text-[11px] tracking-widest gap-2"
                     onClick={() => navigate("?quick=treatment")}
                   >
                     {" "}
@@ -275,7 +275,7 @@ export const EmergencyKit: React.FC = () => {
                   <p className="font-black text-xs uppercase tracking-tight">
                     Manual Técnico SENA
                   </p>{" "}
-                  <p className="text-[10px] opacity-80 leading-tight">
+                  <p className="text-[11px] opacity-80 leading-tight">
                     Este protocolo sigue las guías oficiales de sanidad animal.
                   </p>{" "}
                 </div>{" "}

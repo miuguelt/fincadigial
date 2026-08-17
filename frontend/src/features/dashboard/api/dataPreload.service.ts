@@ -205,7 +205,7 @@ class DataPreloadService {
   private async fetchDashboardCriticalData(): Promise<DashboardCriticalData> {
     try {
       console.log('[DataPreloadService] Iniciando carga de datos críticos del dashboard...');
-      
+
       // Función helper para extraer totales de respuestas variables
       const pickNumber = (obj: any, keys: string[], fallback = 0): number => {
         for (const k of keys) {
@@ -368,7 +368,7 @@ class DataPreloadService {
   private async fetchAnimalModuleData(): Promise<AnimalModuleData> {
     try {
       console.log('[DataPreloadService] Iniciando carga de datos del módulo Animal...');
-      
+
       // Ejecutar todas las llamadas en paralelo
       const [
         animalsResponse,
@@ -446,7 +446,7 @@ class DataPreloadService {
       }
 
       console.log('[DataPreloadService] Iniciando carga de datos del módulo Usuario...');
-      
+
       // Ejecutar todas las llamadas en paralelo
       const [usersResponse, userRoles] = await Promise.all([
         usersService.getUsers({ limit: 100 }).catch(() => ({ data: [] })),
@@ -493,7 +493,7 @@ class DataPreloadService {
       // PRIORIDAD 1: Datos críticos del dashboard (bloqueante)
       console.log('[DataPreloadService] Etapa 1: Cargando datos críticos del dashboard...');
       const dashboardData = await this.fetchDashboardCriticalData();
-      
+
       // Guardar en caché local
       localStorage.setItem('dashboard_critical_data', JSON.stringify(dashboardData));
       this.state.dashboardLoaded = true;
@@ -501,7 +501,7 @@ class DataPreloadService {
 
       // PRIORIDAD 2 y 3: Datos de módulos en paralelo (no bloqueantes)
       console.log('[DataPreloadService] Etapa 2: Iniciando carga no bloqueante de módulos...');
-      
+
       // Iniciar ambas precargas en paralelo sin esperar a que completen
       const animalModulePromise = this.fetchAnimalModuleData()
         .then(data => {
@@ -525,7 +525,7 @@ class DataPreloadService {
 
       // Esperar a que ambas precargas terminen (sin bloquear la UI)
       await Promise.allSettled([animalModulePromise, userModulePromise]);
-      
+
       this.state.lastUpdate = Date.now();
       console.log('[DataPreloadService] Proceso de precarga completado');
     } catch (error: any) {
@@ -544,13 +544,13 @@ class DataPreloadService {
     try {
       const cached = localStorage.getItem('dashboard_critical_data');
       if (!cached) return null;
-      
+
       const data = JSON.parse(cached) as DashboardCriticalData;
       if (!this.isCacheValid(data.timestamp)) {
         localStorage.removeItem('dashboard_critical_data');
         return null;
       }
-      
+
       return data;
     } catch (error) {
       console.error('[DataPreloadService] Error al obtener datos del dashboard desde caché:', error);
@@ -565,13 +565,13 @@ class DataPreloadService {
     try {
       const cached = localStorage.getItem('animal_module_data');
       if (!cached) return null;
-      
+
       const data = JSON.parse(cached) as AnimalModuleData;
       if (!this.isCacheValid(data.timestamp)) {
         localStorage.removeItem('animal_module_data');
         return null;
       }
-      
+
       return data;
     } catch (error) {
       console.error('[DataPreloadService] Error al obtener datos del módulo Animal desde caché:', error);
@@ -586,13 +586,13 @@ class DataPreloadService {
     try {
       const cached = localStorage.getItem('user_module_data');
       if (!cached) return null;
-      
+
       const data = JSON.parse(cached) as UserModuleData;
       if (!this.isCacheValid(data.timestamp)) {
         localStorage.removeItem('user_module_data');
         return null;
       }
-      
+
       return data;
     } catch (error) {
       console.error('[DataPreloadService] Error al obtener datos del módulo Usuario desde caché:', error);
@@ -614,12 +614,12 @@ class DataPreloadService {
     localStorage.removeItem('dashboard_critical_data');
     localStorage.removeItem('animal_module_data');
     localStorage.removeItem('user_module_data');
-    
+
     this.state.dashboardLoaded = false;
     this.state.animalModuleLoaded = false;
     this.state.userModuleLoaded = false;
     this.state.lastUpdate = null;
-    
+
     console.log('[DataPreloadService] Caché invalidado');
     this.notifyStateChange();
   }
@@ -642,7 +642,7 @@ class DataPreloadService {
         this.state.userModuleLoaded = false;
         break;
     }
-    
+
     console.log(`[DataPreloadService] Caché del módulo ${module} invalidado`);
     this.notifyStateChange();
   }

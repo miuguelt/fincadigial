@@ -12,14 +12,14 @@ export const NotificationsBell: React.FC<NotificationsBellProps> = ({ onClick, c
   const { totalPending } = useNotifications();
 
   return (
-    <button 
+    <button
       className={cn("relative flex h-8 w-8 items-center justify-center rounded-xl hover:bg-primary/10 transition-all text-muted-foreground hover:text-primary", className)}
       onClick={onClick}
       title="Notificaciones"
     >
       <Bell size={20} />
       {totalPending > 0 && (
-        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-danger text-white text-[10px] font-bold leading-[18px] text-center shadow-sm">
+        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-danger text-white text-[11px] font-bold leading-[18px] text-center shadow-sm">
           {totalPending > 99 ? "99+" : totalPending}
         </span>
       )}

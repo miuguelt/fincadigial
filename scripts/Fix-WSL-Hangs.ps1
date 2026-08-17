@@ -40,7 +40,7 @@ $wslProcesses = Get-Process -Name "wsl" -ErrorAction SilentlyContinue
 if ($wslProcesses) {
     $count = ($wslProcesses | Measure-Object).Count
     Write-Host "   -> Se encontraron $($count) procesos 'wsl.exe' activos." -ForegroundColor $Yellow
-    
+
     # Listar detalles de procesos potencialmente bloqueados
     $now = Get-Date
     $zombieCount = 0
@@ -56,7 +56,7 @@ if ($wslProcesses) {
             # Algunos procesos del sistema pueden no permitir leer StartTime sin permisos de Admin
         }
     }
-    
+
     if ($zombieCount -gt 0) {
         Write-Host "   -> ¡Alerta! Se detectaron $($zombieCount) procesos zombies de larga duración." -ForegroundColor $Red
     }
@@ -103,18 +103,18 @@ $wslConfigPath = "$env:USERPROFILE\.wslconfig"
 if (Test-Path $wslConfigPath) {
     $configContent = Get-Content $wslConfigPath
     Write-Host "   Configuración detectada en ${wslConfigPath}:" -ForegroundColor $Gray
-    
+
     $hasMemoryLimit = $configContent -match "memory="
     $hasProcessors = $configContent -match "processors="
     $hasReclaim = $configContent -match "autoMemoryReclaim="
     $hasSparse = $configContent -match "sparseVhd="
-    
+
     foreach ($line in $configContent) {
         if ($line.Trim() -ne "" -and !$line.StartsWith("#")) {
             Write-Host "      • $line" -ForegroundColor $Cyan
         }
     }
-    
+
     Write-Host ""
     if ($hasReclaim -and $hasSparse) {
         Write-Host "   ✅ ¡Perfecto! autoMemoryReclaim y sparseVhd están activos. Tu RAM se recuperará automáticamente." -ForegroundColor $Green
@@ -132,7 +132,7 @@ if ($ShutdownWSL -or ($blockedPortsCount -gt 3 -and $wslProcesses)) {
     Write-Host "   -> Apagando WSL de forma segura..." -ForegroundColor $Yellow
     wsl.exe --shutdown
     Start-Sleep -Seconds 3
-    
+
     # Verificar que se apagó
     $status = wsl.exe -l -v | Out-String
     if ($status -match "Stopped" -or $status -eq "") {
@@ -144,12 +144,12 @@ if ($ShutdownWSL -or ($blockedPortsCount -gt 3 -and $wslProcesses)) {
         Start-Service -Name "WSLService" -ErrorAction SilentlyContinue
         Write-Host "   ✅ Servicio de Windows WSLService reiniciado." -ForegroundColor $Green
     }
-    
+
     # Iniciar de nuevo y arrancar Docker
     Write-Host "   -> Iniciando WSL y verificando distribución por defecto..." -ForegroundColor $Yellow
     wsl.exe -d Ubuntu -e true 2>$null
     wsl.exe -e true 2>$null
-    
+
     if ($RestartDocker) {
         Write-Host "   -> Reiniciando contenedores de Docker..." -ForegroundColor $Yellow
         wsl.exe -d Ubuntu -e docker compose -f /mnt/c/Users/Miguel/Documents/Aplicaciones/_projects/villaluz/docker-compose.yml up -d 2>$null

@@ -321,7 +321,7 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({
 
 		<div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
 			<div>
-				<span className="text-[10px] uppercase font-bold text-slate-400 block">
+				<span className="text-[11px] uppercase font-bold text-slate-400 block">
 					Identificador
 				</span>
 				<span className="text-sm font-bold text-slate-800">
@@ -329,7 +329,7 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({
 				</span>
 			</div>
 			<div>
-				<span className="text-[10px] uppercase font-bold text-slate-400 block">
+				<span className="text-[11px] uppercase font-bold text-slate-400 block">
 					Nombre
 				</span>
 				<span className="text-sm font-bold text-slate-800">
@@ -337,7 +337,7 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({
 				</span>
 			</div>
 			<div>
-				<span className="text-[10px] uppercase font-bold text-slate-400 block">
+				<span className="text-[11px] uppercase font-bold text-slate-400 block">
 					Raza
 				</span>
 				<span className="text-sm font-bold text-slate-800">
@@ -345,7 +345,7 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({
 				</span>
 			</div>
 			<div>
-				<span className="text-[10px] uppercase font-bold text-slate-400 block">
+				<span className="text-[11px] uppercase font-bold text-slate-400 block">
 					Sexo
 				</span>
 				<span className="text-sm font-bold text-slate-800">

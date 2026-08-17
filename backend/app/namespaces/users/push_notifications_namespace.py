@@ -29,49 +29,74 @@ from app.services.push_notification_service import PushNotificationService
 logger = logging.getLogger(__name__)
 
 # Namespace
-push_ns = Namespace('push', description='Notificaciones Web Push')
+push_ns = Namespace("push", description="Notificaciones Web Push")
 
 # =============================================================================
 # Modelos para documentación Swagger
 # =============================================================================
 
-subscription_model = push_ns.model('PushSubscription', {
-    'endpoint': fields.String(required=True, description='URL del endpoint push'),
-    'keys': fields.Nested(push_ns.model('PushKeys', {
-        'p256dh': fields.String(required=True, description='Clave pública'),
-        'auth': fields.String(required=True, description='Auth secret'),
-    }), required=True),
-})
+subscription_model = push_ns.model(
+    "PushSubscription",
+    {
+        "endpoint": fields.String(required=True, description="URL del endpoint push"),
+        "keys": fields.Nested(
+            push_ns.model(
+                "PushKeys",
+                {
+                    "p256dh": fields.String(required=True, description="Clave pública"),
+                    "auth": fields.String(required=True, description="Auth secret"),
+                },
+            ),
+            required=True,
+        ),
+    },
+)
 
-unsubscribe_model = push_ns.model('UnsubscribeRequest', {
-    'endpoint': fields.String(required=True, description='URL del endpoint a desuscribir'),
-})
+unsubscribe_model = push_ns.model(
+    "UnsubscribeRequest",
+    {
+        "endpoint": fields.String(
+            required=True, description="URL del endpoint a desuscribir"
+        ),
+    },
+)
 
-test_notification_model = push_ns.model('TestNotificationRequest', {
-    'title': fields.String(description='Título de la notificación', default='Notificación de prueba'),
-    'body': fields.String(description='Cuerpo del mensaje', default='¡Las notificaciones funcionan!'),
-})
+test_notification_model = push_ns.model(
+    "TestNotificationRequest",
+    {
+        "title": fields.String(
+            description="Título de la notificación", default="Notificación de prueba"
+        ),
+        "body": fields.String(
+            description="Cuerpo del mensaje", default="¡Las notificaciones funcionan!"
+        ),
+    },
+)
 
-subscription_info_model = push_ns.model('SubscriptionInfo', {
-    'id': fields.Integer(),
-    'platform': fields.String(),
-    'browser': fields.String(),
-    'is_active': fields.Boolean(),
-    'created_at': fields.String(),
-    'last_used': fields.String(),
-})
+subscription_info_model = push_ns.model(
+    "SubscriptionInfo",
+    {
+        "id": fields.Integer(),
+        "platform": fields.String(),
+        "browser": fields.String(),
+        "is_active": fields.Boolean(),
+        "created_at": fields.String(),
+        "last_used": fields.String(),
+    },
+)
 
 
 # =============================================================================
 # Endpoints
 # =============================================================================
 
-@push_ns.route('/vapid-public-key')
+
+@push_ns.route("/vapid-public-key")
 class VapidPublicKeyResource(Resource):
     """Obtener la clave pública VAPID para suscripción."""
 
-    @push_ns.doc('get_vapid_public_key')
-    @push_ns.response(200, 'Clave pública obtenida')
+    @push_ns.doc("get_vapid_public_key")
+    @push_ns.response(200, "Clave pública obtenida")
     def get(self):
         """
         Obtener la clave pública VAPID.
@@ -82,40 +107,40 @@ class VapidPublicKeyResource(Resource):
         try:
             vapid_keys = get_vapid_keys()
 
-            if not vapid_keys['public_key']:
+            if not vapid_keys["public_key"]:
                 return APIResponse.error(
-                    'VAPID no configurado en el servidor',
+                    "VAPID no configurado en el servidor",
                     status_code=503,
-                    error_code='VAPID_NOT_CONFIGURED'
+                    error_code="VAPID_NOT_CONFIGURED",
                 )
 
             return APIResponse.success(
-                message='Clave pública VAPID obtenida',
+                message="Clave pública VAPID obtenida",
                 data={
-                    'public_key': vapid_keys['public_key'],
-                    'subject': vapid_keys['claims_sub'],
-                }
+                    "public_key": vapid_keys["public_key"],
+                    "subject": vapid_keys["claims_sub"],
+                },
             )
 
         except Exception as e:
-            logger.error(f'Error obteniendo VAPID key: {e}', exc_info=True)
+            logger.error(f"Error obteniendo VAPID key: {e}", exc_info=True)
             return APIResponse.error(
-                'Error al obtener clave pública',
-                details={'error': str(e)},
-                status_code=500
+                "Error al obtener clave pública",
+                details={"error": str(e)},
+                status_code=500,
             )
 
 
-@push_ns.route('/subscribe')
+@push_ns.route("/subscribe")
 class SubscribeResource(Resource):
     """Suscribirse a notificaciones push."""
 
     @jwt_required()
-    @push_ns.doc('subscribe_push', security='jwt')
+    @push_ns.doc("subscribe_push", security="jwt")
     @push_ns.expect(subscription_model)
-    @push_ns.response(201, 'Suscripción creada')
-    @push_ns.response(400, 'Datos inválidos')
-    @push_ns.response(401, 'No autenticado')
+    @push_ns.response(201, "Suscripción creada")
+    @push_ns.response(400, "Datos inválidos")
+    @push_ns.response(401, "No autenticado")
     def post(self):
         """
         Suscribir el dispositivo actual a notificaciones push.
@@ -128,33 +153,35 @@ class SubscribeResource(Resource):
             try:
                 user_id = int(user_id)
             except (ValueError, TypeError):
-                return APIResponse.error('ID de usuario inválido', status_code=400)
+                return APIResponse.error("ID de usuario inválido", status_code=400)
 
             data = flask.request.get_json() or {}
-            subscription_data = data.get('subscription') or data
+            subscription_data = data.get("subscription") or data
 
             # Validar datos requeridos
-            endpoint = subscription_data.get('endpoint')
-            keys = subscription_data.get('keys', {})
-            p256dh = keys.get('p256dh')
-            auth = keys.get('auth')
+            endpoint = subscription_data.get("endpoint")
+            keys = subscription_data.get("keys", {})
+            p256dh = keys.get("p256dh")
+            auth = keys.get("auth")
 
             if not all([endpoint, p256dh, auth]):
-                return APIResponse.validation_error({
-                    'endpoint': 'Requerido' if not endpoint else None,
-                    'keys.p256dh': 'Requerido' if not p256dh else None,
-                    'keys.auth': 'Requerido' if not auth else None,
-                })
+                return APIResponse.validation_error(
+                    {
+                        "endpoint": "Requerido" if not endpoint else None,
+                        "keys.p256dh": "Requerido" if not p256dh else None,
+                        "keys.auth": "Requerido" if not auth else None,
+                    }
+                )
 
             # Crear o actualizar suscripción
-            user_agent = flask.request.headers.get('User-Agent', '')
+            user_agent = flask.request.headers.get("User-Agent", "")
 
             subscription = PushSubscription.create(
                 user_id=user_id,
                 endpoint=endpoint,
                 p256dh=p256dh,
                 auth=auth,
-                user_agent=user_agent
+                user_agent=user_agent,
             )
 
             # Enviar notificación de bienvenida si es nueva
@@ -162,36 +189,34 @@ class SubscribeResource(Resource):
             if is_new:
                 PushNotificationService.send_welcome_notification(user_id)
 
-            logger.info(f'Usuario {user_id} suscrito a notificaciones push')
+            logger.info(f"Usuario {user_id} suscrito a notificaciones push")
 
             return APIResponse.success(
-                message='Suscripción creada exitosamente',
+                message="Suscripción creada exitosamente",
                 data={
-                    'subscription_id': subscription.id,
-                    'is_new': is_new,
-                    'platform': subscription.platform,
-                    'browser': subscription.browser,
+                    "subscription_id": subscription.id,
+                    "is_new": is_new,
+                    "platform": subscription.platform,
+                    "browser": subscription.browser,
                 },
-                status_code=201
+                status_code=201,
             )
 
         except Exception as e:
-            logger.error(f'Error en suscripción push: {e}', exc_info=True)
+            logger.error(f"Error en suscripción push: {e}", exc_info=True)
             return APIResponse.error(
-                'Error al crear suscripción',
-                details={'error': str(e)},
-                status_code=500
+                "Error al crear suscripción", details={"error": str(e)}, status_code=500
             )
 
 
-@push_ns.route('/unsubscribe')
+@push_ns.route("/unsubscribe")
 class UnsubscribeResource(Resource):
     """Desuscribirse de notificaciones push."""
 
     @jwt_required()
-    @push_ns.doc('unsubscribe_push', security='jwt')
+    @push_ns.doc("unsubscribe_push", security="jwt")
     @push_ns.expect(unsubscribe_model)
-    @push_ns.response(200, 'Suscripción desactivada')
+    @push_ns.response(200, "Suscripción desactivada")
     def post(self):
         """
         Desactivar la suscripción push del dispositivo.
@@ -204,48 +229,49 @@ class UnsubscribeResource(Resource):
             try:
                 user_id = int(user_id)
             except (ValueError, TypeError):
-                return APIResponse.error('ID de usuario inválido', status_code=400)
+                return APIResponse.error("ID de usuario inválido", status_code=400)
 
             data = flask.request.get_json() or {}
-            endpoint = data.get('endpoint')
+            endpoint = data.get("endpoint")
 
             if endpoint:
                 # Desactivar suscripción específica
                 success = PushSubscription.deactivate_by_endpoint(endpoint)
                 if success:
-                    logger.info(f'Suscripción desactivada: {endpoint[:50]}...')
+                    logger.info(f"Suscripción desactivada: {endpoint[:50]}...")
                     return APIResponse.success(
-                        message='Suscripción desactivada exitosamente'
+                        message="Suscripción desactivada exitosamente"
                     )
                 else:
                     return APIResponse.error(
-                        'Suscripción no encontrada',
-                        status_code=404
+                        "Suscripción no encontrada", status_code=404
                     )
             else:
                 # Desactivar todas las suscripciones del usuario
                 count = PushSubscription.deactivate_by_user(user_id)
-                logger.info(f'Desactivadas {count} suscripciones para usuario {user_id}')
+                logger.info(
+                    f"Desactivadas {count} suscripciones para usuario {user_id}"
+                )
                 return APIResponse.success(
-                    message=f'{count} suscripciones desactivadas'
+                    message=f"{count} suscripciones desactivadas"
                 )
 
         except Exception as e:
-            logger.error(f'Error en desuscripción: {e}', exc_info=True)
+            logger.error(f"Error en desuscripción: {e}", exc_info=True)
             return APIResponse.error(
-                'Error al desactivar suscripción',
-                details={'error': str(e)},
-                status_code=500
+                "Error al desactivar suscripción",
+                details={"error": str(e)},
+                status_code=500,
             )
 
 
-@push_ns.route('/subscriptions')
+@push_ns.route("/subscriptions")
 class UserSubscriptionsResource(Resource):
     """Gestionar suscripciones del usuario."""
 
     @jwt_required()
-    @push_ns.doc('list_subscriptions', security='jwt')
-    @push_ns.response(200, 'Lista de suscripciones', [subscription_info_model])
+    @push_ns.doc("list_subscriptions", security="jwt")
+    @push_ns.response(200, "Lista de suscripciones", [subscription_info_model])
     def get(self):
         """
         Listar todas las suscripciones push del usuario.
@@ -255,30 +281,32 @@ class UserSubscriptionsResource(Resource):
             try:
                 user_id = int(user_id)
             except (ValueError, TypeError):
-                return APIResponse.error('ID de usuario inválido', status_code=400)
+                return APIResponse.error("ID de usuario inválido", status_code=400)
 
-            subscriptions = PushSubscription.get_user_subscriptions(user_id, active_only=False)
+            subscriptions = PushSubscription.get_user_subscriptions(
+                user_id, active_only=False
+            )
 
             return APIResponse.success(
-                message=f'{len(subscriptions)} suscripciones encontradas',
+                message=f"{len(subscriptions)} suscripciones encontradas",
                 data={
-                    'subscriptions': [s.to_dict() for s in subscriptions],
-                    'active_count': len([s for s in subscriptions if s.is_active]),
-                    'total_count': len(subscriptions),
-                }
+                    "subscriptions": [s.to_dict() for s in subscriptions],
+                    "active_count": len([s for s in subscriptions if s.is_active]),
+                    "total_count": len(subscriptions),
+                },
             )
 
         except Exception as e:
-            logger.error(f'Error listando suscripciones: {e}', exc_info=True)
+            logger.error(f"Error listando suscripciones: {e}", exc_info=True)
             return APIResponse.error(
-                'Error al obtener suscripciones',
-                details={'error': str(e)},
-                status_code=500
+                "Error al obtener suscripciones",
+                details={"error": str(e)},
+                status_code=500,
             )
 
     @jwt_required()
-    @push_ns.doc('delete_all_subscriptions', security='jwt')
-    @push_ns.response(200, 'Todas las suscripciones desactivadas')
+    @push_ns.doc("delete_all_subscriptions", security="jwt")
+    @push_ns.response(200, "Todas las suscripciones desactivadas")
     def delete(self):
         """
         Desactivar TODAS las suscripciones push del usuario.
@@ -288,33 +316,31 @@ class UserSubscriptionsResource(Resource):
             try:
                 user_id = int(user_id)
             except (ValueError, TypeError):
-                return APIResponse.error('ID de usuario inválido', status_code=400)
+                return APIResponse.error("ID de usuario inválido", status_code=400)
 
             count = PushSubscription.deactivate_by_user(user_id)
 
-            logger.info(f'Usuario {user_id} desactivó todas sus suscripciones push')
+            logger.info(f"Usuario {user_id} desactivó todas sus suscripciones push")
 
-            return APIResponse.success(
-                message=f'{count} suscripciones desactivadas'
-            )
+            return APIResponse.success(message=f"{count} suscripciones desactivadas")
 
         except Exception as e:
-            logger.error(f'Error desactivando suscripciones: {e}', exc_info=True)
+            logger.error(f"Error desactivando suscripciones: {e}", exc_info=True)
             return APIResponse.error(
-                'Error al desactivar suscripciones',
-                details={'error': str(e)},
-                status_code=500
+                "Error al desactivar suscripciones",
+                details={"error": str(e)},
+                status_code=500,
             )
 
 
-@push_ns.route('/test')
+@push_ns.route("/test")
 class TestNotificationResource(Resource):
     """Enviar notificación de prueba."""
 
     @jwt_required()
-    @push_ns.doc('send_test_notification', security='jwt')
+    @push_ns.doc("send_test_notification", security="jwt")
     @push_ns.expect(test_notification_model)
-    @push_ns.response(200, 'Notificación enviada')
+    @push_ns.response(200, "Notificación enviada")
     def post(self):
         """
         Enviar una notificación de prueba al usuario actual.
@@ -326,21 +352,23 @@ class TestNotificationResource(Resource):
             try:
                 user_id = int(user_id)
             except (ValueError, TypeError):
-                return APIResponse.error('ID de usuario inválido', status_code=400)
+                return APIResponse.error("ID de usuario inválido", status_code=400)
 
             data = flask.request.get_json() or {}
-            title = data.get('title', 'Notificación de prueba')
-            body = data.get('body', '¡Las notificaciones funcionan correctamente!')
+            title = data.get("title", "Notificación de prueba")
+            body = data.get("body", "¡Las notificaciones funcionan correctamente!")
 
             # Verificar si el usuario tiene suscripciones
-            subscription_count = PushNotificationService.get_user_subscription_count(user_id)
+            subscription_count = PushNotificationService.get_user_subscription_count(
+                user_id
+            )
 
             if subscription_count == 0:
                 return APIResponse.error(
-                    'No tienes dispositivos suscritos a notificaciones push. '
-                    'Habilita las notificaciones en tu navegador primero.',
+                    "No tienes dispositivos suscritos a notificaciones push. "
+                    "Habilita las notificaciones en tu navegador primero.",
                     status_code=400,
-                    error_code='NO_SUBSCRIPTIONS'
+                    error_code="NO_SUBSCRIPTIONS",
                 )
 
             # Enviar notificación de prueba
@@ -348,35 +376,35 @@ class TestNotificationResource(Resource):
                 user_id=user_id,
                 title=title,
                 body=body,
-                tag='test-notification',
-                data={'type': 'test', 'url': '/settings/notifications'}
+                tag="test-notification",
+                data={"type": "test", "url": "/settings/notifications"},
             )
 
             return APIResponse.success(
-                message=f'Notificación de prueba enviada a {count} dispositivos',
+                message=f"Notificación de prueba enviada a {count} dispositivos",
                 data={
-                    'devices_notified': count,
-                    'total_subscriptions': subscription_count,
-                }
+                    "devices_notified": count,
+                    "total_subscriptions": subscription_count,
+                },
             )
 
         except Exception as e:
-            logger.error(f'Error enviando notificación de prueba: {e}', exc_info=True)
+            logger.error(f"Error enviando notificación de prueba: {e}", exc_info=True)
             return APIResponse.error(
-                'Error al enviar notificación',
-                details={'error': str(e)},
-                status_code=500
+                "Error al enviar notificación",
+                details={"error": str(e)},
+                status_code=500,
             )
 
 
-@push_ns.route('/stats')
+@push_ns.route("/stats")
 class PushStatsResource(Resource):
     """Estadísticas de notificaciones push (Admin only)."""
 
     @jwt_required()
-    @push_ns.doc('push_stats', security='jwt')
-    @push_ns.response(200, 'Estadísticas obtenidas')
-    @push_ns.response(403, 'No autorizado')
+    @push_ns.doc("push_stats", security="jwt")
+    @push_ns.response(200, "Estadísticas obtenidas")
+    @push_ns.response(403, "No autorizado")
     def get(self):
         """
         Obtener estadísticas de notificaciones push.
@@ -387,13 +415,12 @@ class PushStatsResource(Resource):
 
             user_id = get_jwt_identity()
             jwt_data = get_jwt()
-            role = jwt_data.get('role')
+            role = jwt_data.get("role")
 
             # Solo admin puede ver stats
-            if role not in ['Administrador', 'Propietario']:
+            if role not in ["Administrador", "Propietario"]:
                 return APIResponse.error(
-                    'Solo administradores pueden ver estadísticas',
-                    status_code=403
+                    "Solo administradores pueden ver estadísticas", status_code=403
                 )
 
             # Contar suscripciones
@@ -402,7 +429,7 @@ class PushStatsResource(Resource):
 
             # Contar por plataforma
             platform_stats = {}
-            for platform in ['mobile', 'desktop', 'tablet', 'unknown']:
+            for platform in ["mobile", "desktop", "tablet", "unknown"]:
                 count = PushSubscription.query.filter_by(
                     platform=platform, is_active=True
                 ).count()
@@ -411,7 +438,7 @@ class PushStatsResource(Resource):
 
             # Contar por navegador
             browser_stats = {}
-            for browser in ['chrome', 'firefox', 'safari', 'edge', 'unknown']:
+            for browser in ["chrome", "firefox", "safari", "edge", "unknown"]:
                 count = PushSubscription.query.filter_by(
                     browser=browser, is_active=True
                 ).count()
@@ -419,20 +446,20 @@ class PushStatsResource(Resource):
                     browser_stats[browser] = count
 
             return APIResponse.success(
-                message='Estadísticas de notificaciones push',
+                message="Estadísticas de notificaciones push",
                 data={
-                    'total_subscriptions': total_subs,
-                    'active_subscriptions': active_subs,
-                    'inactive_subscriptions': total_subs - active_subs,
-                    'by_platform': platform_stats,
-                    'by_browser': browser_stats,
-                }
+                    "total_subscriptions": total_subs,
+                    "active_subscriptions": active_subs,
+                    "inactive_subscriptions": total_subs - active_subs,
+                    "by_platform": platform_stats,
+                    "by_browser": browser_stats,
+                },
             )
 
         except Exception as e:
-            logger.error(f'Error obteniendo stats: {e}', exc_info=True)
+            logger.error(f"Error obteniendo stats: {e}", exc_info=True)
             return APIResponse.error(
-                'Error al obtener estadísticas',
-                details={'error': str(e)},
-                status_code=500
+                "Error al obtener estadísticas",
+                details={"error": str(e)},
+                status_code=500,
             )

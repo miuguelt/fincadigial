@@ -1,4 +1,4 @@
- 
+
 /**
  * Matriz RBAC del cliente — espejo de `backend/app/utils/rbac.py`.
  *

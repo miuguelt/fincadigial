@@ -33,7 +33,7 @@ const FincaSearchSummary: React.FC<{ fincas: FincaDetail[] }> = ({ fincas }) => 
 					<p className="text-2xl font-bold tabular-nums text-slate-800">
 						{stat.value}
 					</p>
-					<p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+					<p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
 						{stat.label}
 					</p>
 				</div>

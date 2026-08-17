@@ -74,8 +74,8 @@ export const chatService = {
     const response = await apiFetch<ChatMessage>({
       url: '/chat/send',
       method: 'POST',
-      data: { 
-        recipient_id: recipientId, 
+      data: {
+        recipient_id: recipientId,
         message,
         attachment_url: attachment?.url,
         attachment_type: attachment?.type,

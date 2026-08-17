@@ -65,7 +65,7 @@ export function ClimateAlertFormModal({
 							<button
 								key={r.value}
 								onClick={() => setForm((f) => ({ ...f, risk_type: r.value }))}
-								className={`flex flex-col items-center gap-1 p-2 md:p-2.5 rounded-xl border-2 text-[10px] md:text-xs font-semibold transition-all ${form.risk_type === r.value ? "border-orange-400 bg-orange-50 dark:bg-orange-950/30 text-orange-800 dark:text-orange-300" : "border-border bg-background text-muted-foreground"}`}
+								className={`flex flex-col items-center gap-1 p-2 md:p-2.5 rounded-xl border-2 text-[11px] md:text-xs font-semibold transition-all ${form.risk_type === r.value ? "border-orange-400 bg-orange-50 dark:bg-orange-950/30 text-orange-800 dark:text-orange-300" : "border-border bg-background text-muted-foreground"}`}
 							>
 								<span className="text-lg md:text-xl">{r.emoji}</span>
 								<span className="break-words leading-tight text-center">
@@ -85,7 +85,7 @@ export function ClimateAlertFormModal({
 							<button
 								key={key}
 								onClick={() => setForm((f) => ({ ...f, severity: key }))}
-								className={`flex flex-col items-center gap-1 p-2 md:p-2.5 rounded-xl border-2 text-[10px] md:text-xs font-semibold transition-all ${form.severity === key ? `${cfg.border} ${cfg.bg} ${cfg.color}` : "border-border bg-background text-muted-foreground"}`}
+								className={`flex flex-col items-center gap-1 p-2 md:p-2.5 rounded-xl border-2 text-[11px] md:text-xs font-semibold transition-all ${form.severity === key ? `${cfg.border} ${cfg.bg} ${cfg.color}` : "border-border bg-background text-muted-foreground"}`}
 							>
 								<span className="text-lg md:text-xl">{cfg.emoji}</span>
 								<span className="break-words leading-tight text-center">

@@ -5,9 +5,9 @@
  * SSOT: widgets/admin-crud/ui/OptimizedAdminCRUDPage.tsx
  *
  * OptimizedAdminCRUDPage
- * 
+ *
  * Versión optimizada y refactorizada del componente AdminCRUDPage original.
- * 
+ *
  * Mejoras implementadas:
  * - División en componentes más pequeños y especializados
  * - Optimización del rendimiento con memoización y virtualización
@@ -95,7 +95,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
   const [formErrors, setFormErrors] = useState<FieldErrors>({});
   const [formErrorMessages, setFormErrorMessages] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Selección masiva
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
@@ -111,9 +111,9 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFullScreen]);
-  
+
   const toggleSelect = useCallback((id: number) => {
-    setSelectedIds(prev => 
+    setSelectedIds(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   }, []);
@@ -128,7 +128,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
     setFormErrorMessages(validation.messages);
     setFormData(nextData);
   }, [formData, config.formSections]);
-  
+
   // Estados para modales
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [detailItem, setDetailItem] = useState<T | null>(null);
@@ -136,7 +136,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
   const editRequestSeqRef = useRef(0);
   const suppressEditAutoOpenRef = useRef(false);
   const lastClosedEditIdRef = useRef<number | null>(null);
-  
+
   // Estados para confirmación y dependencias
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [targetId, setTargetId] = useState<number | null>(null);
@@ -155,22 +155,22 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       samples?: Array<{ id: number | string; name: string }>;
     }>;
   } | null>(null);
-  
+
   // Hooks y utilidades
   const { showToast } = useToast();
   const t = useT();
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   // Clave de entidad para tombstones persistentes
   const entityKey = useMemo(() => (config.entityName || 'entity').toLowerCase(), [config.entityName]);
-  
+
   // Limpiar tombstones expirados al montar
   useEffect(() => {
     clearExpired(entityKey);
   }, [entityKey]);
-  
+
   // Configuración de recursos
   const {
     data: items,
@@ -203,14 +203,14 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
   });
 
   const formSections = useMemo(() => config.formSections || [], [config.formSections]);
-  
+
   // Paginación
   const pageFromURL = parseInt((searchParams.get('page') || '').toString(), 10);
   const currentPage = Number.isFinite(pageFromURL) && pageFromURL > 0 ? pageFromURL : (meta?.page || 1);
   const pageSize = meta?.limit || 10;
   const totalItems = meta?.total || 0;
   const totalPages = meta?.totalPages || Math.ceil(totalItems / pageSize);
-  
+
   // Filtrar items para excluir tombstones
   const filteredItems = useMemo(() => {
     const tombstoneIds = getTombstoneIds(entityKey);
@@ -219,7 +219,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       return !tombstoneIds.has(idStr);
     });
   }, [items, entityKey]);
-  
+
   // Handlers
   const openCreate = useCallback(() => {
     setEditingItem(null);
@@ -228,7 +228,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
     setFormErrorMessages([]);
     setIsModalOpen(true);
   }, [initialFormData]);
-  
+
   const openEdit = useCallback((item: T) => {
     setEditingItem(item);
     const formValues = mapResponseToForm ? mapResponseToForm(item) : (item as unknown as TInput);
@@ -237,7 +237,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
     setFormErrorMessages([]);
     setIsModalOpen(true);
   }, [mapResponseToForm]);
-  
+
   const openDetail = useCallback((item: T) => {
     if (externalOnOpenDetail) {
       externalOnOpenDetail(item);
@@ -249,7 +249,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
     setDetailItem(filteredItems[safeIndex] || item);
     setIsDetailOpen(true);
   }, [filteredItems, externalOnOpenDetail]);
-  
+
   const openDeleteConfirm = useCallback(async (id: number) => {
     setTargetId(id);
     setConfirmOpen(true);
@@ -276,7 +276,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       setIsCheckingDependencies(false);
     }
   }, [service]);
-  
+
   const handleModalClose = useCallback(() => {
     if (editingItem?.id) {
       editRequestSeqRef.current += 1;
@@ -291,7 +291,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
     setFormErrors({});
     setFormErrorMessages([]);
     setEditingItem(null);
-    
+
     const sp = new URLSearchParams(searchParams);
     let changed = false;
     if (sp.has('create')) { sp.delete('create'); changed = true; }
@@ -302,7 +302,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       navigate(-1);
     }
   }, [initialFormData, searchParams, setSearchParams, navigate, location.pathname, editingItem]);
-  
+
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -323,7 +323,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       }
       return;
     }
-    
+
     if (validateForm) {
       const validationError = validateForm(formData);
       if (validationError) {
@@ -331,9 +331,9 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
         return;
       }
     }
-    
+
     setSaving(true);
-    
+
     try {
       if (editingItem?.id) {
         // Ver AdminCRUDPage: version_id permite al backend detectar (409) que
@@ -349,15 +349,15 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       } else {
         await createItem(formData as any);
         showToast(`✅ ${config.entityName} creado correctamente`, 'success');
-        
+
         // Volver a la página 1 después de crear
         if (setPage && meta?.page && meta.page > 1) {
           setPage(1);
         }
       }
-      
+
       handleModalClose();
-      
+
       // Refrescar datos después de un breve delay
       setTimeout(async () => {
         try {
@@ -368,7 +368,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       }, 300);
     } catch (error: any) {
       let errorMessage = `${t('crud.save_error', 'Error al guardar')} ${config.entityName.toLowerCase()}`;
-      
+
       if (error?.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error?.response?.data?.detail) {
@@ -376,7 +376,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       } else if (error?.message) {
         errorMessage = error.message;
       }
-      
+
       const validationErrors =
         (error as any)?.validationErrors ||
         (error as any)?.details?.validation_errors ||
@@ -444,14 +444,14 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       setSaving(false);
     }
   }, [formData, validateForm, editingItem, updateItem, createItem, setPage, meta, handleModalClose, refetch, config.entityName, formSections, t, showToast, setFormErrors, setFormErrorMessages, formErrorMessages]);
-  
+
   const handleConfirmDelete = useCallback(async () => {
     if (targetId == null && selectedIds.length === 0) return;
-    
+
     const idsToDelete = targetId != null ? [targetId] : selectedIds;
     setConfirmOpen(false);
     setTargetId(null);
-    
+
     try {
       setSaving(true);
       // En una implementación real, usaríamos un endpoint de bulk delete
@@ -460,10 +460,10 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
         await deleteItem(idToDelete);
         addTombstone(entityKey, String(idToDelete), 120000);
       }
-      
+
       showToast(`🗑️ ${idsToDelete.length} ${config.entityName}(s) eliminados correctamente`, 'success');
       clearSelection();
-      
+
       // Cerrar modales si el item eliminado estaba abierto
       if (isDetailOpen && detailItem && idsToDelete.includes(detailItem.id)) {
         setIsDetailOpen(false);
@@ -473,7 +473,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
         setIsModalOpen(false);
         setEditingItem(null);
       }
-      
+
       // Refrescar después de un breve delay
       setTimeout(async () => {
         try {
@@ -488,7 +488,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       setSaving(false);
     }
   }, [targetId, selectedIds, deleteItem, entityKey, isDetailOpen, detailItem, isModalOpen, editingItem, refetch, config.entityName, showToast, clearSelection]);
-  
+
   // Sincronizar búsqueda con URL
   useEffect(() => {
     const handle = setTimeout(() => {
@@ -499,10 +499,10 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       setSearchParams(sp, { replace: true });
       setSearch?.(searchQuery);
     }, 500);
-    
+
     return () => clearTimeout(handle);
   }, [searchQuery, searchParams, setSearchParams, setSearch]);
-  
+
   // Sincronizar estado con URL
   useEffect(() => {
     const search = (searchParams.get('search') || '').toString();
@@ -514,7 +514,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
   const handleUpdateCell = useCallback(async (item: T, key: string, value: any) => {
     await updateItem(item.id, { [key]: value } as any);
   }, [updateItem]);
-  
+
   // Auto-open create modal via ?create=1
   useEffect(() => {
     if (config.enableCreateModal !== false) {
@@ -524,7 +524,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       }
     }
   }, [searchParams, config.enableCreateModal, isModalOpen, openCreate]);
-  
+
   // Auto-open edit modal via ?edit=ID
   useEffect(() => {
     if (config.enableEditModal !== false) {
@@ -564,7 +564,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       }
     }
   }, [searchParams, config.enableEditModal, isModalOpen, editingItem, service, openEdit, showToast, t, setSearchParams]);
-  
+
   // Header con búsqueda y botones
   const header = (
     <PageHeader
@@ -577,7 +577,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           searchPlaceholder={config.searchPlaceholder}
-          onOpenCreate={config.enableCreateModal !== false ? openCreate : undefined}
+          onOpenCreate={config.enableCreateModal !== false ? openCreate : undefined} createLabel={`${t('common.create', 'Crear')} ${config.entityName.toLowerCase()}`}
           customToolbar={config.customToolbar}
           onToggleFullScreen={() => setIsFullScreen((prev) => !prev)}
           isFullScreen={isFullScreen}
@@ -585,7 +585,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       }
     />
   );
-  
+
   // Loading state
   if (loading && filteredItems.length === 0) {
     return (
@@ -604,7 +604,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       </AppLayout>
     );
   }
-  
+
   // Error state
   if (error) {
     return (
@@ -620,10 +620,10 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       </AppLayout>
     );
   }
-  
+
   // Empty state
   const empty = !loading && (filteredItems?.length || 0) === 0;
-  
+
   const mainContent = (
     <AppLayout
       header={header}
@@ -667,7 +667,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
               onUpdateCell={handleUpdateCell}
             />
           </div>
-          
+
           <CRUDPagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -678,7 +678,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
           />
         </>
       )}
-      
+
       {/* Create/Edit Modal */}
       {(isModalOpen) && (
         <CRUDForm
@@ -696,7 +696,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
           showEditTimestamps={config.showEditTimestamps}
         />
       )}
-      
+
       {/* Detail Modal */}
       {isDetailOpen && (
         <DetailModal
@@ -715,7 +715,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
           setDetailItem={setDetailItem}
         />
       )}
-      
+
       {/* Confirm Delete Dialog */}
       <ConfirmDeleteDialog
         open={confirmOpen}

@@ -11,9 +11,11 @@ import { PageHeader } from '@/widgets/layout/PageHeader';
 import { LifeBuoy, Search, RefreshCw } from 'lucide-react';
 import { useToast } from '@/app/providers/ToastContext';
 import { subscribeSSE } from '@/lib/events';
+import { useSearchParams } from 'react-router-dom';
 
 const TechnicalAssistancePage: React.FC = () => {
   const { showToast } = useToast();
+  const [searchParams] = useSearchParams();
   const [items, setItems] = useState<TechnicalAssistanceRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [network, setNetwork] = useState<AssistanceNetwork | null>(null);
@@ -24,6 +26,12 @@ const TechnicalAssistancePage: React.FC = () => {
   const [detailItem, setDetailItem] = useState<TechnicalAssistanceRequest | null>(null);
   const [showDetail, setShowDetail] = useState(false);
   const refreshTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (searchParams.get('sos') === '1') {
+      setShowNewDialog(true);
+    }
+  }, [searchParams]);
 
   const load = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);

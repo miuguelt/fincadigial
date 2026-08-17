@@ -18,18 +18,14 @@ fi
 if [ ! -d ".git" ]; then
     echo "⚠️  Inicializando repositorio Git..."
     git init
-    git add -A
-    git commit -m "chore: inicialización del repositorio" --allow-empty
+    echo "Repositorio Git inicializado; no se creará un commit automático."
 fi
 
-# 3. Guardar estado actual
+# 3. Mostrar estado actual sin modificar staging ni historial
 echo ""
-echo "[1/4] Guardando checkpoint inicial..."
-git add -A 2>/dev/null
-git commit -m "checkpoint: inicio de sesión $(date +%Y-%m-%d_%H:%M:%S)" --allow-empty 2>/dev/null || true
-TAG="session-start-$(date +%Y%m%d-%H%M%S)"
-git tag "$TAG" 2>/dev/null || true
-echo "   Tag creado: $TAG"
+echo "[1/4] Estado actual del repositorio..."
+git status --short
+echo "   No se creó commit ni tag automático."
 
 # 4. Verificar integridad
 echo ""

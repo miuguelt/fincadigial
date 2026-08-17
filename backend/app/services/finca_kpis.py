@@ -18,7 +18,7 @@ from sqlalchemy import case, func
 
 from app.extensions import db
 
-_CENTS = Decimal('0.01')
+_CENTS = Decimal("0.01")
 
 
 def _money(value) -> float:
@@ -38,19 +38,20 @@ def get_fincas_kpis(finca_ids: list[int]) -> dict[int, dict]:
     from app.models.fields import Fields, parse_numeric_text
     from app.models.financial import Transaction, TransactionType
     from app.models.milk_production import MilkProduction
+    from app.utils.financial_filters import exclude_simulated_transactions
 
     finca_ids = [int(f_id) for f_id in finca_ids]
     kpis = {
         f_id: {
-            'total_animals': 0,
-            'total_animals_males': 0,
-            'total_animals_females': 0,
-            'total_milk_liters': 0.0,
-            'total_income': 0.0,
-            'total_expenses': 0.0,
-            'net_balance': 0.0,
-            'total_fields': 0,
-            'total_fields_area': 0.0,
+            "total_animals": 0,
+            "total_animals_males": 0,
+            "total_animals_females": 0,
+            "total_milk_liters": 0.0,
+            "total_income": 0.0,
+            "total_expenses": 0.0,
+            "net_balance": 0.0,
+            "total_fields": 0,
+            "total_fields_area": 0.0,
         }
         for f_id in finca_ids
     }
@@ -74,9 +75,9 @@ def get_fincas_kpis(finca_ids: list[int]) -> dict[int, dict]:
         .all()
     )
     for finca_id, total, males, females in animal_rows:
-        kpis[finca_id]['total_animals'] = int(total or 0)
-        kpis[finca_id]['total_animals_males'] = int(males or 0)
-        kpis[finca_id]['total_animals_females'] = int(females or 0)
+        kpis[finca_id]["total_animals"] = int(total or 0)
+        kpis[finca_id]["total_animals_males"] = int(males or 0)
+        kpis[finca_id]["total_animals_females"] = int(females or 0)
 
     # ---- Milk produced (historic total) -------------------------------------
     milk_rows = (
@@ -89,31 +90,36 @@ def get_fincas_kpis(finca_ids: list[int]) -> dict[int, dict]:
         .all()
     )
     for finca_id, liters in milk_rows:
-        kpis[finca_id]['total_milk_liters'] = float(liters or 0.0)
+        kpis[finca_id]["total_milk_liters"] = float(liters or 0.0)
 
     # ---- Income / expenses --------------------------------------------------
+    money_query = db.session.query(
+        Transaction.finca_id,
+        Transaction.transaction_type,
+        func.sum(Transaction.amount),
+    ).filter(
+        Transaction.finca_id.in_(finca_ids),
+        Transaction.is_deleted.is_(False),
+    )
     money_rows = (
-        db.session.query(
+        exclude_simulated_transactions(money_query, Transaction)
+        .group_by(
             Transaction.finca_id,
             Transaction.transaction_type,
-            func.sum(Transaction.amount),
         )
-        .filter(
-            Transaction.finca_id.in_(finca_ids),
-            Transaction.is_deleted.is_(False),
-        )
-        .group_by(Transaction.finca_id, Transaction.transaction_type)
         .all()
     )
-    totals = {f_id: {'income': Decimal(0), 'expenses': Decimal(0)} for f_id in finca_ids}
+    totals = {
+        f_id: {"income": Decimal(0), "expenses": Decimal(0)} for f_id in finca_ids
+    }
     for finca_id, tx_type, amount in money_rows:
-        key = 'income' if tx_type == TransactionType.Income else 'expenses'
+        key = "income" if tx_type == TransactionType.Income else "expenses"
         totals[finca_id][key] = Decimal(amount or 0)
 
     for finca_id, amounts in totals.items():
-        kpis[finca_id]['total_income'] = _money(amounts['income'])
-        kpis[finca_id]['total_expenses'] = _money(amounts['expenses'])
-        kpis[finca_id]['net_balance'] = _money(amounts['income'] - amounts['expenses'])
+        kpis[finca_id]["total_income"] = _money(amounts["income"])
+        kpis[finca_id]["total_expenses"] = _money(amounts["expenses"])
+        kpis[finca_id]["net_balance"] = _money(amounts["income"] - amounts["expenses"])
 
     # ---- Paddocks and area --------------------------------------------------
     # `area` is a free-text column ("85 hectáreas"), so it cannot be summed in
@@ -124,11 +130,11 @@ def get_fincas_kpis(finca_ids: list[int]) -> dict[int, dict]:
         .all()
     )
     for finca_id, area in field_rows:
-        kpis[finca_id]['total_fields'] += 1
-        kpis[finca_id]['total_fields_area'] += parse_numeric_text(area)
+        kpis[finca_id]["total_fields"] += 1
+        kpis[finca_id]["total_fields_area"] += parse_numeric_text(area)
 
     for entry in kpis.values():
-        entry['total_fields_area'] = round(entry['total_fields_area'], 2)
+        entry["total_fields_area"] = round(entry["total_fields_area"], 2)
 
     return kpis
 
@@ -158,14 +164,14 @@ def get_user_fincas_report(user_id: int) -> list[dict]:
 
     return [
         {
-            'finca_id': finca.id,
-            'finca_name': finca.name,
-            'finca_type': finca.type.value if finca.type else None,
-            'finca_is_active': bool(finca.is_active),
-            'department': finca.department or '',
-            'municipality': finca.municipality or '',
-            'role': membership.role,
-            'kpis': kpis[finca.id],
+            "finca_id": finca.id,
+            "finca_name": finca.name,
+            "finca_type": finca.type.value if finca.type else None,
+            "finca_is_active": bool(finca.is_active),
+            "department": finca.department or "",
+            "municipality": finca.municipality or "",
+            "role": membership.role,
+            "kpis": kpis[finca.id],
         }
         for membership, finca in memberships
     ]

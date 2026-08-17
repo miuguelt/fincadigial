@@ -113,7 +113,7 @@ export function useImageUpload({
       // Aquí usaríamos apiClient o fetch
       // Para este ejemplo, simulamos la llamada con axios/apiClient
       const { apiClient } = await import('@/shared/api/client');
-      
+
       const response = await apiClient.patch(endpoint, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (progressEvent: any) => {

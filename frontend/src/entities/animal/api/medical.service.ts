@@ -34,9 +34,9 @@ class MedicalService extends BaseService<any> {
     const resp = await this.customRequest<any>('upcoming-events', 'GET', undefined, {
       params: { days }
     });
-    
+
     const data = resp.data || resp;
-    
+
     // Normalizar la respuesta del backend a un formato más amigable para la UI del campesino
     return {
       births: (data.births || []).map((b: any) => ({
@@ -62,7 +62,7 @@ class MedicalService extends BaseService<any> {
       })),
       summary: {
         total: (data.births?.length || 0) + (data.vaccinations?.length || 0) + (data.controls?.length || 0),
-        critical: (data.births?.filter((b:any) => b.days_to_birth <= 7).length || 0) + 
+        critical: (data.births?.filter((b:any) => b.days_to_birth <= 7).length || 0) +
                   (data.vaccinations?.filter((v:any) => v.days_remaining <= 3).length || 0)
       }
     };

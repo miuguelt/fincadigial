@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { 
-  IconSearch, 
-  IconLoader2, 
+import {
+  IconSearch,
+  IconLoader2,
   IconCheck,
 } from '@/shared/ui/icons';
 import { cn } from '@/shared/ui/cn';
@@ -81,7 +81,7 @@ export function UserSearchCombobox({
                   {selectedUser.avatar_url ? (
                     <img src={selectedUser.avatar_url} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-primary/20 text-primary text-[10px] font-bold">
+                    <div className="w-full h-full flex items-center justify-center bg-primary/20 text-primary text-[11px] font-bold">
                       {selectedUser.full_name[0]}
                     </div>
                   )}
@@ -100,8 +100,8 @@ export function UserSearchCombobox({
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
         <Command shouldFilter={false}>
-          <CommandInput 
-            placeholder="Escribe nombre o correo..." 
+          <CommandInput
+            placeholder="Escribe nombre o correo..."
             value={query}
             onValueChange={setQuery}
           />
@@ -144,12 +144,12 @@ export function UserSearchCombobox({
                     </div>
                     <div className="flex flex-col">
                       <span className="text-sm font-bold text-[var(--color-text)]">{user.full_name}</span>
-                      <span className="text-[10px] text-[var(--color-text-muted)]">{user.email_masked}</span>
+                      <span className="text-[11px] text-[var(--color-text-muted)]">{user.email_masked}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     {user.tiene_finca && (
-                      <div className="px-1.5 py-0.5 rounded-md bg-[var(--color-info)]/10 border border-[var(--color-info)]/20 text-[8px] font-black text-[var(--color-info)] uppercase">
+                      <div className="px-1.5 py-0.5 rounded-md bg-[var(--color-info)]/10 border border-[var(--color-info)]/20 text-[11px] font-black text-[var(--color-info)] uppercase">
                         Miembro
                       </div>
                     )}

@@ -10,7 +10,9 @@ from app.models.treatment_recommendations import (
 from app.services.alert_engine import AlertEngine
 
 
-def evaluate_recommendation_rules(animal, finca_id, trig, today: date, age_months) -> None:
+def evaluate_recommendation_rules(
+    animal, finca_id, trig, today: date, age_months
+) -> None:
     """Dispara avisos por controles y cierres próximos o atrasados."""
     recommendations = TreatmentRecommendations.query.filter_by(
         animal_id=animal.id,
@@ -32,7 +34,9 @@ def _evaluate_controls(recommendation, today, lead_days, trig) -> None:
     ]
     if not pending:
         return
-    overdue = next((control for control in pending if control.scheduled_date < today), None)
+    overdue = next(
+        (control for control in pending if control.scheduled_date < today), None
+    )
     if overdue:
         trig(
             AlertType.HEALTH,

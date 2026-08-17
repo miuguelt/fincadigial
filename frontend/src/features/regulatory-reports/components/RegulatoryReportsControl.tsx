@@ -48,7 +48,7 @@ export const RegulatoryReportsControl: React.FC = () => {
           Generación de archivos CSV y PDF compatibles con los formatos oficiales de trazabilidad.
         </p>
       </div>
-      
+
       <div className="p-5 space-y-6 bg-background/50">
         {/* Inventario */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 p-5 rounded-xl bg-card shadow-sm border border-border/60 hover:shadow-md transition-shadow">
@@ -102,15 +102,15 @@ export const RegulatoryReportsControl: React.FC = () => {
               <p className="text-xs text-muted-foreground mt-0.5">Ingresos, egresos, compras y ventas por rango de fechas.</p>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 bg-muted/20 p-4 rounded-lg border border-border/50">
             <div className="space-y-1.5">
               <label className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground flex items-center gap-1.5">
                 <Calendar className="h-3.5 w-3.5" /> Desde
               </label>
-              <input 
-                type="date" 
-                value={startDate} 
+              <input
+                type="date"
+                value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 className="w-full bg-background border border-border/80 shadow-sm rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none transition-shadow"
               />
@@ -119,9 +119,9 @@ export const RegulatoryReportsControl: React.FC = () => {
               <label className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground flex items-center gap-1.5">
                 <Calendar className="h-3.5 w-3.5" /> Hasta
               </label>
-              <input 
-                type="date" 
-                value={endDate} 
+              <input
+                type="date"
+                value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 className="w-full bg-background border border-border/80 shadow-sm rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none transition-shadow"
               />

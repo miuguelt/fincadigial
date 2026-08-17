@@ -115,7 +115,7 @@ const FieldCardComponent: React.FC<FieldCardProps> = ({
               style={{ width: `${Math.min(occupationRate, 100)}%` }}
             />
             {occupationRate > 10 && (
-              <span className="absolute inset-y-0 left-2 flex items-center text-[10px] font-bold text-white drop-shadow-md">
+              <span className="absolute inset-y-0 left-2 flex items-center text-[11px] font-bold text-white drop-shadow-md">
                 {occupationRate.toFixed(0)}%
               </span>
             )}

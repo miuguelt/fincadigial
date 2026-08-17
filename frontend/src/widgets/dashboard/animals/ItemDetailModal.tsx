@@ -316,7 +316,7 @@ export function ItemDetailModal({
 
                 {/* Auditoría del Sistema */}
                 <div className="bg-secondary/30/50 dark:bg-slate-950/20 rounded-xl p-3 border border-border/10">
-                    <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-2">
+                    <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-2">
                         <Calendar className="w-3 h-3" />
                         Registro del Sistema
                     </div>
@@ -420,7 +420,7 @@ export function DetailSection({
             fullWidth && "col-span-full"
         )}>
             <h4 className={cn(
-                "text-[10px] font-bold uppercase tracking-wider mb-4 flex items-center gap-2",
+                "text-[11px] font-bold uppercase tracking-wider mb-4 flex items-center gap-2",
                 style.text
             )}>
                 {icon}
@@ -452,14 +452,14 @@ export function InfoField({
 
     return (
         <div className={cn("space-y-1", fullWidth && "col-span-full")}>
-            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70">
                 {label}
             </div>
             {badge ? (
                <Badge
                     variant={badgeVariant as any}
                     className={cn(
-                        "text-[10px] px-2 py-0 h-5",
+                        "text-[11px] px-2 py-0 h-5",
                         badgeVariant === 'success' && "bg-success text-success-foreground"
                     )}
                 >

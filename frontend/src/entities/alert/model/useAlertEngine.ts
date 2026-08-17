@@ -80,7 +80,7 @@ export const useAlertEngine = () => {
       const animalControls = (controls || [])
         .filter(c => c.animal_id === animal.id)
         .sort((a, b) => new Date(b.checkup_date || b.control_date).getTime() - new Date(a.checkup_date || a.control_date).getTime());
-      
+
       const latestControl = animalControls[0];
 
       activeConfigs.forEach(config => {
@@ -114,4 +114,3 @@ export const useAlertEngine = () => {
     isLoading: !configs || !animals
   };
 };
-

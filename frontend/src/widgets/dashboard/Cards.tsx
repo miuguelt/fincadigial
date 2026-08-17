@@ -78,7 +78,7 @@ const StatisticsCard = ({
       >
         <div className="flex items-start justify-between">
           <div className="space-y-2">
-            <p className="text-[10px] font-semibold text-sm text-text-secondary opacity-60">
+            <p className="text-[11px] font-semibold text-sm text-text-secondary opacity-60">
               {title}
             </p>
             <h3

@@ -67,7 +67,7 @@ function computeThumb(
 
 /**
  * Traduce el arrastre del pulgar a scroll del contenedor. Se queda escuchando
- * en `window` para que el gesto sobreviva a salirse de la caja con el ratón.
+ * en `window` para que el gesto sobreviva a salirse de la caja con el mouse.
  */
 function beginDrag(
   el: HTMLDivElement,

@@ -80,7 +80,7 @@ const UserDetail = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <Button
                 onClick={() => navigate(`/admin/user-history/${user.identification}`)}
@@ -98,15 +98,15 @@ const UserDetail = () => {
           <Tabs defaultValue="general" className="w-full">
             <div className="px-6 border-b border-border/50 bg-muted/5">
               <TabsList className="bg-transparent h-14 -mb-px gap-6">
-                <TabsTrigger 
-                  value="general" 
+                <TabsTrigger
+                  value="general"
                   className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-success data-[state=active]:shadow-none rounded-none px-0 font-medium text-muted-foreground data-[state=active]:text-foreground h-14"
                 >
                   <User className="w-4 h-4 mr-2" />
                   Información General
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="fincas" 
+                <TabsTrigger
+                  value="fincas"
                   className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-success data-[state=active]:shadow-none rounded-none px-0 font-medium text-muted-foreground data-[state=active]:text-foreground h-14"
                 >
                   <Building2 className="w-4 h-4 mr-2" />
@@ -124,7 +124,7 @@ const UserDetail = () => {
                 )}
               </TabsList>
             </div>
-            
+
             <TabsContent value="general" className="p-6 m-0 animate-in fade-in-50 duration-500">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-6">
@@ -198,17 +198,17 @@ const UserDetail = () => {
                               <p className="font-medium text-foreground">{user.email}</p>
                             </div>
                           </div>
-                          
+
                           <div className="flex items-start gap-4">
                             <div className="p-2 bg-background rounded-lg border border-border/50 text-muted-foreground">
                               <Phone className="w-4 h-4" />
                             </div>
                             <div>
-                              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Teléfono Móvil</p>
+                              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Celular</p>
                               <p className="font-medium text-foreground">{user.phone || 'No registrado'}</p>
                             </div>
                           </div>
-                          
+
                           <div className="flex items-start gap-4">
                             <div className="p-2 bg-background rounded-lg border border-border/50 text-muted-foreground">
                               <MapPin className="w-4 h-4" />
@@ -248,7 +248,7 @@ const UserDetail = () => {
                              </div>
                              <div>
                                <h4 className="font-bold text-foreground">{finca.name}</h4>
-                               <Badge variant="outline" className="mt-1 bg-background text-[10px] uppercase font-semibold">{finca.role}</Badge>
+                               <Badge variant="outline" className="mt-1 bg-background text-[11px] uppercase font-semibold">{finca.role}</Badge>
                              </div>
                            </div>
                            <Badge variant={finca.is_active ? "default" : "secondary"} className={finca.is_active ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border border-emerald-500/20" : ""}>

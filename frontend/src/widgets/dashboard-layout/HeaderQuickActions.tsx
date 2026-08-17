@@ -75,7 +75,7 @@ const HeaderQuickActions: React.FC = () => {
         align="end"
         className="z-[1050] mt-2 w-60 rounded-xl border border-border/40 bg-card/90 p-2 shadow-2xl backdrop-blur-xl"
       >
-        <DropdownMenuLabel className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+        <DropdownMenuLabel className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
           Acciones rápidas
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

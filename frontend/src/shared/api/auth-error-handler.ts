@@ -89,4 +89,3 @@ export async function forceLogoutFromApiError(
   const loginUrl = details?.login_url || details?.loginUrl;
   await forceClientLogout(reason, { logoutUrl, loginUrl });
 }
-

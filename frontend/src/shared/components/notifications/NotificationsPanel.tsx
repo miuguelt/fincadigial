@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger
 } from '@/shared/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { NotificationsBell } from './NotificationsBell';
@@ -47,9 +47,9 @@ export const NotificationsPanel: React.FC = () => {
   const renderCard = (notif: NotificationItem) => {
     const isPending = notif.status === 'pending';
     let text = '';
-    
+
     switch (notif.type) {
-      case 'JOIN_REQUEST': 
+      case 'JOIN_REQUEST':
         text = `${notif.sender_name} quiere unirse a "${notif.finca_name}"`;
         break;
       case 'INVITATION_RECEIVED':
@@ -86,22 +86,22 @@ export const NotificationsPanel: React.FC = () => {
             <p className="text-xs text-muted-foreground leading-snug mb-2">
               {text}
             </p>
-            <div className="text-[10px] text-muted-foreground/70 font-medium mb-3">
+            <div className="text-[11px] text-muted-foreground/70 font-medium mb-3">
               {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: es })}
             </div>
-            
+
             {isPending && (notif.type === 'JOIN_REQUEST' || notif.type === 'INVITATION_RECEIVED') && (
               <div className="flex items-center gap-2">
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   onClick={() => approve(notif.id)}
                   className="h-8 text-xs px-3 font-bold bg-primary text-primary-foreground hover:bg-primary/90 rounded-md"
                 >
                   {notif.type === 'JOIN_REQUEST' ? 'Aprobar' : 'Aceptar'}
                 </Button>
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
+                <Button
+                  size="sm"
+                  variant="ghost"
                   onClick={() => reject(notif.id)}
                   className="h-8 text-xs px-3 font-bold text-danger hover:bg-danger/10 hover:text-danger rounded-md"
                 >
@@ -112,8 +112,8 @@ export const NotificationsPanel: React.FC = () => {
 
             {isPending && notif.type === 'JOIN_APPROVED' && (
               <div className="flex items-center gap-2">
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   onClick={() => {
                     markAsRead(notif.id);
                     setIsOpen(false);
@@ -125,11 +125,11 @@ export const NotificationsPanel: React.FC = () => {
                 </Button>
               </div>
             )}
-            
+
             {isPending && (notif.type === 'INVITATION_ACCEPTED' || notif.type === 'INVITATION_REJECTED') && (
               <div className="flex items-center gap-2">
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   variant="ghost"
                   onClick={() => markAsRead(notif.id)}
                   className="h-8 text-xs px-3 font-bold border border-border rounded-md"
@@ -151,9 +151,9 @@ export const NotificationsPanel: React.FC = () => {
           <NotificationsBell />
         </div>
       </DropdownMenuTrigger>
-      
-      <DropdownMenuContent 
-        align="end" 
+
+      <DropdownMenuContent
+        align="end"
         className="w-[380px] p-0 rounded-2xl border border-border/40 bg-card/95 backdrop-blur-xl shadow-2xl z-[1050] overflow-hidden"
       >
         <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between bg-muted/20">
@@ -162,28 +162,28 @@ export const NotificationsPanel: React.FC = () => {
             Notificaciones
           </h3>
           {totalPending > 0 && (
-            <span className="text-[10px] bg-danger text-white px-2 py-0.5 rounded-full font-bold">
+            <span className="text-[11px] bg-danger text-white px-2 py-0.5 rounded-full font-bold">
               {totalPending} nuevas
             </span>
           )}
         </div>
-        
+
         <Tabs defaultValue="pendientes" className="w-full">
           <TabsList className="w-full justify-start rounded-none border-b border-border/50 bg-transparent h-12 p-0">
-            <TabsTrigger 
-              value="pendientes" 
+            <TabsTrigger
+              value="pendientes"
               className="flex-1 h-full rounded-none data-[state=active]:bg-muted/30 data-[state=active]:border-b-2 data-[state=active]:border-primary"
             >
               Pendientes ({pendingNotifs.length})
             </TabsTrigger>
-            <TabsTrigger 
+            <TabsTrigger
               value="historial"
               className="flex-1 h-full rounded-none data-[state=active]:bg-muted/30 data-[state=active]:border-b-2 data-[state=active]:border-primary"
             >
               Historial
             </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="pendientes" className="m-0 p-0 max-h-[400px] overflow-y-auto">
             {pendingNotifs.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
@@ -196,7 +196,7 @@ export const NotificationsPanel: React.FC = () => {
               </div>
             )}
           </TabsContent>
-          
+
           <TabsContent value="historial" className="m-0 p-0 max-h-[400px] overflow-y-auto">
             {historyNotifs.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">

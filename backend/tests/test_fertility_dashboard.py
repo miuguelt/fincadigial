@@ -35,18 +35,18 @@ def _sire(record: str, finca_id: int, breed_id: int) -> Animals:
 
 
 def _event(animal: Animals, event_type: EventType, days_ago: int, **kwargs) -> None:
-    db.session.add(ReproductiveEvent(
-        animal_id=animal.id,
-        finca_id=animal.finca_id,
-        event_type=event_type,
-        event_date=date.today() - timedelta(days=days_ago),
-        **kwargs,
-    ))
+    db.session.add(
+        ReproductiveEvent(
+            animal_id=animal.id,
+            finca_id=animal.finca_id,
+            event_type=event_type,
+            event_date=date.today() - timedelta(days=days_ago),
+            **kwargs,
+        )
+    )
 
 
-def test_fertility_dashboard_uses_database_and_isolates_finca(
-    app, client, token_for
-):
+def test_fertility_dashboard_uses_database_and_isolates_finca(app, client, token_for):
     headers = token_for("Administrador", finca_type="Tradicional")
     with app.app_context():
         own_finca = Finca.query.one()

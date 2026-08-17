@@ -4,6 +4,7 @@ import gzip
 from io import BytesIO
 from app.utils.compression import init_compression
 
+
 @pytest.fixture
 def comp_app():
     app = flask.Flask("test_compression_app")
@@ -35,6 +36,7 @@ def comp_app():
 
     return app
 
+
 @pytest.mark.critical
 def test_compression_gzip_applied(comp_app):
     client = comp_app.test_client()
@@ -51,6 +53,7 @@ def test_compression_gzip_applied(comp_app):
         decoded_data = gz.read().decode("utf-8")
     assert '"data"' in decoded_data
 
+
 @pytest.mark.critical
 def test_compression_gzip_not_accepted(comp_app):
     client = comp_app.test_client()
@@ -61,6 +64,7 @@ def test_compression_gzip_not_accepted(comp_app):
     assert resp.headers.get("Content-Encoding") is None
     assert "data" in resp.get_json()
 
+
 @pytest.mark.critical
 def test_compression_ignored_for_short_responses(comp_app):
     client = comp_app.test_client()
@@ -70,6 +74,7 @@ def test_compression_ignored_for_short_responses(comp_app):
     assert resp.status_code == 200
     assert resp.headers.get("Content-Encoding") is None
     assert resp.data.decode("utf-8") == "ok"
+
 
 @pytest.mark.critical
 def test_compression_ignored_for_different_mimetypes(comp_app):

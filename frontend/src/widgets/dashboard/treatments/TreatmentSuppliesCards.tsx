@@ -78,7 +78,7 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                     <div className="absolute inset-0 z-10 bg-background/50 backdrop-blur-[1px] flex items-center justify-center transition-all duration-300">
                         <div className="bg-background/80 px-3 py-1.5 rounded-full shadow-md border border-border flex items-center gap-2">
                             <div className="w-3.5 h-3.5 rounded-full border-2 border-cyan-500 border-t-transparent animate-spin" />
-                            <span className="text-[10px] font-medium text-muted-foreground">Actualizando...</span>
+                            <span className="text-[11px] font-medium text-muted-foreground">Actualizando...</span>
                         </div>
                     </div>
                 )}
@@ -114,11 +114,11 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-2 mt-1">
-                                                    <Badge variant="outline" className="text-[9px] h-4 px-1 rounded bg-cyan-50/50 dark:bg-cyan-950/30 text-cyan-700 dark:text-cyan-450 border-cyan-200/50">
+                                                    <Badge variant="outline" className="text-[11px] h-4 px-1 rounded bg-cyan-50/50 dark:bg-cyan-950/30 text-cyan-700 dark:text-cyan-450 border-cyan-200/50">
                                                         #{v.vaccine_id}
                                                     </Badge>
                                                     {fullVacc?.type && (
-                                                        <span className="text-[10px] text-muted-foreground px-2 border-l border-border/50 fit-clamp">
+                                                        <span className="text-[11px] text-muted-foreground px-2 border-l border-border/50 fit-clamp">
                                                             {fullVacc.type}
                                                         </span>
                                                     )}
@@ -141,7 +141,7 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                                                     {deleteLoadingId?.type === 'vaccine' && deleteLoadingId?.id === v.id ? (
                                                         <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                                                     ) : confirmingDeleteId === v.id ? (
-                                                        <span className="text-[10px] font-bold">✓</span>
+                                                        <span className="text-[11px] font-bold">✓</span>
                                                     ) : (
                                                         <Trash2 className="w-3.5 h-3.5" />
                                                     )}
@@ -152,17 +152,17 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                                         {/* Grilla técnica inferior de ancho completo */}
                                         <div className="grid grid-cols-3 gap-2 text-[11px] text-muted-foreground bg-cyan-50/30 dark:bg-cyan-950/10 rounded-md p-2 border border-cyan-100/40 dark:border-cyan-900/10">
                                             <div className="flex flex-col min-w-0">
-                                                <span className="text-[9px] uppercase opacity-60 font-bold tracking-wider text-cyan-800 dark:text-cyan-400 mb-0.5">Dosis</span>
+                                                <span className="text-[11px] uppercase opacity-60 font-bold tracking-wider text-cyan-800 dark:text-cyan-400 mb-0.5">Dosis</span>
                                                 <span className="font-semibold text-foreground fit-clamp" title={v.dose || '-'}>{v.dose || '-'}</span>
                                             </div>
                                             <div className="flex flex-col min-w-0">
-                                                <span className="text-[9px] uppercase opacity-60 font-bold tracking-wider text-cyan-800 dark:text-cyan-400 mb-0.5">Vía</span>
+                                                <span className="text-[11px] uppercase opacity-60 font-bold tracking-wider text-cyan-800 dark:text-cyan-400 mb-0.5">Vía</span>
                                                 <span className="font-semibold text-foreground fit-clamp" title={(v.vaccine_id && vaccineRouteMap[Number(v.vaccine_id)]) || '-'}>
                                                     {(v.vaccine_id && vaccineRouteMap[Number(v.vaccine_id)]) || '-'}
                                                 </span>
                                             </div>
                                             <div className="flex flex-col min-w-0">
-                                                <span className="text-[9px] uppercase opacity-60 font-bold tracking-wider text-cyan-800 dark:text-cyan-400 mb-0.5">Intervalo</span>
+                                                <span className="text-[11px] uppercase opacity-60 font-bold tracking-wider text-cyan-800 dark:text-cyan-400 mb-0.5">Intervalo</span>
                                                 <span className="font-semibold text-foreground fit-clamp" title={fullVacc?.vaccination_interval ? `${fullVacc.vaccination_interval} días` : '-'}>
                                                     {fullVacc?.vaccination_interval ? `${fullVacc.vaccination_interval} días` : '-'}
                                                 </span>
@@ -182,7 +182,7 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                     <div className="absolute inset-0 z-10 bg-background/50 backdrop-blur-[1px] flex items-center justify-center transition-all duration-300">
                         <div className="bg-background/80 px-3 py-1.5 rounded-full shadow-md border border-border flex items-center gap-2">
                             <div className="w-3.5 h-3.5 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
-                            <span className="text-[10px] font-medium text-muted-foreground">Actualizando...</span>
+                            <span className="text-[11px] font-medium text-muted-foreground">Actualizando...</span>
                         </div>
                     </div>
                 )}
@@ -218,11 +218,11 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-2 mt-1">
-                                                    <Badge variant="outline" className="text-[9px] h-4 px-1 rounded bg-purple-50/50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-450 border-purple-200/50">
+                                                    <Badge variant="outline" className="text-[11px] h-4 px-1 rounded bg-purple-50/50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-450 border-purple-200/50">
                                                         #{m.medication_id}
                                                     </Badge>
                                                     {fullMed?.concentration && (
-                                                        <span className="text-[10px] text-muted-foreground px-2 border-l border-border/50 fit-clamp">
+                                                        <span className="text-[11px] text-muted-foreground px-2 border-l border-border/50 fit-clamp">
                                                             {fullMed.concentration}
                                                         </span>
                                                     )}
@@ -245,7 +245,7 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                                                     {deleteLoadingId?.type === 'medication' && deleteLoadingId?.id === m.id ? (
                                                         <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                                                     ) : confirmingDeleteId === m.id ? (
-                                                        <span className="text-[10px] font-bold">✓</span>
+                                                        <span className="text-[11px] font-bold">✓</span>
                                                     ) : (
                                                         <Trash2 className="w-3.5 h-3.5" />
                                                     )}
@@ -256,15 +256,15 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                                         {/* Grilla técnica inferior de ancho completo */}
                                         <div className="grid grid-cols-3 gap-2 text-[11px] text-muted-foreground bg-purple-50/30 dark:bg-purple-950/10 rounded-md p-2 border border-purple-100/40 dark:border-purple-900/10">
                                             <div className="flex flex-col min-w-0">
-                                                <span className="text-[9px] uppercase opacity-60 font-bold tracking-wider text-purple-800 dark:text-purple-400 mb-0.5">Dosis</span>
+                                                <span className="text-[11px] uppercase opacity-60 font-bold tracking-wider text-purple-800 dark:text-purple-400 mb-0.5">Dosis</span>
                                                 <span className="font-semibold text-foreground fit-clamp" title={m.dosage || m.dose || '-'}>{m.dosage || m.dose || '-'}</span>
                                             </div>
                                             <div className="flex flex-col min-w-0">
-                                                <span className="text-[9px] uppercase opacity-60 font-bold tracking-wider text-purple-800 dark:text-purple-400 mb-0.5">Frecuencia</span>
+                                                <span className="text-[11px] uppercase opacity-60 font-bold tracking-wider text-purple-800 dark:text-purple-400 mb-0.5">Frecuencia</span>
                                                 <span className="font-semibold text-foreground fit-clamp" title={m.frequency || '-'}>{m.frequency || '-'}</span>
                                             </div>
                                             <div className="flex flex-col min-w-0">
-                                                <span className="text-[9px] uppercase opacity-60 font-bold tracking-wider text-purple-800 dark:text-purple-400 mb-0.5">Duración</span>
+                                                <span className="text-[11px] uppercase opacity-60 font-bold tracking-wider text-purple-800 dark:text-purple-400 mb-0.5">Duración</span>
                                                 <span className="font-semibold text-foreground fit-clamp" title={m.duration_days ? `${m.duration_days} días` : '-'}>
                                                     {m.duration_days ? `${m.duration_days} días` : '-'}
                                                 </span>

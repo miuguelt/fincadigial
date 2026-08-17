@@ -36,8 +36,8 @@ function UserCardHeader({ user, avatarUrl, onAvatarUpdated }: UserCardHeaderProp
       <div className="min-w-0 flex-1">
         <h3 className="font-black text-base leading-snug tracking-tight text-foreground break-words group-hover:text-primary transition-colors">{user.fullname}</h3>
         <div className="mt-1 flex flex-wrap items-center gap-1.5">
-          <Badge variant="outline" className="border-primary/20 bg-primary/5 px-2 py-0 text-[9px] font-black uppercase text-primary">{user.role}</Badge>
-          <div className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-[8px] font-bold uppercase', isActive ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600' : 'border-border bg-muted text-muted-foreground')}>
+          <Badge variant="outline" className="border-primary/20 bg-primary/5 px-2 py-0 text-[11px] font-black uppercase text-primary">{user.role}</Badge>
+          <div className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-bold uppercase', isActive ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600' : 'border-border bg-muted text-muted-foreground')}>
             <div className={cn('h-1 w-1 rounded-full', isActive ? 'animate-pulse bg-emerald-500' : 'bg-muted-foreground')} />
             {isActive ? 'En Finca' : 'Fuera'}
           </div>
@@ -62,7 +62,7 @@ function ContactItem({ icon, label, value }: { icon: ReactNode; label: string; v
     <div className="flex w-full min-w-0 items-center gap-2 rounded-xl border border-transparent bg-muted/20 p-2 transition-colors group-hover:border-border/40">
       {icon}
       <div className="min-w-0 flex-1">
-        <p className="mb-1 text-[8px] font-black uppercase leading-none tracking-widest text-muted-foreground">{label}</p>
+        <p className="mb-1 text-[11px] font-black uppercase leading-none tracking-widest text-muted-foreground">{label}</p>
         <p className="break-words text-xs font-semibold text-foreground [overflow-wrap:anywhere]">{String(value ?? '')}</p>
       </div>
     </div>
@@ -83,11 +83,11 @@ function ContactActions({ user, chat, hasWhatsApp, onOpenChat }: { user: UserWit
 function UserCardFooter({ user }: { user: UserWithProfile }) {
   const fincas = user.fincas ?? [];
   return (
-    <div className="mt-auto flex items-center justify-between gap-3 border-t border-border/40 pt-2 text-[9px] font-black uppercase tracking-tighter text-muted-foreground">
+    <div className="mt-auto flex items-center justify-between gap-3 border-t border-border/40 pt-2 text-[11px] font-black uppercase tracking-tighter text-muted-foreground">
       <div className="flex flex-col"><span className="opacity-50">Vinculado desde</span><span className="text-foreground/60">{user.created_at ? new Date(user.created_at).toLocaleDateString('es-CO') : '-'}</span></div>
       {fincas.length > 0 && <div className="flex -space-x-2 overflow-hidden py-1" title={`${fincas.length} fincas asociadas`}>
-        {fincas.slice(0, 3).map((finca) => <div key={finca.id} className="inline-block h-6 w-6 rounded-lg ring-2 ring-card bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-[10px]">{finca.name?.[0] || finca.finca_name?.[0]}</div>)}
-        {fincas.length > 3 && <div className="inline-block h-6 w-6 rounded-lg ring-2 ring-card bg-muted border border-border flex items-center justify-center text-muted-foreground font-black text-[8px]">+{fincas.length - 3}</div>}
+        {fincas.slice(0, 3).map((finca) => <div key={finca.id} className="inline-block h-6 w-6 rounded-lg ring-2 ring-card bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-[11px]">{finca.name?.[0] || finca.finca_name?.[0]}</div>)}
+        {fincas.length > 3 && <div className="inline-block h-6 w-6 rounded-lg ring-2 ring-card bg-muted border border-border flex items-center justify-center text-muted-foreground font-black text-[11px]">+{fincas.length - 3}</div>}
       </div>}
     </div>
   );

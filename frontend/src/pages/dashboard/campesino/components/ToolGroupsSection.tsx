@@ -53,11 +53,11 @@ function ToolCard({ group, tool, index, groupIndex, onNavigate }: ToolCardProps)
 
 function SignalBadge({ requiresOnline }: { requiresOnline: boolean }) {
   return requiresOnline ? (
-    <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 px-2.5 py-1 rounded-full border border-amber-500/20 shadow-sm">
+    <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 px-2.5 py-1 rounded-full border border-amber-500/20 shadow-sm">
       <Wifi className="w-3 h-3" /> Con red
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-full border border-emerald-500/20 shadow-sm">
+    <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-full border border-emerald-500/20 shadow-sm">
       <WifiOff className="w-3 h-3" /> Sin red OK
     </span>
   );

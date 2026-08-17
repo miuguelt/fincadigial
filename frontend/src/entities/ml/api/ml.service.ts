@@ -136,8 +136,8 @@ class MLService extends BaseService<PredictionResponse> {
 
   // Comparar predicciones vs producción real
   async comparePredictionsVsActual(
-    animalId: number, 
-    startDate: string, 
+    animalId: number,
+    startDate: string,
     endDate: string
   ): Promise<{
     accuracy: number;

@@ -281,11 +281,11 @@ export const QuickChatPanel: React.FC<QuickChatPanelProps> = ({
 							{contact.fullname}
 						</p>
 						<div className="flex items-center gap-2">
-							<p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+							<p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
 								{contact.role || "Usuario"}
 							</p>
 							{!isOnline && (
-								<span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase text-amber-600">
+								<span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase text-amber-600">
 									<WifiOff size={10} /> Sin señal
 								</span>
 							)}
@@ -333,7 +333,7 @@ export const QuickChatPanel: React.FC<QuickChatPanelProps> = ({
 						grouped.map((group) => (
 							<div key={group.label} className="space-y-2">
 								<div className="flex justify-center">
-									<span className="rounded-full bg-muted/60 px-3 py-0.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+									<span className="rounded-full bg-muted/60 px-3 py-0.5 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
 										{group.label}
 									</span>
 								</div>
@@ -370,7 +370,7 @@ export const QuickChatPanel: React.FC<QuickChatPanelProps> = ({
 												</p>
 												<p
 													className={cn(
-														"mt-1 flex items-center justify-end gap-1 text-[10px]",
+														"mt-1 flex items-center justify-end gap-1 text-[11px]",
 														mine
 															? "text-primary-foreground/70"
 															: "text-muted-foreground",

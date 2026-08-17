@@ -85,7 +85,7 @@ export const SyncStatus: React.FC = () => {
             <WifiOff className="h-4 w-4 animate-pulse" />
           )}
           {(pendingOperations > 0 || syncStatus.failed > 0) && (
-            <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 flex items-center justify-center bg-warning text-white text-[8px] font-bold rounded-full">
+            <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 flex items-center justify-center bg-warning text-white text-[11px] font-bold rounded-full">
               {pendingOperations + syncStatus.failed}
             </span>
           )}

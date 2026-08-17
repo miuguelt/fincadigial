@@ -3,7 +3,7 @@
 Fecha: 2026-01-16 01:21
 
 - Swagger: `http://127.0.0.1:8081/api/v1/swagger.json`
-- Frontend: `C:\Users\Miguel\Documents\Flask Projects\Front_finca`
+- Frontend: `C:\Users\Miguel\Documents\Aplicaciones\_projects\villaluz\frontend`
 
 ## Resumen
 

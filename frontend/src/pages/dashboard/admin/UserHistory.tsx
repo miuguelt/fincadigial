@@ -84,19 +84,19 @@ const UserHistory = () => {
           <TabsTrigger value="fields">Lotes Asignados</TabsTrigger>
         </TabsList>
         <TabsContent value="animals">
-          <HistoryTable 
+          <HistoryTable
             columns={["Animal", "Código", "Especie", "Raza", "Estado"]}
             data={userAnimals}
           />
         </TabsContent>
         <TabsContent value="genetics">
-          <HistoryTable 
+          <HistoryTable
             columns={["Animal", "Tipo", "Fecha", "Descripción"]}
             data={userGenetics}
           />
         </TabsContent>
         <TabsContent value="fields">
-          <HistoryTable 
+          <HistoryTable
             columns={["Animal", "Lote", "Fecha de Entrada", "Fecha de Salida"]}
             data={userAnimalFields}
           />

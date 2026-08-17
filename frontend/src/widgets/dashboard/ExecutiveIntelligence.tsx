@@ -129,7 +129,7 @@ export const ExecutiveIntelligence: React.FC = () => {
           <div className="bg-card/5 backdrop-blur-sm p-6 rounded-xl border border-white/5">
             <div className="flex items-center justify-between mb-4">
               <Activity className="text-info/80" size={20} />
-              <span className="text-[10px] font-black text-muted-foreground uppercase">
+              <span className="text-[11px] font-black text-muted-foreground uppercase">
                 Índice Vital
               </span>
             </div>
@@ -152,7 +152,7 @@ export const ExecutiveIntelligence: React.FC = () => {
           <div className="bg-card/5 backdrop-blur-sm p-6 rounded-xl border border-white/5">
             <div className="flex items-center justify-between mb-4">
               <Network className="text-success" size={20} />
-              <span className="text-[10px] font-black text-muted-foreground uppercase">
+              <span className="text-[11px] font-black text-muted-foreground uppercase">
                 Red de Campo
               </span>
             </div>
@@ -174,7 +174,7 @@ export const ExecutiveIntelligence: React.FC = () => {
           <div className="bg-card/5 backdrop-blur-sm p-6 rounded-xl border border-white/5">
             <div className="flex items-center justify-between mb-4">
               <ShieldAlert className="text-warning/80" size={20} />
-              <span className="text-[10px] font-black text-muted-foreground uppercase">
+              <span className="text-[11px] font-black text-muted-foreground uppercase">
                 Alertas Activas
               </span>
             </div>
@@ -182,7 +182,7 @@ export const ExecutiveIntelligence: React.FC = () => {
             <div className="text-xs text-muted-foreground">
               Alertas no leídas del sistema
             </div>
-            <div className="mt-4 flex items-center gap-2 text-[10px] font-bold">
+            <div className="mt-4 flex items-center gap-2 text-[11px] font-bold">
               {criticalAlerts === 0 ? (
                 <>
                   <CheckCircle size={12} className="text-success" />
@@ -236,7 +236,7 @@ export const ExecutiveIntelligence: React.FC = () => {
         <div className="mt-8 flex items-center justify-between p-4 bg-card/5 rounded-lg border border-white/5">
           <div className="flex items-center gap-3">
             <Cpu className="text-muted-foreground" size={18} />
-            <p className="text-[10px] font-bold text-muted-foreground/70">
+            <p className="text-[11px] font-bold text-muted-foreground/70">
               Última sincronización del Gateway:{" "}
               <span className="text-white">
                 {lastSyncAt
@@ -249,7 +249,7 @@ export const ExecutiveIntelligence: React.FC = () => {
             type="button"
             variant="link"
             onClick={() => navigate('/admin/analytics/executive')}
-            className="text-[10px] font-black text-info/80 hover:text-info transition-colors uppercase tracking-widest px-0 h-auto"
+            className="text-[11px] font-black text-info/80 hover:text-info transition-colors uppercase tracking-widest px-0 h-auto"
           >
             Ver Reporte Detallado
           </Button>

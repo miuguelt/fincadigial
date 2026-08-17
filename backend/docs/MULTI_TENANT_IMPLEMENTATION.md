@@ -114,7 +114,7 @@
 ## Ejecución de la Migración
 
 ```bash
-cd BackFinca
+cd VillaLuz
 python docs/migrations/001_add_multi_tenant.py
 ```
 
@@ -135,7 +135,7 @@ curl -X POST http://localhost:5000/api/v1/public/register \
       "fullname": "Juan Pérez",
       "email": "juan@example.com",
       "phone": "3001234567",
-      "password": "SecurePass123!"
+      "password": "<PASSWORD>"
     }
   }'
 ```
@@ -149,7 +149,7 @@ curl http://localhost:5000/api/v1/public/
 # Login con finca_id en claims
 curl -X POST http://localhost:5000/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"identifier": "juan@example.com", "password": "SecurePass123!"}'
+  -d '{"identifier": "juan@example.com", "password": "<PASSWORD>"}'
 ```
 
 ---
@@ -186,4 +186,3 @@ docs/
 - El registro público asigna automáticamente el rol según el tipo de finca:
   - Educativa → Administrador
   - Tradicional → Propietario
-

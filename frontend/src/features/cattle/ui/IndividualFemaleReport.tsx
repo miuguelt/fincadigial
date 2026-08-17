@@ -86,7 +86,7 @@ const IndividualFemaleReport: React.FC<FemaleReportProps> = ({
           {/* Identification Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 mb-8">
             <div className="flex flex-col border-b border-border pb-2">
-              <span className="text-[10px] font-black uppercase text-muted-foreground">
+              <span className="text-[11px] font-black uppercase text-muted-foreground">
                 Finca
               </span>
               <span className="text-lg font-bold text-foreground">
@@ -94,7 +94,7 @@ const IndividualFemaleReport: React.FC<FemaleReportProps> = ({
               </span>
             </div>
             <div className="flex flex-col border-b border-border pb-2">
-              <span className="text-[10px] font-black uppercase text-muted-foreground">
+              <span className="text-[11px] font-black uppercase text-muted-foreground">
                 Identificación del Animal
               </span>
               <span className="text-lg font-bold text-foreground underline decoration-emerald-500 decoration-4 underline-offset-4">
@@ -102,7 +102,7 @@ const IndividualFemaleReport: React.FC<FemaleReportProps> = ({
               </span>
             </div>
             <div className="flex flex-col border-b border-border pb-2">
-              <span className="text-[10px] font-black uppercase text-muted-foreground">
+              <span className="text-[11px] font-black uppercase text-muted-foreground">
                 Raza
               </span>
               <span className="text-lg font-bold text-foreground">
@@ -110,7 +110,7 @@ const IndividualFemaleReport: React.FC<FemaleReportProps> = ({
               </span>
             </div>
             <div className="flex flex-col border-b border-border pb-2">
-              <span className="text-[10px] font-black uppercase text-muted-foreground">
+              <span className="text-[11px] font-black uppercase text-muted-foreground">
                 Fecha de Nacimiento
               </span>
               <span className="text-lg font-bold text-foreground">
@@ -118,7 +118,7 @@ const IndividualFemaleReport: React.FC<FemaleReportProps> = ({
               </span>
             </div>
             <div className="flex flex-col border-b border-border pb-2">
-              <span className="text-[10px] font-black uppercase text-muted-foreground">
+              <span className="text-[11px] font-black uppercase text-muted-foreground">
                 Procedencia
               </span>
               <span className="text-lg font-bold text-foreground">
@@ -126,14 +126,14 @@ const IndividualFemaleReport: React.FC<FemaleReportProps> = ({
               </span>
             </div>
             <div className="flex flex-col border-b border-border pb-2">
-              <span className="text-[10px] font-black uppercase text-muted-foreground">
+              <span className="text-[11px] font-black uppercase text-muted-foreground">
                 Frame Score
               </span>
               <div className="flex items-center gap-2">
                 <span className="text-lg font-black text-emerald-600">
                   {reportData.frameScore}
                 </span>
-                <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-[var(--radius-full)] font-bold uppercase">
+                <span className="text-[11px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-[var(--radius-full)] font-bold uppercase">
                   Mediana
                 </span>
               </div>
@@ -147,7 +147,7 @@ const IndividualFemaleReport: React.FC<FemaleReportProps> = ({
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase">
+                <p className="text-[11px] font-bold text-muted-foreground uppercase">
                   Madre
                 </p>
                 <div className="flex justify-between items-center mt-1">
@@ -160,7 +160,7 @@ const IndividualFemaleReport: React.FC<FemaleReportProps> = ({
                 </div>
               </div>
               <div>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase">
+                <p className="text-[11px] font-bold text-muted-foreground uppercase">
                   Padre
                 </p>
                 <div className="flex justify-between items-center mt-1">
@@ -185,7 +185,7 @@ const IndividualFemaleReport: React.FC<FemaleReportProps> = ({
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
                   <thead>
-                    <tr className="bg-card text-white text-[10px] uppercase font-bold text-center">
+                    <tr className="bg-card text-white text-[11px] uppercase font-bold text-center">
                       <th className="p-2 border border-slate-900">
                         Fecha Celo
                       </th>
@@ -246,7 +246,7 @@ const IndividualFemaleReport: React.FC<FemaleReportProps> = ({
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
                   <thead>
-                    <tr className="bg-card text-white text-[10px] uppercase font-bold text-center">
+                    <tr className="bg-card text-white text-[11px] uppercase font-bold text-center">
                       <th className="p-2 border border-slate-900">
                         Fecha Parto
                       </th>
@@ -297,7 +297,7 @@ const IndividualFemaleReport: React.FC<FemaleReportProps> = ({
 
           {/* Footer Observations */}
           <div className="mt-12 border-t-2 border-slate-900 pt-6">
-            <p className="text-[10px] font-black uppercase text-muted-foreground mb-2">
+            <p className="text-[11px] font-black uppercase text-muted-foreground mb-2">
               Observaciones Generales
             </p>
             <p className="text-sm text-foreground leading-relaxed italic">
@@ -307,10 +307,10 @@ const IndividualFemaleReport: React.FC<FemaleReportProps> = ({
 
           <div className="mt-12 flex justify-between items-end opacity-20 select-none no-print">
             <div className="flex flex-col">
-              <span className="text-[8px] font-semibold text-sm">
+              <span className="text-[11px] font-semibold text-sm">
                 Sistema Villa Luz
               </span>
-              <span className="text-[8px] font-medium">
+              <span className="text-[11px] font-medium">
                 Generado el: {new Date().toLocaleString('es-CO')}
               </span>
             </div>

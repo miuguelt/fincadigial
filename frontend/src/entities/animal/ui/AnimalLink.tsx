@@ -28,7 +28,7 @@ export const AnimalLink: React.FC<{ id: number | string; label: string; children
 
       const ancestorsApi = useAnimalTreeApi();
       const descendantsApi = useAnimalTreeApi();
-      
+
       const [isTreeOpen, setIsTreeOpen] = useState(false);
       const [treeAnimal, setTreeAnimal] = useState<any | null>(null);
       const [treeLevels, setTreeLevels] = useState<any[][]>([]);

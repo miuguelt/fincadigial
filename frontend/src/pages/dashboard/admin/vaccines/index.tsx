@@ -71,8 +71,8 @@ function AdminVaccinesPage() {
 
   // Columnas de la tabla con renderizado optimizado y Foreign Key Links
   const columns: CRUDColumn<VaccineResponse & { [k: string]: any }>[] = useMemo(() => [
-    { 
-      key: 'name', 
+    {
+      key: 'name',
       label: 'Nombre',
       render: (v) => (
         <span className="inline-flex items-center gap-1.5 font-bold text-foreground">

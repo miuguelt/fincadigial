@@ -172,7 +172,7 @@ export function PaginationBar({
           </button>
         </div>
 
-        <div className="text-[10px] sm:text-xs font-medium text-white/70">
+        <div className="text-[11px] sm:text-xs font-medium text-white/70">
           Pág. <span className="text-white font-bold">{page}</span> / <span className="text-white font-bold">{Math.max(totalPages, 1)}</span>
           {typeof totalItems === "number" && totalItems >= 0 ? (
             <span className="ml-1 text-white/50 hidden md:inline">({totalItems.toLocaleString('es-CO')} reg.)</span>

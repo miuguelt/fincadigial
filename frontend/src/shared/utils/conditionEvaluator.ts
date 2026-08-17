@@ -3,10 +3,10 @@
  */
 export const evaluateCondition = (value: any, condition: string): boolean => {
   if (!condition) return false;
-  
+
   // Limpiar espacios
   const cleanCondition = condition.trim();
-  
+
   // Caso 1: Comparaciones numéricas (<, >, <=, >=, ==, !=)
   const numericMatch = cleanCondition.match(/^([<>!=]=?)\s*(.+)$/);
   if (numericMatch) {
@@ -43,8 +43,8 @@ export const evaluateCondition = (value: any, condition: string): boolean => {
  * Mapea una dimensión (string) a un valor real del objeto animal/control
  */
 export const getValueByDimension = (
-  animal: any, 
-  latestControl: any, 
+  animal: any,
+  latestControl: any,
   dimension: string,
   extraData?: {
     milkHistory?: any[],
@@ -53,12 +53,12 @@ export const getValueByDimension = (
   }
 ): any => {
   const d = dimension.toLowerCase();
-  
+
   // Atributos del Animal
   if (d === 'peso') return latestControl?.weight ?? animal.weight;
   if (d === 'altura') return latestControl?.height ?? animal.height;
   if (d === 'salud' || d === 'estado_salud') return latestControl?.health_status ?? latestControl?.healt_status ?? 'Sano';
-  
+
   // Atributos calculados
   if (d === 'dias_sin_control') {
     const lastDate = latestControl?.checkup_date ?? latestControl?.control_date ?? animal.created_at;
@@ -74,7 +74,7 @@ export const getValueByDimension = (
     const assignments = (extraData?.fieldAssignments || [])
       .filter(a => a.animal_id === animal.id)
       .sort((a, b) => new Date(b.created_at || b.assignment_date).getTime() - new Date(a.created_at || a.assignment_date).getTime());
-    
+
     const latest = assignments[0];
     if (!latest) return 0;
     const diff = Date.now() - new Date(latest.created_at || latest.assignment_date).getTime();
@@ -86,7 +86,7 @@ export const getValueByDimension = (
     const history = (extraData?.milkHistory || [])
       .filter(m => m.animal_id === animal.id)
       .sort((a, b) => new Date(b.created_at || b.date).getTime() - new Date(a.created_at || a.date).getTime());
-    
+
     if (history.length < 1) return 0;
     return history[0].liters || history[0].quantity || 0;
   }
@@ -99,4 +99,3 @@ export const getValueByDimension = (
   // Propiedad directa
   return animal[dimension] ?? latestControl?.[dimension];
 };
-

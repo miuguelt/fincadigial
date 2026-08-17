@@ -139,7 +139,7 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
               {" "}
               <DialogTitle className="text-xl font-bold tracking-tight text-white flex items-center gap-3 fit-clamp drop-shadow-sm">
                 Inmunización Colectiva
-                <Badge className="bg-white/20 text-white font-bold text-[10px] px-2.5 py-0.5 rounded-[var(--radius-full)] border-white/10 shadow-sm">
+                <Badge className="bg-white/20 text-white font-bold text-[11px] px-2.5 py-0.5 rounded-[var(--radius-full)] border-white/10 shadow-sm">
                   {selectedAnimalIds.length} Sujetos
                 </Badge>
               </DialogTitle>
@@ -153,7 +153,7 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
               <span className="animate-ping absolute inline-flex h-full w-full rounded-[var(--radius-full)] bg-white opacity-75"></span>
               <span className="relative inline-flex rounded-[var(--radius-full)] h-2 w-2 bg-white"></span>
             </div>
-            <p className="text-[10px] font-bold text-white uppercase tracking-tight">
+            <p className="text-[11px] font-bold text-white uppercase tracking-tight">
               Clínica Verificada
             </p>
           </div>
@@ -234,7 +234,7 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
                           >
                             {v.name}
                           </p>{" "}
-                          <p className="text-[10px] font-medium text-muted-foreground/60 uppercase fit-clamp tracking-widest mt-1">
+                          <p className="text-[11px] font-medium text-muted-foreground/60 uppercase fit-clamp tracking-widest mt-1">
                             {" "}
                             {v.type || "Biológico Clínico"}{" "}
                           </p>{" "}
@@ -281,7 +281,7 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
                         Auditores Bio-Métricos
                       </h4>{" "}
                     </div>{" "}
-                    <Badge className="bg-muted text-muted-foreground border-none text-[10px] font-bold px-2 py-0.5">
+                    <Badge className="bg-muted text-muted-foreground border-none text-[11px] font-bold px-2 py-0.5">
                       {selectedAnimalIds.length}
                     </Badge>{" "}
                   </div>{" "}
@@ -293,7 +293,7 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
                         {" "}
                         <IconMeat size="sm" className="text-primary" />{" "}
                       </div>{" "}
-                      <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
+                      <span className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-widest">
                         Identidad Verificada
                       </span>{" "}
                     </div>{" "}
@@ -318,7 +318,7 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
                       {" "}
                       <div className="space-y-2">
                         {" "}
-                        <Label className="text-[10px] font-bold uppercase text-muted-foreground/40 tracking-wider">
+                        <Label className="text-[11px] font-bold uppercase text-muted-foreground/40 tracking-wider">
                           Aplicación
                         </Label>{" "}
                         <Input
@@ -330,7 +330,7 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
                       </div>{" "}
                       <div className="space-y-2">
                         {" "}
-                        <Label className="text-[10px] font-bold uppercase text-muted-foreground/40 tracking-wider">
+                        <Label className="text-[11px] font-bold uppercase text-muted-foreground/40 tracking-wider">
                           Refuerzo
                         </Label>{" "}
                         <Input
@@ -345,7 +345,7 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
                       {" "}
                       <div className="space-y-2">
                         {" "}
-                        <Label className="text-[10px] font-bold uppercase text-muted-foreground/40 tracking-wider">
+                        <Label className="text-[11px] font-bold uppercase text-muted-foreground/40 tracking-wider">
                           Dosis (ML/CC)
                         </Label>{" "}
                         <Input
@@ -357,7 +357,7 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
                       </div>{" "}
                       <div className="space-y-2">
                         {" "}
-                        <Label className="text-[10px] font-bold uppercase text-muted-foreground/40 tracking-wider">
+                        <Label className="text-[11px] font-bold uppercase text-muted-foreground/40 tracking-wider">
                           Lote No.
                         </Label>{" "}
                         <Input
@@ -370,7 +370,7 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
                     </div>{" "}
                     <div className="space-y-2">
                       {" "}
-                      <Label className="text-[10px] font-bold uppercase text-muted-foreground/40 tracking-wider">
+                      <Label className="text-[11px] font-bold uppercase text-muted-foreground/40 tracking-wider">
                         Dictamen Clínico
                       </Label>{" "}
                       <Textarea
@@ -398,7 +398,7 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
                           {" "}
                           <div className="min-w-0">
                             {" "}
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40 mb-1">
+                            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/40 mb-1">
                               Biológico Activo
                             </p>{" "}
                             <h5 className="text-xl font-bold fit-clamp text-primary">
@@ -412,7 +412,7 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
                         </div>{" "}
                         <div className="bg-background/80 backdrop-blur-sm rounded-xl p-4 border border-border/50 relative z-10">
                           {" "}
-                          <p className="text-[10px] font-medium leading-relaxed text-muted-foreground/80 uppercase tracking-wider">
+                          <p className="text-[11px] font-medium leading-relaxed text-muted-foreground/80 uppercase tracking-wider">
                             {" "}
                             {selectedVaccine.description ||
                               "ESTE PRODUCTO REQUIERE MANEJO DE CADENA DE FRÍO Y ADMINISTRACIÓN POR PERSONAL CALIFICADO."}{" "}
@@ -465,7 +465,7 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
               />{" "}
               <div className="flex flex-col text-right">
                 {" "}
-                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider leading-none mb-1">
+                <span className="text-[11px] font-bold text-muted-foreground/40 uppercase tracking-wider leading-none mb-1">
                   Biológico
                 </span>{" "}
                 <span

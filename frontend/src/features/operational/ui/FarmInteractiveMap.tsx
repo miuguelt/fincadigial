@@ -112,7 +112,7 @@ export const FarmInteractiveMap: React.FC = () => {
           </div>
           <div>
             <h1 className="text-xl font-black tracking-tight">Geogestión Villa Luz</h1>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-0.5">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mt-0.5">
               Control de Potreros y Rotación
             </p>
           </div>
@@ -123,7 +123,7 @@ export const FarmInteractiveMap: React.FC = () => {
             size="sm"
             onClick={fetchFields}
             disabled={loading}
-            className="rounded-xl h-10 px-4 font-black uppercase text-[10px] tracking-widest gap-2"
+            className="rounded-xl h-10 px-4 font-black uppercase text-[11px] tracking-widest gap-2"
           >
             {loading ? (
               <IconLoader2 size="sm" className="animate-spin" />
@@ -139,28 +139,28 @@ export const FarmInteractiveMap: React.FC = () => {
         <aside className="w-full md:w-[320px] bg-card/80 backdrop-blur-md border-r border-border/50 p-6 overflow-y-auto custom-scrollbar z-[1000] shadow-md">
           <div className="space-y-6">
             <div className="space-y-1 px-1">
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                 Resumen de Ocupación
               </span>
               <div className="grid grid-cols-2 gap-2 mt-2">
                 <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3">
-                  <p className="text-[8px] font-black text-emerald-600 uppercase">Animales</p>
+                  <p className="text-[11px] font-black text-emerald-600 uppercase">Animales</p>
                   <p className="text-xl font-black text-emerald-700">
                     {fields.reduce((acc, f) => acc + (f.animal_count || 0), 0)}
                   </p>
                 </div>
                 <div className="bg-info/10 border border-info/20 rounded-lg p-3">
-                  <p className="text-[8px] font-black text-info uppercase">Potreros</p>
+                  <p className="text-[11px] font-black text-info uppercase">Potreros</p>
                   <p className="text-xl font-black text-info">{fields.length}</p>
                 </div>
               </div>
             </div>
             <div className="space-y-3">
               <div className="flex items-center justify-between px-1">
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                   Listado de Potreros
                 </span>
-                <Badge variant="outline" className="text-[9px]">
+                <Badge variant="outline" className="text-[11px]">
                   {fields.length}
                 </Badge>
               </div>
@@ -186,7 +186,7 @@ export const FarmInteractiveMap: React.FC = () => {
                         {(() => {
                           const { capacityNum, isEstimated } = getEffectiveCapacity(field.capacity, (field as any).area);
                           return (
-                            <p className="text-[10px] font-bold text-muted-foreground/60">
+                            <p className="text-[11px] font-bold text-muted-foreground/60">
                               {field.animal_count} animales • {capacityNum ? `${capacityNum} UA${isEstimated ? '*' : ''}` : 'Sin definir'}
                             </p>
                           );
@@ -248,7 +248,7 @@ export const FarmInteractiveMap: React.FC = () => {
                     <Popup className="custom-leaflet-popup">
                       <div className="p-1 min-w-[200px] space-y-4">
                         <div className="flex flex-col gap-1 border-b border-border pb-3">
-                          <span className="text-[8px] font-semibold text-sm text-muted-foreground">
+                          <span className="text-[11px] font-semibold text-sm text-muted-foreground">
                             Potrero Seleccionado
                           </span>
                           <h4 className="text-lg font-black tracking-tighter text-emerald-950 leading-none">
@@ -257,12 +257,12 @@ export const FarmInteractiveMap: React.FC = () => {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1">
-                            <span className="text-[7px] font-black uppercase text-muted-foreground/60">
+                            <span className="text-[11px] font-black uppercase text-muted-foreground/60">
                               Estado
                             </span>
                             <Badge
                               className={cn(
-                                "w-full justify-center rounded-lg text-[8px] font-black border-none",
+                                "w-full justify-center rounded-lg text-[11px] font-black border-none",
                                 field.state === "Disponible"
                                   ? "bg-emerald-100 text-emerald-700"
                                   : "bg-warning/10 text-warning"
@@ -272,7 +272,7 @@ export const FarmInteractiveMap: React.FC = () => {
                             </Badge>
                           </div>
                           <div className="space-y-1">
-                            <span className="text-[7px] font-black uppercase text-muted-foreground/60">
+                            <span className="text-[11px] font-black uppercase text-muted-foreground/60">
                               Ocupación
                             </span>
                             {(() => {
@@ -280,7 +280,7 @@ export const FarmInteractiveMap: React.FC = () => {
                               return (
                                 <p className="text-sm font-black text-foreground">
                                   {field.animal_count}{" "}
-                                  <span className="text-[10px] text-muted-foreground/50" title={isEstimated ? 'Estimada por área' : undefined}>
+                                  <span className="text-[11px] text-muted-foreground/50" title={isEstimated ? 'Estimada por área' : undefined}>
                                     / {capacityNum || '∞'}{isEstimated ? '*' : ''}
                                   </span>
                                 </p>
@@ -291,14 +291,14 @@ export const FarmInteractiveMap: React.FC = () => {
                         <div className="pt-2 flex flex-col gap-2">
                           <Button
                             size="sm"
-                            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase text-[9px] tracking-widest h-9 rounded-xl gap-2 shadow-sm shadow-emerald-900/20"
+                            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase text-[11px] tracking-widest h-9 rounded-xl gap-2 shadow-sm shadow-emerald-900/20"
                           >
                             <IconSwitchHorizontal size="sm" /> Trasladar Lote Aquí
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="w-full text-muted-foreground font-bold uppercase text-[8px] h-8"
+                            className="w-full text-muted-foreground font-bold uppercase text-[11px] h-8"
                           >
                             Ver Historial de Pastoreo
                           </Button>

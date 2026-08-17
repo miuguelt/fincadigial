@@ -24,7 +24,7 @@ export const SignupSuccess: React.FC<SignupSuccessProps> = () => {
                 <IconInfoCircle size="sm" /> Importante: Pendiente de aprobación
               </p>
               <p className="text-warning text-xs leading-relaxed">
-                Tu cuenta ha sido creada, pero un administrador de la finca Villa Luz debe <strong>aprobar tu registro</strong> antes de que puedas acceder. 
+                Tu cuenta ha sido creada, pero un administrador de la finca Villa Luz debe <strong>aprobar tu registro</strong> antes de que puedas acceder.
                 <br /><br />
                 Este proceso suele ser rápido. Intenta iniciar sesión más tarde para verificar tu estado.
               </p>
@@ -44,4 +44,3 @@ export const SignupSuccess: React.FC<SignupSuccessProps> = () => {
     </div>
   );
 };
-

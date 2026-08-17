@@ -14,7 +14,7 @@ class RegulatoryReportsService {
         params: { format },
         responseType: 'blob'
       });
-      
+
       this.downloadFile((response as any).data, `reporte_inventario_ica.${format}`);
     } catch (error) {
       console.error(`Error downloading inventory ${format} report:`, error);
@@ -37,14 +37,14 @@ class RegulatoryReportsService {
       const response = await apiFetch({
         url: `${this.base}/movements`,
         method: 'GET',
-        params: { 
-          date_from: startDate, 
-          date_to: endDate, 
-          format 
+        params: {
+          date_from: startDate,
+          date_to: endDate,
+          format
         },
         responseType: 'blob'
       });
-      
+
       this.downloadFile((response as any).data, `reporte_movimientos_ica.${format}`);
     } catch (error) {
       console.error(`Error downloading movements ${format} report:`, error);
@@ -67,14 +67,14 @@ class RegulatoryReportsService {
       const response = await apiFetch({
         url: `${this.base}/health`,
         method: 'GET',
-        params: { 
-          date_from: startDate, 
-          date_to: endDate, 
-          format 
+        params: {
+          date_from: startDate,
+          date_to: endDate,
+          format
         },
         responseType: 'blob'
       });
-      
+
       this.downloadFile((response as any).data, `reporte_sanidad_ica.${format}`);
     } catch (error) {
       console.error(`Error downloading health ${format} report:`, error);

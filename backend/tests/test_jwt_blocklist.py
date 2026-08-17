@@ -9,8 +9,9 @@ from app.utils.token_blocklist import (
     is_token_revoked,
     _cache_timeout_for,
     _cleanup_fallback,
-    _fallback_blocklist
+    _fallback_blocklist,
 )
+
 
 class MockJWTManager:
     def __init__(self):
@@ -45,6 +46,7 @@ class MockJWTManager:
         self.claims_fn = fn
         return fn
 
+
 @pytest.mark.unit
 @pytest.mark.critical
 def test_jwt_handlers_callbacks(app):
@@ -54,55 +56,54 @@ def test_jwt_handlers_callbacks(app):
     # 1. expired_token_callback (requires app context due to flask.jsonify / current_app)
     with app.app_context():
         # expired 60 seconds ago
-        payload = {
-            'exp': int(time.time()) - 60,
-            'type': 'access'
-        }
+        payload = {"exp": int(time.time()) - 60, "type": "access"}
         with app.test_request_context():
             resp = jwt.expired_fn({}, payload)
             assert resp.status_code == 401
-            assert resp.headers['Cache-Control'] == 'no-store'
+            assert resp.headers["Cache-Control"] == "no-store"
             data = resp.get_json()
-            assert data['success'] is False
-            assert data['error']['code'] == 'TOKEN_EXPIRED'
-            assert data['error']['details']['token_type'] == 'access'
-            assert data['error']['details']['client_action'] == 'ATTEMPT_REFRESH'
+            assert data["success"] is False
+            assert data["error"]["code"] == "TOKEN_EXPIRED"
+            assert data["error"]["details"]["token_type"] == "access"
+            assert data["error"]["details"]["client_action"] == "ATTEMPT_REFRESH"
 
         # refresh token expired
-        payload_refresh = {
-            'exp': int(time.time()) - 60,
-            'type': 'refresh'
-        }
+        payload_refresh = {"exp": int(time.time()) - 60, "type": "refresh"}
         with app.test_request_context():
             resp_ref = jwt.expired_fn({}, payload_refresh)
             assert resp_ref.status_code == 401
             data_ref = resp_ref.get_json()
-            assert data_ref['error']['details']['token_type'] == 'refresh'
-            assert data_ref['error']['details']['client_action'] == 'CLEAR_AUTH_AND_RELOGIN'
+            assert data_ref["error"]["details"]["token_type"] == "refresh"
+            assert (
+                data_ref["error"]["details"]["client_action"]
+                == "CLEAR_AUTH_AND_RELOGIN"
+            )
 
     # 2. invalid_token_callback
     res, status = jwt.invalid_fn("Token structure invalid")
     assert status == 401
-    assert res['success'] is False
-    assert res['error']['code'] == 'INVALID_TOKEN'
+    assert res["success"] is False
+    assert res["error"]["code"] == "INVALID_TOKEN"
 
     # 3. unauthorized_callback (CSRF error)
     res, status = jwt.unauthorized_fn("Missing CSRF token")
     assert status == 401
-    assert res['error']['code'] == 'CSRF_ERROR'
+    assert res["error"]["code"] == "CSRF_ERROR"
 
     # unauthorized_callback (Missing Token)
     res, status = jwt.unauthorized_fn("Missing authorization header")
     assert status == 401
-    assert res['error']['code'] == 'MISSING_TOKEN'
+    assert res["error"]["code"] == "MISSING_TOKEN"
 
     # 4. token_in_blocklist_loader
     # Setup mock for is_token_revoked
-    with patch('app.utils.jwt_handlers.is_token_revoked', return_value=True):
+    with patch("app.utils.jwt_handlers.is_token_revoked", return_value=True):
         assert jwt.blocklist_fn({}, {"jti": "some-jti"}) is True
 
     # Check exception handling
-    with patch('app.utils.jwt_handlers.is_token_revoked', side_effect=Exception("Cache error")):
+    with patch(
+        "app.utils.jwt_handlers.is_token_revoked", side_effect=Exception("Cache error")
+    ):
         assert jwt.blocklist_fn({}, {"jti": "some-jti"}) is False
 
     # 5. revoked_token_callback
@@ -111,14 +112,14 @@ def test_jwt_handlers_callbacks(app):
             resp = jwt.revoked_fn({}, {"type": "access", "sub": "123"})
             assert resp.status_code == 401
             data = resp.get_json()
-            assert data['success'] is False
-            assert data['error']['code'] == 'TOKEN_REVOKED'
+            assert data["success"] is False
+            assert data["error"]["code"] == "TOKEN_REVOKED"
 
     # 6. additional_claims_loader
     with app.app_context():
         claims = jwt.claims_fn("123")
-        assert 'server_time_utc' in claims
-        assert claims['server_env'] == app.config.get('CONFIG_NAME')
+        assert "server_time_utc" in claims
+        assert claims["server_env"] == app.config.get("CONFIG_NAME")
 
 
 @pytest.mark.unit
@@ -156,7 +157,7 @@ def test_token_blocklist_operations():
 
     # Mark token revoked (without cache, using fallback blocklist in memory)
     token = {"jti": "test-jti-123", "exp": int(time.time()) + 10}
-    with patch('app.utils.token_blocklist._get_cache', return_value=None):
+    with patch("app.utils.token_blocklist._get_cache", return_value=None):
         assert mark_token_revoked(token) is True
         assert is_token_revoked(token) is True
 
@@ -168,10 +169,10 @@ def test_token_blocklist_operations():
 
     # Mark token revoked (with cache success)
     mock_cache = MagicMock()
-    with patch('app.utils.token_blocklist._get_cache', return_value=mock_cache):
+    with patch("app.utils.token_blocklist._get_cache", return_value=mock_cache):
         assert mark_token_revoked(token) is True
         mock_cache.set.assert_called_once()
-        
+
         # Verify is_token_revoked checks cache
         mock_cache.get.return_value = True
         assert is_token_revoked(token) is True
@@ -180,12 +181,12 @@ def test_token_blocklist_operations():
     # Mark token revoked (with cache exception)
     mock_cache_fail = MagicMock()
     mock_cache_fail.set.side_effect = Exception("Redis error")
-    with patch('app.utils.token_blocklist._get_cache', return_value=mock_cache_fail):
+    with patch("app.utils.token_blocklist._get_cache", return_value=mock_cache_fail):
         assert mark_token_revoked(token) is False
 
     # Verify is_token_revoked handles exception (fail-safe returns False so valid requests aren't blocked)
     mock_cache_fail.get.side_effect = Exception("Redis error")
-    with patch('app.utils.token_blocklist._get_cache', return_value=mock_cache_fail):
+    with patch("app.utils.token_blocklist._get_cache", return_value=mock_cache_fail):
         assert is_token_revoked(token) is False
 
 
@@ -195,7 +196,7 @@ def test_token_blocklist_cleanup():
     # Insert expired token in fallback blocklist
     past_time = time.time() - 10
     future_time = time.time() + 60
-    
+
     _fallback_blocklist.clear()
     _fallback_blocklist["expired-jti"] = past_time
     _fallback_blocklist["active-jti"] = future_time

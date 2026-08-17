@@ -12,25 +12,25 @@ export interface ReportParams {
 }
 
 export const regulatoryApi = {
-  getInventory: (params: ReportParams) => 
+  getInventory: (params: ReportParams) =>
     apiClient.get('/api/v1/regulatory-reports/inventory', { params }),
-    
-  getMovements: (params: ReportParams) => 
+
+  getMovements: (params: ReportParams) =>
     apiClient.get('/api/v1/regulatory-reports/movements', { params }),
-    
-  getHealth: (params: ReportParams) => 
+
+  getHealth: (params: ReportParams) =>
     apiClient.get('/api/v1/regulatory-reports/health', { params }),
-    
-  getFormats: () => 
+
+  getFormats: () =>
     apiClient.get('/api/v1/regulatory-reports/formats'),
-    
+
   downloadReport: async (reportType: ReportType, params: ReportParams) => {
     const format = params.format || 'csv';
     const response = await apiClient.get(`/api/v1/regulatory-reports/${reportType}`, {
       params: { ...params, format },
       responseType: 'blob'
     });
-    
+
     // Crear link de descarga
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');

@@ -44,7 +44,9 @@ def get_public_finca_images(finca_id: int) -> list[dict[str, Any]]:
     return [serialize_public_image(image) for image in images]
 
 
-def get_public_finca_images_map(finca_ids: list[int]) -> dict[int, list[dict[str, Any]]]:
+def get_public_finca_images_map(
+    finca_ids: list[int],
+) -> dict[int, list[dict[str, Any]]]:
     if not finca_ids:
         return {}
     images = (

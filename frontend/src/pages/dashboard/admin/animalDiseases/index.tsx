@@ -51,11 +51,11 @@ function AdminAnimalDiseasesPage() {
     try {
       const res = await animalDiseasesService.getAnimalDiseases({ page: 1, limit: 1000 });
       const allItems = res.data || [];
-      
+
       let active = 0;
       let recovered = 0;
       let critical = 0;
-      
+
       allItems.forEach(item => {
         const status = item.status;
         if (status === 'Activo' || status === 'En tratamiento' || status === 'En Tratamiento' || status === 'Observación') {
@@ -66,10 +66,10 @@ function AdminAnimalDiseasesPage() {
           critical++;
         }
       });
-      
+
       const total = allItems.length;
       const recoveryRate = total > 0 ? Math.round((recovered / total) * 100) : 0;
-      
+
       setStats({
         active,
         recovered,
@@ -97,7 +97,7 @@ function AdminAnimalDiseasesPage() {
           <div className="space-y-1">
             <span className="text-xs font-bold text-muted-foreground/80 uppercase tracking-wider">Animales Enfermos</span>
             <div className="text-3xl font-extrabold tracking-tight text-foreground">{stats.active}</div>
-            <p className="text-[10px] text-muted-foreground/70 font-medium">Reses enfermas y en observación</p>
+            <p className="text-[11px] text-muted-foreground/70 font-medium">Reses enfermas y en observación</p>
           </div>
           <div className="p-3 rounded-xl bg-red-500/10 text-red-500 dark:bg-red-500/20 transition-transform duration-300 group-hover:scale-110">
             <Activity className="h-5 w-5 animate-pulse" />
@@ -108,7 +108,7 @@ function AdminAnimalDiseasesPage() {
           <div className="space-y-1">
             <span className="text-xs font-bold text-muted-foreground/80 uppercase tracking-wider">Animales Sanados</span>
             <div className="text-3xl font-extrabold tracking-tight text-foreground">{stats.recovered}</div>
-            <p className="text-[10px] text-muted-foreground/70 font-medium">Reses que ya se curaron</p>
+            <p className="text-[11px] text-muted-foreground/70 font-medium">Reses que ya se curaron</p>
           </div>
           <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500 dark:bg-emerald-500/20 transition-transform duration-300 group-hover:scale-110">
             <CheckCircle2 className="h-5 w-5" />
@@ -119,7 +119,7 @@ function AdminAnimalDiseasesPage() {
           <div className="space-y-1">
             <span className="text-xs font-bold text-muted-foreground/80 uppercase tracking-wider">Casos Graves</span>
             <div className="text-3xl font-extrabold tracking-tight text-foreground">{stats.critical}</div>
-            <p className="text-[10px] text-muted-foreground/70 font-medium">Reses muy enfermas (crónico)</p>
+            <p className="text-[11px] text-muted-foreground/70 font-medium">Reses muy enfermas (crónico)</p>
           </div>
           <div className="p-3 rounded-xl bg-amber-500/10 text-amber-500 dark:bg-amber-500/20 transition-transform duration-300 group-hover:scale-110">
             <AlertTriangle className="h-5 w-5 animate-bounce" />
@@ -130,7 +130,7 @@ function AdminAnimalDiseasesPage() {
           <div className="space-y-1">
             <span className="text-xs font-bold text-muted-foreground/80 uppercase tracking-wider">Porcentaje de Sanados</span>
             <div className="text-3xl font-extrabold tracking-tight text-foreground">{stats.recoveryRate}%</div>
-            <p className="text-[10px] text-muted-foreground/70 font-medium">De todos los enfermos, cuántos se salvaron</p>
+            <p className="text-[11px] text-muted-foreground/70 font-medium">De todos los enfermos, cuántos se salvaron</p>
           </div>
           <div className="p-3 rounded-xl bg-blue-500/10 text-blue-500 dark:bg-blue-500/20 transition-transform duration-300 group-hover:scale-110">
             <TrendingUp className="h-5 w-5 animate-pulse" />
@@ -160,9 +160,9 @@ function AdminAnimalDiseasesPage() {
               >
                 <span className={`w-2 h-2 rounded-full transition-transform duration-300 ${tab.dotColor} ${isActive ? 'scale-125 shadow-[0_0_8px_currentColor]' : 'opacity-70'}`} />
                 <span>{tab.label}</span>
-                <span className={`ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-black transition-all duration-300 ${
-                  isActive 
-                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10' 
+                <span className={`ml-1.5 px-2 py-0.5 rounded-full text-[11px] font-black transition-all duration-300 ${
+                  isActive
+                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10'
                     : 'bg-muted/40 text-muted-foreground/60'
                 }`}>
                   {tab.count}
@@ -254,7 +254,7 @@ function AdminAnimalDiseasesPage() {
       render: (v) => {
         if (!v) return '-';
         const valStr = String(v);
-        
+
         let themeClass = "";
         let dotClass = "";
         let emoji = "";

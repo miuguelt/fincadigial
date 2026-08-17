@@ -153,10 +153,10 @@ export function useApiState<T = any>(options: UseApiStateOptions = {}): UseApiSt
       // Intentar reintento si está configurado
       if (attempt <= retryAttempts && apiError.status && apiError.status >= 500) {
         console.warn(`Reintentando petición (intento ${attempt}/${retryAttempts})...`);
-        
+
         // Esperar antes del reintento
         await new Promise(resolve => setTimeout(resolve, retryDelay * attempt));
-        
+
         return executeApiCall(apiCall, attempt + 1);
       }
 

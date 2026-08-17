@@ -1,1 +1,0 @@
-export { MilkTrendChart } from './MilkTrendChart';

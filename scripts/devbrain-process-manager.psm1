@@ -133,7 +133,7 @@ function Stop-DockerContainers {
 function Ensure-Dependencies {
     param([string]$LogDir)
     Write-Log "Checking database and cache dependencies..." "Yellow"
-    
+
     $pgOk = $false
     foreach ($p in @($env:DB_PORT, "5434", "5432", "5433")) {
         if ($p -and $p -gt 0 -and (Test-PortReachable -Port $p)) {

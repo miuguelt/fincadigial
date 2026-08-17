@@ -4,6 +4,7 @@ Tests de integración HTTP para endpoints de autenticación.
 Prueban el comportamiento real del endpoint /api/v1/auth/login y /auth/me,
 incluyendo credenciales inválidas, usuario inactivo y aprobación pendiente.
 """
+
 import pytest
 
 
@@ -16,7 +17,10 @@ class TestLogin:
         """Login exitoso devuelve 200 con access_token."""
         resp = client.post(
             f"{BASE}/auth/login",
-            json={"identifier": test_user["identification"], "password": test_user["password"]},
+            json={
+                "identifier": test_user["identification"],
+                "password": test_user["password"],
+            },
         )
         assert resp.status_code == 200
         body = resp.get_json()
@@ -30,7 +34,10 @@ class TestLogin:
         """Login con contraseña incorrecta devuelve 401."""
         resp = client.post(
             f"{BASE}/auth/login",
-            json={"identifier": test_user["identification"], "password": "WrongPass999!"},
+            json={
+                "identifier": test_user["identification"],
+                "password": "WrongPass999!",
+            },
         )
         assert resp.status_code == 401
 
@@ -47,7 +54,10 @@ class TestLogin:
         """Login con usuario inactivo devuelve 403."""
         resp = client.post(
             f"{BASE}/auth/login",
-            json={"identifier": inactive_user["identification"], "password": inactive_user["password"]},
+            json={
+                "identifier": inactive_user["identification"],
+                "password": inactive_user["password"],
+            },
         )
         assert resp.status_code == 403
 
@@ -55,11 +65,17 @@ class TestLogin:
         """Login con usuario pendiente de aprobación devuelve 403 con APPROVAL_PENDING."""
         resp = client.post(
             f"{BASE}/auth/login",
-            json={"identifier": pending_user["identification"], "password": pending_user["password"]},
+            json={
+                "identifier": pending_user["identification"],
+                "password": pending_user["password"],
+            },
         )
         assert resp.status_code == 403
         body = resp.get_json()
-        assert body.get("error_code") == "APPROVAL_PENDING" or "aprobación" in str(body).lower()
+        assert (
+            body.get("error_code") == "APPROVAL_PENDING"
+            or "aprobación" in str(body).lower()
+        )
 
     def test_login_sin_body(self, client):
         """Login sin body devuelve error de validación (400 o 422)."""

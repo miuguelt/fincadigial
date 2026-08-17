@@ -1,4 +1,5 @@
 """CSV helpers for regulatory_reports_namespace."""
+
 import csv
 from datetime import datetime
 from io import StringIO
@@ -20,18 +21,18 @@ def send_csv_response(data: list, headers: list, filename: str) -> Response:
     csv_content = generate_csv(data, headers)
     return Response(
         csv_content,
-        mimetype='text/csv',
+        mimetype="text/csv",
         headers={
-            'Content-Disposition': f'attachment; filename={filename}.csv',
-            'Content-Type': 'text/csv; charset=utf-8'
-        }
+            "Content-Disposition": f"attachment; filename={filename}.csv",
+            "Content-Type": "text/csv; charset=utf-8",
+        },
     )
 
 
 def parse_date(date_str: str) -> datetime:
     """Parsear fecha desde string."""
     try:
-        return datetime.strptime(date_str, '%Y-%m-%d')
+        return datetime.strptime(date_str, "%Y-%m-%d")
     except ValueError:
         return None
 
@@ -39,4 +40,3 @@ def parse_date(date_str: str) -> datetime:
 # =============================================================================
 # Endpoints
 # =============================================================================
-

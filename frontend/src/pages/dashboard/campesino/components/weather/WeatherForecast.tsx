@@ -94,7 +94,7 @@ export function WeatherForecast({ forecast }: Props) {
 						<p className="text-xs font-bold text-muted-foreground capitalize">
 							{new Date(day.date + "T12:00:00").toLocaleDateString("es-CO", { weekday: "short" })}
 						</p>
-						<p className="text-[10px] text-muted-foreground mb-2">
+						<p className="text-[11px] text-muted-foreground mb-2">
 							{new Date(day.date + "T12:00:00").toLocaleDateString("es-CO", { day: "numeric", month: "short" })}
 						</p>
 						<div className="flex justify-center gap-1 text-sm font-bold">
@@ -103,18 +103,18 @@ export function WeatherForecast({ forecast }: Props) {
 							<span className="text-blue-500">{day.temp_min?.toFixed(0) || "--"}°</span>
 						</div>
 						{day.precipitation_mm != null && day.precipitation_mm > 0 && (
-							<p className="text-[10px] text-blue-500 mt-1 flex items-center justify-center gap-0.5">
+							<p className="text-[11px] text-blue-500 mt-1 flex items-center justify-center gap-0.5">
 								<Droplets className="w-3 h-3" />
 								{day.precipitation_mm.toFixed(1)}mm
 							</p>
 						)}
 						{day.wind_max != null && (
-							<p className="text-[10px] text-cyan-500 flex items-center justify-center gap-0.5">
+							<p className="text-[11px] text-cyan-500 flex items-center justify-center gap-0.5">
 								<Wind className="w-3 h-3" />
 								{day.wind_max.toFixed(0)} km/h
 							</p>
 						)}
-						<p className="text-[10px] text-muted-foreground mt-1 capitalize fit-clamp">
+						<p className="text-[11px] text-muted-foreground mt-1 capitalize fit-clamp">
 							{getWmoDescription(day.weather_code)}
 						</p>
 					</motion.div>

@@ -42,4 +42,3 @@ export const formatChangePercentage = (
 
   return `${sign}${formatted}${suffix}%`;
 };
-

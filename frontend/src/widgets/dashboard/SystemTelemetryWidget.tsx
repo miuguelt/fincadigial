@@ -481,7 +481,7 @@ const SystemTelemetryWidget: React.FC = () => {
                 <RefreshCw className="h-3.5 w-3.5" />
                 Log de Autorreparación
               </h4>
-              <span className="rounded-md border border-blue-200 dark:border-blue-800 bg-white/60 dark:bg-blue-900/20 px-2 py-0.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+              <span className="rounded-md border border-blue-200 dark:border-blue-800 bg-white/60 dark:bg-blue-900/20 px-2 py-0.5 text-[11px] font-semibold text-blue-600 dark:text-blue-400">
                 Auto-habilitado
               </span>
             </div>

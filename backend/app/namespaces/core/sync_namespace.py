@@ -60,7 +60,9 @@ def _operation_dict(op: SyncOperation):
         "origin_device_id": op.origin_device_id,
         "author_user_id": op.author_user_id,
         "finca_id": op.finca_id,
-        "created_at_device": op.created_at_device.isoformat() if op.created_at_device else None,
+        "created_at_device": op.created_at_device.isoformat()
+        if op.created_at_device
+        else None,
         "created_at": op.created_at.isoformat() if op.created_at else None,
     }
 
@@ -76,6 +78,7 @@ class SyncPushResource(Resource):
     @jwt_required()
     def post(self):
         from app.utils.tenant_context import apply_tenant_filter
+
         payload = flask.request.get_json(silent=True) or {}
         finca_id = _finca_id_from_request(payload)
         user_id = get_jwt_identity()
@@ -85,7 +88,9 @@ class SyncPushResource(Resource):
         device_id = payload.get("device_id")
         operations = payload.get("operations") or []
         if not device_id or not isinstance(operations, list):
-            return APIResponse.validation_error({"device_id": "requerido", "operations": "lista requerida"})
+            return APIResponse.validation_error(
+                {"device_id": "requerido", "operations": "lista requerida"}
+            )
 
         device_q = apply_tenant_filter(Device.query, Device)
         device = device_q.filter_by(device_id=device_id).first()
@@ -110,19 +115,27 @@ class SyncPushResource(Resource):
         for item in operations:
             if not isinstance(item, dict):
                 continue
-            operation_id = item.get("operation_id") or item.get("id") or str(uuid.uuid4())
+            operation_id = (
+                item.get("operation_id") or item.get("id") or str(uuid.uuid4())
+            )
             normalized_operations.append((item, operation_id))
 
         operation_ids = [operation_id for _, operation_id in normalized_operations]
         existing_operations = {}
         existing_receipts = set()
         if operation_ids:
-            existing_query = apply_tenant_filter(SyncOperation.query, SyncOperation, finca_id)
+            existing_query = apply_tenant_filter(
+                SyncOperation.query, SyncOperation, finca_id
+            )
             existing_operations = {
                 op.operation_id: op
-                for op in existing_query.filter(SyncOperation.operation_id.in_(operation_ids)).all()
+                for op in existing_query.filter(
+                    SyncOperation.operation_id.in_(operation_ids)
+                ).all()
             }
-            receipt_query = apply_tenant_filter(SyncOperationReceipt.query, SyncOperationReceipt, finca_id)
+            receipt_query = apply_tenant_filter(
+                SyncOperationReceipt.query, SyncOperationReceipt, finca_id
+            )
             existing_receipts = {
                 receipt.operation_id
                 for receipt in receipt_query.filter(
@@ -143,22 +156,26 @@ class SyncPushResource(Resource):
             if existing:
                 duplicates.append(operation_id)
                 if operation_id not in existing_receipts:
-                    db.session.add(SyncOperationReceipt(
-                        operation_id=operation_id,
-                        device_id=device_id,
-                        finca_id=finca_id,
-                        applied=existing.status == SyncOperationStatus.APPLIED,
-                    ))
+                    db.session.add(
+                        SyncOperationReceipt(
+                            operation_id=operation_id,
+                            device_id=device_id,
+                            finca_id=finca_id,
+                            applied=existing.status == SyncOperationStatus.APPLIED,
+                        )
+                    )
                     existing_receipts.add(operation_id)
                 continue
 
             entity_type = item.get("entity_type")
             operation = item.get("operation")
             if not entity_type or not operation:
-                conflicts.append({
-                    "operation_id": operation_id,
-                    "reason": "entity_type y operation son requeridos",
-                })
+                conflicts.append(
+                    {
+                        "operation_id": operation_id,
+                        "reason": "entity_type y operation son requeridos",
+                    }
+                )
                 continue
 
             raw_payload = item.get("payload")
@@ -175,7 +192,9 @@ class SyncPushResource(Resource):
             op = SyncOperation(
                 operation_id=operation_id,
                 entity_type=entity_type,
-                entity_id=str(item.get("entity_id")) if item.get("entity_id") is not None else None,
+                entity_id=str(item.get("entity_id"))
+                if item.get("entity_id") is not None
+                else None,
                 operation=str(operation).lower(),
                 payload=raw_payload,
                 base_version=item.get("base_version"),
@@ -189,22 +208,28 @@ class SyncPushResource(Resource):
                 created_at_device=_parse_dt(item.get("created_at_device")),
             )
             db.session.add(op)
-            db.session.add(SyncOperationReceipt(
-                operation_id=operation_id,
-                device_id=device_id,
-                finca_id=finca_id,
-                applied=False,
-            ))
+            db.session.add(
+                SyncOperationReceipt(
+                    operation_id=operation_id,
+                    device_id=device_id,
+                    finca_id=finca_id,
+                    applied=False,
+                )
+            )
             existing_operations[operation_id] = op
             existing_receipts.add(operation_id)
             accepted.append(operation_id)
 
         db.session.commit()
-        return APIResponse.success({
-            "accepted": accepted,
-            "duplicates": duplicates,
-            "conflicts": conflicts,
-        }, message="Operaciones recibidas", status_code=202)
+        return APIResponse.success(
+            {
+                "accepted": accepted,
+                "duplicates": duplicates,
+                "conflicts": conflicts,
+            },
+            message="Operaciones recibidas",
+            status_code=202,
+        )
 
 
 @sync_ns.route("/pull")
@@ -217,11 +242,12 @@ class SyncPullResource(Resource):
         last_cursor = int(payload.get("last_cursor") or 0)
         limit = min(int(payload.get("limit") or 100), 500)
         if not finca_id or not device_id:
-            return APIResponse.validation_error({"finca_id": "requerido", "device_id": "requerido"})
+            return APIResponse.validation_error(
+                {"finca_id": "requerido", "device_id": "requerido"}
+            )
 
         query = (
-            SyncOperation.query
-            .filter(SyncOperation.finca_id == finca_id)
+            SyncOperation.query.filter(SyncOperation.finca_id == finca_id)
             .filter(SyncOperation.id > last_cursor)
             .filter(SyncOperation.origin_device_id != device_id)
             .order_by(SyncOperation.priority.asc(), SyncOperation.id.asc())
@@ -243,20 +269,24 @@ class SyncPullResource(Resource):
 
         for op in operations:
             if op.operation_id not in existing_receipts:
-                db.session.add(SyncOperationReceipt(
-                    operation_id=op.operation_id,
-                    device_id=device_id,
-                    finca_id=finca_id,
-                    applied=False,
-                ))
+                db.session.add(
+                    SyncOperationReceipt(
+                        operation_id=op.operation_id,
+                        device_id=device_id,
+                        finca_id=finca_id,
+                        applied=False,
+                    )
+                )
         db.session.commit()
 
         next_cursor = max([op.id for op in operations], default=last_cursor)
-        return APIResponse.success({
-            "operations": [_operation_dict(op) for op in operations],
-            "next_cursor": next_cursor,
-            "has_more": len(operations) == limit,
-        })
+        return APIResponse.success(
+            {
+                "operations": [_operation_dict(op) for op in operations],
+                "next_cursor": next_cursor,
+                "has_more": len(operations) == limit,
+            }
+        )
 
 
 @sync_ns.route("/resolve-conflict")
@@ -269,13 +299,17 @@ class SyncResolveConflictResource(Resource):
         conflict_id = payload.get("conflict_id")
         resolution = payload.get("resolution")
         if not finca_id or not conflict_id or not resolution:
-            return APIResponse.validation_error({
-                "finca_id": "requerido",
-                "conflict_id": "requerido",
-                "resolution": "requerido",
-            })
+            return APIResponse.validation_error(
+                {
+                    "finca_id": "requerido",
+                    "conflict_id": "requerido",
+                    "resolution": "requerido",
+                }
+            )
 
-        conflict = SyncConflict.query.filter_by(id=conflict_id, finca_id=finca_id).first()
+        conflict = SyncConflict.query.filter_by(
+            id=conflict_id, finca_id=finca_id
+        ).first()
         if not conflict:
             return APIResponse.not_found("Conflicto")
 
@@ -284,7 +318,13 @@ class SyncResolveConflictResource(Resource):
         conflict.resolved_at = datetime.now(UTC)
         op = SyncOperation.query.filter_by(operation_id=conflict.operation_id).first()
         if op:
-            op.status = SyncOperationStatus.APPLIED if resolution != "reject" else SyncOperationStatus.REJECTED
+            op.status = (
+                SyncOperationStatus.APPLIED
+                if resolution != "reject"
+                else SyncOperationStatus.REJECTED
+            )
             op.applied_at = datetime.now(UTC)
         db.session.commit()
-        return APIResponse.success({"conflict_id": conflict.id, "resolution": resolution})
+        return APIResponse.success(
+            {"conflict_id": conflict.id, "resolution": resolution}
+        )

@@ -5,7 +5,9 @@ Script completo para probar la corrección del buscador y la visualización de c
 
 import sys
 import os
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 
 def test_complete_search_fix():
     """Probar la corrección completa del buscador"""
@@ -36,25 +38,25 @@ def test_complete_search_fix():
 
     examples = [
         {
-            'url': 'GET /api/v1/animals/?search=2025',
-            'description': 'Busca animales con fechas en 2025 (solo fechas)',
-            'expected': 'Todos los campos del animal: id, record, sex, birth_date, weight, status, breeds_id, etc.'
+            "url": "GET /api/v1/animals/?search=2025",
+            "description": "Busca animales con fechas en 2025 (solo fechas)",
+            "expected": "Todos los campos del animal: id, record, sex, birth_date, weight, status, breeds_id, etc.",
         },
         {
-            'url': 'GET /api/v1/treatments/?search=2024-12',
-            'description': 'Busca tratamientos de diciembre 2024',
-            'expected': 'Todos los campos del tratamiento: id, treatment_date, description, frequency, etc.'
+            "url": "GET /api/v1/treatments/?search=2024-12",
+            "description": "Busca tratamientos de diciembre 2024",
+            "expected": "Todos los campos del tratamiento: id, treatment_date, description, frequency, etc.",
         },
         {
-            'url': 'GET /api/v1/vaccinations/?search=2025&search_type=text',
-            'description': 'Busca "2025" en campos de texto de vacunaciones',
-            'expected': 'Vacunaciones con "2025" en cualquier campo de texto o ID=2025'
+            "url": "GET /api/v1/vaccinations/?search=2025&search_type=text",
+            "description": 'Busca "2025" en campos de texto de vacunaciones',
+            "expected": 'Vacunaciones con "2025" en cualquier campo de texto o ID=2025',
         },
         {
-            'url': 'GET /api/v1/control/?search=2025&search_type=all',
-            'description': 'Busca "2025" en todos los campos de control',
-            'expected': 'Controles que coincidan en cualquier campo (comportamiento original)'
-        }
+            "url": "GET /api/v1/control/?search=2025&search_type=all",
+            "description": 'Busca "2025" en todos los campos de control',
+            "expected": "Controles que coincidan en cualquier campo (comportamiento original)",
+        },
     ]
 
     for i, example in enumerate(examples, 1):
@@ -63,19 +65,21 @@ def test_complete_search_fix():
         print(f"   Resultado esperado: {example['expected']}")
 
     print("\n🎯 RESULTADO ESPERADO:")
-    print("• Las búsquedas por fechas ahora son precisas y no muestran falsos positivos")
+    print(
+        "• Las búsquedas por fechas ahora son precisas y no muestran falsos positivos"
+    )
     print("• Todos los campos de los registros se muestran completamente")
     print("• Los usuarios pueden controlar el tipo de búsqueda según sus necesidades")
     print("• Se mantiene compatibilidad total con el código existente")
 
     print("\n📊 MODELOS VERIFICADOS:")
     models_checked = [
-        ('Animals', '✅ Todos los campos incluidos'),
-        ('Treatments', '✅ Todos los campos incluidos'),
-        ('Vaccinations', '✅ Todos los campos incluidos'),
-        ('Control', '✅ Todos los campos incluidos'),
-        ('AnimalDiseases', '✅ Ya tenía todos los campos'),
-        ('GeneticImprovements', '✅ Ya tenía todos los campos')
+        ("Animals", "✅ Todos los campos incluidos"),
+        ("Treatments", "✅ Todos los campos incluidos"),
+        ("Vaccinations", "✅ Todos los campos incluidos"),
+        ("Control", "✅ Todos los campos incluidos"),
+        ("AnimalDiseases", "✅ Ya tenía todos los campos"),
+        ("GeneticImprovements", "✅ Ya tenía todos los campos"),
     ]
 
     for model, status in models_checked:
@@ -92,6 +96,7 @@ def test_complete_search_fix():
     print("   • Encuentra los registros correctos")
     print("   • Muestra todas las columnas completas")
     print("   • Ofrece control sobre el tipo de búsqueda")
+
 
 if __name__ == "__main__":
     test_complete_search_fix()

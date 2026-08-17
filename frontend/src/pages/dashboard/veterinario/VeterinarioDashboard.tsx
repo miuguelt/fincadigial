@@ -7,9 +7,9 @@ import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { getStatusBadgeClass } from '@/shared/utils/badgeStyles';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
-import { 
-  Syringe, 
-  Pill, 
+import {
+  Syringe,
+  Pill,
   AlertTriangle,
   ClipboardList,
   Activity,
@@ -19,7 +19,8 @@ import {
   WifiOff,
   RefreshCw,
   Check,
-  X
+  X,
+  LifeBuoy
 } from 'lucide-react';
 import { useOnlineStatus } from '@/shared/hooks/useOnlineStatus';
 import { LiveStats } from '@/widgets/dashboard/LiveStats';
@@ -45,7 +46,7 @@ export default function VeterinarioDashboard() {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { isOnline, totalOperations } = useOnlineStatus();
-  const [activeTab, setActiveTab] = useState('acciones');
+  const [activeTab, setActiveTab] = useState('asistencia');
 
   const quickActions: QuickAction[] = [
     {
@@ -84,7 +85,6 @@ export default function VeterinarioDashboard() {
 
   const { stats, loading: statsLoading } = useCompleteDashboardStats();
 
-  // Helper para obtener valores de estadísticas con safe access
   const getStatValue = (stat: any) => stat?.valor ?? 0;
 
   const healthModules = [
@@ -128,6 +128,7 @@ export default function VeterinarioDashboard() {
   return (
     <div className="w-full p-4 space-y-6">
       <FincaHeroBanner />
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -138,7 +139,7 @@ export default function VeterinarioDashboard() {
             Bienvenido, Dr./Dra. {user?.fullname}. Finca: {user?.finca_name || 'No asignada'}
           </p>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Badge className={getStatusBadgeClass(isOnline ? 'success' : 'danger')}>
             {isOnline ? (
@@ -147,7 +148,7 @@ export default function VeterinarioDashboard() {
               <><WifiOff className="h-3 w-3 mr-1" /> Sin conexión</>
             )}
           </Badge>
-          
+
           {totalOperations > 0 && (
             <Badge className={getStatusBadgeClass('warning')}>
               <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
@@ -156,9 +157,6 @@ export default function VeterinarioDashboard() {
           )}
         </div>
       </div>
-
-      {/* Bandeja persistente: complementa los avisos push y en tiempo real. */}
-      <VeterinarianAssistancePanel />
 
       {/* KPIs en tiempo real */}
       <LiveStats />
@@ -177,17 +175,25 @@ export default function VeterinarioDashboard() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="asistencia" className="flex items-center gap-1.5 font-bold">
+            <LifeBuoy className="h-4 w-4 text-emerald-600" />
+            Solicitudes de Ayuda
+          </TabsTrigger>
           <TabsTrigger value="acciones">Acciones</TabsTrigger>
           <TabsTrigger value="modulos">Módulos Salud</TabsTrigger>
           <TabsTrigger value="alertas">Alertas</TabsTrigger>
           <TabsTrigger value="info">Información</TabsTrigger>
         </TabsList>
 
+        <TabsContent value="asistencia" className="space-y-4 pt-2">
+          <VeterinarianAssistancePanel />
+        </TabsContent>
+
         <TabsContent value="acciones" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {quickActions.map((action) => (
-              <Card 
+              <Card
                 key={action.id}
                 className="cursor-pointer hover:shadow-md transition-shadow"
                 onClick={() => handleAction(action)}
@@ -210,7 +216,6 @@ export default function VeterinarioDashboard() {
             ))}
           </div>
 
-          {/* Alerta de modo offline */}
           {!isOnline && (
             <Card className="bg-warning/10 border-warning/20">
               <CardContent className="p-4">
@@ -221,7 +226,7 @@ export default function VeterinarioDashboard() {
                       Modo Sin Conexión
                     </h4>
                     <p className="text-sm text-warning-foreground mt-1">
-                      Los registros se guardarán localmente y se sincronizarán 
+                      Los registros se guardarán localmente y se sincronizarán
                       al recuperar conexión.
                     </p>
                   </div>
@@ -234,7 +239,7 @@ export default function VeterinarioDashboard() {
         <TabsContent value="modulos">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {healthModules.map((module) => (
-              <Card 
+              <Card
                 key={module.title}
                 className="cursor-pointer hover:shadow-md transition-shadow"
                 onClick={() => navigate(module.path)}

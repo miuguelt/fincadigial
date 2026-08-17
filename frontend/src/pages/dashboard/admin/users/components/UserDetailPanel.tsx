@@ -215,13 +215,13 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 								<div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-1.5">
 									<Badge
 										variant="outline"
-										className="text-[10px] font-black uppercase py-0.5 px-3 border-primary/20 text-primary bg-primary/5 rounded-full"
+										className="text-[11px] font-black uppercase py-0.5 px-3 border-primary/20 text-primary bg-primary/5 rounded-full"
 									>
 										{item.role}
 									</Badge>
 									<div
 										className={cn(
-											"flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-[9px] font-bold uppercase",
+											"flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-[11px] font-bold uppercase",
 											isActive
 												? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
 												: "bg-muted text-muted-foreground border-border",
@@ -292,7 +292,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 							)}
 						>
 							<span>{tab.label}</span>
-							<span className="text-[9px] font-medium opacity-60 uppercase tracking-widest hidden sm:inline">
+							<span className="text-[11px] font-medium opacity-60 uppercase tracking-widest hidden sm:inline">
 								{tab.desc}
 							</span>
 						</button>
@@ -309,7 +309,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 									<Activity className="h-5 w-5 text-primary group-hover:scale-110 transition-transform duration-300" />
 									<Badge
 										variant="secondary"
-										className="text-[9px] font-black uppercase"
+										className="text-[11px] font-black uppercase"
 									>
 										Total
 									</Badge>
@@ -322,7 +322,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 											totalActivities || 0
 										)}
 									</p>
-									<p className="text-[10px] font-black uppercase text-muted-foreground mt-1">
+									<p className="text-[11px] font-black uppercase text-muted-foreground mt-1">
 										Eventos Registrados
 									</p>
 								</div>
@@ -333,7 +333,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 									<Heart className="h-5 w-5 text-emerald-500 group-hover:scale-110 transition-transform duration-300" />
 									<Badge
 										variant="secondary"
-										className="text-[9px] font-black uppercase"
+										className="text-[11px] font-black uppercase"
 									>
 										Salud
 									</Badge>
@@ -346,7 +346,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 											controlsCount
 										)}
 									</p>
-									<p className="text-[10px] font-black uppercase text-muted-foreground mt-1">
+									<p className="text-[11px] font-black uppercase text-muted-foreground mt-1">
 										Controles Médicos
 									</p>
 								</div>
@@ -357,7 +357,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 									<Syringe className="h-5 w-5 text-indigo-500 group-hover:scale-110 transition-transform duration-300" />
 									<Badge
 										variant="secondary"
-										className="text-[9px] font-black uppercase"
+										className="text-[11px] font-black uppercase"
 									>
 										Tratamientos
 									</Badge>
@@ -370,7 +370,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 											treatmentsCount
 										)}
 									</p>
-									<p className="text-[10px] font-black uppercase text-muted-foreground mt-1">
+									<p className="text-[11px] font-black uppercase text-muted-foreground mt-1">
 										Vacunas e Inyecciones
 									</p>
 								</div>
@@ -381,7 +381,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 									<Clock className="h-5 w-5 text-amber-500 group-hover:scale-110 transition-transform duration-300" />
 									<Badge
 										variant="secondary"
-										className="text-[9px] font-black uppercase"
+										className="text-[11px] font-black uppercase"
 									>
 										Permanencia
 									</Badge>
@@ -390,7 +390,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 									<p className="text-3xl font-black leading-none text-foreground">
 										{linkedDays ?? "-"}
 									</p>
-									<p className="text-[10px] font-black uppercase text-muted-foreground mt-1">
+									<p className="text-[11px] font-black uppercase text-muted-foreground mt-1">
 										Días en la Finca
 									</p>
 								</div>
@@ -558,7 +558,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 									<History size={16} className="text-primary" /> Historial
 									Operativo en Predio
 								</h3>
-								<span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-muted/40 px-2.5 py-0.5 rounded-full">
+								<span className="text-[11px] font-black text-muted-foreground uppercase tracking-widest bg-muted/40 px-2.5 py-0.5 rounded-full">
 									{filteredActivitiesForTimeline.length} de {totalActivities}{" "}
 									registros
 								</span>
@@ -575,7 +575,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 										type="button"
 										onClick={() => setHistoryFilter(pill.id as any)}
 										className={cn(
-											"text-[10px] font-black uppercase px-2.5 py-1 rounded-lg transition-all",
+											"text-[11px] font-black uppercase px-2.5 py-1 rounded-lg transition-all",
 											historyFilter === pill.id
 												? "bg-background text-foreground shadow-sm font-black"
 												: "text-muted-foreground hover:text-foreground",
@@ -609,7 +609,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 														<h4 className="font-bold text-sm text-foreground group-hover/timeline:text-primary transition-colors duration-200">
 															{act.title || act.action || "Acción registrada"}
 														</h4>
-														<span className="text-[10px] font-semibold text-muted-foreground shrink-0">
+														<span className="text-[11px] font-semibold text-muted-foreground shrink-0">
 															{localFormatDateTime(act.created_at)}
 														</span>
 													</div>
@@ -622,7 +622,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 														{act.entity && (
 															<Badge
 																variant="outline"
-																className="text-[9px] font-bold uppercase tracking-wider px-2 py-0 bg-muted/10 border-border/30 text-muted-foreground"
+																className="text-[11px] font-bold uppercase tracking-wider px-2 py-0 bg-muted/10 border-border/30 text-muted-foreground"
 															>
 																{act.entity}
 															</Badge>
@@ -635,7 +635,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 																	onClose?.();
 																	navigate(`/animals?search=${act.animal_id}`);
 																}}
-																className="inline-flex items-center gap-1 text-[9px] font-bold uppercase text-primary hover:text-primary/80 bg-primary/5 hover:bg-primary/10 border border-primary/20 rounded-full px-2.5 py-0.5 transition-all duration-200"
+																className="inline-flex items-center gap-1 text-[11px] font-bold uppercase text-primary hover:text-primary/80 bg-primary/5 hover:bg-primary/10 border border-primary/20 rounded-full px-2.5 py-0.5 transition-all duration-200"
 															>
 																<ExternalLink size={10} /> Ver Animal #
 																{act.animal_id}
@@ -713,7 +713,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 							<div className="rounded-2xl border border-border/40 bg-muted/20 p-4 hover:bg-muted/30 hover:border-border/60 transition-all duration-200 group">
 								<div className="flex items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
 									<IdCard size={14} />
-									<span className="text-[10px] font-black uppercase tracking-widest">
+									<span className="text-[11px] font-black uppercase tracking-widest">
 										Cédula / Identificación
 									</span>
 								</div>
@@ -725,7 +725,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 							<div className="rounded-2xl border border-border/40 bg-muted/20 p-4 hover:bg-muted/30 hover:border-border/60 transition-all duration-200 group">
 								<div className="flex items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
 									<Mail size={14} />
-									<span className="text-[10px] font-black uppercase tracking-widest">
+									<span className="text-[11px] font-black uppercase tracking-widest">
 										Correo Electrónico
 									</span>
 								</div>
@@ -740,7 +740,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 							<div className="rounded-2xl border border-border/40 bg-muted/20 p-4 hover:bg-muted/30 hover:border-border/60 transition-all duration-200 group">
 								<div className="flex items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
 									<Phone size={14} />
-									<span className="text-[10px] font-black uppercase tracking-widest">
+									<span className="text-[11px] font-black uppercase tracking-widest">
 										Teléfono de Contacto
 									</span>
 								</div>
@@ -752,7 +752,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 							<div className="rounded-2xl border border-border/40 bg-muted/20 p-4 hover:bg-muted/30 hover:border-border/60 transition-all duration-200 group">
 								<div className="flex items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
 									<MapPin size={14} />
-									<span className="text-[10px] font-black uppercase tracking-widest">
+									<span className="text-[11px] font-black uppercase tracking-widest">
 										Dirección / Vereda
 									</span>
 								</div>
@@ -767,7 +767,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 							<div className="rounded-2xl border border-border/40 bg-muted/20 p-4 hover:bg-muted/30 hover:border-border/60 transition-all duration-200 group">
 								<div className="flex items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
 									<Building2 size={14} />
-									<span className="text-[10px] font-black uppercase tracking-widest">
+									<span className="text-[11px] font-black uppercase tracking-widest">
 										Finca Principal
 									</span>
 								</div>
@@ -777,7 +777,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 								>
 									{item.finca_name || "Sin finca asignada"}
 								</p>
-								<p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mt-0.5">
+								<p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mt-0.5">
 									{item.finca_type || "Sin tipo"}
 								</p>
 							</div>
@@ -785,14 +785,14 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 							<div className="rounded-2xl border border-border/40 bg-muted/20 p-4 hover:bg-muted/30 hover:border-border/60 transition-all duration-200 group">
 								<div className="flex items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
 									<Layers size={14} />
-									<span className="text-[10px] font-black uppercase tracking-widest">
+									<span className="text-[11px] font-black uppercase tracking-widest">
 										Predios Vinculados
 									</span>
 								</div>
 								<p className="text-base font-black text-foreground mt-2">
 									{fincas.length}
 									{item.is_multi_finca && (
-										<span className="ml-2 text-[10px] font-black uppercase tracking-widest text-primary">
+										<span className="ml-2 text-[11px] font-black uppercase tracking-widest text-primary">
 											Multi-finca
 										</span>
 									)}
@@ -802,7 +802,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 							<div className="rounded-2xl border border-border/40 bg-muted/20 p-4 hover:bg-muted/30 hover:border-border/60 transition-all duration-200 group">
 								<div className="flex items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
 									<CalendarClock size={14} />
-									<span className="text-[10px] font-black uppercase tracking-widest">
+									<span className="text-[11px] font-black uppercase tracking-widest">
 										Última Actualización
 									</span>
 								</div>
@@ -814,7 +814,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 							<div className="rounded-2xl border border-border/40 bg-muted/20 p-4 hover:bg-muted/30 hover:border-border/60 transition-all duration-200 group">
 								<div className="flex items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
 									<Hash size={14} />
-									<span className="text-[10px] font-black uppercase tracking-widest">
+									<span className="text-[11px] font-black uppercase tracking-widest">
 										Identificador Interno
 									</span>
 								</div>
@@ -827,7 +827,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 						<div className="rounded-2xl border border-border/40 bg-muted/20 p-4 mt-2">
 							<div className="flex items-center gap-2 text-muted-foreground">
 								<ShieldCheck size={14} />
-								<span className="text-[10px] font-black uppercase tracking-widest">
+								<span className="text-[11px] font-black uppercase tracking-widest">
 									Estado y Permisos
 								</span>
 							</div>
@@ -835,7 +835,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 								<Badge
 									variant="outline"
 									className={cn(
-										"font-black uppercase py-0.5 px-3 rounded-full border text-[10px]",
+										"font-black uppercase py-0.5 px-3 rounded-full border text-[11px]",
 										access?.color,
 									)}
 								>
@@ -844,14 +844,14 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 								</Badge>
 								<Badge
 									variant="secondary"
-									className="font-black uppercase py-0.5 px-3 rounded-full text-[10px]"
+									className="font-black uppercase py-0.5 px-3 rounded-full text-[11px]"
 								>
 									Creado: {localFormatDateTime(item.created_at).split(",")[0]}
 								</Badge>
 								<Badge
 									variant="outline"
 									className={cn(
-										"font-black uppercase py-0.5 px-3 rounded-full border text-[10px] gap-1",
+										"font-black uppercase py-0.5 px-3 rounded-full border text-[11px] gap-1",
 										isActive
 											? "bg-emerald-500/10 text-emerald-700 border-emerald-500/25"
 											: "bg-slate-500/10 text-slate-600 border-slate-500/25",
@@ -863,7 +863,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 								{linkedDays !== null && (
 									<Badge
 										variant="secondary"
-										className="font-black uppercase py-0.5 px-3 rounded-full text-[10px]"
+										className="font-black uppercase py-0.5 px-3 rounded-full text-[11px]"
 									>
 										{linkedDays} días vinculado
 									</Badge>

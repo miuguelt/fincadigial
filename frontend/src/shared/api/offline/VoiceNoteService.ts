@@ -64,7 +64,7 @@ class VoiceNoteService {
       this.mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
         const duration = Math.round((Date.now() - this.recordingStartTime) / 1000);
-        
+
         const note: VoiceNote = {
           id: `vn-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           timestamp: Date.now(),
@@ -74,7 +74,7 @@ class VoiceNoteService {
         };
 
         await this.saveNote(note);
-        
+
         // Intentar sincronizar inmediatamente si hay red
         if (navigator.onLine) {
           this.syncNote(note).catch(console.error);
@@ -142,7 +142,7 @@ class VoiceNoteService {
       // Convertir Blob a Base64 para envío simple en JSON
       // En una app más grande usaríamos FormData, pero para reportes cortos esto es más resiliente en Mesh
       const base64 = await this.blobToBase64(note.blob);
-      
+
       // Encolar en la cola offline estándar para que herede la lógica de reintentos y tokens
       await offlineQueue.enqueue(
         'POST',
@@ -178,4 +178,3 @@ class VoiceNoteService {
 }
 
 export const voiceNoteService = new VoiceNoteService();
-

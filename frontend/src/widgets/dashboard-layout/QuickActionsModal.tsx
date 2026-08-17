@@ -14,7 +14,7 @@ const QuickWater = lazy(() => import('@/pages/quick/QuickWater'));
 export function QuickActionsModal() {
   const [searchParams, setSearchParams] = useSearchParams();
   const quickAction = searchParams.get('quick');
-  
+
   // Si no hay acción rápida, el modal no debe renderizarse ni estar abierto
   const isOpen = !!quickAction;
 
@@ -49,7 +49,7 @@ export function QuickActionsModal() {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent 
+      <DialogContent
         className="w-[min(640px,calc(100vw-1rem))] max-w-[640px] max-h-[min(90dvh,760px)] p-0 border border-border overflow-hidden bg-background sm:rounded-xl"
         // Le damos un z-index alto para asegurarnos de que quede encima de todo
         zIndex={1200}

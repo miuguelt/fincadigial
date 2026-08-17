@@ -67,4 +67,3 @@ export function isPublicEndpoint(path: string): boolean {
   if (path === 'users/public' || path.endsWith('/users/public')) return true;
   return false;
 }
-

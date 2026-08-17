@@ -28,7 +28,7 @@ test.describe('Autenticación', () => {
     const dashboardPage = new DashboardPage(page);
 
     // Login
-    await loginPage.login('99999999', 'password123');
+    await loginPage.login(process.env.E2E_OWNER_ID ?? '', process.env.E2E_OWNER_PASS ?? '');
 
     // Verificar redirección
     await loginPage.expectLoginSuccess();

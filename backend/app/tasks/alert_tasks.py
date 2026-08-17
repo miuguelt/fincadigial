@@ -5,6 +5,7 @@ import flask
 
 logger = logging.getLogger(__name__)
 
+
 @celery.task(name="app.tasks.alert_tasks.evaluate_all_alerts")
 def evaluate_all_alerts(finca_id=None):
     """
@@ -26,13 +27,15 @@ def evaluate_all_alerts(finca_id=None):
 
         if redis_client is not None:
             lock = redis_client.lock(
-                f'villaluz:tasks:evaluate_all_alerts:{finca_id or "global"}',
+                f"villaluz:tasks:evaluate_all_alerts:{finca_id or 'global'}",
                 timeout=2 * 60 * 60,
                 blocking_timeout=0,
             )
             if not lock.acquire(blocking=False):
-                logger.info("Evaluación de alertas omitida: ya existe una ejecución activa")
-                return {'status': 'skipped', 'reason': 'already_running'}
+                logger.info(
+                    "Evaluación de alertas omitida: ya existe una ejecución activa"
+                )
+                return {"status": "skipped", "reason": "already_running"}
 
         results = AlertEngine.evaluate_all(finca_id=finca_id)
         logger.info(f"Evaluación de alertas finalizada: {results}")
@@ -46,7 +49,10 @@ def evaluate_all_alerts(finca_id=None):
                 if lock.owned():
                     lock.release()
             except Exception:
-                logger.warning("No se pudo liberar el lock de evaluación de alertas", exc_info=True)
+                logger.warning(
+                    "No se pudo liberar el lock de evaluación de alertas", exc_info=True
+                )
+
 
 @celery.task(name="app.tasks.alert_tasks.broadcast_live_kpis")
 def broadcast_live_kpis():
@@ -54,11 +60,15 @@ def broadcast_live_kpis():
     Calcula los KPIs y los difunde a través de Redis Pub/Sub a todos los WebSockets / SSE.
     """
     from app.extensions import redis_client
+
     if not redis_client:
         return "No Redis Client"
 
     import json
-    from app.namespaces.analytics.live import calculate_live_kpis_by_finca, combine_live_kpis
+    from app.namespaces.analytics.live import (
+        calculate_live_kpis_by_finca,
+        combine_live_kpis,
+    )
     from app.models.finca import Finca
 
     # Fake admin to bypass filters internally
@@ -69,18 +79,22 @@ def broadcast_live_kpis():
 
     try:
         finca_ids = [row[0] for row in Finca.query.with_entities(Finca.id).all()]
-        channels = ['live_kpis_global', *(f'live_kpis_{finca_id}' for finca_id in finca_ids)]
+        channels = [
+            "live_kpis_global",
+            *(f"live_kpis_{finca_id}" for finca_id in finca_ids),
+        ]
 
         try:
             subscriber_rows = redis_client.pubsub_numsub(*channels)
             subscribers = {
-                key.decode('utf-8') if isinstance(key, bytes) else str(key): int(count)
+                key.decode("utf-8") if isinstance(key, bytes) else str(key): int(count)
                 for key, count in subscriber_rows
             }
-            global_active = subscribers.get('live_kpis_global', 0) > 0
+            global_active = subscribers.get("live_kpis_global", 0) > 0
             active_ids = [
-                finca_id for finca_id in finca_ids
-                if subscribers.get(f'live_kpis_{finca_id}', 0) > 0
+                finca_id
+                for finca_id in finca_ids
+                if subscribers.get(f"live_kpis_{finca_id}", 0) > 0
             ]
         except Exception:
             # Older Redis-compatible servers may not expose PUBSUB NUMSUB.
@@ -95,16 +109,18 @@ def broadcast_live_kpis():
 
         if global_active:
             redis_client.publish(
-                'live_kpis_global',
+                "live_kpis_global",
                 json.dumps(combine_live_kpis(per_finca.values())),
             )
 
         for finca_id in active_ids:
             payload = per_finca.get(finca_id)
             if payload:
-                redis_client.publish(f'live_kpis_{finca_id}', json.dumps(payload))
+                redis_client.publish(f"live_kpis_{finca_id}", json.dumps(payload))
 
-        logger.debug("Broadcast de KPIs live completado para %s fincas activas.", len(active_ids))
+        logger.debug(
+            "Broadcast de KPIs live completado para %s fincas activas.", len(active_ids)
+        )
         return True
     except Exception as e:
         logger.error(f"Error emitiendo KPIs a Redis: {e}")

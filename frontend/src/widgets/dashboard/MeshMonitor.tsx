@@ -233,7 +233,7 @@ export const MeshMonitor: React.FC = () => {
             <span className="text-sm font-semibold text-foreground">Datos por Guardar</span>
           </div>
           <p className="text-2xl font-bold text-foreground">{pendingCount}</p>
-          <p className="text-[10px] text-muted-foreground mt-1">
+          <p className="text-[11px] text-muted-foreground mt-1">
             Registros en este celular en espera de enviarse
           </p>
         </div>
@@ -247,7 +247,7 @@ export const MeshMonitor: React.FC = () => {
           <p className="text-2xl font-bold text-foreground">
             {nearbyNodes.length}
           </p>
-          <p className="text-[10px] text-muted-foreground mt-1">
+          <p className="text-[11px] text-muted-foreground mt-1">
             {nearbyNodes.filter((n) => n.isConnected).length} conectados ahora
           </p>
         </div>
@@ -261,7 +261,7 @@ export const MeshMonitor: React.FC = () => {
           <p className="text-2xl font-bold text-foreground">
             {syncState?.messagesReceived || 0}
           </p>
-          <p className="text-[10px] text-muted-foreground mt-1">
+          <p className="text-[11px] text-muted-foreground mt-1">
             {syncState?.lastSyncAt
               ? `Último paso: ${new Date(syncState.lastSyncAt).toLocaleTimeString('es-CO')}`
               : "Sin pasar datos aún"}
@@ -296,7 +296,7 @@ export const MeshMonitor: React.FC = () => {
                   )}
                   <div>
                     <p className="text-sm font-medium text-foreground">{node.name}</p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-[11px] text-muted-foreground">
                       {node.connectionType === "bluetooth"
                         ? "Bluetooth Directo"
                         : "Red WiFi del Campo"}

@@ -44,11 +44,13 @@ def test_image_list_is_public_and_returns_real_image_data(client, app):
 
 def test_image_upload_is_forbidden_without_finca_membership(client, app):
     with app.app_context():
+        from tests.conftest import get_test_password
+
         finca = _create_finca("Finca protegida")
         user = User.create(
             identification=90909090,
             fullname="Usuario sin acceso",
-            password="TestPassword123!",
+            password=get_test_password(),
             email="sin-acceso@tests.villaluz",
             phone="3009090909",
             role=Role.Operario,

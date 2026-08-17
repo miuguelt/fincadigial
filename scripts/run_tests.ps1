@@ -32,7 +32,7 @@
 #>
 
 param(
-    [ValidateSet('backend', 'frontend', 'e2e', 'all')]
+    [ValidateSet('backend', 'frontend', 'e2e', 'unattended', 'all')]
     [string]$Layer = 'all',
 
     [switch]$Coverage,
@@ -195,6 +195,13 @@ switch ($Layer) {
     'backend'  { Run-BackendTests }
     'frontend' { Run-FrontendTests }
     'e2e'      { Run-E2ETests }
+    'unattended' {
+        # Todo lo que corre sin la aplicación levantada. Es la capa que usa
+        # `db test villaluz`: Playwright tiene webServer undefined, así que
+        # incluir E2E aquí haría fallar cualquier verificación desatendida.
+        Run-BackendTests
+        Run-FrontendTests
+    }
     'all'      {
         Run-BackendTests
         Run-FrontendTests

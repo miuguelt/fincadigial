@@ -51,7 +51,7 @@ const DashboardExecutive: React.FC = () => {
 
   const kpiResumen = dashboard?.kpi_resumen;
   const rawKpiCards: KpiCardSummary[] = useMemo(() => kpiResumen?.cards ?? [], [kpiResumen]);
-  
+
   const kpiCards = useMemo<KpiCardSummary[]>(() => {
     if (!rawKpiCards.length) return [];
     const indexOfId = (id: string) => KPI_ORDER.indexOf(id);
@@ -98,15 +98,16 @@ const DashboardExecutive: React.FC = () => {
   }
 
   // Preparar datos para demografía
+  const activeSexDistribution = (animalStats as any)?.by_sex_active ?? (animalStats as any)?.by_sex ?? {};
   const totalesSexo = {
-    machos: dashboard.distribucion_sexo?.machos || (animalStats as any)?.by_sex?.Macho || 0,
-    hembras: dashboard.distribucion_sexo?.hembras || (animalStats as any)?.by_sex?.Hembra || 0,
+    machos: dashboard.distribucion_sexo?.machos ?? activeSexDistribution.Macho ?? 0,
+    hembras: dashboard.distribucion_sexo?.hembras ?? activeSexDistribution.Hembra ?? 0,
   };
-  
+
   const statusChartData = animalStats?.by_status && Object.keys(animalStats.by_status).length > 0
     ? { labels: Object.keys(animalStats.by_status), datasets: [{ data: Object.values(animalStats.by_status) }] }
     : null;
-    
+
   const ageDistributionData = animalStats?.age_distribution && animalStats.age_distribution.length > 0
     ? { labels: animalStats.age_distribution.map((item: any) => item.age_range), datasets: [{ data: animalStats.age_distribution.map((item: any) => item.count) }] }
     : null;
@@ -118,7 +119,7 @@ const DashboardExecutive: React.FC = () => {
     const treatments = healthStats?.treatments_by_month || [];
     const vaccinations = healthStats?.vaccinations_by_month || [];
     if (!treatments.length && !vaccinations.length) return null;
-    
+
     const labels = Array.from(new Set([...treatments.map((i: any) => i.period), ...vaccinations.map((i: any) => i.period)])).sort();
     const mapSeries = (src: any[]) => labels.map((p) => src.find((i) => i.period === p)?.count ?? 0);
 
@@ -132,8 +133,8 @@ const DashboardExecutive: React.FC = () => {
   })();
 
   const fechaActualizacion = dashboard.generated_at ? new Date(dashboard.generated_at) : undefined;
-  const totalAnimales = animalStats?.total ?? dashboard.animales_activos?.valor ?? 0;
-  const treatmentSuccessRate = healthStats?.treatment_success_rate ?? 0;
+  const totalAnimales = (animalStats as any)?.total_animals ?? dashboard.animales_activos?.valor ?? 0;
+  const healthyControlRate = healthStats?.healthy_control_rate ?? null;
   const enfermedadesComunes = healthStats?.common_diseases || [];
 
   return (
@@ -150,7 +151,7 @@ const DashboardExecutive: React.FC = () => {
             const iconNode = kpiIconMap[card.id] || (card.icono ? <span>{card.icono}</span> : null);
 
             return (
-              <motion.div 
+              <motion.div
                 key={card.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -204,7 +205,7 @@ const DashboardExecutive: React.FC = () => {
           <ExecutiveHealth
             healthTimeSeries={healthTimeSeries}
             enfermedadesComunes={enfermedadesComunes}
-            treatmentSuccessRate={treatmentSuccessRate}
+            healthyControlRate={healthyControlRate}
           />
         </section>
 

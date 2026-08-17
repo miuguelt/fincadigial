@@ -51,4 +51,3 @@ export const QuickStat: React.FC<{ label: string; value: string | number; icon?:
     {icon && <span className="text-2xl">{icon}</span>}
   </div>
 );
-

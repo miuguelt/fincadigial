@@ -86,13 +86,13 @@ SELECT COUNT(*) FROM treatments WHERE animals_id = 123
 
 **After (EXISTS with LIMIT 1)**:
 ```sql
-SELECT CASE 
+SELECT CASE
     WHEN EXISTS (
-        SELECT 1 FROM treatments 
-        WHERE animals_id = 123 
+        SELECT 1 FROM treatments
+        WHERE animals_id = 123
         LIMIT 1
-    ) THEN 1 
-    ELSE 0 
+    ) THEN 1
+    ELSE 0
 END as count
 ```
 

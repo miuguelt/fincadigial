@@ -58,7 +58,9 @@ class TestContentType:
         assert "application/json" in resp.content_type
 
     def test_respuesta_post_es_json(self, client):
-        resp = client.post(f"{BASE}/auth/login", json={"identifier": 0, "password": "x"})
+        resp = client.post(
+            f"{BASE}/auth/login", json={"identifier": 0, "password": "x"}
+        )
         assert "application/json" in resp.content_type
 
     def test_respuesta_401_es_json(self, client):

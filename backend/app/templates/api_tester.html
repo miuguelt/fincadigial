@@ -168,7 +168,7 @@
                 <div class="row">
                     <div class="col-md-8">
                         <label for="authToken" class="form-label">Token JWT (opcional para endpoints públicos)</label>
-                        <input type="text" class="form-control token-input" id="authToken" 
+                        <input type="text" class="form-control token-input" id="authToken"
                                placeholder="Pega aquí tu token JWT o usa el botón de login">
                     </div>
                     <div class="col-md-4 d-flex align-items-end">
@@ -213,7 +213,7 @@
                         <label for="endpoint" class="form-label">Endpoint URL</label>
                         <div class="input-group">
                             <span class="input-group-text" id="baseUrlDisplay">{{ config.get('API_BASE_URL', 'https://localhost:8081').replace('/api/v1', '') }}</span>
-                            <input type="text" class="form-control" id="endpoint" 
+                            <input type="text" class="form-control" id="endpoint"
                                    placeholder="/api/v1/auth/login" value="/api/v1/auth/login">
                         </div>
                     </div>
@@ -222,10 +222,10 @@
                 <div class="row mt-3">
                     <div class="col-12">
                         <label for="requestBody" class="form-label">Cuerpo de la Petición (JSON)</label>
-                        <textarea class="form-control" id="requestBody" rows="8" 
+                        <textarea class="form-control" id="requestBody" rows="8"
                                   placeholder='{
   "identification": 12345678,
-  "password": "password123"
+  "password": "<TEST_PASSWORD>"
 }'></textarea>
                     </div>
                 </div>
@@ -276,7 +276,7 @@
                 endpoint: '/api/v1/auth/login',
                 body: JSON.stringify({
                     "identification": 12345678,
-                    "password": "password123"
+                    "password": "<TEST_PASSWORD>"
                 }, null, 2)
             },
             getTreatments: { method: 'GET', endpoint: '/api/v1/medical/treatments', body: '' },
@@ -299,7 +299,7 @@
                 body: JSON.stringify({
                     "identification": 87654321,
                     "fullname": "María García",
-                    "password": "password123",
+                    "password": "<TEST_PASSWORD>",
                     "email": "maria@example.com",
                     "phone": "3001234567",
                     "address": "Calle 123 #45-67",
@@ -337,7 +337,7 @@
         async function testLogin() {
             const loginData = {
                 identification: 12345678,
-                password: "password123"
+                password: "<TEST_PASSWORD>"
             };
 
             try {
@@ -351,7 +351,7 @@
                 });
 
                 const data = await response.json();
-                
+
                 if (response.ok && data && data.data && data.data.access_token) {
                     document.getElementById('authToken').value = data.data.access_token;
                     alert('✅ Login exitoso! Token guardado automáticamente.');
@@ -403,7 +403,7 @@
             try {
                 const baseUrl = document.getElementById('baseUrlDisplay').textContent;
                 const response = await fetch(`${baseUrl}${endpoint}`, options);
-                
+
                 // Obtener headers de respuesta
                 const responseHeaders = {};
                 response.headers.forEach((value, key) => {
@@ -413,7 +413,7 @@
                 // Obtener cuerpo de respuesta
                 let responseData;
                 const contentType = response.headers.get('content-type');
-                
+
                 if (contentType && contentType.includes('application/json')) {
                     responseData = await response.json();
                 } else {
@@ -442,7 +442,7 @@
             // Mostrar código de estado
             statusElement.textContent = status;
             statusElement.className = `status-code status-${Math.floor(status / 100) * 100}`;
-            
+
             if (status === 0) {
                 statusElement.className = 'status-code status-500';
                 statusElement.textContent = 'Error de Conexión';

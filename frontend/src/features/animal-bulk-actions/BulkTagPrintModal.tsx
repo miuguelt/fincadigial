@@ -52,7 +52,7 @@ export const BulkTagPrintModal: React.FC<BulkTagPrintModalProps> = ({
             <span className="text-xl font-black tracking-tight uppercase text-white">
               Identificación Sistémica
             </span>
-            <Badge className="ml-3 bg-indigo-500 text-black font-black text-[10px] px-3 py-0.5 rounded-full uppercase tracking-widest border-none">
+            <Badge className="ml-3 bg-indigo-500 text-black font-black text-[11px] px-3 py-0.5 rounded-full uppercase tracking-widest border-none">
               {animals.length} Etiquetas
             </Badge>
           </div>
@@ -80,7 +80,7 @@ export const BulkTagPrintModal: React.FC<BulkTagPrintModalProps> = ({
             <div className="hidden xl:flex items-center gap-4 pr-8 border-r border-white/10">
               <Activity size={20} className="text-emerald-400" />
               <div className="flex flex-col text-right">
-                <span className="text-[9px] font-black text-indigo-400/40 uppercase tracking-widest leading-none mb-1.5">
+                <span className="text-[11px] font-black text-indigo-400/40 uppercase tracking-widest leading-none mb-1.5">
                   Estado de Salida
                 </span>
                 <span className="text-[18px] font-black uppercase tracking-tight text-white italic leading-none drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
@@ -107,7 +107,7 @@ export const BulkTagPrintModal: React.FC<BulkTagPrintModalProps> = ({
           <div className="px-8 py-4 border-b border-white/10 flex items-center justify-between gap-6 bg-[#0f172a]/40">
             <div className="flex items-center gap-4 shrink-0">
               <div className="h-3 w-3 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]" />
-              <h3 className="font-black text-[10px] uppercase tracking-[0.4em] text-indigo-200">
+              <h3 className="font-black text-[11px] uppercase tracking-[0.4em] text-indigo-200">
                 Terminal de Previsualización
               </h3>
             </div>
@@ -116,7 +116,7 @@ export const BulkTagPrintModal: React.FC<BulkTagPrintModalProps> = ({
               size="sm"
               onClick={() => setFullViewport(!fullViewport)}
               className={cn(
-                "h-11 rounded-xl px-5 font-black text-[10px] uppercase tracking-widest gap-3 text-muted-foreground hover:text-white hover:bg-card/5 transition-all italic",
+                "h-11 rounded-xl px-5 font-black text-[11px] uppercase tracking-widest gap-3 text-muted-foreground hover:text-white hover:bg-card/5 transition-all italic",
                 fullViewport && "text-emerald-400 border border-emerald-500/30"
               )}
             >

@@ -215,7 +215,7 @@ export const MCPStatusWidget: React.FC = () => {
                 </p>
               </div>
             </div>
-            <p className="text-[10px] text-muted-foreground mt-2">
+            <p className="text-[11px] text-muted-foreground mt-2">
               Última actualización:{" "}
               {new Date(healthData.timestamp).toLocaleTimeString('es-CO')}
             </p>

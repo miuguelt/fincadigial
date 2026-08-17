@@ -68,7 +68,7 @@ export const AlertNotificationCard = memo(function AlertNotificationCard({
         <div className="flex items-center gap-2 min-w-0">
           {/* Badge de prioridad */}
           <span className={cn(
-            'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0',
+            'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider shrink-0',
             priority.badge, 'text-white shadow-sm'
           )}>
             {priority.pulse && (
@@ -82,7 +82,7 @@ export const AlertNotificationCard = memo(function AlertNotificationCard({
 
           {/* Tipo de alerta */}
           <div className={cn(
-            'flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold',
+            'flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold',
             'bg-black/5 dark:bg-card/10',
             priority.color
           )}>
@@ -128,14 +128,14 @@ export const AlertNotificationCard = memo(function AlertNotificationCard({
             {(alert.animal_record || alert.animal_name) && (
               <div className="mt-2 flex flex-wrap items-center gap-1.5">
                 {alert.animal_record && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-secondary text-secondary-foreground border border-border/40">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-secondary text-secondary-foreground border border-border/40">
                     <Tag className="h-2.5 w-2.5" />
                     {alert.animal_record}
                     {alert.animal_name && <span className="text-muted-foreground">· {alert.animal_name}</span>}
                   </span>
                 )}
                 {alert.field_name && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-secondary text-secondary-foreground border border-border/40">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-secondary text-secondary-foreground border border-border/40">
                     <MapPin className="h-2.5 w-2.5" />
                     {alert.field_name}
                   </span>
@@ -156,7 +156,7 @@ export const AlertNotificationCard = memo(function AlertNotificationCard({
               <div className="flex items-center justify-center w-5 h-5 rounded-full bg-violet-500/20">
                 <Sparkles className="h-3 w-3 text-violet-600 dark:text-violet-400" />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-violet-700 dark:text-violet-300">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-violet-700 dark:text-violet-300">
                 Recomendación IA
               </span>
             </div>

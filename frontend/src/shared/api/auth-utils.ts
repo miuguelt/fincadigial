@@ -1,9 +1,9 @@
 import { getCookie } from '@/shared/utils/cookieUtils';
 import { toast } from "@/shared/hooks/use-toast";
-import { 
-  API_CONFIG, 
-  AUTH_SESSION_ACTIVE_KEY, 
-  SESSION_STORAGE_KEYS, 
+import {
+  API_CONFIG,
+  AUTH_SESSION_ACTIVE_KEY,
+  SESSION_STORAGE_KEYS,
   SESSION_COOKIE_CANDIDATES,
   AUTH_STATE_KEYS
 } from './config';
@@ -49,8 +49,8 @@ export const readStoredToken = (): string | null => {
   try {
     const storageKey = API_CONFIG?.authStorageKey || AUTH_STORAGE_KEY;
     // Intentar leer de múltiples fuentes para máxima resiliencia
-    return localStorage.getItem(storageKey) || 
-           localStorage.getItem('access_token') || 
+    return localStorage.getItem(storageKey) ||
+           localStorage.getItem('access_token') ||
            sessionStorage.getItem(storageKey) ||
            sessionStorage.getItem('access_token');
   } catch {
@@ -102,7 +102,7 @@ export async function forceClientLogout(reason = 'expired', options?: { logoutUr
       const loginUrl = new URL(loginPath, window.location.origin);
       loginUrl.searchParams.set('reason', reason);
       const target = loginUrl.toString();
-      
+
       const willRedirect = window.location.pathname !== loginUrl.pathname;
 
       if (reason === 'expired' && !willRedirect) {
@@ -112,7 +112,7 @@ export async function forceClientLogout(reason = 'expired', options?: { logoutUr
           variant: "destructive",
         });
       }
-      
+
       if (willRedirect) {
         window.location.assign(target);
       }
@@ -120,4 +120,3 @@ export async function forceClientLogout(reason = 'expired', options?: { logoutUr
   })().finally(() => { forceLogoutPromise = null; });
   return forceLogoutPromise;
 }
-

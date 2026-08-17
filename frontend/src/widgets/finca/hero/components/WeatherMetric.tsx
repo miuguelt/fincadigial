@@ -29,14 +29,14 @@ export function WeatherMetric({ item }: { item: WeatherMetricItem }) {
     >
       <Icon className="h-5 w-5 shrink-0 opacity-80" aria-hidden="true" />
       <div className="min-w-0">
-        <p className="text-[10px] font-bold uppercase leading-none tracking-wider opacity-70">
+        <p className="text-[11px] font-bold uppercase leading-none tracking-wider opacity-70">
           {item.label}
         </p>
         <p className="mt-1 fit-clamp text-base font-black leading-none tabular-nums sm:text-lg">
           {item.value}
         </p>
         {item.hint && (
-          <p className="mt-1 text-[10px] leading-tight opacity-70 break-words">{item.hint}</p>
+          <p className="mt-1 text-[11px] leading-tight opacity-70 break-words">{item.hint}</p>
         )}
       </div>
     </div>

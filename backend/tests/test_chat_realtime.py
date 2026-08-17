@@ -14,12 +14,14 @@ def _create_finca(name: str) -> Finca:
 
 
 def _create_user(index: int, name: str, finca: Finca, *, status: bool = True) -> User:
+    from tests.conftest import get_test_password
+
     user = User.create(
         identification=9_100_000 + index,
         fullname=name,
         email=f"chat-{index}@test.villaluz",
         phone=f"3109{index:06d}",
-        password=("Test" + "Password123!"),
+        password=get_test_password(),
         role=Role.Operario,
         finca_id=finca.id,
         approval_status=ApprovalStatus.Approved,

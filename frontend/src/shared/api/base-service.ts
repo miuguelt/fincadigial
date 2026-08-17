@@ -105,7 +105,7 @@ export class BaseService<T> {
   }
 
   async getAll(params?: Record<string, any>): Promise<T[]> {
-    const normalizedParams = BaseService.buildListParams(params || {});
+    const normalizedParams = buildListParams(params || {});
     const { cancelToken, ...restParams } = normalizedParams as any;
 
     const originalParams = (params || {}) as Record<string, any>;
@@ -154,7 +154,7 @@ export class BaseService<T> {
   }
 
   async getPaginated(params?: Record<string, any>): Promise<PaginatedResponse<T>> {
-    const normalizedParams = BaseService.buildListParams(params || {});
+    const normalizedParams = buildListParams(params || {});
     const { cancelToken, ...normalizedWithoutToken } = normalizedParams as any;
     const requestParamsBase: Record<string, any> = { ...normalizedWithoutToken };
     const shouldBypassCache = Object.prototype.hasOwnProperty.call(requestParamsBase, 'cache_bust') && requestParamsBase.cache_bust != null;
@@ -210,7 +210,7 @@ export class BaseService<T> {
   }
 
   async getById(id: number | string, params?: Record<string, any>): Promise<T> {
-    const normalizedParams = BaseService.buildListParams(params || {});
+    const normalizedParams = buildListParams(params || {});
     const { cancelToken, ...normalizedWithoutToken } = normalizedParams as any;
     const requestParams: Record<string, any> = {};
     if (normalizedWithoutToken.fields) requestParams.fields = normalizedWithoutToken.fields;
@@ -301,7 +301,7 @@ export class BaseService<T> {
   }
 
   async search(query: string, params?: Record<string, any>): Promise<T[]> {
-    const normalizedParams = BaseService.buildListParams(params || {});
+    const normalizedParams = buildListParams(params || {});
     const searchValue = normalizedParams.search ?? query;
     const searchParams = { ...normalizedParams, q: searchValue, search: searchValue };
     const cacheKey = this.getCacheKey(searchParams);
@@ -335,45 +335,6 @@ export class BaseService<T> {
       await this.clearCache();
     }
     return response.data?.data || response.data || response;
-  }
-
-  public static buildListParams(opts: Record<string, any> = {}): Record<string, any> {
-    const {
-      page,
-      limit,
-      per_page,
-      search,
-      q,
-      sort_by,
-      sortBy,
-      sort_order,
-      order,
-      include_relations,
-      cache_bust,
-      fields,
-      export: exportFlag,
-      ...rest
-    } = opts;
-
-    let defaultLimit = 10;
-    try {
-      if (typeof window !== 'undefined') {
-        defaultLimit = getDefaultLimitByDevice();
-      }
-    } catch { /* Browser capability detection falls back to the default limit. */ }
-
-    return {
-      page: page ?? rest.page ?? 1,
-      limit: limit ?? per_page ?? rest.limit ?? defaultLimit,
-      search: search ?? q,
-      sort_by: sort_by ?? sortBy,
-      sort_order: sort_order ?? order,
-      include_relations,
-      cache_bust,
-      fields,
-      export: exportFlag,
-      ...rest,
-    };
   }
 
   async getMetadata(): Promise<{ resource: string; total_count: number; last_modified: string; etag: string } | null> {

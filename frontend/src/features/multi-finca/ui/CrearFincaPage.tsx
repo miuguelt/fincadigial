@@ -73,7 +73,7 @@ export const CrearFincaPage: React.FC<{ modal?: boolean }> = ({ modal = false })
     if (!created) return;
     try {
       const resp = await apiClient.post("/multi-finca/switch", { finca_id: created.finca_id });
-      
+
       // Persistir token de forma explícita si se recibió en la respuesta
       const token = resp.data?.data?.access_token || resp.data?.access_token;
       if (token) {

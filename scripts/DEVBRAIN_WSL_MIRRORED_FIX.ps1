@@ -3,12 +3,12 @@
 # ==============================================================================
 # Este script soluciona el error 0x8007054f (CreateInstance/ConfigureNetworking)
 # que ocurre en WSL cuando se usa networkingMode=mirrored.
-# 
+#
 # Solución:
 # 1. Fuerza el apagado de WSL.
 # 2. Reinicia el Servicio de Red de Host (HNS) que gestiona los switches virtuales.
-# 3. Desactiva el Inicio Rápido (Fast Startup) de Windows. El Inicio Rápido 
-#    hiberna el kernel y corrompe el estado de HNS entre reinicios, siendo la 
+# 3. Desactiva el Inicio Rápido (Fast Startup) de Windows. El Inicio Rápido
+#    hiberna el kernel y corrompe el estado de HNS entre reinicios, siendo la
 #    causa principal de que WSL falle al arrancar.
 # ==============================================================================
 

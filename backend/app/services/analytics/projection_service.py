@@ -50,13 +50,16 @@ class ProjectionService:
 
         if gdp_avg is None:
             from app.models.breed_growth_standards import BreedGrowthStandard
+
             if animal.breeds_id and animal.sex:
                 _, _, adg = BreedGrowthStandard.get_expected_weight(
                     animal.breeds_id, animal.sex.value, animal.age_in_months or 6
                 )
-                gdp_avg = adg if adg else ProjectionService._get_config('param.gdp_default')
+                gdp_avg = (
+                    adg if adg else ProjectionService._get_config("param.gdp_default")
+                )
             else:
-                gdp_avg = ProjectionService._get_config('param.gdp_default')
+                gdp_avg = ProjectionService._get_config("param.gdp_default")
 
         current_weight = animal.weight
         projected_weight = current_weight + (gdp_avg * days_projected)
@@ -68,17 +71,19 @@ class ProjectionService:
             "projected_days": days_projected,
             "projected_weight": round(projected_weight, 2),
             "confidence": "Alta" if len(controls) >= 3 else "Media",
-            "source": "BreedGrowthStandard" if len(controls) < 2 else "historical"
+            "source": "BreedGrowthStandard" if len(controls) < 2 else "historical",
         }
 
     @staticmethod
-    def project_field_capacity(field_area_m2: float, biomass_m2: float, animal_count: int) -> dict[str, Any]:
+    def project_field_capacity(
+        field_area_m2: float, biomass_m2: float, animal_count: int
+    ) -> dict[str, Any]:
         """
         Calcula cuántos días puede soportar un potrero la carga animal actual.
         Parámetros de consumo desde system_contents.
         """
-        coef = ProjectionService._get_config('param.coef_aprovechamiento')
-        consumo = ProjectionService._get_config('param.consumo_promedio_kg')
+        coef = ProjectionService._get_config("param.coef_aprovechamiento")
+        consumo = ProjectionService._get_config("param.consumo_promedio_kg")
 
         total_biomass = field_area_m2 * biomass_m2
         consumable_biomass = total_biomass * coef
@@ -93,11 +98,13 @@ class ProjectionService:
             "total_biomass_kg": round(total_biomass, 2),
             "daily_consumption_kg": daily_consumption,
             "estimated_days": round(days_capacity, 1),
-            "alert": days_capacity < 3
+            "alert": days_capacity < 3,
         }
 
     @staticmethod
-    def project_milk_production(finca_id: int, months_projected: int = 3) -> dict[str, Any]:
+    def project_milk_production(
+        finca_id: int, months_projected: int = 3
+    ) -> dict[str, Any]:
         """
         Proyecta la producción de leche basada en tendencia real desde MilkSummary.
         Factores estacionales desde BD (SeasonalAdjustment).
@@ -107,7 +114,11 @@ class ProjectionService:
 
         summary = MilkSummary.get_for_finca(finca_id)
 
-        avg_liters = float(summary.avg_liters_per_animal) if summary and summary.avg_liters_per_animal else 0
+        avg_liters = (
+            float(summary.avg_liters_per_animal)
+            if summary and summary.avg_liters_per_animal
+            else 0
+        )
         total_active_cows = summary.total_animals if summary else 0
 
         current_monthly = avg_liters * total_active_cows * 30
@@ -143,11 +154,13 @@ class ProjectionService:
         if not animal:
             return {"error": "Animal no encontrado"}
 
-        price_per_kg = ProjectionService._get_config('param.price_per_kg')
-        weight_loss_avoided = ProjectionService._get_config('param.weight_loss_avoided')
+        price_per_kg = ProjectionService._get_config("param.price_per_kg")
+        weight_loss_avoided = ProjectionService._get_config("param.weight_loss_avoided")
 
         if price_per_kg is None or weight_loss_avoided is None:
-            return {"error": "Faltan parámetros de configuración: price_per_kg o weight_loss_avoided no están configurados en system_contents"}
+            return {
+                "error": "Faltan parámetros de configuración: price_per_kg o weight_loss_avoided no están configurados en system_contents"
+            }
 
         benefit_value = weight_loss_avoided * price_per_kg
         roi_ratio = (benefit_value - treatment_cost) / (treatment_cost or 1)
@@ -158,7 +171,7 @@ class ProjectionService:
             "estimated_weight_saved_kg": weight_loss_avoided,
             "price_per_kg": price_per_kg,
             "roi_ratio": round(roi_ratio, 2),
-            "verdict": "Altamente Recomendado" if roi_ratio > 2 else "Recomendado"
+            "verdict": "Altamente Recomendado" if roi_ratio > 2 else "Recomendado",
         }
 
 

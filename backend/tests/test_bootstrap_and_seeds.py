@@ -52,7 +52,9 @@ class TestSeedUsers:
             db.session.commit()
 
             # Crear una finca y un usuario conflictivo (mismo ID pero diferente email)
-            finca = Finca(name="Villa Luz", type=FarmType.Tradicional, department="Colombia")
+            finca = Finca(
+                name="Villa Luz", type=FarmType.Tradicional, department="Colombia"
+            )
             db.session.add(finca)
             db.session.commit()
 
@@ -63,12 +65,15 @@ class TestSeedUsers:
                 role=Role.Operario,
                 finca_id=finca.id,
                 phone="3001234567",
-                password="hashedpassword"  # Proveer password para evitar error de NOT NULL
+                password="hashedpassword",  # Proveer password para evitar error de NOT NULL
             )
             db.session.add(conflict_user)
             db.session.commit()
 
-            assert User.query.filter_by(identification=1098).first().email == "conflict@villaluz.co"
+            assert (
+                User.query.filter_by(identification=1098).first().email
+                == "conflict@villaluz.co"
+            )
 
             # Ejecutar ensure_test_users
             ensure_test_users()
@@ -80,7 +85,7 @@ class TestSeedUsers:
 
     def test_ensure_test_users_exception(self, app, db_session):
         with app.app_context():
-            with patch('app.utils.seed_users.Finca.query') as mock_query:
+            with patch("app.utils.seed_users.Finca.query") as mock_query:
                 mock_query.first.side_effect = Exception("DB error")
                 # No debe propagar la excepción, sino hacer rollback y registrar el error
                 ensure_test_users()
@@ -128,7 +133,10 @@ class TestSeedMaster:
 
     def test_run_master_seed_exception(self, app, db_session):
         with app.app_context():
-            with patch('app.utils.seed_master.seed_territories', side_effect=Exception("Master seed fail")):
+            with patch(
+                "app.utils.seed_master.seed_territories",
+                side_effect=Exception("Master seed fail"),
+            ):
                 # No debe propagar la excepción
                 run_master_seed()
 
@@ -150,7 +158,7 @@ class TestBootstrap:
             # Ahora debe existir
             admin = User.query.filter_by(identification=99999999).first()
             assert admin is not None
-            assert admin.email == 'admin.seed@example.com'
+            assert admin.email == "admin.seed@example.com"
 
             # Ejecutar de nuevo no debe duplicarlo
             seed_admin_user(app)
@@ -163,7 +171,7 @@ class TestBootstrap:
             Finca.query.delete()
             db.session.commit()
 
-            with patch('sqlalchemy.inspect') as mock_inspect:
+            with patch("sqlalchemy.inspect") as mock_inspect:
                 mock_inspector = MagicMock()
                 mock_inspector.get_table_names.return_value = []
                 mock_inspect.return_value = mock_inspector
@@ -174,18 +182,20 @@ class TestBootstrap:
 
     def test_seed_admin_user_exception(self, app, db_session):
         with app.app_context():
-            with patch('sqlalchemy.inspect', side_effect=Exception("DB error")):
+            with patch("sqlalchemy.inspect", side_effect=Exception("DB error")):
                 # Captura la excepción sin propagarla
                 seed_admin_user(app)
 
     def test_warmup_initial_caches_sync(self, app, db_session):
         # Desactivar modo asíncrono para que corra sincrónicamente en el test
-        app.config['CACHE_WARMUP_ASYNC'] = False
-        app.config['CACHE_WARMUP_INCLUDE_RELATIONS'] = True
+        app.config["CACHE_WARMUP_ASYNC"] = False
+        app.config["CACHE_WARMUP_INCLUDE_RELATIONS"] = True
 
         with app.app_context():
             # Crear finca y animales básicos para calentar
-            finca = Finca(name="Villa Luz", type=FarmType.Tradicional, department="Colombia")
+            finca = Finca(
+                name="Villa Luz", type=FarmType.Tradicional, department="Colombia"
+            )
             db.session.add(finca)
             db.session.commit()
 

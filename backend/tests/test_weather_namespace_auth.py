@@ -12,8 +12,8 @@ from app.models.user_finca import UserFinca
 
 
 def _user_id_from(auth_headers):
-    token = auth_headers['Authorization'].split(' ', 1)[1]
-    return int(decode_token(token)['sub'])
+    token = auth_headers["Authorization"].split(" ", 1)[1]
+    return int(decode_token(token)["sub"])
 
 
 def _grant_access(app, auth_headers):
@@ -23,12 +23,14 @@ def _grant_access(app, auth_headers):
         finca = Finca.query.first()
         link = UserFinca.query.filter_by(user_id=user_id, finca_id=finca.id).first()
         if link is None:
-            db.session.add(UserFinca(
-                user_id=user_id,
-                finca_id=finca.id,
-                role='Administrador',
-                is_active=True,
-            ))
+            db.session.add(
+                UserFinca(
+                    user_id=user_id,
+                    finca_id=finca.id,
+                    role="Administrador",
+                    is_active=True,
+                )
+            )
         else:
             link.is_active = True
         db.session.commit()
@@ -37,7 +39,7 @@ def _grant_access(app, auth_headers):
 
 def test_dashboard_requiere_jwt(client, app, auth_headers):
     finca_id = _grant_access(app, auth_headers)
-    response = client.get(f'/api/v1/weather/dashboard/{finca_id}')
+    response = client.get(f"/api/v1/weather/dashboard/{finca_id}")
     assert response.status_code == 401
 
 
@@ -45,22 +47,22 @@ def test_dashboard_responde_con_membresia_en_la_finca(client, app, auth_headers)
     finca_id = _grant_access(app, auth_headers)
 
     response = client.get(
-        f'/api/v1/weather/dashboard/{finca_id}?days=1',
+        f"/api/v1/weather/dashboard/{finca_id}?days=1",
         headers=auth_headers,
     )
 
     assert response.status_code == 200, response.get_json()
-    data = response.get_json()['data']
-    assert data['finca_id'] == finca_id
-    assert data['alerts'] == []
-    assert data['history'] == []
+    data = response.get_json()["data"]
+    assert data["finca_id"] == finca_id
+    assert data["alerts"] == []
+    assert data["history"] == []
 
 
 def test_dashboard_rechaza_finca_ajena(client, app, auth_headers):
     finca_id = _grant_access(app, auth_headers)
 
     response = client.get(
-        f'/api/v1/weather/dashboard/{finca_id + 999}',
+        f"/api/v1/weather/dashboard/{finca_id + 999}",
         headers=auth_headers,
     )
 

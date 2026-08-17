@@ -1,13 +1,15 @@
 """Agrega constraints faltantes (PostgreSQL compatible)."""
+
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend"))
 
 from app import create_app
 from app.extensions import db
 from sqlalchemy import text
 
-app = create_app('development')
+app = create_app("development")
 
 # PostgreSQL no soporta IF NOT EXISTS para CHECK constraints
 # Usamos DO $$ block para verificar si existe antes de crear

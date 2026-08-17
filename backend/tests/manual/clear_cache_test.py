@@ -5,7 +5,9 @@ Script para limpiar cache y probar el sistema corregido.
 
 import sys
 import os
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 
 def clear_cache_and_test():
     """Limpia el cache y prueba el sistema."""
@@ -13,7 +15,7 @@ def clear_cache_and_test():
         from app.utils.integrity_checker import OptimizedIntegrityChecker
 
         print("LIMPIEZA DE CACHE Y PRUEBA")
-        print("="*40)
+        print("=" * 40)
 
         # Limpiar cache
         OptimizedIntegrityChecker.clear_cache()
@@ -39,8 +41,10 @@ def clear_cache_and_test():
     except Exception as e:
         print(f"Error: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 if __name__ == "__main__":
     clear_cache_and_test()

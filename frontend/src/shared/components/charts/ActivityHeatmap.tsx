@@ -62,8 +62,8 @@ export function ActivityHeatmap({
       return acc;
     }, {} as Record<string, number>);
 
-    const avgActivity = total > 0 
-      ? data.reduce((sum, item) => sum + item.value, 0) / total 
+    const avgActivity = total > 0
+      ? data.reduce((sum, item) => sum + item.value, 0) / total
       : 0;
 
     const peakHour = data.length > 0
@@ -201,7 +201,7 @@ export function ActivityHeatmap({
                 <p className="text-xs text-muted-foreground">Total Registros</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </div>
-              
+
               <div className="p-3 bg-muted/50 rounded-lg">
                 <p className="text-xs text-muted-foreground">Actividad Promedio</p>
                 <p className="text-2xl font-bold">{stats.avgActivity.toFixed(1)}%</p>
@@ -217,8 +217,8 @@ export function ActivityHeatmap({
               <div className="p-3 bg-muted/50 rounded-lg">
                 <p className="text-xs text-muted-foreground">Tipo Principal</p>
                 <p className="text-lg font-bold">
-                  {Object.entries(stats.byType).sort((a, b) => b[1] - a[1])[0]?.[0] 
-                    ? ACTIVITY_LABELS[Object.entries(stats.byType).sort((a, b) => b[1] - a[1])[0][0]] 
+                  {Object.entries(stats.byType).sort((a, b) => b[1] - a[1])[0]?.[0]
+                    ? ACTIVITY_LABELS[Object.entries(stats.byType).sort((a, b) => b[1] - a[1])[0][0]]
                     : 'N/A'}
                 </p>
               </div>

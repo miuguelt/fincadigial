@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { useToast } from '@/app/providers/ToastContext';
-import dataPreloadService, { 
-  PreloadState, 
-  DashboardCriticalData, 
-  AnimalModuleData, 
+import dataPreloadService, {
+  PreloadState,
+  DashboardCriticalData,
+  AnimalModuleData,
   UserModuleData,
   PreloadError,
-  PreloadErrorType 
+  PreloadErrorType
 } from '@/features/dashboard/api/dataPreload.service';
 
 /**
@@ -39,21 +39,21 @@ export interface UseDataPreloadReturn {
   // Estado general
   isLoading: boolean;
   isInitialized: boolean;
-  
+
   // Estado de carga por módulo
   dashboardLoaded: boolean;
   animalModuleLoaded: boolean;
   userModuleLoaded: boolean;
-  
+
   // Datos
   dashboardData: DashboardCriticalData | null;
   animalModuleData: AnimalModuleData | null;
   userModuleData: UserModuleData | null;
-  
+
   // Errores
   errors: PreloadError[];
   hasCriticalErrors: boolean;
-  
+
   // Acciones
   startPreload: () => Promise<void>;
   retryPreload: () => Promise<void>;
@@ -62,7 +62,7 @@ export interface UseDataPreloadReturn {
   refreshUserModule: () => Promise<void>;
   clearErrors: () => void;
   invalidateCache: (module?: 'dashboard' | 'animal' | 'user') => void;
-  
+
   // Utilidades
   getTimeSinceLastUpdate: () => number | null;
   isDataFresh: (maxAgeMs?: number) => boolean;
@@ -70,7 +70,7 @@ export interface UseDataPreloadReturn {
 
 /**
  * Hook personalizado para la gestión de precarga de datos con jerarquía clara
- * 
+ *
  * Características principales:
  * - Prioridad absoluta a los datos del dashboard (bloqueante)
  * - Precarga no bloqueante para módulos Animal y Usuario
@@ -89,11 +89,11 @@ export function useDataPreload(options: UseDataPreloadOptions = {}): UseDataPrel
   // Estado local para sincronizar con el servicio
   const [state, setState] = useState<PreloadState>(dataPreloadService.getState());
   const [isInitialized, setIsInitialized] = useState(false);
-  
+
   // Referencias para evitar llamadas duplicadas
   const preloadPromiseRef = useRef<Promise<void> | null>(null);
   const isMountedRef = useRef(true);
-  
+
   // Hooks externos
   const { isAuthenticated } = useAuth();
   const { showToast } = useToast();
@@ -114,13 +114,13 @@ export function useDataPreload(options: UseDataPreloadOptions = {}): UseDataPrel
   // Efecto para manejar errores no críticos
   useEffect(() => {
     if (!showNonCriticalErrors || !isInitialized) return;
-    
+
     const nonCriticalErrors = state.errors.filter(error => !error.critical);
     const newErrors = nonCriticalErrors.filter(error => {
       // Considerar "nuevo" si tiene menos de 5 segundos
       return Date.now() - error.timestamp < 5000;
     });
-    
+
     newErrors.forEach(error => {
       let message = '';
       switch (error.type) {
@@ -136,7 +136,7 @@ export function useDataPreload(options: UseDataPreloadOptions = {}): UseDataPrel
         default:
           message = 'Error al cargar datos. Inténtalo nuevamente.';
       }
-      
+
       showToast(message, 'warning', 5000);
     });
   }, [state.errors, showNonCriticalErrors, isInitialized, showToast]);
@@ -156,18 +156,18 @@ export function useDataPreload(options: UseDataPreloadOptions = {}): UseDataPrel
     }
 
     console.log('[useDataPreload] Iniciando proceso de precarga...');
-    
+
     preloadPromiseRef.current = (async () => {
       try {
         await dataPreloadService.preloadData();
-        
+
         if (isMountedRef.current) {
           setIsInitialized(true);
           console.log('[useDataPreload] Precarga completada exitosamente');
         }
       } catch (error: any) {
         console.error('[useDataPreload] Error en la precarga:', error);
-        
+
         // Si es un error crítico, mostrar toast
         if (error?.message?.includes('crítico')) {
           showToast(
@@ -176,7 +176,7 @@ export function useDataPreload(options: UseDataPreloadOptions = {}): UseDataPrel
             8000
           );
         }
-        
+
         if (isMountedRef.current) {
           setIsInitialized(true); // Marcar como inicializado incluso con errores
         }
@@ -199,7 +199,7 @@ export function useDataPreload(options: UseDataPreloadOptions = {}): UseDataPrel
   const refreshDashboard = useCallback(async () => {
     console.log('[useDataPreload] Refrescando datos del dashboard...');
     dataPreloadService.invalidateModuleData('dashboard');
-    
+
     // Si no hay una precarga en curso, iniciar una
     if (!state.isLoading) {
       await startPreload();
@@ -209,7 +209,7 @@ export function useDataPreload(options: UseDataPreloadOptions = {}): UseDataPrel
   const refreshAnimalModule = useCallback(async () => {
     console.log('[useDataPreload] Refrescando datos del módulo Animal...');
     dataPreloadService.invalidateModuleData('animal');
-    
+
     // Si no hay una precarga en curso, iniciar una
     if (!state.isLoading) {
       await startPreload();
@@ -219,7 +219,7 @@ export function useDataPreload(options: UseDataPreloadOptions = {}): UseDataPrel
   const refreshUserModule = useCallback(async () => {
     console.log('[useDataPreload] Refrescando datos del módulo Usuario...');
     dataPreloadService.invalidateModuleData('user');
-    
+
     // Si no hay una precarga en curso, iniciar una
     if (!state.isLoading) {
       await startPreload();
@@ -256,18 +256,18 @@ export function useDataPreload(options: UseDataPreloadOptions = {}): UseDataPrel
   // Efecto para iniciar precarga automáticamente
   useEffect(() => {
     if (!autoStart || !isAuthenticated) return;
-    
+
     const startWithDelay = async () => {
       if (startDelay > 0) {
         await new Promise(resolve => setTimeout(resolve, startDelay));
       }
-      
+
       // Verificar si ya hay datos válidos en caché
-      const hasValidCache = 
+      const hasValidCache =
         dataPreloadService.getDashboardData() !== null ||
         dataPreloadService.getAnimalModuleData() !== null ||
         dataPreloadService.getUserModuleData() !== null;
-      
+
       if (forceRefresh || !hasValidCache) {
         await startPreload();
       } else {
@@ -276,7 +276,7 @@ export function useDataPreload(options: UseDataPreloadOptions = {}): UseDataPrel
         console.log('[useDataPreload] Usando datos en caché, precarga omitida');
       }
     };
-    
+
     startWithDelay();
   }, [autoStart, isAuthenticated, forceRefresh, startDelay, startPreload]);
 
@@ -291,28 +291,28 @@ export function useDataPreload(options: UseDataPreloadOptions = {}): UseDataPrel
   const dashboardData = dataPreloadService.getDashboardData();
   const animalModuleData = dataPreloadService.getAnimalModuleData();
   const userModuleData = dataPreloadService.getUserModuleData();
-  
+
   const hasCriticalErrors = state.errors.some(error => error.critical);
 
   return {
     // Estado general
     isLoading: state.isLoading,
     isInitialized,
-    
+
     // Estado de carga por módulo
     dashboardLoaded: state.dashboardLoaded,
     animalModuleLoaded: state.animalModuleLoaded,
     userModuleLoaded: state.userModuleLoaded,
-    
+
     // Datos
     dashboardData,
     animalModuleData,
     userModuleData,
-    
+
     // Errores
     errors: state.errors,
     hasCriticalErrors,
-    
+
     // Acciones
     startPreload,
     retryPreload,
@@ -321,7 +321,7 @@ export function useDataPreload(options: UseDataPreloadOptions = {}): UseDataPrel
     refreshUserModule,
     clearErrors,
     invalidateCache,
-    
+
     // Utilidades
     getTimeSinceLastUpdate,
     isDataFresh

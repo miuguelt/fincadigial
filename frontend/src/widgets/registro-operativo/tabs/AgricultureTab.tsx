@@ -138,7 +138,7 @@ export function AgricultureTab({ activities, loading, errored = false, onQuickAc
                     const plotName = activity.crop_plot?.name || activity.crop_plot?.crop_name;
                     return (
                       <motion.div key={activity.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }} className="relative">
-                        <div className={`absolute -left-3 top-4 w-4 h-4 rounded-full border-2 border-background flex items-center justify-center text-[10px] ${cfg.color}`} aria-hidden="true">{cfg.emoji}</div>
+                        <div className={`absolute -left-3 top-4 w-4 h-4 rounded-full border-2 border-background flex items-center justify-center text-[11px] ${cfg.color}`} aria-hidden="true">{cfg.emoji}</div>
                         <div className={`ml-2 rounded-lg border ${cfg.border} ${cfg.color} p-3`}>
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0" style={{ overflowWrap: 'break-word' }}>

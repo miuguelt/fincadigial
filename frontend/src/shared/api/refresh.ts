@@ -38,4 +38,3 @@ export async function performRefresh(options?: { retryOnCsrfError?: boolean }): 
   refreshPromise = doRefresh().finally(() => { refreshPromise = null; });
   return refreshPromise;
 }
-

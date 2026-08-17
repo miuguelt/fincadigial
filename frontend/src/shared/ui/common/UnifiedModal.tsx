@@ -1,4 +1,4 @@
- 
+
 import React from 'react';
 import { GenericModal, useUnifiedDisclosure, ModalSize } from './GenericModal';
 

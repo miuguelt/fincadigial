@@ -112,7 +112,7 @@ export function AnimalRelatedSection<T>({
 						>
 							{title}
 						</h3>
-						<span className="text-[10px] text-muted-foreground font-medium">
+						<span className="text-[11px] text-muted-foreground font-medium">
 							{data.length} registros
 						</span>
 					</div>
@@ -266,7 +266,7 @@ export function AnimalRelatedSection<T>({
 														deletingItemId === resolveRecordId(item) ? (
 															<div className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
 														) : confirmingDeleteId === resolveRecordId(item) ? (
-															<span className="text-[10px] font-bold">✓</span>
+															<span className="text-[11px] font-bold">✓</span>
 														) : (
 															<Trash2 className="h-3.5 w-3.5" />
 														)}
@@ -284,7 +284,7 @@ export function AnimalRelatedSection<T>({
 										size="sm"
 										variant="ghost"
 										onClick={onViewAll}
-										className="text-[10px] font-bold uppercase tracking-widest opacity-60 hover:opacity-100 w-full"
+										className="text-[11px] font-bold uppercase tracking-widest opacity-60 hover:opacity-100 w-full"
 									>
 										Ver todos ({data.length})
 									</Button>

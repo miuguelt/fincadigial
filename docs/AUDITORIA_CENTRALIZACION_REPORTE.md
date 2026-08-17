@@ -16,7 +16,7 @@ Se ha completado la auditoría y estabilización del ecosistema DevBrain para as
 ## 3. 🚦 Estado de Servicios (Guardian Audit)
 Se ejecutó `db audit` con los siguientes resultados:
 - **Proxies MCP:** Todos los canales (Windsurf, Claude, Cursor, Trae, Gemini, Codex, OpenCode, Antigravity) están **OK**.
-- **Base de Datos:** 
+- **Base de Datos:**
     - PostgreSQL Central: **OK** (Puerto 5432)
     - Redis Villaluz: **OK** (Puerto 6380)
     - MariaDB Staging: **MISSING** (Esperado en entorno de desarrollo local).

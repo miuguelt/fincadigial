@@ -7,8 +7,10 @@ Script para:
 
 Uso: python -m app.scripts.fix_control_finca_and_summaries
 """
+
 import os
 import sys
+
 sys.path.append(os.getcwd())
 
 from app import create_app, db
@@ -17,7 +19,7 @@ from app.models.animals import Animals
 from app.models.finca import Finca
 from app.models.extended_summaries import MilkSummary, FinancialSummary
 
-app = create_app('development')
+app = create_app("development")
 with app.app_context():
     print("🔧 1. Reparando controles con finca_id NULL...")
 
@@ -32,7 +34,9 @@ with app.app_context():
             db.session.add(c)
             fixed += 1
         else:
-            print(f"   ⚠️ Control {c.id}: animal {c.animal_id} no encontrado o sin finca")
+            print(
+                f"   ⚠️ Control {c.id}: animal {c.animal_id} no encontrado o sin finca"
+            )
 
     db.session.commit()
     print(f"   ✅ {fixed} controles reparados")
@@ -40,7 +44,7 @@ with app.app_context():
     print("\n🔒 2. Aplicando NOT NULL a columna finca_id en control...")
     try:
         db.session.execute(
-            db.text('ALTER TABLE control ALTER COLUMN finca_id SET NOT NULL')
+            db.text("ALTER TABLE control ALTER COLUMN finca_id SET NOT NULL")
         )
         db.session.commit()
         print("   ✅ Columna finca_id ahora es NOT NULL")

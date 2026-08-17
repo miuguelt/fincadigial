@@ -85,7 +85,7 @@ export const FastInventoryAction: React.FC = () => {
                     : "border-border/50 hover:border-amber-200 bg-muted/50"
                 }`}
               >
-                <p className="text-[10px] font-bold uppercase text-muted-foreground fit-clamp">
+                <p className="text-[11px] font-bold uppercase text-muted-foreground fit-clamp">
                   {lot.medication?.name || lot.vaccine?.name || "Insumo"}
                 </p>
                 <p className="text-sm font-black text-foreground fit-clamp">

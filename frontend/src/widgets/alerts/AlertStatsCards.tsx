@@ -105,7 +105,7 @@ export function AlertStatsCards({ stats, total = 0, unreadCount, criticalCount }
               </div>
               {card.badge && (
                 <span className={cn(
-                  'inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full w-fit',
+                  'inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full w-fit',
                   card.badge.up
                     ? 'bg-success/10 text-success dark:bg-green-900/40 dark:text-green-300'
                     : 'bg-warning/10 text-warning dark:bg-amber-900/40 dark:text-amber-300'

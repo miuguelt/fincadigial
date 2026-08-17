@@ -4,6 +4,7 @@ Script de prueba simple para el verificador de integridad referencial optimizado
 
 import sys
 import os
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Crear contexto de aplicación Flask
@@ -13,6 +14,7 @@ from app.models.animals import Animals
 from app.models.breeds import Breeds
 from app.models.species import Species
 import time
+
 
 def test_integrity_checker():
     """Prueba el verificador de integridad con diferentes escenarios"""
@@ -80,11 +82,13 @@ def test_integrity_checker():
                 print(f"   Puede eliminar: {summary['can_delete']}")
                 print(f"   Total dependientes: {summary['total_dependents']}")
                 print(f"   Eliminaciones cascade: {summary['cascade_deletions']}")
-                print(f"   Dependencias bloqueantes: {summary['blocking_dependencies']}")
+                print(
+                    f"   Dependencias bloqueantes: {summary['blocking_dependencies']}"
+                )
 
-                if summary['warnings']:
+                if summary["warnings"]:
                     print("   Advertencias detalladas:")
-                    for warning in summary['warnings']:
+                    for warning in summary["warnings"]:
                         print(f"     - {warning['message']}")
             else:
                 print("   No hay animales en la BD para probar")
@@ -92,6 +96,7 @@ def test_integrity_checker():
             print(f"   Error consultando animales: {e}")
 
         print("\n=== Prueba completada ===")
+
 
 def test_performance():
     """Prueba de rendimiento con múltiples llamadas"""
@@ -106,21 +111,28 @@ def test_performance():
         print("Primeras llamadas (sin cache)...")
         start_time = time.time()
         for animal_id in test_ids:
-            warnings = OptimizedIntegrityChecker.check_integrity_fast(Animals, animal_id)
+            warnings = OptimizedIntegrityChecker.check_integrity_fast(
+                Animals, animal_id
+            )
         first_round_time = time.time() - start_time
         print(f"Tiempo total primeras 5 llamadas: {first_round_time:.3f}s")
-        print(f"Promedio por llamada: {first_round_time/5:.3f}s")
+        print(f"Promedio por llamada: {first_round_time / 5:.3f}s")
 
         print("\nSegundas llamadas (con cache)...")
         start_time = time.time()
         for animal_id in test_ids:
-            warnings = OptimizedIntegrityChecker.check_integrity_fast(Animals, animal_id)
+            warnings = OptimizedIntegrityChecker.check_integrity_fast(
+                Animals, animal_id
+            )
         second_round_time = time.time() - start_time
         print(f"Tiempo total segundas 5 llamadas: {second_round_time:.3f}s")
-        print(f"Promedio por llamada: {second_round_time/5:.3f}s")
+        print(f"Promedio por llamada: {second_round_time / 5:.3f}s")
         if first_round_time > 0:
-            improvement = ((first_round_time - second_round_time) / first_round_time * 100)
+            improvement = (
+                (first_round_time - second_round_time) / first_round_time * 100
+            )
             print(f"Mejora con cache: {improvement:.1f}%")
+
 
 if __name__ == "__main__":
     try:
@@ -129,4 +141,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error en prueba: {e}")
         import traceback
+
         traceback.print_exc()

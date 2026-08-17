@@ -1,1 +1,0 @@
-export { MilkStats } from './MilkStats';

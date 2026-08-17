@@ -37,7 +37,7 @@ const SkeletonCard: React.FC = () => (
 
 /**
  * SkeletonTable: muestra un esqueleto de tabla accesible mientras se cargan los datos.
- * 
+ *
  * ── RESPONSIVE ──
  * - Móvil (<768px): muestra cards skeleton apiladas
  * - Tablet/Desktop (≥768px): muestra tabla skeleton con shimmer

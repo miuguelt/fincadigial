@@ -1,6 +1,6 @@
 /*
  * CRUDModals
- * 
+ *
  * Componentes optimizados para los modales de CRUD.
  * Implementa modales de detalle y confirmación con mejor UX.
  */
@@ -94,7 +94,7 @@ function DetailModalComponent<T extends { id: number }>({
   setDetailItem: (item: T | null) => void;
 }) {
   const t = useT();
-  
+
   // Manejar navegación entre elementos
   const handleNextDetail = useCallback(() => {
     if (!items?.length || detailIndex === null) return;
@@ -102,14 +102,14 @@ function DetailModalComponent<T extends { id: number }>({
     setDetailIndex(nextIndex);
     setDetailItem(items[nextIndex]);
   }, [items, detailIndex, setDetailIndex, setDetailItem]);
-  
+
   const handlePrevDetail = useCallback(() => {
     if (!items?.length || detailIndex === null) return;
     const prevIndex = (detailIndex - 1 + items.length) % items.length;
     setDetailIndex(prevIndex);
     setDetailItem(items[prevIndex]);
   }, [items, detailIndex, setDetailIndex, setDetailItem]);
-  
+
   // Mapa de etiquetas para llaves foráneas
   const fkLabelMap = React.useMemo(() => {
     const map: Record<string, Map<string, string>> = {};
@@ -130,7 +130,7 @@ function DetailModalComponent<T extends { id: number }>({
     }
     return map;
   }, [config.formSections]);
-  
+
   // Footer con navegación y acciones
   const footer = (
     <div className="relative border-t border-border/40 bg-muted/20 backdrop-blur-md px-5 sm:px-6 py-3 sm:py-4 rounded-b-2xl">
@@ -187,7 +187,7 @@ function DetailModalComponent<T extends { id: number }>({
   const theme = config.themeColor || 'blue';
   const primaryStyle = cardStyles[theme] || cardStyles.blue;
   const secondaryStyle = cardStyles.slate;
-  
+
   return (
     <GenericModal
       isOpen={isOpen}
@@ -240,7 +240,7 @@ function DetailModalComponent<T extends { id: number }>({
 
                     return (
                       <div key={String(col.key)} className="rounded-xl border border-border/40 bg-muted/5 p-4 transition-all duration-300 hover:bg-muted/20 hover:border-border/80 space-y-1.5 min-w-0 shadow-sm hover:shadow-md group">
-                        <dt className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">
+                        <dt className="text-[11px] font-black text-muted-foreground uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">
                           {col.label}
                         </dt>
                         <dd className="text-sm sm:text-base font-semibold text-foreground break-words whitespace-normal leading-snug min-w-0">
@@ -252,7 +252,7 @@ function DetailModalComponent<T extends { id: number }>({
                 </dl>
               </CardContent>
             </Card>
-            
+
             <Card className={`shadow-lg hover:shadow-xl transition-all duration-300 border rounded-lg overflow-hidden ${secondaryStyle.card} bg-card/30 backdrop-blur-sm border-border/40`}>
               <CardHeader className={`pb-4 ${secondaryStyle.header} bg-muted/5 backdrop-blur-md border-b border-border/30`}>
                 <div className="flex items-center gap-2.5">
@@ -268,7 +268,7 @@ function DetailModalComponent<T extends { id: number }>({
                 <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   {(item as any).created_at && (
                     <div className="rounded-xl border border-border/40 bg-muted/5 p-4 transition-all duration-300 hover:bg-muted/20 hover:border-border/80 space-y-1.5 min-w-0 shadow-sm hover:shadow-md group">
-                      <dt className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">
+                      <dt className="text-[11px] font-black text-muted-foreground uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">
                         Creado
                       </dt>
                       <dd className="text-sm sm:text-base font-semibold text-foreground break-words whitespace-normal leading-snug">
@@ -278,7 +278,7 @@ function DetailModalComponent<T extends { id: number }>({
                   )}
                   {(item as any).updated_at && (
                     <div className="rounded-xl border border-border/40 bg-muted/5 p-4 transition-all duration-300 hover:bg-muted/20 hover:border-border/80 space-y-1.5 min-w-0 shadow-sm hover:shadow-md group">
-                      <dt className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">
+                      <dt className="text-[11px] font-black text-muted-foreground uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">
                         Actualizado
                       </dt>
                       <dd className="text-sm sm:text-base font-semibold text-foreground break-words whitespace-normal leading-snug">
@@ -344,7 +344,7 @@ export const ConfirmDeleteDialog = memo<{
       dependencyInfo.dependencies.forEach((dep) => {
         const typeStr = dep.cascade_delete ? "🔄 Se eliminará en cascada" : "❌ Bloquea la eliminación";
         msg += `• **${dep.message || dep.table}** (${typeStr})\n`;
-        
+
         // Listar las muestras si existen
         if (dep.samples && dep.samples.length > 0) {
           dep.samples.forEach((sample) => {

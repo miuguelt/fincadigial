@@ -14,4 +14,3 @@ class UnavailableNativeTransport implements TransportAdapter {
 
 export const NativeNearbyTransport = new UnavailableNativeTransport('native-nearby');
 export const NativeMultipeerTransport = new UnavailableNativeTransport('native-multipeer');
-

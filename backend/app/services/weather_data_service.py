@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 def _get_weather_param(key: str) -> float | None:
     """Lee un parámetro de clima desde system_contents. Retorna None si no existe."""
-    entry = SystemContent.get_by_key(f'param.weather.{key}')
+    entry = SystemContent.get_by_key(f"param.weather.{key}")
     if entry:
         try:
             return float(entry.content)
@@ -29,7 +29,7 @@ def _get_weather_param(key: str) -> float | None:
 
 def _get_weather_text(key: str) -> str | None:
     """Lee texto de recomendación desde system_contents."""
-    entry = SystemContent.get_by_key(f'recommendation.weather.{key}')
+    entry = SystemContent.get_by_key(f"recommendation.weather.{key}")
     if entry:
         return entry.content
     return None
@@ -60,6 +60,7 @@ class WeatherDataService:
     def fetch_weather_data(lat: float, lon: float) -> dict[str, Any]:
         try:
             import requests
+
             params = {
                 "latitude": lat,
                 "longitude": lon,
@@ -70,7 +71,9 @@ class WeatherDataService:
                 "forecast_days": 7,
             }
 
-            response = requests.get(WeatherDataService.BASE_URL, params=params, timeout=10)
+            response = requests.get(
+                WeatherDataService.BASE_URL, params=params, timeout=10
+            )
             response.raise_for_status()
             return response.json()
         except Exception as e:
@@ -111,7 +114,12 @@ class WeatherDataService:
         }
         daily_rows = []
         for index in range(len(daily.get("time") or [])):
-            daily_rows.append({key: value(daily, source_key, index) for key, source_key in daily_keys.items()})
+            daily_rows.append(
+                {
+                    key: value(daily, source_key, index)
+                    for key, source_key in daily_keys.items()
+                }
+            )
 
         hourly_keys = {
             "time": "time",
@@ -134,7 +142,12 @@ class WeatherDataService:
         }
         hourly_rows = []
         for index in range(min(len(hourly.get("time") or []), 48)):
-            hourly_rows.append({key: value(hourly, source_key, index) for key, source_key in hourly_keys.items()})
+            hourly_rows.append(
+                {
+                    key: value(hourly, source_key, index)
+                    for key, source_key in hourly_keys.items()
+                }
+            )
 
         return {
             "timezone": data.get("timezone"),
@@ -144,7 +157,9 @@ class WeatherDataService:
         }
 
     @staticmethod
-    def save_weather_record(finca_id: int, lat: float, lon: float, data: dict[str, Any]) -> WeatherRecord | None:
+    def save_weather_record(
+        finca_id: int, lat: float, lon: float, data: dict[str, Any]
+    ) -> WeatherRecord | None:
         try:
             current = data.get("current", {})
             daily = data.get("daily", {})
@@ -157,9 +172,13 @@ class WeatherDataService:
             if weather_code is None:
                 logger.warning("Open-Meteo response sin weathercode")
                 return None
-            condition_str, condition_enum = WeatherDataService.decode_wmo_code(weather_code)
+            condition_str, condition_enum = WeatherDataService.decode_wmo_code(
+                weather_code
+            )
 
-            sunrise_str = daily.get("sunrise", [None])[0] if daily.get("sunrise") else None
+            sunrise_str = (
+                daily.get("sunrise", [None])[0] if daily.get("sunrise") else None
+            )
             sunset_str = daily.get("sunset", [None])[0] if daily.get("sunset") else None
 
             sunrise_time = None
@@ -185,7 +204,9 @@ class WeatherDataService:
                 wind_direction_degrees=current.get("wind_direction_10m"),
                 precipitation_mm=current.get("precipitation"),
                 pressure_hpa=current.get("surface_pressure"),
-                uv_index=daily.get("uv_index_max", [None])[0] if daily.get("uv_index_max") else None,
+                uv_index=daily.get("uv_index_max", [None])[0]
+                if daily.get("uv_index_max")
+                else None,
                 cloud_cover_percent=current.get("cloud_cover"),
                 weather_code=weather_code,
                 weather_condition=condition_enum,
@@ -212,120 +233,184 @@ class WeatherDataService:
         precipitation = record.precipitation_mm
         condition = record.weather_condition
 
-        heat_warn = _get_weather_param('heat_warn')
-        heat_crit = _get_weather_param('heat_critical')
-        heat_extreme = _get_weather_param('heat_extreme')
+        heat_warn = _get_weather_param("heat_warn")
+        heat_crit = _get_weather_param("heat_critical")
+        heat_extreme = _get_weather_param("heat_extreme")
 
-        if heat_warn is not None and heat_crit is not None and heat_extreme is not None and temp is not None and temp > heat_warn:
-            severity = WeatherAlertSeverity.CRITICAL if temp > heat_extreme else WeatherAlertSeverity.HIGH if temp > heat_crit else WeatherAlertSeverity.MEDIUM
-            alerts.append(WeatherAlert(
-                finca_id=finca_id,
-                title=f"Alerta de calor extremo: {temp:.1f}°C",
-                alert_type=WeatherAlertType.HEAT,
-                severity=severity,
-                description=f"Temperatura actual de {temp:.1f}°C. Riesgo de estrés térmico en el ganado.",
-                recommendation=_get_weather_text('heat') or "Proporcione sombra adicional y agua fresca.",
-                current_temperature=temp,
-                current_humidity=humidity,
-                current_wind_speed=wind,
-                valid_from=datetime.utcnow(),
-                valid_until=datetime.utcnow() + timedelta(hours=6),
-                source="open-meteo-auto",
-            ))
+        if (
+            heat_warn is not None
+            and heat_crit is not None
+            and heat_extreme is not None
+            and temp is not None
+            and temp > heat_warn
+        ):
+            severity = (
+                WeatherAlertSeverity.CRITICAL
+                if temp > heat_extreme
+                else WeatherAlertSeverity.HIGH
+                if temp > heat_crit
+                else WeatherAlertSeverity.MEDIUM
+            )
+            alerts.append(
+                WeatherAlert(
+                    finca_id=finca_id,
+                    title=f"Alerta de calor extremo: {temp:.1f}°C",
+                    alert_type=WeatherAlertType.HEAT,
+                    severity=severity,
+                    description=f"Temperatura actual de {temp:.1f}°C. Riesgo de estrés térmico en el ganado.",
+                    recommendation=_get_weather_text("heat")
+                    or "Proporcione sombra adicional y agua fresca.",
+                    current_temperature=temp,
+                    current_humidity=humidity,
+                    current_wind_speed=wind,
+                    valid_from=datetime.utcnow(),
+                    valid_until=datetime.utcnow() + timedelta(hours=6),
+                    source="open-meteo-auto",
+                )
+            )
 
-        cold_warn = _get_weather_param('cold_warn')
-        cold_crit = _get_weather_param('cold_critical')
-        cold_extreme = _get_weather_param('cold_extreme')
+        cold_warn = _get_weather_param("cold_warn")
+        cold_crit = _get_weather_param("cold_critical")
+        cold_extreme = _get_weather_param("cold_extreme")
 
-        if cold_warn is not None and cold_crit is not None and cold_extreme is not None and temp is not None and temp < cold_warn:
-            severity = WeatherAlertSeverity.CRITICAL if temp < cold_extreme else WeatherAlertSeverity.HIGH if temp < cold_crit else WeatherAlertSeverity.MEDIUM
-            alerts.append(WeatherAlert(
-                finca_id=finca_id,
-                title=f"Alerta de frío extremo: {temp:.1f}°C",
-                alert_type=WeatherAlertType.COLD,
-                severity=severity,
-                description=f"Temperatura actual de {temp:.1f}°C. Riesgo de hipotermia en terneros y animales jóvenes.",
-                recommendation=_get_weather_text('cold') or "Proporcione refugio y alimento adicional.",
-                current_temperature=temp,
-                current_humidity=humidity,
-                current_wind_speed=wind,
-                valid_from=datetime.utcnow(),
-                valid_until=datetime.utcnow() + timedelta(hours=12),
-                source="open-meteo-auto",
-            ))
+        if (
+            cold_warn is not None
+            and cold_crit is not None
+            and cold_extreme is not None
+            and temp is not None
+            and temp < cold_warn
+        ):
+            severity = (
+                WeatherAlertSeverity.CRITICAL
+                if temp < cold_extreme
+                else WeatherAlertSeverity.HIGH
+                if temp < cold_crit
+                else WeatherAlertSeverity.MEDIUM
+            )
+            alerts.append(
+                WeatherAlert(
+                    finca_id=finca_id,
+                    title=f"Alerta de frío extremo: {temp:.1f}°C",
+                    alert_type=WeatherAlertType.COLD,
+                    severity=severity,
+                    description=f"Temperatura actual de {temp:.1f}°C. Riesgo de hipotermia en terneros y animales jóvenes.",
+                    recommendation=_get_weather_text("cold")
+                    or "Proporcione refugio y alimento adicional.",
+                    current_temperature=temp,
+                    current_humidity=humidity,
+                    current_wind_speed=wind,
+                    valid_from=datetime.utcnow(),
+                    valid_until=datetime.utcnow() + timedelta(hours=12),
+                    source="open-meteo-auto",
+                )
+            )
 
         if condition == WeatherCondition.STORM:
-            alerts.append(WeatherAlert(
-                finca_id=finca_id,
-                title="Alerta de tormenta eléctrica",
-                alert_type=WeatherAlertType.STORM,
-                severity=WeatherAlertSeverity.HIGH,
-                description="Tormenta eléctrica detectada en la zona.",
-                recommendation=_get_weather_text('storm') or "Refugie al ganado en zonas seguras.",
-                current_temperature=temp,
-                current_humidity=humidity,
-                current_wind_speed=wind,
-                valid_from=datetime.utcnow(),
-                valid_until=datetime.utcnow() + timedelta(hours=4),
-                source="open-meteo-auto",
-            ))
+            alerts.append(
+                WeatherAlert(
+                    finca_id=finca_id,
+                    title="Alerta de tormenta eléctrica",
+                    alert_type=WeatherAlertType.STORM,
+                    severity=WeatherAlertSeverity.HIGH,
+                    description="Tormenta eléctrica detectada en la zona.",
+                    recommendation=_get_weather_text("storm")
+                    or "Refugie al ganado en zonas seguras.",
+                    current_temperature=temp,
+                    current_humidity=humidity,
+                    current_wind_speed=wind,
+                    valid_from=datetime.utcnow(),
+                    valid_until=datetime.utcnow() + timedelta(hours=4),
+                    source="open-meteo-auto",
+                )
+            )
 
-        rain_warn = _get_weather_param('rain_warn')
-        rain_crit = _get_weather_param('rain_critical')
+        rain_warn = _get_weather_param("rain_warn")
+        rain_crit = _get_weather_param("rain_critical")
 
-        if rain_warn is not None and rain_crit is not None and condition == WeatherCondition.RAIN and precipitation is not None and precipitation > rain_warn:
-            severity = WeatherAlertSeverity.HIGH if precipitation > rain_crit else WeatherAlertSeverity.MEDIUM
-            alerts.append(WeatherAlert(
-                finca_id=finca_id,
-                title=f"Lluvias intensas: {precipitation:.1f}mm",
-                alert_type=WeatherAlertType.RAIN,
-                severity=severity,
-                description=f"Precipitación actual de {precipitation:.1f}mm. Riesgo de encharcamiento y deslizamientos.",
-                recommendation=_get_weather_text('rain') or "Vigile zonas de drenaje.",
-                current_temperature=temp,
-                current_humidity=humidity,
-                current_wind_speed=wind,
-                valid_from=datetime.utcnow(),
-                valid_until=datetime.utcnow() + timedelta(hours=8),
-                source="open-meteo-auto",
-            ))
+        if (
+            rain_warn is not None
+            and rain_crit is not None
+            and condition == WeatherCondition.RAIN
+            and precipitation is not None
+            and precipitation > rain_warn
+        ):
+            severity = (
+                WeatherAlertSeverity.HIGH
+                if precipitation > rain_crit
+                else WeatherAlertSeverity.MEDIUM
+            )
+            alerts.append(
+                WeatherAlert(
+                    finca_id=finca_id,
+                    title=f"Lluvias intensas: {precipitation:.1f}mm",
+                    alert_type=WeatherAlertType.RAIN,
+                    severity=severity,
+                    description=f"Precipitación actual de {precipitation:.1f}mm. Riesgo de encharcamiento y deslizamientos.",
+                    recommendation=_get_weather_text("rain")
+                    or "Vigile zonas de drenaje.",
+                    current_temperature=temp,
+                    current_humidity=humidity,
+                    current_wind_speed=wind,
+                    valid_from=datetime.utcnow(),
+                    valid_until=datetime.utcnow() + timedelta(hours=8),
+                    source="open-meteo-auto",
+                )
+            )
 
-        wind_warn = _get_weather_param('wind_warn')
-        wind_crit = _get_weather_param('wind_critical')
-        wind_extreme = _get_weather_param('wind_extreme')
+        wind_warn = _get_weather_param("wind_warn")
+        wind_crit = _get_weather_param("wind_critical")
+        wind_extreme = _get_weather_param("wind_extreme")
 
-        if wind_warn is not None and wind_crit is not None and wind_extreme is not None and wind is not None and wind > wind_warn:
-            severity = WeatherAlertSeverity.CRITICAL if wind > wind_extreme else WeatherAlertSeverity.HIGH if wind > wind_crit else WeatherAlertSeverity.MEDIUM
-            alerts.append(WeatherAlert(
-                finca_id=finca_id,
-                title=f"Vientos fuertes: {wind:.1f} km/h",
-                alert_type=WeatherAlertType.WIND,
-                severity=severity,
-                description=f"Velocidad del viento de {wind:.1f} km/h. Riesgo de daños en infraestructura.",
-                recommendation=_get_weather_text('wind') or "Asegure estructuras ligeras.",
-                current_temperature=temp,
-                current_humidity=humidity,
-                current_wind_speed=wind,
-                valid_from=datetime.utcnow(),
-                valid_until=datetime.utcnow() + timedelta(hours=6),
-                source="open-meteo-auto",
-            ))
+        if (
+            wind_warn is not None
+            and wind_crit is not None
+            and wind_extreme is not None
+            and wind is not None
+            and wind > wind_warn
+        ):
+            severity = (
+                WeatherAlertSeverity.CRITICAL
+                if wind > wind_extreme
+                else WeatherAlertSeverity.HIGH
+                if wind > wind_crit
+                else WeatherAlertSeverity.MEDIUM
+            )
+            alerts.append(
+                WeatherAlert(
+                    finca_id=finca_id,
+                    title=f"Vientos fuertes: {wind:.1f} km/h",
+                    alert_type=WeatherAlertType.WIND,
+                    severity=severity,
+                    description=f"Velocidad del viento de {wind:.1f} km/h. Riesgo de daños en infraestructura.",
+                    recommendation=_get_weather_text("wind")
+                    or "Asegure estructuras ligeras.",
+                    current_temperature=temp,
+                    current_humidity=humidity,
+                    current_wind_speed=wind,
+                    valid_from=datetime.utcnow(),
+                    valid_until=datetime.utcnow() + timedelta(hours=6),
+                    source="open-meteo-auto",
+                )
+            )
 
         if condition == WeatherCondition.HAIL:
-            alerts.append(WeatherAlert(
-                finca_id=finca_id,
-                title="Alerta de granizo",
-                alert_type=WeatherAlertType.HAIL,
-                severity=WeatherAlertSeverity.HIGH,
-                description="Granizo detectado en la zona. Riesgo de daños a cultivos y animales.",
-                recommendation=_get_weather_text('hail') or "Refugie al ganado inmediatamente.",
-                current_temperature=temp,
-                current_humidity=humidity,
-                current_wind_speed=wind,
-                valid_from=datetime.utcnow(),
-                valid_until=datetime.utcnow() + timedelta(hours=3),
-                source="open-meteo-auto",
-            ))
+            alerts.append(
+                WeatherAlert(
+                    finca_id=finca_id,
+                    title="Alerta de granizo",
+                    alert_type=WeatherAlertType.HAIL,
+                    severity=WeatherAlertSeverity.HIGH,
+                    description="Granizo detectado en la zona. Riesgo de daños a cultivos y animales.",
+                    recommendation=_get_weather_text("hail")
+                    or "Refugie al ganado inmediatamente.",
+                    current_temperature=temp,
+                    current_humidity=humidity,
+                    current_wind_speed=wind,
+                    valid_from=datetime.utcnow(),
+                    valid_until=datetime.utcnow() + timedelta(hours=3),
+                    source="open-meteo-auto",
+                )
+            )
 
         return alerts
 
@@ -340,7 +425,9 @@ class WeatherDataService:
         if not data:
             return {"success": False, "error": "Error obteniendo datos climáticos"}
 
-        record = WeatherDataService.save_weather_record(finca_id, finca.latitude, finca.longitude, data)
+        record = WeatherDataService.save_weather_record(
+            finca_id, finca.latitude, finca.longitude, data
+        )
         if not record:
             return {"success": False, "error": "Error guardando registro climático"}
 
@@ -376,22 +463,30 @@ class WeatherDataService:
 
         for finca in fincas:
             result = WeatherDataService.update_finca_weather(finca.id)
-            results["details"].append({"finca_id": finca.id, "finca_name": finca.name, **result})
+            results["details"].append(
+                {"finca_id": finca.id, "finca_name": finca.name, **result}
+            )
             if result.get("success"):
                 results["success"] += 1
             else:
                 results["failed"] += 1
 
-        logger.info(f"Weather update completed: {results['success']}/{results['total']} fincas updated")
+        logger.info(
+            f"Weather update completed: {results['success']}/{results['total']} fincas updated"
+        )
         return results
 
     @staticmethod
     def get_weather_history(finca_id: int, days: int = 7) -> list[dict[str, Any]]:
         start_date = datetime.utcnow() - timedelta(days=days)
-        records = WeatherRecord.query.filter(
-            WeatherRecord.finca_id == finca_id,
-            WeatherRecord.recorded_at >= start_date,
-        ).order_by(WeatherRecord.recorded_at.asc()).all()
+        records = (
+            WeatherRecord.query.filter(
+                WeatherRecord.finca_id == finca_id,
+                WeatherRecord.recorded_at >= start_date,
+            )
+            .order_by(WeatherRecord.recorded_at.asc())
+            .all()
+        )
 
         return [WeatherDataService.serialize_record(r) for r in records]
 
@@ -401,7 +496,9 @@ class WeatherDataService:
         return {
             "id": record.id,
             "finca_id": record.finca_id,
-            "recorded_at": record.recorded_at.isoformat() if record.recorded_at else None,
+            "recorded_at": record.recorded_at.isoformat()
+            if record.recorded_at
+            else None,
             "temperature_celsius": record.temperature_celsius,
             "feels_like_celsius": record.feels_like_celsius,
             "humidity_percent": record.humidity_percent,
@@ -412,9 +509,15 @@ class WeatherDataService:
             "uv_index": record.uv_index,
             "cloud_cover_percent": record.cloud_cover_percent,
             "weather_code": record.weather_code,
-            "weather_condition": record.weather_condition.value if record.weather_condition else None,
-            "sunrise_time": record.sunrise_time.isoformat() if record.sunrise_time else None,
-            "sunset_time": record.sunset_time.isoformat() if record.sunset_time else None,
+            "weather_condition": record.weather_condition.value
+            if record.weather_condition
+            else None,
+            "sunrise_time": record.sunrise_time.isoformat()
+            if record.sunrise_time
+            else None,
+            "sunset_time": record.sunset_time.isoformat()
+            if record.sunset_time
+            else None,
             "latitude": record.latitude,
             "longitude": record.longitude,
             "source": record.source,
@@ -422,14 +525,18 @@ class WeatherDataService:
 
     @staticmethod
     def get_active_alerts(finca_id: int) -> list[dict[str, Any]]:
-        alerts = WeatherAlert.query.filter(
-            WeatherAlert.finca_id == finca_id,
-            WeatherAlert.is_active == True,
-            WeatherAlert.is_dismissed == False,
-        ).order_by(
-            WeatherAlert.severity.desc(),
-            WeatherAlert.valid_until.asc(),
-        ).all()
+        alerts = (
+            WeatherAlert.query.filter(
+                WeatherAlert.finca_id == finca_id,
+                WeatherAlert.is_active == True,
+                WeatherAlert.is_dismissed == False,
+            )
+            .order_by(
+                WeatherAlert.severity.desc(),
+                WeatherAlert.valid_until.asc(),
+            )
+            .all()
+        )
 
         return [
             {

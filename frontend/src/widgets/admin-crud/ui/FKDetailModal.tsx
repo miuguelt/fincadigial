@@ -3,13 +3,13 @@ import { GenericModal } from '@/shared/ui/common/GenericModal';
 import { BaseService } from '@/shared/api/base-service';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Badge } from '@/shared/ui/badge';
-import { 
-  User, 
-  Calendar, 
-  Tag, 
-  Info, 
-  Database, 
-  Clock, 
+import {
+  User,
+  Calendar,
+  Tag,
+  Info,
+  Database,
+  Clock,
   ChevronRight,
   ExternalLink
 } from 'lucide-react';
@@ -45,7 +45,7 @@ export const FKDetailModal: React.FC<FKDetailModalProps> = ({
 
     setLoading(true);
     setError(null);
-    
+
     // El nombre de la entidad suele coincidir con el endpoint
     const endpoint = entity.startsWith('/') ? entity : `/${entity}`;
     const service = new BaseService(endpoint);
@@ -126,9 +126,9 @@ export const FKDetailModal: React.FC<FKDetailModalProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
               {Object.entries(data)
-                .filter(([key, value]) => 
-                  !key.startsWith('_') && 
-                  typeof value !== 'object' && 
+                .filter(([key, value]) =>
+                  !key.startsWith('_') &&
+                  typeof value !== 'object' &&
                   key !== 'id' &&
                   key !== 'finca_id'
                 )
@@ -138,7 +138,7 @@ export const FKDetailModal: React.FC<FKDetailModalProps> = ({
                       {getIcon(key)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/70 mb-0.5">
+                      <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground/70 mb-0.5">
                         {key.replace(/_/g, ' ')}
                       </p>
                       <p className="text-sm font-medium text-foreground fit-clamp">
@@ -174,4 +174,3 @@ export const FKDetailModal: React.FC<FKDetailModalProps> = ({
     </GenericModal>
   );
 };
-

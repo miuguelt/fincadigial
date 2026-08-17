@@ -3,8 +3,8 @@
 Fecha: 2026-01-16
 
 - Backend (Flask): `http://127.0.0.1:8081/api/v1`
-- Frontend (React/Vite): `C:\Users\Miguel\Documents\Flask Projects\Front_finca`
-- Credenciales de prueba: `ADMIN_IDENT=1098`, `ADMIN_PASS=12345678Ab`
+- Frontend (React/Vite): `C:\Users\Miguel\Documents\Aplicaciones\_projects\villaluz\frontend`
+- Credenciales de prueba: `ADMIN_IDENT=<E2E_ADMIN_ID>`, `ADMIN_PASS=<E2E_ADMIN_PASSWORD>`
 
 ## Resumen ejecutivo
 
@@ -31,7 +31,7 @@ Fecha: 2026-01-16
 
 ### Frontend
 
-- `npm run build` (en `Front_finca/`)
+- `npm run build` (en `frontend/`)
 
 ## Estado CRUD por entidad (backend)
 
@@ -63,7 +63,7 @@ Evidencia principal: salida `ok=true` en `scripts/test_all_endpoints_swagger.py`
 
 ## Integración Frontend (CRUD extremo a extremo)
 
-Cambios principales en `Front_finca/`:
+Cambios principales en `frontend/`:
 
 - Alineación de nombres de campos con Swagger (forms y tablas).
 - Listados que requieren nombres de relaciones ahora usan `?include_relations=true`.

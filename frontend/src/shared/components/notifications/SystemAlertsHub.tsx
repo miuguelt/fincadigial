@@ -84,7 +84,7 @@ const ToastItem = forwardRef<HTMLDivElement, { toast: ToastItemData; dismiss: (i
 
       <div className="flex-1 space-y-1 relative z-10">
         {toast.title && (
-          <h4 className="text-[10px] font-black uppercase tracking-[0.25em] leading-none opacity-60 mb-1">
+          <h4 className="text-[11px] font-black uppercase tracking-[0.25em] leading-none opacity-60 mb-1">
             {toast.title}
           </h4>
         )}

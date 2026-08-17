@@ -49,8 +49,8 @@ function AdminMedicationsPage() {
 
   // Columnas de la tabla
   const columns: CRUDColumn<MedicationResponse & { [k: string]: any }>[] = useMemo(() => [
-    { 
-      key: 'name', 
+    {
+      key: 'name',
       label: 'Nombre',
       render: (v) => (
         <span className="inline-flex items-center gap-1.5 font-bold text-foreground">
@@ -60,8 +60,8 @@ function AdminMedicationsPage() {
     },
     { key: 'dosis', label: 'Dosis', render: (v) => v || '-' },
     { key: 'availability', label: 'Disponibilidad', render: (v) => (v ? '✅ Sí' : '❌ No') },
-    { 
-      key: 'route_administration_id', 
+    {
+      key: 'route_administration_id',
       label: 'Ruta Admin.',
       render: (v) => {
         if (!v) return '-';

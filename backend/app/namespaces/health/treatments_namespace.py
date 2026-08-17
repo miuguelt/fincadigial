@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 treatments_ns = create_optimized_namespace(
-    name='treatments',
-    description='Tratamientos médicos',
+    name="treatments",
+    description="Tratamientos médicos",
     model_class=Treatments,
-    path='/treatments'
+    path="/treatments",
 )

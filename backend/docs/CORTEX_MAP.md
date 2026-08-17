@@ -1,6 +1,6 @@
-# 🧭 CORTEX MAP: BackFinca
+# 🧭 CORTEX MAP: VillaLuz Backend
 
-> Ubicación: `C:\Users\Miguel\Documents\GitHub\BackFinca`
+> Ubicación: `C:\Users\Miguel\Documents\Aplicaciones\_projects\villaluz\backend`
 
 ## 📁 Estructura comprimida
 ```text

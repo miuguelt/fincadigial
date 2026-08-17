@@ -5,31 +5,95 @@ import * as Icons from '@/shared/ui/icons';
 import { cn } from '@/shared/ui/cn';
 
 const routeConfig: Record<string, string> = {
+  // Módulo Campesino y Operativo
+  'campesino': 'Mi Espacio',
+  'registro-operativo': 'Mi registro diario',
+  'ganaderia': 'Ganadería operativa',
+  'crop-plots': 'Cultivos y parcelas',
+  'crop-activities': 'Labores de cultivo',
+  'water-sources': 'Fuentes de agua',
+  'climate-alerts': 'Alertas de clima',
+  'weather': 'Clima y alertas',
+  'market-offers': 'Mercado campesino',
+  'technical-assistance': 'Asistencia técnica',
+  'offline-learning': 'Capacitación',
+
+  // Gestión General y Roles
   'admin': 'Administración',
+  'dashboard': 'Mi Finca',
+  'profile': 'Mi Perfil',
+  'select-finca': 'Seleccionar Finca',
+  'chat': 'Mensajes',
+  'alerts': 'Alertas',
+  'scanner': 'Escanear Chapeta',
+  'user-approval': 'Solicitudes de Ingreso',
+  'users': 'Personal de la Finca',
+  'global': 'Usuarios del Sistema',
+  'fincas': 'Todas las Fincas',
+  'membership': 'Finca y Permisos',
+  'tasks': 'Herramientas',
+  'data-overview': 'Ajustes del Sistema',
+  'operational': 'Operaciones',
+  'activity-log': 'Bitácora de Actividades',
+  'diagnostics': 'Diagnósticos',
+  'calendar': 'Calendario',
+
+  // Ganadería y Producción
   'animals': 'Animales',
   'fields': 'Potreros',
   'controls': 'Registros',
+  'control': 'Registros',
   'reproduction': 'Cría y Reproducción',
-  'food-types': 'Alimentación',
-  'treatments': 'Tratamientos',
-  'disease-animals': 'Salud',
+  'fertility': 'Fertilidad',
+  'sire-performance': 'Toros y Reproductores',
+  'genetic-improvements': 'Mejoramiento Genético',
+  'genetic_improvements': 'Mejoramiento Genético',
+  'species': 'Especies',
+  'breeds': 'Razas',
+  'food-types': 'Alimentación y Forrajes',
+  'milk-production': 'Producción de Leche',
+  'growth': 'Crecimiento',
+  'animal-fields': 'Animales en Potrero',
+
+  // Sanidad Animal
+  'health': 'Sanidad Animal',
+  'disease-animals': 'Enfermedades y Alertas',
+  'diseases': 'Enfermedades',
+  'treatments': 'Tratamientos e Insumos',
+  'treatment_medications': 'Tratamientos Médicos',
+  'treatment_vaccines': 'Vacunación',
+  'vaccinations': 'Vacunaciones',
+  'vaccines': 'Vacunas',
+  'medications': 'Medicamentos',
+  'inventory': 'Inventario',
+
+  // Analítica, Reportes e ICA
   'analytics': 'Informes',
-  'executive': 'Resumen',
-  'reports': 'Reportes',
-  'campesino': 'Mi Espacio',
-  'user-approval': 'Por Aprobar',
-  'users': 'Personas',
-  'membership': 'Mi Finca y Permisos',
-  'tasks': 'Herramientas',
-  'data-overview': 'Ajustes',
-  'dashboard': 'Mi Finca',
+  'executive': 'Indicadores de la Finca',
+  'reports': 'Informes y Exportación',
+  'regulatory-reports': 'Reportes ICA',
+  'ica-compliance': 'Cumplimiento ICA',
+  'multi-finca': 'Mis Fincas',
+  'financial': 'Finanzas',
+
+  // Herramientas y Capacitación
+  'tools': 'Herramientas',
+  'frame-calculator': 'Calculadora de Estructura',
+  'ration-calculator': 'Calculadora de Ración',
   'courses': 'Capacitación',
   'lessons': 'Lecciones',
   'basics': 'Manejo Básico',
-  'health': 'Sanidad Animal',
   'records': 'Registro ICA',
-  'registro-operativo': 'Mi registro diario',
 };
+
+function getSegmentLabel(segment: string): string {
+  if (routeConfig[segment]) return routeConfig[segment];
+  return segment
+    .split(/[-_]/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+}
 
 export const Breadcrumbs: React.FC = () => {
   const location = useLocation();
@@ -48,8 +112,8 @@ export const Breadcrumbs: React.FC = () => {
 
   // Filtrar prefijos de rol
   const displayPaths = pathnames.filter(p => !['admin', 'instructor', 'veterinario', 'apprentice', 'operario'].includes(p));
-  const currentLabel = displayPaths.length > 0 
-    ? (routeConfig[displayPaths[displayPaths.length - 1]] || displayPaths[displayPaths.length - 1]) 
+  const currentLabel = displayPaths.length > 0
+    ? getSegmentLabel(displayPaths[displayPaths.length - 1])
     : 'Mi Finca';
 
   return (
@@ -77,11 +141,11 @@ export const Breadcrumbs: React.FC = () => {
               <Home className="h-3.5 w-3.5" />
             </Link>
           </li>
-          
+
           {displayPaths.slice(0, 3).map((value, index) => {
             const last = index === displayPaths.length - 1 || index === 2;
-            const label = routeConfig[value] || value.charAt(0).toUpperCase() + value.slice(1);
-            
+            const label = getSegmentLabel(value);
+
             return (
               <React.Fragment key={value}>
                 <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40" />

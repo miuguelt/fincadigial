@@ -48,8 +48,19 @@ describe('KPICard compact', () => {
   });
 
   it('conserva el sparkline en la variante completa de los dashboards', () => {
-    const { container } = render(<KPICard title="Total" value={12} />);
+    // KPICard sólo dibuja la línea con una serie real de al menos dos puntos.
+    // Esta prueba la omitía y exigía el sparkline igual, así que llevaba en
+    // rojo desde que se retiró la constante DEFAULT_TREND.
+    const { container } = render(
+      <KPICard title="Total" value={12} trendData={[{ value: 4 }, { value: 9 }]} />,
+    );
 
     expect(container.querySelector('.recharts-responsive-container')).not.toBeNull();
+  });
+
+  it('no inventa una tendencia cuando no hay serie', () => {
+    const { container } = render(<KPICard title="Total" value={12} />);
+
+    expect(container.querySelector('.recharts-responsive-container')).toBeNull();
   });
 });

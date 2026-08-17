@@ -25,7 +25,7 @@ export function NotificationFilterTabs({ tabs, activeTab, onTabChange }: Notific
           {tab.label}
           {tab.count !== undefined && tab.count > 0 && (
             <span className={cn(
-              'ml-1 px-1.5 py-0.5 rounded-full text-[10px]',
+              'ml-1 px-1.5 py-0.5 rounded-full text-[11px]',
               activeTab === tab.key ? 'bg-primary/20' : 'bg-muted'
             )}>
               {tab.count}

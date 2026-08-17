@@ -57,7 +57,9 @@ def rate_limit_handler(request_limit):
         limit_str = ""
 
     try:
-        log_rate_limit_exceeded(endpoint=endpoint, limit=limit_str, user_identifier=user_id)
+        log_rate_limit_exceeded(
+            endpoint=endpoint, limit=limit_str, user_identifier=user_id
+        )
     except Exception:
         logger.exception("Fallo al registrar evento de rate limit")
 
@@ -74,8 +76,8 @@ def rate_limit_handler(request_limit):
         },
     )
     resp = flask.make_response(flask.jsonify(payload), status)
-    resp.headers['Retry-After'] = '60'
-    resp.headers['RateLimit-Reset'] = '60'
+    resp.headers["Retry-After"] = "60"
+    resp.headers["RateLimit-Reset"] = "60"
     return resp
 
 
@@ -105,7 +107,12 @@ def init_rate_limiter(app):
             # Key por usuario autenticado cuando exista (evita colisiones detrás de NAT),
             # con fallback a IP.
             key_func=get_user_id,
-            default_limits=["50000 per day", "5000 per hour", "500 per minute", "50 per second"],
+            default_limits=[
+                "50000 per day",
+                "5000 per hour",
+                "500 per minute",
+                "50 per second",
+            ],
             on_breach=rate_limit_handler,
             storage_uri="memory://",
             headers_enabled=True,
@@ -113,33 +120,45 @@ def init_rate_limiter(app):
             in_memory_fallback_enabled=True,
             enabled=not app.config.get("TESTING", False),
         )
-        app.logger.info("Rate limiter inicializado con storage: memory:// (sin configuración de REDIS_URL)")
+        app.logger.info(
+            "Rate limiter inicializado con storage: memory:// (sin configuración de REDIS_URL)"
+        )
         _GLOBAL_LIMITER = limiter
         return limiter
 
     if _RATE_LIMITER_STORAGE_OK is None:
         try:
             from .redis_client import make_redis_ops_client
+
             _test_client = make_redis_ops_client(storage_uri)
             if _test_client:
                 _test_client.ping()
             _RATE_LIMITER_STORAGE_OK = True
         except Exception as e:
-            app.logger.warning("Rate limiter Redis '%s' falló: %s. Reintentando con memory://", storage_uri, e)
+            app.logger.warning(
+                "Rate limiter Redis '%s' falló: %s. Reintentando con memory://",
+                storage_uri,
+                e,
+            )
             _RATE_LIMITER_STORAGE_OK = False
 
     if _RATE_LIMITER_STORAGE_OK:
         limiter = Limiter(
             app=app,
             key_func=get_user_id,
-            default_limits=["50000 per day", "5000 per hour", "500 per minute", "50 per second"],
+            default_limits=[
+                "50000 per day",
+                "5000 per hour",
+                "500 per minute",
+                "50 per second",
+            ],
             on_breach=rate_limit_handler,
             storage_uri=storage_uri,
             storage_options=dict(_LIMITER_STORAGE_OPTIONS),
             headers_enabled=True,
             swallow_errors=True,
             in_memory_fallback_enabled=True,
-            enabled=not app.config.get('TESTING', False),
+            enabled=not app.config.get("TESTING", False),
         )
         app.logger.info("Rate limiter inicializado con storage Redis: %s", storage_uri)
         _GLOBAL_LIMITER = limiter
@@ -148,7 +167,12 @@ def init_rate_limiter(app):
         limiter = Limiter(
             app=app,
             key_func=get_user_id,
-            default_limits=["50000 per day", "5000 per hour", "500 per minute", "50 per second"],
+            default_limits=[
+                "50000 per day",
+                "5000 per hour",
+                "500 per minute",
+                "50 per second",
+            ],
             on_breach=rate_limit_handler,
             storage_uri="memory://",
             headers_enabled=True,
@@ -170,14 +194,38 @@ RATE_LIMIT_CONFIG = {
         "recover": "20 per hour",
         "reset": "20 per hour",
     },
-    "users": {"create": "50 per hour", "read": "300 per minute", "update": "500 per hour", "delete": "100 per hour"},
-    "animals": {"create": "500 per hour", "read": "300 per minute", "update": "1000 per hour", "delete": "200 per hour"},
-    "fields": {"create": "200 per hour", "read": "200 per minute", "update": "400 per hour", "delete": "100 per hour"},
-    "inventory": {"create": "300 per hour", "read": "250 per minute", "update": "600 per hour", "delete": "150 per hour"},
+    "users": {
+        "create": "50 per hour",
+        "read": "300 per minute",
+        "update": "500 per hour",
+        "delete": "100 per hour",
+    },
+    "animals": {
+        "create": "500 per hour",
+        "read": "300 per minute",
+        "update": "1000 per hour",
+        "delete": "200 per hour",
+    },
+    "fields": {
+        "create": "200 per hour",
+        "read": "200 per minute",
+        "update": "400 per hour",
+        "delete": "100 per hour",
+    },
+    "inventory": {
+        "create": "300 per hour",
+        "read": "250 per minute",
+        "update": "600 per hour",
+        "delete": "150 per hour",
+    },
     "activity": {
         "summary": "500 per minute",
         "stats": "500 per minute",
         "filters": "300 per minute",
     },
-    "general": {"read": "2000 per hour", "write": "500 per hour", "admin": "5000 per hour"},
+    "general": {
+        "read": "2000 per hour",
+        "write": "500 per hour",
+        "admin": "5000 per hour",
+    },
 }

@@ -4,10 +4,10 @@ import { Card, CardContent } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Badge } from '@/shared/ui/badge';
-import { 
-  Building2, 
-  Search, 
-  MapPin, 
+import {
+  Building2,
+  Search,
+  MapPin,
   Loader2,
   ArrowLeft,
   Users,
@@ -26,7 +26,7 @@ interface FincaWithRequestStatus extends Finca {
 export default function FincasPublicasPage() {
   const navigate = useNavigate();
   const { showToast } = useToast();
-  
+
   const [fincas, setFincas] = useState<FincaWithRequestStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -46,7 +46,7 @@ export default function FincasPublicasPage() {
       };
 
       const response = await fincaService.getPublicFincas(filters);
-      
+
       if (response && response.data) {
         setFincas(response.data || []);
         setTotalItems((response as any).total_items || (response as any).total || 0);
@@ -90,7 +90,7 @@ export default function FincasPublicasPage() {
     try {
       // Redirigir al registro de usuario con pre-selección de finca
       navigate('/register/user', {
-        state: { 
+        state: {
           fincaId: finca.id,
           fincaName: finca.name,
           message: `Te estás registrando para unirte a: ${finca.name}`
@@ -105,7 +105,7 @@ export default function FincasPublicasPage() {
   };
 
   const getTypeIcon = (type: string) => {
-    return type === 'Educativa' 
+    return type === 'Educativa'
       ? <School className="h-4 w-4" />
       : <Tractor className="h-4 w-4" />;
   };
@@ -130,7 +130,7 @@ export default function FincasPublicasPage() {
             <ArrowLeft className="h-4 w-4 mr-1" />
             Volver al login
           </Button>
-          
+
           <div className="flex items-center gap-4 mb-2">
             <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
               <Building2 className="h-6 w-6 text-white" />
@@ -158,7 +158,7 @@ export default function FincasPublicasPage() {
                   className="pl-10"
                 />
               </div>
-              <Button 
+              <Button
                 onClick={handleSearch}
                 className="bg-success hover:bg-green-700"
               >
@@ -205,8 +205,8 @@ export default function FincasPublicasPage() {
           <p className="text-sm text-muted-foreground">
             {loading ? 'Cargando...' : `${totalItems} finca${totalItems !== 1 ? 's' : ''} encontrada${totalItems !== 1 ? 's' : ''}`}
           </p>
-          <Link 
-            to="/register/user" 
+          <Link
+            to="/register/user"
             className="text-sm text-success hover:text-success font-medium"
           >
             ¿No encuentras tu finca? Regístrate aquí →
@@ -227,12 +227,12 @@ export default function FincasPublicasPage() {
                 No se encontraron fincas
               </h3>
               <p className="text-muted-foreground text-sm mb-4">
-                {searchQuery 
-                  ? 'Intenta con otros términos de búsqueda' 
+                {searchQuery
+                  ? 'Intenta con otros términos de búsqueda'
                   : 'Aún no hay fincas registradas en el sistema'}
               </p>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   setSearchQuery('');
                   setSelectedType('all');
@@ -246,8 +246,8 @@ export default function FincasPublicasPage() {
         ) : (
           <div className="space-y-4">
             {fincas.map((finca) => (
-              <Card 
-                key={finca.id} 
+              <Card
+                key={finca.id}
                 className="shadow-md border-0 hover:shadow-lg transition-shadow"
               >
                 <CardContent className="p-5">
@@ -257,15 +257,15 @@ export default function FincasPublicasPage() {
                         <h3 className="text-lg font-semibold text-foreground">
                           {finca.name}
                         </h3>
-                        <Badge 
-                          variant="outline" 
+                        <Badge
+                          variant="outline"
                           className={getTypeColor(finca.type || 'Tradicional')}
                         >
                           {getTypeIcon(finca.type || 'Tradicional')}
                           <span className="ml-1">{finca.type}</span>
                         </Badge>
                       </div>
-                      
+
                       {(finca.department || finca.municipality) && (
                         <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
                           <MapPin className="h-4 w-4" />
@@ -274,7 +274,7 @@ export default function FincasPublicasPage() {
                           </span>
                         </div>
                       )}
-                      
+
                       {finca.address && (
                         <p className="text-sm text-muted-foreground">{finca.address}</p>
                       )}
@@ -290,7 +290,7 @@ export default function FincasPublicasPage() {
                           Ya eres miembro
                         </Badge>
                       ) : null}
-                      
+
                       <Button
                         onClick={() => handleRequestMembership(finca)}
                         disabled={requestingFincaId === finca.id || finca.hasPendingRequest || finca.isMember}

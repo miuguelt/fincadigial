@@ -2,21 +2,25 @@
 """Prueba específica del endpoint de animals con JWT"""
 
 import requests
-import json
+
+from test_credentials import get_role_credentials
 
 BASE_URL = "http://localhost:8181/api/v1"
 HEADERS = {"Content-Type": "application/json"}
 
+
 def login():
+    identifier, password = get_role_credentials("Administrador")
     resp = requests.post(
         f"{BASE_URL}/auth/login",
         headers=HEADERS,
-        json={"identifier": "1098", "password": "Admin1234!"}
+        json={"identifier": identifier, "password": password},
     )
     data = resp.json()
     if data.get("success"):
         return data["data"]["access_token"], data["data"]["user"]
     return None, None
+
 
 def test_animals(token):
     headers = {**HEADERS, "Authorization": f"Bearer {token}"}
@@ -27,10 +31,13 @@ def test_animals(token):
         animals = data.get("data", [])
         print(f"Animales encontrados: {len(animals)}")
         if animals:
-            print(f"Primer animal: ID={animals[0].get('id')}, finca_id={animals[0].get('finca_id')}")
+            print(
+                f"Primer animal: ID={animals[0].get('id')}, finca_id={animals[0].get('finca_id')}"
+            )
     else:
         print(f"Error: {resp.text[:500]}")
     return resp.status_code == 200
+
 
 if __name__ == "__main__":
     token, user = login()

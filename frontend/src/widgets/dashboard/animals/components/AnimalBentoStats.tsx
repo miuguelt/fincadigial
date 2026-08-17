@@ -50,7 +50,7 @@ export function AnimalBentoStats({
 		color: string;
 	}) => (
 		<div className="bg-card/40 border border-border/40 p-3.5 rounded-xl space-y-1 transition-all hover:bg-card/60 hover:shadow-sm">
-			<div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground/80">
+			<div className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground/80">
 				{label}
 			</div>
 			<div className={`text-lg font-black ${color} flex items-baseline gap-1`}>
@@ -61,7 +61,7 @@ export function AnimalBentoStats({
 					</span>
 				)}
 			</div>
-			<div className="text-[9px] text-muted-foreground leading-tight">
+			<div className="text-[11px] text-muted-foreground leading-tight">
 				{sub}
 			</div>
 		</div>
@@ -77,7 +77,7 @@ export function AnimalBentoStats({
 					<h3 className="text-xs font-black uppercase tracking-wider text-foreground">
 						Rendimiento y Métricas 360°
 					</h3>
-					<p className="text-[10px] text-muted-foreground font-medium mt-0.5">
+					<p className="text-[11px] text-muted-foreground font-medium mt-0.5">
 						Análisis consolidado en tiempo real basado en controles y
 						trazabilidad
 					</p>

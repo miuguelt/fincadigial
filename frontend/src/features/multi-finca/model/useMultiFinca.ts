@@ -15,7 +15,7 @@ export const useMultiFinca = () => {
     setSwitching(true);
     try {
       const resp = await apiClient.post(`/api/v1/multi-finca/switch`, { finca_id: fincaId });
-      
+
       // Persistir token de forma explícita si se recibió en la respuesta
       const token = resp.data?.data?.access_token || resp.data?.access_token;
       if (token) {
@@ -45,9 +45,9 @@ export const useMultiFinca = () => {
 
       // Actualizar datos del usuario (refresca claims del JWT)
       await refreshUserData?.();
-      
+
       showToast('Cambiando de finca...', 'info');
-      
+
       // Redirigir y recargar para limpiar estados antiguos
       navigate('/dashboard', { replace: true });
       window.location.reload();

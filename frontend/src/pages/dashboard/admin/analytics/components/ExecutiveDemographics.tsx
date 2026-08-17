@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { COLORS, getChartColors } from '@/shared/utils/colors';
+import { getBreedLabel } from './analyticsAdapters';
 
 interface ExecutiveDemographicsProps {
   totalesSexo: { machos: number; hembras: number };
@@ -54,7 +55,7 @@ export const ExecutiveDemographics: React.FC<ExecutiveDemographicsProps> = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Distribución por sexo */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
@@ -90,7 +91,7 @@ export const ExecutiveDemographics: React.FC<ExecutiveDemographicsProps> = ({
       </motion.div>
 
       {/* Estado de los animales */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
@@ -121,7 +122,7 @@ export const ExecutiveDemographics: React.FC<ExecutiveDemographicsProps> = ({
       </motion.div>
 
       {/* Pirámide de Edades / Razas Destacadas */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
@@ -152,7 +153,7 @@ export const ExecutiveDemographics: React.FC<ExecutiveDemographicsProps> = ({
           {topBreeds && topBreeds.length > 0 ? (
             <div className="space-y-3">
               {topBreeds.slice(0, 3).map((breed: any, index: number) => {
-                const nombre = breed.breed_name || breed.raza || breed.name || `Raza ${index + 1}`;
+                const nombre = getBreedLabel(breed, index);
                 const cantidad = breed.count ?? breed.cantidad ?? 0;
                 const porcentaje = totalAnimales > 0 ? ((cantidad / totalAnimales) * 100).toFixed(1) : "0";
                 return (

@@ -1,4 +1,4 @@
- 
+
 import React, { useEffect, useMemo, useState } from "react";
 import {
   IconRefresh,
@@ -133,7 +133,7 @@ const GrazingRotation: React.FC = () => {
           const capacityNumber = parseCapacity((field as any).capacity);
           const areaNum = field.area ? parseFloat(String(field.area).replace(',', '.')) : 0;
           const estimatedCapacity = areaNum > 0 ? Math.max(1, Math.round(areaNum * 2)) : 0;
-          
+
           const hasCapacity = capacityNumber > 0;
           const effectiveCap = hasCapacity ? capacityNumber : estimatedCapacity;
           const isEst = !hasCapacity && estimatedCapacity > 0;
@@ -156,7 +156,7 @@ const GrazingRotation: React.FC = () => {
                     {field.name}
                   </h3>
                   <span
-                    className={`text-[10px] font-black uppercase px-3 py-1 rounded-lg mt-2 inline-block ${state === "Ocupado" ? "bg-destructive/5 text-destructive" : state === "Listo" ? "bg-emerald-50 text-emerald-600" : "bg-info/5 text-info"}`}
+                    className={`text-[11px] font-black uppercase px-3 py-1 rounded-lg mt-2 inline-block ${state === "Ocupado" ? "bg-destructive/5 text-destructive" : state === "Listo" ? "bg-emerald-50 text-emerald-600" : "bg-info/5 text-info"}`}
                   >
                     {state}
                   </span>
@@ -167,13 +167,13 @@ const GrazingRotation: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-6">
                 <div className="bg-muted p-4 rounded-xl">
-                  <p className="text-[10px] font-black text-muted-foreground uppercase mb-1">
+                  <p className="text-[11px] font-black text-muted-foreground uppercase mb-1">
                     Capacidad
                   </p>
                   <p className="text-xl font-black text-foreground">{capacity}</p>
                 </div>
                 <div className="bg-muted p-4 rounded-xl">
-                  <p className="text-[10px] font-black text-muted-foreground uppercase mb-1">
+                  <p className="text-[11px] font-black text-muted-foreground uppercase mb-1">
                     Carga Actual
                   </p>
                   <p className="text-xl font-black text-foreground">{animals} cabezas</p>

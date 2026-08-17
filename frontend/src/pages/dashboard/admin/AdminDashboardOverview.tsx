@@ -27,13 +27,13 @@ import { FastWeightEntry } from '@/widgets/dashboard/FastWeightEntry';
 
 /**
  * Página de inicio del Dashboard Administrativo
- * Rediseñado para facilitar el uso desde celulares y computadoras mediante un sistema de pestañas.
+ * Rediseñado para facilitar el uso desde celulares y computadores mediante un sistema de pestañas.
  */
 const AdminDashboardOverview: React.FC = () => {
   const navigate = useNavigate();
   const { useDashboard } = useAnalytics();
   const { data: dashboardStats, isLoading } = useDashboard();
-  
+
   const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'mesh' | 'field'>('overview');
 
   const analyticsCards = [
@@ -125,7 +125,7 @@ const AdminDashboardOverview: React.FC = () => {
                     </div>
                     <div>
                       <p className={`text-xl sm:text-2xl font-black ${stat.color} leading-none`}>{stat.value}</p>
-                      <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-text-secondary opacity-80 mt-1 fit-clamp max-w-[80px] sm:max-w-[100px]">{stat.label}</p>
+                      <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-text-secondary opacity-80 mt-1 fit-clamp max-w-[80px] sm:max-w-[100px]">{stat.label}</p>
                     </div>
                   </div>
                 );
@@ -216,7 +216,7 @@ const AdminDashboardOverview: React.FC = () => {
 
       {/* Tab Content */}
       <div className="pt-2 pb-10">
-        
+
         {/* --- TAB: OVERVIEW --- */}
         {activeTab === 'overview' && (
           <div className="space-y-6 animate-fade-in">
@@ -245,7 +245,7 @@ const AdminDashboardOverview: React.FC = () => {
                   </div>
                   <span className="text-xs font-bold text-text-primary">Personal</span>
                 </button>
-                
+
                 <button
                   onClick={() => navigate('/admin/fincas')}
                   className="group p-4 bg-background border border-border rounded-lg hover:border-success hover:bg-success/5 transition-all text-center flex flex-col items-center"
@@ -285,14 +285,14 @@ const AdminDashboardOverview: React.FC = () => {
                         {card.stats && !isLoading && (
                           <div className="text-right px-3 py-1.5 sm:px-4 sm:py-2 bg-black/15 backdrop-blur-md rounded-lg border border-white/10">
                             <p className="text-xs sm:text-sm font-bold">{card.stats.primary}</p>
-                            <p className="text-[9px] sm:text-[10px] uppercase tracking-widest opacity-70">{card.stats.secondary}</p>
+                            <p className="text-[11px] sm:text-[11px] uppercase tracking-widest opacity-70">{card.stats.secondary}</p>
                           </div>
                         )}
                       </div>
                       <div>
                         <h3 className="text-xl sm:text-2xl font-black mb-1 sm:mb-2 leading-tight tracking-tight">{card.title}</h3>
                         <p className="text-xs sm:text-sm opacity-85 line-clamp-2 mb-3 sm:mb-4">{card.description}</p>
-                        <div className="flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
+                        <div className="flex items-center gap-2 text-[11px] sm:text-xs font-bold uppercase tracking-widest">
                           <span>Explorar</span>
                           <div className="h-5 w-5 rounded-full bg-white/10 flex items-center justify-center transition-transform duration-300 group-hover:translate-x-1">
                             <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -336,7 +336,7 @@ const AdminDashboardOverview: React.FC = () => {
               <VoiceNoteWidget />
               <FastWeightEntry />
             </div>
-            
+
             <div className="pt-4 border-t border-border">
               <h3 className="text-md font-bold text-text-primary mb-4 flex items-center">
                 <MapPin className="w-4 h-4 text-info mr-2" />
@@ -346,7 +346,7 @@ const AdminDashboardOverview: React.FC = () => {
             </div>
           </div>
         )}
-        
+
       </div>
 
       {/* Loading Overlay Global */}

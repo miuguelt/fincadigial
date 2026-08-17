@@ -93,7 +93,7 @@ const DashboardStatsCardComponent: React.FC<DashboardStatsCardProps> = ({
       />
 
       <CardHeader className="flex flex-row items-start justify-between px-5 pt-5 pb-2 space-y-0">
-        <CardTitle className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-[0.12em] leading-tight max-w-[140px] mt-1">
+        <CardTitle className="text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.12em] leading-tight max-w-[140px] mt-1">
           {title}
         </CardTitle>
         <div
@@ -115,7 +115,7 @@ const DashboardStatsCardComponent: React.FC<DashboardStatsCardProps> = ({
           )}
 
           {trendInfo && (
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-[11px] text-muted-foreground">
               <span className="font-bold text-foreground">{trendInfo.periodo_actual}</span>
               {" / "}
               <span>{trendInfo.periodo_anterior} ant.</span>
@@ -131,7 +131,7 @@ const DashboardStatsCardComponent: React.FC<DashboardStatsCardProps> = ({
           {hasChange && (
             <div className="flex items-center gap-2">
               <span
-                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-extrabold tracking-wide border-0 ${trendBgColor} ${trendColor}`}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-extrabold tracking-wide border-0 ${trendBgColor} ${trendColor}`}
                 title={
                   typeof change === "number"
                     ? `${change.toFixed(1)}% vs periodo anterior`
@@ -141,7 +141,7 @@ const DashboardStatsCardComponent: React.FC<DashboardStatsCardProps> = ({
                 <TrendIcon className="h-3 w-3 flex-shrink-0" />
                 {formattedChange}
               </span>
-              <span className="text-[10px] text-muted-foreground">vs anterior</span>
+              <span className="text-[11px] text-muted-foreground">vs anterior</span>
             </div>
           )}
         </div>

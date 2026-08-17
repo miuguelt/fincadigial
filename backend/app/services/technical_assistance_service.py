@@ -23,13 +23,15 @@ logger = logging.getLogger(__name__)
 
 SPECIALIST_ROLES = frozenset({Role.Veterinario.value})
 MANAGER_ROLES = frozenset({Role.Administrador.value, Role.Propietario.value})
-VALID_PRIORITIES = frozenset({'low', 'medium', 'high', 'critical'})
+VALID_PRIORITIES = frozenset({"low", "medium", "high", "critical"})
 
 
 class TechnicalAssistanceError(Exception):
     """Expected workflow error with an HTTP-safe status and code."""
 
-    def __init__(self, message: str, *, status_code: int = 400, code: str = 'ASSISTANCE_ERROR'):
+    def __init__(
+        self, message: str, *, status_code: int = 400, code: str = "ASSISTANCE_ERROR"
+    ):
         super().__init__(message)
         self.message = message
         self.status_code = status_code
@@ -51,81 +53,94 @@ class TechnicalAssistanceService:
             .filter(
                 User.status.is_(True),
                 or_(User.finca_id == finca_id, UserFinca.finca_id == finca_id),
-                or_(User.role == Role.Veterinario, UserFinca.role == Role.Veterinario.value),
+                or_(
+                    User.role == Role.Veterinario,
+                    UserFinca.role == Role.Veterinario.value,
+                ),
             )
             .distinct()
         )
 
     @classmethod
     def list_veterinarians(cls, finca_id: int) -> dict:
-        veterinarians = cls._veterinarian_query(finca_id).order_by(User.fullname.asc()).all()
+        veterinarians = (
+            cls._veterinarian_query(finca_id).order_by(User.fullname.asc()).all()
+        )
         items = []
         verified_count = 0
 
         for veterinarian in veterinarians:
-            credential = getattr(veterinarian, 'professional_credential', None)
+            credential = getattr(veterinarian, "professional_credential", None)
             credential_summary = credential.public_summary() if credential else None
-            if credential_summary and credential_summary.get('status') == 'Verificado':
+            if credential_summary and credential_summary.get("status") == "Verificado":
                 verified_count += 1
-            items.append({
-                'id': veterinarian.id,
-                'fullname': veterinarian.fullname,
-                'avatar_url': veterinarian.avatar_url,
-                'credential': credential_summary,
-            })
+            items.append(
+                {
+                    "id": veterinarian.id,
+                    "fullname": veterinarian.fullname,
+                    "avatar_url": veterinarian.avatar_url,
+                    "credential": credential_summary,
+                }
+            )
 
         return {
-            'veterinarians': items,
-            'total': len(items),
-            'verified': verified_count,
+            "veterinarians": items,
+            "total": len(items),
+            "verified": verified_count,
         }
 
     @staticmethod
     def _serialize(item: TechnicalAssistanceRequest) -> dict:
         data = item.to_namespace_dict(include_relations=True)
         credential = (
-            getattr(item.assignee, 'professional_credential', None)
+            getattr(item.assignee, "professional_credential", None)
             if item.assignee
             else None
         )
-        data['assignee_credential'] = credential.public_summary() if credential else None
+        data["assignee_credential"] = (
+            credential.public_summary() if credential else None
+        )
         return data
 
     @staticmethod
     def _get_request(request_id: int, finca_id: int, *, lock: bool = False):
-        query = TechnicalAssistanceRequest.query.filter_by(id=request_id, finca_id=finca_id)
+        query = TechnicalAssistanceRequest.query.filter_by(
+            id=request_id, finca_id=finca_id
+        )
         if lock:
             query = query.with_for_update()
         item = query.first()
         if not item:
             raise TechnicalAssistanceError(
-                'Solicitud de asistencia no encontrada.',
+                "Solicitud de asistencia no encontrada.",
                 status_code=404,
-                code='ASSISTANCE_NOT_FOUND',
+                code="ASSISTANCE_NOT_FOUND",
             )
         return item
 
     @classmethod
-    def create_request(cls, finca_id: int, requester_user_id: int, payload: dict) -> dict:
-        title = str(payload.get('title') or '').strip()
-        category = str(payload.get('category') or '').strip()
-        description = str(payload.get('description') or '').strip()
-        priority = str(payload.get('priority') or 'medium').strip().lower()
+    def create_request(
+        cls, finca_id: int, requester_user_id: int, payload: dict
+    ) -> dict:
+        title = str(payload.get("title") or "").strip()
+        category = str(payload.get("category") or "").strip()
+        description = str(payload.get("description") or "").strip()
+        priority = str(payload.get("priority") or "medium").strip().lower()
 
         errors = {}
         if len(title) < 4:
-            errors['title'] = 'Escribe un título de al menos 4 caracteres.'
+            errors["title"] = "Escribe un título de al menos 4 caracteres."
         if not category:
-            errors['category'] = 'Selecciona el tipo de ayuda que necesitas.'
+            errors["category"] = "Selecciona el tipo de ayuda que necesitas."
         if len(description) < 10:
-            errors['description'] = 'Describe el problema con al menos 10 caracteres.'
+            errors["description"] = "Describe el problema con al menos 10 caracteres."
         if priority not in VALID_PRIORITIES:
-            errors['priority'] = 'La prioridad indicada no es válida.'
+            errors["priority"] = "La prioridad indicada no es válida."
         if errors:
             raise TechnicalAssistanceError(
-                'Revisa los datos de la solicitud.',
+                "Revisa los datos de la solicitud.",
                 status_code=422,
-                code='ASSISTANCE_VALIDATION_ERROR',
+                code="ASSISTANCE_VALIDATION_ERROR",
             )
 
         item = TechnicalAssistanceRequest.create(
@@ -141,32 +156,34 @@ class TechnicalAssistanceService:
 
         notification = cls._notify_veterinarians(item)
         return {
-            'request': cls._serialize(item),
-            'notification': notification,
+            "request": cls._serialize(item),
+            "notification": notification,
         }
 
     @classmethod
     def _notify_veterinarians(cls, item: TechnicalAssistanceRequest) -> dict:
         veterinarians = cls._veterinarian_query(item.finca_id).all()
         veterinarian_ids = [veterinarian.id for veterinarian in veterinarians]
-        body = f'{item.title} · prioridad {item.priority}'
+        body = f"{item.title} · prioridad {item.priority}"
         event_data = {
-            'title': 'Nueva solicitud de asistencia',
-            'message': body,
-            'notification_type': 'warning' if item.priority in {'high', 'critical'} else 'info',
-            'type': 'technical_assistance_request',
-            'request_id': item.id,
-            'priority': item.priority,
-            'action': {
-                'label': 'Revisar solicitud',
-                'url': '/veterinario/dashboard?focus=assistance',
+            "title": "Nueva solicitud de asistencia",
+            "message": body,
+            "notification_type": "warning"
+            if item.priority in {"high", "critical"}
+            else "info",
+            "type": "technical_assistance_request",
+            "request_id": item.id,
+            "priority": item.priority,
+            "action": {
+                "label": "Revisar solicitud",
+                "url": "/veterinario/dashboard?focus=assistance",
             },
         }
 
         for veterinarian_id in veterinarian_ids:
             EventService.emit_to_user(
                 user_id=veterinarian_id,
-                event_type='technical_assistance_requested',
+                event_type="technical_assistance_requested",
                 data=event_data,
             )
 
@@ -174,36 +191,38 @@ class TechnicalAssistanceService:
         # is reserved for urgent work so a busy farm does not turn every new
         # request into an interruption on every veterinarian's device.
         push_deliveries = 0
-        push_enabled = item.priority in {'high', 'critical'}
+        push_enabled = item.priority in {"high", "critical"}
         if veterinarian_ids and push_enabled:
             try:
                 results = PushNotificationService.send_to_users(
                     user_ids=veterinarian_ids,
-                    title='Nueva solicitud de asistencia',
+                    title="Nueva solicitud de asistencia",
                     body=body,
                     data={
-                        'type': 'technical_assistance_request',
-                        'request_id': item.id,
-                        'url': '/veterinario/dashboard?focus=assistance',
+                        "type": "technical_assistance_request",
+                        "request_id": item.id,
+                        "url": "/veterinario/dashboard?focus=assistance",
                     },
                 )
                 push_deliveries = sum(results.values())
             except Exception:
                 logger.warning(
-                    'No se pudo enviar push de asistencia request_id=%s',
+                    "No se pudo enviar push de asistencia request_id=%s",
                     item.id,
                     exc_info=True,
                 )
 
         return {
-            'recipients': len(veterinarian_ids),
-            'push_deliveries': push_deliveries,
-            'in_app_deliveries': len(veterinarian_ids),
-            'push_policy': 'urgent_only',
+            "recipients": len(veterinarian_ids),
+            "push_deliveries": push_deliveries,
+            "in_app_deliveries": len(veterinarian_ids),
+            "push_policy": "urgent_only",
         }
 
     @classmethod
-    def list_mine(cls, finca_id: int, user_id: int, role: str, *, limit: int = 50) -> dict:
+    def list_mine(
+        cls, finca_id: int, user_id: int, role: str, *, limit: int = 50
+    ) -> dict:
         query = TechnicalAssistanceRequest.query.filter_by(finca_id=finca_id)
         if role not in MANAGER_ROLES:
             # Legacy rows did not record their requester. They remain visible to
@@ -221,10 +240,12 @@ class TechnicalAssistanceService:
             .limit(max(1, min(limit, 100)))
             .all()
         )
-        return {'items': [cls._serialize(item) for item in items], 'total': total}
+        return {"items": [cls._serialize(item) for item in items], "total": total}
 
     @classmethod
-    def list_inbox(cls, finca_id: int, veterinarian_user_id: int, *, limit: int = 50) -> dict:
+    def list_inbox(
+        cls, finca_id: int, veterinarian_user_id: int, *, limit: int = 50
+    ) -> dict:
         active_statuses = [AssistanceStatus.OPEN, AssistanceStatus.IN_PROGRESS]
         base = TechnicalAssistanceRequest.query.filter(
             TechnicalAssistanceRequest.finca_id == finca_id,
@@ -232,9 +253,9 @@ class TechnicalAssistanceService:
         )
 
         priority_order = case(
-            (TechnicalAssistanceRequest.priority == 'critical', 0),
-            (TechnicalAssistanceRequest.priority == 'high', 1),
-            (TechnicalAssistanceRequest.priority == 'medium', 2),
+            (TechnicalAssistanceRequest.priority == "critical", 0),
+            (TechnicalAssistanceRequest.priority == "high", 1),
+            (TechnicalAssistanceRequest.priority == "medium", 2),
             else_=3,
         )
         assignment_order = case(
@@ -252,13 +273,15 @@ class TechnicalAssistanceService:
             .all()
         )
         return {
-            'items': [cls._serialize(item) for item in items],
-            'counts': {
-                'waiting': base.filter(TechnicalAssistanceRequest.assigned_user_id.is_(None)).count(),
-                'mine': base.filter(
+            "items": [cls._serialize(item) for item in items],
+            "counts": {
+                "waiting": base.filter(
+                    TechnicalAssistanceRequest.assigned_user_id.is_(None)
+                ).count(),
+                "mine": base.filter(
                     TechnicalAssistanceRequest.assigned_user_id == veterinarian_user_id
                 ).count(),
-                'active': base.count(),
+                "active": base.count(),
             },
         }
 
@@ -267,15 +290,15 @@ class TechnicalAssistanceService:
         item = cls._get_request(request_id, finca_id, lock=True)
         if item.status not in {AssistanceStatus.OPEN, AssistanceStatus.IN_PROGRESS}:
             raise TechnicalAssistanceError(
-                'Esta solicitud ya no está disponible para tomar.',
+                "Esta solicitud ya no está disponible para tomar.",
                 status_code=409,
-                code='ASSISTANCE_NOT_AVAILABLE',
+                code="ASSISTANCE_NOT_AVAILABLE",
             )
         if item.assigned_user_id and item.assigned_user_id != veterinarian_user_id:
             raise TechnicalAssistanceError(
-                'Otro veterinario ya está atendiendo esta solicitud.',
+                "Otro veterinario ya está atendiendo esta solicitud.",
                 status_code=409,
-                code='ASSISTANCE_ALREADY_ASSIGNED',
+                code="ASSISTANCE_ALREADY_ASSIGNED",
             )
 
         item.assigned_user_id = veterinarian_user_id
@@ -283,9 +306,9 @@ class TechnicalAssistanceService:
         db.session.commit()
         cls._notify_requester(
             item,
-            event_type='technical_assistance_claimed',
-            title='Un veterinario tomó tu solicitud',
-            message=f'{item.assignee.fullname if item.assignee else "El veterinario"} ya está revisando tu caso.',
+            event_type="technical_assistance_claimed",
+            title="Un veterinario tomó tu solicitud",
+            message=f"{item.assignee.fullname if item.assignee else 'El veterinario'} ya está revisando tu caso.",
         )
         return cls._serialize(item)
 
@@ -299,39 +322,41 @@ class TechnicalAssistanceService:
         *,
         resolved: bool = True,
     ) -> dict:
-        clean_notes = str(notes or '').strip()
+        clean_notes = str(notes or "").strip()
         if len(clean_notes) < 10:
             raise TechnicalAssistanceError(
-                'La respuesta debe tener al menos 10 caracteres.',
+                "La respuesta debe tener al menos 10 caracteres.",
                 status_code=422,
-                code='ASSISTANCE_RESPONSE_TOO_SHORT',
+                code="ASSISTANCE_RESPONSE_TOO_SHORT",
             )
 
         item = cls._get_request(request_id, finca_id, lock=True)
         if item.status in {AssistanceStatus.RESOLVED, AssistanceStatus.CLOSED}:
             raise TechnicalAssistanceError(
-                'Esta solicitud ya fue finalizada.',
+                "Esta solicitud ya fue finalizada.",
                 status_code=409,
-                code='ASSISTANCE_ALREADY_FINISHED',
+                code="ASSISTANCE_ALREADY_FINISHED",
             )
         if item.assigned_user_id and item.assigned_user_id != veterinarian_user_id:
             raise TechnicalAssistanceError(
-                'Otro veterinario está atendiendo esta solicitud.',
+                "Otro veterinario está atendiendo esta solicitud.",
                 status_code=409,
-                code='ASSISTANCE_ALREADY_ASSIGNED',
+                code="ASSISTANCE_ALREADY_ASSIGNED",
             )
 
         item.assigned_user_id = veterinarian_user_id
         item.resolution_notes = clean_notes
-        item.status = AssistanceStatus.RESOLVED if resolved else AssistanceStatus.IN_PROGRESS
+        item.status = (
+            AssistanceStatus.RESOLVED if resolved else AssistanceStatus.IN_PROGRESS
+        )
         item.resolved_at = datetime.now(UTC) if resolved else None
         db.session.commit()
 
         cls._notify_requester(
             item,
-            event_type='technical_assistance_responded',
-            title='Tu solicitud recibió respuesta',
-            message=f'{item.assignee.fullname if item.assignee else "El veterinario"} respondió: {clean_notes[:90]}',
+            event_type="technical_assistance_responded",
+            title="Tu solicitud recibió respuesta",
+            message=f"{item.assignee.fullname if item.assignee else 'El veterinario'} respondió: {clean_notes[:90]}",
         )
         return cls._serialize(item)
 
@@ -341,15 +366,15 @@ class TechnicalAssistanceService:
         owns_request = item.requester_user_id in {None, user_id}
         if not owns_request and role not in MANAGER_ROLES:
             raise TechnicalAssistanceError(
-                'No puedes cancelar la solicitud de otra persona.',
+                "No puedes cancelar la solicitud de otra persona.",
                 status_code=403,
-                code='ASSISTANCE_CANCEL_FORBIDDEN',
+                code="ASSISTANCE_CANCEL_FORBIDDEN",
             )
         if item.status in {AssistanceStatus.RESOLVED, AssistanceStatus.CLOSED}:
             raise TechnicalAssistanceError(
-                'La solicitud ya fue finalizada.',
+                "La solicitud ya fue finalizada.",
                 status_code=409,
-                code='ASSISTANCE_ALREADY_FINISHED',
+                code="ASSISTANCE_ALREADY_FINISHED",
             )
 
         item.status = AssistanceStatus.CLOSED
@@ -368,14 +393,14 @@ class TechnicalAssistanceService:
             return
 
         event_data = {
-            'title': title,
-            'message': message,
-            'notification_type': 'success',
-            'type': event_type,
-            'request_id': item.id,
-            'action': {
-                'label': 'Ver respuesta',
-                'url': '/campesino/technical-assistance',
+            "title": title,
+            "message": message,
+            "notification_type": "success",
+            "type": event_type,
+            "request_id": item.id,
+            "action": {
+                "label": "Ver respuesta",
+                "url": "/campesino/technical-assistance",
             },
         }
         EventService.emit_to_user(
@@ -388,16 +413,16 @@ class TechnicalAssistanceService:
                 user_id=item.requester_user_id,
                 title=title,
                 body=message,
-                tag=f'assistance-{item.id}',
+                tag=f"assistance-{item.id}",
                 data={
-                    'type': event_type,
-                    'request_id': item.id,
-                    'url': '/campesino/technical-assistance',
+                    "type": event_type,
+                    "request_id": item.id,
+                    "url": "/campesino/technical-assistance",
                 },
             )
         except Exception:
             logger.warning(
-                'No se pudo enviar push al solicitante request_id=%s',
+                "No se pudo enviar push al solicitante request_id=%s",
                 item.id,
                 exc_info=True,
             )

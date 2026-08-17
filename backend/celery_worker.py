@@ -3,7 +3,7 @@ from app import create_app
 from app.celery_ext import celery
 
 # Asegurar contexto de la aplicación para que Celery y Flask-SQLAlchemy funcionen
-app = create_app(os.getenv('FLASK_ENV', 'development'))
+app = create_app(os.getenv("FLASK_ENV", "development"))
 app.app_context().push()
 
 # Importar las tareas para que Celery las registre
@@ -13,30 +13,30 @@ import app.tasks.weather_tasks
 
 # Configurar el cron (Celery Beat) para evaluar alertas cada 6 horas
 alert_evaluation_interval = max(
-    float(os.getenv('ALERT_EVALUATION_INTERVAL_SECONDS', '21600')),
+    float(os.getenv("ALERT_EVALUATION_INTERVAL_SECONDS", "21600")),
     3600.0,
 )
 celery.conf.beat_schedule = {
-    'evaluate-alerts-periodically': {
-        'task': 'app.tasks.alert_tasks.evaluate_all_alerts',
-        'schedule': alert_evaluation_interval,
+    "evaluate-alerts-periodically": {
+        "task": "app.tasks.alert_tasks.evaluate_all_alerts",
+        "schedule": alert_evaluation_interval,
     },
-    'broadcast-live-kpis-every-60-seconds': {
-        'task': 'app.tasks.alert_tasks.broadcast_live_kpis',
-        'schedule': float(os.getenv('LIVE_KPI_INTERVAL_SECONDS', '60')),
+    "broadcast-live-kpis-every-60-seconds": {
+        "task": "app.tasks.alert_tasks.broadcast_live_kpis",
+        "schedule": float(os.getenv("LIVE_KPI_INTERVAL_SECONDS", "60")),
     },
-    'run-self-healing-every-15-minutes': {
-        'task': 'app.tasks.system_tasks.run_self_healing',
-        'schedule': 900.0,  # 15 minutos
+    "run-self-healing-every-15-minutes": {
+        "task": "app.tasks.system_tasks.run_self_healing",
+        "schedule": 900.0,  # 15 minutos
     },
     # Tareas de clima - 2 veces al día (cada 12 horas)
-    'update-weather-twice-daily': {
-        'task': 'app.tasks.weather_tasks.update_all_weather',
-        'schedule': 43200.0,  # 12 horas en segundos
+    "update-weather-twice-daily": {
+        "task": "app.tasks.weather_tasks.update_all_weather",
+        "schedule": 43200.0,  # 12 horas en segundos
     },
-    'cleanup-weather-alerts-daily': {
-        'task': 'app.tasks.weather_tasks.cleanup_old_alerts',
-        'schedule': 86400.0,  # 24 horas en segundos
+    "cleanup-weather-alerts-daily": {
+        "task": "app.tasks.weather_tasks.cleanup_old_alerts",
+        "schedule": 86400.0,  # 24 horas en segundos
     },
 }
-celery.conf.timezone = 'UTC'
+celery.conf.timezone = "UTC"

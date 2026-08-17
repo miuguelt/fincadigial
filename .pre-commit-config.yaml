@@ -1,34 +1,49 @@
 repos:
+  - repo: local
+    hooks:
+      - id: villaluz-project-hygiene
+        name: VillaLuz project hygiene
+        language: system
+        entry: pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Test-VillaLuzProjectHygiene.ps1 -FailOnViolations
+        pass_filenames: false
+        always_run: true
+      - id: villaluz-modularity
+        name: VillaLuz modularity ratchet
+        language: system
+        entry: npm run modularity:changed
+        pass_filenames: false
+        always_run: true
+
   # Python (backend)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.0
+    rev: v0.15.20
     hooks:
       - id: ruff
-        args: [--fix]
-        files: ^BackFinca/
+        files: ^(backend|scripts)/.*\.py$
       - id: ruff-format
-        files: ^BackFinca/
+        files: ^(backend|scripts)/.*\.py$
 
   # JavaScript / TypeScript (frontend)
   - repo: local
     hooks:
       - id: eslint-frontend
         name: ESLint (frontend)
-        language: node
-        entry: bash -c 'cd VillaLuzFront && npx eslint --max-warnings=0 "$@"' --
-        files: ^VillaLuzFront/src/.*\.(ts|tsx)$
-        pass_filenames: true
+        language: system
+        entry: pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Test-VillaLuzFrontendLint.ps1
+        files: ^frontend/src/.*\.(ts|tsx)$
+        pass_filenames: false
+        always_run: true
 
   # General
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
       - id: trailing-whitespace
-        exclude: ^(VillaLuzFront/dist|BackFinca/migrations)
+        exclude: ^(frontend/dist|backend/migrations)
       - id: end-of-file-fixer
-        exclude: ^(VillaLuzFront/dist|BackFinca/migrations)
+        exclude: ^(frontend/dist|backend/migrations)
       - id: check-yaml
       - id: check-json
-        exclude: ^VillaLuzFront/node_modules
+        exclude: ^(frontend/node_modules|frontend/tsconfig\..*\.json$)
       - id: check-merge-conflict
       - id: detect-private-key

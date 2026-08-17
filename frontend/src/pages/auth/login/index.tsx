@@ -1,4 +1,4 @@
-﻿import { Button } from "@/shared/ui/button";
+import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { useAuth } from "@/features/auth/model/useAuth";
@@ -13,6 +13,10 @@ import { ClimbingBoxLoader } from "react-spinners";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 
 const LoginForm = () => {
+  const showTestAccess = import.meta.env.DEV;
+  const developmentProfilePassword = import.meta.env.DEV
+    ? String(import.meta.env.VITE_DEV_PROFILE_PASSWORD || '').trim()
+    : '';
   const [identification, setIdentification] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -24,6 +28,7 @@ const LoginForm = () => {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const successTimerRef = useRef<number | null>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
 
   // Helper: ensure any error value becomes a safe, readable string
   const toErrorText = (val: unknown): string => {
@@ -82,18 +87,19 @@ const LoginForm = () => {
     };
   }, []);
 
-  const validateForm = () => {
+  const validateForm = (idValue = identification, passwordValue = password) => {
     const newErrors: { identification?: string; password?: string } = {};
+    const normalizedIdentification = idValue.trim();
 
-    if (!identification.trim()) {
+    if (!normalizedIdentification) {
       newErrors.identification = 'El número de documento es obligatorio';
-    } else if (!/^\d{4,15}$/.test(identification)) {
+    } else if (!/^\d{4,15}$/.test(normalizedIdentification)) {
       newErrors.identification = 'El documento debe contener entre 4 y 15 dígitos numéricos';
     }
 
-    if (!password) {
+    if (!passwordValue) {
       newErrors.password = 'La contraseña es obligatoria';
-    } else if (password.length < 4) {
+    } else if (passwordValue.length < 4) {
       newErrors.password = 'La contraseña debe tener al menos 4 caracteres';
     }
 
@@ -109,10 +115,15 @@ const LoginForm = () => {
     return `Servidor no disponible (503). ${suffix}`;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) return;
+  const executeLogin = async (idToUse: string, passwordToUse: string) => {
+    if (!idToUse.trim()) {
+      setErrors({ identification: 'El número de documento es obligatorio' });
+      return;
+    }
+    if (!passwordToUse) {
+      setErrors({ password: 'La contraseña es obligatoria' });
+      return;
+    }
 
     setLoading(true);
     setErrors({});
@@ -120,12 +131,12 @@ const LoginForm = () => {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     try {
-      console.log('🔐 Starting login with credentials:', { identification, password: '***' });
+      console.log('🔐 Starting login with credentials:', { identification: idToUse, password: '***' });
 
       // Usar el servicio de autenticación estándar con timeout optimizado
       const loginData = {
-        identification: identification, // enviar como cadena
-        password: password
+        identification: idToUse, // enviar como cadena
+        password: passwordToUse
       };
 
       // Ejecutar login con timeout más corto para mejor UX
@@ -152,12 +163,6 @@ const LoginForm = () => {
       }
 
       if (token || userData) {
-        // Si el backend no devolvió el objeto user, no disparamos /auth/me de inmediato.
-        // Autenticamos con los datos disponibles y dejamos la revalidación al AuthProvider.
-        if (!userData) {
-          // Mantener UX consistente: no bloquear por falta de perfil, AuthProvider lo actualizará.
-        }
-
         if (userData) {
           // Crear objeto User completo con valores por defecto para Potreros faltantes
           const completeUserData = {
@@ -182,10 +187,8 @@ const LoginForm = () => {
           const finalUserData = completeUserData as any;
           const canonBefore = normalizeRole((finalUserData as any).role);
           console.log('🔍 Role normalization:', { role: (finalUserData as any).role, canonBefore });
-          // No volver a llamar /auth/me aquí para normalizar rol, reducimos llamadas
 
           if (!canonBefore) {
-            // No llamar a login si no tenemos un rol válido; mostrar mensaje y permanecer en login
             console.error('❌ Invalid role:', (finalUserData as any).role);
             setErrors({ general: 'Tu cuenta no tiene un rol asignado o reconocido. Contacta al administrador.' });
             return;
@@ -195,7 +198,7 @@ const LoginForm = () => {
           const sessionVia = isCookieOnlySession || !token ? 'cookie-only' : 'token/cookie';
           console.log(`✅ Session established successfully (via ${sessionVia})`);
           setSuccessMessage(isCookieOnlySession || !token ? 'Inicio de sesión exitoso. Sesión validada mediante cookie segura.' : 'Inicio de sesión exitoso.');
-          // Manage auto-clear timer safely
+
           if (successTimerRef.current) {
             clearTimeout(successTimerRef.current);
             successTimerRef.current = null;
@@ -203,8 +206,6 @@ const LoginForm = () => {
           successTimerRef.current = window.setTimeout(() => {
             setSuccessMessage(null);
           }, 10000);
-
-          // Ya no re-invocamos /auth/me después; AuthProvider se encargará en background.
         } else {
           console.error('❌ Incomplete data in response (no user):', response);
           setErrors({ general: 'Error: No se pudo obtener el perfil del usuario después de iniciar sesión.' });
@@ -230,66 +231,72 @@ const LoginForm = () => {
         return data?.message || data?.error || undefined;
       };
 
-      // Soportar errores normalizados de authService (AuthError: { message, status, details })
-      if (error && typeof error === 'object') {
-        const status = error.status as number;
-        const code = error.code;
-        const serverMsg = formatMessageFromCode({ 
-          message: error.message || 'Error de autenticación', 
-          code: code,
-          details: error.details 
-        });
+      // AxiosError también es un objeto: primero unificamos ambas formas de error
+      // para no perder el status ni el mensaje que devuelve el backend.
+      const responseError = error?.response;
+      const responseData = responseError?.data ?? error?.data;
+      const status = Number(error?.status ?? responseError?.status ?? 0);
+      const code = error?.code ?? responseData?.error?.code;
+      const serverMsg = formatMessageFromCode({
+        message: error?.message || extractServerMessage(responseData) || 'Error de autenticación',
+        code,
+        details: error?.details ?? responseData?.error?.details ?? responseData?.details
+      });
+      const messageLower = String(error?.message || '').toLowerCase();
 
-        if (code === 'APPROVAL_PENDING') {
-          setIsPendingApproval(true);
-          return;
-        }
+      if (code === 'APPROVAL_PENDING') {
+        setIsPendingApproval(true);
+        return;
+      }
 
-        if (status === 401) {
-          setErrors({ general: serverMsg || 'Credenciales incorrectas. Verifique su documento y contraseña.' });
-        } else if (status === 503) {
-          setErrors({ general: backendUnavailableMessage(serverMsg) });
-        } else if (status === 400 || status === 422) {
-          setErrors({ general: serverMsg || 'Datos de inicio de sesión inválidos.' });
-        } else if (status === 404) {
-          setErrors({ general: serverMsg || 'Usuario no encontrado.' });
-        } else if (status === 0) {
-          setErrors({ general: 'Error de conexión. Verifique su conexión a Internet y que el servidor esté en ejecución.' });
-        } else if (status >= 500) {
-          setErrors({ general: serverMsg || 'Error del servidor. Por favor, inténtelo más tarde.' });
-        } else {
-          setErrors({ general: serverMsg || `Error (${status}).` });
-        }
-      } else if (error?.response) {
-        // AxiosError con respuesta del servidor
-        const status = error.response.status as number;
-        const data = error.response.data;
-        const serverMsg = extractServerMessage(data);
-
-        if (status === 401) {
-          setErrors({ general: serverMsg || 'Credenciales incorrectas. Verifique su documento y contraseña.' });
-        } else if (status === 400 || status === 422) {
-          setErrors({ general: serverMsg || 'Datos de inicio de sesión inválidos.' });
-        } else if (status === 404) {
-          setErrors({ general: serverMsg || 'Usuario no encontrado.' });
-        } else if (status === 0) {
-          setErrors({ general: 'Error de conexión. Verifique su conexión a Internet y que el servidor esté en ejecución.' });
-        } else if (status >= 500) {
-          setErrors({ general: serverMsg || 'Error del servidor. Por favor, inténtelo más tarde.' });
-        } else {
-          setErrors({ general: serverMsg || `Error del servidor (${status}): ${data?.message || 'Error desconocido'}` });
-        }
+      if (status === 401) {
+        setErrors({ general: serverMsg || 'Credenciales incorrectas. Verifique su documento y contraseña.' });
+      } else if (status === 503) {
+        setErrors({ general: backendUnavailableMessage(serverMsg) });
+      } else if (status === 400 || status === 422) {
+        setErrors({ general: serverMsg || 'Datos de inicio de sesión inválidos.' });
+      } else if (status === 404) {
+        setErrors({ general: serverMsg || 'Usuario no encontrado.' });
+      } else if (status === 0 && messageLower.includes('timeout')) {
+        setErrors({ general: 'El servidor tardó demasiado en responder. Inténtelo nuevamente.' });
+      } else if (status === 0 && (error?.request || responseError)) {
+        setErrors({ general: 'Error de conexión. Verifique su conexión a Internet y que el servidor esté en ejecución.' });
+      } else if (status >= 500) {
+        setErrors({ general: serverMsg || 'Error del servidor. Por favor, inténtelo más tarde.' });
       } else if (error?.request) {
-        // Error de red / CORS / backend caído
         setErrors({ general: 'Error de conexión. Verifique su conexión a Internet y que el servidor esté en ejecución.' });
       } else {
-        // Error de configuración u otro
         setErrors({ general: error?.message || 'Ocurrió un error inesperado.' });
       }
     } finally {
       setLoading(false);
       if (timeoutId) clearTimeout(timeoutId);
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // FormData también lee valores colocados por el autocompletado del navegador,
+    // que en ocasiones no dispara onChange y deja desactualizado el estado React.
+    const formData = new FormData(e.currentTarget);
+    const submittedIdentification = String(formData.get('identifier') ?? identification).trim();
+    const submittedPassword = String(formData.get('password') ?? password);
+    setIdentification(submittedIdentification);
+    setPassword(submittedPassword);
+
+    if (!validateForm(submittedIdentification, submittedPassword)) {
+      if (!submittedPassword) passwordInputRef.current?.focus();
+      return;
+    }
+    void executeLogin(submittedIdentification, submittedPassword);
+  };
+
+  const selectDevelopmentProfile = (profileIdentification: string) => {
+    setIdentification(profileIdentification);
+    setPassword(developmentProfilePassword);
+    setErrors({});
+    passwordInputRef.current?.focus();
   };
 
   return (
@@ -326,7 +333,7 @@ const LoginForm = () => {
                   Este proceso suele tardar menos de 24 horas. Recibirás una notificación cuando seas aprobado.
                 </AlertDescription>
               </Alert>
-              <Button 
+              <Button
                 onClick={() => setIsPendingApproval(false)}
                 variant="outline"
                 className="w-full border-amber-200 text-warning hover:bg-warning/10"
@@ -386,7 +393,8 @@ const LoginForm = () => {
                   name="password"
                   autoComplete="current-password"
                   type="password"
-                  placeholder="••••••••"
+                  placeholder="Escribe tu contraseña"
+                  ref={passwordInputRef}
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
@@ -433,94 +441,79 @@ const LoginForm = () => {
           </form>
           )}
           {errors.general && (
-            <div className="p-3 mb-4 text-sm font-medium text-destructive bg-destructive/10 rounded-md">
-              {toErrorText(errors.general)}
-            </div>
+            <Alert variant="destructive" className="p-3 mb-4" aria-live="assertive">
+              <AlertTitle>No se pudo iniciar sesión</AlertTitle>
+              <AlertDescription>{toErrorText(errors.general)}</AlertDescription>
+            </Alert>
           )}
+          {showTestAccess && (
           <div className="mt-8 pt-6 border-t border-border/50">
             <p className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-              Accesos de prueba
+              Perfiles de desarrollo
+            </p>
+            <p className="mb-4 text-center text-xs text-muted-foreground">
+              Selecciona un perfil y escribe la contraseña configurada para tu entorno.
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <button
                 type="button"
-                onClick={() => {
-                  setIdentification("1098");
-                  setPassword("Villaluz2024!");
-                }}
+                onClick={() => selectDevelopmentProfile("1098")}
                 className="flex flex-col items-center p-3 rounded-lg bg-info/5 border border-blue-100 hover:bg-info/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <span className="text-info font-bold text-sm">Admin</span>
-                <span className="text-info text-[10px]">Administrador</span>
+                <span className="text-info text-[11px]">Administrador</span>
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setIdentification("55555555");
-                  setPassword("Villaluz2024!");
-                }}
+                onClick={() => selectDevelopmentProfile("55555555")}
                 className="flex flex-col items-center p-3 rounded-lg bg-amber-50 border border-amber-100 hover:bg-amber-100 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <span className="text-amber-700 font-bold text-sm">Dueño</span>
-                <span className="text-amber-500 text-[10px]">Propietario</span>
+                <span className="text-amber-500 text-[11px]">Propietario</span>
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setIdentification("66666666");
-                  setPassword("Villaluz2024!");
-                }}
+                onClick={() => selectDevelopmentProfile("66666666")}
                 className="flex flex-col items-center p-3 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <span className="text-slate-700 font-bold text-sm">Capataz</span>
-                <span className="text-slate-500 text-[10px]">Supervisor</span>
+                <span className="text-slate-500 text-[11px]">Supervisor</span>
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setIdentification("11111111");
-                  setPassword("Villaluz2024!");
-                }}
+                onClick={() => selectDevelopmentProfile("11111111")}
                 className="flex flex-col items-center p-3 rounded-lg bg-purple-50 border border-purple-100 hover:bg-purple-100 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <span className="text-purple-700 font-bold text-sm">Instrucc.</span>
-                <span className="text-purple-500 text-[10px]">Instructor SENA</span>
+                <span className="text-purple-500 text-[11px]">Instructor SENA</span>
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setIdentification("22222222");
-                  setPassword("Villaluz2024!");
-                }}
+                onClick={() => selectDevelopmentProfile("22222222")}
                 className="flex flex-col items-center p-3 rounded-lg bg-teal-50 border border-teal-100 hover:bg-teal-100 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <span className="text-teal-700 font-bold text-sm">Aprendiz</span>
-                <span className="text-teal-500 text-[10px]">Estudiante SENA</span>
+                <span className="text-teal-500 text-[11px]">Estudiante SENA</span>
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setIdentification("33333333");
-                  setPassword("Villaluz2024!");
-                }}
+                onClick={() => selectDevelopmentProfile("33333333")}
                 className="flex flex-col items-center p-3 rounded-lg bg-orange-50 border border-orange-100 hover:bg-orange-100 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <span className="text-orange-700 font-bold text-sm">Operario</span>
-                <span className="text-orange-500 text-[10px]">Trabajo Campo</span>
+                <span className="text-orange-500 text-[11px]">Trabajo Campo</span>
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setIdentification("44444444");
-                  setPassword("Villaluz2024!");
-                }}
+                onClick={() => selectDevelopmentProfile("44444444")}
                 className="flex flex-col items-center p-3 rounded-lg bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <span className="text-emerald-700 font-bold text-sm">Veterin.</span>
-                <span className="text-emerald-500 text-[10px]">Sanidad Animal</span>
+                <span className="text-emerald-500 text-[11px]">Sanidad Animal</span>
               </button>
             </div>
           </div>
+          )}
           <div className="text-center mt-6 space-y-2">
             <p className="text-sm text-muted-foreground">
               ¿No tienes una cuenta?{" "}

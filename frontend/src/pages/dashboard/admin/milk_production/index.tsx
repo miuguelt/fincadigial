@@ -99,7 +99,7 @@ const MilkProductionPage = () => {
       render: (_val: string, item: any) => (
         <div className="flex flex-col">
           <span className="font-bold">{item.animal?.nombre || item.animal?.name || item.animal_id}</span>
-          <span className="text-[10px] text-muted-foreground">{item.animal?.registro || item.animal?.record || 'Ref: ' + item.animal_id}</span>
+          <span className="text-[11px] text-muted-foreground">{item.animal?.registro || item.animal?.record || 'Ref: ' + item.animal_id}</span>
         </div>
       )
     },
@@ -126,7 +126,7 @@ const MilkProductionPage = () => {
       key: 'fat_percentage',
       label: 'Grasa/Prot',
       render: (_val: any, item: MilkProduction) => (
-        <div className="text-[10px] text-muted-foreground">
+        <div className="text-[11px] text-muted-foreground">
           G: {item.fat_percentage || '-'}% | P: {item.protein_percentage || '-'}%
         </div>
       )

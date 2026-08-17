@@ -176,7 +176,7 @@ export const VoiceNoteWidget: React.FC = () => {
                     })}
                   </p>
                   <p
-                    className={`text-[10px] ${isFieldMode ? "text-muted-foreground" : "text-muted-foreground"}`}
+                    className={`text-[11px] ${isFieldMode ? "text-muted-foreground" : "text-muted-foreground"}`}
                   >
                     {note.duration} segundos
                   </p>

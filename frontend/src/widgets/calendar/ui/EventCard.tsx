@@ -35,7 +35,7 @@ export function EventCard({ event, onOpenAnimal, compact }: EventCardProps) {
 					{event.priority && (
 						<span
 							className={cn(
-								"shrink-0 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full",
+								"shrink-0 text-[11px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full",
 								event.priority === "Crítica" || event.priority === "Urgente"
 									? "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300"
 									: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
@@ -52,7 +52,7 @@ export function EventCard({ event, onOpenAnimal, compact }: EventCardProps) {
 				)}
 				<div className="flex items-center justify-between gap-2 mt-1.5">
 					<span
-						className="text-[10px] font-bold uppercase tracking-wider"
+						className="text-[11px] font-bold uppercase tracking-wider"
 						style={{ color: event.color }}
 					>
 						{cfg.emoji} {cfg.label}

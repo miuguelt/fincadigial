@@ -771,7 +771,7 @@ const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps> = ({
               className={`relative bg-card border border-border/60 rounded-xl p-4 group hover:shadow-md hover:border-border transition-all duration-200 border-l-4 ${getBorderColor()} cursor-pointer hover:bg-muted/50`}
             >
               {/* Número de registro */}
-              <div className="absolute -top-2 -right-2 bg-muted text-muted-foreground text-[9px] font-bold px-2 py-0.5 rounded-full border border-border/50 shadow-sm">
+              <div className="absolute -top-2 -right-2 bg-muted text-muted-foreground text-[11px] font-bold px-2 py-0.5 rounded-full border border-border/50 shadow-sm">
                 #{listData.length - index}
               </div>
 
@@ -847,7 +847,7 @@ const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps> = ({
     const inputClass =
       "w-full px-3 py-2 text-sm rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/50";
     const labelClass =
-      "block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 ml-1";
+      "block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 ml-1";
     const selectClass =
       "w-full px-3 py-2 text-sm rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all cursor-pointer";
     const idPrefix = `form-${type}-${modalStateId}`;

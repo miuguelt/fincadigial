@@ -111,14 +111,14 @@ export function MilkTrendChart({
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f9fafb" />
-                <XAxis 
-                  dataKey="name" 
-                  tick={{ fontSize: 11, fill: '#9ca3af', fontWeight: 500 }} 
+                <XAxis
+                  dataKey="name"
+                  tick={{ fontSize: 11, fill: '#9ca3af', fontWeight: 500 }}
                   axisLine={false}
                   tickLine={false}
                 />
-                <YAxis 
-                  tick={{ fontSize: 11, fill: '#9ca3af', fontWeight: 500 }} 
+                <YAxis
+                  tick={{ fontSize: 11, fill: '#9ca3af', fontWeight: 500 }}
                   axisLine={false}
                   tickLine={false}
                 />

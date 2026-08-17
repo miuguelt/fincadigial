@@ -10,7 +10,7 @@
 | Backend | Flask 3 + Flask-RESTX + SQLAlchemy |
 | Auth | JWT (cookies + headers), roles: Administrador / Instructor / Aprendiz |
 | Cache | Redis (Caché & SSE) |
-| DB dev | PostgreSQL 18 (Puerto 5435) |
+| DB dev | PostgreSQL 18 (Puerto 5434) |
 | DB prod | PostgreSQL 18 (Coolify Ready) |
 | ML | scikit-learn local (`services/ml/`) + LLM via CortexService |
 | Push | Firebase Cloud Messaging (`push_notification_service.py`) |
@@ -21,17 +21,20 @@
 | Servicio | Puerto |
 |---|---|
 | Backend | http://localhost:8092 |
-| Frontend | https://localhost:3005 |
-| Redis | 127.0.0.1:6380 (WSL/Docker) |
+| Frontend | http://localhost:3005 |
+| Redis | 127.0.0.1:6380 (Memurai Windows) |
+
+> Fuente operativa: `start-windows.ps1`, `backend/config.py` y `frontend/vite.config.ts`.
+> Esta documentación describe el runtime Windows-native actual; los informes fechados en `docs/` son históricos y no sustituyen estas fuentes.
 
 ## Arranque
 
-```bash
+```powershell
 # Backend
-cd backend && ./venv_win/Scripts/python.exe wsgi.py
+pwsh -File .\start-windows.ps1 -BackendOnly
 
 # Frontend
-cd frontend && npm run dev -- --host
+pwsh -File .\start-windows.ps1 -FrontendOnly
 ```
 
 ---

@@ -257,7 +257,7 @@ export const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps>
     return (<div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">{listData.map((item, index) => {
       const borderColor = (type && borderMap[type]) || "border-l-primary";
       return (<div key={item.id || index} onClick={() => { setEditingItem(item); setModalMode("view"); }} className={`relative bg-card border border-border/60 rounded-xl p-4 group hover:shadow-md hover:border-border transition-all duration-200 border-l-4 ${borderColor} cursor-pointer hover:bg-muted/50`}>
-        <div className="absolute -top-2 -right-2 bg-muted text-muted-foreground text-[9px] font-bold px-2 py-0.5 rounded-full border border-border/50 shadow-sm">#{listData.length - index}</div>
+        <div className="absolute -top-2 -right-2 bg-muted text-muted-foreground text-[11px] font-bold px-2 py-0.5 rounded-full border border-border/50 shadow-sm">#{listData.length - index}</div>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">{renderListItemInternal(item, type)}</div>
           <div className="flex flex-col gap-1 opacity-60 group-hover:opacity-100 transition-opacity">

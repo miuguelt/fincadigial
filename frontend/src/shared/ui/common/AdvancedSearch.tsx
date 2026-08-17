@@ -203,7 +203,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             className="pl-10"
           />
         </div>
-        
+
         <Button
           variant="outline"
           onClick={() => setShowFilters(!showFilters)}
@@ -217,7 +217,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             </Badge>
           )}
         </Button>
-        
+
         {showExport && (
           <Button
             variant="outline"
@@ -272,7 +272,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                 </div>
               ))}
             </div>
-            
+
             {filterOptions.length > 0 && (
               <>
                 <Separator className="my-4" />

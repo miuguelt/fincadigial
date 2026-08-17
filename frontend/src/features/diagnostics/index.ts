@@ -8,4 +8,3 @@ export {
 export type {
   DependencyCheckResult,
 } from './api/dependencyCheck.types';
-

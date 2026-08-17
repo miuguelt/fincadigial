@@ -3,9 +3,12 @@ import pytest
 from unittest.mock import MagicMock, patch
 from app.utils.db_protector import init_db_protector
 
+
 @pytest.mark.unit
 class TestDbProtector:
-    @patch.dict(os.environ, {"FLASK_ENV": "production", "ALLOW_DATABASE_DESTRUCTION": "false"})
+    @patch.dict(
+        os.environ, {"FLASK_ENV": "production", "ALLOW_DATABASE_DESTRUCTION": "false"}
+    )
     def test_drop_all_blocked_in_production(self):
         app_mock = MagicMock()
         db_mock = MagicMock()
@@ -21,7 +24,9 @@ class TestDbProtector:
         assert "BLOQUEO DE SEGURIDAD" in str(exc_info.value)
         original_drop.assert_not_called()
 
-    @patch.dict(os.environ, {"FLASK_ENV": "production", "ALLOW_DATABASE_DESTRUCTION": "true"})
+    @patch.dict(
+        os.environ, {"FLASK_ENV": "production", "ALLOW_DATABASE_DESTRUCTION": "true"}
+    )
     def test_drop_all_allowed_in_production_with_bypass(self):
         app_mock = MagicMock()
         db_mock = MagicMock()
@@ -34,17 +39,19 @@ class TestDbProtector:
         db_mock.drop_all()
         original_drop.assert_called_once()
 
-    @patch.dict(os.environ, {"FLASK_ENV": "development", "ALLOW_DATABASE_DESTRUCTION": "false"})
+    @patch.dict(
+        os.environ, {"FLASK_ENV": "development", "ALLOW_DATABASE_DESTRUCTION": "false"}
+    )
     def test_drop_all_warning_in_development(self):
         app_mock = MagicMock()
         db_mock = MagicMock()
         original_drop = MagicMock()
         db_mock.drop_all = original_drop
 
-        with patch('app.utils.db_protector.logger') as mock_logger:
+        with patch("app.utils.db_protector.logger") as mock_logger:
             init_db_protector(app_mock, db_mock)
             db_mock.drop_all()
-            
+
             mock_logger.warning.assert_called_once_with(
                 "Protector interceptó drop_all en modo seguro (no-producción)."
             )
@@ -57,7 +64,7 @@ class TestDbProtector:
         original_create = MagicMock()
         db_mock.create_all = original_create
 
-        with patch('app.utils.db_protector.logger') as mock_logger:
+        with patch("app.utils.db_protector.logger") as mock_logger:
             init_db_protector(app_mock, db_mock)
             db_mock.create_all()
 

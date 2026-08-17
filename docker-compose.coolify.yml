@@ -311,7 +311,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME:-villaluz}
     volumes:
-      - ./backups:/backups
+      - backup_data:/backups
     depends_on:
       villaluz-db:
         condition: service_healthy
@@ -334,4 +334,6 @@ volumes:
   uploads_data:
     driver: local
   maintenance_logs:
+    driver: local
+  backup_data:
     driver: local

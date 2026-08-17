@@ -28,7 +28,7 @@ export default function QuickDisease() {
     newParams.delete('quick');
     setSearchParams(newParams, { replace: true });
   };
-  
+
   const [animalId, setAnimalId] = useState<number | null>(null);
   const [diseaseId, setDiseaseId] = useState<number | null>(null);
   const [status, setStatus] = useState('Activo');

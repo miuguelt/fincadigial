@@ -50,7 +50,7 @@ El sistema reconoce automáticamente estos formatos:
 
 - **Año**: `2025` (4 dígitos)
 - **Año-Mes**: `2024-12` o `2024/12`
-- **Fecha completa**: 
+- **Fecha completa**:
   - `2024-12-25` (ISO)
   - `25/12/2024` (Europeo)
   - `2024/12/25` (Americano)

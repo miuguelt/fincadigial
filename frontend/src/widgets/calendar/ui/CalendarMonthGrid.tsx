@@ -96,7 +96,7 @@ export function CalendarMonthGrid({
 				{WEEKDAY_LABELS.map((label) => (
 					<span
 						key={label}
-						className="text-center text-[10px] sm:text-xs font-bold text-muted-foreground uppercase py-0.5 sm:py-1"
+						className="text-center text-[11px] sm:text-xs font-bold text-muted-foreground uppercase py-0.5 sm:py-1"
 					>
 						{label}
 					</span>
@@ -160,7 +160,7 @@ export function CalendarMonthGrid({
 												/>
 											))}
 											{representedTotal > 3 && (
-												<span className="text-[7px] sm:text-[8px] leading-none font-bold text-muted-foreground ml-0.5">
+												<span className="text-[11px] sm:text-[11px] leading-none font-bold text-muted-foreground ml-0.5">
 													+{representedTotal - 3}
 												</span>
 											)}

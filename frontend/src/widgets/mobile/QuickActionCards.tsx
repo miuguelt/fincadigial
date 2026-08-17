@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { 
-  Milk, 
-  Weight, 
-  Stethoscope, 
-  Heart, 
-  X, 
+import {
+  Milk,
+  Weight,
+  Stethoscope,
+  Heart,
+  X,
   ChevronRight,
   ClipboardCheck,
   Zap,
@@ -30,37 +30,37 @@ export default function QuickActionCards() {
   const [formData, setFormData] = useState<any>({});
 
   const actions = [
-    { 
-      id: 'milk', 
-      title: 'Leche', 
+    {
+      id: 'milk',
+      title: 'Leche',
       subtitle: 'Registrar ordeño',
-      icon: <Milk className="h-6 w-6" />, 
-      color: 'from-blue-500 to-blue-700', 
-      shadow: 'shadow-blue-500/20' 
+      icon: <Milk className="h-6 w-6" />,
+      color: 'from-blue-500 to-blue-700',
+      shadow: 'shadow-blue-500/20'
     },
-    { 
-      id: 'weight', 
-      title: 'Peso', 
+    {
+      id: 'weight',
+      title: 'Peso',
       subtitle: 'Control de masa',
-      icon: <Weight className="h-6 w-6" />, 
-      color: 'from-orange-500 to-orange-700', 
-      shadow: 'shadow-orange-500/20' 
+      icon: <Weight className="h-6 w-6" />,
+      color: 'from-orange-500 to-orange-700',
+      shadow: 'shadow-orange-500/20'
     },
-    { 
-      id: 'health', 
-      title: 'Salud', 
+    {
+      id: 'health',
+      title: 'Salud',
       subtitle: 'Nuevo tratamiento',
-      icon: <Stethoscope className="h-6 w-6" />, 
-      color: 'from-rose-500 to-rose-700', 
-      shadow: 'shadow-rose-500/20' 
+      icon: <Stethoscope className="h-6 w-6" />,
+      color: 'from-rose-500 to-rose-700',
+      shadow: 'shadow-rose-500/20'
     },
-    { 
-      id: 'repro', 
-      title: 'Celo', 
+    {
+      id: 'repro',
+      title: 'Celo',
       subtitle: 'Reportar evento',
-      icon: <Heart className="h-6 w-6" />, 
-      color: 'from-pink-500 to-pink-700', 
-      shadow: 'shadow-pink-500/20' 
+      icon: <Heart className="h-6 w-6" />,
+      color: 'from-pink-500 to-pink-700',
+      shadow: 'shadow-pink-500/20'
     },
   ];
 
@@ -108,7 +108,7 @@ export default function QuickActionCards() {
           notes: formData.notes
         } as any);
       }
-      
+
       showToast('Registro guardado con éxito', 'success');
       closeModal();
     } catch (error: any) {
@@ -140,10 +140,10 @@ export default function QuickActionCards() {
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-black text-lg tracking-tighter leading-tight">{action.title}</h3>
-            <p className="text-[10px] font-bold uppercase tracking-widest opacity-50">{action.subtitle}</p>
+            <p className="text-[11px] font-bold uppercase tracking-widest opacity-50">{action.subtitle}</p>
           </div>
           <ChevronRight className="h-5 w-5 opacity-20 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-          
+
           {/* Decorative highlight */}
           <div className="absolute top-0 right-0 h-20 w-20 bg-card/5 rounded-full -mr-10 -mt-10 blur-2xl" />
         </motion.button>
@@ -152,15 +152,15 @@ export default function QuickActionCards() {
       <AnimatePresence>
         {activeModal && (
           <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closeModal}
               className="absolute inset-0 bg-black/60 backdrop-blur-md"
             />
-            
-            <motion.div 
+
+            <motion.div
               initial={{ y: '100%', scale: 1 }}
               animate={{ y: 0, scale: 1 }}
               exit={{ y: '100%', scale: 1 }}
@@ -181,12 +181,12 @@ export default function QuickActionCards() {
                       <h3 className="text-2xl font-black tracking-tighter">
                         {actions.find(a => a.id === activeModal)?.title}
                       </h3>
-                      <p className="text-[10px] font-bold uppercase tracking-widest opacity-50">Acción Rápida de Campo</p>
+                      <p className="text-[11px] font-bold uppercase tracking-widest opacity-50">Acción Rápida de Campo</p>
                     </div>
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={closeModal}
                     className="rounded-full bg-card/5 hover:bg-card/10"
                   >
@@ -194,11 +194,11 @@ export default function QuickActionCards() {
                   </Button>
                 </div>
               </div>
-              
+
               {/* Modal Body */}
               <form onSubmit={handleSubmit} className="p-8 space-y-6">
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1">Sujeto / Animal</Label>
+                  <Label className="text-[11px] font-black uppercase tracking-[0.2em] ml-1">Sujeto / Animal</Label>
                   <div className="relative">
                     <select
                       id="animal_id"
@@ -220,7 +220,7 @@ export default function QuickActionCards() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1">Fecha</Label>
+                    <Label className="text-[11px] font-black uppercase tracking-[0.2em] ml-1">Fecha</Label>
                     <Input
                       id="date"
                       type="date"
@@ -230,10 +230,10 @@ export default function QuickActionCards() {
                       required
                     />
                   </div>
-                  
+
                   {activeModal === 'milk' && (
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1">Sesión</Label>
+                      <Label className="text-[11px] font-black uppercase tracking-[0.2em] ml-1">Sesión</Label>
                       <select
                         id="session"
                         className="w-full h-10 rounded-lg border border-white/10 bg-background/50 px-4 font-bold outline-none"
@@ -249,7 +249,7 @@ export default function QuickActionCards() {
 
                 {activeModal === 'milk' && (
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1 text-info">Volumen (Litros)</Label>
+                    <Label className="text-[11px] font-black uppercase tracking-[0.2em] ml-1 text-info">Volumen (Litros)</Label>
                     <div className="relative">
                       <Input
                         id="liters"
@@ -268,7 +268,7 @@ export default function QuickActionCards() {
 
                 {activeModal === 'weight' && (
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1 text-orange-500">Masa Corporal (Kg)</Label>
+                    <Label className="text-[11px] font-black uppercase tracking-[0.2em] ml-1 text-orange-500">Masa Corporal (Kg)</Label>
                     <Input
                       id="weight"
                       type="number"
@@ -282,7 +282,7 @@ export default function QuickActionCards() {
                 )}
 
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1">Notas del Operario</Label>
+                  <Label className="text-[11px] font-black uppercase tracking-[0.2em] ml-1">Notas del Operario</Label>
                   <textarea
                     id="notes"
                     placeholder="Escribe observaciones adicionales..."
@@ -293,16 +293,16 @@ export default function QuickActionCards() {
                 </div>
 
                 <div className="pt-4 flex gap-4">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     className="flex-1 h-10 rounded-xl font-semibold text-sm border-white/10"
                     onClick={closeModal}
                   >
                     Descartar
                   </Button>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     className="flex-1 h-10 rounded-xl font-semibold text-sm bg-primary shadow-xl shadow-primary/20"
                     disabled={loading}
                   >

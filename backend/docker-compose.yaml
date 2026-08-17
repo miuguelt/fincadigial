@@ -28,7 +28,7 @@ services:
       JWT_COOKIE_DOMAIN: ${JWT_COOKIE_DOMAIN}
       CORS_ORIGINS: ${CORS_ORIGINS}
       CACHE_WARMUP_ENABLED: 'false'
-    
+
     command: ["gunicorn", "--workers", "2", "--timeout", "60", "--bind", "0.0.0.0:8081", "wsgi:app"]
 
     # Carpeta persistente para archivos estáticos

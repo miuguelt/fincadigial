@@ -5,7 +5,7 @@ Migración 003: Agregar tabla push_subscription (Web Push)
 Crea la tabla para almacenar suscripciones Web Push de usuarios.
 
 Uso:
-    cd BackFinca
+    cd VillaLuz
     python docs/migrations/003_add_push_subscriptions.py
 
 Dependencias:
@@ -14,7 +14,10 @@ Dependencias:
 
 import sys
 import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 
 from app import create_app, db
 from sqlalchemy import text
@@ -65,12 +68,16 @@ def upgrade():
         logger.info("✅ Migración 003 completada exitosamente")
 
         logger.info("\n⚠️ IMPORTANTE:")
-        logger.info("Para habilitar notificaciones push, configura las variables de entorno:")
+        logger.info(
+            "Para habilitar notificaciones push, configura las variables de entorno:"
+        )
         logger.info("  VAPID_PUBLIC_KEY=tu_clave_publica")
         logger.info("  VAPID_PRIVATE_KEY=tu_clave_privada")
         logger.info("  VAPID_CLAIMS_SUB=mailto:admin@fincavillaluz.com")
         logger.info("\nGenera las claves con:")
-        logger.info("  python -c \"from vapid import Vapid; v=Vapid(); v.generate_keys(); print(v.public_key()); print(v.private_key())\"")
+        logger.info(
+            '  python -c "from vapid import Vapid; v=Vapid(); v.generate_keys(); print(v.public_key()); print(v.private_key())"'
+        )
 
     except Exception as e:
         db.session.rollback()
@@ -92,11 +99,11 @@ def downgrade():
         raise
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description='Migración 003: Push Subscriptions')
-    parser.add_argument('--downgrade', action='store_true', help='Revertir migración')
+    parser = argparse.ArgumentParser(description="Migración 003: Push Subscriptions")
+    parser.add_argument("--downgrade", action="store_true", help="Revertir migración")
     args = parser.parse_args()
 
     app = create_app()

@@ -14,7 +14,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
-import { Transaction } from '@/entities/financial/api/financial.service';
+import { isIncomeTransaction, Transaction } from '@/entities/financial/api/financial.service';
 
 export interface FinancialChartProps {
   data: Transaction[];
@@ -22,14 +22,9 @@ export interface FinancialChartProps {
   height?: number;
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  Milk: 'Leche',
-  Animal: 'Animales',
-  Medication: 'Medicamentos',
-  Food: 'Alimento',
-  Service: 'Servicios',
-  Other: 'Otros',
-};
+/* La API ya envía la categoría en español ("Venta de Leche", "Alimento"), así
+   que no hay nada que traducir aquí: el mapa que había usaba las claves en
+   inglés y no acertaba ninguna. */
 
 export function FinancialChart({
   data,
@@ -43,7 +38,7 @@ export function FinancialChart({
       if (!acc[date]) {
         acc[date] = { date, income: 0, expense: 0 };
       }
-      if (item.transaction_type === 'Income') {
+      if (isIncomeTransaction(item)) {
         acc[date].income += item.amount;
       } else {
         acc[date].expense += item.amount;
@@ -60,9 +55,9 @@ export function FinancialChart({
     const grouped = data.reduce((acc, item) => {
       const category = item.category;
       if (!acc[category]) {
-        acc[category] = { name: CATEGORY_LABELS[category] || category, income: 0, expense: 0 };
+        acc[category] = { name: category, income: 0, expense: 0 };
       }
-      if (item.transaction_type === 'Income') {
+      if (isIncomeTransaction(item)) {
         acc[category].income += item.amount;
       } else {
         acc[category].expense += item.amount;
@@ -76,7 +71,7 @@ export function FinancialChart({
   const pieData = useMemo(() => {
     const totals = data.reduce(
       (acc, item) => {
-        if (item.transaction_type === 'Income') {
+        if (isIncomeTransaction(item)) {
           acc.income += item.amount;
         } else {
           acc.expense += item.amount;
@@ -95,7 +90,7 @@ export function FinancialChart({
   const totals = useMemo(() => {
     return data.reduce(
       (acc, item) => {
-        if (item.transaction_type === 'Income') {
+        if (isIncomeTransaction(item)) {
           acc.income += item.amount;
         } else {
           acc.expense += item.amount;

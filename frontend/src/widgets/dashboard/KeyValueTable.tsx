@@ -38,7 +38,7 @@ export const KeyValueTable: React.FC<KeyValueTableProps> = ({
         </tbody>
       </table>
       {Object.entries(data).length > maxRows && (
-        <div className="text-[10px] px-2 py-1 text-muted-foreground border-t bg-muted">
+        <div className="text-[11px] px-2 py-1 text-muted-foreground border-t bg-muted">
           {Object.entries(data).length - maxRows} más…
         </div>
       )}

@@ -1110,12 +1110,12 @@ const { stats, loading, error, loadStats } = useDashboardStats();
   - SSE: GET /api/v1/events
   - WebSocket: /ws
 - Referencias:
-  - [api.py: SSE](file:///c:/Users/Miguel/Documents/Flask%20Projects/BackFinca/app/api.py#L201-L260)
-  - [api.py: WebSocket](file:///c:/Users/Miguel/Documents/Flask%20Projects/BackFinca/app/api.py#L261-L294)
-  - [namespace_helpers.py: create](file:///c:/Users/Miguel/Documents/Flask%20Projects/BackFinca/app/utils/namespace_helpers.py#L970-L985)
-  - [namespace_helpers.py: update](file:///c:/Users/Miguel/Documents/Flask%20Projects/BackFinca/app/utils/namespace_helpers.py#L1245-L1265)
-  - [namespace_helpers.py: delete](file:///c:/Users/Miguel/Documents/Flask%20Projects/BackFinca/app/utils/namespace_helpers.py#L1455-L1465)
-  - [namespace_helpers.py: bulk](file:///c:/Users/Miguel/Documents/Flask%20Projects/BackFinca/app/utils/namespace_helpers.py#L1598-L1608)
+  - [api.py: SSE](file:///c:/Users/Miguel/Documents/Flask%20Projects/VillaLuz/app/api.py#L201-L260)
+  - [api.py: WebSocket](file:///c:/Users/Miguel/Documents/Flask%20Projects/VillaLuz/app/api.py#L261-L294)
+  - [namespace_helpers.py: create](file:///c:/Users/Miguel/Documents/Flask%20Projects/VillaLuz/app/utils/namespace_helpers.py#L970-L985)
+  - [namespace_helpers.py: update](file:///c:/Users/Miguel/Documents/Flask%20Projects/VillaLuz/app/utils/namespace_helpers.py#L1245-L1265)
+  - [namespace_helpers.py: delete](file:///c:/Users/Miguel/Documents/Flask%20Projects/VillaLuz/app/utils/namespace_helpers.py#L1455-L1465)
+  - [namespace_helpers.py: bulk](file:///c:/Users/Miguel/Documents/Flask%20Projects/VillaLuz/app/utils/namespace_helpers.py#L1598-L1608)
 
 ### Formato de eventos
 

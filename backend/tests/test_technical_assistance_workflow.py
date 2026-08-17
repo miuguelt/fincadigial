@@ -94,18 +94,25 @@ def test_request_is_notified_claimed_and_answered(client, token_for):
 
 
 def test_targeted_sse_event_is_private_to_recipient():
-    payload = json.dumps({
-        "endpoint": "user_notification",
-        "recipient_id": 42,
-        "data": {"type": "technical_assistance_request"},
-    })
+    payload = json.dumps(
+        {
+            "endpoint": "user_notification",
+            "recipient_id": 42,
+            "data": {"type": "technical_assistance_request"},
+        }
+    )
 
     assert _event_visible_to_user(payload, "42") is True
     assert _event_visible_to_user(payload, "7") is False
-    assert _event_visible_to_user(json.dumps({"endpoint": "technical-assistance"}), "7") is True
+    assert (
+        _event_visible_to_user(json.dumps({"endpoint": "technical-assistance"}), "7")
+        is True
+    )
 
 
-def test_non_urgent_request_uses_in_app_channel_without_push(client, token_for, monkeypatch):
+def test_non_urgent_request_uses_in_app_channel_without_push(
+    client, token_for, monkeypatch
+):
     farmer_headers = token_for("Operario", finca_type="Tradicional")
     push_calls = []
 

@@ -65,7 +65,7 @@ export function renderListItemInternal(
               </span>{" "}
               <Badge
                 variant="outline"
-                className="text-[10px] h-5 bg-emerald-500/5 text-emerald-600 border-emerald-200 shrink-0"
+                className="text-[11px] h-5 bg-emerald-500/5 text-emerald-600 border-emerald-200 shrink-0"
               >
                 {" "}
                 {formatDate(item.date)}{" "}
@@ -77,7 +77,7 @@ export function renderListItemInternal(
               </p>
             )}{" "}
             {item.results && (
-              <div className="flex items-center gap-1.5 mt-1 text-[10px] font-medium text-foreground/70">
+              <div className="flex items-center gap-1.5 mt-1 text-[11px] font-medium text-foreground/70">
                 {" "}
                 <span className="w-1 h-1 rounded-[var(--radius-full)] bg-emerald-500" />{" "}
                 Resultado: {item.results}{" "}
@@ -97,13 +97,13 @@ export function renderListItemInternal(
               </span>{" "}
               <Badge
                 variant={item.status === "Activo" ? "destructive" : "default"}
-                className={`text-[10px] h-5 ${item.status === "Curado" ? "bg-success text-white" : ""}`}
+                className={`text-[11px] h-5 ${item.status === "Curado" ? "bg-success text-white" : ""}`}
               >
                 {" "}
                 {item.status}{" "}
               </Badge>{" "}
             </div>{" "}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
               {" "}
               <div className="flex items-center gap-1">
                 {" "}
@@ -123,7 +123,7 @@ export function renderListItemInternal(
               </div>{" "}
             </div>{" "}
             {item.notes && (
-              <p className="text-[10px] text-muted-foreground/80 border-l-2 border-rose-200 pl-2 mt-1">
+              <p className="text-[11px] text-muted-foreground/80 border-l-2 border-rose-200 pl-2 mt-1">
                 {" "}
                 {item.notes}{" "}
               </p>
@@ -146,7 +146,7 @@ export function renderListItemInternal(
                   {" "}
                   <Badge
                     variant="outline"
-                    className="text-[9px] h-4 bg-warning/5 text-warning border-amber-200"
+                    className="text-[11px] h-4 bg-warning/5 text-warning border-amber-200"
                   >
                     {" "}
                     Desde: {formatDate(item.assignment_date)}{" "}
@@ -154,7 +154,7 @@ export function renderListItemInternal(
                   {item.removal_date && (
                     <Badge
                       variant="outline"
-                      className="text-[9px] h-4 bg-muted/500/5 text-muted-foreground border-border"
+                      className="text-[11px] h-4 bg-muted/500/5 text-muted-foreground border-border"
                     >
                       {" "}
                       Hasta: {formatDate(item.removal_date)}{" "}
@@ -164,14 +164,14 @@ export function renderListItemInternal(
               </div>{" "}
               <Badge
                 variant={item.removal_date ? "secondary" : "default"}
-                className={`text-[10px] h-5 ${!item.removal_date ? "bg-success text-white animate-pulse" : ""}`}
+                className={`text-[11px] h-5 ${!item.removal_date ? "bg-success text-white animate-pulse" : ""}`}
               >
                 {" "}
                 {item.removal_date ? "Retirado" : "Activo"}{" "}
               </Badge>{" "}
             </div>{" "}
             {item.notes && (
-              <p className="text-[10px] text-muted-foreground/80 italic line-clamp-1 border-l-2 border-amber-200 pl-2">
+              <p className="text-[11px] text-muted-foreground/80 italic line-clamp-1 border-l-2 border-amber-200 pl-2">
                 {" "}
                 {item.notes}{" "}
               </p>
@@ -190,13 +190,13 @@ export function renderListItemInternal(
               </span>{" "}
               <Badge
                 variant="outline"
-                className="text-[10px] h-5 bg-info/5 text-info border-info/30"
+                className="text-[11px] h-5 bg-info/5 text-info border-info/30"
               >
                 {" "}
                 {formatDate(item.vaccination_date)}{" "}
               </Badge>{" "}
             </div>{" "}
-            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
               {" "}
               <span className="font-semibold">Instructor:</span>{" "}
               <span className="fit-clamp">
@@ -225,7 +225,7 @@ export function renderListItemInternal(
               </span>{" "}
               <Badge
                 variant="outline"
-                className="text-[10px] h-5 bg-purple-500/5 text-purple-600 border-purple-200 shrink-0"
+                className="text-[11px] h-5 bg-purple-500/5 text-purple-600 border-purple-200 shrink-0"
               >
                 {" "}
                 {formatDate(item.treatment_date)}{" "}
@@ -235,25 +235,25 @@ export function renderListItemInternal(
               {" "}
               <div className="flex flex-col gap-0.5">
                 {" "}
-                <span className="text-[9px] font-bold text-purple-700 uppercase">
+                <span className="text-[11px] font-bold text-purple-700 uppercase">
                   Dosis
                 </span>{" "}
-                <span className="text-[10px] text-foreground font-medium fit-clamp">
+                <span className="text-[11px] text-foreground font-medium fit-clamp">
                   {item.dosis || "-"}
                 </span>{" "}
               </div>{" "}
               <div className="flex flex-col gap-0.5">
                 {" "}
-                <span className="text-[9px] font-bold text-purple-700 uppercase">
+                <span className="text-[11px] font-bold text-purple-700 uppercase">
                   Frecuencia
                 </span>{" "}
-                <span className="text-[10px] text-foreground font-medium fit-clamp">
+                <span className="text-[11px] text-foreground font-medium fit-clamp">
                   {item.frequency || "-"}
                 </span>{" "}
               </div>{" "}
             </div>{" "}
             {item.veterinarian && (
-              <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground font-medium">
+              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium">
                 {" "}
                 <div className="w-1.5 h-1.5 rounded-[var(--radius-full)] bg-purple-400" />{" "}
                 <span>
@@ -321,7 +321,7 @@ export function renderListItemInternal(
               </span>{" "}
               <Badge
                 variant="outline"
-                className="text-[10px] h-6 px-2 bg-orange-500/5 text-orange-600 border-orange-200 font-semibold"
+                className="text-[11px] h-6 px-2 bg-orange-500/5 text-orange-600 border-orange-200 font-semibold"
               >
                 {" "}
                 📅 {formatDate(item.checkup_date)}{" "}
@@ -338,12 +338,12 @@ export function renderListItemInternal(
                   </div>{" "}
                   <div className="flex flex-col">
                     {" "}
-                    <span className="text-[9px] text-muted-foreground font-medium uppercase">
+                    <span className="text-[11px] text-muted-foreground font-medium uppercase">
                       Peso
                     </span>{" "}
                     <span className="text-sm font-black text-foreground">
                       {item.weight}{" "}
-                      <span className="text-[10px] font-normal">kg</span>
+                      <span className="text-[11px] font-normal">kg</span>
                     </span>{" "}
                   </div>{" "}
                 </div>
@@ -357,12 +357,12 @@ export function renderListItemInternal(
                   </div>{" "}
                   <div className="flex flex-col">
                     {" "}
-                    <span className="text-[9px] text-muted-foreground font-medium uppercase">
+                    <span className="text-[11px] text-muted-foreground font-medium uppercase">
                       Altura
                     </span>{" "}
                     <span className="text-sm font-black text-foreground">
                       {item.height}{" "}
-                      <span className="text-[10px] font-normal">m</span>
+                      <span className="text-[11px] font-normal">m</span>
                     </span>{" "}
                   </div>{" "}
                 </div>
@@ -391,13 +391,13 @@ export function renderListItemInternal(
               </span>{" "}
               <Badge
                 variant="outline"
-                className="text-[10px] h-5 bg-sky-500/5 text-sky-600 border-sky-200 font-bold"
+                className="text-[11px] h-5 bg-sky-500/5 text-sky-600 border-sky-200 font-bold"
               >
                 {" "}
                 {item.liters} L{" "}
               </Badge>{" "}
             </div>{" "}
-            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
               {" "}
               <span className="font-semibold text-foreground/60">
                 {formatDate(item.date)}
@@ -411,7 +411,7 @@ export function renderListItemInternal(
               )}{" "}
             </div>{" "}
             {item.notes && (
-              <p className="text-[10px] text-muted-foreground/80 italic border-l-2 border-sky-200 pl-2">
+              <p className="text-[11px] text-muted-foreground/80 italic border-l-2 border-sky-200 pl-2">
                 {" "}
                 {item.notes}{" "}
               </p>

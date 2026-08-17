@@ -46,7 +46,7 @@ export function LivestockTagWidget({ animal }: LivestockTagWidgetProps) {
 
     setIsProgramming(true);
     setNfcStatus('writing');
-    
+
     try {
       const NDEFReader = (window as unknown as {
         NDEFReader: new () => { write: (payload: unknown) => Promise<void> };
@@ -77,7 +77,7 @@ export function LivestockTagWidget({ animal }: LivestockTagWidgetProps) {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-sm text-foreground">Identificación Animal</h3>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Etiquetado Digital v2.5</p>
+            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Etiquetado Digital v2.5</p>
           </div>
         </div>
 
@@ -85,7 +85,7 @@ export function LivestockTagWidget({ animal }: LivestockTagWidgetProps) {
           <button
             onClick={() => setMode('qr')}
             className={cn(
-              "px-3 py-1.5 rounded-lg text-[10px] font-semibold text-sm transition-all",
+              "px-3 py-1.5 rounded-lg text-[11px] font-semibold text-sm transition-all",
               mode === 'qr' ? "bg-card dark:bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -94,7 +94,7 @@ export function LivestockTagWidget({ animal }: LivestockTagWidgetProps) {
           <button
             onClick={() => setMode('nfc')}
             className={cn(
-              "px-3 py-1.5 rounded-lg text-[10px] font-semibold text-sm transition-all",
+              "px-3 py-1.5 rounded-lg text-[11px] font-semibold text-sm transition-all",
               mode === 'nfc' ? "bg-card dark:bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -140,9 +140,9 @@ export function LivestockTagWidget({ animal }: LivestockTagWidgetProps) {
                   }}
                 />
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="rounded-xl font-semibold text-sm h-10 px-6 gap-2 border-primary/20 text-primary hover:bg-primary/10"
                 onClick={downloadQR}
               >
@@ -185,7 +185,7 @@ export function LivestockTagWidget({ animal }: LivestockTagWidgetProps) {
                 </p>
                </div>
 
-              <Button 
+              <Button
                 disabled={isProgramming}
                 onClick={programNfc}
                 className={cn(
@@ -206,9 +206,8 @@ export function LivestockTagWidget({ animal }: LivestockTagWidgetProps) {
             <div key={i} className="w-6 h-6 rounded-full bg-secondary dark:bg-card/10 border-2 border-white dark:border-slate-900" />
           ))}
         </div>
-        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-tighter">Compatible con NTAG213/215</span>
+        <span className="text-[11px] font-black text-muted-foreground uppercase tracking-tighter">Compatible con NTAG213/215</span>
       </div>
     </div>
   );
 }
-

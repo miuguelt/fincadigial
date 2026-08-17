@@ -17,24 +17,24 @@ declare global {
       }): Promise<BluetoothDevice>;
     };
   }
-  
+
   interface BluetoothDevice {
     id: string;
     name: string | null;
     gatt?: BluetoothRemoteGATTServer;
     watchingAdvertisements: boolean;
   }
-  
+
   interface BluetoothRemoteGATTServer {
     connect(): Promise<BluetoothRemoteGATTServer>;
     disconnect(): void;
     getPrimaryService(uuid: string): Promise<BluetoothRemoteGATTService>;
   }
-  
+
   interface BluetoothRemoteGATTService {
     getCharacteristic(uuid: string): Promise<BluetoothRemoteGATTCharacteristic>;
   }
-  
+
   interface BluetoothRemoteGATTCharacteristic {
     readValue(): Promise<DataView>;
     writeValue(value: BufferSource): Promise<void>;
@@ -121,17 +121,17 @@ export class ProximitySyncService {
     // Generar ID único de dispositivo basado en timestamp + random
     this.deviceId = this.generateDeviceId();
     this.deviceName = `VillaLuz-${this.deviceId.slice(-4)}`;
-    
+
     // Inicializar canales de comunicación
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
       this.discoveryChannel = new BroadcastChannel('villaluz-mesh-discovery');
       this.signalChannel = new BroadcastChannel('villaluz-mesh-signal');
       this.setupChannels();
     }
-    
+
     // Iniciar heartbeat automático
     this.startHeartbeat();
-    
+
     console.log(`[VLMSP] Servicio inicializado - Device: ${this.deviceName} (${this.deviceId})`);
   }
 
@@ -328,7 +328,7 @@ export class ProximitySyncService {
 
   private async startDiscoveryLoop(includeBluetooth: boolean): Promise<void> {
     if (this.isScanning) return;
-    
+
     this.isScanning = true;
     console.log('[VLMSP] Iniciando escaneo pasivo continuo...');
 
@@ -337,7 +337,7 @@ export class ProximitySyncService {
 
     // 2. Bluetooth sólo cuando el usuario activa el modo campo explícito.
     if (includeBluetooth) await this.scanBluetooth();
-    
+
     // 3. Fallback: WebRTC para redes WiFi
     await this.scanWebRTC();
 
@@ -354,7 +354,7 @@ export class ProximitySyncService {
       const { LanNodeTransport } = await import('./transports/LanNodeTransport');
       const lan = new LanNodeTransport();
       const peers = await lan.discover();
-      
+
       for (const peer of peers) {
         if (!this.discoveredPeers.has(peer.id)) {
           const discoveredPeer: DiscoveredPeer = {
@@ -539,7 +539,7 @@ export class ProximitySyncService {
    */
   async startAdvertising(): Promise<void> {
     console.log(`[VLMSP] Anunciando presencia como ${this.deviceName}`);
-    
+
     // En browsers actuales, no podemos actuar como peripheral Bluetooth real
     // Usamos WebRTC DataChannel para crear un "servidor" de señalización local
     await this.startWebRTCAdvertising();
@@ -611,7 +611,7 @@ export class ProximitySyncService {
 
   private async handleBluetoothDevice(device: BluetoothDevice): Promise<DiscoveredPeer> {
     const peerId = `bt-${device.id}`;
-    
+
     const peer: DiscoveredPeer = {
       id: peerId,
       name: device.name || 'Dispositivo Desconocido',
@@ -657,7 +657,7 @@ export class ProximitySyncService {
       this.activeConnections.set(peer.id, server);
       peer.isConnected = true;
       this.syncState.isSyncing = true;
-      
+
       // 3. Obtener servicio y características
       const service = await server.getPrimaryService(VLMSP_SERVICE_UUID);
       const msgOutChar = await service.getCharacteristic(VLMSP_CHARACTERISTIC_MSG_OUT);
@@ -666,7 +666,7 @@ export class ProximitySyncService {
 
       // 4. Leer operaciones pendientes locales
       const pendingOps = await offlineQueue.getPendingOperations();
-      
+
       // 5. Leer operaciones pendientes del peer
       const peerData = await msgOutChar.readValue();
       const peerOps: QueuedOperation[] = JSON.parse(new TextDecoder().decode(peerData));
@@ -774,7 +774,7 @@ export class ProximitySyncService {
 
   private handleWebRTCPeerDiscovery(msg: any): DiscoveredPeer {
     const peerId = `webrtc-${msg.deviceId}`;
-    
+
     const peer: DiscoveredPeer = {
       id: peerId,
       name: msg.deviceName,
@@ -799,7 +799,7 @@ export class ProximitySyncService {
 
   private async syncWithWebRTCPeer(peer: DiscoveredPeer): Promise<boolean> {
     if (!this.signalChannel) return false;
-    
+
     const pc = new RTCPeerConnection(VLMSP_WEBRTC_CONFIG);
     this.activeConnections.set(peer.id, pc);
 
@@ -827,7 +827,7 @@ export class ProximitySyncService {
       // Esperar respuesta
       const answer = await new Promise<RTCSessionDescriptionInit>((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error('Timeout esperando respuesta WebRTC')), 10000);
-        
+
         const handleAnswer = (event: MessageEvent) => {
           const msg = event.data;
           if (msg.type === 'WEBRTC_ANSWER' && msg.to === this.deviceId && msg.from === peer.deviceId) {
@@ -845,7 +845,7 @@ export class ProximitySyncService {
       // Esperar a que el canal de datos se abra
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error('Timeout abriendo DataChannel')), 10000);
-        
+
         dataChannel.onopen = () => {
           clearTimeout(timeout);
           resolve();
@@ -856,7 +856,7 @@ export class ProximitySyncService {
 
       // Intercambiar datos
       const pendingOps = await offlineQueue.getPendingOperations();
-      
+
       dataChannel.send(JSON.stringify({
         type: 'PENDING_OPS',
         deviceId: this.deviceId,

@@ -7,7 +7,7 @@ import { isDevMode } from '@/shared/utils/viteEnv'
 
 const LOG_LEVELS = {
   DEBUG: 'debug',
-  INFO: 'info', 
+  INFO: 'info',
   WARN: 'warn',
   ERROR: 'error',
   NONE: 'none'

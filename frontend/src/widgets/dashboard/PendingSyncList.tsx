@@ -66,12 +66,12 @@ export const PendingSyncList: React.FC = () => {
                       </p>
                       <Badge
                         variant="secondary"
-                        className="text-[8px] h-3 px-1"
+                        className="text-[11px] h-3 px-1"
                       >
                         {item.type}
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] text-emerald-600 font-medium">
+                    <div className="flex items-center gap-2 text-[11px] text-emerald-600 font-medium">
                       <IconClock size="sm" />{" "}
                       {new Date(item.timestamp).toLocaleTimeString([], {
                         hour: "2-digit",
@@ -87,7 +87,7 @@ export const PendingSyncList: React.FC = () => {
                 </div>
                 <Badge
                   variant="outline"
-                  className="bg-warning/5 text-warning border-amber-200 text-[10px] font-black uppercase"
+                  className="bg-warning/5 text-warning border-amber-200 text-[11px] font-black uppercase"
                 >
                   Pendiente
                 </Badge>
@@ -96,7 +96,7 @@ export const PendingSyncList: React.FC = () => {
           </div>
         </ScrollArea>
         <div className="p-4 bg-emerald-50 border-t border-emerald-100">
-          <p className="text-[10px] font-bold text-emerald-800 text-center uppercase tracking-widest">
+          <p className="text-[11px] font-bold text-emerald-800 text-center uppercase tracking-widest">
             Se enviará automáticamente al detectar señal
           </p>
         </div>

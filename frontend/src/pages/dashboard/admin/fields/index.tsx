@@ -144,11 +144,11 @@ const FieldOccupancyBar: React.FC<{ animalCount: number; capacity: string; area?
   const manualCapacity = parseInt(capacity) || 0;
   const areaNum = area ? parseFloat(String(area).replace(',', '.')) : 0;
   const estimatedCapacity = areaNum > 0 ? Math.max(1, Math.round(areaNum * 2)) : 0;
-  
+
   const hasCapacity = manualCapacity > 0;
   const capacityNum = hasCapacity ? manualCapacity : estimatedCapacity > 0 ? estimatedCapacity : null;
   const isEstimated = !hasCapacity && estimatedCapacity > 0;
-  
+
   const pct = capacityNum ? Math.min(Math.round((animalCount / capacityNum) * 100), 100) : 0;
   const displayPct = capacityNum ? `${pct}%${isEstimated ? ' (Est.)' : ''}` : (animalCount > 0 ? 'N/A' : '0%');
   const barWidth = capacityNum ? pct : (animalCount > 0 ? 100 : 0);
@@ -208,10 +208,10 @@ const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVer
   }
 
   const statusBaseColor = (potrero.state || 'Disponible').toLowerCase();
-  const borderClasses = 
+  const borderClasses =
     statusBaseColor === 'disponible' ? 'border-l-emerald-500 shadow-emerald-500/10' :
     statusBaseColor === 'ocupado' ? 'border-l-amber-500 shadow-amber-500/10' :
-    statusBaseColor === 'mantenimiento' ? 'border-l-blue-500 shadow-blue-500/10' : 
+    statusBaseColor === 'mantenimiento' ? 'border-l-blue-500 shadow-blue-500/10' :
     'border-l-rose-500 shadow-rose-500/10';
 
   return (
@@ -229,7 +229,7 @@ const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVer
       <CardContent className="!p-4 flex flex-col gap-3 relative overflow-hidden">
         {/* Glow effect on hover */}
         <div className="absolute -inset-x-20 -top-20 h-40 bg-gradient-to-b from-white/5 to-transparent opacity-0 group-hover/potrero:opacity-100 transition-opacity duration-700 pointer-events-none" />
-        
+
         <div className="flex items-start justify-between gap-2 relative z-10">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 min-w-0">
@@ -241,12 +241,12 @@ const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVer
                 {potrero.name || 'Sin nombre'}
               </h3>
             </div>
-            <div className="flex items-center gap-1.5 mt-1.5 text-[10px] font-black text-muted-foreground uppercase tracking-wider opacity-60 min-w-0">
+            <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-black text-muted-foreground uppercase tracking-wider opacity-60 min-w-0">
               <MapPin className="h-3 w-3 shrink-0" />
               <span className="fit-clamp">{potrero.ubication || potrero.location || 'Sin ubicación'}</span>
             </div>
           </div>
-          <Badge variant="secondary" className="font-mono font-black text-[10px] px-2 bg-white/5 border-white/10 text-muted-foreground/60 shrink-0 whitespace-nowrap">
+          <Badge variant="secondary" className="font-mono font-black text-[11px] px-2 bg-white/5 border-white/10 text-muted-foreground/60 shrink-0 whitespace-nowrap">
             #{potrero.id}
           </Badge>
         </div>
@@ -254,7 +254,7 @@ const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVer
         <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/5 group-hover/potrero:border-white/10 group-hover/potrero:bg-white/10 transition-all duration-500 relative z-10">
           <div className="flex justify-between items-end gap-3 mb-3">
              <div className="min-w-0">
-               <span className="text-[9px] font-black text-muted-foreground uppercase tracking-wider block mb-1 opacity-70 whitespace-nowrap">Carga Biológica</span>
+               <span className="text-[11px] font-black text-muted-foreground uppercase tracking-wider block mb-1 opacity-70 whitespace-nowrap">Carga Biológica</span>
                <div className="flex items-baseline gap-1.5 whitespace-nowrap">
                  <span className={cn("text-4xl font-black tracking-tight drop-shadow-sm tabular-nums", actual > 0 ? palette.text : "text-foreground/30")}>
                    {actual}
@@ -263,41 +263,41 @@ const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVer
                </div>
              </div>
              <span className={cn(
-               "text-[9px] font-black uppercase px-2.5 py-1 rounded-lg border transition-all duration-500 shrink-0 whitespace-nowrap mb-1",
+               "text-[11px] font-black uppercase px-2.5 py-1 rounded-lg border transition-all duration-500 shrink-0 whitespace-nowrap mb-1",
                palette.badge,
                "shadow-lg group-hover/potrero:scale-105"
              )}>
                {palette.label}
              </span>
           </div>
-          
+
           <div className={cn("h-3 rounded-full overflow-hidden p-0.5 bg-black/30 ring-1 ring-white/5 shadow-inner", palette.track)}>
-            <motion.div 
+            <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${barWidth}%` }}
               transition={{ duration: 1.5, ease: "easeOut" }}
-              className={cn("h-full rounded-full shadow-[0_0_15px_rgba(0,0,0,0.5)] bg-gradient-to-r", palette.bar)} 
+              className={cn("h-full rounded-full shadow-[0_0_15px_rgba(0,0,0,0.5)] bg-gradient-to-r", palette.bar)}
             />
           </div>
-          
-          <p className="mt-3 text-[10px] font-black text-muted-foreground/50 uppercase tracking-wider flex items-center gap-2 min-w-0 group-hover/potrero:text-muted-foreground transition-colors">
+
+          <p className="mt-3 text-[11px] font-black text-muted-foreground/50 uppercase tracking-wider flex items-center gap-2 min-w-0 group-hover/potrero:text-muted-foreground transition-colors">
              <Info className={cn("h-3.5 w-3.5 shrink-0", palette.text)} />
              <span className="fit-clamp">
-               {remainingText} {isEstimated && <span className="text-[8px] opacity-40 font-bold">(Estimado por área)</span>}
+               {remainingText} {isEstimated && <span className="text-[11px] opacity-40 font-bold">(Estimado por área)</span>}
              </span>
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3 relative z-10">
           <div className="bg-white/5 rounded-lg p-3 border border-white/5 group-hover/potrero:bg-white/10 transition-colors min-w-0">
-            <span className="text-[8px] font-black text-muted-foreground uppercase tracking-wider block mb-1.5 opacity-60 whitespace-nowrap">Extensión</span>
+            <span className="text-[11px] font-black text-muted-foreground uppercase tracking-wider block mb-1.5 opacity-60 whitespace-nowrap">Extensión</span>
             <span className="text-sm font-black text-foreground flex items-baseline gap-1 whitespace-nowrap overflow-hidden">
               <span className="fit-clamp">{area ? area.value : '—'}</span>
-              {area?.unit && <span className="text-[10px] opacity-40 shrink-0">{area.unit}</span>}
+              {area?.unit && <span className="text-[11px] opacity-40 shrink-0">{area.unit}</span>}
             </span>
           </div>
           <div className="bg-white/5 rounded-lg p-3 border border-white/5 group-hover/potrero:bg-white/10 transition-colors min-w-0">
-            <span className="text-[8px] font-black text-muted-foreground uppercase tracking-wider block mb-1.5 opacity-60 whitespace-nowrap">Suministro</span>
+            <span className="text-[11px] font-black text-muted-foreground uppercase tracking-wider block mb-1.5 opacity-60 whitespace-nowrap">Suministro</span>
             <span className="text-sm font-black text-foreground fit-clamp block" title={foodTypeLabel}>{foodTypeLabel || '—'}</span>
           </div>
         </div>
@@ -306,7 +306,7 @@ const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVer
       <CardFooter className="!p-0 border-t border-white/5 bg-white/5 overflow-hidden relative z-10">
         <button
           onClick={(e) => { e.stopPropagation(); onOpenDetail?.(potrero); }}
-          className="flex-1 flex items-center justify-center gap-2.5 h-12 text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground hover:text-primary hover:bg-white/5 transition-all active:scale-95"
+          className="flex-1 flex items-center justify-center gap-2.5 h-12 text-[11px] font-black uppercase tracking-[0.15em] text-muted-foreground hover:text-primary hover:bg-white/5 transition-all active:scale-95"
         >
           <Activity className="w-4 h-4 opacity-50" /> Detalle
         </button>
@@ -315,7 +315,7 @@ const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVer
           onClick={(e) => { e.stopPropagation(); if (actual > 0) onVerAnimales(potrero); }}
           disabled={actual === 0}
           className={cn(
-            "flex-1 flex items-center justify-center gap-2.5 h-12 text-[10px] font-black uppercase tracking-[0.15em] transition-all active:scale-95",
+            "flex-1 flex items-center justify-center gap-2.5 h-12 text-[11px] font-black uppercase tracking-[0.15em] transition-all active:scale-95",
             actual === 0 ? "opacity-20 grayscale cursor-not-allowed" : "text-muted-foreground hover:text-emerald-400 hover:bg-white/5"
           )}
         >
@@ -403,7 +403,7 @@ const PremiumFieldsHeader: React.FC<{
           { label: 'Disponibles', value: metrics.availableSpots },
         ].map((kpi) => (
           <div key={kpi.label} className="flex items-baseline gap-1.5 whitespace-nowrap">
-            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/70">{kpi.label}</span>
+            <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground/70">{kpi.label}</span>
             <span className="text-sm font-black tabular-nums text-foreground">{kpi.value}</span>
           </div>
         ))}
@@ -492,7 +492,7 @@ function FieldsCrudPage() {
 
   const [foodTypeOptions, setFoodTypeOptions] = useState<Array<{ value: number; label: string }>>([]);
   const [viewMode] = useGlobalViewMode();
-  
+
   const [isAnimalsOpen, setIsAnimalsOpen] = useState(false);
   const [modalField, setModalField] = useState<FieldResponse | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -524,7 +524,7 @@ function FieldsCrudPage() {
         label: 'Código',
         sortable: true,
         render: (v) => (
-          <span className="font-mono text-[10px] bg-secondary/30 px-1.5 py-0.5 rounded">{v}</span>
+          <span className="font-mono text-[11px] bg-secondary/30 px-1.5 py-0.5 rounded">{v}</span>
         ),
       },
       { key: 'name', label: 'Nombre', sortable: true },

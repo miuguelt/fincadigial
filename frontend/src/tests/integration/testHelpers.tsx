@@ -43,7 +43,7 @@ export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children
       finca_id: 1
     }
     const ts = Date.now()
-    
+
     window.sessionStorage.setItem('auth:session_active', '1')
     window.localStorage.setItem('auth:session_active', '1')
     window.localStorage.setItem('auth:user', JSON.stringify({ user: mockUser, ts }))

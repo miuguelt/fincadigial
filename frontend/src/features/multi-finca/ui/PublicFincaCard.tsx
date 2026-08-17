@@ -43,7 +43,7 @@ const DataPoint: React.FC<{
 	<div className="min-w-0 border-r border-slate-300 px-2 last:border-r-0 sm:px-3">
 		<div className="mb-1 flex items-center gap-1.5 text-slate-600">
 			<span className={cn("shrink-0", accent)}>{icon}</span>
-			<span className="fit-clamp text-[10px] font-semibold uppercase tracking-wide">
+			<span className="fit-clamp text-[11px] font-semibold uppercase tracking-wide">
 				{label}
 			</span>
 		</div>
@@ -95,12 +95,12 @@ export const PublicFincaCard: React.FC<PublicFincaCardProps> = ({
 						className="h-40 rounded-none border-b border-slate-100"
 					/>
 					<div className="absolute left-3 right-3 top-3 flex items-start justify-between gap-2">
-						<Badge className="rounded-full border border-slate-200 bg-white text-[10px] font-bold uppercase tracking-wide !text-slate-800 shadow-sm">
+						<Badge className="rounded-full border border-slate-200 bg-white text-[11px] font-bold uppercase tracking-wide !text-slate-800 shadow-sm">
 							{finca.type || "Tipo no registrado"}
 						</Badge>
 						<Badge
 							className={cn(
-								"rounded-full border bg-white text-[10px] font-bold shadow-sm",
+								"rounded-full border bg-white text-[11px] font-bold shadow-sm",
 								finca.is_member
 									? "border-emerald-200 !text-emerald-700"
 									: finca.already_requested

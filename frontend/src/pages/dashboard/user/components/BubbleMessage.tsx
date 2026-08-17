@@ -21,4 +21,3 @@ export const BubbleMessage = ({ message, variant = 'error' }: BubbleMessageProps
         </div>
     );
 };
-

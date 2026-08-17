@@ -533,4 +533,4 @@ curl -H "Authorization: Bearer $TOKEN" \
 
 **Próxima Revisión:** Después de implementación frontend
 
-**Contacto:** Equipo de Desarrollo BackFinca
+**Contacto:** Equipo de Desarrollo VillaLuz

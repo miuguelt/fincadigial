@@ -110,7 +110,7 @@ const ICAComplianceBadge: React.FC<ICAComplianceBadgeProps> = ({
               />
               <span className="text-xs">{checkLabels[key] ?? key}</span>
               {val.days != null && (
-                <span className="text-[10px] opacity-60 ml-auto">
+                <span className="text-[11px] opacity-60 ml-auto">
                   {val.days}d
                 </span>
               )}

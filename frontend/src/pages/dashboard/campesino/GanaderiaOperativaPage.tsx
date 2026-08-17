@@ -752,33 +752,33 @@ export default function GanaderiaOperativaPage() {
   const handleFinanceSubmit = async (): Promise<boolean> => {
     if (!financeForm.amount || !financeForm.category) { showToast('Complete monto y categoría', 'error'); return false; }
     setSavingForm(true);
-    const payload: any = { 
-      transaction_type: financeForm.transaction_type, 
-      category: financeForm.category, 
-      amount: Number(financeForm.amount), 
-      date: financeForm.date, 
-      description: financeForm.description 
+    const payload: any = {
+      transaction_type: financeForm.transaction_type,
+      category: financeForm.category,
+      amount: Number(financeForm.amount),
+      date: financeForm.date,
+      description: financeForm.description
     };
     if (financeForm.animalId) {
       payload.animal_id = Number(financeForm.animalId);
     }
-    
+
     try {
-      if (!isOnline) { 
-        await offlineQueue.enqueue('POST', 'financial/transactions', payload); 
-        showToast('Transacción guardada sin señal. Se sincronizará pronto.', 'success'); 
-      } else { 
-        await api.post('/financial/transactions', payload); 
-        showToast('Transacción registrada exitosamente', 'success'); 
+      if (!isOnline) {
+        await offlineQueue.enqueue('POST', 'financial/transactions', payload);
+        showToast('Transacción guardada sin señal. Se sincronizará pronto.', 'success');
+      } else {
+        await api.post('/financial/transactions', payload);
+        showToast('Transacción registrada exitosamente', 'success');
       }
-      closeModal(); 
-      loadHistoryRecords(); 
+      closeModal();
+      loadHistoryRecords();
       return true;
-    } catch { 
-      showToast('Error al registrar transacción', 'error'); 
-      return false; 
-    } finally { 
-      setSavingForm(false); 
+    } catch {
+      showToast('Error al registrar transacción', 'error');
+      return false;
+    } finally {
+      setSavingForm(false);
     }
   };
 
@@ -826,7 +826,7 @@ export default function GanaderiaOperativaPage() {
               )}
             </div>
             {totalOperations > 0 && (
-              <div className="text-[10px] uppercase font-bold tracking-widest bg-amber-500/20 text-amber-200 border border-amber-500/30 px-3 py-1 rounded-md flex items-center gap-1 animate-pulse">
+              <div className="text-[11px] uppercase font-bold tracking-widest bg-amber-500/20 text-amber-200 border border-amber-500/30 px-3 py-1 rounded-md flex items-center gap-1 animate-pulse">
                 <Clock className="w-3.5 h-3.5" /> {totalOperations} pendientes de sincronización
               </div>
             )}
@@ -899,7 +899,7 @@ export default function GanaderiaOperativaPage() {
               </div>
               <div className="absolute right-3 top-3 text-white/10 font-bold text-6xl select-none leading-none pointer-events-none">💉</div>
             </motion.button>
-            
+
             {/* Finance Register */}
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -923,7 +923,7 @@ export default function GanaderiaOperativaPage() {
             <CardContent className="p-4 flex items-center gap-3">
               <div className="p-3 bg-amber-500/10 text-amber-600 rounded-lg"><IconMilk className="w-6 h-6" /></div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Leche del Lote</span>
+                <span className="text-[11px] uppercase font-bold text-slate-400 tracking-wider">Leche del Lote</span>
                 <span className="block text-lg font-black text-slate-800 dark:text-slate-100 mt-0.5">{stats.milkTotal} L</span>
               </div>
             </CardContent>
@@ -932,7 +932,7 @@ export default function GanaderiaOperativaPage() {
             <CardContent className="p-4 flex items-center gap-3">
               <div className="p-3 bg-rose-500/10 text-rose-600 rounded-lg"><IconHealthAlert className="w-6 h-6" /></div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Enfermos Activos</span>
+                <span className="text-[11px] uppercase font-bold text-slate-400 tracking-wider">Enfermos Activos</span>
                 <span className="block text-lg font-black text-slate-800 dark:text-slate-100 mt-0.5">{stats.activeDiseases} Casos</span>
               </div>
             </CardContent>
@@ -941,7 +941,7 @@ export default function GanaderiaOperativaPage() {
             <CardContent className="p-4 flex items-center gap-3">
               <div className="p-3 bg-emerald-500/10 text-emerald-600 rounded-lg"><IconRouteCattle className="w-6 h-6" /></div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Traslados Registrados</span>
+                <span className="text-[11px] uppercase font-bold text-slate-400 tracking-wider">Traslados Registrados</span>
                 <span className="block text-lg font-black text-slate-800 dark:text-slate-100 mt-0.5">{stats.transfersCount} Movs</span>
               </div>
             </CardContent>
@@ -950,7 +950,7 @@ export default function GanaderiaOperativaPage() {
             <CardContent className="p-4 flex items-center gap-3">
               <div className="p-3 bg-indigo-500/10 text-indigo-600 rounded-lg"><IconCow className="w-6 h-6" /></div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Ganado Controlado</span>
+                <span className="text-[11px] uppercase font-bold text-slate-400 tracking-wider">Ganado Controlado</span>
                 <span className="block text-lg font-black text-slate-800 dark:text-slate-100 mt-0.5">{animals.length} Vacas</span>
               </div>
             </CardContent>
@@ -1071,7 +1071,7 @@ export default function GanaderiaOperativaPage() {
                     setStartDate('');
                     setEndDate('');
                   }}
-                  className="absolute -right-1 -top-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-full p-1 text-[9px] font-extrabold focus:outline-none border-0"
+                  className="absolute -right-1 -top-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-full p-1 text-[11px] font-extrabold focus:outline-none border-0"
                   title="Limpiar Filtros"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -1098,13 +1098,13 @@ export default function GanaderiaOperativaPage() {
                 <table className="min-w-full divide-y divide-slate-150">
                   <thead className="bg-slate-50 dark:bg-slate-800/40">
                     <tr>
-                      <th className="px-5 py-3.5 text-left text-[10px] font-black uppercase text-slate-400 tracking-wider">Fecha</th>
-                      <th className="px-5 py-3.5 text-left text-[10px] font-black uppercase text-slate-400 tracking-wider">Foto</th>
-                      <th className="px-5 py-3.5 text-left text-[10px] font-black uppercase text-slate-400 tracking-wider">Animal / Ganado</th>
-                      <th className="px-5 py-3.5 text-left text-[10px] font-black uppercase text-slate-400 tracking-wider">Actividad</th>
-                      <th className="px-5 py-3.5 text-left text-[10px] font-black uppercase text-slate-400 tracking-wider">Detalle</th>
-                      <th className="px-5 py-3.5 text-left text-[10px] font-black uppercase text-slate-400 tracking-wider">Notas</th>
-                      <th className="px-5 py-3.5 text-right text-[10px] font-black uppercase text-slate-400 tracking-wider">Acciones</th>
+                      <th className="px-5 py-3.5 text-left text-[11px] font-black uppercase text-slate-400 tracking-wider">Fecha</th>
+                      <th className="px-5 py-3.5 text-left text-[11px] font-black uppercase text-slate-400 tracking-wider">Foto</th>
+                      <th className="px-5 py-3.5 text-left text-[11px] font-black uppercase text-slate-400 tracking-wider">Animal / Ganado</th>
+                      <th className="px-5 py-3.5 text-left text-[11px] font-black uppercase text-slate-400 tracking-wider">Actividad</th>
+                      <th className="px-5 py-3.5 text-left text-[11px] font-black uppercase text-slate-400 tracking-wider">Detalle</th>
+                      <th className="px-5 py-3.5 text-left text-[11px] font-black uppercase text-slate-400 tracking-wider">Notas</th>
+                      <th className="px-5 py-3.5 text-right text-[11px] font-black uppercase text-slate-400 tracking-wider">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 bg-white dark:bg-slate-900">
@@ -1125,7 +1125,7 @@ export default function GanaderiaOperativaPage() {
                           <td className="whitespace-nowrap px-5 py-4 text-xs font-bold text-slate-500">
                             <div className="flex flex-col">
                               <span>{new Date(r.date).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
-                              <span className="text-[10px] opacity-60 font-medium">{new Date(r.date).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}</span>
+                              <span className="text-[11px] opacity-60 font-medium">{new Date(r.date).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                           </td>
                           <td className="px-5 py-4">
@@ -1145,7 +1145,7 @@ export default function GanaderiaOperativaPage() {
                             <AnimalLink id={r.animalId} label={r.animalLabel} />
                           </td>
                           <td className="whitespace-nowrap px-5 py-4">
-                            <span className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-[10px] font-bold border backdrop-blur-sm ${badgeStyles}`}>
+                            <span className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-[11px] font-bold border backdrop-blur-sm ${badgeStyles}`}>
                               {r.type === 'milking' && '🥛'}
                               {r.type === 'transfer' && '🛣️'}
                               {r.type === 'disease' && '🤒'}
@@ -1158,17 +1158,17 @@ export default function GanaderiaOperativaPage() {
                               {r.type === 'milking' ? (
                                 <div className="flex items-center gap-1.5 bg-amber-500/5 px-2 py-0.5 rounded-lg border border-amber-500/10">
                                   <span className="font-black text-amber-600 dark:text-amber-400">{r.raw.liters}L</span>
-                                  <span className="text-[10px] opacity-70">({r.raw.milking_session === 'AM' ? 'Mañana' : 'Tarde'})</span>
+                                  <span className="text-[11px] opacity-70">({r.raw.milking_session === 'AM' ? 'Mañana' : 'Tarde'})</span>
                                 </div>
                               ) : r.type === 'transfer' && r.entityId && r.entityLabel ? (
                                 <div className="flex items-center gap-2">
-                                  <span className="opacity-60 text-[10px]">Potrero:</span>
+                                  <span className="opacity-60 text-[11px]">Potrero:</span>
                                   <FieldLink id={r.entityId} label={r.entityLabel} />
                                 </div>
                               ) : r.type === 'disease' && r.entityId && r.entityLabel ? (
                                 <div className="flex items-center gap-2">
                                   <DiseaseLink id={r.entityId} label={r.entityLabel} />
-                                  <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase ${
+                                  <span className={`px-1.5 py-0.5 rounded-md text-[11px] font-black uppercase ${
                                     r.raw.status === 'Activo' ? 'bg-red-500/10 text-red-600' : 'bg-emerald-500/10 text-emerald-600'
                                   }`}>
                                     {r.raw.status || 'Activo'}
@@ -1177,7 +1177,7 @@ export default function GanaderiaOperativaPage() {
                               ) : r.type === 'treatment' && r.entityId && r.entityLabel ? (
                                 <div className="flex items-center gap-2">
                                   <MedicationLink id={r.entityId} label={r.entityLabel} />
-                                  <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                                  <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[11px] font-bold">
                                     {r.raw.dosis || r.raw.dose || 'Sin dosis'}
                                   </span>
                                 </div>
@@ -1608,7 +1608,7 @@ export default function GanaderiaOperativaPage() {
           </div>
         </DialogContent>
       </Dialog>
-      
+
       {/* ─── 5. MODAL DE FINANZAS (FINANCE) ─── */}
       <FinanceModal
         open={activeModal === 'finance'}

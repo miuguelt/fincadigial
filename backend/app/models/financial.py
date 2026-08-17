@@ -3,37 +3,40 @@ from app.models.base_model import BaseModel
 from sqlalchemy import Index
 import enum as _enum
 
+
 class TransactionType(_enum.Enum):
-    Income = 'Ingreso'
-    Expense = 'Gasto'
+    Income = "Ingreso"
+    Expense = "Gasto"
+
 
 class TransactionCategory(_enum.Enum):
     # Postgres stores the member NAME; the API exposes the value.
     # Adding members requires a migration (see fin001_tx_cat).
-    Milk = 'Venta de Leche'
-    Animal = 'Venta de Animal'
-    Cheese = 'Venta de Queso'
-    Crop = 'Venta de Cosecha'
-    Medication = 'Medicamentos'
-    Food = 'Alimento'
-    Agriculture = 'Insumos Agrícolas'
-    Service = 'Servicios Veterinarios'
-    Labor = 'Mano de Obra'
-    Transport = 'Transporte'
-    Maintenance = 'Mantenimiento'
-    Other = 'Otros'
+    Milk = "Venta de Leche"
+    Animal = "Venta de Animal"
+    Cheese = "Venta de Queso"
+    Crop = "Venta de Cosecha"
+    Medication = "Medicamentos"
+    Food = "Alimento"
+    Agriculture = "Insumos Agrícolas"
+    Service = "Servicios Veterinarios"
+    Labor = "Mano de Obra"
+    Transport = "Transporte"
+    Maintenance = "Mantenimiento"
+    Other = "Otros"
+
 
 class Transaction(BaseModel):
-    __tablename__ = 'transactions'
+    __tablename__ = "transactions"
     __table_args__ = (
-        Index('ix_transactions_finca_id', 'finca_id'),
-        Index('ix_transactions_date', 'date'),
-        Index('ix_transactions_animal_id', 'animal_id'),
+        Index("ix_transactions_finca_id", "finca_id"),
+        Index("ix_transactions_date", "date"),
+        Index("ix_transactions_animal_id", "animal_id"),
     )
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    finca_id = db.Column(db.Integer, db.ForeignKey('finca.id'), nullable=False)
-    animal_id = db.Column(db.Integer, db.ForeignKey('animals.id'), nullable=True)
+    finca_id = db.Column(db.Integer, db.ForeignKey("finca.id"), nullable=False)
+    animal_id = db.Column(db.Integer, db.ForeignKey("animals.id"), nullable=True)
 
     transaction_type = db.Column(db.Enum(TransactionType), nullable=False)
     category = db.Column(db.Enum(TransactionCategory), nullable=False)
@@ -43,27 +46,40 @@ class Transaction(BaseModel):
     description = db.Column(db.String(255), nullable=True)
 
     # Relaciones
-    animal = db.relationship('Animals', foreign_keys=[animal_id], lazy='selectin')
+    animal = db.relationship("Animals", foreign_keys=[animal_id], lazy="selectin")
 
     _namespace_fields = [
-        'id', 'finca_id', 'animal_id', 'transaction_type', 'category', 'amount', 'date', 'description'
+        "id",
+        "finca_id",
+        "animal_id",
+        "transaction_type",
+        "category",
+        "amount",
+        "date",
+        "description",
     ]
-    _namespace_relations = {
-        'animal': {'fields': ['id', 'record', 'name']}
-    }
-    _filterable_fields = ['finca_id', 'animal_id', 'transaction_type', 'category', 'date']
-    _searchable_fields = ['description']
-    _sortable_fields = ['id', 'date', 'amount']
-    _required_fields = ['finca_id', 'transaction_type', 'category', 'amount', 'date']
+    _namespace_relations = {"animal": {"fields": ["id", "record", "name"]}}
+    _filterable_fields = [
+        "finca_id",
+        "animal_id",
+        "transaction_type",
+        "category",
+        "date",
+    ]
+    _searchable_fields = ["description"]
+    _sortable_fields = ["id", "date", "amount"]
+    _required_fields = ["finca_id", "transaction_type", "category", "amount", "date"]
     _enum_fields = {
-        'transaction_type': TransactionType,
-        'category': TransactionCategory,
+        "transaction_type": TransactionType,
+        "category": TransactionCategory,
     }
+
     @classmethod
     def create(cls, **kwargs):
         instance = super().create(**kwargs)
         if instance and instance.finca_id:
             from app.models.extended_summaries import FinancialSummary
+
             summary = FinancialSummary.get_for_finca(instance.finca_id)
             summary.apply_transaction(instance.transaction_type, instance.amount)
             db.session.commit()
@@ -77,13 +93,17 @@ class Transaction(BaseModel):
 
         result = super().update(commit=False, **kwargs)
 
-        if old_finca and (old_amount != self.amount or old_type != self.transaction_type or old_finca != self.finca_id):
+        if old_finca and (
+            old_amount != self.amount
+            or old_type != self.transaction_type
+            or old_finca != self.finca_id
+        ):
             from app.models.extended_summaries import FinancialSummary
-            
+
             # Revertir de la finca anterior
             old_summary = FinancialSummary.get_for_finca(old_finca)
             old_summary.apply_transaction(old_type, old_amount, is_reversion=True)
-            
+
             # Aplicar a la finca actual
             new_summary = FinancialSummary.get_for_finca(self.finca_id)
             new_summary.apply_transaction(self.transaction_type, self.amount)
@@ -99,6 +119,7 @@ class Transaction(BaseModel):
         result = super().delete(commit=commit)
         if f_id:
             from app.models.extended_summaries import FinancialSummary
+
             summary = FinancialSummary.get_for_finca(f_id)
             summary.apply_transaction(tx_type, amount, is_reversion=True)
             if commit:
@@ -110,6 +131,7 @@ class Transaction(BaseModel):
         result = super().restore(commit=commit)
         if self.finca_id:
             from app.models.extended_summaries import FinancialSummary
+
             summary = FinancialSummary.get_for_finca(self.finca_id)
             summary.apply_transaction(self.transaction_type, self.amount)
             if commit:
@@ -122,6 +144,7 @@ class Transaction(BaseModel):
         finca_ids = {inst.finca_id for inst in instances if inst.finca_id}
         if finca_ids:
             from app.models.extended_summaries import FinancialSummary
+
             for f_id in finca_ids:
                 summary = FinancialSummary.get_for_finca(f_id)
                 summary.recalculate()
@@ -133,6 +156,7 @@ class Transaction(BaseModel):
         finca_ids = {inst.finca_id for inst in instances if inst.finca_id}
         if finca_ids:
             from app.models.extended_summaries import FinancialSummary
+
             for f_id in finca_ids:
                 summary = FinancialSummary.get_for_finca(f_id)
                 summary.recalculate()
@@ -141,13 +165,15 @@ class Transaction(BaseModel):
     @classmethod
     def bulk_delete(cls, ids, hard_delete=False):
         from app.utils.tenant_context import apply_tenant_filter
+
         instances = apply_tenant_filter(cls.query, cls).filter(cls.id.in_(ids)).all()
         finca_ids = {inst.finca_id for inst in instances if inst.finca_id}
-        
+
         count = super().bulk_delete(ids, hard_delete=hard_delete)
-        
+
         if finca_ids:
             from app.models.extended_summaries import FinancialSummary
+
             for f_id in finca_ids:
                 summary = FinancialSummary.get_for_finca(f_id)
                 summary.recalculate()

@@ -475,12 +475,12 @@ export function useActionModalLogic({
 
 	const handleEdit = (item: any) => {
 		setEditingItem(item);
-		
+
 		const data = { ...item };
 		// Preprocesar fechas para que funcionen con <input type="date"> (requiere formato YYYY-MM-DD)
 		const dateFields = [
-			"date", "diagnosis_date", "assignment_date", "removal_date", 
-			"vaccination_date", "treatment_date", "checkup_date", 
+			"date", "diagnosis_date", "assignment_date", "removal_date",
+			"vaccination_date", "treatment_date", "checkup_date",
 			"event_date", "due_date"
 		];
 		dateFields.forEach(field => {

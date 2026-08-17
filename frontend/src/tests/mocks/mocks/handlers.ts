@@ -50,7 +50,7 @@ export const handlers = [
   http.get(`${API_BASE}/animals`, ({ request }) => {
     const url = new URL(request.url)
     const sex = url.searchParams.get('sex')
-    
+
     let filtered = mockAnimals
     if (sex) {
       filtered = mockAnimals.filter(a => a.sex === sex || (a as any).gender === sex)
@@ -103,7 +103,7 @@ export const handlers = [
 
   http.post(`${API_BASE}/animales`, async ({ request }) => {
     const body = await request.json() as Partial<AnimalContract>
-    
+
     if (!body.name || !body.record || !body.especie || !body.birth_date) {
       return HttpResponse.json({
         errors: {
@@ -134,7 +134,7 @@ export const handlers = [
     const id = Number(params.id)
     const body = await request.json() as Partial<AnimalContract>
     const animal = mockAnimals.find(a => a.id === id) || mockAnimals[0]
-    
+
     const updatedAnimal: AnimalContract = {
       ...animal,
       ...body,
@@ -239,7 +239,7 @@ export const handlers = [
   http.get(`${API_BASE}/v1/health`, () => {
     return HttpResponse.json({ status: 'healthy', version: '1.0.0' })
   }),
-  
+
   // --- ANALYTICS ---
   http.get(`${API_BASE}/v1/analytics/dashboard/complete`, () => {
     return HttpResponse.json({

@@ -1,4 +1,3 @@
-
 import pytest
 from app import create_app, db
 from app.models.fields import Fields, LandStatus
@@ -10,26 +9,32 @@ from app.models.animalFields import AnimalFields
 from datetime import date
 from flask_jwt_extended import create_access_token
 
+
 @pytest.fixture
 def app():
-    app = create_app('testing')
-    app.config['JWT_SECRET_KEY'] = 'testing_secret'
-    app.config['CACHE_WARMUP_ASYNC'] = False # Disable warmup for tests
+    app = create_app("testing")
+    app.config["JWT_SECRET_KEY"] = "testing_secret"
+    app.config["CACHE_WARMUP_ASYNC"] = False  # Disable warmup for tests
     with app.app_context():
         db.create_all()
         yield app
         db.session.remove()
         db.drop_all()
 
+
 @pytest.fixture
 def client(app):
     return app.test_client()
 
+
 @pytest.fixture
 def auth_headers(app):
     with app.app_context():
-        access_token = create_access_token(identity='1', additional_claims={'role': 'Administrador'})
-    return {'Authorization': f'Bearer {access_token}'}
+        access_token = create_access_token(
+            identity="1", additional_claims={"role": "Administrador"}
+        )
+    return {"Authorization": f"Bearer {access_token}"}
+
 
 def test_unassign_animal_from_field(client, auth_headers):
     # Setup
@@ -38,7 +43,7 @@ def test_unassign_animal_from_field(client, auth_headers):
         sowing_date=date.today(),
         area=100,
         handlings="Ninguno",
-        gauges="10"
+        gauges="10",
     )
     db.session.add(food_type)
     db.session.commit()
@@ -57,16 +62,24 @@ def test_unassign_animal_from_field(client, auth_headers):
         handlings="Rotativo",
         gauges="5",
         area="10",
-        food_type_id=food_type.id
+        food_type_id=food_type.id,
     )
     db.session.add(field)
     db.session.commit()
-    animal = Animals(record="A001", sex=Sex.Hembra, weight=300, birth_date=date.today(), breeds_id=breed.id)
+    animal = Animals(
+        record="A001",
+        sex=Sex.Hembra,
+        weight=300,
+        birth_date=date.today(),
+        breeds_id=breed.id,
+    )
     db.session.add(animal)
     db.session.commit()
 
     # Assign to field
-    af = AnimalFields(animal_id=animal.id, field_id=field.id, assignment_date=date.today())
+    af = AnimalFields(
+        animal_id=animal.id, field_id=field.id, assignment_date=date.today()
+    )
     db.session.add(af)
     db.session.commit()
 
@@ -74,10 +87,10 @@ def test_unassign_animal_from_field(client, auth_headers):
     assert af.removal_date is None
 
     # Test Unassign by setting removal_date
-    payload = {
-        "removal_date": date.today().isoformat()
-    }
-    response = client.put(f'/api/v1/animal-fields/{af.id}', json=payload, headers=auth_headers)
+    payload = {"removal_date": date.today().isoformat()}
+    response = client.put(
+        f"/api/v1/animal-fields/{af.id}", json=payload, headers=auth_headers
+    )
 
     assert response.status_code == 200
 
@@ -87,4 +100,4 @@ def test_unassign_animal_from_field(client, auth_headers):
 
     # Verify removal_date is set to today
     assert af.removal_date == date.today()
-    assert response.get_json()['success'] is True
+    assert response.get_json()["success"] is True

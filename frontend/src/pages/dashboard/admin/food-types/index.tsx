@@ -5,7 +5,7 @@ import type { FoodTypeResponse } from '@/shared/api/generated/swaggerTypes';
 
 // Columnas de la tabla (width numérico -> w-{n})
 const columns: CRUDColumn<FoodTypeResponse & { [k: string]: any }>[] = [
-  
+
   { key: 'food_type', label: 'Nombre', render: (_v, item) => item.name || item.food_type },
   { key: 'description', label: 'Descripción', render: (v, item) => (v || (item as any).handlings || '-') },
   { key: 'created_at', label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },

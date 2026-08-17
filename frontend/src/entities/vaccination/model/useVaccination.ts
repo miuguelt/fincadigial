@@ -122,4 +122,3 @@ function mapVaccinationResponseToLocal(r: VaccinationResponse): Vaccinations {
     vaccines: undefined,
   };
 }
- 

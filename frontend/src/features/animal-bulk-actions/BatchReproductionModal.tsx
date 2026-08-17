@@ -209,7 +209,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
             <div className="min-w-0">
               <DialogTitle className="text-xl font-bold tracking-tight text-white flex items-center gap-3 fit-clamp drop-shadow-sm">
                 Gestión Reproductiva Masiva
-                <Badge className="bg-white/20 text-white font-bold text-[10px] px-2.5 py-0.5 rounded-[var(--radius-full)] border-white/10 shadow-sm">
+                <Badge className="bg-white/20 text-white font-bold text-[11px] px-2.5 py-0.5 rounded-[var(--radius-full)] border-white/10 shadow-sm">
                   {selectedAnimalIds.length} Sujetos
                 </Badge>
               </DialogTitle>
@@ -223,7 +223,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
               <span className="animate-ping absolute inline-flex h-full w-full rounded-[var(--radius-full)] bg-white opacity-75"></span>
               <span className="relative inline-flex rounded-[var(--radius-full)] h-2 w-2 bg-white"></span>
             </div>
-            <p className="text-[10px] font-bold text-white uppercase tracking-tight">
+            <p className="text-[11px] font-bold text-white uppercase tracking-tight">
               Sincronización en Caliente
             </p>
           </div>
@@ -320,7 +320,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
                         Sujetos Destinatarios
                       </h4>
                     </div>
-                    <Badge className="bg-muted text-muted-foreground border-none text-[10px] font-bold px-2 py-0.5">
+                    <Badge className="bg-muted text-muted-foreground border-none text-[11px] font-bold px-2 py-0.5">
                       {selectedAnimalIds.length}
                     </Badge>
                   </div>
@@ -329,7 +329,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
                       <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
                         <IconMeat size="sm" className="text-primary" />
                       </div>
-                      <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
+                      <span className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-widest">
                         Hembras Aptas Sincronizadas
                       </span>
                     </div>
@@ -349,7 +349,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
                   <div className="bg-background p-5 rounded-xl border border-border space-y-4 shadow-sm">
                     {/* General: Date */}
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-bold uppercase text-muted-foreground/40 tracking-wider">
+                      <Label className="text-[11px] font-bold uppercase text-muted-foreground/40 tracking-wider">
                         Fecha del Evento
                       </Label>
                       <Input
@@ -364,7 +364,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
                     {eventType === "Inseminacion" && (
                       <>
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold uppercase text-muted-foreground/40 tracking-wider">
+                          <Label className="text-[11px] font-bold uppercase text-muted-foreground/40 tracking-wider">
                             Técnica de Servicio
                           </Label>
                           <select
@@ -387,7 +387,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
                           </select>
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold uppercase text-muted-foreground/40 tracking-wider">
+                          <Label className="text-[11px] font-bold uppercase text-muted-foreground/40 tracking-wider">
                             Toro / Padre
                           </Label>
                           {loadingSires ? (
@@ -418,7 +418,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
                     {/* Dynamic Fields: Diagnostico */}
                     {eventType === "Diagnostico" && (
                       <div className="space-y-2">
-                        <Label className="text-[10px] font-bold uppercase text-muted-foreground/40 tracking-wider">
+                        <Label className="text-[11px] font-bold uppercase text-muted-foreground/40 tracking-wider">
                           Resultado de Preñez
                         </Label>
                         <select
@@ -445,7 +445,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
                       <>
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase text-muted-foreground/40 tracking-wider">
+                            <Label className="text-[11px] font-bold uppercase text-muted-foreground/40 tracking-wider">
                               Crías Vivas
                             </Label>
                             <Input
@@ -457,7 +457,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase text-muted-foreground/40 tracking-wider">
+                            <Label className="text-[11px] font-bold uppercase text-muted-foreground/40 tracking-wider">
                               Crías Muertas
                             </Label>
                             <Input
@@ -489,7 +489,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
 
                     {/* General: Notes */}
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-bold uppercase text-muted-foreground/40 tracking-wider">
+                      <Label className="text-[11px] font-bold uppercase text-muted-foreground/40 tracking-wider">
                         Notas y Observaciones
                       </Label>
                       <Textarea
@@ -516,7 +516,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
                       >
                         <div className="flex items-center justify-between relative z-10">
                           <div className="min-w-0">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40 mb-1">
+                            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/40 mb-1">
                               Evento Activo
                             </p>
                             <h5 className={cn("text-xl font-bold fit-clamp", selectedEventInfo.color)}>
@@ -527,7 +527,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
                             {getEventIcon(eventType)}
                           </div>
                         </div>
-                        <div className="bg-background/80 backdrop-blur-sm rounded-xl p-4 border border-border/50 relative z-10 text-[10px] font-medium leading-relaxed text-muted-foreground/80 uppercase tracking-wider">
+                        <div className="bg-background/80 backdrop-blur-sm rounded-xl p-4 border border-border/50 relative z-10 text-[11px] font-medium leading-relaxed text-muted-foreground/80 uppercase tracking-wider">
                           Este evento modificará el estado reproductivo y de lactancia de los animales seleccionados directamente en la base de datos.
                         </div>
                         <div className="flex items-center justify-center py-2 px-4 rounded-lg border border-primary/30 bg-primary/20 text-primary font-bold text-[11px] uppercase tracking-wider shadow-sm relative z-10">
@@ -559,7 +559,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
                 className="text-primary"
               />
               <div className="flex flex-col text-right">
-                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider leading-none mb-1">
+                <span className="text-[11px] font-bold text-muted-foreground/40 uppercase tracking-wider leading-none mb-1">
                   Evento
                 </span>
                 <span className="text-base font-bold uppercase tracking-tight leading-none text-foreground">

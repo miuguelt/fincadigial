@@ -6,13 +6,16 @@ Crea la tabla user_finca para permitir que un usuario pertenezca
 a múltiples fincas con diferentes roles.
 
 Uso:
-    cd BackFinca
+    cd VillaLuz
     python docs/migrations/002_add_user_finca.py
 """
 
 import sys
 import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 
 from app import create_app, db
 from sqlalchemy import text
@@ -104,11 +107,11 @@ def downgrade():
         raise
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description='Migración 002: Multi-Finca')
-    parser.add_argument('--downgrade', action='store_true', help='Revertir migración')
+    parser = argparse.ArgumentParser(description="Migración 002: Multi-Finca")
+    parser.add_argument("--downgrade", action="store_true", help="Revertir migración")
     args = parser.parse_args()
 
     app = create_app()

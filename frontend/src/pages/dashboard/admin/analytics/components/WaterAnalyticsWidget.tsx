@@ -3,6 +3,7 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { Droplet } from "lucide-react";
 import api from "@/shared/api/client";
+import { summarizeWaterMeasurements } from './analyticsAdapters';
 
 interface WaterAnalyticsWidgetProps {
 	fincaId?: number;
@@ -11,8 +12,9 @@ interface WaterAnalyticsWidgetProps {
 export const WaterAnalyticsWidget: React.FC<WaterAnalyticsWidgetProps> = ({
 	fincaId,
 }) => {
-	const [avgLevel, setAvgLevel] = useState<number>(0);
-	const [avgPh, setAvgPh] = useState<number>(0);
+	const [hasMeasurements, setHasMeasurements] = useState(false);
+	const [avgLevel, setAvgLevel] = useState<number | null>(null);
+	const [avgPh, setAvgPh] = useState<number | null>(null);
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
@@ -24,19 +26,11 @@ export const WaterAnalyticsWidget: React.FC<WaterAnalyticsWidgetProps> = ({
 					params: { limit: 50, sort_by: "measured_at", sort_order: "desc" },
 				});
 				const data = Array.isArray(resp) ? resp : resp.data || [];
-				
-				if (data.length > 0) {
-					// Extract non-null levels and phs
-					const levels = data.filter((m: any) => m.level_percent != null).map((m: any) => m.level_percent);
-					const phs = data.filter((m: any) => m.ph != null).map((m: any) => m.ph);
-					
-					if (levels.length > 0) {
-						setAvgLevel(Math.round(levels.reduce((a: number, b: number) => a + b, 0) / levels.length));
-					}
-					if (phs.length > 0) {
-						setAvgPh(Number((phs.reduce((a: number, b: number) => a + b, 0) / phs.length).toFixed(1)));
-					}
-				}
+
+				const summary = summarizeWaterMeasurements(data);
+				setHasMeasurements(summary.hasMeasurements);
+				setAvgLevel(summary.avgLevel);
+				setAvgPh(summary.avgPh);
 			} catch (e) {
 				console.error("Error fetching water measurements:", e);
 			} finally {
@@ -68,16 +62,16 @@ export const WaterAnalyticsWidget: React.FC<WaterAnalyticsWidgetProps> = ({
 							Nivel Promedio Global (Fuentes)
 						</span>
 						<span className="text-sm font-black text-sky-600 dark:text-sky-400">
-							{loading ? "..." : `${avgLevel}%`}
+							{loading ? "..." : avgLevel === null ? "Sin datos" : `${avgLevel}%`}
 						</span>
 					</div>
 					<div className="w-full bg-muted/50 rounded-full h-3">
 						<motion.div
 							initial={{ width: 0 }}
-							animate={{ width: `${Math.min(avgLevel, 100)}%` }}
+								animate={{ width: `${Math.min(avgLevel ?? 0, 100)}%` }}
 							transition={{ duration: 1, delay: 1.2 }}
 							className={`h-3 rounded-full ${
-								avgLevel < 25 ? "bg-destructive" : avgLevel < 50 ? "bg-warning" : "bg-sky-500"
+								(avgLevel ?? 0) < 25 ? "bg-destructive" : (avgLevel ?? 0) < 50 ? "bg-warning" : "bg-sky-500"
 							}`}
 						/>
 					</div>
@@ -89,15 +83,15 @@ export const WaterAnalyticsWidget: React.FC<WaterAnalyticsWidgetProps> = ({
 							Calidad Promedio (pH)
 						</p>
 						<p className="text-xl font-black text-foreground">
-							{loading ? "..." : avgPh || "—"}
+							{loading ? "..." : avgPh === null ? "Sin datos" : avgPh}
 						</p>
 					</div>
 					<div className="bg-surface-secondary/50 p-4 rounded-lg">
 						<p className="text-xs text-muted-foreground mb-1 font-medium">
 							Estado General
 						</p>
-						<p className={`text-sm font-black ${avgLevel < 25 ? "text-destructive" : "text-success-500"}`}>
-							{loading ? "..." : (avgLevel < 25 ? "Crítico (Bajo)" : "Óptimo")}
+						<p className={`text-sm font-black ${avgLevel !== null && avgLevel < 25 ? "text-destructive" : "text-success-500"}`}>
+							{loading ? "..." : !hasMeasurements || avgLevel === null ? "Sin datos" : (avgLevel < 25 ? "Crítico (Bajo)" : "Óptimo")}
 						</p>
 					</div>
 				</div>

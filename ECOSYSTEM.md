@@ -1,4 +1,4 @@
-# 🌿 4VillaLuz — Ecosistema de Configuración Unificada
+# 🌿 VillaLuz — Ecosistema de Configuración Unificada
 > **Fuente de Verdad para IAs y Desarrolladores. Leer ANTES de modificar cualquier archivo.**
 > Última actualización: 2026-05-02
 
@@ -7,7 +7,7 @@
 ## 🏗️ Arquitectura del Ecosistema
 
 ```
-4VillaLuz/
+villaluz/
 ├── backend/          → Backend Flask (Python) — Puerto 8092
 ├── frontend/         → Frontend Vite/React    — Puerto 3005 (HTTPS)
 ├── ECOSYSTEM.md      → ← ESTE ARCHIVO (Fuente de Verdad)
@@ -29,23 +29,31 @@
 
 ---
 
-## 🔑 Credenciales de Prueba (Auto-Seeding)
+## 🔑 Credenciales de Prueba
 
-> Estas credenciales son **inyectadas automáticamente** en la BD cada vez que `run.py` arranca en modo `development`. No necesitas crearlas manualmente.
+> ⚠️ Estos usuarios **ya no se siembran solos**: hoy `wsgi.py` solo corre `run_core_initialization()` e `initialize_all_finca_defaults()`, y nadie llama a `ensure_test_users()` fuera de las pruebas. Créalos con `scripts/create_test_users.py` o `scripts/seed_e2e.py`.
 
-| Rol              | ID (Identificación) | Contraseña  | Email                    |
-| :--------------- | :------------------ | :---------- | :----------------------- |
-| **Administrador**| `1098`              | `12345678`  | admin@villaluz.co        |
-| **Veterinario**  | `66666666`          | `12345678`  | veterinario@villaluz.co  |
-| **Operario**     | `55555555`          | `12345678`  | operario@villaluz.co     |
+> Los documentos y correos salen de `backend/app/utils/seed_identities.py`, la tabla canónica que comparten el seeder, los scripts de apoyo y los botones del login.
 
-> El login en el frontend usa el campo **"Número de identificación"** (no email). Los botones de acceso rápido en la pantalla de login pre-llenan estos valores automáticamente.
+> 🔒 La contraseña **no se documenta aquí**. Sale de `ADMIN_PASSWORD` o `TEST_USER_PASSWORD` en tu `backend/.env` local, que está ignorado por git. Ver [DEV_CREDENTIALS.md](DEV_CREDENTIALS.md).
+
+| Rol              | ID (Identificación) | Email                    |
+| :--------------- | :------------------ | :----------------------- |
+| **Administrador**| `1098`              | admin@villaluz.co        |
+| **Propietario**  | `55555555`          | propietario@villaluz.co  |
+| **Capataz**      | `66666666`          | capataz@villaluz.co      |
+| **Instructor**   | `11111111`          | instructor@sena.edu.co   |
+| **Aprendiz**     | `22222222`          | aprendiz@sena.edu.co     |
+| **Operario**     | `33333333`          | operario@villaluz.co     |
+| **Veterinario**  | `44444444`          | veterinario@villaluz.co  |
+
+> El login en el frontend usa el campo **"Número de identificación"** (no email). Los botones de acceso rápido en la pantalla de login pre-llenan el documento y la contraseña que tengas en `VITE_DEV_PROFILE_PASSWORD`.
 
 ---
 
 ## 📁 Archivos de Configuración
 
-### Backend: `BackFinca/.env`
+### Backend: `backend/.env`
 ```
 FLASK_ENV=development
 PORT=5000
@@ -56,17 +64,20 @@ DB_NAME=finca_db
 FRONTEND_URL=https://localhost:3003
 BACKEND_URL=http://localhost:5000
 CORS_ORIGINS=https://localhost:3003,...
-TEST_USER_PASSWORD=12345678
-TEST_USER_ADMIN_ID=1098
-TEST_USER_VETERINARIO_ID=66666666
-TEST_USER_OPERARIO_ID=55555555
+TEST_USER_PASSWORD=<defínela en tu .env local, nunca aquí>
+ADMIN_ID=1098
+TEST_USER_PROPRIETARIO_ID=55555555
+TEST_USER_CAPATAZ_ID=66666666
+TEST_USER_OPERARIO_ID=33333333
+TEST_USER_VETERINARIO_ID=44444444
 ```
 
-### Frontend: `VillaLuzFront/.env`
+### Frontend: `frontend/.env`
 ```
 VITE_API_BASE_URL=/api/v1          ← Ruta RELATIVA (usa el proxy Vite)
 VITE_PROXY_TARGET=http://127.0.0.1:5000  ← Backend real
 VITE_FRONTEND_URL=https://localhost:3003
+VITE_DEV_PROFILE_PASSWORD=<defínela en tu .env local, nunca aquí>
 ```
 
 ---
@@ -98,11 +109,11 @@ npm run dev
 ## ⚠️ Reglas para IAs (Anti-Interferencia)
 
 1. **Nunca cambiar los puertos** sin actualizar AMBOS `.env` (backend y frontend).
-2. **Nunca modificar credenciales de prueba** sin actualizar `BackFinca/.env` Y `IDENTITY.json`.
+2. **Nunca modificar credenciales de prueba** sin actualizar `backend/.env` e `IDENTITY.json`.
 3. **El proxy Vite es el puente:** si el login falla con error de red, verificar que `VITE_PROXY_TARGET` apunte al mismo puerto que `PORT` en el backend.
 4. **`npm run dev` fuerza el puerto 3003** via `--port 3003` en `package.json`. Si el puerto está ocupado, matar procesos Node con `Stop-Process -Name node -Force`.
-5. **CORS:** Al agregar un nuevo origen, actualizar `CORS_ORIGINS` en `BackFinca/.env`.
-6. **Seeding:** `ensure_test_users()` en `BackFinca/app/utils/seed_users.py` usa las variables `TEST_USER_*` del `.env`. Cambiar el `.env` es suficiente para cambiar las credenciales.
+5. **CORS:** Al agregar un nuevo origen, actualizar `CORS_ORIGINS` en `backend/.env`.
+6. **Seeding:** `ensure_test_users()` en `backend/app/utils/seed_users.py` usa las variables `TEST_USER_*` del `.env`. Cambiar el `.env` es suficiente para cambiar las credenciales.
 
 ---
 

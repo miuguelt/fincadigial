@@ -137,7 +137,7 @@ export const PaginationBar: React.FC<PaginationBarProps> = ({
           </button>
         </div>
 
-        <div className="text-[10px] sm:text-xs font-medium text-white/70 tracking-wide shrink-0">
+        <div className="text-[11px] sm:text-xs font-medium text-white/70 tracking-wide shrink-0">
           Pág. <span className="text-white font-bold">{page}</span> / <span className="text-white font-bold">{Math.max(pages, 1)}</span>
         </div>
       </div>

@@ -17,7 +17,7 @@ Se ha implementado una funcionalidad de búsqueda avanzada que permite buscar po
 - **Ejemplo:** `search=2024-12` → Encuentra todos los registros de diciembre 2024
 
 ### 3. 📅 Búsqueda por Día (Fecha Completa)
-- **Formatos:** 
+- **Formatos:**
   - `2024-12-25` (ISO)
   - `25/12/2024` (Europeo)
   - `2024/12/25` (Americano)
@@ -107,7 +107,7 @@ const response = await fetch('/api/v1/animals?search=123');
 La funcionalidad se implementa en el método `get_namespace_query()` del `BaseModel`:
 
 - Usa `extract('year', column)` para búsqueda por año
-- Usa `extract('month', column)` para búsqueda por mes  
+- Usa `extract('month', column)` para búsqueda por mes
 - Usa comparación directa para búsqueda por día específico
 - Usa `ilike('%term%')` para búsqueda de texto en todas las columnas
 - Aplica búsqueda con `or_()` para coincidencias en cualquier campo

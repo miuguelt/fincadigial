@@ -1,6 +1,6 @@
 /*
  * CRUDForm
- * 
+ *
  * Componente optimizado para formularios de creación/edición.
  * Implementa validación eficiente y mejor experiencia de usuario.
  */
@@ -312,7 +312,7 @@ const FormField = memo<{
 
   return (
     <div className={cn(
-      'w-full space-y-2 group/field relative', 
+      'w-full space-y-2 group/field relative',
       field.colSpan && field.colSpan > 1 && 'sm:col-span-2'
     )}>
       <label htmlFor={String(field.name)} className={cn(
@@ -328,7 +328,7 @@ const FormField = memo<{
 
       <div className="relative group/input">
         {renderField()}
-        
+
         {/* Decorative focus ring/border effect */}
         <div className="absolute inset-0 rounded-xl border-2 border-primary/0 pointer-events-none group-focus-within/input:border-primary/20 transition-all duration-300 -m-[1px]" />
       </div>
@@ -340,9 +340,9 @@ const FormField = memo<{
             <span>{error || 'Este campo es obligatorio.'}</span>
           </p>
         )}
-        
+
         {field.helperText && !error && (
-          <p className="text-[10px] sm:text-[11px] text-muted-foreground/50 italic leading-tight group-focus-within/field:text-muted-foreground/80 transition-colors duration-300">
+          <p className="text-[11px] sm:text-[11px] text-muted-foreground/50 italic leading-tight group-focus-within/field:text-muted-foreground/80 transition-colors duration-300">
             {field.helperText}
           </p>
         )}

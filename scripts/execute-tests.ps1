@@ -11,8 +11,8 @@ param(
 $RootPath = $PSScriptRoot
 if (-not $RootPath) { $RootPath = Get-Location }
 
-$BackendPath = Join-Path $RootPath "BackFinca"
-$FrontendPath = Join-Path $RootPath "VillaLuzFront"
+$BackendPath = Join-Path $RootPath "backend"
+$FrontendPath = Join-Path $RootPath "frontend"
 
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host "  VILLALUZ - SISTEMA DE PRUEBAS E2E" -ForegroundColor Cyan
@@ -60,7 +60,7 @@ if (-not $SkipBackendCheck) {
         Write-Host "  ❌ Backend NO está disponible" -ForegroundColor Red
         Write-Host "" -ForegroundColor Yellow
         Write-Host "  Para iniciar el backend ejecuta:" -ForegroundColor White
-        Write-Host "    cd BackFinca" -ForegroundColor Cyan
+        Write-Host "    cd backend" -ForegroundColor Cyan
         Write-Host "    python run.py" -ForegroundColor Cyan
         Write-Host ""
         $startBackend = Read-Host "  ¿Deseas intentar iniciar el backend automáticamente? (S/N)"
@@ -93,7 +93,7 @@ if (Test-FrontendRunning) {
     if (-not $SkipFrontendStart) {
         Write-Host "" -ForegroundColor Yellow
         Write-Host "  Para iniciar el frontend ejecuta:" -ForegroundColor White
-        Write-Host "    cd VillaLuzFront" -ForegroundColor Cyan
+        Write-Host "    cd frontend" -ForegroundColor Cyan
         Write-Host "    npm start" -ForegroundColor Cyan
         Write-Host ""
         $startFrontend = Read-Host "  ¿Deseas intentar iniciar el frontend automáticamente? (S/N)"

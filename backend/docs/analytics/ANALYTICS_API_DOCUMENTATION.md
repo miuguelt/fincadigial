@@ -1,4 +1,4 @@
-# 📊 BackFinca Analytics API - Documentación Completa
+# 📊 VillaLuz Analytics API - Documentación Completa
 
 ## Índice
 1. [Resumen Ejecutivo](#resumen-ejecutivo)
@@ -15,7 +15,7 @@
 
 ## Resumen Ejecutivo
 
-El sistema de analytics de BackFinca proporciona endpoints optimizados para obtener métricas, KPIs y datos analíticos sobre la gestión ganadera. Todos los endpoints están bajo `/api/analytics/`.
+El sistema de analytics de VillaLuz proporciona endpoints optimizados para obtener métricas, KPIs y datos analíticos sobre la gestión ganadera. Todos los endpoints están bajo `/api/analytics/`.
 
 ### Características Principales:
 - ✅ **Dashboards preconstruidos** para vista ejecutiva, salud y productividad

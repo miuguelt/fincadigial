@@ -1236,9 +1236,9 @@ Si tienes dudas:
   - SSE: GET /api/v1/events
   - WebSocket: /ws
 - Referencias:
-  - [api.py: SSE](file:///c:/Users/Miguel/Documents/Flask%20Projects/BackFinca/app/api.py#L201-L260)
-  - [api.py: WebSocket](file:///c:/Users/Miguel/Documents/Flask%20Projects/BackFinca/app/api.py#L261-L294)
-  - [namespace_helpers.py: eventos](file:///c:/Users/Miguel/Documents/Flask%20Projects/BackFinca/app/utils/namespace_helpers.py#L970-L1608)
+  - [api.py: SSE](file:///c:/Users/Miguel/Documents/Flask%20Projects/VillaLuz/app/api.py#L201-L260)
+  - [api.py: WebSocket](file:///c:/Users/Miguel/Documents/Flask%20Projects/VillaLuz/app/api.py#L261-L294)
+  - [namespace_helpers.py: eventos](file:///c:/Users/Miguel/Documents/Flask%20Projects/VillaLuz/app/utils/namespace_helpers.py#L970-L1608)
 
 ### Hook useEventBus
 

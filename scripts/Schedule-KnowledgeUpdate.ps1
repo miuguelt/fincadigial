@@ -3,7 +3,7 @@
 
 $TaskName = "DevBrain_Cerebro_Update"
 $ActionScript = "c:\Users\Miguel\Documents\Aplicaciones\_projects/villaluz\scripts\index_local_knowledge.py"
-$PythonExe = "c:\Users\Miguel\Documents\Aplicaciones\_projects/villaluz\BackFinca\venv_win\Scripts\python.exe"
+$PythonExe = "c:\Users\Miguel\Documents\Aplicaciones\_projects/villaluz\backend\venv_win\Scripts\python.exe"
 
 # 1. Crear la acción (Ejecutar Python con el script de indexación)
 $Action = New-ScheduledTaskAction -Execute $PythonExe -Argument $ActionScript

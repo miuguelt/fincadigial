@@ -30,7 +30,7 @@ export function QuickReportBuilder() {
             Crea reportes a la medida para analizar el rendimiento de tu finca
           </p>
         </div>
-        
+
         <div className="p-5 bg-background/50">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {metrics.map((m) => (

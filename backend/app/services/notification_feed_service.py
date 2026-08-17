@@ -9,14 +9,14 @@ from app.services.invitation_service import InvitationService, InvitationError
 
 logger = logging.getLogger(__name__)
 
-ADMIN_ROLES = ('Administrador', 'Propietario', 'Capataz')
+ADMIN_ROLES = ("Administrador", "Propietario", "Capataz")
 
 _STATUS_MAP = {
-    JoinRequestStatus.PENDING: 'pending',
-    JoinRequestStatus.APPROVED: 'approved',
-    JoinRequestStatus.REJECTED: 'rejected',
-    JoinRequestStatus.EXPIRED: 'rejected',
-    JoinRequestStatus.CANCELLED: 'rejected',
+    JoinRequestStatus.PENDING: "pending",
+    JoinRequestStatus.APPROVED: "approved",
+    JoinRequestStatus.REJECTED: "rejected",
+    JoinRequestStatus.EXPIRED: "rejected",
+    JoinRequestStatus.CANCELLED: "rejected",
 }
 
 
@@ -25,28 +25,30 @@ class NotificationFeedService:
 
     @classmethod
     def _admin_finca_ids(cls, user_id: int) -> list[int]:
-        memberships = UserFinca.query.filter_by(user_id=user_id).filter(
-            UserFinca.role.in_(ADMIN_ROLES)
-        ).all()
+        memberships = (
+            UserFinca.query.filter_by(user_id=user_id)
+            .filter(UserFinca.role.in_(ADMIN_ROLES))
+            .all()
+        )
         return [m.finca_id for m in memberships]
 
     @classmethod
     def _serialize(cls, req: JoinRequest, notification_type: str) -> dict:
         return {
-            'id': req.id,
-            'type': notification_type,
-            'finca_id': req.finca_id,
-            'finca_name': req.finca.name if req.finca else None,
-            'sender_id': req.user_id,
-            'sender_name': req.user.fullname if req.user else None,
-            'requested_role': req.requested_role,
-            'created_at': req.created_at.isoformat() if req.created_at else None,
-            'status': _STATUS_MAP.get(req.status, 'pending'),
-            'metadata': {
-                'request_type': req.request_type.value,
-                'notes': req.notes,
-                'expires_at': req.expires_at.isoformat() if req.expires_at else None,
-                'is_expired': req.is_expired(),
+            "id": req.id,
+            "type": notification_type,
+            "finca_id": req.finca_id,
+            "finca_name": req.finca.name if req.finca else None,
+            "sender_id": req.user_id,
+            "sender_name": req.user.fullname if req.user else None,
+            "requested_role": req.requested_role,
+            "created_at": req.created_at.isoformat() if req.created_at else None,
+            "status": _STATUS_MAP.get(req.status, "pending"),
+            "metadata": {
+                "request_type": req.request_type.value,
+                "notes": req.notes,
+                "expires_at": req.expires_at.isoformat() if req.expires_at else None,
+                "is_expired": req.is_expired(),
             },
         }
 
@@ -72,7 +74,7 @@ class NotificationFeedService:
             if query_status is not None:
                 requests_q = requests_q.filter(JoinRequest.status == query_status)
             items.extend(
-                cls._serialize(r, 'JOIN_REQUEST')
+                cls._serialize(r, "JOIN_REQUEST")
                 for r in requests_q.order_by(JoinRequest.created_at.desc()).all()
             )
 
@@ -83,11 +85,11 @@ class NotificationFeedService:
         if query_status is not None:
             invitations_q = invitations_q.filter(JoinRequest.status == query_status)
         items.extend(
-            cls._serialize(r, 'INVITATION_RECEIVED')
+            cls._serialize(r, "INVITATION_RECEIVED")
             for r in invitations_q.order_by(JoinRequest.created_at.desc()).all()
         )
 
-        items.sort(key=lambda i: i['created_at'] or '', reverse=True)
+        items.sort(key=lambda i: i["created_at"] or "", reverse=True)
         return items
 
     @classmethod
@@ -100,14 +102,14 @@ class NotificationFeedService:
         if not cls._is_visible_to(req, user_id):
             raise InvitationError("Notificación no encontrada", status_code=404)
 
-        if action == 'read':
+        if action == "read":
             # No existe estado "leído" persistido: se acusa recibo sin mutar la fila.
             return cls._serialize(req, cls._type_of(req))
 
-        if action not in ('approve', 'reject'):
+        if action not in ("approve", "reject"):
             raise InvitationError(f"Acción no soportada: {action}")
 
-        approve = action == 'approve'
+        approve = action == "approve"
         if req.request_type == JoinRequestType.INVITATION:
             req = InvitationService.respond_to_invitation(req.id, user_id, approve)
         else:
@@ -118,9 +120,9 @@ class NotificationFeedService:
     @classmethod
     def _type_of(cls, req: JoinRequest) -> str:
         return (
-            'INVITATION_RECEIVED'
+            "INVITATION_RECEIVED"
             if req.request_type == JoinRequestType.INVITATION
-            else 'JOIN_REQUEST'
+            else "JOIN_REQUEST"
         )
 
     @classmethod

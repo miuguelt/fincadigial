@@ -296,7 +296,7 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
                         key={index}
                         className="text-xs p-2 bg-destructive text-destructive-foreground rounded"
                       >
-                        <div className="font-mono text-[10px] fit-clamp">
+                        <div className="font-mono text-[11px] fit-clamp">
                           {req.url}
                         </div>
                         <div className="text-destructive-foreground">

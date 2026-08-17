@@ -9,11 +9,11 @@ import { Input } from '@/shared/ui/input';
 import { ScrollArea } from '@/shared/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/shared/ui/common/Avatar';
 import { cn } from '@/shared/ui/cn';
-import { 
-  MessageCircle, 
-  X, 
-  Send, 
-  ChevronLeft, 
+import {
+  MessageCircle,
+  X,
+  Send,
+  ChevronLeft,
   Search,
   User as UserIcon,
   Wifi,
@@ -76,7 +76,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
   // Cargar contactos y conteo inicial con soporte de fallback
   useEffect(() => {
     if (!user) return;
-    
+
     const initChat = async () => {
       try {
         setLoading(true);
@@ -150,9 +150,9 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
         try {
           const res = await chatService.getHistory(selectedContact.id);
           setMessages(res.data || []);
-          
+
           setUnreadCount(prev => Math.max(0, prev - (selectedContact.unread_count || 0)));
-          setContacts(prev => prev.map(c => 
+          setContacts(prev => prev.map(c =>
             c.id === selectedContact.id ? { ...c, unread_count: 0 } : c
           ));
         } catch (error) {
@@ -173,7 +173,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
   }, [messages, selectedContact]);
 
   const filteredContacts = useMemo(() => {
-    return contacts.filter(c => 
+    return contacts.filter(c =>
       c.fullname.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.role.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -209,9 +209,9 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
     try {
       setIsSyncing(true);
       showToast('Selecciona un dispositivo cercano...', 'info');
-      
+
       const peer = await proximitySync.discoverPeers();
-      
+
       if (peer) {
         showToast(`Conectando con ${peer.name}...`, 'info');
       } else {
@@ -249,9 +249,9 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
               <div className="flex items-center gap-3">
                 {selectedContact ? (
                   <>
-                    <button 
+                    <button
                       type="button"
-                      onClick={() => setSelectedContact(null)} 
+                      onClick={() => setSelectedContact(null)}
                       className="h-8 w-8 rounded-full bg-background/50 hover:bg-background/80 flex items-center justify-center transition-colors border border-white/5"
                     >
                       <ChevronLeft size={18} className="text-foreground" />
@@ -266,7 +266,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                         <p className="text-sm font-bold text-foreground fit-clamp max-w-[150px]">
                           {selectedContact.fullname}
                         </p>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                        <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold">
                           {selectedContact.role}
                         </p>
                       </div>
@@ -279,14 +279,14 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                     </div>
                     <div>
                       <p className="text-sm font-bold text-foreground">Comunicaciones</p>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Chat Interno</p>
+                      <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold">Chat Interno</p>
                     </div>
                   </div>
                 )}
               </div>
-              <button 
+              <button
                 type="button"
-                onClick={() => setIsOpen(false)} 
+                onClick={() => setIsOpen(false)}
                 className="h-8 w-8 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground"
               >
                 <X size={18} />
@@ -302,17 +302,17 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                     <div className="flex items-center gap-2">
                       <div className="relative flex-1">
                         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-                        <Input 
-                          placeholder="Buscar compañero..." 
+                        <Input
+                          placeholder="Buscar compañero..."
                           className="pl-10 h-10 bg-background/60 border-white/5 focus-visible:ring-primary rounded-xl text-sm"
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                         />
                       </div>
-                      <Button 
+                      <Button
                         type="button"
-                        variant="outline" 
-                        size="icon" 
+                        variant="outline"
+                        size="icon"
                         title="Sincronizar por proximidad (Bluetooth)"
                         onClick={handleProximitySync}
                         disabled={isSyncing}
@@ -325,7 +325,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                       </Button>
                     </div>
                   </div>
-                  
+
                   <ScrollArea className="flex-1">
                     <div className="px-3 pb-4 space-y-1">
                       {filteredContacts.length > 0 ? (
@@ -350,7 +350,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                                   {contact.fullname}
                                 </p>
                                 {contact.unread_count ? (
-                                  <span className="bg-primary text-primary-foreground text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[20px] text-center shadow-sm">
+                                  <span className="bg-primary text-primary-foreground text-[11px] font-black px-1.5 py-0.5 rounded-full min-w-[20px] text-center shadow-sm">
                                     {contact.unread_count}
                                   </span>
                                 ) : null}
@@ -375,7 +375,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
               ) : (
                 // Ventana de Chat
                 <>
-                  <div 
+                  <div
                     ref={scrollRef}
                     className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth"
                   >
@@ -397,13 +397,13 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                           <div key={msg.id || idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                             <div className={cn(
                               "max-w-[85%] rounded-lg px-4 py-2.5 text-sm shadow-sm relative group",
-                              isMe 
-                                ? "bg-primary text-white rounded-br-sm" 
+                              isMe
+                                ? "bg-primary text-white rounded-br-sm"
                                 : "bg-background/80 border border-white/5 text-foreground rounded-bl-sm"
                             )}>
                               <p className="leading-relaxed">{msg.message}</p>
                               <div className={cn(
-                                "text-[9px] mt-1.5 font-medium flex items-center gap-1",
+                                "text-[11px] mt-1.5 font-medium flex items-center gap-1",
                                 isMe ? "text-white/70 justify-end" : "text-muted-foreground justify-start"
                               )}>
                                  {format(new Date(msg.created_at), 'HH:mm')}
@@ -417,20 +417,20 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                       })
                     )}
                   </div>
-                  
+
                   {/* Footer Input */}
                   <div className="p-3 bg-background/40 backdrop-blur-xl border-t border-white/5 shrink-0">
                     <form onSubmit={handleSendMessage} className="flex gap-2">
-                      <Input 
-                        placeholder="Escribe un mensaje..." 
+                      <Input
+                        placeholder="Escribe un mensaje..."
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         className="flex-1 h-11 bg-background border-white/5 focus-visible:ring-primary rounded-xl text-sm"
                         autoFocus
                       />
-                      <Button 
-                        type="submit" 
-                        size="icon" 
+                      <Button
+                        type="submit"
+                        size="icon"
                         disabled={!newMessage.trim()}
                         className="bg-primary hover:bg-primary/90 h-11 w-11 shrink-0 rounded-xl shadow-md transition-all active:scale-95 disabled:opacity-50"
                       >
@@ -469,7 +469,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
           </motion.div>
 
           {unreadCount > 0 && !isOpen && (
-            <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center border-2 border-card shadow-sm animate-pulse z-10">
+            <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[11px] font-bold h-5 w-5 rounded-full flex items-center justify-center border-2 border-card shadow-sm animate-pulse z-10">
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}

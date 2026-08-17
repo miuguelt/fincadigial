@@ -5,7 +5,7 @@ from app.models.system_content import SystemContent
 class RegionalBenchmarkingService:
     @staticmethod
     def get_regional_averages() -> dict[str, Any]:
-        entry = SystemContent.get_by_key('config.regional_averages')
+        entry = SystemContent.get_by_key("config.regional_averages")
         if entry and entry.extra:
             return entry.extra
         return {}
@@ -17,22 +17,28 @@ class RegionalBenchmarkingService:
             return {}
         comparison = {}
         if "avg_milk_per_cow" in farm_kpis and "avg_milk_per_cow" in averages:
-            diff = ((farm_kpis["avg_milk_per_cow"] - averages["avg_milk_per_cow"]) / averages["avg_milk_per_cow"]) * 100
+            diff = (
+                (farm_kpis["avg_milk_per_cow"] - averages["avg_milk_per_cow"])
+                / averages["avg_milk_per_cow"]
+            ) * 100
             comparison["milk_performance"] = {
                 "label": "Producción de Leche",
                 "farm": farm_kpis["avg_milk_per_cow"],
                 "regional": averages["avg_milk_per_cow"],
                 "percentage_diff": round(diff, 1),
-                "is_above": diff > 0
+                "is_above": diff > 0,
             }
         if "avg_open_days" in farm_kpis and "avg_open_days" in averages:
-            diff = ((averages["avg_open_days"] - farm_kpis["avg_open_days"]) / averages["avg_open_days"]) * 100
+            diff = (
+                (averages["avg_open_days"] - farm_kpis["avg_open_days"])
+                / averages["avg_open_days"]
+            ) * 100
             comparison["reproduction_performance"] = {
                 "label": "Eficiencia Reproductiva (Días Abiertos)",
                 "farm": farm_kpis["avg_open_days"],
                 "regional": averages["avg_open_days"],
                 "percentage_diff": round(diff, 1),
-                "is_above": farm_kpis["avg_open_days"] < averages["avg_open_days"]
+                "is_above": farm_kpis["avg_open_days"] < averages["avg_open_days"],
             }
         return comparison
 
@@ -40,7 +46,9 @@ class RegionalBenchmarkingService:
 class DigitalAdvisorService:
     @staticmethod
     def generate_recommendations(finca_id: int) -> list[dict[str, Any]]:
-        entries = SystemContent.get_by_category('advisor_recommendation', finca_id=finca_id)
+        entries = SystemContent.get_by_category(
+            "advisor_recommendation", finca_id=finca_id
+        )
         if entries:
             return [
                 {

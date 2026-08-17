@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <!-- Fondo circular -->
   <circle cx="16" cy="16" r="16" fill="#2d5016"/>
-  
+
   <!-- Silueta de vaca -->
   <g fill="#ffffff">
     <!-- Cuerpo -->
@@ -23,7 +23,7 @@
     <ellipse cx="18" cy="17" rx="2" ry="1.5" fill="#2d5016"/>
     <ellipse cx="14" cy="19" rx="1.5" ry="1" fill="#2d5016"/>
   </g>
-  
+
   <!-- Detalle de pasto -->
   <g fill="#90c950">
     <path d="M 4 28 Q 4 26 5 25"/>

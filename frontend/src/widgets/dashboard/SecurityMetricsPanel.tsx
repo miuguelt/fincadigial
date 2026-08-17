@@ -159,7 +159,7 @@ export const SecurityMetricsPanel = () => {
                     <span className="font-medium line-clamp-1">{al.title}</span>
                     {al.severity && (
                       <span
-                        className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${severityColor[al.severity] || "bg-muted text-muted-foreground"}`}
+                        className={`px-1.5 py-0.5 rounded text-[11px] font-medium ${severityColor[al.severity] || "bg-muted text-muted-foreground"}`}
                       >
                         {al.severity}
                       </span>
@@ -171,7 +171,7 @@ export const SecurityMetricsPanel = () => {
                     </p>
                   )}
                   {al.created_at && (
-                    <span className="text-[9px] text-muted-foreground mt-1 block">
+                    <span className="text-[11px] text-muted-foreground mt-1 block">
                       {normalizeDisplayValue(al.created_at)}
                     </span>
                   )}
@@ -185,7 +185,7 @@ export const SecurityMetricsPanel = () => {
           </ul>
         </div>
         {metrics?.last_scan && (
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[11px] text-muted-foreground">
             Último scan: {normalizeDisplayValue(metrics.last_scan)}{" "}
             {metrics.avg_scan_time_ms && `(~${metrics.avg_scan_time_ms} ms)`}
           </p>

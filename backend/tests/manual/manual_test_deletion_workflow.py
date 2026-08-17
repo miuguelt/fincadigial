@@ -19,10 +19,11 @@ from app.models.species import Species
 from app.utils.integrity_checker import OptimizedIntegrityChecker
 from datetime import date
 
+
 def test_complete_workflow():
     """Test completo del workflow de eliminación optimizado"""
-    app = create_app('testing')
-    app.config['CACHE_WARMUP_ASYNC'] = False
+    app = create_app("testing")
+    app.config["CACHE_WARMUP_ASYNC"] = False
 
     with app.app_context():
         db.create_all()
@@ -59,7 +60,7 @@ def test_complete_workflow():
                     sex=Sex.Macho,
                     weight=400,
                     birth_date=date.today(),
-                    status='Vivo'
+                    status="Vivo",
                 )
                 db.session.add(test_animal)
                 db.session.commit()
@@ -76,7 +77,7 @@ def test_complete_workflow():
 
             # Medir tiempo de detección de dependencias
             start_time = time.time()
-            dependencies = checker.get_batch_dependencies([animal.id], 'animals')
+            dependencies = checker.get_batch_dependencies([animal.id], "animals")
             end_time = time.time()
 
             detection_time = (end_time - start_time) * 1000
@@ -98,7 +99,7 @@ def test_complete_workflow():
         animal_ids = [a.id for a in animals[:3]]
 
         start_time = time.time()
-        batch_deps = checker.get_batch_dependencies(animal_ids, 'animals')
+        batch_deps = checker.get_batch_dependencies(animal_ids, "animals")
         end_time = time.time()
 
         batch_time = (end_time - start_time) * 1000
@@ -111,17 +112,17 @@ def test_complete_workflow():
 
         # Primera llamada (sin cache)
         start_time = time.time()
-        deps1 = checker.get_batch_dependencies([animal_id], 'animals')
+        deps1 = checker.get_batch_dependencies([animal_id], "animals")
         first_time = (time.time() - start_time) * 1000
 
         # Segunda llamada (con cache)
         start_time = time.time()
-        deps2 = checker.get_batch_dependencies([animal_id], 'animals')
+        deps2 = checker.get_batch_dependencies([animal_id], "animals")
         cached_time = (time.time() - start_time) * 1000
 
         print(f"   ⏱️  Primera llamada: {first_time:.2f}ms")
         print(f"   ⏱️  Segunda llamada: {cached_time:.2f}ms")
-        print(f"   🚀 Speedup cache: {first_time/max(cached_time, 0.1):.1f}x")
+        print(f"   🚀 Speedup cache: {first_time / max(cached_time, 0.1):.1f}x")
 
         if deps1 == deps2:
             print("   ✅ Cache funcionando correctamente")
@@ -130,21 +131,27 @@ def test_complete_workflow():
 
         # 6. Simular eliminación segura (solo si no hay dependencias)
         print("\n6. Probando eliminación segura...")
-        safe_animals = [a for a in animals if len(checker.get_batch_dependencies([a.id], 'animals')) == 0]
+        safe_animals = [
+            a
+            for a in animals
+            if len(checker.get_batch_dependencies([a.id], "animals")) == 0
+        ]
 
         if safe_animals:
             test_animal = safe_animals[0]
             print(f"   🐄 Probando eliminación de animal ID {test_animal.id}")
 
             # Verificar dependencias antes de eliminar
-            final_deps = checker.get_batch_dependencies([test_animal.id], 'animals')
+            final_deps = checker.get_batch_dependencies([test_animal.id], "animals")
 
             if len(final_deps) == 0:
                 print("   ✅ Animal sin dependencias - seguro para eliminar")
                 # No eliminamos realmente, solo verificamos que se podría
                 print("   📝 Nota: Eliminación simulada (no se borra realmente)")
             else:
-                print(f"   ⚠️  Animal tiene {len(final_deps)} dependencias - no se elimina")
+                print(
+                    f"   ⚠️  Animal tiene {len(final_deps)} dependencias - no se elimina"
+                )
         else:
             print("   ℹ️  No hay animales sin dependencias para probar eliminación")
 
@@ -159,23 +166,30 @@ def test_complete_workflow():
         print(f"⏰ Cache TTL: {cache_stats.get('ttl', 30)}s")
 
         # Tiempos medidos
-        avg_detection_time = sum([
-            (time.time() - start_time) * 1000
-            for start_time in [0.001]  # Placeholder
-        ]) / max(len(animals), 1)
+        avg_detection_time = sum(
+            [
+                (time.time() - start_time) * 1000
+                for start_time in [0.001]  # Placeholder
+            ]
+        ) / max(len(animals), 1)
 
         print("⚡ Tiempos de detección: <50ms (objetivo)")
         print(f"🔄 Tiempo batch: {batch_time:.2f}ms para {len(animal_ids)} animales")
-        print(f"🚀 Speedup con cache: {first_time/max(cached_time, 0.1):.1f}x")
+        print(f"🚀 Speedup con cache: {first_time / max(cached_time, 0.1):.1f}x")
 
         print("\n✅ TEST COMPLETADO - Optimizaciones verificadas")
 
         # Recomendaciones
         print("\n📋 RECOMENDACIONES:")
-        print("1. Aplicar índices MySQL: mysql -u root -p finca < delete_performance_indexes_mysql.sql")
+        print(
+            "1. Aplicar índices MySQL: mysql -u root -p finca < delete_performance_indexes_mysql.sql"
+        )
         print("2. Reiniciar backend para cargar todos los cambios")
-        print("3. Actualizar frontend para usar endpoint /animals/{id}/delete-with-check")
+        print(
+            "3. Actualizar frontend para usar endpoint /animals/{id}/delete-with-check"
+        )
         print("4. Monitorear tiempos de eliminación en producción")
+
 
 if __name__ == "__main__":
     test_complete_workflow()

@@ -7,26 +7,28 @@
 
 import { test as base, expect, type Page } from '@playwright/test';
 
+const env = (name: string) => process.env[name] ?? '';
+
 // Usuarios de test
 export const testUsers = {
   propietario: {
     identifier: '99999999',
-    password: 'password123',
+    password: env('E2E_OWNER_PASS'),
     role: 'Propietario',
   },
   admin: {
     identifier: '88888888',
-    password: 'admin123',
+    password: env('E2E_ADMIN_PASS'),
     role: 'Administrador',
   },
   operario: {
     identifier: '77777777',
-    password: 'operario123',
+    password: env('E2E_WORKER_PASS'),
     role: 'Operario',
   },
   veterinario: {
     identifier: '66666666',
-    password: 'vet123',
+    password: env('E2E_VET_PASS'),
     role: 'Veterinario',
   },
 };

@@ -50,13 +50,13 @@ def run_stress_test(token, concurrency=5, iterations=10):
     url = f"{BASE_URL}/analytics/dashboard/complete"
     print(f"🚀 Iniciando prueba de estrés en {url}")
     print(f"👥 Concurrencia: {concurrency}, Iteraciones: {iterations}")
-    
+
     results = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=concurrency) as executor:
         futures = [executor.submit(hit_endpoint, token, "dashboard_complete", url) for _ in range(iterations)]
         for future in concurrent.futures.as_completed(futures):
             results.append(future.result())
-    
+
     return results
 
 def main():
@@ -67,14 +67,14 @@ def main():
     # Prueba de estrés
     concurrency_levels = [1, 5, 10]
     total_iterations = 20
-    
+
     all_results = {}
-    
+
     for c in concurrency_levels:
         print(f"\n--- Nivel de Concurrencia: {c} ---")
         results = run_stress_test(token, concurrency=c, iterations=total_iterations)
         all_results[f"concurrency_{c}"] = results
-        
+
         durations = [r['duration'] for r in results if r['success']]
         if durations:
             avg = sum(durations) / len(durations)

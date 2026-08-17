@@ -4,12 +4,12 @@ import { useAuth } from '@/features/auth/model/useAuth';
 import { normalizeRole } from '@/features/auth/api/auth.service';
 import { canAccessRoutePath, getRouteSection, toRolePath } from '@/shared/lib/routeAccess';
 import {
-  HeartPulse, 
-  ShieldAlert, 
-  Activity, 
-  Pill, 
-  Syringe, 
-  Layers, 
+  HeartPulse,
+  ShieldAlert,
+  Activity,
+  Pill,
+  Syringe,
+  Layers,
   Calendar,
   TrendingUp,
 } from 'lucide-react';

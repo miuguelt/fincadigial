@@ -11,7 +11,7 @@ interface PremiumTreatmentsHeaderProps {
 export const PremiumTreatmentsHeader: React.FC<PremiumTreatmentsHeaderProps> = ({ items }) => {
   const metrics = useMemo(() => {
     const totalTreatments = items.length;
-    
+
     // Animales únicos
     const uniqueAnimals = new Set<number>();
     // Tratamientos en los últimos 30 días
@@ -96,7 +96,7 @@ export const PremiumTreatmentsHeader: React.FC<PremiumTreatmentsHeaderProps> = (
                     <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors fit-clamp max-w-[80%]">
                       {diag.name}
                     </h3>
-                    <span className="text-[10px] font-mono bg-purple-500/10 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded font-bold">
+                    <span className="text-[11px] font-mono bg-purple-500/10 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded font-bold">
                       #{index + 1}
                     </span>
                   </div>

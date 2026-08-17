@@ -51,20 +51,20 @@ export function useMedications(): UseMedicationsResult {
     try {
       const created = await (resource.createItem as any)(payload as any);
       if (!created) return null;
-      
+
       const mappedCreated = mapMedicationResponseToLocal(created as any);
-      
+
       // Actualización optimista inmediata
       resource.setData((prev: any[]) => {
         const clean = Array.isArray(prev) ? prev.filter((x: any) => (x?.id) !== (created as any)?.id) : [];
         return [...clean, mappedCreated] as any;
       });
-      
+
       // Forzar refetch para asegurar sincronización con el servidor
       setTimeout(() => {
         void resource.refetch().catch(() => {});
       }, 100);
-      
+
       return mappedCreated;
     } catch (error) {
       console.error('Error creating medication:', error);
@@ -76,20 +76,20 @@ export function useMedications(): UseMedicationsResult {
     try {
       const updated = await (resource.updateItem as any)(id, payload as any);
       if (!updated) return null;
-      
+
       const mappedUpdated = mapMedicationResponseToLocal(updated as any);
-      
+
       // Actualización optimista inmediata
       resource.setData((prev: any[]) => {
         const arr = Array.isArray(prev) ? prev : [];
         return arr.map((x: any) => (x?.id === (updated as any)?.id || x?.id === id) ? { ...x, ...mappedUpdated } : x) as any;
       });
-      
+
       // Forzar refetch para asegurar sincronización con el servidor
       setTimeout(() => {
         void resource.refetch().catch(() => {});
       }, 100);
-      
+
       return mappedUpdated;
     } catch (error) {
       console.error('Error updating medication:', error);
@@ -100,20 +100,20 @@ export function useMedications(): UseMedicationsResult {
   const deleteMedication = async (id: number | string): Promise<boolean> => {
     try {
       const result = await resource.deleteItem(id);
-      
+
       if (result) {
         // Actualización optimista inmediata
         resource.setData((prev: any[]) => {
           const arr = Array.isArray(prev) ? prev : [];
           return arr.filter((x: any) => x?.id !== id) as any;
         });
-        
+
         // Forzar refetch para asegurar sincronización con el servidor
         setTimeout(() => {
           void resource.refetch().catch(() => {});
         }, 100);
       }
-      
+
       return result;
     } catch (error) {
       console.error('Error deleting medication:', error);
@@ -143,4 +143,3 @@ export function useMedications(): UseMedicationsResult {
     setFields: (resource as any).setFields,
   };
 }
-    

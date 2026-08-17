@@ -6,7 +6,7 @@ Este documento detalla el estándar técnico de arquitectura y desarrollo aplica
 
 ## 1. El Problema del Puerto Flotante y CORS
 
-En arquitecturas desacopladas (Frontend en Vite y Backend en Go/Python), el backend define una política estricta de `CORS_ORIGINS` (por ejemplo, `https://localhost:3005`). 
+En arquitecturas desacopladas (Frontend en Vite y Backend en Go/Python), el backend define una política estricta de `CORS_ORIGINS` (por ejemplo, `https://localhost:3005`).
 
 ### Comportamiento Defectuoso (Por Defecto)
 * **Vite con `strictPort: false`**: Si el puerto configurado (3005) está ocupado por una instancia previa que no se cerró correctamente (zombie), Vite autoincrementa el puerto a `3006`, `3007`, etc., e inicia el servidor dev con éxito aparente.
@@ -22,7 +22,7 @@ En arquitecturas desacopladas (Frontend en Vite y Backend en Go/Python), el back
 Para evitar que el desarrollador tenga que intervenir manualmente, se integra un ciclo de auto-recuperación en el hook `predev` de npm.
 
 ```
-[npm run dev] 
+[npm run dev]
       │
       ▼
 [predev hook] ──► Ejecuta DEVBRAIN_GUARDIAN.ps1

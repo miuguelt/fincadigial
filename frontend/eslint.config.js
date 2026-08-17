@@ -29,6 +29,7 @@ export default tseslint.config(
       'devbrain/no-legacy-screen-header': 'error',
       'devbrain/no-mid-word-break': 'error',
       'devbrain/no-truncate': 'error',
+      'devbrain/no-tiny-text': 'error',
       // Project pragmatics: relax strict TS rules for faster iteration
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',

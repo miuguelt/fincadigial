@@ -115,13 +115,13 @@ export const MultiFincaPage: React.FC = () => {
                       <IconBuilding className="h-7 w-7" />
                     </div>
                     {isActive ? (
-                      <Badge className="bg-emerald-600 text-white border-none font-black uppercase text-[10px] tracking-widest px-3 py-1">
+                      <Badge className="bg-emerald-600 text-white border-none font-black uppercase text-[11px] tracking-widest px-3 py-1">
                         Finca Activa Ahora
                       </Badge>
                     ) : (
                       <Badge
                         variant="outline"
-                        className="text-[10px] font-semibold tracking-wider uppercase text-muted-foreground"
+                        className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground"
                       >
                         Registrada
                       </Badge>
@@ -131,13 +131,13 @@ export const MultiFincaPage: React.FC = () => {
                     <h3 className="text-2xl font-black text-foreground leading-tight">
                       {fincaName}
                     </h3>
-                    <p className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest flex items-center gap-1.5">
+                    <p className="text-muted-foreground font-bold uppercase text-[11px] tracking-widest flex items-center gap-1.5">
                       <IconShieldCheck className="h-3.5 w-3.5 text-primary" /> Rol: {membership.role || "Miembro"}
                     </p>
                   </div>
                   <div className="mt-8 pt-6 border-t border-border/50 flex items-center justify-between">
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                      <span className="text-[11px] font-black text-muted-foreground uppercase tracking-widest">
                         Registrada
                       </span>
                       <span className="text-xs font-bold text-foreground">
@@ -150,7 +150,7 @@ export const MultiFincaPage: React.FC = () => {
                       onClick={() => handleSwitchFinca(targetFincaId)}
                       disabled={isActive || switching || switchingId === targetFincaId}
                       className={cn(
-                        "rounded-xl h-11 px-5 font-bold uppercase text-[10px] tracking-widest gap-2 transition-all shadow-sm",
+                        "rounded-xl h-11 px-5 font-bold uppercase text-[11px] tracking-widest gap-2 transition-all shadow-sm",
                         isActive
                           ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 cursor-default"
                           : "bg-primary text-primary-foreground hover:bg-primary/90",

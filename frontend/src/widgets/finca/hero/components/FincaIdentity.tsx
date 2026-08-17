@@ -43,6 +43,18 @@ function formatCoords(latitude: number | null, longitude: number | null): string
   return `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
 }
 
+/**
+ * Qué decir bajo el nombre de la finca.
+ *
+ * Decir "Ubicación sin registrar" mientras justo debajo se muestra una chapa
+ * con las coordenadas se contradice: la finca sí está ubicada, lo que falta es
+ * el municipio. Se nombra exactamente lo que falta.
+ */
+function locationLine(place: string, hasCoords: boolean): string {
+  if (place) return place;
+  return hasCoords ? 'Ubicada por GPS · falta registrar el municipio' : 'Ubicación sin registrar';
+}
+
 /** Identidad de la finca: cómo se llama, dónde queda y con qué registro opera. */
 export function FincaIdentity({ name, profile, location }: Props) {
   const ficha: Partial<FincaHeroProfile> = profile ?? {};
@@ -69,7 +81,7 @@ export function FincaIdentity({ name, profile, location }: Props) {
             {name}
           </h2>
           <p className="fit-clamp text-sm text-muted-foreground">
-            {place || 'Ubicación sin registrar'}
+            {locationLine(place, coords !== null)}
           </p>
         </div>
       </div>

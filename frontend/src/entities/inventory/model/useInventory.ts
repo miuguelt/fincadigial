@@ -6,7 +6,7 @@ import type { InventoryLotInput, InventoryMovementInput } from '@/shared/api/gen
 export const useInventory = () => {
   const queryClient = useQueryClient();
 
-  const useLots = (params?: Record<string, any>) => 
+  const useLots = (params?: Record<string, any>) =>
     useQuery({
       queryKey: ['inventory', 'lots', params],
       queryFn: () => inventoryService.getLotsPaginated(params),

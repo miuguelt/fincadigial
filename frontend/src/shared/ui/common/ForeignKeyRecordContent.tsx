@@ -117,7 +117,7 @@ export function ForeignKeyRecordContent({
 								key={key}
 								className="min-w-0 rounded-xl border border-border/40 bg-muted/20 p-3"
 							>
-								<div className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+								<div className="mb-1 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
 									{getIcon(key)}
 									<span>{label}</span>
 								</div>

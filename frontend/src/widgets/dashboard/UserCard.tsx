@@ -85,14 +85,14 @@ export const UserCard: React.FC<UserCardProps> = ({
               <div className="flex items-center gap-1 mt-1">
                 <Badge
                   variant={getRoleColor(user.role) as any}
-                  className="text-[10px] h-5 px-1.5 font-medium"
+                  className="text-[11px] h-5 px-1.5 font-medium"
                 >
                   {user.role}
                 </Badge>
                 {!user.isActive && (
                   <Badge
                     variant="outline"
-                    className="text-[10px] h-5 px-1.5 text-muted-foreground bg-muted/50 border-border"
+                    className="text-[11px] h-5 px-1.5 text-muted-foreground bg-muted/50 border-border"
                   >
                     Inactivo
                   </Badge>

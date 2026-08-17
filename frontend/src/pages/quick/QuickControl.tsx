@@ -26,7 +26,7 @@ export default function QuickControl() {
     newParams.delete('quick');
     setSearchParams(newParams, { replace: true });
   };
-  
+
   const [animalId, setAnimalId] = useState<number | null>(null);
   const [weight, setWeight] = useState<string>('');
   const [date, setDate] = useState(getTodayColombia());

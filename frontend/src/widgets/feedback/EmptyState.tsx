@@ -51,18 +51,18 @@ export function EmptyState({
       <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 mb-6">
         {renderIcon()}
       </div>
-      
+
       <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
         {title}
       </h3>
-      
+
       <p className="text-sm sm:text-base text-muted-foreground max-w-sm mb-8 leading-relaxed">
         {description}
       </p>
 
       {action || (actionLabel && onAction && (
-        <button 
-          onClick={onAction} 
+        <button
+          onClick={onAction}
           className="inline-flex items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 font-bold px-8 py-4 h-auto hover:bg-primary/90 transition-all active:scale-95"
         >
           <Icons.IconPlus size={20} className="mr-2" />

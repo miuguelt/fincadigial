@@ -34,36 +34,36 @@ from app.utils.tenant_context import get_current_finca_id
 
 logger = logging.getLogger(__name__)
 
-VERIFIER_ROLES = {'Administrador', 'Propietario'}
-DEFAULT_VERIFICATION_SOURCE = 'Registro público COMVEZCOL'
+VERIFIER_ROLES = {"Administrador", "Propietario"}
+DEFAULT_VERIFICATION_SOURCE = "Registro público COMVEZCOL"
 
 # Campos que el titular puede enviar. El estado, la verificación y la prueba de
 # consentimiento los fija el servidor: si viajaran en el payload, cualquiera
 # podría autoverificarse.
 SELF_EDITABLE_FIELDS = (
-    'title',
-    'professional_card_number',
-    'issuing_authority',
-    'card_issued_at',
-    'university',
-    'graduation_year',
-    'specialization',
-    'ica_registration',
-    'practice_areas',
-    'liability_insurer',
-    'liability_policy_number',
-    'liability_expires_at',
+    "title",
+    "professional_card_number",
+    "issuing_authority",
+    "card_issued_at",
+    "university",
+    "graduation_year",
+    "specialization",
+    "ica_registration",
+    "practice_areas",
+    "liability_insurer",
+    "liability_policy_number",
+    "liability_expires_at",
 )
 
 professional_credentials_ns = create_optimized_namespace(
-    'professional-credentials',
-    'Acreditación profesional de veterinarios',
+    "professional-credentials",
+    "Acreditación profesional de veterinarios",
     ProfessionalCredential,
 )
 
 
 def _current_user_id() -> int | None:
-    raw = get_jwt().get('id')
+    raw = get_jwt().get("id")
     try:
         return int(raw)
     except (TypeError, ValueError):
@@ -71,7 +71,7 @@ def _current_user_id() -> int | None:
 
 
 def _current_role() -> str:
-    return get_jwt().get('role') or ''
+    return get_jwt().get("role") or ""
 
 
 def _is_verifier() -> bool:
@@ -93,15 +93,15 @@ def _comparable(field: str, value):
     if value is None:
         return None
 
-    value = getattr(value, 'value', value)  # enums -> su valor
+    value = getattr(value, "value", value)  # enums -> su valor
 
     if isinstance(value, (date, datetime)):
         return value.isoformat()
 
     if isinstance(value, str):
         value = value.strip()
-        if field == 'professional_card_number':
-            return re.sub(r'\s+', '', value).upper()
+        if field == "professional_card_number":
+            return re.sub(r"\s+", "", value).upper()
         return value or None
 
     return value
@@ -109,8 +109,10 @@ def _comparable(field: str, value):
 
 def _changed_fields(credential, payload: dict) -> set[str]:
     return {
-        key for key in payload
-        if _comparable(key, getattr(credential, key, None)) != _comparable(key, payload[key])
+        key
+        for key in payload
+        if _comparable(key, getattr(credential, key, None))
+        != _comparable(key, payload[key])
     }
 
 
@@ -122,60 +124,62 @@ def _shares_finca(verifier_id: int, target_user_id: int) -> bool:
     """
     finca_id = get_current_finca_id()
     if not finca_id:
-        return _current_role() == 'Administrador'
+        return _current_role() == "Administrador"
     return UserFinca.has_access(target_user_id, finca_id)
 
 
-@professional_credentials_ns.route('/me')
+@professional_credentials_ns.route("/me")
 class MyProfessionalCredential(Resource):
     @professional_credentials_ns.doc(
-        'get_my_professional_credential',
-        description='Credencial profesional del usuario autenticado',
-        security=['Bearer'],
+        "get_my_professional_credential",
+        description="Credencial profesional del usuario autenticado",
+        security=["Bearer"],
     )
     @jwt_required()
     def get(self):
         user_id = _current_user_id()
         if not user_id:
-            return APIResponse.unauthorized('No se pudo identificar al usuario')
+            return APIResponse.unauthorized("No se pudo identificar al usuario")
 
         credential = ProfessionalCredential.query.filter_by(user_id=user_id).first()
         if not credential:
             # Ausencia de credencial no es un error: el perfil aún no se acreditó.
             return APIResponse.success(
                 data=None,
-                message='Sin credencial profesional registrada',
+                message="Sin credencial profesional registrada",
             )
 
         return APIResponse.success(
             data=credential.to_namespace_dict(include_relations=True),
-            message='Credencial profesional',
+            message="Credencial profesional",
         )
 
     @professional_credentials_ns.doc(
-        'upsert_my_professional_credential',
-        description='Crear o actualizar la credencial profesional propia',
-        security=['Bearer'],
+        "upsert_my_professional_credential",
+        description="Crear o actualizar la credencial profesional propia",
+        security=["Bearer"],
     )
     @jwt_required()
     def put(self):
         user_id = _current_user_id()
         if not user_id:
-            return APIResponse.unauthorized('No se pudo identificar al usuario')
+            return APIResponse.unauthorized("No se pudo identificar al usuario")
 
-        if _current_role() != 'Veterinario':
+        if _current_role() != "Veterinario":
             return APIResponse.forbidden(
-                'La acreditación profesional está disponible para el rol Veterinario'
+                "La acreditación profesional está disponible para el rol Veterinario"
             )
 
         body = flask.request.get_json(silent=True) or {}
-        if not body.get('consent_accepted'):
-            return APIResponse.validation_error({
-                'consent_accepted': (
-                    'Debes autorizar el tratamiento de tus datos profesionales '
-                    'para registrar la acreditación'
-                )
-            })
+        if not body.get("consent_accepted"):
+            return APIResponse.validation_error(
+                {
+                    "consent_accepted": (
+                        "Debes autorizar el tratamiento de tus datos profesionales "
+                        "para registrar la acreditación"
+                    )
+                }
+            )
 
         payload = _extract_payload()
         credential = ProfessionalCredential.query.filter_by(user_id=user_id).first()
@@ -191,7 +195,7 @@ class MyProfessionalCredential(Resource):
                     status=CredentialStatus.EnRevision,
                     **payload,
                 )
-                message = 'Acreditación registrada. Queda pendiente de revisión.'
+                message = "Acreditación registrada. Queda pendiente de revisión."
             else:
                 # Solo se reinicia la revisión si cambió algo que la verificación
                 # respaldaba; corregir el teléfono de la aseguradora no debería
@@ -200,21 +204,21 @@ class MyProfessionalCredential(Resource):
                 needs_reverification = bool(changed_keys & REVERIFY_TRIGGER_FIELDS)
 
                 updates = dict(payload)
-                updates['consent_version'] = CONSENT_VERSION
-                updates['consent_accepted_at'] = now
+                updates["consent_version"] = CONSENT_VERSION
+                updates["consent_accepted_at"] = now
                 if needs_reverification:
-                    updates['status'] = CredentialStatus.EnRevision
-                    updates['verified_at'] = None
-                    updates['verified_by_id'] = None
-                    updates['verification_reference'] = None
-                    updates['verification_expires_at'] = None
-                    updates['rejection_reason'] = None
+                    updates["status"] = CredentialStatus.EnRevision
+                    updates["verified_at"] = None
+                    updates["verified_by_id"] = None
+                    updates["verification_reference"] = None
+                    updates["verification_expires_at"] = None
+                    updates["rejection_reason"] = None
 
                 credential.update(**updates)
                 message = (
-                    'Acreditación actualizada. Vuelve a quedar pendiente de revisión.'
+                    "Acreditación actualizada. Vuelve a quedar pendiente de revisión."
                     if needs_reverification
-                    else 'Acreditación actualizada.'
+                    else "Acreditación actualizada."
                 )
 
             return APIResponse.success(
@@ -224,74 +228,81 @@ class MyProfessionalCredential(Resource):
 
         except ValidationError as exc:
             db.session.rollback()
-            errors = getattr(exc, 'errors', None) or {'error': exc.message}
+            errors = getattr(exc, "errors", None) or {"error": exc.message}
             return APIResponse.validation_error(errors)
         except Exception as exc:
             db.session.rollback()
-            logger.error('Error guardando credencial profesional: %s', exc, exc_info=True)
-            return APIResponse.error('No se pudo guardar la acreditación profesional')
+            logger.error(
+                "Error guardando credencial profesional: %s", exc, exc_info=True
+            )
+            return APIResponse.error("No se pudo guardar la acreditación profesional")
 
     @professional_credentials_ns.doc(
-        'delete_my_professional_credential',
-        description='Suprimir la credencial profesional propia (Ley 1581 de 2012)',
-        security=['Bearer'],
+        "delete_my_professional_credential",
+        description="Suprimir la credencial profesional propia (Ley 1581 de 2012)",
+        security=["Bearer"],
     )
     @jwt_required()
     def delete(self):
         user_id = _current_user_id()
         if not user_id:
-            return APIResponse.unauthorized('No se pudo identificar al usuario')
+            return APIResponse.unauthorized("No se pudo identificar al usuario")
 
         credential = ProfessionalCredential.query.filter_by(user_id=user_id).first()
         if not credential:
-            return APIResponse.not_found('Credencial profesional')
+            return APIResponse.not_found("Credencial profesional")
 
         try:
             db.session.delete(credential)
             db.session.commit()
-            return APIResponse.success(message='Datos profesionales eliminados')
+            return APIResponse.success(message="Datos profesionales eliminados")
         except Exception as exc:
             db.session.rollback()
-            logger.error('Error eliminando credencial profesional: %s', exc, exc_info=True)
-            return APIResponse.error('No se pudo eliminar la acreditación profesional')
+            logger.error(
+                "Error eliminando credencial profesional: %s", exc, exc_info=True
+            )
+            return APIResponse.error("No se pudo eliminar la acreditación profesional")
 
 
-@professional_credentials_ns.route('/user/<int:user_id>/badge')
+@professional_credentials_ns.route("/user/<int:user_id>/badge")
 class ProfessionalCredentialBadge(Resource):
     @professional_credentials_ns.doc(
-        'get_professional_credential_badge',
-        description='Resumen público de la acreditación de un usuario',
-        security=['Bearer'],
+        "get_professional_credential_badge",
+        description="Resumen público de la acreditación de un usuario",
+        security=["Bearer"],
     )
     @jwt_required()
     def get(self, user_id):
         credential = ProfessionalCredential.query.filter_by(user_id=user_id).first()
         if not credential:
-            return APIResponse.success(data=None, message='Sin acreditación registrada')
+            return APIResponse.success(data=None, message="Sin acreditación registrada")
         return APIResponse.success(
             data=credential.public_summary(),
-            message='Resumen de acreditación',
+            message="Resumen de acreditación",
         )
 
 
-@professional_credentials_ns.route('/pending')
+@professional_credentials_ns.route("/pending")
 class PendingProfessionalCredentials(Resource):
     @professional_credentials_ns.doc(
-        'list_pending_professional_credentials',
-        description='Credenciales pendientes de cotejo en la finca activa',
-        security=['Bearer'],
+        "list_pending_professional_credentials",
+        description="Credenciales pendientes de cotejo en la finca activa",
+        security=["Bearer"],
     )
     @jwt_required()
     def get(self):
         if not _is_verifier():
-            return APIResponse.forbidden('Solo Administrador o Propietario pueden revisar acreditaciones')
+            return APIResponse.forbidden(
+                "Solo Administrador o Propietario pueden revisar acreditaciones"
+            )
 
-        query = (
-            ProfessionalCredential.query
-            .filter(ProfessionalCredential.status.in_([
-                CredentialStatus.Autodeclarado,
-                CredentialStatus.EnRevision,
-            ]))
+        query = ProfessionalCredential.query.filter(
+            ProfessionalCredential.status.in_(
+                [
+                    CredentialStatus.Autodeclarado,
+                    CredentialStatus.EnRevision,
+                ]
+            )
         )
 
         finca_id = get_current_finca_id()
@@ -306,7 +317,7 @@ class PendingProfessionalCredentials(Resource):
         pending = query.order_by(ProfessionalCredential.updated_at.asc()).all()
         return APIResponse.success(
             data=[item.to_namespace_dict(include_relations=True) for item in pending],
-            message=f'{len(pending)} acreditaciones pendientes de revisión',
+            message=f"{len(pending)} acreditaciones pendientes de revisión",
         )
 
 
@@ -314,23 +325,23 @@ def _load_for_verification(credential_id: int):
     """Devuelve (credencial, respuesta_de_error). Solo una de las dos es no nula."""
     if not _is_verifier():
         return None, APIResponse.forbidden(
-            'Solo Administrador o Propietario pueden verificar acreditaciones'
+            "Solo Administrador o Propietario pueden verificar acreditaciones"
         )
 
     verifier_id = _current_user_id()
     if not verifier_id:
-        return None, APIResponse.unauthorized('No se pudo identificar al usuario')
+        return None, APIResponse.unauthorized("No se pudo identificar al usuario")
 
     credential = ProfessionalCredential.query.get(credential_id)
     if not credential:
-        return None, APIResponse.not_found('Credencial profesional')
+        return None, APIResponse.not_found("Credencial profesional")
 
     if credential.user_id == verifier_id:
-        return None, APIResponse.forbidden('No puedes verificar tu propia acreditación')
+        return None, APIResponse.forbidden("No puedes verificar tu propia acreditación")
 
     if not _shares_finca(verifier_id, credential.user_id):
         return None, APIResponse.forbidden(
-            'Solo puedes revisar acreditaciones de usuarios de tu finca'
+            "Solo puedes revisar acreditaciones de usuarios de tu finca"
         )
 
     return credential, None
@@ -343,25 +354,25 @@ def _log_verification(credential, action: str, title: str, description: str):
 
         ActivityLog.create(
             action=action,
-            entity='ProfessionalCredential',
+            entity="ProfessionalCredential",
             entity_id=credential.id,
             title=title,
             description=description,
-            severity='info',
+            severity="info",
             actor_id=_current_user_id(),
             finca_id=get_current_finca_id(),
         )
         db.session.commit()
     except Exception as exc:
-        logger.warning('No se pudo registrar la verificación en ActivityLog: %s', exc)
+        logger.warning("No se pudo registrar la verificación en ActivityLog: %s", exc)
 
 
-@professional_credentials_ns.route('/<int:credential_id>/verify')
+@professional_credentials_ns.route("/<int:credential_id>/verify")
 class VerifyProfessionalCredential(Resource):
     @professional_credentials_ns.doc(
-        'verify_professional_credential',
-        description='Registrar el cotejo contra el registro público de COMVEZCOL',
-        security=['Bearer'],
+        "verify_professional_credential",
+        description="Registrar el cotejo contra el registro público de COMVEZCOL",
+        security=["Bearer"],
     )
     @jwt_required()
     def post(self, credential_id):
@@ -370,17 +381,19 @@ class VerifyProfessionalCredential(Resource):
             return error
 
         body = flask.request.get_json(silent=True) or {}
-        reference = (body.get('reference') or '').strip()
+        reference = (body.get("reference") or "").strip()
         if not reference:
-            return APIResponse.validation_error({
-                'reference': (
-                    'Indica la referencia del cotejo (número de consulta, '
-                    'fecha o enlace del registro público)'
-                )
-            })
+            return APIResponse.validation_error(
+                {
+                    "reference": (
+                        "Indica la referencia del cotejo (número de consulta, "
+                        "fecha o enlace del registro público)"
+                    )
+                }
+            )
 
-        source = (body.get('source') or '').strip() or DEFAULT_VERIFICATION_SOURCE
-        notes = (body.get('notes') or '').strip() or None
+        source = (body.get("source") or "").strip() or DEFAULT_VERIFICATION_SOURCE
+        notes = (body.get("notes") or "").strip() or None
 
         try:
             user = User.query.get(credential.user_id)
@@ -394,27 +407,27 @@ class VerifyProfessionalCredential(Resource):
 
             _log_verification(
                 credential,
-                action='verify',
-                title=f'Acreditación verificada: {user.fullname if user else credential.user_id}',
-                description=f'Cotejada contra {source}. Referencia: {reference}',
+                action="verify",
+                title=f"Acreditación verificada: {user.fullname if user else credential.user_id}",
+                description=f"Cotejada contra {source}. Referencia: {reference}",
             )
 
             return APIResponse.success(
                 data=credential.to_namespace_dict(include_relations=True),
-                message='Acreditación verificada',
+                message="Acreditación verificada",
             )
         except Exception as exc:
             db.session.rollback()
-            logger.error('Error verificando acreditación: %s', exc, exc_info=True)
-            return APIResponse.error('No se pudo verificar la acreditación')
+            logger.error("Error verificando acreditación: %s", exc, exc_info=True)
+            return APIResponse.error("No se pudo verificar la acreditación")
 
 
-@professional_credentials_ns.route('/<int:credential_id>/reject')
+@professional_credentials_ns.route("/<int:credential_id>/reject")
 class RejectProfessionalCredential(Resource):
     @professional_credentials_ns.doc(
-        'reject_professional_credential',
-        description='Rechazar una acreditación indicando el motivo',
-        security=['Bearer'],
+        "reject_professional_credential",
+        description="Rechazar una acreditación indicando el motivo",
+        security=["Bearer"],
     )
     @jwt_required()
     def post(self, credential_id):
@@ -423,11 +436,13 @@ class RejectProfessionalCredential(Resource):
             return error
 
         body = flask.request.get_json(silent=True) or {}
-        reason = (body.get('reason') or '').strip()
+        reason = (body.get("reason") or "").strip()
         if not reason:
-            return APIResponse.validation_error({
-                'reason': 'Indica el motivo del rechazo para que el titular pueda corregir'
-            })
+            return APIResponse.validation_error(
+                {
+                    "reason": "Indica el motivo del rechazo para que el titular pueda corregir"
+                }
+            )
 
         try:
             user = User.query.get(credential.user_id)
@@ -436,16 +451,16 @@ class RejectProfessionalCredential(Resource):
 
             _log_verification(
                 credential,
-                action='reject',
-                title=f'Acreditación rechazada: {user.fullname if user else credential.user_id}',
+                action="reject",
+                title=f"Acreditación rechazada: {user.fullname if user else credential.user_id}",
                 description=reason,
             )
 
             return APIResponse.success(
                 data=credential.to_namespace_dict(include_relations=True),
-                message='Acreditación rechazada',
+                message="Acreditación rechazada",
             )
         except Exception as exc:
             db.session.rollback()
-            logger.error('Error rechazando acreditación: %s', exc, exc_info=True)
-            return APIResponse.error('No se pudo rechazar la acreditación')
+            logger.error("Error rechazando acreditación: %s", exc, exc_info=True)
+            return APIResponse.error("No se pudo rechazar la acreditación")

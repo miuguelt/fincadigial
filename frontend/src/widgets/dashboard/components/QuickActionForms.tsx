@@ -48,7 +48,7 @@ export const ActionGrid: React.FC<ActionGridProps> = ({
 			<div className="flex items-center justify-between mb-4 px-0.5">
 				<div>
 					<p className="text-[13px] font-bold text-foreground">Acceso Rápido</p>
-					<p className="text-[10px] text-muted-foreground/70 mt-0.5">
+					<p className="text-[11px] text-muted-foreground/70 mt-0.5">
 						Finca Digital · Campo sin señal
 					</p>
 				</div>
@@ -70,7 +70,7 @@ export const ActionGrid: React.FC<ActionGridProps> = ({
 				<div className="space-y-4">
 					{Object.entries(grouped).map(([cat, catItems]) => (
 						<div key={cat}>
-							<p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-2 px-0.5">
+							<p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-2 px-0.5">
 								{CATEGORY_LABELS[cat] || cat}
 							</p>
 							<div
@@ -221,7 +221,7 @@ export const EditPanel: React.FC<EditPanelProps> = ({
 			<div className="space-y-4">
 				{Object.entries(grouped).map(([cat, catItems]) => (
 					<div key={cat}>
-						<p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-2">
+						<p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-2">
 							{CATEGORY_LABELS[cat] || cat}
 						</p>
 						<div className="space-y-1.5">

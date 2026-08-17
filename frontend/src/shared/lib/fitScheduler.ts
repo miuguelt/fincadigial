@@ -74,7 +74,7 @@ function flush() {
 
 /**
  * Suelo absoluto de legibilidad. Un `minScale` relativo no basta: sobre un
- * `text-xs` (12 px) el 62 % son 7,4 px, ilegibles a pleno sol y con el móvil en
+ * `text-xs` (12 px) el 62 % son 7,4 px, ilegibles a pleno sol y con el celular en
  * la mano, que es como se usa esta aplicación. Por debajo de este tamaño se
  * prefiere recortar (o envolver) antes que seguir encogiendo.
  */

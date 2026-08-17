@@ -12,8 +12,8 @@ const AlertConfigsPage: React.FC = () => {
   const { showToast } = useToast();
   const [refreshKey, setRefreshKey] = useState(0);
   const columns: CRUDColumn<AlertConfig>[] = [
-    { 
-      key: 'alert_type', 
+    {
+      key: 'alert_type',
       label: 'Tipo',
       render: (v) => {
         const iconMap: Record<string, React.ReactNode> = {
@@ -33,8 +33,8 @@ const AlertConfigsPage: React.FC = () => {
     { key: 'dimension', label: 'Dimensión/Campo' },
     { key: 'condition_value', label: 'Condición' },
     { key: 'message', label: 'Mensaje' },
-    { 
-      key: 'priority', 
+    {
+      key: 'priority',
       label: 'Prioridad',
       render: (v) => {
         const priority = v as string;
@@ -47,8 +47,8 @@ const AlertConfigsPage: React.FC = () => {
         return <Badge variant={variants[priority] || 'outline'}>{priority}</Badge>;
       }
     },
-    { 
-      key: 'is_active', 
+    {
+      key: 'is_active',
       label: 'Estado',
       render: (v) => (
         <Badge variant={v ? 'default' : 'outline'} className={v ? 'bg-emerald-500 hover:bg-emerald-600' : ''}>
@@ -63,10 +63,10 @@ const AlertConfigsPage: React.FC = () => {
       title: 'Configuración de Regla de Alerta',
       gridCols: 2,
       fields: [
-        { 
-          name: 'alert_type', 
-          label: 'Tipo de Alerta', 
-          type: 'select', 
+        {
+          name: 'alert_type',
+          label: 'Tipo de Alerta',
+          type: 'select',
           required: true,
           options: [
             { value: 'Salud', label: '🩺 Salud / Sanidad' },
@@ -76,10 +76,10 @@ const AlertConfigsPage: React.FC = () => {
             { value: 'Personalizada', label: '⚙️ Personalizada' }
           ]
         },
-        { 
-          name: 'priority', 
-          label: 'Prioridad', 
-          type: 'select', 
+        {
+          name: 'priority',
+          label: 'Prioridad',
+          type: 'select',
           required: true,
           options: [
             { value: 'Baja', label: 'Baja' },
@@ -88,37 +88,37 @@ const AlertConfigsPage: React.FC = () => {
             { value: 'Crítica', label: 'Crítica' }
           ]
         },
-        { 
-          name: 'dimension', 
-          label: 'Dimensión (Atributo)', 
-          type: 'text', 
+        {
+          name: 'dimension',
+          label: 'Dimensión (Atributo)',
+          type: 'text',
           required: true,
-          placeholder: 'Ej: peso, dias_sin_control, temperatura' 
+          placeholder: 'Ej: peso, dias_sin_control, temperatura'
         },
-        { 
-          name: 'condition_value', 
-          label: 'Condición (Valor Crítico)', 
-          type: 'text', 
-          required: true, 
-          placeholder: 'Ej: < 400, > 30' 
+        {
+          name: 'condition_value',
+          label: 'Condición (Valor Crítico)',
+          type: 'text',
+          required: true,
+          placeholder: 'Ej: < 400, > 30'
         },
-        { 
-          name: 'message', 
-          label: 'Mensaje de la Alerta', 
-          type: 'text', 
+        {
+          name: 'message',
+          label: 'Mensaje de la Alerta',
+          type: 'text',
           required: true,
           colSpan: 2,
-          placeholder: 'Ej: El animal ha perdido peso significativamente' 
+          placeholder: 'Ej: El animal ha perdido peso significativamente'
         },
-        { 
-          name: 'animal_id', 
-          label: 'Aplicar a Animal Específico (Opcional)', 
+        {
+          name: 'animal_id',
+          label: 'Aplicar a Animal Específico (Opcional)',
           type: 'select',
           loadOptions: async () => {
             const data = await animalsService.getAnimals({ limit: 1000 });
             return ((data as any[]) || []).map((a: any) => ({ value: a.id, label: a.record }));
           },
-          placeholder: 'Si se deja vacío, aplica a toda la finca' 
+          placeholder: 'Si se deja vacío, aplica a toda la finca'
         } as any,
         { name: 'is_active', label: 'Regla Activa', type: 'checkbox', defaultValue: true } as any,
       ],
@@ -172,10 +172,10 @@ const AlertConfigsPage: React.FC = () => {
         <div className="flex-1">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-bold text-amber-900">Estrategia de Alertas Inteligentes</h4>
-            <Button size="sm" 
-              variant="outline" 
+            <Button size="sm"
+              variant="outline"
               onClick={handleInitializeDefaults}
-              className="bg-card border-amber-300 text-warning hover:bg-warning/10 h-8 text-[10px] font-black uppercase"
+              className="bg-card border-amber-300 text-warning hover:bg-warning/10 h-8 text-[11px] font-black uppercase"
             >
               Inicializar Reglas Sugeridas
             </Button>
@@ -185,7 +185,7 @@ const AlertConfigsPage: React.FC = () => {
           </p>
         </div>
       </div>
-      
+
       <AdminCRUDPage
         key={refreshKey}
         config={config as any}
@@ -209,4 +209,3 @@ const AlertConfigsPage: React.FC = () => {
 };
 
 export default AlertConfigsPage;
-

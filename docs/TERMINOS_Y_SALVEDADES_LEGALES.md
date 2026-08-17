@@ -1,6 +1,6 @@
 # TÉRMINOS DE SERVICIO, SALVEDADES LEGALES Y RECOMENDACIONES DE SEGURIDAD
 
-**Fecha de entrada en vigor:** 10 de Agosto de 2026  
+**Fecha de entrada en vigor:** 10 de Agosto de 2026
 **Aplicabilidad:** Sistema de Gestión Zootécnica e Historias Clínicas Ganaderas **FINCA DIGITAL / VILLALUZ**.
 
 ---

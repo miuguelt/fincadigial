@@ -35,4 +35,3 @@ class ActivityLogService extends BaseService<ActivityLog> {
 
 export const activityLogService = new ActivityLogService();
 export default activityLogService;
-

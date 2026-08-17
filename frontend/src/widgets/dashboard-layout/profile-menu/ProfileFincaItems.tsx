@@ -21,7 +21,7 @@ export function ProfileFincaItems({ fincas, activeFincaId, onNavigate }: Props) 
 
   return (
     <>
-      <DropdownMenuLabel className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+      <DropdownMenuLabel className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
         Mis fincas
       </DropdownMenuLabel>
 
@@ -82,4 +82,3 @@ export function ProfileFincaItems({ fincas, activeFincaId, onNavigate }: Props) 
     </>
   );
 }
-

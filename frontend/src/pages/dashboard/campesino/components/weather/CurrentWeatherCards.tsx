@@ -10,7 +10,9 @@ import {
 	Thermometer,
 	Wind,
 } from "lucide-react";
+import { describeCondition } from "@/entities/weather";
 import type { WeatherRecord } from "@/entities/weather";
+import { formatClockTime } from "@/shared/lib/formatClockTime";
 
 interface Props {
 	current: WeatherRecord | null;
@@ -32,23 +34,12 @@ function uvLevel(uv: number | null): { label: string; color: string } {
 	return { label: "Extremo", color: "text-purple-600" };
 }
 
-function formatTime(timeStr: string | null): string | null {
-	if (!timeStr) return null;
-	// El backend envía la hora suelta ("06:12:00"), que `new Date` no acepta.
-	const bareTime = /^(\d{2}):(\d{2})/.exec(timeStr);
-	if (bareTime) return `${bareTime[1]}:${bareTime[2]}`;
-
-	const date = new Date(timeStr);
-	if (Number.isNaN(date.getTime())) return timeStr;
-	return date.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
-}
-
 export function CurrentWeatherCards({ current }: Props) {
 	if (!current) return null;
 
 	const uvInfo = uvLevel(current.uv_index);
-	const sunrise = formatTime(current.sunrise_time);
-	const sunset = formatTime(current.sunset_time);
+	const sunrise = formatClockTime(current.sunrise_time);
+	const sunset = formatClockTime(current.sunset_time);
 
 	return (
 		<div className="space-y-4">
@@ -56,13 +47,13 @@ export function CurrentWeatherCards({ current }: Props) {
 				<div className="bg-card rounded-lg p-3 border border-border">
 					<div className="flex items-center gap-1.5 mb-1.5">
 						<Thermometer className="w-4 h-4 text-red-500" />
-						<span className="text-[10px] text-muted-foreground">Temperatura</span>
+						<span className="text-[11px] text-muted-foreground">Temperatura</span>
 					</div>
 					<p className="text-xl font-bold">
 						{current.temperature_celsius?.toFixed(1) || "--"}°C
 					</p>
 					{current.feels_like_celsius != null && (
-						<p className="text-[10px] text-muted-foreground">
+						<p className="text-[11px] text-muted-foreground">
 							Sensación: {current.feels_like_celsius.toFixed(1)}°C
 						</p>
 					)}
@@ -71,7 +62,7 @@ export function CurrentWeatherCards({ current }: Props) {
 				<div className="bg-card rounded-lg p-3 border border-border">
 					<div className="flex items-center gap-1.5 mb-1.5">
 						<Droplets className="w-4 h-4 text-blue-500" />
-						<span className="text-[10px] text-muted-foreground">Humedad</span>
+						<span className="text-[11px] text-muted-foreground">Humedad</span>
 					</div>
 					<p className="text-xl font-bold">
 						{current.humidity_percent?.toFixed(0) || "--"}%
@@ -81,13 +72,13 @@ export function CurrentWeatherCards({ current }: Props) {
 				<div className="bg-card rounded-lg p-3 border border-border">
 					<div className="flex items-center gap-1.5 mb-1.5">
 						<Wind className="w-4 h-4 text-cyan-500" />
-						<span className="text-[10px] text-muted-foreground">Viento</span>
+						<span className="text-[11px] text-muted-foreground">Viento</span>
 					</div>
 					<p className="text-xl font-bold">
 						{current.wind_speed_kmh?.toFixed(1) || "--"} <span className="text-xs font-normal">km/h</span>
 					</p>
 					{current.wind_direction_degrees != null && (
-						<p className="text-[10px] text-muted-foreground flex items-center gap-1">
+						<p className="text-[11px] text-muted-foreground flex items-center gap-1">
 							<Compass className="w-3 h-3" />
 							{windDirectionLabel(current.wind_direction_degrees)} ({current.wind_direction_degrees.toFixed(0)}°)
 						</p>
@@ -97,7 +88,7 @@ export function CurrentWeatherCards({ current }: Props) {
 				<div className="bg-card rounded-lg p-3 border border-border">
 					<div className="flex items-center gap-1.5 mb-1.5">
 						<CloudRain className="w-4 h-4 text-indigo-500" />
-						<span className="text-[10px] text-muted-foreground">Lluvia</span>
+						<span className="text-[11px] text-muted-foreground">Lluvia</span>
 					</div>
 					<p className="text-xl font-bold">
 						{current.precipitation_mm?.toFixed(1) || "0"} <span className="text-xs font-normal">mm</span>
@@ -107,7 +98,7 @@ export function CurrentWeatherCards({ current }: Props) {
 				<div className="bg-card rounded-lg p-3 border border-border">
 					<div className="flex items-center gap-1.5 mb-1.5">
 						<Gauge className="w-4 h-4 text-amber-500" />
-						<span className="text-[10px] text-muted-foreground">Presión</span>
+						<span className="text-[11px] text-muted-foreground">Presión</span>
 					</div>
 					<p className="text-xl font-bold">
 						{current.pressure_hpa?.toFixed(0) || "--"} <span className="text-xs font-normal">hPa</span>
@@ -117,12 +108,12 @@ export function CurrentWeatherCards({ current }: Props) {
 				<div className="bg-card rounded-lg p-3 border border-border">
 					<div className="flex items-center gap-1.5 mb-1.5">
 						<Sun className="w-4 h-4 text-yellow-500" />
-						<span className="text-[10px] text-muted-foreground">UV</span>
+						<span className="text-[11px] text-muted-foreground">UV</span>
 					</div>
 					<p className="text-xl font-bold">
 						{current.uv_index?.toFixed(0) || "--"}
 					</p>
-					<p className={`text-[10px] font-medium ${uvInfo.color}`}>
+					<p className={`text-[11px] font-medium ${uvInfo.color}`}>
 						{uvInfo.label}
 					</p>
 				</div>
@@ -132,7 +123,7 @@ export function CurrentWeatherCards({ current }: Props) {
 				<div className="bg-card rounded-lg p-3 border border-border">
 					<div className="flex items-center gap-1.5 mb-1">
 						<Cloud className="w-4 h-4 text-gray-400" />
-						<span className="text-[10px] text-muted-foreground">Nubosidad</span>
+						<span className="text-[11px] text-muted-foreground">Nubosidad</span>
 					</div>
 					<p className="text-lg font-bold">
 						{current.cloud_cover_percent?.toFixed(0) || "--"}%
@@ -143,7 +134,7 @@ export function CurrentWeatherCards({ current }: Props) {
 					<div className="bg-card rounded-lg p-3 border border-border">
 						<div className="flex items-center gap-1.5 mb-1">
 							<Sunrise className="w-4 h-4 text-amber-500" />
-							<span className="text-[10px] text-muted-foreground">Amanecer</span>
+							<span className="text-[11px] text-muted-foreground">Amanecer</span>
 						</div>
 						<p className="text-lg font-bold">{sunrise}</p>
 					</div>
@@ -153,7 +144,7 @@ export function CurrentWeatherCards({ current }: Props) {
 					<div className="bg-card rounded-lg p-3 border border-border">
 						<div className="flex items-center gap-1.5 mb-1">
 							<Sunset className="w-4 h-4 text-orange-500" />
-							<span className="text-[10px] text-muted-foreground">Atardecer</span>
+							<span className="text-[11px] text-muted-foreground">Atardecer</span>
 						</div>
 						<p className="text-lg font-bold">{sunset}</p>
 					</div>
@@ -166,8 +157,8 @@ export function CurrentWeatherCards({ current }: Props) {
 					{current.weather_condition === "cloudy" && <Cloud className="w-6 h-6 text-gray-500" />}
 					{current.weather_condition === "rain" && <CloudRain className="w-6 h-6 text-blue-500" />}
 					{current.weather_condition === "storm" && <CloudRain className="w-6 h-6 text-purple-500" />}
-					<p className="text-sm font-medium text-sky-800 dark:text-sky-200 capitalize">
-						Condición actual: {current.weather_condition}
+					<p className="text-sm font-medium text-sky-800 dark:text-sky-200">
+						Ahora mismo: {describeCondition(current.weather_condition, current.weather_code)}
 					</p>
 				</div>
 			)}

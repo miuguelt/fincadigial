@@ -143,7 +143,7 @@ const InstructorDashboard: React.FC = () => {
               <BookOpen className="h-4 w-4 text-indigo-500 group-hover:text-indigo-600" />
               <div className="text-left">
                 <p className="text-xs font-medium text-foreground">Manejo Básico</p>
-                <p className="text-[10px] text-muted-foreground">8 lecciones • 2h</p>
+                <p className="text-[11px] text-muted-foreground">8 lecciones • 2h</p>
               </div>
             </button>
             <button
@@ -153,7 +153,7 @@ const InstructorDashboard: React.FC = () => {
               <Heart className="h-4 w-4 text-destructive group-hover:text-destructive" />
               <div className="text-left">
                 <p className="text-xs font-medium text-foreground">Sanidad Animal</p>
-                <p className="text-[10px] text-muted-foreground">12 lecciones • 4h</p>
+                <p className="text-[11px] text-muted-foreground">12 lecciones • 4h</p>
               </div>
             </button>
             <button
@@ -163,7 +163,7 @@ const InstructorDashboard: React.FC = () => {
               <Activity className="h-4 w-4 text-emerald-500 group-hover:text-emerald-600" />
               <div className="text-left">
                 <p className="text-xs font-medium text-foreground">Reproducción</p>
-                <p className="text-[10px] text-muted-foreground">6 lecciones • 2.5h</p>
+                <p className="text-[11px] text-muted-foreground">6 lecciones • 2.5h</p>
               </div>
             </button>
             <button
@@ -173,7 +173,7 @@ const InstructorDashboard: React.FC = () => {
               <Award className="h-4 w-4 text-warning group-hover:text-warning" />
               <div className="text-left">
                 <p className="text-xs font-medium text-foreground">Registro ICA</p>
-                <p className="text-[10px] text-muted-foreground">10 lecciones • 3h</p>
+                <p className="text-[11px] text-muted-foreground">10 lecciones • 3h</p>
               </div>
             </button>
           </div>

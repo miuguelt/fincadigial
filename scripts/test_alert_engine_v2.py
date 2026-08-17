@@ -4,15 +4,16 @@ Evalúa 6 escenarios: peso bajo vs raza, ADG bajo, BCS bajo, tendencia BCS,
 pérdida de peso + enfermedad, lactancia + pérdida.
 Requiere ALLOW_SIMULATION_SCRIPTS=true
 """
+
 import os
 import sys
 
-_ALLOW_SIM = os.getenv('ALLOW_SIMULATION_SCRIPTS', '').lower() == 'true'
+_ALLOW_SIM = os.getenv("ALLOW_SIMULATION_SCRIPTS", "").lower() == "true"
 if not _ALLOW_SIM:
     print("ALLOW_SIMULATION_SCRIPTS=true para permitir.")
     sys.exit(0)
 
-backend_path = os.path.join(os.path.dirname(__file__), '..', 'backend')
+backend_path = os.path.join(os.path.dirname(__file__), "..", "backend")
 if backend_path not in sys.path:
     sys.path.insert(0, backend_path)
 
@@ -42,33 +43,38 @@ def check(label, condition):
 
 
 def test_alert_engine_v2():
-    app = create_app('development')
+    app = create_app("development")
     with app.app_context():
         finca = Finca.query.first()
         if not finca:
             print("No hay fincas. Crea una finca primero.")
             return
 
-        breed = Breeds.query.filter_by(name='Brahman').first()
+        breed = Breeds.query.filter_by(name="Brahman").first()
         if not breed:
             print("No hay raza Brahman. Ejecuta seed_breed_growth_standards.py primero.")
             return
 
         # Clean up previous test data
         import time
-        test_prefix = f'TEST-{int(time.time())}-'
-        old_test = Animals.query.filter(Animals.record.like('TEST-%')).all()
+
+        test_prefix = f"TEST-{int(time.time())}-"
+        old_test = Animals.query.filter(Animals.record.like("TEST-%")).all()
         old_ids = [a.id for a in old_test]
         if old_ids:
-            BodyConditionScore.query.filter(BodyConditionScore.animal_id.in_(old_ids)).delete(synchronize_session=False)
+            BodyConditionScore.query.filter(BodyConditionScore.animal_id.in_(old_ids)).delete(
+                synchronize_session=False
+            )
             Control.query.filter(Control.animal_id.in_(old_ids)).delete(synchronize_session=False)
-            AnimalAlert.query.filter(AnimalAlert.animal_id.in_(old_ids)).delete(synchronize_session=False)
+            AnimalAlert.query.filter(AnimalAlert.animal_id.in_(old_ids)).delete(
+                synchronize_session=False
+            )
             Animals.query.filter(Animals.id.in_(old_ids)).delete(synchronize_session=False)
         db.session.commit()
 
         print("=== Escenario 1: Peso bajo vs raza (Rule 30) ===")
         animal1 = Animals(
-            record=f'{test_prefix}001',
+            record=f"{test_prefix}001",
             sex=Sex.Hembra,
             birth_date=date.today() - timedelta(days=365),
             weight=250,
@@ -81,12 +87,18 @@ def test_alert_engine_v2():
 
         # Peso esperado para hembra Brahman 12mo ≈ 240 kg, mínimo ≈ 192 kg
         # Creamos un control con 150 kg (muy por debajo del mínimo)
-        ctrl1 = Control(animal_id=animal1.id, weight=150, finca_id=finca.id, health_status=HealthStatus.Bueno, checkup_date=date.today())
+        ctrl1 = Control(
+            animal_id=animal1.id,
+            weight=150,
+            finca_id=finca.id,
+            health_status=HealthStatus.Bueno,
+            checkup_date=date.today(),
+        )
         db.session.add(ctrl1)
         db.session.commit()
 
         existing_std = BreedGrowthStandard.query.filter_by(
-            breed_id=breed.id, sex='Hembra', age_months=12
+            breed_id=breed.id, sex="Hembra", age_months=12
         ).first()
         if existing_std:
             check("Estándar de 12 meses existe", True)
@@ -96,7 +108,7 @@ def test_alert_engine_v2():
 
         print("\n=== Escenario 2: ADG sostenido bajo (Rule 31) ===")
         animal2 = Animals(
-            record=f'{test_prefix}002',
+            record=f"{test_prefix}002",
             sex=Sex.Hembra,
             birth_date=date.today() - timedelta(days=730),
             weight=280,
@@ -120,7 +132,7 @@ def test_alert_engine_v2():
 
         print("\n=== Escenario 3: BCS bajo (Rule 36) ===")
         animal3 = Animals(
-            record=f'{test_prefix}003',
+            record=f"{test_prefix}003",
             sex=Sex.Hembra,
             birth_date=date.today() - timedelta(days=1095),
             weight=400,
@@ -136,7 +148,7 @@ def test_alert_engine_v2():
             finca_id=finca.id,
             score=2.0,
             score_date=date.today(),
-            notes='Test BCS bajo crítico',
+            notes="Test BCS bajo crítico",
         )
         db.session.add(bcs1)
         db.session.commit()
@@ -145,14 +157,14 @@ def test_alert_engine_v2():
         check("BCS latest retorna registro", latest is not None)
         if latest:
             check("BCS score = 2.0", latest.score == 2.0)
-            check("BCS category = Emaciado", latest.category == 'Emaciado')
+            check("BCS category = Emaciado", latest.category == "Emaciado")
 
         trend = BodyConditionScore.get_trend(animal3.id, days=90)
         check("BCS trend retorna lista", len(trend) >= 1)
 
         print("\n=== Escenario 4: BCS tendencia negativa (Rule 37) ===")
         animal4 = Animals(
-            record=f'{test_prefix}004',
+            record=f"{test_prefix}004",
             sex=Sex.Hembra,
             birth_date=date.today() - timedelta(days=1460),
             weight=500,
@@ -185,7 +197,10 @@ def test_alert_engine_v2():
             AlertEngine.evaluate_all()
             alerts_after = AnimalAlert.query.count()
             check("AlertEngine.evaluate_all() ejecutado sin error", True)
-            check(f"Nuevas alertas generadas ({alerts_after - alerts_before})", alerts_after > alerts_before)
+            check(
+                f"Nuevas alertas generadas ({alerts_after - alerts_before})",
+                alerts_after > alerts_before,
+            )
         except Exception as e:
             check(f"AlertEngine falló: {e}", False)
 
@@ -195,16 +210,18 @@ def test_alert_engine_v2():
             if alerts:
                 latest_alert = alerts[-1]
                 check(f"{a.record} alertas generadas: {len(alerts)}", True)
-                check(f"  Última: {latest_alert.alert_type.value} - {latest_alert.message[:60]}", True)
+                check(
+                    f"  Última: {latest_alert.alert_type.value} - {latest_alert.message[:60]}", True
+                )
             else:
                 check(f"{a.record} sin alertas", False)
 
-        print(f"\n{'='*40}")
+        print(f"\n{'=' * 40}")
         print(f"Resultados: {PASS} pasaron, {FAIL} fallaron")
-        print(f"{'='*40}")
+        print(f"{'=' * 40}")
 
         return PASS, FAIL
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_alert_engine_v2()

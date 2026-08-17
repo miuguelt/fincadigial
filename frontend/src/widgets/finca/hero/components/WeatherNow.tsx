@@ -1,6 +1,6 @@
 import { Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSun, RefreshCcw, Snowflake, Sun } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { getWeatherKind, getWmoDescription } from '@/entities/weather';
+import { describeCondition, getWeatherKind } from '@/entities/weather';
 import type { WeatherRecord } from '@/entities/weather';
 import type { WeatherConditionKind } from '@/entities/weather';
 import { cn } from '@/shared/ui/cn';
@@ -27,7 +27,7 @@ interface Props {
 export function WeatherNow({ record, refreshing, onRefresh }: Props) {
   const kind = getWeatherKind(record.weather_code);
   const Icon = KIND_ICON[kind];
-  const description = record.weather_condition || getWmoDescription(record.weather_code);
+  const description = describeCondition(record.weather_condition, record.weather_code);
   const temperature =
     record.temperature_celsius === null || record.temperature_celsius === undefined
       ? '—'

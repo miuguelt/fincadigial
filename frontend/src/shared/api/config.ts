@@ -1,10 +1,10 @@
 import { getEnvVar } from '@/shared/utils/viteEnv';
 import { getApiBaseURL } from '@/shared/utils/envConfig';
-import { 
-  AUTH_STORAGE_KEY, 
-  AUTH_SESSION_ACTIVE_KEY, 
-  DEFAULT_API_TIMEOUT, 
-  DEFAULT_TOAST_DEDUP_MS 
+import {
+  AUTH_STORAGE_KEY,
+  AUTH_SESSION_ACTIVE_KEY,
+  DEFAULT_API_TIMEOUT,
+  DEFAULT_TOAST_DEDUP_MS
 } from '../constants/core';
 
 const envStr = (key: string, fallback = ''): string => String(getEnvVar(key, fallback) ?? fallback);
@@ -41,4 +41,3 @@ export const AUTH_STATE_KEYS = [
 
 export const SESSION_STORAGE_KEYS = [API_CONFIG.authStorageKey, 'access_token'];
 export const SESSION_COOKIE_CANDIDATES = ['access_token_cookie', 'access_token', 'csrf_access_token', 'csrf_refresh_token'];
-

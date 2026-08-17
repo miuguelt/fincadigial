@@ -85,4 +85,3 @@ export const useUsers = (options?: { autoFetch?: boolean }) => {
     fetchUserStatus,
   };
 };
-

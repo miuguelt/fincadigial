@@ -175,7 +175,7 @@ export const JoinFincaRequestDialog: React.FC<JoinFincaRequestDialogProps> = ({
                     </div>
                   </div>
                   {selectedFinca === finca.id && (
-                    <Badge variant={"primary" as any} className="h-5 text-[10px]">
+                    <Badge variant={"primary" as any} className="h-5 text-[11px]">
                       Seleccionada
                     </Badge>
                   )}

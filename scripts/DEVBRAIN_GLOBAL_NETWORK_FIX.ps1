@@ -1,12 +1,12 @@
 # ==============================================================================
 # DEVBRAIN GLOBAL NETWORK FIX (WSL / HYPER-V / DYNAMIC PORTS)
 # ==============================================================================
-# Este script resuelve el problema crónico de puertos "zombies" o "Access Denied" 
+# Este script resuelve el problema crónico de puertos "zombies" o "Access Denied"
 # en Windows + WSL2 + Docker.
 #
-# Problema Raíz: 
-# Windows a veces configura el rango de puertos dinámicos desde 1025, haciendo 
-# que puertos como 3000, 3005, 5173 sean robados aleatoriamente por sockets de 
+# Problema Raíz:
+# Windows a veces configura el rango de puertos dinámicos desde 1025, haciendo
+# que puertos como 3000, 3005, 5173 sean robados aleatoriamente por sockets de
 # salida en estado FIN_WAIT_2 o CLOSE_WAIT. Además, Hyper-V reserva bloques enteros.
 #
 # Solución DevBrain:

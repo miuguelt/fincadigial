@@ -53,7 +53,7 @@ export function AnimalRecommendationsWidget({ animalId }: { animalId: number }) 
 
   const getUrgencyIcon = (urgencia: string) => {
     switch (urgencia) {
-      case 'Inmediata': 
+      case 'Inmediata':
       case 'Alta': return <IconAlertTriangle size="md" />;
       default: return <IconInfoCircle size="md" />;
     }
@@ -62,7 +62,7 @@ export function AnimalRecommendationsWidget({ animalId }: { animalId: number }) 
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-bold flex items-center gap-2">
-        <IconFileText size="md" className="text-muted-foreground" /> 
+        <IconFileText size="md" className="text-muted-foreground" />
         Recomendaciones del Motor (Offline)
       </h3>
       {recommendations.map((rec) => (
@@ -76,16 +76,16 @@ export function AnimalRecommendationsWidget({ animalId }: { animalId: number }) 
               {rec.categoria}
             </Badge>
           </div>
-          
+
           <CardContent className="p-4 space-y-3">
             <h4 className="font-bold text-lg leading-tight text-foreground">{rec.titulo}</h4>
             <p className="text-muted-foreground text-sm leading-relaxed">{rec.descripcion}</p>
-            
+
             <div className="bg-muted/50 p-3 rounded-lg border border-border/50">
               <strong className="text-sm block text-foreground mb-1">Acción sugerida:</strong>
               <p className="text-foreground/80 font-medium">{rec.accion}</p>
             </div>
-            
+
             <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground pt-2 border-t border-border/50">
               <span className="flex items-center gap-1 bg-muted px-2 py-1 rounded">
                 ⚙️ {rec.contexto_aplicado}
@@ -107,4 +107,3 @@ export function AnimalRecommendationsWidget({ animalId }: { animalId: number }) 
     </div>
   );
 }
-

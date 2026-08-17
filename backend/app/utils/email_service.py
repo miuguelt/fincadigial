@@ -50,7 +50,11 @@ def build_password_reset_link(reset_token: str) -> str:
             or _get_config("API_BASE_URL")
         )
     if not frontend_url:
-        scheme = _get_config("FRONTEND_PROTOCOL") or _get_config("BACKEND_PROTOCOL") or "http"
+        scheme = (
+            _get_config("FRONTEND_PROTOCOL")
+            or _get_config("BACKEND_PROTOCOL")
+            or "http"
+        )
         host = _get_config("FRONTEND_HOST") or _get_config("BACKEND_HOST")
         port = _get_config("FRONTEND_PORT") or _get_config("BACKEND_PORT")
         if host:
@@ -58,7 +62,10 @@ def build_password_reset_link(reset_token: str) -> str:
             if port:
                 frontend_url = f"{frontend_url}:{port}"
 
-    reset_path = _get_config("FRONTEND_PASSWORD_RESET_PATH", "/reset-password") or "/reset-password"
+    reset_path = (
+        _get_config("FRONTEND_PASSWORD_RESET_PATH", "/reset-password")
+        or "/reset-password"
+    )
     if frontend_url:
         base = str(frontend_url).rstrip("/")
         if not str(reset_path).startswith("/"):

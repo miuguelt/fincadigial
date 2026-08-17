@@ -2,7 +2,7 @@ import '@/shared/api/client';
 import { apiFetch } from '@/shared/api/apiFetch';
 import { readStandardErrorPayload } from '@/shared/api/error-parser';
 import { getCookie } from '@/shared/utils/cookieUtils';
-import { 
+import {
   decodeToken,
   isValidTokenFormat,
   getUserFromToken
@@ -317,19 +317,19 @@ class AuthService {
       const payload: LoginRequest = { identification: String(identification), password };
       const response = await apiFetch({ url: `/auth/login`, method: 'POST', data: payload });
       const _r = response?.data ?? response;
-  
+
       const rawTokenCandidate = _r ? findTokenCandidate(_r) : undefined;
       let normalizedUser = _r ? findUserCandidate(_r) : undefined;
       if (!normalizedUser && looksLikeUserObject(_r)) {
         normalizedUser = _r;
       }
       const normalizedMessage = (_r && (_r.message || _r.data?.message || _r.data?.data?.message)) || undefined;
-  
+
       const normalizedToken = extractJWT(rawTokenCandidate);
-  
+
       let finalAccessToken: string | undefined = undefined;
       let finalUser = normalizedUser;
-  
+
       if (normalizedToken) {
         if (!isValidTokenFormat(normalizedToken)) {
           throw new Error('Formato de token inválido recibido en login');
@@ -344,7 +344,7 @@ class AuthService {
           }
         }
       }
-  
+
       return {
         access_token: finalAccessToken,
         message: normalizedMessage,
@@ -364,7 +364,7 @@ class AuthService {
       if (config?.forceRefresh) {
         meCache = { ts: 0, data: null };
       }
-      
+
       // Evitar ráfaga: usar micro-caché
       const now = Date.now();
       if (meCache.data && (now - meCache.ts) < ME_TTL_MS) {
@@ -647,9 +647,9 @@ export const loginUser = async (userData: any) => {
   } catch (error: any) {
     // Re-lanzar el error para que el componente de login lo maneje
     const parsed = readStandardErrorPayload(error);
-    throw { 
-      status: parsed.status, 
-      data: parsed.raw, 
+    throw {
+      status: parsed.status,
+      data: parsed.raw,
       message: parsed.message,
       code: parsed.code,
       details: parsed.details
@@ -731,7 +731,7 @@ export function normalizeRole(role: any): string | null {
   // Remove diacritics and normalize separators
   try {
     s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  } catch (error) { /* older engines may not support normalize, ignore */ 
+  } catch (error) { /* older engines may not support normalize, ignore */
     logAuthWarning('normalizeRole', error);
   }
   const sn = s

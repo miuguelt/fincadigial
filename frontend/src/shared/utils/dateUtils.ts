@@ -8,15 +8,15 @@
  */
 export const getTodayColombia = (): string => {
   const now = new Date();
-  
+
   // Opción 1: Usar toLocaleString con zona horaria específica
   const colombiaDate = new Date(now.toLocaleString("en-US", { timeZone: "America/Bogota" }));
-  
+
   // Formatear a YYYY-MM-DD
   const year = colombiaDate.getFullYear();
   const month = String(colombiaDate.getMonth() + 1).padStart(2, '0');
   const day = String(colombiaDate.getDate()).padStart(2, '0');
-  
+
   return `${year}-${month}-${day}`;
 };
 
@@ -26,17 +26,17 @@ export const getTodayColombia = (): string => {
  */
 export const getNowColombiaISO = (): string => {
   const now = new Date();
-  
+
   // Usar toLocaleString con zona horaria específica y luego formatear
   const colombiaDate = new Date(now.toLocaleString("en-US", { timeZone: "America/Bogota" }));
-  
+
   const year = colombiaDate.getFullYear();
   const month = String(colombiaDate.getMonth() + 1).padStart(2, '0');
   const day = String(colombiaDate.getDate()).padStart(2, '0');
   const hours = String(colombiaDate.getHours()).padStart(2, '0');
   const minutes = String(colombiaDate.getMinutes()).padStart(2, '0');
   const seconds = String(colombiaDate.getSeconds()).padStart(2, '0');
-  
+
   return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 };
 
@@ -47,14 +47,14 @@ export const getNowColombiaISO = (): string => {
  */
 export const formatDateColombia = (date: Date | string): string => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  
+
   // Usar toLocaleString con zona horaria específica
   const colombiaDate = new Date(dateObj.toLocaleString("en-US", { timeZone: "America/Bogota" }));
-  
+
   const year = colombiaDate.getFullYear();
   const month = String(colombiaDate.getMonth() + 1).padStart(2, '0');
   const day = String(colombiaDate.getDate()).padStart(2, '0');
-  
+
   return `${year}-${month}-${day}`;
 };
 
@@ -182,4 +182,3 @@ export const formatTimeColombia = (date: Date | string): string => {
 export const formatNumberColombia = (value: number): string => {
   return new Intl.NumberFormat('es-CO').format(value);
 };
-

@@ -102,7 +102,7 @@ export function WeatherDecisionPanel({ current, forecast }: Props) {
 							<div className="min-w-0">
 								<div className="flex items-center gap-2 flex-wrap">
 									<h3 className="font-bold text-sm">{decision.title}</h3>
-									<span className={`text-[10px] rounded-full px-2 py-0.5 font-bold ${config.badge}`}>
+									<span className={`text-[11px] rounded-full px-2 py-0.5 font-bold ${config.badge}`}>
 										{decision.tone === "good" ? "Favorable" : decision.tone === "critical" ? "Prioridad" : "Vigilar"}
 									</span>
 								</div>

@@ -7,6 +7,7 @@ from app.models.control import Control
 
 logger = logging.getLogger(__name__)
 
+
 class SyncProcessorService:
     @classmethod
     def process_pending_operations(cls, finca_id=None):
@@ -19,8 +20,7 @@ class SyncProcessorService:
 
         # Ordenamos por logical_clock y fallback a created_at
         operations = query.order_by(
-            SyncOperation.logical_clock.asc(),
-            SyncOperation.created_at.asc()
+            SyncOperation.logical_clock.asc(), SyncOperation.created_at.asc()
         ).all()
 
         processed_count = 0
@@ -65,12 +65,16 @@ class SyncProcessorService:
             # En Villaluz los offline IDs pueden ser negativos (ej: -15234), pero la BD usa int autoincrement.
             # Intentaremos buscar por ID si es numérico.
             # También para Animal, buscaremos por 'record' (número de chapa) si está disponible en payload.
-            if str(op.entity_id).lstrip('-').isdigit() and int(op.entity_id) > 0:
-                local_entity = Model.query.filter_by(id=int(op.entity_id), finca_id=op.finca_id).first()
+            if str(op.entity_id).lstrip("-").isdigit() and int(op.entity_id) > 0:
+                local_entity = Model.query.filter_by(
+                    id=int(op.entity_id), finca_id=op.finca_id
+                ).first()
 
             # Fallback para animal por "record" si no lo encontró
             if not local_entity and Model == Animals and payload.get("record"):
-                local_entity = Model.query.filter_by(record=str(payload["record"]), finca_id=op.finca_id).first()
+                local_entity = Model.query.filter_by(
+                    record=str(payload["record"]), finca_id=op.finca_id
+                ).first()
 
         operation_type = op.operation.lower()
 
@@ -84,14 +88,22 @@ class SyncProcessorService:
 
             # (Futuro: comparar hashes o campos). Por ahora creamos la actualización si se ve bien.
             # Vamos a generar un conflicto manual si el payload de update es sobre una entidad que fue modificada más tarde.
-            if op.created_at_device and local_entity.updated_at and local_entity.updated_at > op.created_at_device:
+            if (
+                op.created_at_device
+                and local_entity.updated_at
+                and local_entity.updated_at > op.created_at_device
+            ):
                 cls._create_conflict(op, local_entity)
                 return "conflict"
 
         if operation_type == "create":
             # Filtrar payload para quitar IDs negativos
-            clean_payload = {k: v for k, v in payload.items() if k != 'id' or (isinstance(v, int) and v > 0)}
-            clean_payload['finca_id'] = op.finca_id
+            clean_payload = {
+                k: v
+                for k, v in payload.items()
+                if k != "id" or (isinstance(v, int) and v > 0)
+            }
+            clean_payload["finca_id"] = op.finca_id
 
             # Evitar duplicados (Ej. record único en animales)
             if local_entity:
@@ -110,7 +122,9 @@ class SyncProcessorService:
                 cls._create_conflict(op, None)
                 return "conflict"
             else:
-                clean_payload = {k: v for k, v in payload.items() if k not in ['id', 'finca_id']}
+                clean_payload = {
+                    k: v for k, v in payload.items() if k not in ["id", "finca_id"]
+                }
                 local_entity.update(commit=False, **clean_payload)
 
         elif operation_type == "delete":
@@ -134,6 +148,6 @@ class SyncProcessorService:
             entity_id=str(local_entity.id) if local_entity else op.entity_id,
             local_payload=local_entity.to_namespace_dict() if local_entity else None,
             incoming_payload=op.payload,
-            finca_id=op.finca_id
+            finca_id=op.finca_id,
         )
         db.session.add(conflict)

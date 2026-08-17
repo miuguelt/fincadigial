@@ -13,35 +13,44 @@ logger = logging.getLogger(__name__)
 
 weather_ns = Namespace("weather", description="Datos climáticos y alertas automáticas")
 
-alert_model = weather_ns.model("WeatherAlert", {
-    "id": fields.Integer,
-    "title": fields.String,
-    "alert_type": fields.String,
-    "severity": fields.String,
-    "description": fields.String,
-    "recommendation": fields.String,
-    "current_temperature": fields.Float,
-    "valid_from": fields.DateTime,
-    "valid_until": fields.DateTime,
-    "created_at": fields.DateTime,
-})
+alert_model = weather_ns.model(
+    "WeatherAlert",
+    {
+        "id": fields.Integer,
+        "title": fields.String,
+        "alert_type": fields.String,
+        "severity": fields.String,
+        "description": fields.String,
+        "recommendation": fields.String,
+        "current_temperature": fields.Float,
+        "valid_from": fields.DateTime,
+        "valid_until": fields.DateTime,
+        "created_at": fields.DateTime,
+    },
+)
 
-record_model = weather_ns.model("WeatherRecord", {
-    "id": fields.Integer,
-    "recorded_at": fields.DateTime,
-    "temperature_celsius": fields.Float,
-    "humidity_percent": fields.Float,
-    "wind_speed_kmh": fields.Float,
-    "precipitation_mm": fields.Float,
-    "weather_condition": fields.String,
-    "uv_index": fields.Float,
-})
+record_model = weather_ns.model(
+    "WeatherRecord",
+    {
+        "id": fields.Integer,
+        "recorded_at": fields.DateTime,
+        "temperature_celsius": fields.Float,
+        "humidity_percent": fields.Float,
+        "wind_speed_kmh": fields.Float,
+        "precipitation_mm": fields.Float,
+        "weather_condition": fields.String,
+        "uv_index": fields.Float,
+    },
+)
 
-weather_summary_model = weather_ns.model("WeatherSummary", {
-    "current": fields.Nested(record_model, allow_null=True),
-    "alerts": fields.List(fields.Nested(alert_model)),
-    "history": fields.List(fields.Nested(record_model)),
-})
+weather_summary_model = weather_ns.model(
+    "WeatherSummary",
+    {
+        "current": fields.Nested(record_model, allow_null=True),
+        "alerts": fields.List(fields.Nested(alert_model)),
+        "history": fields.List(fields.Nested(record_model)),
+    },
+)
 
 
 def _current_user_id() -> int | None:
@@ -77,22 +86,31 @@ class WeatherCurrent(Resource):
             if not result.get("success"):
                 error_msg = result.get("error", "Error obteniendo datos")
                 if "coordenadas" in error_msg.lower():
-                    return APIResponse.success({
-                        "record": None,
-                        "alerts_generated": 0,
-                        "forecast": {"timezone": None, "daily": [], "hourly": []},
-                        "no_coordinates": True,
-                    }, message="Finca sin coordenadas configuradas")
+                    return APIResponse.success(
+                        {
+                            "record": None,
+                            "alerts_generated": 0,
+                            "forecast": {"timezone": None, "daily": [], "hourly": []},
+                            "no_coordinates": True,
+                        },
+                        message="Finca sin coordenadas configuradas",
+                    )
                 return APIResponse.error(error_msg)
 
             record_id = result.get("record_id")
             record = WeatherRecord.query.get(record_id) if record_id else None
 
-            return APIResponse.success({
-                "record": WeatherDataService.serialize_record(record) if record else None,
-                "alerts_generated": result.get("alerts_generated", 0),
-                "forecast": result.get("forecast", {"timezone": None, "daily": [], "hourly": []}),
-            })
+            return APIResponse.success(
+                {
+                    "record": WeatherDataService.serialize_record(record)
+                    if record
+                    else None,
+                    "alerts_generated": result.get("alerts_generated", 0),
+                    "forecast": result.get(
+                        "forecast", {"timezone": None, "daily": [], "hourly": []}
+                    ),
+                }
+            )
         except Exception as e:
             logger.error(f"Error getting current weather: {e}")
             return APIResponse.error(str(e))
@@ -114,9 +132,14 @@ class WeatherAlerts(Resource):
             return APIResponse.error(str(e))
 
     @weather_ns.doc(description="Descarta una alerta climática")
-    @weather_ns.expect(weather_ns.model("DismissAlert", {
-        "alert_id": fields.Integer(required=True),
-    }))
+    @weather_ns.expect(
+        weather_ns.model(
+            "DismissAlert",
+            {
+                "alert_id": fields.Integer(required=True),
+            },
+        )
+    )
     @jwt_required()
     def post(self, finca_id):
         try:
@@ -178,20 +201,22 @@ class WeatherDashboard(Resource):
 
             current = history[-1] if history else None
 
-            return APIResponse.success({
-                "current": current,
-                "alerts": alerts,
-                "history": history,
-                "finca_id": finca_id,
-                # La UI necesita saber si la finca tiene coordenadas para
-                # ofrecer la captura GPS cuando falten.
-                "location": {
-                    "latitude": finca.latitude,
-                    "longitude": finca.longitude,
-                    "department": finca.department,
-                    "municipality": finca.municipality,
-                },
-            })
+            return APIResponse.success(
+                {
+                    "current": current,
+                    "alerts": alerts,
+                    "history": history,
+                    "finca_id": finca_id,
+                    # La UI necesita saber si la finca tiene coordenadas para
+                    # ofrecer la captura GPS cuando falten.
+                    "location": {
+                        "latitude": finca.latitude,
+                        "longitude": finca.longitude,
+                        "department": finca.department,
+                        "municipality": finca.municipality,
+                    },
+                }
+            )
         except Exception as e:
             logger.error(f"Error getting weather dashboard: {e}")
             return APIResponse.error(str(e))
@@ -199,7 +224,9 @@ class WeatherDashboard(Resource):
 
 @weather_ns.route("/update-all")
 class WeatherUpdateAll(Resource):
-    @weather_ns.doc(description="Actualiza datos climáticos de todas las fincas (admin)")
+    @weather_ns.doc(
+        description="Actualiza datos climáticos de todas las fincas (admin)"
+    )
     @jwt_required()
     def post(self):
         try:
@@ -210,7 +237,9 @@ class WeatherUpdateAll(Resource):
                 return APIResponse.unauthorized()
 
             if user.role not in [Role.Administrador, Role.Propietario]:
-                return APIResponse.forbidden("Solo administradores pueden ejecutar esta acción")
+                return APIResponse.forbidden(
+                    "Solo administradores pueden ejecutar esta acción"
+                )
 
             result = WeatherDataService.update_all_fincas()
             return APIResponse.success(result)

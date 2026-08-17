@@ -61,12 +61,12 @@ class RequestMonitor {
   getStats(timeWindow: number = 60000) { // Últimos 60 segundos por defecto
     const now = Date.now();
     const recentRequests = this.requests.filter(req => now - req.timestamp <= timeWindow);
-    
+
     const totalRequests = recentRequests.length;
     const cacheHits = recentRequests.filter(req => req.fromCache).length;
     const apiCalls = totalRequests - cacheHits;
     const cacheHitRate = totalRequests > 0 ? (cacheHits / totalRequests) * 100 : 0;
-    
+
     // Agrupar por endpoint
     const endpointStats = recentRequests.reduce((acc, req) => {
       const endpoint = this.extractEndpoint(req.url);
@@ -111,14 +111,14 @@ class RequestMonitor {
   private calculateAverageResponseTime(requests: RequestLog[]): number {
     const requestsWithDuration = requests.filter(req => req.duration !== undefined);
     if (requestsWithDuration.length === 0) return 0;
-    
+
     const totalDuration = requestsWithDuration.reduce((sum, req) => sum + (req.duration || 0), 0);
     return totalDuration / requestsWithDuration.length;
   }
 
   printStats(timeWindow?: number) {
     const stats = this.getStats(timeWindow);
-    
+
     logger.debug('📊 Request Monitor Stats');
     logger.debug(`⏱️  Time Window: ${stats.timeWindow / 1000}s`);
     logger.debug(`📡 Total Requests: ${stats.totalRequests}`);
@@ -126,14 +126,14 @@ class RequestMonitor {
     logger.debug(`🚀 Cache Hits: ${stats.cacheHits}`);
     logger.debug(`📈 Cache Hit Rate: ${stats.cacheHitRate.toFixed(1)}%`);
     logger.debug(`⚡ Avg Response Time: ${stats.averageResponseTime.toFixed(0)}ms`);
-    
+
     if (stats.redundantEndpoints.length > 0) {
       logger.debug('⚠️  Potentially Redundant Endpoints');
       stats.redundantEndpoints.forEach(endpoint => {
         logger.debug(`${endpoint.endpoint}: ${endpoint.api} API calls, ${endpoint.cached} cached`);
       });
     }
-    
+
     logger.debug('📋 Endpoint Breakdown');
     Object.entries(stats.endpointStats).forEach(([endpoint, endpointStats]) => {
       const hitRate = endpointStats.total > 0 ? (endpointStats.cached / endpointStats.total * 100).toFixed(1) : '0';
@@ -143,10 +143,10 @@ class RequestMonitor {
 
   getRedundantRequests(timeWindow: number = 10000): Array<{ url: string; count: number; timestamps: number[] }> {
     const now = Date.now();
-    const recentRequests = this.requests.filter(req => 
+    const recentRequests = this.requests.filter(req =>
       now - req.timestamp <= timeWindow && !req.fromCache
     );
-    
+
     const urlCounts = recentRequests.reduce((acc, req) => {
       if (!acc[req.url]) {
         acc[req.url] = { count: 0, timestamps: [] };
@@ -155,7 +155,7 @@ class RequestMonitor {
       acc[req.url].timestamps.push(req.timestamp);
       return acc;
     }, {} as Record<string, { count: number; timestamps: number[] }>);
-    
+
     return Object.entries(urlCounts)
       .filter(([_, data]) => data.count > 1)
       .map(([url, data]) => ({ url, ...data }))
@@ -193,7 +193,7 @@ export function setupAxiosInterceptor(axiosInstance: any) {
       const endTime = Date.now();
       const duration = endTime - (response.config.metadata?.startTime || endTime);
       const size = JSON.stringify(response.data).length;
-      
+
       requestMonitor.logRequest(
         response.config.url,
         response.config.method?.toUpperCase() || 'GET',
@@ -201,20 +201,20 @@ export function setupAxiosInterceptor(axiosInstance: any) {
         duration,
         size
       );
-      
+
       return response;
     },
     (error: any) => {
       const endTime = Date.now();
       const duration = endTime - (error.config?.metadata?.startTime || endTime);
-      
+
       requestMonitor.logRequest(
         error.config?.url || 'unknown',
         error.config?.method?.toUpperCase() || 'GET',
         false,
         duration
       );
-      
+
       return Promise.reject(error);
     }
   );
@@ -239,13 +239,13 @@ export function useRequestMonitor() {
 // Utilidad para mostrar estadísticas en la consola cada cierto tiempo
 export function startPeriodicStats(intervalMs: number = 30000) {
   if (!IS_DEV || ENV.VITE_ENABLE_PERFORMANCE_MONITORING !== 'true') return;
-  
+
   const interval = setInterval(() => {
     const stats = requestMonitor.getStats();
     if (stats.totalRequests > 0) {
       requestMonitor.printStats();
     }
   }, intervalMs);
-  
+
   return () => clearInterval(interval);
 }

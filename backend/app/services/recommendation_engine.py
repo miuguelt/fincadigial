@@ -14,16 +14,22 @@ import logging
 from datetime import date
 from typing import Any
 
-from app.models.knowledge_base import KBRecomendacion, KBRegla, KBCalendario, KBOperador, KBUrgencia
+from app.models.knowledge_base import (
+    KBRecomendacion,
+    KBRegla,
+    KBCalendario,
+    KBOperador,
+    KBUrgencia,
+)
 
 logger = logging.getLogger(__name__)
 
 # Orden de urgencia para ranking
 _URGENCIA_ORDEN = {
     KBUrgencia.INMEDIATA.value: 0,
-    KBUrgencia.ALTA.value:      1,
-    KBUrgencia.MEDIA.value:     2,
-    KBUrgencia.BAJA.value:      3,
+    KBUrgencia.ALTA.value: 1,
+    KBUrgencia.MEDIA.value: 2,
+    KBUrgencia.BAJA.value: 3,
 }
 
 
@@ -44,6 +50,7 @@ class RecomendacionMotor:
         Devuelve lista ordenada por urgencia, sin duplicados.
         """
         from app.models.animals import Animals
+
         animal = Animals.query.get(animal_id)
         if not animal:
             return []
@@ -59,12 +66,12 @@ class RecomendacionMotor:
             # Evaluar todas las reglas de esta recomendación
             if cls._evaluar_reglas(rec.reglas, contexto):
                 d = rec.to_dict()
-                d['animal_id'] = animal_id
-                d['contexto_aplicado'] = cls._resumen_contexto(contexto)
+                d["animal_id"] = animal_id
+                d["contexto_aplicado"] = cls._resumen_contexto(contexto)
                 resultados.append(d)
 
         # Ordenar por urgencia
-        resultados.sort(key=lambda r: _URGENCIA_ORDEN.get(r['urgencia'], 99))
+        resultados.sort(key=lambda r: _URGENCIA_ORDEN.get(r["urgencia"], 99))
         return resultados[:max_results]
 
     @classmethod
@@ -81,14 +88,14 @@ class RecomendacionMotor:
             return []
 
         edad_dias = animal.age_in_days or 0
-        sexo = animal.sex.value if animal.sex else 'Ambos'
+        sexo = animal.sex.value if animal.sex else "Ambos"
 
         eventos = KBCalendario.query.filter_by(activo=True).all()
         pendientes = []
 
         for evento in eventos:
             # Filtro de sexo
-            if evento.sexo.value not in ('Ambos', sexo):
+            if evento.sexo.value not in ("Ambos", sexo):
                 continue
             # Filtro de rango de edad
             if evento.edad_inicio_dias and edad_dias < evento.edad_inicio_dias:
@@ -98,18 +105,19 @@ class RecomendacionMotor:
 
             # Verificar si ya fue aplicado recientemente
             if evento.frecuencia_dias and evento.frecuencia_dias > 0:
-                ultima = (Vaccinations.query
-                          .filter_by(animal_id=animal_id)
-                          .order_by(Vaccinations.vaccination_date.desc())
-                          .first())
+                ultima = (
+                    Vaccinations.query.filter_by(animal_id=animal_id)
+                    .order_by(Vaccinations.vaccination_date.desc())
+                    .first()
+                )
                 if ultima:
                     dias_desde = (date.today() - ultima.vaccination_date).days
                     if dias_desde < evento.frecuencia_dias:
                         continue  # Aún no vence
 
             d = evento.to_dict()
-            d['animal_id'] = animal_id
-            d['edad_actual_dias'] = edad_dias
+            d["animal_id"] = animal_id
+            d["edad_actual_dias"] = edad_dias
             pendientes.append(d)
 
         return pendientes
@@ -118,6 +126,7 @@ class RecomendacionMotor:
     def recomendaciones_por_categoria(cls, categoria: str) -> list[dict]:
         """Devuelve todas las recomendaciones de una categoría (para listados de referencia)."""
         from app.models.knowledge_base import KBCategoria
+
         try:
             cat = KBCategoria(categoria)
         except ValueError:
@@ -139,66 +148,73 @@ class RecomendacionMotor:
         ctx: dict[str, Any] = {}
 
         # Campos directos
-        ctx['age_in_days']   = animal.age_in_days or 0
-        ctx['age_in_months'] = animal.age_in_months or 0
-        ctx['weight']        = float(animal.weight or 0)
-        ctx['is_pregnant']   = bool(animal.is_pregnant)
-        ctx['is_lactating']  = bool(animal.is_lactating)
-        ctx['sexo']          = animal.sex.value if animal.sex else 'Ambos'
-        ctx['status']        = animal.status.value if animal.status else ''
+        ctx["age_in_days"] = animal.age_in_days or 0
+        ctx["age_in_months"] = animal.age_in_months or 0
+        ctx["weight"] = float(animal.weight or 0)
+        ctx["is_pregnant"] = bool(animal.is_pregnant)
+        ctx["is_lactating"] = bool(animal.is_lactating)
+        ctx["sexo"] = animal.sex.value if animal.sex else "Ambos"
+        ctx["status"] = animal.status.value if animal.status else ""
 
         # Días desde último parto
         try:
             if animal.last_calving_date:
-                ctx['dias_desde_parto'] = (date.today() - animal.last_calving_date).days
+                ctx["dias_desde_parto"] = (date.today() - animal.last_calving_date).days
             else:
-                ctx['dias_desde_parto'] = None
+                ctx["dias_desde_parto"] = None
         except Exception:
-            ctx['dias_desde_parto'] = None
+            ctx["dias_desde_parto"] = None
 
         # Días abiertos (sin preñez tras parto)
         try:
-            if ctx['dias_desde_parto'] and not animal.is_pregnant:
-                ctx['dias_abiertos'] = ctx['dias_desde_parto']
+            if ctx["dias_desde_parto"] and not animal.is_pregnant:
+                ctx["dias_abiertos"] = ctx["dias_desde_parto"]
             else:
-                ctx['dias_abiertos'] = 0
+                ctx["dias_abiertos"] = 0
         except Exception:
-            ctx['dias_abiertos'] = 0
+            ctx["dias_abiertos"] = 0
 
         # Días desde último control de peso
         try:
             ultimo_control = animal.controls.first()
             if ultimo_control:
-                ctx['dias_desde_control'] = (date.today() - ultimo_control.checkup_date).days
-                ctx['ultimo_peso_control'] = float(ultimo_control.weight or animal.weight)
+                ctx["dias_desde_control"] = (
+                    date.today() - ultimo_control.checkup_date
+                ).days
+                ctx["ultimo_peso_control"] = float(
+                    ultimo_control.weight or animal.weight
+                )
             else:
-                ctx['dias_desde_control'] = 9999
-                ctx['ultimo_peso_control'] = float(animal.weight or 0)
+                ctx["dias_desde_control"] = 9999
+                ctx["ultimo_peso_control"] = float(animal.weight or 0)
         except Exception:
-            ctx['dias_desde_control'] = 9999
-            ctx['ultimo_peso_control'] = float(animal.weight or 0)
+            ctx["dias_desde_control"] = 9999
+            ctx["ultimo_peso_control"] = float(animal.weight or 0)
 
         # Alertas activas
         try:
-            ctx['pending_alerts_count'] = animal.pending_alerts_count
+            ctx["pending_alerts_count"] = animal.pending_alerts_count
         except Exception:
-            ctx['pending_alerts_count'] = 0
+            ctx["pending_alerts_count"] = 0
 
         # Producción de leche (promedio 7 días)
         try:
             from app.models.milk_production import MilkProduction
             from datetime import timedelta
+
             semana_atras = date.today() - timedelta(days=7)
             registros = MilkProduction.query.filter(
                 MilkProduction.animal_id == animal.id,
-                MilkProduction.date >= semana_atras
+                MilkProduction.date >= semana_atras,
             ).all()
             if registros:
-                ctx['leche_promedio_7d'] = sum(r.quantity for r in registros) / len(registros)
+                ctx["leche_promedio_7d"] = sum(r.quantity for r in registros) / len(
+                    registros
+                )
             else:
-                ctx['leche_promedio_7d'] = None
+                ctx["leche_promedio_7d"] = None
         except Exception:
-            ctx['leche_promedio_7d'] = None
+            ctx["leche_promedio_7d"] = None
 
         return ctx
 
@@ -209,10 +225,10 @@ class RecomendacionMotor:
     @classmethod
     def _filtro_basico(cls, rec: KBRecomendacion, ctx: dict) -> bool:
         """Filtro rápido antes de evaluar reglas individuales."""
-        sexo_animal = ctx.get('sexo', 'Ambos')
-        if rec.sexo.value not in ('Ambos', sexo_animal):
+        sexo_animal = ctx.get("sexo", "Ambos")
+        if rec.sexo.value not in ("Ambos", sexo_animal):
             return False
-        edad = ctx.get('age_in_days', 0)
+        edad = ctx.get("age_in_days", 0)
         if rec.edad_min_dias and edad < rec.edad_min_dias:
             return False
         if rec.edad_max_dias and edad > rec.edad_max_dias:
@@ -251,11 +267,11 @@ class RecomendacionMotor:
         try:
             # Conversión numérica cuando el valor es número
             if isinstance(valor_ctx, bool):
-                val_ref = regla.valor.lower() in ('true', '1', 'si', 'yes')
+                val_ref = regla.valor.lower() in ("true", "1", "si", "yes")
                 return cls._comparar(op, valor_ctx, val_ref)
 
             v_num = float(valor_ctx)
-            ref   = float(regla.valor)
+            ref = float(regla.valor)
 
             if op == KBOperador.BETWEEN:
                 ref_max = float(regla.valor_max)
@@ -269,22 +285,28 @@ class RecomendacionMotor:
 
     @staticmethod
     def _comparar(op: KBOperador, a: Any, b: Any) -> bool:
-        if op == KBOperador.GT:  return a > b
-        if op == KBOperador.GTE: return a >= b
-        if op == KBOperador.LT:  return a < b
-        if op == KBOperador.LTE: return a <= b
-        if op == KBOperador.EQ:  return a == b
-        if op == KBOperador.NEQ: return a != b
+        if op == KBOperador.GT:
+            return a > b
+        if op == KBOperador.GTE:
+            return a >= b
+        if op == KBOperador.LT:
+            return a < b
+        if op == KBOperador.LTE:
+            return a <= b
+        if op == KBOperador.EQ:
+            return a == b
+        if op == KBOperador.NEQ:
+            return a != b
         return False
 
     @staticmethod
     def _resumen_contexto(ctx: dict) -> str:
         """Genera un string legible del contexto para depuración."""
         partes = []
-        if ctx.get('age_in_months'):
+        if ctx.get("age_in_months"):
             partes.append(f"{ctx['age_in_months']} meses")
-        if ctx.get('weight'):
+        if ctx.get("weight"):
             partes.append(f"{ctx['weight']} kg")
-        if ctx.get('dias_abiertos'):
+        if ctx.get("dias_abiertos"):
             partes.append(f"{ctx['dias_abiertos']} días abiertos")
-        return ', '.join(partes) or 'datos básicos'
+        return ", ".join(partes) or "datos básicos"

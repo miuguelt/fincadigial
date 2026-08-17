@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip as RechartsTooltip, 
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
   ResponsiveContainer,
   BarChart,
   Bar,
@@ -13,10 +13,10 @@ import {
 } from 'recharts';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { 
-  TrendingUp, 
-  Syringe, 
-  Pill, 
+import {
+  TrendingUp,
+  Syringe,
+  Pill,
   Activity,
   Download,
   AlertCircle,
@@ -64,7 +64,7 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
   const { showToast } = useToast();
   const { user } = useAuth();
   const { useHealthStatistics } = useAnalytics();
-  
+
   // Queries
   const { data: healthStatsRaw, isLoading: loadingStats, error: statsError } = useHealthStatistics();
   const healthStats = healthStatsRaw as any;
@@ -75,11 +75,11 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
     const sano = Number(dist['Sano'] || dist['sano'] || 0);
     const totalStatus = Object.values(dist).reduce((acc: number, val: any) => acc + (Number(val) || 0), 0);
     const healthRate = totalStatus > 0 ? Math.round((sano / totalStatus) * 100) : 85; // Fallback razonable
-    
+
     // Top Diagnóstico
     const topDisease = healthStats?.common_diseases?.[0]?.diagnosis || 'Ninguno registrado';
     const topDiseaseCount = healthStats?.common_diseases?.[0]?.count || 0;
-    
+
     // Insumo más utilizado
     const topMed = healthStats?.medication_usage?.[0]?.medication || 'Ninguno registrado';
     const topMedCount = healthStats?.medication_usage?.[0]?.usage_count || 0;
@@ -98,16 +98,16 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
     const treatments = healthStats?.treatments_by_month || [];
     const vaccinations = healthStats?.vaccinations_by_month || [];
     if (!treatments.length && !vaccinations.length) return [];
-    
+
     const periods = Array.from(new Set([
       ...treatments.map((i: any) => i.period),
       ...vaccinations.map((i: any) => i.period)
     ])).sort();
-    
+
     return periods.map(period => {
       const t = treatments.find((i: any) => i.period === period)?.count ?? 0;
       const v = vaccinations.find((i: any) => i.period === period)?.count ?? 0;
-      
+
       // Formatear etiqueta "Año-Mes" a "Mes Año" en español
       let label = period;
       try {
@@ -115,11 +115,11 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
         const date = new Date(Number(year), Number(month) - 1);
         label = date.toLocaleDateString('es-CO', { month: 'short', year: '2-digit' });
       } catch { /* Keep the original period when it cannot be parsed. */ }
-      
-      return { 
-        period: label, 
-        Tratamientos: t, 
-        Vacunaciones: v 
+
+      return {
+        period: label,
+        Tratamientos: t,
+        Vacunaciones: v
       };
     });
   }, [healthStats]);
@@ -149,7 +149,7 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
 
     try {
       const doc = new jsPDF();
-      
+
       const runAutoTable = (docObj: any, options: any) => {
         try {
           if (typeof autoTable === "function") autoTable(docObj, options);
@@ -377,8 +377,8 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
             Monitoreo en tiempo real de intervenciones clínicas en un período de {period_months || 12} meses
           </p>
         </div>
-        <Button 
-          variant="primary" 
+        <Button
+          variant="primary"
           size="sm"
           className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 text-white font-semibold shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all"
           onClick={handleExportPDF}
@@ -396,9 +396,9 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
             <Pill className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground block">Tratamientos</span>
+            <span className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground block">Tratamientos</span>
             <span className="text-2xl font-black text-foreground">{total_treatments ?? 0}</span>
-            <span className="text-[10px] text-muted-foreground block mt-0.5">Intervenciones totales</span>
+            <span className="text-[11px] text-muted-foreground block mt-0.5">Intervenciones totales</span>
           </div>
         </div>
 
@@ -408,9 +408,9 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
             <Syringe className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground block">Vacunas</span>
+            <span className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground block">Vacunas</span>
             <span className="text-2xl font-black text-foreground">{total_vaccinations ?? 0}</span>
-            <span className="text-[10px] text-muted-foreground block mt-0.5">Dosis aplicadas</span>
+            <span className="text-[11px] text-muted-foreground block mt-0.5">Dosis aplicadas</span>
           </div>
         </div>
 
@@ -420,9 +420,9 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
             <Activity className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground block">Tasa de Salud</span>
+            <span className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground block">Tasa de Salud</span>
             <span className="text-2xl font-black text-foreground">{healthMetrics.healthRate}%</span>
-            <span className="text-[10px] text-muted-foreground block mt-0.5">Animales clínicamente sanos</span>
+            <span className="text-[11px] text-muted-foreground block mt-0.5">Animales clínicamente sanos</span>
           </div>
         </div>
 
@@ -432,11 +432,11 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
             <AlertCircle className="w-5 h-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground block">Top Diagnóstico</span>
+            <span className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground block">Top Diagnóstico</span>
             <span className="text-sm font-bold text-foreground block fit-clamp" title={healthMetrics.topDisease}>
               {healthMetrics.topDisease}
             </span>
-            <span className="text-[10px] text-muted-foreground block mt-0.5">
+            <span className="text-[11px] text-muted-foreground block mt-0.5">
               {healthMetrics.topDiseaseCount > 0 ? `${healthMetrics.topDiseaseCount} casos registrados` : 'Sin registros'}
             </span>
           </div>
@@ -445,7 +445,7 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
 
       {/* Gráficos Principales */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         {/* Gráfico 1: Evolución Temporal */}
         <div className="lg:col-span-2 bg-card/40 backdrop-blur-md border border-border/40 rounded-xl p-5 shadow-sm">
           <div className="mb-4">
@@ -486,7 +486,7 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Casos Clínicos Comunes</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Diagnósticos más registrados</p>
           </div>
-          
+
           <div className="h-48 w-full my-4">
             {diseasesData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -511,7 +511,7 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
             {diseasesData.slice(0, 3).map((item: any, idx: number) => (
               <div key={idx} className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-muted-foreground fit-clamp max-w-[150px]">{item.name}</span>
-                <Badge variant="outline" className="text-[10px] font-bold border-red-200/50 bg-red-50/30 text-red-600">
+                <Badge variant="outline" className="text-[11px] font-bold border-red-200/50 bg-red-50/30 text-red-600">
                   {item.Casos} casos
                 </Badge>
               </div>

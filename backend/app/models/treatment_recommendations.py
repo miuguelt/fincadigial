@@ -51,9 +51,19 @@ class TreatmentRecommendations(BaseModel):
     final_notes = db.Column(db.Text, nullable=True)
 
     _namespace_fields = [
-        "id", "animal_id", "finca_id", "title", "recommendation",
-        "responsible", "start_date", "estimated_end_date", "duration_days",
-        "control_interval_days", "status", "final_notes", "created_at",
+        "id",
+        "animal_id",
+        "finca_id",
+        "title",
+        "recommendation",
+        "responsible",
+        "start_date",
+        "estimated_end_date",
+        "duration_days",
+        "control_interval_days",
+        "status",
+        "final_notes",
+        "created_at",
         "updated_at",
     ]
     _namespace_relations = {
@@ -61,18 +71,39 @@ class TreatmentRecommendations(BaseModel):
         "finca": {"fields": ["id", "name"]},
         "controls": {
             "fields": [
-                "id", "scheduled_date", "control_date", "observation",
-                "completed", "recorded_by",
+                "id",
+                "scheduled_date",
+                "control_date",
+                "observation",
+                "completed",
+                "recorded_by",
             ],
             "depth": 1,
         },
     }
     _searchable_fields = ["title", "recommendation", "responsible", "final_notes"]
-    _filterable_fields = ["animal_id", "finca_id", "status", "start_date", "estimated_end_date"]
-    _sortable_fields = ["id", "start_date", "estimated_end_date", "status", "created_at"]
+    _filterable_fields = [
+        "animal_id",
+        "finca_id",
+        "status",
+        "start_date",
+        "estimated_end_date",
+    ]
+    _sortable_fields = [
+        "id",
+        "start_date",
+        "estimated_end_date",
+        "status",
+        "created_at",
+    ]
     _required_fields = [
-        "animal_id", "title", "recommendation", "start_date",
-        "estimated_end_date", "duration_days", "control_interval_days",
+        "animal_id",
+        "title",
+        "recommendation",
+        "start_date",
+        "estimated_end_date",
+        "duration_days",
+        "control_interval_days",
     ]
 
     # backref (not back_populates): Animals does not declare the reverse side,
@@ -82,7 +113,9 @@ class TreatmentRecommendations(BaseModel):
         backref="treatment_recommendations",
         lazy="selectin",
     )
-    finca = db.relationship("Finca", backref="treatment_recommendations", lazy="selectin")
+    finca = db.relationship(
+        "Finca", backref="treatment_recommendations", lazy="selectin"
+    )
     controls = db.relationship(
         "TreatmentRecommendationControls",
         back_populates="treatment_recommendation",
@@ -112,13 +145,23 @@ class TreatmentRecommendations(BaseModel):
         start_date = normalized.get("start_date")
         end_date = normalized.get("estimated_end_date")
         if start_date and end_date and end_date < start_date:
-            errors.append("La fecha estimada de finalización no puede ser anterior al inicio")
-        if normalized.get("duration_days") is not None and normalized["duration_days"] <= 0:
+            errors.append(
+                "La fecha estimada de finalización no puede ser anterior al inicio"
+            )
+        if (
+            normalized.get("duration_days") is not None
+            and normalized["duration_days"] <= 0
+        ):
             errors.append("La duración debe ser mayor que cero")
-        if normalized.get("control_interval_days") is not None and normalized["control_interval_days"] <= 0:
+        if (
+            normalized.get("control_interval_days") is not None
+            and normalized["control_interval_days"] <= 0
+        ):
             errors.append("El intervalo de control debe ser mayor que cero")
         if errors:
-            raise ValidationError("; ".join(errors), code="validation_error", errors=errors)
+            raise ValidationError(
+                "; ".join(errors), code="validation_error", errors=errors
+            )
         return normalized
 
     def __repr__(self) -> str:

@@ -38,4 +38,3 @@ export const DATE_FORMATS = {
   COLOMBIA_ISO: 'YYYY-MM-DD HH:mm:ss',
   DISPLAY: 'DD/MM/YYYY',
 } as const;
-

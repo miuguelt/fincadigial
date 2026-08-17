@@ -1,6 +1,6 @@
 # Guía Paso a Paso de Migraciones (Alembic / Flask-Migrate)
 
-Esta guía define un flujo estándar y reproducible para crear, aplicar y verificar migraciones de base de datos en BackFinca usando Flask-Migrate (Alembic). Incluye comandos listos para Windows PowerShell y Linux/macOS.
+Esta guía define un flujo estándar y reproducible para crear, aplicar y verificar migraciones de base de datos en VillaLuz usando Flask-Migrate (Alembic). Incluye comandos listos para Windows PowerShell y Linux/macOS.
 
 ## Comando único recomendado
 - Ejecutar y verificar migraciones de forma robusta:
@@ -105,7 +105,7 @@ SQLALCHEMY_DATABASE_URI=mysql+pymysql://usuario:password@host:puerto/base
 - Mensajes claros de migración: usar verbos y contexto (“add”, “normalize”, “make_not_null”, “composite_index”).
 - Evitar índices duplicados:
   - Usar inspección de índices antes de crear:
-    - Ver ejemplo en [20260108_activity_agg_and_indexes.py](file:///c:/Users/Miguel/Documents/Flask%20Projects/BackFinca/migrations/versions/20260108_activity_agg_and_indexes.py#L20-L31).
+    - Ver ejemplo en [20260108_activity_agg_and_indexes.py](file:///c:/Users/Miguel/Documents/Flask%20Projects/VillaLuz/migrations/versions/20260108_activity_agg_and_indexes.py#L20-L31).
 - Mantener cadena de revisiones:
   - `down_revision` debe apuntar al último ID aplicado.
 - Verificar en entorno de pruebas antes de producción.
@@ -124,11 +124,11 @@ SQLALCHEMY_DATABASE_URI=mysql+pymysql://usuario:password@host:puerto/base
   - `upgrade_db.py` ignora problemas de Redis/cache y continúa con la migración.
 
 ## Archivos clave del flujo
-- Inicialización de Flask-Migrate: [__init__.py](file:///c:/Users/Miguel/Documents/Flask%20Projects/BackFinca/app/__init__.py#L248-L252)
-- Integración Alembic con la app: [env.py](file:///c:/Users/Miguel/Documents/Flask%20Projects/BackFinca/migrations/env.py#L11-L20) y [env.py](file:///c:/Users/Miguel/Documents/Flask%20Projects/BackFinca/migrations/env.py#L29-L41)
-- Configuración Alembic: [alembic.ini](file:///c:/Users/Miguel/Documents/Flask%20Projects/BackFinca/alembic.ini)
-- Ejemplo de migración con inspección de índices: [20260108_activity_agg_and_indexes.py](file:///c:/Users/Miguel/Documents/Flask%20Projects/BackFinca/migrations/versions/20260108_activity_agg_and_indexes.py)
- - Comando único y verificación total: [upgrade_db.py](file:///c:/Users/Miguel/Documents/Flask%20Projects/BackFinca/upgrade_db.py)
+- Inicialización de Flask-Migrate: [__init__.py](file:///c:/Users/Miguel/Documents/Flask%20Projects/VillaLuz/app/__init__.py#L248-L252)
+- Integración Alembic con la app: [env.py](file:///c:/Users/Miguel/Documents/Flask%20Projects/VillaLuz/migrations/env.py#L11-L20) y [env.py](file:///c:/Users/Miguel/Documents/Flask%20Projects/VillaLuz/migrations/env.py#L29-L41)
+- Configuración Alembic: [alembic.ini](file:///c:/Users/Miguel/Documents/Flask%20Projects/VillaLuz/alembic.ini)
+- Ejemplo de migración con inspección de índices: [20260108_activity_agg_and_indexes.py](file:///c:/Users/Miguel/Documents/Flask%20Projects/VillaLuz/migrations/versions/20260108_activity_agg_and_indexes.py)
+ - Comando único y verificación total: [upgrade_db.py](file:///c:/Users/Miguel/Documents/Flask%20Projects/VillaLuz/upgrade_db.py)
 
 ## Ejemplo rápido (Windows PowerShell)
 ```

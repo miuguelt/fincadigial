@@ -27,7 +27,7 @@ export interface Animals{
     sale_date?: string;
     exit_date?: string;
     exit_reason?: string;
-    
+
     // Potreros adicionales para compatibilidad con formularios y relaciones
     idAnimal?: number;
     name?: string;
@@ -44,7 +44,7 @@ export interface Animals{
     controls?: Control[];
     geneticImprovements?: GeneticImprovements[];
     animalFields?: AnimalFields[];
-    
+
     // Campos dinámicos del backend
     health_indicator?: 'stable' | 'warning' | 'critical';
     is_pregnant?: boolean;

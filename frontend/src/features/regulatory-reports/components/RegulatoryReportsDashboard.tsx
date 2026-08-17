@@ -79,10 +79,10 @@ export const RegulatoryReportsDashboard: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto bg-background/50 p-3 rounded-xl border border-border/50">
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <Label htmlFor="date-from" className="text-sm font-medium whitespace-nowrap text-muted-foreground">Desde</Label>
-              <Input 
-                id="date-from" 
-                type="date" 
-                value={dateFrom} 
+              <Input
+                id="date-from"
+                type="date"
+                value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
                 className="bg-background shadow-sm border-border/80 w-full sm:w-[160px]"
               />
@@ -90,10 +90,10 @@ export const RegulatoryReportsDashboard: React.FC = () => {
             <div className="hidden sm:block w-px h-8 bg-border"></div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <Label htmlFor="date-to" className="text-sm font-medium whitespace-nowrap text-muted-foreground">Hasta</Label>
-              <Input 
-                id="date-to" 
-                type="date" 
-                value={dateTo} 
+              <Input
+                id="date-to"
+                type="date"
+                value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
                 className="bg-background shadow-sm border-border/80 w-full sm:w-[160px]"
               />
@@ -115,16 +115,16 @@ export const RegulatoryReportsDashboard: React.FC = () => {
             <CardContent className="px-6 py-0 flex-1">
               <div className="text-xs text-muted-foreground space-y-2 p-4 bg-muted/30 rounded-xl border border-border/50">
                 <p className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary/60"></span> Formato: CSV / Excel / PDF
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary/60"></span> Formatos disponibles: CSV / PDF
                 </p>
                 <p className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary/60"></span> Cumplimiento: Resolución ICA 1234
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary/60"></span> Fuente: registros sanitarios de la finca
                 </p>
               </div>
             </CardContent>
             <CardFooter className="p-6 pt-5 flex gap-3">
-              <Button 
-                className="flex-1 gap-2 bg-background hover:bg-muted border-border/80 shadow-sm transition-colors" 
+              <Button
+                className="flex-1 gap-2 bg-background hover:bg-muted border-border/80 shadow-sm transition-colors"
                 onClick={() => handleDownload(report.id, 'csv')}
                 disabled={loading}
                 variant="outline"
@@ -132,8 +132,8 @@ export const RegulatoryReportsDashboard: React.FC = () => {
                 {loading ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> : <FileDown className="h-4 w-4 text-muted-foreground" />}
                 CSV
               </Button>
-              <Button 
-                className="flex-1 gap-2 shadow-sm transition-all" 
+              <Button
+                className="flex-1 gap-2 shadow-sm transition-all"
                 onClick={() => handleDownload(report.id, 'pdf')}
                 disabled={loading}
               >
@@ -151,9 +151,9 @@ export const RegulatoryReportsDashboard: React.FC = () => {
             <ShieldCheck className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h4 className="font-semibold text-sm">Certificación Sanitaria Automática</h4>
+            <h4 className="font-semibold text-sm">Sincronización sanitaria</h4>
             <p className="text-xs text-muted-foreground">
-              Estos reportes están sincronizados con la base de datos central de la finca. 
+              Estos reportes están sincronizados con la base de datos central de la finca.
               Asegúrate de que todos los eventos (vacunas, muertes, ventas) estén registrados en el sistema antes de exportar.
             </p>
           </div>

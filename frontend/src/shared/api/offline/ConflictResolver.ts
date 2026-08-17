@@ -9,7 +9,7 @@ export interface ConflictLog {
 }
 
 /**
- * ConflictResolver: Se encarga de decidir qué dato prevalece cuando 
+ * ConflictResolver: Se encarga de decidir qué dato prevalece cuando
  * hay cambios divergentes en la red Mesh.
  */
 export class ConflictResolver {
@@ -23,8 +23,8 @@ export class ConflictResolver {
     const versionA = opA.syncVersion || 0;
     const versionB = opB.syncVersion || 0;
 
-    const result = versionA >= versionB 
-      ? { winner: opA, loser: opB } 
+    const result = versionA >= versionB
+      ? { winner: opA, loser: opB }
       : { winner: opB, loser: opA };
 
     this.logConflict(result.winner, result.loser);
@@ -43,7 +43,7 @@ export class ConflictResolver {
       loser,
       resolvedAt: Date.now()
     };
-    
+
     logs.unshift(newLog);
     // Mantener solo los últimos 50 conflictos
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(logs.slice(0, 50)));

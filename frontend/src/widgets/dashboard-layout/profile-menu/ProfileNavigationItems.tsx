@@ -55,7 +55,7 @@ function CountBadge({ count }: { count?: number }) {
   if (!count) return null;
 
   return (
-    <span className="ml-auto flex min-w-6 items-center justify-center rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-black text-white">
+    <span className="ml-auto flex min-w-6 items-center justify-center rounded-full bg-destructive px-1.5 py-0.5 text-[11px] font-black text-white">
       {count > 99 ? '99+' : count}
     </span>
   );
@@ -75,7 +75,7 @@ export function ProfileNavigationItems() {
 
   return (
     <>
-      <DropdownMenuLabel className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+      <DropdownMenuLabel className="px-3 py-1.5 text-[11px] font-black uppercase tracking-wider text-muted-foreground">
         Accesos principales
       </DropdownMenuLabel>
 

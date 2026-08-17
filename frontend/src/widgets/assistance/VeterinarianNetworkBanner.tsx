@@ -13,7 +13,7 @@ function VeterinarianPill({ veterinarian }: { veterinarian: AssistanceVeterinari
   const verified = veterinarian.credential?.status === 'Verificado';
   return (
     <div className="flex min-w-0 max-w-full items-center gap-2 rounded-full border border-border/50 bg-background/90 py-1.5 pl-1.5 pr-3 shadow-sm" title={veterinarian.credential?.specialization || undefined}>
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-black text-primary">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-black text-primary">
         {initials(veterinarian.fullname)}
       </span>
       <span className="min-w-0 text-fluid-xs font-bold text-foreground">{veterinarian.fullname}</span>
@@ -59,7 +59,7 @@ export function VeterinarianNetworkBanner({ network, loading = false }: Props) {
         <div className="flex min-w-0 items-start gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm"><BellRing className="h-5 w-5" aria-hidden /></span>
           <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">Red veterinaria de tu finca</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">Red veterinaria de tu finca</p>
             <h2 className="mt-1 text-sm font-black text-foreground sm:text-base">{network.total} veterinario{network.total === 1 ? '' : 's'} recibirán tu solicitud</h2>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Se envía un aviso dentro de Villa Luz y, si lo activaron, una notificación al dispositivo. El primero que tome el caso queda asignado.</p>
           </div>

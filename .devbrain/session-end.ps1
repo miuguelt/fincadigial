@@ -4,7 +4,6 @@
     Protocolo de cierre de sesion de agente DevBrain.
 #>
 param(
-    [switch]$AutoCommit,
     [switch]$SkipBuild,
     [switch]$SkipIntegrity
 )
@@ -22,22 +21,7 @@ $uncommitted = git status --short 2>$null
 if ($uncommitted) {
     Write-Host "`n[1/5] Archivos sin commit detectados:" -ForegroundColor Yellow
     Write-Host $uncommitted
-    if ($AutoCommit) {
-        git add -A
-        $ts = Get-Date -Format "yyyy-MM-dd_HH:mm"
-        git commit -m "session-end: cambios de sesion $ts"
-        Write-Host "   Auto-commit realizado." -ForegroundColor Green
-    } else {
-        $resp = Read-Host "Deseas hacer commit automatico? (s/n)"
-        if ($resp -eq "s") {
-            git add -A
-            $ts = Get-Date -Format "yyyy-MM-dd_HH:mm"
-            git commit -m "session-end: cambios de sesion $ts"
-        } else {
-            Write-Host "ABORTADO - No puedes cerrar sesion con archivos sin commit" -ForegroundColor Red
-            exit 1
-        }
-    }
+    Write-Host "   No se hará commit automático. Revisa y confirma manualmente." -ForegroundColor Yellow
 } else {
     Write-Host "`n[1/5] Sin archivos pendientes" -ForegroundColor Green
 }
@@ -91,10 +75,8 @@ Write-Host ""
 Write-Host "   Si aprendiste algo nuevo, registralo en:" -ForegroundColor White
 Write-Host "      .devbrain\knowledge\lessons_learned.md" -ForegroundColor DarkGray
 
-# 6. Tag de fin de sesion
-$tag = "session-end-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
-git tag $tag 2>$null | Out-Null
-Write-Host "`n   Tag creado: $tag" -ForegroundColor Green
+# 6. No crear tags automáticos: el historial debe ser una decisión humana.
+Write-Host "`n   No se creó tag automático." -ForegroundColor DarkGray
 
 Write-Host "`n==========================================" -ForegroundColor Cyan
 Write-Host "  Protocolo de cierre completado." -ForegroundColor Green

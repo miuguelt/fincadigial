@@ -78,7 +78,7 @@ export function PulseTile({
         {hasDelta && (
           <span
             className={cn(
-              'inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] font-bold tabular-nums',
+              'inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[11px] font-bold tabular-nums',
               deltaIsGood
                 ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
                 : 'bg-rose-500/10 text-rose-700 dark:text-rose-400',

@@ -1,21 +1,21 @@
 import { useState } from 'react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
   DialogFooter,
   DialogDescription
 } from '@/shared/ui/dialog';
 import { Button } from '@/shared/ui/button';
 import { Label } from '@/shared/ui/label';
 import { Textarea } from '@/shared/ui/textarea';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/shared/ui/select';
 import { UserSearchCombobox } from '@/shared/components/UserSearchCombobox';
 import { IconSend, IconLoader2 } from '@/shared/ui/icons';
@@ -65,7 +65,7 @@ export function FarmInviteModal({
         notes: message,
         method: 'link'
       });
-      
+
       showToast(`Invitación enviada a ${selectedUser.full_name}`, 'success');
       if (onSuccess) onSuccess();
       onClose();
@@ -114,13 +114,13 @@ export function FarmInviteModal({
 
           <div className="grid gap-2">
             <Label>Mensaje (opcional)</Label>
-            <Textarea 
-              placeholder="Hola, te invito a gestionar esta finca conmigo..." 
+            <Textarea
+              placeholder="Hola, te invito a gestionar esta finca conmigo..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               maxLength={280}
             />
-            <span className="text-[10px] text-right text-[var(--color-text-muted)]">
+            <span className="text-[11px] text-right text-[var(--color-text-muted)]">
               {message.length}/280
             </span>
           </div>

@@ -93,7 +93,7 @@ export const InviteForm = ({ fincaId, onSuccess }: InviteFormProps) => {
         title: '¡Invitación Enviada!',
         description: `Se ha notificado a ${selectedUser.fullname} para unirse a tu equipo.`,
       });
-      
+
       // Resetear
       setSelectedUser(null);
       setSearchQuery('');
@@ -208,7 +208,7 @@ export const InviteForm = ({ fincaId, onSuccess }: InviteFormProps) => {
                 {/* Visual fallback for QR data */}
                 <div className="w-40 h-40 flex flex-col items-center justify-center border-2 border-dashed border-muted rounded bg-muted/10 p-2 text-center">
                   <QrCode className="h-12 w-12 text-muted-foreground mb-2" />
-                  <span className="text-[10px] text-muted-foreground font-mono break-anywhere line-clamp-3">
+                  <span className="text-[11px] text-muted-foreground font-mono break-anywhere line-clamp-3">
                     {createdInvitation.url}
                   </span>
                 </div>

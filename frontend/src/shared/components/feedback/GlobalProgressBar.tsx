@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 
 /**
  * GlobalProgressBar
- * 
+ *
  * Una barra de progreso premium "Crystal" que se muestra en la parte superior
  * de la pantalla durante la navegación entre rutas o peticiones activas.
  */
@@ -19,7 +19,7 @@ export const GlobalProgressBar: React.FC = () => {
   // Activar barra cuando hay actividad o cambio de ruta
   useEffect(() => {
     const hasActivity = isFetching > 0 || isMutating > 0;
-    
+
     if (hasActivity) {
       setIsVisible(true);
       // Simular progreso
@@ -62,7 +62,7 @@ export const GlobalProgressBar: React.FC = () => {
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-primary/20 blur-sm"
           />
-          
+
           {/* Barra principal */}
           <motion.div
             initial={{ width: '0%' }}

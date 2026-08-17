@@ -101,7 +101,7 @@ export default function SystemLogsTab() {
 							key={c}
 							onClick={() => setFilter(c === filter ? "" : c)}
 							className={cn(
-								"px-2 py-1 text-[10px] font-bold rounded-md border transition-colors",
+								"px-2 py-1 text-[11px] font-bold rounded-md border transition-colors",
 								c === filter
 									? "bg-primary text-primary-foreground border-primary"
 									: "bg-card text-muted-foreground border-border",
@@ -128,14 +128,14 @@ export default function SystemLogsTab() {
 								<Badge
 									variant="outline"
 									className={cn(
-										"text-[9px] px-1 py-0",
+										"text-[11px] px-1 py-0",
 										categoryColor[l.category] || categoryColor.other,
 									)}
 								>
 									{l.category}
 								</Badge>
 							</div>
-							<div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
+							<div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground">
 								<span>{l.size_kb} KB</span>
 								<span>·</span>
 								<span>{new Date(l.modified).toLocaleDateString('es-CO')}</span>

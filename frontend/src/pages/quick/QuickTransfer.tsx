@@ -27,7 +27,7 @@ export default function QuickTransfer() {
     newParams.delete('quick');
     setSearchParams(newParams, { replace: true });
   };
-  
+
   const [animalId, setAnimalId] = useState<number | null>(null);
   const [fieldId, setFieldId] = useState<number | null>(null);
   const [date, setDate] = useState(getTodayColombia());

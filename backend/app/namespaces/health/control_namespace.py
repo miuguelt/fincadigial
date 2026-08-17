@@ -5,8 +5,8 @@ from app.utils.namespace_helpers import create_optimized_namespace
 
 # Create the optimized namespace for the Control model
 control_ns = create_optimized_namespace(
-    name='control',
-    description='🩺 Gestión de Controles de Salud',
+    name="control",
+    description="🩺 Gestión de Controles de Salud",
     model_class=Control,
-    path='/control'
+    path="/control",
 )

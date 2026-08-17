@@ -19,4 +19,3 @@ export interface FormErrors {
   address?: string;
   general?: string;
 }
-

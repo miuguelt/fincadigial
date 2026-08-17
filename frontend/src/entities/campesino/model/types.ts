@@ -190,4 +190,3 @@ export interface OfflineLearningMaterial {
   is_active?: boolean;
   _is_offline_pending?: boolean;
 }
-

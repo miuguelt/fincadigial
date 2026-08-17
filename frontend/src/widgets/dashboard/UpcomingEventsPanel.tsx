@@ -224,7 +224,7 @@ const UpcomingEventsPanel: React.FC = () => {
               {tab.icon} {tab.label}
               {counts[tab.key] > 0 && (
                 <span
-                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                  className={`px-1.5 py-0.5 rounded-full text-[11px] font-black ${
                     activeTab === tab.key
                       ? "bg-card/20 text-white"
                       : "bg-primary/10 text-primary"

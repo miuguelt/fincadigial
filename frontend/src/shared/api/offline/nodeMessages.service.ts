@@ -21,4 +21,3 @@ export const nodeMessagesService = {
     return data?.data || data;
   },
 };
-

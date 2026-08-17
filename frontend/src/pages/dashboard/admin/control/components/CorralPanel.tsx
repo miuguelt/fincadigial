@@ -26,23 +26,23 @@ type CorralSessionPayload = {
 export const CorralPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
   const { user } = useAuth() as any;
   const { toast } = useToast();
-  
+
   const [animals, setAnimals] = useState<{label: string, value: number, sex: string}[]>([]);
   const [loadingAnimals, setLoadingAnimals] = useState(true);
-  
+
   const [animalId, setAnimalId] = useState<number | ''>('');
   const [healthStatus, setHealthStatus] = useState<string>('Sano');
   const [weight, setWeight] = useState<string>('');
   const [milkLiters, setMilkLiters] = useState<string>('');
-  
+
   // Extra options
   const [showRepro, setShowRepro] = useState(false);
   const [reproEvent, setReproEvent] = useState<string>('');
-  
+
   const [showTreatment, setShowTreatment] = useState(false);
   const [treatmentDesc, setTreatmentDesc] = useState<string>('');
   const [treatmentDosis, setTreatmentDosis] = useState<string>('');
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export const CorralPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
         const data = await animalService.getAll({ page: 1, page_size: 1000 } as any);
         const raw: any = data;
         const arr: any[] = Array.isArray(raw) ? raw : (raw?.items ?? raw?.data ?? raw?.results ?? []);
-        
+
         setAnimals(arr.map((a: any) => ({
           label: (a.record || a.registro) ? `${a.record || a.registro} - ${a.name || a.nombre || ''}` : `Animal #${a.id}`,
           value: a.id,
@@ -87,37 +87,37 @@ export const CorralPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
       toast({ title: 'Atención', description: 'Debe seleccionar un animal.', variant: 'warning' });
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     const payload: CorralSessionPayload = {
       animal_id: animalId,
       finca_id: user?.finca_id,
       health_status: healthStatus,
     };
-    
+
     if (weight) payload.weight = parseFloat(weight);
     if (milkLiters && parseFloat(milkLiters) > 0) {
       payload.milk_liters = parseFloat(milkLiters);
       payload.milking_session = new Date().getHours() < 12 ? 'AM' : 'PM';
     }
-    
+
     if (showRepro && reproEvent) {
       payload.reproduction_event = reproEvent;
     }
-    
+
     if (showTreatment && treatmentDesc) {
       payload.treatment_description = treatmentDesc;
       payload.treatment_dosis = treatmentDosis || 'Aplicado';
       payload.treatment_frequency = 'Dosis única';
     }
-    
+
     try {
       // Guardar a través de la cola offline para robustez
       await offlineQueue.enqueue('POST', '/api/v1/corral/session', payload);
-      
+
       toast({ title: '¡Guardado!', description: 'Registro guardado correctamente.', variant: 'success' });
-      
+
       if (onClose) {
         onClose();
       } else {
@@ -131,7 +131,7 @@ export const CorralPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
         setTreatmentDesc('');
         setTreatmentDosis('');
       }
-      
+
     } catch (error: any) {
       console.error(error);
       toast({ title: 'Error', description: error.message || 'No se pudo guardar la sesión.', variant: 'destructive' });
@@ -142,14 +142,14 @@ export const CorralPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
 
   const formContent = (
     <form onSubmit={handleSubmit} className="space-y-8">
-      
+
       {/* Paso 1: Animal */}
       <div className="bg-blue-50/50 dark:bg-blue-950/30 p-5 rounded-lg border border-blue-100 dark:border-blue-900 shadow-sm">
         <Label className="text-xl font-bold text-blue-900 dark:text-blue-200 mb-3 flex items-center gap-2">
           <span>1.</span> 🐄 ¿A qué animal vamos a registrar?
         </Label>
-        <Select 
-          value={animalId ? animalId.toString() : ''} 
+        <Select
+          value={animalId ? animalId.toString() : ''}
           onValueChange={(val) => setAnimalId(parseInt(val))}
           disabled={loadingAnimals}
         >
@@ -168,7 +168,7 @@ export const CorralPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
 
       {animalId && (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          
+
           {/* Paso 2: Producción y Peso */}
           <div className="bg-emerald-50/50 dark:bg-emerald-950/30 p-5 rounded-lg border border-emerald-100 dark:border-emerald-900 shadow-sm">
             <Label className="text-xl font-bold text-emerald-900 dark:text-emerald-200 mb-4 flex items-center gap-2">
@@ -216,7 +216,7 @@ export const CorralPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
               </div>
             </div>
           </div>
-          
+
           {/* Paso 3: Salud */}
           <div className="bg-amber-50/50 dark:bg-amber-950/30 p-5 rounded-lg border border-amber-100 dark:border-amber-900 shadow-sm">
             <Label className="text-xl font-bold text-amber-900 dark:text-amber-200 mb-4 flex items-center gap-2">
@@ -243,7 +243,7 @@ export const CorralPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
                 );
               })}
             </div>
-            
+
             {/* Tratamiento si está enfermo */}
             {showTreatment && (
               <div className="mt-5 p-5 bg-red-50 dark:bg-red-950/40 rounded-xl border-2 border-red-200 dark:border-red-900 animate-in fade-in slide-in-from-top-2">
@@ -273,7 +273,7 @@ export const CorralPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
               </div>
             )}
           </div>
-          
+
           {/* Paso 4: Novedad Reproductiva */}
           {isFemale && (
             <div className="bg-purple-50/50 dark:bg-purple-950/30 p-5 rounded-lg border border-purple-100 dark:border-purple-900 shadow-sm">
@@ -293,7 +293,7 @@ export const CorralPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
                   {showRepro ? 'Quitar' : '+ Añadir'}
                 </Button>
               </div>
-              
+
               {showRepro && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-in fade-in slide-in-from-top-2">
                   {[
@@ -302,7 +302,7 @@ export const CorralPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
                     { id: 'Diagnostico', label: 'Diagnóstico', icon: '👨‍⚕️' },
                     { id: 'Parto', icon: '🍼' }
                   ].map((evt) => (
-                    <div 
+                    <div
                       key={evt.id}
                       onClick={() => setReproEvent(evt.id)}
                       className={`cursor-pointer rounded-xl border-2 p-3 flex flex-col items-center justify-center gap-1 transition-all ${reproEvent === evt.id ? 'border-purple-500 bg-purple-100 dark:bg-purple-950/60 font-bold text-purple-900 dark:text-purple-100 shadow-sm' : 'border-purple-200 dark:border-purple-800 bg-card hover:bg-purple-50 dark:hover:bg-purple-950/40 text-muted-foreground'}`}
@@ -328,9 +328,9 @@ export const CorralPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
                 Cancelar
               </Button>
             )}
-            <Button 
-              type="submit" 
-              disabled={isSubmitting || !animalId} 
+            <Button
+              type="submit"
+              disabled={isSubmitting || !animalId}
               className={`${onClose ? 'w-full sm:w-2/3' : 'w-full'} h-16 text-2xl font-bold rounded-lg shadow-lg bg-emerald-600 hover:bg-emerald-700 hover:shadow-xl transition-all`}
             >
               {isSubmitting ? 'Guardando...' : '💾 Guardar Registro'}
@@ -364,4 +364,3 @@ export const CorralPanel: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
     </Card>
   );
 };
-

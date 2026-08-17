@@ -17,7 +17,7 @@ from app.services.activity_service import (
     _window_bounds,
     _apply_bounds,
     _window_date_bounds,
-    _can_use_daily_agg
+    _can_use_daily_agg,
 )
 
 
@@ -43,12 +43,14 @@ def test_parse_datetime():
     # Formato inválido
     assert _parse_datetime("formato-incorrecto") is None
 
+
 @pytest.mark.critical
 def test_safe_int():
     assert _safe_int(None) is None
     assert _safe_int(42) == 42
     assert _safe_int("42") == 42
     assert _safe_int("abc") is None
+
 
 @pytest.mark.critical
 def test_iso():
@@ -59,15 +61,17 @@ def test_iso():
     assert _iso(dt_naive) == "2026-05-21T15:00:00Z"
 
     dt_tz = datetime(2026, 5, 21, 15, 0, 0, tzinfo=timezone(timedelta(hours=-5)))
-    assert _iso(dt_tz) == "2026-05-21T20:00:00Z" # Convertido a UTC
+    assert _iso(dt_tz) == "2026-05-21T20:00:00Z"  # Convertido a UTC
 
     assert _iso(object()) is None
+
 
 @pytest.mark.critical
 def test_parse_csv():
     assert _parse_csv(None) == set()
     assert _parse_csv("") == set()
     assert _parse_csv("a,b,,c ") == {"a", "b", "c"}
+
 
 @pytest.mark.critical
 def test_normalize_dt_for_db():
@@ -80,6 +84,7 @@ def test_normalize_dt_for_db():
     normalized = _normalize_dt_for_db(dt_tz)
     assert normalized.tzinfo is None
     assert normalized == datetime(2026, 5, 21, 15, 0, 0)
+
 
 @pytest.mark.critical
 def test_encode_decode_cursor():
@@ -96,6 +101,7 @@ def test_encode_decode_cursor():
     # Cursor inválido
     assert _decode_cursor("invalid-base64") == (None, None)
     assert _decode_cursor(None) == (None, None)
+
 
 @pytest.mark.critical
 def test_format_activity():
@@ -133,6 +139,7 @@ def test_format_activity():
     res_filtered = _format_activity(item, fields_set={"id", "action", "entity"})
     assert res_filtered == {"id": 1, "action": "create", "entity": "animal"}
 
+
 @pytest.mark.critical
 def test_activity_load_only():
     # Sin campos específicos
@@ -140,14 +147,17 @@ def test_activity_load_only():
     assert len(cols) > 2
 
     # Con campos específicos
-    cols_filtered = _activity_load_only({"action", "title"}, include_actor=False, include_relations=False)
+    cols_filtered = _activity_load_only(
+        {"action", "title"}, include_actor=False, include_relations=False
+    )
     # Debe contener al menos id, created_at, action y title
-    col_names = [getattr(col, 'name', '') for col in cols_filtered]
+    col_names = [getattr(col, "name", "") for col in cols_filtered]
     assert "id" in col_names
     assert "created_at" in col_names
     assert "action" in col_names
     assert "title" in col_names
     assert "severity" not in col_names
+
 
 @pytest.mark.critical
 def test_build_query(app):
@@ -160,16 +170,18 @@ def test_build_query(app):
         assert q is not None
 
         # Filtros con args
-        flask.request.args = MultiDict({
-            "entity": "animal",
-            "action": "create",
-            "severity": "info",
-            "entity_id": "42",
-            "user_id": "10",
-            "animal_id": "42",
-            "from": "2026-05-21T00:00:00Z",
-            "to": "2026-05-21T23:59:59Z"
-        })
+        flask.request.args = MultiDict(
+            {
+                "entity": "animal",
+                "action": "create",
+                "severity": "info",
+                "entity_id": "42",
+                "user_id": "10",
+                "animal_id": "42",
+                "from": "2026-05-21T00:00:00Z",
+                "to": "2026-05-21T23:59:59Z",
+            }
+        )
 
         q_filtered = _build_query()
         # Verificar que la query se haya construido con filtros
@@ -182,6 +194,7 @@ def test_build_query(app):
         assert "animal_id =" in sql
         assert "created_at >=" in sql
         assert "created_at <=" in sql
+
 
 @pytest.mark.critical
 def test_window_bounds_and_apply_bounds(app):
@@ -199,10 +212,9 @@ def test_window_bounds_and_apply_bounds(app):
         assert (to_dt - from_dt).days == 7
 
         # Con parámetros de consulta
-        flask.request.args = MultiDict({
-            "from": "2026-05-20T10:00:00Z",
-            "to": "2026-05-21T10:00:00Z"
-        })
+        flask.request.args = MultiDict(
+            {"from": "2026-05-20T10:00:00Z", "to": "2026-05-21T10:00:00Z"}
+        )
         from_dt, to_dt = _window_bounds()
         assert from_dt.day == 20
         assert to_dt.day == 21
@@ -213,6 +225,7 @@ def test_window_bounds_and_apply_bounds(app):
         sql = str(q_bounded)
         assert "created_at >=" in sql
         assert "created_at <=" in sql
+
 
 @pytest.mark.critical
 def test_can_use_daily_agg(app):
@@ -230,13 +243,11 @@ def test_can_use_daily_agg(app):
         dt_not_midnight = datetime(2026, 5, 21, 12, 0, 0)
         assert _can_use_daily_agg(dt_not_midnight, None) is False
 
+
 @pytest.mark.critical
 def test_window_date_bounds(app):
     with app.test_request_context():
-        flask.request.args = MultiDict({
-            "from": "2026-05-20",
-            "to": "2026-05-22"
-        })
+        flask.request.args = MultiDict({"from": "2026-05-20", "to": "2026-05-22"})
         start, end, from_dt, to_dt = _window_date_bounds(days=3)
         assert start == date(2026, 5, 20)
         assert end == date(2026, 5, 22)

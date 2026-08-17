@@ -1,118 +1,78 @@
+"""Siembra los usuarios E2E con las identidades canónicas del seeder.
+
+Antes esta lista repetía documentos y correos a mano con el dominio
+`@villaluz.com`, mientras el seeder de arranque usa `@villaluz.co`: cada arranque
+del backend borraba estos usuarios por conflicto de correo.
+"""
 
 import os
 import sys
 
 # Añadir ruta del backend al path
-backend_path = os.path.join(os.getcwd(), 'BackFinca')
+backend_path = os.path.join(os.getcwd(), "backend")
 if backend_path not in sys.path:
     sys.path.insert(0, backend_path)
 
 from app import create_app, db
-from app.models.user import User, Role, ApprovalStatus
+from app.models.user import User, ApprovalStatus
 from app.models.finca import Finca, FarmType
-from app.models.user_finca import UserFinca
+from app.utils.seed_identities import get_seed_identities
+
+from test_credentials import get_role_password
+
+
+def ensure_e2e_finca():
+    """Devuelve la finca 1 de pruebas E2E, creándola si no existe."""
+    finca = Finca.query.get(1)
+    if finca:
+        return finca
+
+    finca = Finca(
+        id=1,
+        name="Villa Luz - E2E",
+        type=FarmType.Educativa,
+        department="Antioquia",
+        municipality="Medellín",
+    )
+    db.session.add(finca)
+    db.session.commit()
+    print("✓ Finca 1 creada")
+    return finca
+
 
 def seed_e2e_users():
-    app = create_app('development')
-    
+    app = create_app("development")
+
     with app.app_context():
         db.create_all()
         print("🌱 Seeding E2E Test Users...")
-        
-        # 1. Asegurar Finca 1
-        finca = Finca.query.get(1)
-        if not finca:
-            finca = Finca(
-                id=1,
-                name='Villa Luz - E2E',
-                type=FarmType.Educativa,
-                department='Antioquia',
-                municipality='Medellín'
+
+        finca = ensure_e2e_finca()
+
+        for profile in get_seed_identities():
+            role = profile["role"]
+            user = User.query.filter_by(identification=profile["identification"]).first()
+            if user:
+                print(f"✓ Usuario ya existe: {user.fullname} ({role})")
+                continue
+
+            # User.create maneja set_password y UserFinca.assign automáticamente
+            User.create(
+                identification=profile["identification"],
+                fullname=profile["fullname"],
+                email=profile["email"],
+                phone=f"300{profile['identification'] % 10000000:07d}",
+                role=role,
+                password=get_role_password(role),
+                finca_id=finca.id,
+                status=True,
+                approval_status=ApprovalStatus.Approved,
+                commit=True,
             )
-            db.session.add(finca)
-            db.session.commit()
-            print("✓ Finca 1 creada")
-        
-        test_users = [
-            {
-                'identification': 1098,
-                'fullname': 'Admin E2E',
-                'email': 'admin@villaluz.com',
-                'phone': '3001098',
-                'role': 'Administrador',
-                'password': 'Admin1234!'
-            },
-            {
-                'identification': 55555555,
-                'fullname': 'Propietario E2E',
-                'email': 'propietario@villaluz.com',
-                'phone': '3005555',
-                'role': 'Propietario',
-                'password': 'Propietario1234!'
-            },
-            {
-                'identification': 66666666,
-                'fullname': 'Capataz E2E',
-                'email': 'capataz@villaluz.com',
-                'phone': '3006666',
-                'role': 'Capataz',
-                'password': 'Capataz1234!'
-            },
-            {
-                'identification': 11111111,
-                'fullname': 'Instructor E2E',
-                'email': 'instructor@villaluz.com',
-                'phone': '3001111',
-                'role': 'Instructor',
-                'password': 'Instructor1234!'
-            },
-            {
-                'identification': 22222222,
-                'fullname': 'Aprendiz E2E',
-                'email': 'aprendiz@villaluz.com',
-                'phone': '3002222',
-                'role': 'Aprendiz',
-                'password': 'Aprendiz1234!'
-            },
-            {
-                'identification': 33333333,
-                'fullname': 'Operario E2E',
-                'email': 'operario@villaluz.com',
-                'phone': '3003333',
-                'role': 'Operario',
-                'password': 'Operario1234!'
-            },
-            {
-                'identification': 44444444,
-                'fullname': 'Veterinario E2E',
-                'email': 'veterinario@villaluz.com',
-                'phone': '3004444',
-                'role': 'Veterinario',
-                'password': 'Veterinario1234!'
-            }
-        ]
-        
-        for u_data in test_users:
-            user = User.query.filter_by(identification=u_data['identification']).first()
-            if not user:
-                # Usar User.create para manejar set_password y UserFinca.assign automáticamente
-                user = User.create(
-                    identification=u_data['identification'],
-                    fullname=u_data['fullname'],
-                    email=u_data['email'],
-                    phone=u_data['phone'],
-                    role=u_data['role'],
-                    password=u_data['password'],
-                    finca_id=finca.id,
-                    status=True,
-                    approval_status=ApprovalStatus.Approved,
-                    commit=True
-                )
-                print(f"✓ Usuario creado: {u_data['fullname']} ({u_data['role']})")
-            else:
-                print(f"✓ Usuario ya existe: {u_data['fullname']}")
-                
+            print(f"✓ Usuario creado: {profile['fullname']} ({role})")
+
         print("✅ E2E Seed Complete")
+
 
 if __name__ == "__main__":
     seed_e2e_users()

@@ -1,4 +1,4 @@
-# 📊 Gráficos y Visualizaciones Recomendadas - BackFinca
+# 📊 Gráficos y Visualizaciones Recomendadas - VillaLuz
 
 ## Guía Visual para Implementación en Frontend
 

@@ -139,9 +139,9 @@ const TasksPage: React.FC = () => {
           type: 'select',
           loadOptions: async () => {
             const animals = await animalService.getAll();
-            return animals.map((a: any) => ({ 
-              label: (a.record || a.registro) ? `${a.record || a.registro} - ${a.name || a.nombre || ''}` : `Animal #${a.id}`, 
-              value: a.id 
+            return animals.map((a: any) => ({
+              label: (a.record || a.registro) ? `${a.record || a.registro} - ${a.name || a.nombre || ''}` : `Animal #${a.id}`,
+              value: a.id
             }));
           }
         } as any,
@@ -179,4 +179,3 @@ const TasksPage: React.FC = () => {
 };
 
 export default TasksPage;
-

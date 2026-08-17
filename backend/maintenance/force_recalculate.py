@@ -7,7 +7,7 @@ sys.path.append(os.getcwd())
 from app import create_app, db
 from app.models.livestock_summary import LivestockSummary
 
-app = create_app('development')
+app = create_app("development")
 with app.app_context():
     print("Recalculando resúmenes de fincas...")
     summaries = LivestockSummary.query.all()

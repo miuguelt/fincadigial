@@ -50,4 +50,3 @@ describe('UserCard', () => {
     expect(onView).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }))
   })
 })
-

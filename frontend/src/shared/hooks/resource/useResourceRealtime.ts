@@ -90,4 +90,3 @@ export function useResourceRealtime(
   }, [realtimeEnabled, refetch, crudInProgressRef, skipCacheUntilRef, endpointPrefix]);
 
 }
-

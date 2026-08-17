@@ -1,1 +1,0 @@
-export { MilkEntryFormWidget } from './MilkEntryForm';

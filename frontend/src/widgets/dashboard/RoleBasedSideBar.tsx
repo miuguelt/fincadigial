@@ -1,4 +1,4 @@
- 
+
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import { cn } from "@/shared/ui/cn";
 import { useAuth } from "@/features/auth/model/useAuth";
@@ -47,7 +47,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
   const { user, role, loading, isAuthenticated, checkAuthStatus } = useAuth() as any;
   const location = useLocation();
   const { farmPending } = useNotifications();
-  
+
   const [pendingMemberships, setPendingMemberships] = useState(0);
   const [sickAnimalsCount, setSickAnimalsCount] = useState(0);
   const [upcomingBirthsCount, setUpcomingBirthsCount] = useState(0);
@@ -63,7 +63,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
   useEffect(() => {
     if (isAuthenticated && currentRole) {
        // Estos valores vendrían de un endpoint de agregación en el futuro
-       setSickAnimalsCount(0); 
+       setSickAnimalsCount(0);
        setUpcomingBirthsCount(0);
     }
   }, [isAuthenticated, currentRole]);
@@ -324,7 +324,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                         <>
                             <span>{category.title}</span>
                             {badge && (
-                                <span className={cn("ml-auto text-[10px] text-white font-black px-2 py-0.5 rounded-full shadow-sm animate-pulse", badge.color)}>
+                                <span className={cn("ml-auto text-[11px] text-white font-black px-2 py-0.5 rounded-full shadow-sm animate-pulse", badge.color)}>
                                     {badge.count}
                                 </span>
                             )}
@@ -451,7 +451,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                                         </span>
                                         <span className="text-xs text-muted-foreground group-hover:text-primary">{subChild.title}</span>
                                         {subChildBadge && (
-                                          <span className={cn("ml-auto text-[9px] font-black px-1.5 py-0.5 rounded text-white shadow-sm", subChildBadge.color)}>
+                                          <span className={cn("ml-auto text-[11px] font-black px-1.5 py-0.5 rounded text-white shadow-sm", subChildBadge.color)}>
                                             {subChildBadge.count}
                                           </span>
                                         )}
@@ -484,7 +484,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                             </span>
                             <span className="text-sm text-foreground/80">{child.title}</span>
                             {childBadge && (
-                              <span className={cn("ml-auto text-[10px] font-black px-2 py-0.5 rounded-full shadow-md text-white animate-pulse", childBadge.color)}>
+                              <span className={cn("ml-auto text-[11px] font-black px-2 py-0.5 rounded-full shadow-md text-white animate-pulse", childBadge.color)}>
                                 {childBadge.count}
                               </span>
                             )}

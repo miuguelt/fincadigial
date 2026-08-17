@@ -201,7 +201,7 @@ export default function RegisterPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-success rounded-full mb-4">
             <Building2 className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground">4VillaLuz</h1>
+          <h1 className="text-3xl font-bold text-foreground">VillaLuz</h1>
           <p className="text-muted-foreground mt-2">Registro de Nueva Finca</p>
         </div>
 

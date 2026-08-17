@@ -30,4 +30,3 @@ export const useLocationSync = (user: User | null, isAuthenticated: boolean) => 
     return () => clearInterval(interval);
   }, [isAuthenticated, user]);
 };
-

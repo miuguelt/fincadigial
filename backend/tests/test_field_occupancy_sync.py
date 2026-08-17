@@ -17,35 +17,51 @@ from app.models.fields import LandStatus
 
 
 def _finca_id(auth_headers):
-    return decode_token(auth_headers['Authorization'].split(' ')[1])['finca_id']
+    return decode_token(auth_headers["Authorization"].split(" ")[1])["finca_id"]
 
 
-def _seed(finca_id, field_states=('Disponible', 'Disponible'), animal_records=('A001',)):
+def _seed(
+    finca_id, field_states=("Disponible", "Disponible"), animal_records=("A001",)
+):
     """Crea dos potreros y los animales pedidos. Devuelve (field_ids, animal_ids)."""
     food = FoodTypes(
-        food_type='Pasto de Prueba', sowing_date=date.today(), area=10,
-        handlings='Manejo', gauges='G', finca_id=finca_id,
+        food_type="Pasto de Prueba",
+        sowing_date=date.today(),
+        area=10,
+        handlings="Manejo",
+        gauges="G",
+        finca_id=finca_id,
     )
-    species = Species(name='Bovino Test')
+    species = Species(name="Bovino Test")
     db.session.add_all([food, species])
     db.session.commit()
 
-    breed = Breeds(name='Raza Test', species_id=species.id)
+    breed = Breeds(name="Raza Test", species_id=species.id)
     db.session.add(breed)
     db.session.commit()
 
     fields = [
         Fields(
-            name=f'Potrero {index}', ubication=f'Lote {index}', capacity='10',
-            state=LandStatus(state), area='1', gauges='G', handlings='H',
-            food_type_id=food.id, finca_id=finca_id,
+            name=f"Potrero {index}",
+            ubication=f"Lote {index}",
+            capacity="10",
+            state=LandStatus(state),
+            area="1",
+            gauges="G",
+            handlings="H",
+            food_type_id=food.id,
+            finca_id=finca_id,
         )
         for index, state in enumerate(field_states, start=1)
     ]
     animals = [
         Animals(
-            record=record, sex=Sex.Hembra, weight=350, birth_date=date.today(),
-            breeds_id=breed.id, finca_id=finca_id,
+            record=record,
+            sex=Sex.Hembra,
+            weight=350,
+            birth_date=date.today(),
+            breeds_id=breed.id,
+            finca_id=finca_id,
         )
         for record in animal_records
     ]
@@ -56,10 +72,14 @@ def _seed(finca_id, field_states=('Disponible', 'Disponible'), animal_records=('
 
 
 def _assign(animal_id, field_id, finca_id, assignment_date):
-    db.session.add(AnimalFields(
-        animal_id=animal_id, field_id=field_id,
-        assignment_date=assignment_date, finca_id=finca_id,
-    ))
+    db.session.add(
+        AnimalFields(
+            animal_id=animal_id,
+            field_id=field_id,
+            assignment_date=assignment_date,
+            finca_id=finca_id,
+        )
+    )
     db.session.commit()
 
 
@@ -72,8 +92,12 @@ def test_transfer_marks_destination_occupied_and_grazed(client, auth_headers, ap
         _assign(animal_id, origin_id, finca_id, today - timedelta(days=5))
 
     response = client.post(
-        '/api/v1/animal-fields/transfer',
-        json={'animal_ids': [animal_id], 'field_id': target_id, 'date': today.isoformat()},
+        "/api/v1/animal-fields/transfer",
+        json={
+            "animal_ids": [animal_id],
+            "field_id": target_id,
+            "date": today.isoformat(),
+        },
         headers=auth_headers,
     )
     assert response.status_code == 200
@@ -100,20 +124,24 @@ def test_transfer_reports_updated_fields_in_meta(client, auth_headers, app):
         _assign(animal_id, origin_id, finca_id, today - timedelta(days=5))
 
     response = client.post(
-        '/api/v1/animal-fields/transfer',
-        json={'animal_ids': [animal_id], 'field_id': target_id, 'date': today.isoformat()},
+        "/api/v1/animal-fields/transfer",
+        json={
+            "animal_ids": [animal_id],
+            "field_id": target_id,
+            "date": today.isoformat(),
+        },
         headers=auth_headers,
     )
 
-    meta = response.get_json()['meta']
-    by_id = {int(field['id']): field for field in meta['fields']}
+    meta = response.get_json()["meta"]
+    by_id = {int(field["id"]): field for field in meta["fields"]}
 
     assert set(by_id) == {origin_id, target_id}
-    assert by_id[target_id]['animal_count'] == 1
-    assert by_id[target_id]['state'] == 'Ocupado'
-    assert by_id[target_id]['is_grazing_ready'] is False
-    assert by_id[origin_id]['animal_count'] == 0
-    assert by_id[origin_id]['state'] == 'Disponible'
+    assert by_id[target_id]["animal_count"] == 1
+    assert by_id[target_id]["state"] == "Ocupado"
+    assert by_id[target_id]["is_grazing_ready"] is False
+    assert by_id[origin_id]["animal_count"] == 0
+    assert by_id[origin_id]["state"] == "Disponible"
 
 
 def test_transfer_respects_manual_field_state(client, auth_headers, app):
@@ -122,12 +150,17 @@ def test_transfer_respects_manual_field_state(client, auth_headers, app):
     with app.app_context():
         finca_id = _finca_id(auth_headers)
         (_, target_id), (animal_id,) = _seed(
-            finca_id, field_states=('Disponible', 'Mantenimiento'),
+            finca_id,
+            field_states=("Disponible", "Mantenimiento"),
         )
 
     client.post(
-        '/api/v1/animal-fields/transfer',
-        json={'animal_ids': [animal_id], 'field_id': target_id, 'date': today.isoformat()},
+        "/api/v1/animal-fields/transfer",
+        json={
+            "animal_ids": [animal_id],
+            "field_id": target_id,
+            "date": today.isoformat(),
+        },
         headers=auth_headers,
     )
 
@@ -144,28 +177,29 @@ def test_bulk_remove_reports_breakdown_and_frees_field(client, auth_headers, app
     with app.app_context():
         finca_id = _finca_id(auth_headers)
         (field_id, _), (assigned_id, loose_id) = _seed(
-            finca_id, animal_records=('A001', 'A002'),
+            finca_id,
+            animal_records=("A001", "A002"),
         )
         _assign(assigned_id, field_id, finca_id, today - timedelta(days=2))
 
     response = client.post(
-        '/api/v1/animal-fields/bulk-remove',
-        json={'animal_ids': [assigned_id, loose_id], 'date': today.isoformat()},
+        "/api/v1/animal-fields/bulk-remove",
+        json={"animal_ids": [assigned_id, loose_id], "date": today.isoformat()},
         headers=auth_headers,
     )
     assert response.status_code == 200
 
     body = response.get_json()
-    meta = body['meta']
-    assert meta['total_requested'] == 2
-    assert meta['removed_count'] == 1
-    assert meta['skipped_count'] == 1
-    assert loose_id in meta['skipped_animal_ids']
-    assert 'ya estaban sin potrero' in body['message']
+    meta = body["meta"]
+    assert meta["total_requested"] == 2
+    assert meta["removed_count"] == 1
+    assert meta["skipped_count"] == 1
+    assert loose_id in meta["skipped_animal_ids"]
+    assert "ya estaban sin potrero" in body["message"]
 
-    by_id = {int(field['id']): field for field in meta['fields']}
-    assert by_id[field_id]['animal_count'] == 0
-    assert by_id[field_id]['state'] == 'Disponible'
+    by_id = {int(field["id"]): field for field in meta["fields"]}
+    assert by_id[field_id]["animal_count"] == 0
+    assert by_id[field_id]["state"] == "Disponible"
 
     with app.app_context():
         field = db.session.get(Fields, field_id)
@@ -181,10 +215,10 @@ def test_bulk_remove_rejects_animals_from_another_finca(client, auth_headers, ap
         _assign(animal_id, field_id, finca_id, date.today())
 
     response = client.post(
-        '/api/v1/animal-fields/bulk-remove',
-        json={'animal_ids': [animal_id, 999_999]},
+        "/api/v1/animal-fields/bulk-remove",
+        json={"animal_ids": [animal_id, 999_999]},
         headers=auth_headers,
     )
 
     assert response.status_code >= 400
-    assert 'no pertenecen a esta finca' in response.get_json()['message'].lower()
+    assert "no pertenecen a esta finca" in response.get_json()["message"].lower()

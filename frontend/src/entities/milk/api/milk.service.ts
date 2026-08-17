@@ -58,11 +58,11 @@ class MilkService extends BaseService<MilkProduction> {
   }
 
   async estimateRevenue(fincaId: number, pricePerLiter?: number, year?: number, month?: number): Promise<any> {
-    return this.customRequest('revenue/estimate', 'GET', undefined, { 
-      finca_id: fincaId, 
+    return this.customRequest('revenue/estimate', 'GET', undefined, {
+      finca_id: fincaId,
       price_per_liter: pricePerLiter,
       year,
-      month 
+      month
     });
   }
 }

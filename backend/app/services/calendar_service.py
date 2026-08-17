@@ -11,6 +11,7 @@ Consolida en una sola fuente todos los eventos relevantes para el campesino:
 
 Flujo: route (calendar_ns) -> CalendarService -> calendar_event_sources -> DB
 """
+
 import logging
 from datetime import date
 

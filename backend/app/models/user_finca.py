@@ -31,25 +31,32 @@ class UserFinca(db.Model):
     Tabla de unión para relación N:M entre User y Finca.
     Almacena el rol específico del usuario en cada finca.
     """
-    __tablename__ = 'user_finca'
+
+    __tablename__ = "user_finca"
     __table_args__ = (
         # Índice compuesto para búsquedas eficientes
-        db.Index('ix_user_finca_user_finca', 'user_id', 'finca_id', unique=True),
-        db.Index('ix_user_finca_user_id', 'user_id'),
-        db.Index('ix_user_finca_finca_id', 'finca_id'),
-        db.Index('ix_user_finca_is_active', 'is_active'),
-        db.Index('ix_user_finca_is_primary', 'is_primary'),
+        db.Index("ix_user_finca_user_finca", "user_id", "finca_id", unique=True),
+        db.Index("ix_user_finca_user_id", "user_id"),
+        db.Index("ix_user_finca_finca_id", "finca_id"),
+        db.Index("ix_user_finca_is_active", "is_active"),
+        db.Index("ix_user_finca_is_primary", "is_primary"),
     )
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
-    finca_id = db.Column(db.Integer, db.ForeignKey('finca.id', ondelete='CASCADE'), nullable=False)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    finca_id = db.Column(
+        db.Integer, db.ForeignKey("finca.id", ondelete="CASCADE"), nullable=False
+    )
 
     # Rol específico del usuario en esta finca
-    role = db.Column(db.String(50), nullable=False, default='Operario')
+    role = db.Column(db.String(50), nullable=False, default="Operario")
 
     # Supervisor (ej: Instructor SENA supervisando al aprendiz)
-    supervisor_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='SET NULL'), nullable=True)
+    supervisor_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), nullable=True
+    )
 
     # Estado de la relación
     is_active = db.Column(db.Boolean, default=True, nullable=False)
@@ -58,24 +65,39 @@ class UserFinca(db.Model):
     is_primary = db.Column(db.Boolean, default=False, nullable=False)
 
     # Fechas
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC), nullable=False)
-    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))
+    created_at = db.Column(
+        db.DateTime, default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
 
     # Relaciones
-    user = db.relationship('User', backref='finca_memberships', lazy='selectin', foreign_keys=[user_id])
-    finca = db.relationship('Finca', backref='user_memberships', lazy='selectin')
-    supervisor = db.relationship('User', foreign_keys=[supervisor_id], lazy='selectin')
+    user = db.relationship(
+        "User", backref="finca_memberships", lazy="selectin", foreign_keys=[user_id]
+    )
+    finca = db.relationship("Finca", backref="user_memberships", lazy="selectin")
+    supervisor = db.relationship("User", foreign_keys=[supervisor_id], lazy="selectin")
 
     def __repr__(self):
-        return f'<UserFinca user={self.user_id} finca={self.finca_id} role={self.role}>'
+        return f"<UserFinca user={self.user_id} finca={self.finca_id} role={self.role}>"
 
     # =============================================================================
     # Métodos de clase
     # =============================================================================
 
     @classmethod
-    def assign(cls, user_id: int, finca_id: int, role: str = 'Operario',
-               is_active: bool = True, is_primary: bool = False, commit: bool = True) -> 'UserFinca':
+    def assign(
+        cls,
+        user_id: int,
+        finca_id: int,
+        role: str = "Operario",
+        is_active: bool = True,
+        is_primary: bool = False,
+        commit: bool = True,
+    ) -> "UserFinca":
         """
         Asignar un usuario a una finca.
 
@@ -91,10 +113,7 @@ class UserFinca(db.Model):
             UserFinca creado o existente actualizado
         """
         # Buscar si ya existe la relación
-        membership = cls.query.filter_by(
-            user_id=user_id,
-            finca_id=finca_id
-        ).first()
+        membership = cls.query.filter_by(user_id=user_id, finca_id=finca_id).first()
 
         if membership:
             # Actualizar relación existente
@@ -104,9 +123,8 @@ class UserFinca(db.Model):
                 membership.is_primary = True
                 # Desmarcar otras fincas primarias del usuario
                 cls.query.filter(
-                    cls.user_id == user_id,
-                    cls.finca_id != finca_id
-                ).update({'is_primary': False}, synchronize_session=False)
+                    cls.user_id == user_id, cls.finca_id != finca_id
+                ).update({"is_primary": False}, synchronize_session=False)
         else:
             # Crear nueva relación
             membership = cls(
@@ -114,16 +132,15 @@ class UserFinca(db.Model):
                 finca_id=finca_id,
                 role=role,
                 is_active=is_active,
-                is_primary=is_primary
+                is_primary=is_primary,
             )
             db.session.add(membership)
 
             # Si es primary, desmarcar otras
             if is_primary:
                 cls.query.filter(
-                    cls.user_id == user_id,
-                    cls.finca_id != finca_id
-                ).update({'is_primary': False}, synchronize_session=False)
+                    cls.user_id == user_id, cls.finca_id != finca_id
+                ).update({"is_primary": False}, synchronize_session=False)
 
         if commit:
             db.session.commit()
@@ -141,10 +158,7 @@ class UserFinca(db.Model):
         Returns:
             True si se eliminó, False si no existía
         """
-        membership = cls.query.filter_by(
-            user_id=user_id,
-            finca_id=finca_id
-        ).first()
+        membership = cls.query.filter_by(user_id=user_id, finca_id=finca_id).first()
 
         if membership:
             db.session.delete(membership)
@@ -153,7 +167,9 @@ class UserFinca(db.Model):
         return False
 
     @classmethod
-    def get_user_fincas(cls, user_id: int, active_only: bool = True) -> list[dict[str, Any]]:
+    def get_user_fincas(
+        cls, user_id: int, active_only: bool = True
+    ) -> list[dict[str, Any]]:
         """
         Obtener todas las fincas de un usuario.
 
@@ -170,8 +186,7 @@ class UserFinca(db.Model):
         from app.models.finca import Finca
 
         query = cls.query.join(Finca, Finca.id == cls.finca_id).filter(
-            cls.user_id == user_id,
-            Finca.is_deleted.is_(False)
+            cls.user_id == user_id, Finca.is_deleted.is_(False)
         )
 
         if active_only:
@@ -181,21 +196,25 @@ class UserFinca(db.Model):
 
         return [
             {
-                'id': m.id,
-                'finca_id': m.finca_id,
-                'finca_name': m.finca.name if m.finca else None,
-                'finca_type': getattr(m.finca.type, 'value', str(m.finca.type)) if m.finca and m.finca.type else None,
-                'finca_is_active': bool(m.finca.is_active) if m.finca else False,
-                'role': m.role,
-                'is_active': m.is_active,
-                'is_primary': m.is_primary,
-                'created_at': m.created_at.isoformat() if m.created_at else None,
+                "id": m.id,
+                "finca_id": m.finca_id,
+                "finca_name": m.finca.name if m.finca else None,
+                "finca_type": getattr(m.finca.type, "value", str(m.finca.type))
+                if m.finca and m.finca.type
+                else None,
+                "finca_is_active": bool(m.finca.is_active) if m.finca else False,
+                "role": m.role,
+                "is_active": m.is_active,
+                "is_primary": m.is_primary,
+                "created_at": m.created_at.isoformat() if m.created_at else None,
             }
             for m in memberships
         ]
 
     @classmethod
-    def get_finca_users(cls, finca_id: int, active_only: bool = True) -> list[dict[str, Any]]:
+    def get_finca_users(
+        cls, finca_id: int, active_only: bool = True
+    ) -> list[dict[str, Any]]:
         """
         Obtener todos los usuarios de una finca.
 
@@ -215,13 +234,13 @@ class UserFinca(db.Model):
 
         return [
             {
-                'id': m.id,
-                'user_id': m.user_id,
-                'user_fullname': m.user.fullname if m.user else None,
-                'user_email': m.user.email if m.user else None,
-                'role': m.role,
-                'is_active': m.is_active,
-                'is_primary': m.is_primary,
+                "id": m.id,
+                "user_id": m.user_id,
+                "user_fullname": m.user.fullname if m.user else None,
+                "user_email": m.user.email if m.user else None,
+                "role": m.role,
+                "is_active": m.is_active,
+                "is_primary": m.is_primary,
             }
             for m in memberships
         ]
@@ -239,26 +258,25 @@ class UserFinca(db.Model):
         """
         # Primero buscar la marcada como primary
         membership = cls.query.filter_by(
-            user_id=user_id,
-            is_active=True,
-            is_primary=True
+            user_id=user_id, is_active=True, is_primary=True
         ).first()
 
         # Si no hay primary, tomar la primera activa
         if not membership:
-            membership = cls.query.filter_by(
-                user_id=user_id,
-                is_active=True
-            ).first()
+            membership = cls.query.filter_by(user_id=user_id, is_active=True).first()
 
         if membership and membership.finca:
             return {
-                'id': membership.id,
-                'finca_id': membership.finca_id,
-                'finca_name': membership.finca.name,
-                'finca_type': getattr(membership.finca.type, 'value', str(membership.finca.type)) if membership.finca.type else None,
-                'role': membership.role,
-                'is_primary': membership.is_primary,
+                "id": membership.id,
+                "finca_id": membership.finca_id,
+                "finca_name": membership.finca.name,
+                "finca_type": getattr(
+                    membership.finca.type, "value", str(membership.finca.type)
+                )
+                if membership.finca.type
+                else None,
+                "role": membership.role,
+                "is_primary": membership.is_primary,
             }
 
         return None
@@ -277,18 +295,16 @@ class UserFinca(db.Model):
         """
         # Verificar que el usuario tenga acceso a la finca
         membership = cls.query.filter_by(
-            user_id=user_id,
-            finca_id=finca_id,
-            is_active=True
+            user_id=user_id, finca_id=finca_id, is_active=True
         ).first()
 
         if not membership:
             return False
 
         # Desmarcar todas las fincas primarias del usuario
-        cls.query.filter_by(
-            user_id=user_id
-        ).update({'is_primary': False}, synchronize_session=False)
+        cls.query.filter_by(user_id=user_id).update(
+            {"is_primary": False}, synchronize_session=False
+        )
 
         # Marcar la nueva finca como primary
         membership.is_primary = True
@@ -296,6 +312,7 @@ class UserFinca(db.Model):
 
         # Actualizar también el finca_id en User (para compatibilidad)
         from app.models import User
+
         user = db.session.get(User, user_id)
         if user:
             user.finca_id = finca_id
@@ -320,6 +337,7 @@ class UserFinca(db.Model):
             return False
 
         from app.models.user import User
+
         user = db.session.get(User, user_id)
         if not user:
             return False
@@ -329,11 +347,12 @@ class UserFinca(db.Model):
             return True
 
         # 2. Membresía activa en la tabla de unión user_finca
-        return cls.query.filter_by(
-            user_id=user_id,
-            finca_id=finca_id,
-            is_active=True
-        ).first() is not None
+        return (
+            cls.query.filter_by(
+                user_id=user_id, finca_id=finca_id, is_active=True
+            ).first()
+            is not None
+        )
 
     @classmethod
     def get_role_in_finca(cls, user_id: int, finca_id: int) -> str | None:
@@ -348,9 +367,7 @@ class UserFinca(db.Model):
             Rol del usuario o None si no tiene acceso
         """
         membership = cls.query.filter_by(
-            user_id=user_id,
-            finca_id=finca_id,
-            is_active=True
+            user_id=user_id, finca_id=finca_id, is_active=True
         ).first()
 
         return membership.role if membership else None
@@ -390,16 +407,18 @@ class UserFinca(db.Model):
     def to_dict(self) -> dict[str, Any]:
         """Convertir a diccionario con información expandida del usuario."""
         return {
-            'id': self.id,
-            'user_id': self.user_id,
-            'user_fullname': self.user.fullname if self.user else 'N/A',
-            'user_ident': self.user.identification if self.user else 'N/A',
-            'finca_id': self.finca_id,
-            'finca_name': self.finca.name if self.finca else None,
-            'finca_type': getattr(self.finca.type, 'value', str(self.finca.type)) if self.finca and self.finca.type else None,
-            'role': self.role,
-            'is_active': self.is_active,
-            'is_primary': self.is_primary,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            "id": self.id,
+            "user_id": self.user_id,
+            "user_fullname": self.user.fullname if self.user else "N/A",
+            "user_ident": self.user.identification if self.user else "N/A",
+            "finca_id": self.finca_id,
+            "finca_name": self.finca.name if self.finca else None,
+            "finca_type": getattr(self.finca.type, "value", str(self.finca.type))
+            if self.finca and self.finca.type
+            else None,
+            "role": self.role,
+            "is_active": self.is_active,
+            "is_primary": self.is_primary,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

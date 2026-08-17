@@ -35,7 +35,7 @@ const InventoryPage: React.FC = () => {
               <span className="font-bold text-foreground inline-flex items-center gap-1.5">
                 <span>{isVaccine ? '💉' : '💊'}</span> {val || '---'}
               </span>
-              <span className="text-[10px] uppercase font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 w-max px-1.5 py-0.5 rounded mt-1">
+              <span className="text-[11px] uppercase font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 w-max px-1.5 py-0.5 rounded mt-1">
                 {item.product_type}
               </span>
             </div>
@@ -68,7 +68,7 @@ const InventoryPage: React.FC = () => {
               {val ? formatDateColombia(val) : '---'}
             </span>
             {item.days_to_expiry !== undefined && item.days_to_expiry > 0 && item.days_to_expiry <= 30 && (
-              <span className="text-[10px] text-warning font-medium">
+              <span className="text-[11px] text-warning font-medium">
                 Vence en {item.days_to_expiry} días
               </span>
             )}
@@ -187,6 +187,9 @@ const InventoryPage: React.FC = () => {
     ],
     enableEditModal: true,
     enableDelete: true,
+    // El backend de inventario protege el borrado con sus movimientos y no
+    // expone el endpoint CRUD genérico de dependencias.
+    checkDependencies: false,
     enableDetailModal: true,
     customHeader: <div className="mt-4"><SanidadTabs /></div>,
   };

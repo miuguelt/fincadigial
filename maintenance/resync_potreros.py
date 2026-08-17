@@ -18,18 +18,18 @@ try:
     app = create_app()
     with app.app_context():
         print("=== INICIANDO TAREA DE MANTENIMIENTO: RESINCRO DE POTREROS ===")
-        
+
         # 1. Conexión y auditoría rápida
         fields = Fields.query.all()
         print(f"\n[1/4] Auditando campos (potreros): {len(fields)} encontrados.")
-        
+
         # 2. Auditar asignaciones activas
         active_assignments = AnimalFields.query.filter(
             AnimalFields.removal_date.is_(None),
             AnimalFields.is_deleted == False
         ).all()
         print(f"[2/4] Asignaciones activas encontradas en BD: {len(active_assignments)}")
-        
+
         # Verificar integridad: si hay animales marcados como No Vivos con asignaciones activas, cerrarlas.
         inconsistencies = 0
         for af in active_assignments:
@@ -38,7 +38,7 @@ try:
                 print(f"  -> Inconsistencia detectada: Animal ID {af.animal_id} (Estado: {animal.status if animal else 'No existe'}) en Potrero ID {af.field_id} con asignación activa. Cerrándola.")
                 af.removal_date = date.today()
                 inconsistencies += 1
-        
+
         if inconsistencies > 0:
             db.session.commit()
             print(f"  ✅ Se corrigieron y cerraron {inconsistencies} asignaciones inconsistentes.")
@@ -53,7 +53,7 @@ try:
             _cache_clear('Animals')
             _cache_clear('Fields')
             _cache_clear('AnimalFields')
-            
+
             # Limpiar también Flask-Caching general
             cache.clear()
             print("  ✅ Caché del backend limpiada exitosamente.")

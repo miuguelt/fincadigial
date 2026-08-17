@@ -120,7 +120,7 @@ export const animalReportService = {
 
     // Calcular métricas
     const totalCount = animals.length;
-    
+
     // Cuenta por sexo
     let hembras = 0;
     let machos = 0;
@@ -338,7 +338,7 @@ export const animalReportService = {
       const weight = a.weight || "";
       const status = a.status || "Vivo";
       const birthDate = a.birth_date || "";
-      
+
       let age = "";
       if (a.age_in_months !== undefined && a.age_in_months !== null) {
         age = String(a.age_in_months);
@@ -373,13 +373,13 @@ export const animalReportService = {
     const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\n"); // Add BOM for excel spanish encoding
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    
+
     const filename = `VillaLuz_Inventario_${new Date().toISOString().split("T")[0]}.csv`;
     const link = document.createElement("a");
     link.setAttribute("href", url);
     link.setAttribute("download", filename);
     link.style.visibility = "hidden";
-    
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

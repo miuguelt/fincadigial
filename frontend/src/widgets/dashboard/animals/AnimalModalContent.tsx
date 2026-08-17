@@ -44,7 +44,7 @@ function DetailField({
 }) {
   return (
     <div className="space-y-1.5">
-      <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/70">
+      <div className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground/70">
         {label}
       </div>
       {children || (
@@ -83,7 +83,7 @@ function SummaryMetric({
       "bg-gradient-to-br transition-all duration-200 hover:shadow-sm",
       style
     )}>
-      <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+      <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
         <span className={iconColor}>{icon}</span>
         {label}
       </div>
@@ -125,7 +125,7 @@ function MiniFact({
       "min-w-0 rounded-lg border bg-background/50 px-3 py-2 transition-all duration-200 hover:shadow-sm",
       accentMap[accent] || accentMap.slate
     )}>
-      <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+      <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
         {icon && <span className={cn("shrink-0", iconColorMap[accent] || iconColorMap.slate)}>{icon}</span>}
         {label}
       </p>
@@ -261,7 +261,7 @@ function AnimalStatsBar({
           <div className="text-lg font-black text-foreground tabular-nums">
             {s.value}
           </div>
-          <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/70 mt-0.5">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 mt-0.5">
             {s.label}
           </div>
         </div>
@@ -323,7 +323,7 @@ function HealthScoreIndicator({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Shield className={cn("h-4 w-4", color.text)} />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
             Score de Salud
           </span>
         </div>
@@ -332,7 +332,7 @@ function HealthScoreIndicator({
             {score}/100
           </span>
           <span className={cn(
-            "text-[9px] font-bold uppercase px-2 py-0.5 rounded-full",
+            "text-[11px] font-bold uppercase px-2 py-0.5 rounded-full",
             score >= 70 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
               : score >= 40 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
                 : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
@@ -357,7 +357,7 @@ function HealthScoreIndicator({
           { label: 'Control', ok: controls.length > 0 && (() => { const s = [...controls].filter(c => c.checkup_date).sort((a: any, b: any) => new Date(b.checkup_date).getTime() - new Date(a.checkup_date).getTime()); return s.length > 0 && (Date.now() - new Date(s[0].checkup_date).getTime()) / (1000*60*60*24) <= 30; })(), icon: <Syringe className="h-3 w-3" /> },
           { label: 'Alertas', ok: (animal.pending_alerts_count ?? 0) === 0, icon: <Zap className="h-3 w-3" /> },
         ].map((item) => (
-          <div key={item.label} className="flex items-center gap-1 text-[9px] font-medium">
+          <div key={item.label} className="flex items-center gap-1 text-[11px] font-medium">
             {item.ok
               ? <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
               : <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0" />}
@@ -448,7 +448,7 @@ function RelatedDataSection<T>({
             )}>
               {title}
             </h3>
-            <span className="text-[10px] text-muted-foreground font-medium">
+            <span className="text-[11px] text-muted-foreground font-medium">
               {data.length} registros
             </span>
           </div>
@@ -570,7 +570,7 @@ function RelatedDataSection<T>({
                             {deletingItemId !== null && (deletingItemId === resolveRecordId(item)) ? (
                               <div className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                             ) : confirmingDeleteId === resolveRecordId(item) ? (
-                              <span className="text-[10px] font-bold">✓</span>
+                              <span className="text-[11px] font-bold">✓</span>
                             ) : (
                               <Trash2 className="h-3.5 w-3.5" />
                             )}
@@ -588,7 +588,7 @@ function RelatedDataSection<T>({
                     size="sm"
                     variant="ghost"
                     onClick={onViewAll}
-                    className="text-[10px] font-bold uppercase tracking-widest opacity-60 hover:opacity-100 w-full"
+                    className="text-[11px] font-bold uppercase tracking-widest opacity-60 hover:opacity-100 w-full"
                   >
                     Ver todos ({data.length})
                   </Button>
@@ -1147,7 +1147,7 @@ export function AnimalModalContent({
             <div className="p-4 border-b border-border/40">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
+                  <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">
                     Ficha del animal
                   </p>
                   <h2 className="mt-1 text-2xl font-bold text-foreground fit-clamp" data-testid="animal-modal-title">
@@ -1324,7 +1324,7 @@ export function AnimalModalContent({
               <DetailField label="Adulto" value={isAdult} />
             </div>
           </CollapsibleCard>
-          
+
           {/* Trazabilidad ICA - Collapsible */}
           <CollapsibleCard
             title="Trazabilidad y Registro ICA"
@@ -1411,7 +1411,7 @@ export function AnimalModalContent({
                     <span className="text-[13px] font-bold text-foreground leading-tight">
                       {item.improvement_type || item.genetic_event_technique || item.genetic_event_techique || 'Evento Genético'}
                     </span>
-                    <Badge variant="outline" className="text-[9px] h-4 bg-green-500/10 text-green-700 border-green-200 shrink-0">
+                    <Badge variant="outline" className="text-[11px] h-4 bg-green-500/10 text-green-700 border-green-200 shrink-0">
                       {formatDate(item.date)}
                     </Badge>
                   </div>
@@ -1490,12 +1490,12 @@ export function AnimalModalContent({
                     </span>
                     <Badge
                       variant={item.status === 'Activo' ? 'destructive' : 'default'}
-                      className={`text-[9px] h-4 ${item.status === 'Curado' ? 'bg-green-600 text-white' : ''}`}
+                      className={`text-[11px] h-4 ${item.status === 'Curado' ? 'bg-green-600 text-white' : ''}`}
                     >
                       {item.status}
                     </Badge>
                   </div>
-                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <span className="font-semibold">Diagnóstico:</span> {formatDate(item.diagnosis_date)}
                     </span>
@@ -1570,15 +1570,15 @@ export function AnimalModalContent({
                         {fieldOptions[item.field_id] || `Campo #${item.field_id}`}
                       </span>
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5">
-                        <Badge variant="outline" className="text-[9px] h-4 bg-amber-500/10 text-amber-700 border-amber-200">
+                        <Badge variant="outline" className="text-[11px] h-4 bg-amber-500/10 text-amber-700 border-amber-200">
                           ID: {item.field_id}
                         </Badge>
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-[11px] text-muted-foreground">
                           {formatDate(item.assignment_date)}
                         </span>
                       </div>
                     </div>
-                    <Badge variant={item.removal_date ? 'secondary' : 'default'} className={`text-[9px] h-4 ${!item.removal_date ? 'bg-green-600 text-white animate-pulse' : ''}`}>
+                    <Badge variant={item.removal_date ? 'secondary' : 'default'} className={`text-[11px] h-4 ${!item.removal_date ? 'bg-green-600 text-white animate-pulse' : ''}`}>
                       {item.removal_date ? 'Retirado' : 'Activo'}
                     </Badge>
                   </div>
@@ -1650,12 +1650,12 @@ export function AnimalModalContent({
                     <span className="text-[13px] font-bold text-foreground fit-clamp">
                       {vaccineOptions[item.vaccine_id] || `Vacuna #${item.vaccine_id}`}
                     </span>
-                    <Badge variant="outline" className="text-[9px] h-4 bg-blue-500/10 text-blue-700 border-blue-200 shrink-0">
+                    <Badge variant="outline" className="text-[11px] h-4 bg-blue-500/10 text-blue-700 border-blue-200 shrink-0">
                       {formatDate(item.vaccination_date)}
                     </Badge>
                   </div>
                   {item.next_dose_date && (
-                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-blue-600 dark:text-sky-400">
+                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-blue-600 dark:text-sky-400">
                       <span className="w-1 h-1 rounded-full bg-blue-500 animate-ping" />
                       Próxima dosis: {formatDate(item.next_dose_date)}
                     </div>
@@ -1729,12 +1729,12 @@ export function AnimalModalContent({
                       <span className="text-[13px] font-bold text-foreground leading-tight">
                         {item.diagnosis || item.description || `Tratamiento #${item.id}`}
                       </span>
-                      <Badge variant="outline" className="text-[9px] h-4 bg-purple-500/10 text-purple-700 border-purple-200 shrink-0">
+                      <Badge variant="outline" className="text-[11px] h-4 bg-purple-500/10 text-purple-700 border-purple-200 shrink-0">
                         {formatDate(item.treatment_date || item.treatment_date)}
                       </Badge>
                     </div>
                     {(item.frequency || item.dosis || item.description) && (
-                      <div className="flex flex-col gap-1 text-[10px] text-muted-foreground italic">
+                      <div className="flex flex-col gap-1 text-[11px] text-muted-foreground italic">
                         <div className="flex items-center gap-2">
                           {item.dosis && <span>Dosis: {item.dosis}</span>}
                           {item.dosis && item.frequency && <span>•</span>}
@@ -1750,7 +1750,7 @@ export function AnimalModalContent({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-6 px-2 text-[10px] text-purple-600 dark:text-purple-400 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 gap-1 border border-purple-100 dark:border-purple-800/30"
+                      className="h-6 px-2 text-[11px] text-purple-600 dark:text-purple-400 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 gap-1 border border-purple-100 dark:border-purple-800/30"
                       onClick={() => setSuppliesTreatment(item)}
                     >
                       <Syringe className="h-3 w-3" />
@@ -1847,7 +1847,7 @@ export function AnimalModalContent({
                     <span className={`text-[13px] font-bold ${item.health_status === 'Excelente' || item.health_status === 'Bueno' || item.health_status === 'Sano' ? 'text-green-600' : item.health_status === 'Regular' ? 'text-amber-600' : 'text-rose-600'}`}>
                       {item.health_status || item.healt_status || 'Control de Salud'}
                     </span>
-                    <span className="text-[10px] font-medium text-muted-foreground bg-background/50 px-1.5 py-0.5 rounded border border-orange-100">
+                    <span className="text-[11px] font-medium text-muted-foreground bg-background/50 px-1.5 py-0.5 rounded border border-orange-100">
                       {formatDate(item.checkup_date)}
                     </span>
                   </div>

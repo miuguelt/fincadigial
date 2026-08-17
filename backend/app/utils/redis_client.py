@@ -1,4 +1,5 @@
 """Shared Redis client factory with resilient connection defaults."""
+
 import logging
 
 logger = logging.getLogger(__name__)

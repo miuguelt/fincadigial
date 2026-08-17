@@ -31,7 +31,7 @@ const SanitaryActivityForm: React.FC = () => {
           {" "}
           <div className="md:col-span-1">
             {" "}
-            <label className="text-[10px] font-black uppercase text-muted-foreground mb-1 block">
+            <label className="text-[11px] font-black uppercase text-muted-foreground mb-1 block">
               Identificación del Animal
             </label>{" "}
             <div className="relative">
@@ -49,14 +49,14 @@ const SanitaryActivityForm: React.FC = () => {
           </div>{" "}
           <div className="flex flex-col justify-center">
             {" "}
-            <span className="text-[10px] font-black uppercase text-muted-foreground mb-1">
+            <span className="text-[11px] font-black uppercase text-muted-foreground mb-1">
               Raza
             </span>{" "}
             <span className="font-bold text-foreground">Brahman Gris</span>{" "}
           </div>{" "}
           <div className="flex flex-col justify-center">
             {" "}
-            <span className="text-[10px] font-black uppercase text-muted-foreground mb-1">
+            <span className="text-[11px] font-black uppercase text-muted-foreground mb-1">
               Sexo
             </span>{" "}
             <span className="font-bold text-foreground">Hembra</span>{" "}
@@ -73,7 +73,7 @@ const SanitaryActivityForm: React.FC = () => {
             {" "}
             <div>
               {" "}
-              <label className="text-[10px] font-black uppercase text-muted-foreground mb-2 block tracking-widest">
+              <label className="text-[11px] font-black uppercase text-muted-foreground mb-2 block tracking-widest">
                 * Evento Sanitario
               </label>{" "}
               <select className="w-full bg-muted border-2 border-border rounded-lg py-4 px-4 font-bold text-foreground outline-none focus:border-emerald-500">
@@ -86,7 +86,7 @@ const SanitaryActivityForm: React.FC = () => {
             </div>{" "}
             <div>
               {" "}
-              <label className="text-[10px] font-black uppercase text-muted-foreground mb-2 block tracking-widest">
+              <label className="text-[11px] font-black uppercase text-muted-foreground mb-2 block tracking-widest">
                 Producto Utilizado
               </label>{" "}
               <input
@@ -100,7 +100,7 @@ const SanitaryActivityForm: React.FC = () => {
             {" "}
             <div>
               {" "}
-              <label className="text-[10px] font-black uppercase text-muted-foreground mb-2 block tracking-widest">
+              <label className="text-[11px] font-black uppercase text-muted-foreground mb-2 block tracking-widest">
                 Dosis
               </label>{" "}
               <input
@@ -111,7 +111,7 @@ const SanitaryActivityForm: React.FC = () => {
             </div>{" "}
             <div>
               {" "}
-              <label className="text-[10px] font-black uppercase text-muted-foreground mb-2 block tracking-widest">
+              <label className="text-[11px] font-black uppercase text-muted-foreground mb-2 block tracking-widest">
                 ** Vía de Administración
               </label>{" "}
               <select className="w-full bg-muted border-2 border-border rounded-lg py-4 px-4 font-bold text-foreground outline-none focus:border-emerald-500">
@@ -123,7 +123,7 @@ const SanitaryActivityForm: React.FC = () => {
             </div>{" "}
             <div className="bg-destructive/5 p-4 rounded-[var(--radius-xl)] border border-red-100">
               {" "}
-              <label className="text-[10px] font-black uppercase text-destructive mb-2 block tracking-widest">
+              <label className="text-[11px] font-black uppercase text-destructive mb-2 block tracking-widest">
                 Tiempo de Retiro (Días)
               </label>{" "}
               <input
@@ -131,14 +131,14 @@ const SanitaryActivityForm: React.FC = () => {
                 placeholder="0"
                 className="w-full bg-card border-2 border-destructive/30 rounded-lg py-2 px-4 font-black text-destructive outline-none focus:border-destructive"
               />{" "}
-              <p className="text-[9px] text-destructive/80 mt-1 font-bold">
+              <p className="text-[11px] text-destructive/80 mt-1 font-bold">
                 Bloquea comercialización del animal
               </p>{" "}
             </div>{" "}
           </div>{" "}
           <div>
             {" "}
-            <label className="text-[10px] font-black uppercase text-muted-foreground mb-2 block tracking-widest">
+            <label className="text-[11px] font-black uppercase text-muted-foreground mb-2 block tracking-widest">
               Observaciones
             </label>{" "}
             <textarea
@@ -161,7 +161,7 @@ const SanitaryActivityForm: React.FC = () => {
           </button>{" "}
         </div>{" "}
       </div>{" "}
-      <div className="mt-12 text-[9px] text-muted-foreground text-center uppercase font-bold tracking-[0.2em] opacity-40">
+      <div className="mt-12 text-[11px] text-muted-foreground text-center uppercase font-bold tracking-[0.2em] opacity-40">
         {" "}
         Villa Luz Smart Farming Intelligence • Registro Sanitario Legal ICA
         3-138{" "}

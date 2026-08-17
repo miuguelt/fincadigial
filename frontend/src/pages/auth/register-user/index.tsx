@@ -9,28 +9,12 @@ import { Eye, EyeOff, User, Mail, Lock, UserPlus, Phone, CheckCircle2, Loader2, 
 import { usersService } from '@/entities/user/api/user.service';
 import { getUserProfile } from '@/features/auth/api/auth.service';
 import { useToast } from '@/app/providers/ToastContext';
-
-interface SignUpFormData {
-  name: string;
-  email: string;
-  phone: string;
-  password: string;
-  confirmPassword: string;
-  identification_number: string;
-  role: string;
-  address?: string;
-}
-
-interface FormErrors {
-  name?: string;
-  email?: string;
-  phone?: string;
-  password?: string;
-  confirmPassword?: string;
-  identification_number?: string;
-  address?: string;
-  general?: string;
-}
+import {
+  buildValidationErrors,
+  mapBackendValidationErrors,
+  type FormErrors,
+  type SignUpFormData,
+} from './validation';
 
 const RegisterUserPage: React.FC = () => {
   const navigate = useNavigate();
@@ -59,14 +43,14 @@ const RegisterUserPage: React.FC = () => {
     setErrors((prev) => ({ ...prev, [fieldName]: message }));
   };
 
-  const mapBackendValidationErrors = (details: any) => {
-    if (!details || typeof details !== 'object') return;
-    const validation = (details as any).validation_errors || (details as any).errors || details;
-    if (!validation || typeof validation !== 'object') return;
-
+  /** Pinta en cada casilla el error que devolvió el backend. */
+  const applyBackendErrors = (details: any) => {
+    const backendErrors = mapBackendValidationErrors(details);
+    if (Object.keys(backendErrors).length === 0) return;
+    setErrors((prev) => ({ ...prev, ...backendErrors }));
   };
 
-  const validationSnapshot = buildValidationErrors(formData);
+  const validationSnapshot = useMemo(() => buildValidationErrors(formData), [formData]);
   const isFormValid = useMemo(() => Object.keys(validationSnapshot).length === 0, [validationSnapshot]);
 
   const getFieldError = (field: keyof FormErrors) => {
@@ -196,7 +180,7 @@ const RegisterUserPage: React.FC = () => {
 
       if (status === 400) {
         const details = errorData?.details ?? errorData?.validation_errors ?? errorData?.errors ?? errorData;
-        mapBackendValidationErrors({ validation_errors: details, errors: details });
+        applyBackendErrors({ validation_errors: details, errors: details });
         const generalMsg = errorData?.message || errorData?.error;
         if (generalMsg) {
           setFieldError('general', generalMsg);
@@ -207,7 +191,7 @@ const RegisterUserPage: React.FC = () => {
         setFieldError('general', msg);
         showToast(msg, 'error');
       } else if (status === 422) {
-        mapBackendValidationErrors(errorData);
+        applyBackendErrors(errorData);
         const msg = errorData?.message || errorData?.error || 'Datos inválidos. Verifique los campos.';
         setFieldError('general', msg);
         showToast(msg, 'error');

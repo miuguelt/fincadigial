@@ -29,21 +29,27 @@ class AttachmentChunkResource(Resource):
         attachment_id = payload.get("attachment_id")
         chunk_b64 = payload.get("chunk")
         if not finca_id or not attachment_id or not chunk_b64:
-            return APIResponse.validation_error({
-                "finca_id": "requerido",
-                "attachment_id": "requerido",
-                "chunk": "base64 requerido",
-            })
+            return APIResponse.validation_error(
+                {
+                    "finca_id": "requerido",
+                    "attachment_id": "requerido",
+                    "chunk": "base64 requerido",
+                }
+            )
         try:
             chunk = base64.b64decode(chunk_b64)
         except Exception:
             return APIResponse.error("chunk no es base64 valido", status_code=400)
 
-        path = os.path.join(_attachment_dir(finca_id), f"{secure_filename(attachment_id)}.part")
+        path = os.path.join(
+            _attachment_dir(finca_id), f"{secure_filename(attachment_id)}.part"
+        )
         with open(path, "ab") as fh:
             fh.write(chunk)
         size = os.path.getsize(path)
-        return APIResponse.success({"attachment_id": attachment_id, "received_size": size}, status_code=202)
+        return APIResponse.success(
+            {"attachment_id": attachment_id, "received_size": size}, status_code=202
+        )
 
 
 @attachments_ns.route("/complete")
@@ -57,11 +63,13 @@ class AttachmentCompleteResource(Resource):
         sha256 = payload.get("sha256")
         filename = secure_filename(payload.get("filename") or f"{attachment_id}.bin")
         if not finca_id or not attachment_id or not sha256:
-            return APIResponse.validation_error({
-                "finca_id": "requerido",
-                "attachment_id": "requerido",
-                "sha256": "requerido",
-            })
+            return APIResponse.validation_error(
+                {
+                    "finca_id": "requerido",
+                    "attachment_id": "requerido",
+                    "sha256": "requerido",
+                }
+            )
 
         base = _attachment_dir(finca_id)
         part_path = os.path.join(base, f"{secure_filename(attachment_id)}.part")
@@ -79,7 +87,9 @@ class AttachmentCompleteResource(Resource):
         os.replace(part_path, final_path)
         size = os.path.getsize(final_path)
 
-        blob = AttachmentBlob.query.filter_by(attachment_id=attachment_id, finca_id=finca_id).first()
+        blob = AttachmentBlob.query.filter_by(
+            attachment_id=attachment_id, finca_id=finca_id
+        ).first()
         if not blob:
             blob = AttachmentBlob(
                 attachment_id=attachment_id,
@@ -90,7 +100,11 @@ class AttachmentCompleteResource(Resource):
             )
             db.session.add(blob)
         blob.entity_type = payload.get("entity_type")
-        blob.entity_id = str(payload.get("entity_id")) if payload.get("entity_id") is not None else None
+        blob.entity_id = (
+            str(payload.get("entity_id"))
+            if payload.get("entity_id") is not None
+            else None
+        )
         blob.content_type = payload.get("content_type")
         blob.total_size = size
         blob.received_size = size
@@ -98,10 +112,14 @@ class AttachmentCompleteResource(Resource):
         blob.is_complete = True
         db.session.commit()
 
-        return APIResponse.success({
-            "attachment_id": blob.attachment_id,
-            "filename": blob.filename,
-            "sha256": blob.sha256,
-            "total_size": blob.total_size,
-            "storage_path": blob.storage_path,
-        }, message="Adjunto completado", status_code=201)
+        return APIResponse.success(
+            {
+                "attachment_id": blob.attachment_id,
+                "filename": blob.filename,
+                "sha256": blob.sha256,
+                "total_size": blob.total_size,
+                "storage_path": blob.storage_path,
+            },
+            message="Adjunto completado",
+            status_code=201,
+        )

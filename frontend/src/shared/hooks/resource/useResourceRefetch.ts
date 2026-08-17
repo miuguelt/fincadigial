@@ -189,7 +189,7 @@ export function useResourceRefetch<T extends { id?: number | string }, P extends
               } else {
                 const list = await service.getAll(bgWithSignal);
                 const serverList = map ? map(list) : list;
-                
+
                 const serverIds = new Set(serverList.map(item => String((item as any)?.id)));
                 const missingRecentItems: T[] = [];
                 for (const recentId of Array.from(recentlyCreatedIds.current)) {
@@ -272,7 +272,7 @@ export function useResourceRefetch<T extends { id?: number | string }, P extends
 
           const list = await service.getAll(effectiveWithSignal);
           const serverList = map ? map(list) : list;
-          
+
           const serverIds = new Set(serverList.map(item => String((item as any)?.id)));
           const missingRecentItems: T[] = [];
           for (const recentId of Array.from(recentlyCreatedIds.current)) {
@@ -294,7 +294,7 @@ export function useResourceRefetch<T extends { id?: number | string }, P extends
         });
         __resourceInflight.set(cacheKey, fetchPromise as Promise<any>);
       }
-      
+
       try {
         const result = await fetchPromise;
         return result === undefined ? data : result;
@@ -308,4 +308,3 @@ export function useResourceRefetch<T extends { id?: number | string }, P extends
 
   return { refetch };
 }
-

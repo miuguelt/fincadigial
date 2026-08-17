@@ -544,10 +544,10 @@ export const UserActivityTimeline: React.FC<UserActivityTimelineProps> = ({
 																{timeLabel}
 															</span>
 														)}
-														<Badge variant="outline" className="text-[10px]">
+														<Badge variant="outline" className="text-[11px]">
 															{String(item.entity)}
 														</Badge>
-														<Badge variant="outline" className="text-[10px]">
+														<Badge variant="outline" className="text-[11px]">
 															{String(item.action)}
 														</Badge>
 													</div>

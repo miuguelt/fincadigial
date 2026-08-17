@@ -44,9 +44,51 @@ export type WeatherConditionKind =
   | 'snow'
   | 'unknown';
 
+/** Texto que se muestra cuando no hay condición ni código que traducir. */
+const NO_DATA = 'Sin dato';
+
 export function getWmoDescription(code: number | null | undefined): string {
-  if (code === null || code === undefined) return '--';
-  return WMO_DESCRIPTIONS[code] || 'N/A';
+  if (code === null || code === undefined) return NO_DATA;
+  return WMO_DESCRIPTIONS[code] || NO_DATA;
+}
+
+/**
+ * Condición meteorológica en español.
+ *
+ * El backend guarda `weather_condition` en inglés (`"cloudy"`, `"storm"`) y las
+ * pantallas la pintaban tal cual bajo la temperatura. Se traduce aquí; si el
+ * valor no está en la tabla se prefiere el código WMO, que sí está traducido, y
+ * sólo se devuelve el texto original cuando ya viene en español.
+ */
+const CONDITION_LABELS: Record<string, string> = {
+  clear: 'Despejado',
+  sunny: 'Despejado',
+  partly: 'Parcialmente nublado',
+  partly_cloudy: 'Parcialmente nublado',
+  cloudy: 'Nublado',
+  overcast: 'Nublado',
+  fog: 'Niebla',
+  drizzle: 'Llovizna',
+  rain: 'Lluvia',
+  showers: 'Chubascos',
+  storm: 'Tormenta',
+  thunderstorm: 'Tormenta',
+  snow: 'Nieve',
+  hail: 'Granizo',
+};
+
+export function describeCondition(
+  condition: string | null | undefined,
+  code: number | null | undefined,
+): string {
+  const raw = (condition || '').trim();
+  const translated = CONDITION_LABELS[raw.toLowerCase()];
+  if (translated) return translated;
+
+  const fromCode = getWmoDescription(code);
+  if (fromCode !== NO_DATA) return fromCode;
+
+  return raw || NO_DATA;
 }
 
 /** Rangos WMO agrupados por familia, en el orden en que deben evaluarse. */

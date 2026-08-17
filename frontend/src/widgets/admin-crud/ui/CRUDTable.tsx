@@ -1,9 +1,9 @@
 /*
  * CRUDTable
- * 
+ *
  * Componente optimizado para renderizar tablas con gran volumen de datos.
  * Implementa virtualización, memoización y animaciones simplificadas.
- * 
+ *
  * ── RESPONSIVE ──
  * - Móvil (<768px): cards apiladas verticalmente con kebab menu
  * - Tablet (768px-1023px): tabla con scroll horizontal suave
@@ -171,7 +171,7 @@ function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>
                 {getCellValue(columns[1])}
               </div>
             ) : (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 flex-shrink-0">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 flex-shrink-0">
                 {getCellValue(columns[1])}
               </span>
             )
@@ -183,7 +183,7 @@ function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>
       <div className="grid grid-cols-2 gap-x-4 gap-y-2 mb-3">
         {columns.slice(2).map((col) => (
           <div key={String(col.key)} className="min-w-0">
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mb-0.5">
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70 mb-0.5">
               {col.label}
             </div>
             <div className="text-xs font-medium text-foreground fit-clamp" title={col.render ? undefined : String((item as any)[col.key] ?? '-')}>
@@ -342,34 +342,34 @@ function TableRowComponent<T extends { id: number }>(props: TableRowProps<T>) {
 
   const t = useT();
   const isDeleting = deletingItems.has(String(item.id));
-  
+
   const handleClick = useCallback(() => {
     if (onOpenDetail) {
       onOpenDetail(item);
     }
   }, [onOpenDetail, item]);
-  
+
   const handleEdit = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     if (onOpenEdit) {
       onOpenEdit(item);
     }
   }, [onOpenEdit, item]);
-  
+
   const handleDelete = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     if (onOpenDelete) {
       onOpenDelete(item.id);
     }
   }, [onOpenDelete, item]);
-  
+
   return (
     <tr
       className={cn(
         "h-10 md:h-12 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-muted/50",
         "transition-all duration-300 relative overflow-visible",
-        enhancedHover 
-          ? "hover:bg-gradient-to-r hover:from-primary/5 hover:via-primary/[0.02] hover:to-transparent" 
+        enhancedHover
+          ? "hover:bg-gradient-to-r hover:from-primary/5 hover:via-primary/[0.02] hover:to-transparent"
           : "hover:bg-muted/30",
         isDeleting && "opacity-50 bg-destructive/5 dark:bg-red-950/20"
       )}
@@ -421,7 +421,7 @@ function TableRowComponent<T extends { id: number }>(props: TableRowProps<T>) {
                 value={(item as any)[col.key]}
                 editType={col.editType}
                 options={
-                  col.editOptions || 
+                  col.editOptions ||
                   (config.formSections || [])
                     .flatMap((s) => s.fields || [])
                     .find((f) => String(f.name) === String(col.key))?.options
@@ -441,10 +441,10 @@ function TableRowComponent<T extends { id: number }>(props: TableRowProps<T>) {
                 })()}
         </td>
       ))}
-      
+
       {(onOpenDetail || onOpenEdit || onOpenDelete || config.customActions) && (
-        <td className="px-2 sm:px-3 py-2 whitespace-nowrap text-[11px] md:text-xs font-medium" 
-            onClick={(e) => e.stopPropagation()} 
+        <td className="px-2 sm:px-3 py-2 whitespace-nowrap text-[11px] md:text-xs font-medium"
+            onClick={(e) => e.stopPropagation()}
             onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}>
           <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap">
             {onOpenDetail && (
@@ -519,8 +519,8 @@ function TraditionalTableComponent<T extends { id: number }>(props: InternalTabl
 
   // Calcular el ancho mínimo dinámico según el número total de columnas
   const totalCols = useMemo(() => {
-    return columns.length + 
-      (config.enableSelection ? 1 : 0) + 
+    return columns.length +
+      (config.enableSelection ? 1 : 0) +
       ((onOpenDelete || onOpenEdit || onOpenDetail || config.customActions) ? 1 : 0);
   }, [columns.length, config.enableSelection, onOpenDelete, onOpenEdit, onOpenDetail, config.customActions]);
 
@@ -533,7 +533,7 @@ function TraditionalTableComponent<T extends { id: number }>(props: InternalTabl
   }, [totalCols]);
 
   return (
-    <table 
+    <table
       className="min-w-full divide-y divide-border/70 text-[12px] md:text-sm shadow-sm rounded-lg overflow-hidden"
       style={{ minWidth: minWidthStyle }}
     >
@@ -552,7 +552,7 @@ function TraditionalTableComponent<T extends { id: number }>(props: InternalTabl
             <th
               key={String(col.key)}
               className={cn(
-                "px-2 sm:px-3 py-2 text-left text-[10px] sm:text-[11px] md:text-xs font-semibold text-muted-foreground uppercase tracking-wider",
+                "px-2 sm:px-3 py-2 text-left text-[11px] sm:text-[11px] md:text-xs font-semibold text-muted-foreground uppercase tracking-wider",
                 col.width ? `w-${col.width}` : '',
                 "fit-clamp"
               )}
@@ -561,7 +561,7 @@ function TraditionalTableComponent<T extends { id: number }>(props: InternalTabl
             </th>
           ))}
           {(onOpenDelete || onOpenEdit || onOpenDetail || config.customActions) && (
-            <th className="px-1 sm:px-2 py-1 text-left text-[10px] sm:text-[11px] md:text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th className="px-1 sm:px-2 py-1 text-left text-[11px] sm:text-[11px] md:text-xs font-medium text-muted-foreground uppercase tracking-wider">
               <span className="hidden sm:inline">Acciones</span>
               <span className="sm:hidden">Acc.</span>
             </th>
@@ -616,7 +616,7 @@ export function CRUDTable<T extends { id: number }>({
 
   // Mapa de etiquetas para llaves foráneas
   const fkLabelMap = useMemo(() => buildForeignKeyLabelMap(config), [config]);
-  
+
   const deletingItems = useMemo(() => new Set<string>(), []);
 
   return (

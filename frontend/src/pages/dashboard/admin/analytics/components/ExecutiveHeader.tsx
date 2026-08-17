@@ -13,7 +13,7 @@ interface ExecutiveHeaderProps {
 export const ExecutiveHeader: React.FC<ExecutiveHeaderProps> = ({ fechaActualizacion }) => {
   const { rolePath } = useRoleNavigation();
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -27,8 +27,8 @@ export const ExecutiveHeader: React.FC<ExecutiveHeaderProps> = ({ fechaActualiza
           Monitorea inventario, salud, producción y alertas en tiempo real
         </p>
       </div>
-      
-      
+
+
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
         {fechaActualizacion && (
           <div className="flex items-center gap-2 text-xs md:text-sm font-medium bg-surface-secondary/50 border border-border/50 px-4 py-2 rounded-full shadow-sm">
@@ -40,7 +40,7 @@ export const ExecutiveHeader: React.FC<ExecutiveHeaderProps> = ({ fechaActualiza
             <span className="text-foreground">{format(fechaActualizacion, "d MMM, h:mm a", { locale: es })}</span>
           </div>
         )}
-        
+
         <Link to={rolePath('/admin/analytics/reports')} className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-white transition-all duration-200 bg-gradient-to-r from-blue-600 to-indigo-600 border border-transparent rounded-full shadow-md hover:shadow-lg hover:from-blue-500 hover:to-indigo-500 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600">
           <FileText className="w-4 h-4 transition-transform group-hover:scale-110" />
           Visión Finca 360° (Offline)

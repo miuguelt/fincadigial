@@ -34,10 +34,10 @@ export function QuickFormShell({
       {!isModal && (
         <header className={`${colorHeader} px-4 pb-10 pt-6 text-white rounded-b-[var(--radius-xl)] shadow-md relative overflow-hidden`}>
           <div className="absolute top-0 right-0 w-32 h-32 bg-card/10 rounded-[var(--radius-full)] -mr-16 -mt-16 blur-2xl" />
-          
+
           <button
             onClick={() => navigate(volver)}
-            className="mb-6 flex items-center gap-2 rounded-lg bg-card/20 px-4 py-2.5 text-[10px] font-semibold text-sm transition hover:bg-card/30 backdrop-blur-md border border-white/10"
+            className="mb-6 flex items-center gap-2 rounded-lg bg-card/20 px-4 py-2.5 text-[11px] font-semibold text-sm transition hover:bg-card/30 backdrop-blur-md border border-white/10"
           >
             <IconArrowLeft size="sm" />
             Volver
@@ -53,7 +53,7 @@ export function QuickFormShell({
               <h1 className="text-3xl font-black leading-tight tracking-tighter uppercase">{titulo}</h1>
               {/* Estado de red */}
               <span
-                className={`mt-2 inline-flex items-center gap-1.5 rounded-[var(--radius-full)] px-4 py-1 text-[8px] font-semibold text-sm ${
+                className={`mt-2 inline-flex items-center gap-1.5 rounded-[var(--radius-full)] px-4 py-1 text-[11px] font-semibold text-sm ${
                   isOnline
                     ? 'bg-card/20 text-white border border-white/10'
                     : 'bg-amber-400 text-amber-900 shadow-sm'
@@ -67,7 +67,7 @@ export function QuickFormShell({
 
           {/* Cola offline */}
           {totalOperations > 0 && (
-            <div className="mt-6 max-w-lg mx-auto rounded-[var(--radius-md)] bg-black/20 backdrop-blur-md px-5 py-3 text-[10px] font-black text-white/90 border border-white/5 uppercase tracking-widest">
+            <div className="mt-6 max-w-lg mx-auto rounded-[var(--radius-md)] bg-black/20 backdrop-blur-md px-5 py-3 text-[11px] font-black text-white/90 border border-white/5 uppercase tracking-widest">
               <IconRefresh className="w-3 h-3 inline mr-2 animate-spin" />
               {totalOperations} registros pendientes de envío
             </div>
@@ -104,7 +104,7 @@ export function QuickFormShell({
 /** Etiqueta grande para campo */
 export function QLabel({ children, htmlFor }: { children: React.ReactNode; htmlFor?: string }) {
   return (
-    <label htmlFor={htmlFor} className="mb-2 block text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">
+    <label htmlFor={htmlFor} className="mb-2 block text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">
       {children}
     </label>
   );
@@ -237,4 +237,3 @@ export function QCard({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
-

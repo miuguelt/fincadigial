@@ -1,4 +1,5 @@
 import { BaseService } from '@/shared/api/base-service';
+import { clearServiceCaches } from '@/shared/api/service-registry';
 import api from '@/shared/api/client';
 import { readStandardErrorPayload } from '@/shared/api/error-parser';
 import type { AnimalFieldInput, PaginatedResponse, AnimalFieldResponse } from '@/shared/api/generated/swaggerTypes';
@@ -99,7 +100,7 @@ export class AnimalFieldsService extends BaseService<AnimalFieldResponse> {
       await this.clearCache();
       // El traslado cambia la ocupación del potrero y la ubicación del animal:
       // sin esto las tarjetas seguían mostrando el conteo anterior.
-      await BaseService.clearCacheFor('fields', 'animals');
+      await clearServiceCaches('fields', 'animals');
       return result;
     } catch (e: any) {
       return {
@@ -118,7 +119,7 @@ export class AnimalFieldsService extends BaseService<AnimalFieldResponse> {
         `${data.animal_ids.length} animales retirados exitosamente`,
       );
       await this.clearCache();
-      await BaseService.clearCacheFor('fields', 'animals');
+      await clearServiceCaches('fields', 'animals');
       return result;
     } catch (e: any) {
       return {

@@ -73,7 +73,7 @@ function BannerInfo({
 		<div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
 			<div className="flex items-center gap-2 mb-1">
 				{type && (
-					<span className="px-2 py-0.5 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-wider text-white">
+					<span className="px-2 py-0.5 bg-white/20 backdrop-blur-md rounded-full text-[11px] font-bold uppercase tracking-wider text-white">
 						{type}
 					</span>
 				)}

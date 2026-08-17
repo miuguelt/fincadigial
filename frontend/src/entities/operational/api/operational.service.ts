@@ -25,4 +25,3 @@ class OperationalService extends BaseService<OperationalCost> {
 
 export const operationalService = new OperationalService();
 export default operationalService;
-

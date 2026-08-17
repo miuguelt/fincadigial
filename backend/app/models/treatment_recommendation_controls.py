@@ -37,8 +37,15 @@ class TreatmentRecommendationControls(BaseModel):
     recorded_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
 
     _namespace_fields = [
-        "id", "treatment_recommendation_id", "scheduled_date", "control_date",
-        "observation", "completed", "recorded_by", "created_at", "updated_at",
+        "id",
+        "treatment_recommendation_id",
+        "scheduled_date",
+        "control_date",
+        "observation",
+        "completed",
+        "recorded_by",
+        "created_at",
+        "updated_at",
     ]
     _namespace_relations = {
         "treatment_recommendation": {
@@ -49,7 +56,11 @@ class TreatmentRecommendationControls(BaseModel):
     }
     _searchable_fields = ["observation"]
     _filterable_fields = [
-        "treatment_recommendation_id", "scheduled_date", "control_date", "completed", "recorded_by",
+        "treatment_recommendation_id",
+        "scheduled_date",
+        "control_date",
+        "completed",
+        "recorded_by",
     ]
     _sortable_fields = ["id", "scheduled_date", "control_date", "created_at"]
     _required_fields = ["treatment_recommendation_id", "scheduled_date"]

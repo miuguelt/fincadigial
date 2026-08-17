@@ -9,7 +9,7 @@ interface UseReproductionStatsOptions {
 
 export function useReproductionStats(options: UseReproductionStatsOptions = {}) {
   const { fincaId, animalId, autoFetch = true } = options;
-  
+
   const [summary, setSummary] = useState<ReproductionSummary | null>(null);
   const [animalHistory, setAnimalHistory] = useState<AnimalReproductionHistory | null>(null);
   const [pendingBirths, setPendingBirths] = useState<any[]>([]);
@@ -19,10 +19,10 @@ export function useReproductionStats(options: UseReproductionStatsOptions = {}) 
 
   const fetchSummary = useCallback(async () => {
     if (!fincaId) return;
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await reproductionService.getSummary();
       setSummary(data);
@@ -36,7 +36,7 @@ export function useReproductionStats(options: UseReproductionStatsOptions = {}) 
 
   const fetchAnimalHistory = useCallback(async () => {
     if (!animalId) return;
-    
+
     setLoading(true);
     try {
       const data = await reproductionService.getAnimalHistory(animalId);

@@ -139,7 +139,9 @@ class TechnicalAssistanceCreateResource(Resource):
                 user_id,
                 request.get_json(silent=True) or {},
             )
-            return APIResponse.created(result, message="Solicitud enviada a la red veterinaria.")
+            return APIResponse.created(
+                result, message="Solicitud enviada a la red veterinaria."
+            )
         except TechnicalAssistanceError as exc:
             return _assistance_error(exc)
 
@@ -256,6 +258,7 @@ class CancelTechnicalAssistanceResource(Resource):
             )
         except TechnicalAssistanceError as exc:
             return _assistance_error(exc)
+
 
 offline_learning_ns = create_optimized_namespace(
     "offline-learning",

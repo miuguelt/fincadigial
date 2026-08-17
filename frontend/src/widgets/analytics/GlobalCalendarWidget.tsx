@@ -152,7 +152,7 @@ export default function GlobalCalendarWidget() {
                               <p className="text-sm font-semibold text-foreground fit-clamp">
                                 {event.title}
                               </p>
-                              <Badge variant="outline" className="text-[10px] uppercase font-bold" style={{ color: event.color, borderColor: event.color + '40', backgroundColor: event.color + '10' }}>
+                              <Badge variant="outline" className="text-[11px] uppercase font-bold" style={{ color: event.color, borderColor: event.color + '40', backgroundColor: event.color + '10' }}>
                                 {getEventTypeName(event.type)}
                               </Badge>
                             </div>

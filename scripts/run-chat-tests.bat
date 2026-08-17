@@ -11,7 +11,7 @@ curl -s http://localhost:8181/api/v1/health >nul
 if %errorlevel% neq 0 (
     echo ❌ Backend no está disponible en localhost:8181
     echo Por favor inicia el backend primero:
-    echo   cd BackFinca ^&^& python run.py
+    echo   cd backend ^&^& python run.py
     pause
     exit /b 1
 )
@@ -19,8 +19,8 @@ echo ✅ Backend funcionando correctamente
 
 REM Ir al directorio del frontend
 echo.
-echo [2/4] Cambiando a directorio VillaLuzFront...
-cd /d "C:\Users\Miguel\Documents\Aplicaciones\_projects/villaluz\VillaLuzFront"
+echo [2/4] Cambiando a directorio frontend...
+cd /d "C:\Users\Miguel\Documents\Aplicaciones\_projects/villaluz\frontend"
 if %errorlevel% neq 0 (
     echo ❌ No se pudo cambiar al directorio del frontend
     pause
@@ -59,7 +59,7 @@ echo   PRUEBAS COMPLETADAS
 echo =====================================================
 echo.
 echo Para ver reporte detallado:
-echo   cd VillaLuzFront
+echo   cd frontend
 echo   npx playwright show-report
 echo.
 pause

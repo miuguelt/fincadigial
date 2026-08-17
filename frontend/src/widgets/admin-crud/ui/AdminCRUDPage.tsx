@@ -1,15 +1,15 @@
 /*
  * AdminCRUDPage
- * 
+ *
  * Versión optimizada y refactorizada del componente AdminCRUDPage original.
- * 
+ *
  * Mejoras implementadas:
  * - División en componentes más pequeños y especializados
  * - Optimización del rendimiento con memoización y virtualización
  * - Simplificación del manejo de estado
  * - Mejora de la experiencia de usuario con animaciones más sutiles
  * - Mejor accesibilidad y diseño responsivo
- * 
+ *
  * @example
  * ```tsx
  * <AdminCRUDPage
@@ -145,7 +145,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   const editRequestSeqRef = useRef(0);
   const suppressEditAutoOpenRef = useRef(false);
   const lastClosedEditIdRef = useRef<number | null>(null);
-  
+
   // Estados para confirmación y dependencias
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [targetId, setTargetId] = useState<number | null>(null);
@@ -163,7 +163,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       message: string;
     }>;
   } | null>(null);
-  
+
   // Hooks y utilidades
   const { showToast } = useToast();
   const t = useT();
@@ -189,10 +189,10 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     () => Boolean(config.enableDelete) && roleCan(currentRole, permissionEntity, 'delete'),
     [config.enableDelete, currentRole, permissionEntity],
   );
-  
+
   // Clave de entidad para tombstones persistentes
   const entityKey = useMemo(() => (config.entityName || 'entity').toLowerCase(), [config.entityName]);
-  
+
   // Limpiar tombstones expirados al montar
   useEffect(() => {
     clearExpired(entityKey);
@@ -245,7 +245,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       window.removeEventListener('animal-fields:updated', handleRefetch);
     };
   }, [refetch]);
-  
+
   // Paginación
   const pageFromURL = parseInt((searchParams.get('page') || '').toString(), 10);
   const currentPage = Number.isFinite(pageFromURL) && pageFromURL > 0 ? pageFromURL : (meta?.page || 1);
@@ -288,7 +288,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     resetForm();
     setIsModalOpen(true);
   }, [canCreate, resetForm]);
-  
+
   const openEdit = useCallback((item: T) => {
     if (!canUpdate) return;
     setEditingItem(item);
@@ -298,7 +298,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     setFormErrorMessages([]);
     setIsModalOpen(true);
   }, [canUpdate, mapResponseToForm, setFormData, setFormErrors, setFormErrorMessages]);
-  
+
   const openDetail = useCallback((item: T) => {
     if (externalOnOpenDetail) {
       externalOnOpenDetail(item);
@@ -310,15 +310,16 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     setDetailItem(filteredItems[safeIndex] || item);
     setIsDetailOpen(true);
   }, [filteredItems, externalOnOpenDetail]);
-  
+
   const openDeleteConfirm = useCallback(async (id: number) => {
     if (!canDelete) return;
     setTargetId(id);
     setConfirmOpen(true);
-    setIsCheckingDependencies(true);
+    const shouldCheckDependencies = config.checkDependencies !== false;
+    setIsCheckingDependencies(shouldCheckDependencies);
     setDependencyInfo(null);
     try {
-      if (service && typeof service.customRequest === 'function') {
+      if (shouldCheckDependencies && service && typeof service.customRequest === 'function') {
         const resp = await service.customRequest(`${id}/dependencies`, 'GET');
         if (resp && typeof resp === 'object') {
           const info = resp.data || resp;
@@ -337,8 +338,8 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     } finally {
       setIsCheckingDependencies(false);
     }
-  }, [canDelete, service]);
-  
+  }, [canDelete, config.checkDependencies, service]);
+
   const handleModalClose = useCallback(() => {
     if (editingItem?.id) {
       editRequestSeqRef.current += 1;
@@ -351,7 +352,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     setIsModalOpen(false);
     resetForm();
     setEditingItem(null);
-    
+
     const sp = new URLSearchParams(searchParams);
     let changed = false;
     if (sp.has('create')) { sp.delete('create'); changed = true; }
@@ -362,7 +363,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       navigate(-1);
     }
   }, [searchParams, setSearchParams, navigate, location.pathname, editingItem, resetForm]);
-  
+
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -388,7 +389,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       }
       return;
     }
-    
+
     if (validateForm) {
       const validationError = validateForm(formData);
       if (validationError) {
@@ -396,9 +397,9 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
         return;
       }
     }
-    
+
     setSaving(true);
-    
+
     try {
       if (editingItem?.id) {
         // version_id del registro que se abrió a editar: el backend responde 409
@@ -419,7 +420,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       } else {
         const result = await createItem(formData as any);
         showToast(`✅ ${config.entityName} creado correctamente`, 'success');
-        
+
         if (config.onAfterCreate) {
           try {
             await config.onAfterCreate(result);
@@ -433,9 +434,9 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
           setPage(1);
         }
       }
-      
+
       handleModalClose();
-      
+
       // Invalidar caché del servicio para asegurar datos frescos
       if (typeof service.clearCache === 'function') {
         try {
@@ -444,7 +445,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
           console.warn('[AdminCRUDPage] Error al limpiar caché del servicio:', e);
         }
       }
-      
+
       // Refrescar datos después de un breve delay
       setTimeout(async () => {
         try {
@@ -518,25 +519,25 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       setSaving(false);
     }
   }, [canCreate, canUpdate, formData, validateForm, editingItem, updateItem, createItem, setPage, meta, handleModalClose, refetch, config, service, t, showToast, setFormErrors, setFormErrorMessages, formErrorMessages]);
-  
+
   const handleConfirmDelete = useCallback(async () => {
     if (targetId == null || !canDelete) return;
-    
+
     const idToDelete = targetId;
     setConfirmOpen(false);
     setTargetId(null);
     setDependencyInfo(null);
     setIsCheckingDependencies(false);
-    
+
     try {
       const success = await deleteItem(idToDelete);
-      
+
       if (success) {
         showToast(`🗑️ ${config.entityName} eliminado correctamente`, 'success');
-        
+
         // Registrar tombstone para ocultar temporalmente si el backend aún lo devuelve
         addTombstone(entityKey, String(idToDelete), 120000);
-        
+
         // Cerrar modales si el item eliminado estaba abierto
         if (isDetailOpen && detailItem?.id === idToDelete) {
           setIsDetailOpen(false);
@@ -546,15 +547,15 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
           setIsModalOpen(false);
           setEditingItem(null);
         }
-        
+
         // Verificar si después de eliminar, la página actual quedará vacía
         const currentPageItems = filteredItems.length - 1;
         const willBeEmpty = currentPageItems === 0;
-        
+
         if (willBeEmpty && currentPage > 1 && setPage) {
           setPage(currentPage - 1);
         }
-        
+
         // Invalidar caché del servicio para asegurar datos frescos
         if (typeof service.clearCache === 'function') {
           try {
@@ -563,7 +564,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
             console.warn('[AdminCRUDPage] Error al limpiar caché del servicio:', e);
           }
         }
-        
+
         // Refrescar después de un breve delay
         setTimeout(async () => {
           try {
@@ -575,7 +576,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       }
     } catch (error: any) {
       let errorMessage = `Error al eliminar ${config.entityName.toLowerCase()}`;
-      
+
       if (error?.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error?.response?.data?.detail) {
@@ -583,32 +584,32 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       } else if (error?.message) {
         errorMessage = error.message;
       }
-      
+
       showToast(errorMessage, 'error');
     }
   }, [canDelete, targetId, deleteItem, entityKey, isDetailOpen, detailItem, isModalOpen, editingItem, filteredItems, currentPage, setPage, refetch, config.entityName, service, showToast]);
-  
+
   // Sincronizar búsqueda con URL - solo cuando el usuario escribe
   useEffect(() => {
     const handle = setTimeout(() => {
       const sp = new URLSearchParams(window.location.search);
       const currentSearchInURL = sp.get('search') || '';
-      
+
       // Solo actualizar si realmente cambió
       if (searchQuery === currentSearchInURL) {
         return;
       }
-      
+
       if (searchQuery) sp.set('search', searchQuery);
       else sp.delete('search');
       sp.set('page', '1');
       setSearchParams(sp, { replace: true });
       // NO llamar a setSearch aquí - useResource leerá searchQP directamente de la URL
     }, 300);
-    
+
     return () => clearTimeout(handle);
   }, [searchQuery, setSearchParams]);
-  
+
   // Sincronizar estado con URL de forma reactiva
   useEffect(() => {
     const search = (searchParams.get('search') || '').toString();
@@ -631,7 +632,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       }
     }
   }, [searchParams, canCreate, isModalOpen, openCreate]);
-  
+
   // Auto-open edit modal via ?edit=ID
   useEffect(() => {
     if (canUpdate) {
@@ -671,7 +672,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       }
     }
   }, [searchParams, canUpdate, isModalOpen, editingItem, service, openEdit, showToast, t, setSearchParams]);
-  
+
   // Header con búsqueda y botones
   const header = (
     <PageHeader
@@ -684,13 +685,13 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           searchPlaceholder={config.searchPlaceholder}
-          onOpenCreate={canCreate ? openCreate : undefined}
+          onOpenCreate={canCreate ? openCreate : undefined} createLabel={`${t('common.create', 'Crear')} ${config.entityName.toLowerCase()}`}
           customToolbar={config.customToolbar}
         />
       }
     />
   );
-  
+
   // Loading state
   if (loading && !items) {
     return (
@@ -709,7 +710,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       </AppLayout>
     );
   }
-  
+
   // Error state
   if (error) {
     return (
@@ -725,7 +726,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       </AppLayout>
     );
   }
-  
+
   // Empty state
   const empty = (filteredItems?.length || 0) === 0;
 
@@ -763,7 +764,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
           description={config.emptyStateDescription || t('state.empty.description', 'Crea el primer registro para comenzar.')}
           icon={config.emptyStateIcon}
           action={canCreate && (
-            <button onClick={openCreate} aria-label={`${t('common.create', 'Crear')} ${config.entityName.toLowerCase()}`}>
+            <button onClick={openCreate} aria-label={`${t('common.create', 'Crear')} registro desde el estado vacío`}>
               <Plus className="h-4 w-4 mr-2" />
               {t('common.create', 'Crear')} {config.entityName.toLowerCase()}
             </button>
@@ -833,7 +834,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
                               const raw = (item as any)[col.key];
                               return (
                                 <div key={String(col.key)} className="min-w-0 space-y-1">
-                                  <div className="text-muted-foreground font-medium text-[10px] uppercase tracking-wide">{col.label}</div>
+                                  <div className="text-muted-foreground font-medium text-[11px] uppercase tracking-wide">{col.label}</div>
                                   <div className="fit-clamp font-medium text-foreground" title={String(raw ?? '-')}>{String(raw ?? '-')}</div>
                                 </div>
                               );
@@ -902,7 +903,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       {config.enableSelection && selectedIds.length > 0 && config.batchActions && (
         config.batchActions(selectedIds, filteredItems, clearSelection, { openCreate })
       )}
-      
+
       {/* Create/Edit Modal */}
       {(canCreate || canUpdate) && (
         <CRUDForm
@@ -921,7 +922,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
           additionalFormContent={additionalFormContent as any}
         />
       )}
-      
+
       {/* Detail Modal */}
       {config.enableDetailModal !== false && (
         <DetailModal
@@ -940,7 +941,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
           setDetailItem={setDetailItem}
         />
       )}
-      
+
       {/* Confirm Delete Dialog */}
       {canDelete && <ConfirmDeleteDialog
         open={confirmOpen}

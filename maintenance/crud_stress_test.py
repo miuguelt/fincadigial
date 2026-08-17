@@ -21,7 +21,7 @@ def run_crud_test():
     with app.app_context():
         # Asegurar que la base de datos existe
         db.create_all()
-        
+
         print("\n🚀 Iniciando Prueba de Estrés CRUD VillaLuz...")
         print("-" * 50)
 
@@ -45,10 +45,10 @@ def run_crud_test():
             model = table["model"]
             name = table["name"]
             print(f"📦 Procesando tabla: {name}")
-            
+
             try:
                 start_time = time.time()
-                
+
                 # 1. CREATE (10 registros)
                 created_ids = []
                 for i in range(1, 11):
@@ -102,13 +102,13 @@ def run_crud_test():
                             "milking_session": random.choice([MilkSession.AM, MilkSession.PM]),
                             "finca_id": test_finca.id
                         }
-                    
+
                     obj = model.create(**data)
                     created_ids.append(obj.id)
-                
+
                 db.session.commit()
                 create_duration = time.time() - start_time
-                
+
                 # Asignar datos base para siguientes tablas
                 if name == "Finca" and not test_finca: test_finca = Finca.query.get(created_ids[0])
                 if name == "Species" and not test_species: test_species = Species.query.get(created_ids[0])
@@ -119,7 +119,7 @@ def run_crud_test():
                 read_start = time.time()
                 all_objs = model.query.filter(model.id.in_(created_ids)).all()
                 read_duration = time.time() - read_start
-                
+
                 # 3. UPDATE (1 registro)
                 update_start = time.time()
                 target = model.query.get(created_ids[0])
@@ -128,14 +128,14 @@ def run_crud_test():
                 elif name == "MilkProduction": target.update(liters=30.0)
                 db.session.commit()
                 update_duration = time.time() - update_start
-                
+
                 # 4. DELETE (1 registro)
                 delete_start = time.time()
                 target_del = model.query.get(created_ids[-1])
                 target_del.delete()
                 db.session.commit()
                 delete_duration = time.time() - delete_start
-                
+
                 results.append({
                     "Tabla": name,
                     "Creados": 10,
@@ -145,7 +145,7 @@ def run_crud_test():
                     "T_Delete": f"{delete_duration:.4f}s",
                     "Estado": "✅ OK"
                 })
-                
+
             except Exception as e:
                 print(f"❌ Error en tabla {name}: {str(e)}")
                 results.append({

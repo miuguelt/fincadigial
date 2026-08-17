@@ -1,9 +1,11 @@
 # _helpers.py - Utilidades de cálculo para analítica
 from app.utils.tenant_context import apply_tenant_filter
 
+
 def _tf(query, model_class):
     """Helper local para aplicar filtro de tenant de forma concisa."""
     return apply_tenant_filter(query, model_class)
+
 
 def _round(val, precision=0):
     """Helper para redondeo seguro con manejo de Nones."""
@@ -12,10 +14,11 @@ def _round(val, precision=0):
     try:
         if precision == 0:
             return round(float(val))
-        factor = 10 ** precision
+        factor = 10**precision
         return round(float(val) * factor) / float(factor)
     except (ValueError, TypeError):
         return 0.0
+
 
 def calculate_percentage_change(current_value, previous_value, cap=999.0):
     """Calcula variaciones porcentuales controlando desbordes."""
@@ -37,6 +40,7 @@ def calculate_percentage_change(current_value, previous_value, cap=999.0):
             change = -max_change
     return _round(change, 1)
 
+
 def safe_percentage(part, whole, precision=1):
     """Calcula porcentajes evitando divisiones por cero."""
     if not whole:
@@ -45,6 +49,7 @@ def safe_percentage(part, whole, precision=1):
         return _round(float(part) / float(whole) * 100, precision)
     except Exception:
         return 0.0
+
 
 def percentage_point_delta(current_value, previous_value):
     """Diferencia en puntos porcentuales entre periodos."""

@@ -9,7 +9,7 @@ version: '3.8'
 services:
   villaluz-frontend-stg:
     build:
-      context: ./VillaLuzFront
+      context: ./frontend
       dockerfile: Dockerfile
       args:
         - VITE_RUNTIME_ENV=staging
@@ -29,7 +29,7 @@ services:
 
   villaluz-backend-stg:
     build:
-      context: ./BackFinca
+      context: ./backend
       dockerfile: Dockerfile
     image: villaluz-backend:staging
     container_name: villaluz_backend_stg

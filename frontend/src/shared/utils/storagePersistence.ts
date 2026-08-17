@@ -39,4 +39,3 @@ export async function initStoragePersistence(): Promise<boolean> {
     return false;
   }
 }
-

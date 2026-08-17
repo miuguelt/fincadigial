@@ -11,6 +11,7 @@ import json
 
 logger = logging.getLogger(__name__)
 
+
 class EnumRegistry:
     """
     Registro centralizado de enumeradores (enums) para serialización JSON.
@@ -23,7 +24,7 @@ class EnumRegistry:
     def register(cls, enum_class: type[enum.Enum]) -> None:
         """
         Registra un enum para serialización JSON optimizada.
-        
+
         Args:
             enum_class: La clase enum a registrar
         """
@@ -40,11 +41,10 @@ class EnumRegistry:
         logger.debug(f"Enum registrado para JSON: {qualified_name}")
 
     @classmethod
-
     def get_all_enums(cls) -> dict[str, type[enum.Enum]]:
         """
         Obtiene todos los enums registrados.
-        
+
         Returns:
             Diccionario de nombre a clase enum
         """
@@ -54,10 +54,10 @@ class EnumRegistry:
     def get_enum(cls, name: str) -> type[enum.Enum] | None:
         """
         Obtiene un enum por nombre.
-        
+
         Args:
             name: Nombre simple o cualificado del enum
-            
+
         Returns:
             Clase enum o None si no se encuentra
         """
@@ -67,10 +67,10 @@ class EnumRegistry:
     def is_enum(cls, obj: Any) -> bool:
         """
         Verifica si un objeto es una instancia de un enum registrado.
-        
+
         Args:
             obj: Objeto a verificar
-            
+
         Returns:
             True si es una instancia de enum registrado, False en otro caso
         """
@@ -87,10 +87,10 @@ class EnumRegistry:
     def serialize_enum(cls, enum_instance: enum.Enum) -> Any:
         """
         Serializa una instancia de enum a un valor JSON compatible.
-        
+
         Args:
             enum_instance: Instancia de enum a serializar
-            
+
         Returns:
             Valor serializado (normalmente string o número)
         """
@@ -98,7 +98,7 @@ class EnumRegistry:
             raise TypeError(f"{enum_instance} no es una instancia de enum")
 
         # Usar to_json si está disponible
-        if hasattr(enum_instance, 'to_json') and callable(enum_instance.to_json):
+        if hasattr(enum_instance, "to_json") and callable(enum_instance.to_json):
             return enum_instance.to_json()
 
         # De lo contrario, usar el valor
@@ -108,10 +108,10 @@ class EnumRegistry:
     def enum_aware_encoder(cls, obj):
         """
         Función de default para JSONEncoder que maneja enums registrados.
-        
+
         Args:
             obj: Objeto a serializar
-            
+
         Returns:
             Representación serializable o levanta TypeError
         """
@@ -134,6 +134,7 @@ class EnumJSONEncoder(json.JSONEncoder):
         except TypeError:
             # Manejar tipos especiales
             import decimal
+
             if isinstance(obj, decimal.Decimal):
                 return float(obj)
             # Delegar a la implementación base para otros tipos
@@ -157,4 +158,6 @@ def register_application_enums():
     EnumRegistry.register(HealthStatus)
     EnumRegistry.register(LandStatus)
 
-    logger.info(f"Se registraron {len(EnumRegistry.get_all_enums())} enums para serialización JSON")
+    logger.info(
+        f"Se registraron {len(EnumRegistry.get_all_enums())} enums para serialización JSON"
+    )

@@ -460,8 +460,8 @@ const CustomReports: React.FC = () => {
     // Firma y pie de página
     doc.setFontSize(9);
     doc.setTextColor(150, 150, 150);
-    doc.text("Este reporte ha sido certificado mediante cifrado digital y firma del operador en Villa Luz OS.", 20, currentY + 10);
-    doc.text("Generado automáticamente por el subsistema analítico de Finca Digital.", 20, currentY + 15);
+    doc.text("Reporte generado a partir de los datos devueltos por la API de VillaLuz.", 20, currentY + 10);
+    doc.text("Este documento no constituye una firma o certificación digital.", 20, currentY + 15);
 
     doc.save(`VillaLuz_ReporteAnalitico_${new Date().toISOString().split('T')[0]}.pdf`);
   };
@@ -802,7 +802,7 @@ const CustomReports: React.FC = () => {
                     <span className="w-2.5 h-2.5 rounded-full bg-info"></span>
                     Distribución del Inventario y Demografía
                   </h4>
-                  
+
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Estados del Animal */}
                     <div className="bg-secondary/30/50 p-6 rounded-xl border border-slate-100 flex flex-col md:flex-row items-center gap-6">
@@ -953,7 +953,7 @@ const CustomReports: React.FC = () => {
                     <span className="w-2.5 h-2.5 rounded-full bg-success"></span>
                     Últimos Tratamientos Clínicos e Historial Sanitario
                   </h4>
-                  
+
                   {/* Gráfico Comparativo Sanitario */}
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 border border-border rounded-lg overflow-hidden bg-card">
@@ -1020,7 +1020,7 @@ const CustomReports: React.FC = () => {
                     <span className="w-2.5 h-2.5 rounded-full bg-orange-600"></span>
                     Registros Recientes de Controles Biométricos
                   </h4>
-                  
+
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                     {/* Gráfico de Evolución del Peso */}
                     <div className="h-64 w-full bg-secondary/30/50 p-4 rounded-xl border border-slate-100">
@@ -1097,7 +1097,7 @@ const CustomReports: React.FC = () => {
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
                     Estado Actual de Potreros e Infraestructura
                   </h4>
-                  
+
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                     <div className="lg:col-span-2 border border-border rounded-lg overflow-hidden bg-card">
                       <table className="w-full text-left text-sm">

@@ -2,7 +2,7 @@
 
 ## 🎯 30-Second Summary
 
-We've optimized your BackFinca application for **50-90% better performance**:
+We've optimized your VillaLuz application for **50-90% better performance**:
 - ✅ 30 database indexes created
 - ✅ 4 N+1 query patterns fixed
 - ✅ Complete optimization guides for frontend
@@ -16,7 +16,7 @@ We've optimized your BackFinca application for **50-90% better performance**:
 ### Step 1: Run the Migration
 
 ```bash
-cd /path/to/BackFinca
+cd /path/to/VillaLuz
 
 # Check current migration status
 flask db current

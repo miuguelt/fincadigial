@@ -19,7 +19,7 @@ export function ProfileSummary({
   return (
     <div className="px-3 py-2">
       <p className="fit-clamp text-sm font-black text-foreground">{fullname || 'Mi cuenta'}</p>
-      <p className="fit-clamp text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+      <p className="fit-clamp text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
         {role}
       </p>
       {fincaName && <p className="mt-1 fit-clamp text-xs text-muted-foreground">{fincaName}</p>}

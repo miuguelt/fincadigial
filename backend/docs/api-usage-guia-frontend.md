@@ -56,7 +56,7 @@ Body JSON:
 ```json
 {
   "identifier": "99999999",
-  "password": "password123"
+  "password": "<TEST_PASSWORD>"
 }
 ```
 
@@ -78,7 +78,7 @@ Para `POST/PUT/PATCH/DELETE`, agrega `X-CSRF-TOKEN` con el valor de la cookie `c
 El backend devuelve detalles en el error 401 para indicar si se debe intentar un refresh.
 
 ```javascript
-/* 
+/*
  Estructura del error 401 desde el backend:
  {
    "success": false,
@@ -117,10 +117,10 @@ async function apiFetch(path, options = {}) {
   // Manejo de 401 con lógica de refresh backend-driven
   if (response.status === 401) {
     const data = await response.json().catch(() => ({}));
-    
+
     // Si el backend sugiere refrescar y no es un reintento
     const shouldRefresh = data.error?.details?.client_action === 'ATTEMPT_REFRESH';
-    
+
     if (shouldRefresh && !options._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -141,7 +141,7 @@ async function apiFetch(path, options = {}) {
         });
 
         if (!refreshRes.ok) throw new Error('Refresh failed');
-        
+
         processQueue(null, true);
         isRefreshing = false;
         return apiFetch(path, options);
@@ -153,7 +153,7 @@ async function apiFetch(path, options = {}) {
         return Promise.reject(err);
       }
     }
-    
+
     // Si no es para refrescar (ej: token revocado o refresh expirado), lanzar error
     throw new Error(data.message || 'Sesión expirada');
   }

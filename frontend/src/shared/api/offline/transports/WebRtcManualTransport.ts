@@ -12,4 +12,3 @@ export class WebRtcManualTransport implements TransportAdapter {
     return { accepted: false, receipt: { reason: 'manual_signaling_required' } };
   }
 }
-

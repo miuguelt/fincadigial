@@ -14,11 +14,11 @@ class TreatmentRecommendationControlService:
 
     @staticmethod
     def list_controls(recommendation_id: int) -> list[TreatmentRecommendationControls]:
-        recommendation = TreatmentRecommendationService.get_recommendation(recommendation_id)
+        recommendation = TreatmentRecommendationService.get_recommendation(
+            recommendation_id
+        )
         return [
-            control
-            for control in recommendation.controls
-            if not control.is_deleted
+            control for control in recommendation.controls if not control.is_deleted
         ]
 
     @staticmethod
@@ -26,10 +26,14 @@ class TreatmentRecommendationControlService:
         recommendation_id: int,
         control_id: int,
     ) -> TreatmentRecommendationControls:
-        controls = TreatmentRecommendationControlService.list_controls(recommendation_id)
+        controls = TreatmentRecommendationControlService.list_controls(
+            recommendation_id
+        )
         control = next((item for item in controls if item.id == control_id), None)
         if not control:
-            raise ResourceNotFoundException("El control de seguimiento no fue encontrado")
+            raise ResourceNotFoundException(
+                "El control de seguimiento no fue encontrado"
+            )
         return control
 
     @staticmethod
@@ -46,7 +50,9 @@ class TreatmentRecommendationControlService:
         allowed = {"completed", "control_date", "observation"}
         payload = {key: value for key, value in data.items() if key in allowed}
         if not payload:
-            raise ValidationError("Indica qué información del control deseas actualizar")
+            raise ValidationError(
+                "Indica qué información del control deseas actualizar"
+            )
         if payload.get("completed") is False and "control_date" not in payload:
             payload["control_date"] = None
         if payload.get("completed"):
@@ -57,4 +63,6 @@ class TreatmentRecommendationControlService:
             return control
         except IntegrityError as exc:
             db.session.rollback()
-            raise ConflictException("No se pudo actualizar el control de seguimiento") from exc
+            raise ConflictException(
+                "No se pudo actualizar el control de seguimiento"
+            ) from exc

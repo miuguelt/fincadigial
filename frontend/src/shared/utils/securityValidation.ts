@@ -13,7 +13,7 @@
  */
 export function sanitizeInput(input: string): string {
   if (!input || typeof input !== 'string') return '';
-  
+
   return input
     .replace(/[<>]/g, '')           // Eliminar tags HTML básicos
     .replace(/javascript:/gi, '')   // Eliminar protocolos javascript
@@ -29,7 +29,7 @@ export function sanitizeInput(input: string): string {
  */
 export function containsMaliciousCode(input: string): boolean {
   if (!input || typeof input !== 'string') return false;
-  
+
   const maliciousPatterns = [
     /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
     /javascript:/gi,
@@ -42,7 +42,7 @@ export function containsMaliciousCode(input: string): boolean {
     /<object/gi,
     /<embed/gi,
   ];
-  
+
   return maliciousPatterns.some(pattern => pattern.test(input));
 }
 
@@ -108,7 +108,7 @@ export function validatePassword(password: string): PasswordValidationResult {
     /password/i, /123456/, /qwerty/i, /abc123/, /letmein/i,
     /welcome/i, /admin/i, /login/i, /user/i, /monkey/,
   ];
-  
+
   if (commonPatterns.some(pattern => pattern.test(password))) {
     errors.push('La contraseña es demasiado común');
     score = Math.max(0, score - 30);
@@ -140,10 +140,10 @@ export function validatePassword(password: string): PasswordValidationResult {
  */
 export function isValidEmail(email: string): boolean {
   if (!email || typeof email !== 'string') return false;
-  
+
   // RFC 5322 compliant regex simplificado
   const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-  
+
   return emailRegex.test(email) && email.length <= 254;
 }
 
@@ -187,7 +187,7 @@ export function validateFile(
   // Validar extensión
   const extension = file.name.split('.').pop()?.toLowerCase() || '';
   const allowedExtensions = ALLOWED_EXTENSIONS[allowedType];
-  
+
   if (!allowedExtensions.includes(extension)) {
     return {
       isValid: false,
@@ -213,7 +213,7 @@ export function validateFile(
 
 class RateLimiter {
   private attempts: Map<string, number[]> = new Map();
-  
+
   /**
    * Verifica si se puede realizar una acción o si está rate-limited
    * @param key Identificador único (ej: userId + acción)
@@ -223,34 +223,34 @@ class RateLimiter {
   canProceed(key: string, maxAttempts: number = 5, windowMs: number = 60000): boolean {
     const now = Date.now();
     const attempts = this.attempts.get(key) || [];
-    
+
     // Limpiar intentos antiguos
     const validAttempts = attempts.filter(timestamp => now - timestamp < windowMs);
-    
+
     if (validAttempts.length >= maxAttempts) {
       return false;
     }
-    
+
     // Registrar nuevo intento
     validAttempts.push(now);
     this.attempts.set(key, validAttempts);
-    
+
     return true;
   }
-  
+
   /**
    * Obtiene tiempo restante antes de poder reintentar
    */
   getTimeRemaining(key: string, windowMs: number = 60000): number {
     const attempts = this.attempts.get(key) || [];
     if (attempts.length === 0) return 0;
-    
+
     const oldestAttempt = Math.min(...attempts);
     const timeRemaining = windowMs - (Date.now() - oldestAttempt);
-    
+
     return Math.max(0, timeRemaining);
   }
-  
+
   /**
    * Resetea los intentos para una key
    */
@@ -319,7 +319,7 @@ export const SECURITY_HEADERS = {
  */
 export function escapeHtml(text: string): string {
   if (!text || typeof text !== 'string') return '';
-  
+
   const htmlEscapes: Record<string, string> = {
     '&': '&amp;',
     '<': '&lt;',
@@ -327,7 +327,7 @@ export function escapeHtml(text: string): string {
     '"': '&quot;',
     "'": '&#39;',
   };
-  
+
   return text.replace(/[&<>"']/g, char => htmlEscapes[char] || char);
 }
 
@@ -344,7 +344,7 @@ export function isValidUUID(uuid: string): boolean {
  */
 export function containsSQLInjection(input: string): boolean {
   if (!input || typeof input !== 'string') return false;
-  
+
   const sqlPatterns = [
     /(%27)|(')|(--)|(%23)|(#)/i,
     /((%3D)|(=))[^\n]*((%27)|(')|(--)|(%3B)|(;))/i,
@@ -354,7 +354,7 @@ export function containsSQLInjection(input: string): boolean {
     /(%3B)|(;)/i,
     /(%3D)|(=)/i,
   ];
-  
+
   return sqlPatterns.some(pattern => pattern.test(input));
 }
 

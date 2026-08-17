@@ -15,6 +15,7 @@ APRENDIZ = "Aprendiz"
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def assert_list_response(body: dict):
     """Un endpoint de lista exitoso devuelve success=True y data iterable."""
     assert body["success"] is True
@@ -24,6 +25,7 @@ def assert_list_response(body: dict):
 # ---------------------------------------------------------------------------
 # Animales
 # ---------------------------------------------------------------------------
+
 
 class TestAnimalesEndpoints:
     def test_get_list_vacia(self, client, token_for):
@@ -60,6 +62,7 @@ class TestAnimalesEndpoints:
 # Vacunas (catálogo global, sin finca_id)
 # ---------------------------------------------------------------------------
 
+
 class TestVacunasEndpoints:
     def test_get_list(self, client, token_for):
         resp = client.get(f"{BASE}/vaccines", headers=token_for(ADMIN))
@@ -79,11 +82,59 @@ class TestVacunasEndpoints:
 # Potreros (fields)
 # ---------------------------------------------------------------------------
 
+
 class TestFieldsEndpoints:
     def test_get_list(self, client, token_for):
         resp = client.get(f"{BASE}/fields", headers=token_for(ADMIN))
         assert resp.status_code == 200
         assert_list_response(resp.get_json())
+
+    def test_sort_dir_alias_controls_sort_direction(self, client, token_for, app):
+        """El alias que emite BaseService debe conservar el orden solicitado."""
+        from app.models import Finca, FarmType
+        from app.models.fields import Fields, LandStatus
+
+        headers = token_for(ADMIN)
+        with app.app_context():
+            finca = Finca.query.filter_by(type=FarmType.Tradicional).first()
+            db_fields = [
+                Fields(
+                    name="Potrero B alias",
+                    state=LandStatus.Activo,
+                    area="1",
+                    finca_id=finca.id,
+                ),
+                Fields(
+                    name="Potrero A alias",
+                    state=LandStatus.Activo,
+                    area="1",
+                    finca_id=finca.id,
+                ),
+            ]
+            from app.extensions import db
+
+            db.session.add_all(db_fields)
+            db.session.commit()
+
+        asc = client.get(
+            f"{BASE}/fields?sort_by=name&sort_dir=asc&cache_bust=1",
+            headers=headers,
+        )
+        desc = client.get(
+            f"{BASE}/fields?sort_by=name&sort_dir=desc&cache_bust=1",
+            headers=headers,
+        )
+
+        assert asc.status_code == 200
+        assert desc.status_code == 200
+        assert [row["name"] for row in asc.get_json()["data"][:2]] == [
+            "Potrero A alias",
+            "Potrero B alias",
+        ]
+        assert [row["name"] for row in desc.get_json()["data"][:2]] == [
+            "Potrero B alias",
+            "Potrero A alias",
+        ]
 
     def test_post_body_invalido(self, client, token_for):
         resp = client.post(f"{BASE}/fields", json={}, headers=token_for(ADMIN))
@@ -95,13 +146,16 @@ class TestFieldsEndpoints:
 
     def test_put_field_inexistente_con_admin(self, client, token_for):
         """RBAC pasa, handler devuelve 404."""
-        resp = client.put(f"{BASE}/fields/999999", json={"name": "x"}, headers=token_for(ADMIN))
+        resp = client.put(
+            f"{BASE}/fields/999999", json={"name": "x"}, headers=token_for(ADMIN)
+        )
         assert resp.status_code == 404
 
 
 # ---------------------------------------------------------------------------
 # Tratamientos
 # ---------------------------------------------------------------------------
+
 
 class TestTratamientosEndpoints:
     def test_get_list(self, client, token_for):
@@ -114,7 +168,9 @@ class TestTratamientosEndpoints:
 
     def test_instructor_puede_post(self, client, token_for):
         """RBAC permite POST en /treatments para Instructor."""
-        resp = client.post(f"{BASE}/treatments", json={}, headers=token_for("Instructor"))
+        resp = client.post(
+            f"{BASE}/treatments", json={}, headers=token_for("Instructor")
+        )
         # RBAC pasa → validación de datos falla → no 403
         assert resp.status_code != 403
         assert resp.status_code in (400, 422)
@@ -128,6 +184,7 @@ class TestTratamientosEndpoints:
 # Controles veterinarios
 # ---------------------------------------------------------------------------
 
+
 class TestControlsEndpoints:
     def test_get_list(self, client, token_for):
         # El namespace de controles está en /control (singular), no /controls
@@ -137,7 +194,8 @@ class TestControlsEndpoints:
     def test_operario_puede_post_control(self, client, token_for):
         """Operario está en OPERARIO_POST_PATHS para /controls (security_middleware usa ese path)."""
         resp = client.post(
-            f"{BASE}/controls", json={},
+            f"{BASE}/controls",
+            json={},
             headers=token_for("Operario", finca_type="Tradicional"),
         )
         # RBAC pasa (no 403); el endpoint real puede estar en /control
@@ -145,7 +203,8 @@ class TestControlsEndpoints:
 
     def test_veterinario_puede_post_control(self, client, token_for):
         resp = client.post(
-            f"{BASE}/controls", json={},
+            f"{BASE}/controls",
+            json={},
             headers=token_for("Veterinario", finca_type="Tradicional"),
         )
         assert resp.status_code != 403
@@ -154,6 +213,7 @@ class TestControlsEndpoints:
 # ---------------------------------------------------------------------------
 # Enfermedades (catálogo global)
 # ---------------------------------------------------------------------------
+
 
 class TestEnfermedadesEndpoints:
     def test_get_list(self, client, token_for):
@@ -168,6 +228,7 @@ class TestEnfermedadesEndpoints:
 # ---------------------------------------------------------------------------
 # Usuarios (solo Administrador/Propietario)
 # ---------------------------------------------------------------------------
+
 
 class TestUsuariosEndpoints:
     def test_get_lista_admin(self, client, token_for):
@@ -191,6 +252,7 @@ class TestUsuariosEndpoints:
 # Inventario
 # ---------------------------------------------------------------------------
 
+
 class TestInventarioEndpoints:
     def test_get_lotes(self, client, token_for):
         resp = client.get(f"{BASE}/inventory/lots", headers=token_for(ADMIN))
@@ -204,6 +266,7 @@ class TestInventarioEndpoints:
 # ---------------------------------------------------------------------------
 # Razas y Especies (catálogos globales)
 # ---------------------------------------------------------------------------
+
 
 class TestCatalogosEndpoints:
     def test_get_breeds(self, client, token_for):

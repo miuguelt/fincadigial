@@ -62,8 +62,8 @@ export default function GenealogyTree({ animalId }: GenealogyTreeProps) {
     loadGenealogy();
   }, [loadGenealogy]);
   const getSexStyles = (sex: string) => {
-    return sex === 'Macho' 
-      ? 'from-info-500/20 to-info-600/5 border-info-500/30 text-info-700 dark:text-info-300' 
+    return sex === 'Macho'
+      ? 'from-info-500/20 to-info-600/5 border-info-500/30 text-info-700 dark:text-info-300'
       : 'from-danger-500/20 to-danger-600/5 border-danger-500/30 text-danger-700 dark:text-danger-300';
   };
 
@@ -73,8 +73,8 @@ export default function GenealogyTree({ animalId }: GenealogyTreeProps) {
       className={cn(
         "relative flex flex-col items-center gap-2 p-3 rounded-lg border transition-all duration-500 group/node",
         "bg-gradient-to-br backdrop-blur-xl shadow-lg hover:shadow-2xl hover:scale-105 hover:-translate-y-1",
-        isRoot 
-          ? "from-primary/30 to-primary/5 border-primary shadow-primary/20 ring-4 ring-primary/5" 
+        isRoot
+          ? "from-primary/30 to-primary/5 border-primary shadow-primary/20 ring-4 ring-primary/5"
           : getSexStyles(node.sex)
       )}
     >
@@ -86,16 +86,16 @@ export default function GenealogyTree({ animalId }: GenealogyTreeProps) {
           {node.sex === 'Macho' ? '♂' : '♀'}
         </div>
         <div className="flex flex-col">
-          <span className="text-[10px] font-black uppercase tracking-tighter opacity-50">{node.sex}</span>
+          <span className="text-[11px] font-black uppercase tracking-tighter opacity-50">{node.sex}</span>
           <span className="font-black text-sm tracking-tight">{node.record}</span>
         </div>
       </div>
       {isRoot && (
-        <Badge variant="default" className="text-[9px] h-4 bg-primary text-primary-foreground font-black px-1.5 uppercase tracking-widest">
+        <Badge variant="default" className="text-[11px] h-4 bg-primary text-primary-foreground font-black px-1.5 uppercase tracking-widest">
           Sujeto Central
         </Badge>
       )}
-      
+
       {/* Decorative background element */}
       <div className="absolute -z-10 inset-0 bg-card/40 dark:bg-black/20 rounded-lg opacity-0 group-hover/node:opacity-100 transition-opacity" />
     </div>
@@ -121,12 +121,12 @@ export default function GenealogyTree({ animalId }: GenealogyTreeProps) {
       return (
         <div key={nodeId} className="flex flex-col items-center gap-8">
           {renderNode(node, isRoot)}
-          
+
           {children.length > 0 && (
             <div className="relative flex items-start gap-12 pt-8">
               {/* Connecting line to children */}
               <div className="absolute top-0 left-1/2 -translate-x-1/2 h-8 w-[2px] bg-gradient-to-b from-primary/50 to-transparent" />
-              
+
               {children.map((childId, idx) => (
                 <div key={childId} className="relative">
                   {/* Horizontal connecting line */}
@@ -174,11 +174,11 @@ export default function GenealogyTree({ animalId }: GenealogyTreeProps) {
       return (
         <div key={nodeId} className="flex flex-col items-center gap-8">
           {renderNode(node, isRoot)}
-          
+
           {children.length > 0 && (
             <div className="relative flex items-start gap-12 pt-8">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 h-8 w-[2px] bg-gradient-to-b from-primary/50 to-transparent" />
-              
+
               {children.map((childId, idx) => (
                 <div key={childId} className="relative">
                   {children.length > 1 && (

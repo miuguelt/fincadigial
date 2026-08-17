@@ -1,23 +1,27 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { getExecutiveProductionViewModel } from './analyticsAdapters';
 
 interface ExecutiveProductionProps {
   productionStats: any;
   dashboard: any;
 }
 
-export const ExecutiveProduction: React.FC<ExecutiveProductionProps> = ({ productionStats, dashboard }) => {
-  const formatNumber = (val: number | undefined) => {
-    if (val === undefined || val === null || isNaN(val)) return '0';
-    return Number(val).toLocaleString('es-CO');
-  };
+const formatNumber = (value: number | null, fractionDigits = 1): string => {
+  if (value === null || !Number.isFinite(value)) return 'Sin datos';
+  return value.toLocaleString('es-CO', {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  });
+};
 
-  const utilization = productionStats?.field_utilization ?? 0;
-  const productivity = productionStats?.productivity_index ?? 0;
+export const ExecutiveProduction: React.FC<ExecutiveProductionProps> = ({ productionStats, dashboard }) => {
+  const metrics = getExecutiveProductionViewModel(productionStats);
+  const totalFields = metrics.totalFields ?? dashboard?.campos_registrados?.valor ?? null;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, delay: 0.7 }}
@@ -29,37 +33,42 @@ export const ExecutiveProduction: React.FC<ExecutiveProductionProps> = ({ produc
           </svg>
         </div>
         <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-6 relative z-10">Uso de Potreros</h2>
-        
+
         <div className="space-y-6 relative z-10">
           <div>
             <div className="flex justify-between mb-2">
               <span className="text-sm font-semibold text-foreground">Utilización de capacidad</span>
-              <span className="text-sm font-black text-success-600 dark:text-success-400">{utilization}%</span>
+              <span className="text-sm font-black text-success-600 dark:text-success-400">
+                {metrics.fieldUtilization === null ? 'Sin datos' : `${formatNumber(metrics.fieldUtilization)}%`}
+              </span>
             </div>
             <div className="w-full bg-muted/50 rounded-full h-3">
-              <motion.div 
+              <motion.div
                 initial={{ width: 0 }}
-                animate={{ width: `${Math.min(utilization, 100)}%` }}
+                animate={{ width: `${Math.min(metrics.fieldUtilization ?? 0, 100)}%` }}
                 transition={{ duration: 1, delay: 1 }}
-                className="h-3 rounded-full bg-success-500" 
+                className="h-3 rounded-full bg-success-500"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4 mt-6">
             <div className="bg-surface-secondary/50 p-4 rounded-lg">
-              <p className="text-xs text-muted-foreground mb-1 font-medium">Potreros Activos</p>
-              <p className="text-xl font-black text-foreground">{productionStats?.total_fields ?? dashboard?.campos_registrados?.valor ?? 0}</p>
+              <p className="text-xs text-muted-foreground mb-1 font-medium">Potreros registrados</p>
+              <p className="text-xl font-black text-foreground">{totalFields === null ? 'Sin datos' : formatNumber(totalFields, 0)}</p>
             </div>
             <div className="bg-surface-secondary/50 p-4 rounded-lg">
-              <p className="text-xs text-muted-foreground mb-1 font-medium">Carga Promedio</p>
-              <p className="text-xl font-black text-foreground">{productionStats?.animals_per_field ?? 0} <span className="text-xs font-semibold text-muted-foreground">ani/campo</span></p>
+              <p className="text-xs text-muted-foreground mb-1 font-medium">Carga promedio</p>
+              <p className="text-xl font-black text-foreground">
+                {metrics.animalsPerField === null ? 'Sin datos' : formatNumber(metrics.animalsPerField)}
+                {metrics.animalsPerField !== null && <span className="text-xs font-semibold text-muted-foreground"> ani/campo</span>}
+              </p>
             </div>
           </div>
         </div>
       </motion.div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, delay: 0.8 }}
@@ -71,36 +80,31 @@ export const ExecutiveProduction: React.FC<ExecutiveProductionProps> = ({ produc
           </svg>
         </div>
         <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-6 relative z-10">Eficiencia Productiva</h2>
-        
-        <div className="space-y-6 relative z-10">
-          <div>
-            <div className="flex justify-between mb-2">
-              <span className="text-sm font-semibold text-foreground">Índice de Productividad</span>
-              <span className="text-sm font-black text-info">{productivity}%</span>
-            </div>
-            <div className="w-full bg-muted/50 rounded-full h-3">
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min(productivity, 100)}%` }}
-                transition={{ duration: 1, delay: 1.1 }}
-                className="h-3 rounded-full bg-info" 
-              />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4 mt-6">
-            <div className="bg-surface-secondary/50 p-4 rounded-lg">
-              <p className="text-xs text-muted-foreground mb-1 font-medium">Consumo Alimento</p>
-              <p className="text-xl font-black text-foreground">
-                {productionStats?.feed_consumption ? formatNumber(productionStats.feed_consumption) : '—'} <span className="text-xs font-semibold text-muted-foreground">kg</span>
-              </p>
-            </div>
-            <div className="bg-surface-secondary/50 p-4 rounded-lg">
-              <p className="text-xs text-muted-foreground mb-1 font-medium">Costos Operativos</p>
-              <p className="text-xl font-black text-foreground">
-                <span className="text-xs font-semibold text-muted-foreground">$</span> {formatNumber(productionStats?.monthly_costs)}
-              </p>
-            </div>
+        <div className="grid grid-cols-2 gap-4 relative z-10">
+          <div className="bg-surface-secondary/50 p-4 rounded-lg">
+            <p className="text-xs text-muted-foreground mb-1 font-medium">Ganancia diaria promedio</p>
+            <p className="text-xl font-black text-foreground">
+              {metrics.averageDailyGainKg === null ? 'Sin datos' : `${formatNumber(metrics.averageDailyGainKg, 3)} kg/día`}
+            </p>
+          </div>
+          <div className="bg-surface-secondary/50 p-4 rounded-lg">
+            <p className="text-xs text-muted-foreground mb-1 font-medium">Animales analizados</p>
+            <p className="text-xl font-black text-foreground">
+              {metrics.animalsAnalyzed === null ? 'Sin datos' : formatNumber(metrics.animalsAnalyzed, 0)}
+            </p>
+          </div>
+          <div className="bg-surface-secondary/50 p-4 rounded-lg">
+            <p className="text-xs text-muted-foreground mb-1 font-medium">Mejor ganancia diaria</p>
+            <p className="text-xl font-black text-foreground">
+              {metrics.bestDailyGainKg === null ? 'Sin datos' : `${formatNumber(metrics.bestDailyGainKg, 3)} kg/día`}
+            </p>
+          </div>
+          <div className="bg-surface-secondary/50 p-4 rounded-lg">
+            <p className="text-xs text-muted-foreground mb-1 font-medium">Gasto operativo del mes</p>
+            <p className="text-xl font-black text-foreground">
+              {metrics.monthlyExpenses === null ? 'Sin datos' : `$ ${formatNumber(metrics.monthlyExpenses, 0)}`}
+            </p>
           </div>
         </div>
       </motion.div>

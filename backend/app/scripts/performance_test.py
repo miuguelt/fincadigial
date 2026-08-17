@@ -11,7 +11,7 @@ from app.services.analytics.animal_analytics_service import AnimalAnalyticsServi
 from app.models.finca import Finca
 from app.models.animals import Animals
 
-app = create_app('development')
+app = create_app("development")
 with app.app_context():
     finca = Finca.query.first()
     if not finca:

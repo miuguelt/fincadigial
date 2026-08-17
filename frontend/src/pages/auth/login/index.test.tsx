@@ -90,8 +90,8 @@ describe('Login Page', () => {
     await renderComponent();
 
     await user.type(screen.getByLabelText(/identific/i), '12345678');
-    await user.type(screen.getByLabelText(/contrase/i), 'password123');
-    
+    await user.type(screen.getByLabelText(/contrase/i), 'unit-test-password');
+
     // Direct form submit for deterministic JSDOM testing
     const form = screen.getByRole('button', { name: /iniciar/i }).closest('form')!;
     fireEvent.submit(form);
@@ -121,6 +121,40 @@ describe('Login Page', () => {
     expect(screen.getByRole('button', { name: /iniciar/i })).toBeInTheDocument();
   });
 
+  it('loads a development profile with its local password', async () => {
+    const user = userEvent.setup();
+
+    await renderComponent();
+
+    const adminQuickAccess = screen.getByRole('button', { name: /admin.*administrador/i });
+    await user.click(adminQuickAccess);
+
+    expect(screen.getByLabelText(/identific/i)).toHaveValue('1098');
+    expect(screen.getByLabelText(/contrase/i)).toHaveValue(
+      String(import.meta.env.VITE_DEV_PROFILE_PASSWORD || '')
+    );
+  });
+
+  it('uses browser-autofilled values when onChange was not emitted', async () => {
+    const user = userEvent.setup();
+
+    await renderComponent();
+
+    await user.type(screen.getByLabelText(/identific/i), '12345678');
+    const passwordInput = screen.getByLabelText(/contrase/i) as HTMLInputElement;
+    passwordInput.value = 'unit-test-password';
+
+    const form = screen.getByRole('button', { name: /iniciar/i }).closest('form')!;
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(mockLoginUser).toHaveBeenCalledWith({
+        identification: '12345678',
+        password: 'unit-test-password',
+      });
+    });
+  });
+
   it('submits login form and triggers auth flow on success', async () => {
     const user = userEvent.setup();
     const mockLogin = vi.fn();
@@ -134,13 +168,13 @@ describe('Login Page', () => {
     await renderComponent();
 
     await user.type(screen.getByLabelText(/identific/i), '12345678');
-    await user.type(screen.getByLabelText(/contrase/i), 'password123');
-    
+    await user.type(screen.getByLabelText(/contrase/i), 'unit-test-password');
+
     const form = screen.getByRole('button', { name: /iniciar/i }).closest('form')!;
     fireEvent.submit(form);
 
     await waitFor(() => {
-      expect(mockLoginUser).toHaveBeenCalledWith({ identification: '12345678', password: 'password123' } as any);
+      expect(mockLoginUser).toHaveBeenCalledWith({ identification: '12345678', password: 'unit-test-password' } as any);
       expect(mockLogin).toHaveBeenCalled();
     });
   });
@@ -155,12 +189,38 @@ describe('Login Page', () => {
 
       await user.type(screen.getByLabelText(/identific/i), '12345678');
       await user.type(screen.getByLabelText(/contrase/i), 'wrongpassword');
-      
+
       const form = screen.getByRole('button', { name: /iniciar/i }).closest('form')!;
       fireEvent.submit(form);
 
       await waitFor(() => {
         expect(screen.getByText(/credenciales incorrectas/i)).toBeInTheDocument();
+      });
+    } finally {
+      consoleErrorSpy.mockRestore();
+    }
+  });
+
+  it('shows the server message from a raw Axios error', async () => {
+    const user = userEvent.setup();
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    mockLoginUser.mockRejectedValue({
+      response: {
+        status: 401,
+        data: { message: 'Credenciales inválidas desde el servidor' },
+      },
+    });
+
+    try {
+      await renderComponent();
+
+      await user.type(screen.getByLabelText(/identific/i), '12345678');
+      await user.type(screen.getByLabelText(/contrase/i), 'wrongpassword');
+      const form = screen.getByRole('button', { name: /iniciar/i }).closest('form')!;
+      fireEvent.submit(form);
+
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent(/credenciales inválidas desde el servidor/i);
       });
     } finally {
       consoleErrorSpy.mockRestore();

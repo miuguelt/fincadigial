@@ -27,7 +27,7 @@ const FoodTypeForm: React.FC<FoodTypeFormProps> = ({ initialData, onSubmit, load
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    
+
     // Limpiar errores al cambiar el valor
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
@@ -41,36 +41,36 @@ const FoodTypeForm: React.FC<FoodTypeFormProps> = ({ initialData, onSubmit, load
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validaciones
     const newErrors: Record<string, string> = {};
     const today = getTodayColombia();
-    
+
     // Validar fecha de siembra
     if (form.sowing_date) {
       if (form.sowing_date > today) {
         newErrors.sowing_date = 'La fecha de siembra no puede ser futura';
       }
     }
-    
+
     // Validar fecha de cosecha
     if (form.harvest_date) {
       if (form.harvest_date > today) {
         newErrors.harvest_date = 'La fecha de cosecha no puede ser futura';
       }
-      
+
       // Validar que la fecha de cosecha no sea anterior a la de siembra
       if (form.sowing_date && form.harvest_date < form.sowing_date) {
         newErrors.harvest_date = 'La fecha de cosecha no puede ser anterior a la fecha de siembra';
       }
     }
-    
+
     // Si hay errores, mostrarlos y no enviar el formulario
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    
+
     onSubmit({ ...form, area: form.area === undefined ? undefined : Number(form.area) });
   };
 

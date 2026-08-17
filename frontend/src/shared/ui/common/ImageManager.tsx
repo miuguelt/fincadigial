@@ -1083,10 +1083,10 @@ export function ImageManager({
                         // Confirmación adicional para seguridad en pantalla completa
                         handleDelete(selectedImage);
                         // Cerrar modal si se elimina (esto ocurrirá automáticamnete si la imagen desaparece de la lista, pero por UX es mejor cerrarlo explícitamente o manejarlo)
-                        // Nota: handleDelete actualiza el estado 'images' filtrando la eliminada. 
+                        // Nota: handleDelete actualiza el estado 'images' filtrando la eliminada.
                         // Si la imagen seleccionada ya no está en 'images', el modal debería cerrarse o mostrar error.
                         // Vamos a dejar que el effect o la UI reactiva maneje el cierre, o forzarlo si es necesario.
-                        // Dado que 'selectedImage' es un objeto independiente, si la eliminamos de 'images', 
+                        // Dado que 'selectedImage' es un objeto independiente, si la eliminamos de 'images',
                         // 'selectedImage' seguiría existiendo en el estado local del modal a menos que lo limpiemos.
                         // Sin embargo, handleDelete es async.
                       }}

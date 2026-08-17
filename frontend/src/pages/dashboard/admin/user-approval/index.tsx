@@ -149,10 +149,10 @@ const UserApprovalPage = () => {
                         <span className="font-bold text-foreground">{user.fullname}</span>
                         <div className="flex items-center gap-3 mt-1">
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <FaIdCard className="text-[10px]" /> {user.identification}
+                            <FaIdCard className="text-[11px]" /> {user.identification}
                           </span>
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <FaEnvelope className="text-[10px]" /> {user.email}
+                            <FaEnvelope className="text-[11px]" /> {user.email}
                           </span>
                         </div>
                       </div>

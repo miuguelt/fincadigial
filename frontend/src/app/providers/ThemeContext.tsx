@@ -11,7 +11,7 @@ interface ThemeColors {
   secondaryForeground: string;
   accent: string;
   accentForeground: string;
-  
+
   // Colores de fondo
   background: string;
   foreground: string;
@@ -19,7 +19,7 @@ interface ThemeColors {
   cardForeground: string;
   popover: string;
   popoverForeground: string;
-  
+
   // Colores de estado
   muted: string;
   mutedForeground: string;
@@ -31,18 +31,18 @@ interface ThemeColors {
   warningForeground: string;
   info: string;
   infoForeground: string;
-  
+
   // Colores de borde y entrada
   border: string;
   input: string;
   ring: string;
-  
+
   // Colores específicos de la aplicación
   sidebar: string;
   sidebarForeground: string;
   header: string;
   headerForeground: string;
-  
+
   // Colores para gráficos y estadísticas
   chart1: string;
   chart2: string;
@@ -69,14 +69,14 @@ const themes: Record<ThemeMode, ThemeConfig> = {
       secondaryForeground: '222.2 84% 4.9%',
       accent: '210 40% 92%',
       accentForeground: '222.2 84% 4.9%',
-      
+
       background: '0 0% 100%',
       foreground: '222.2 84% 4.9%',
       card: '0 0% 100%',
       cardForeground: '222.2 84% 4.9%',
       popover: '0 0% 100%',
       popoverForeground: '222.2 84% 4.9%',
-      
+
       muted: '210 40% 96%',
       mutedForeground: '215.4 16.3% 46.9%',
       destructive: '0 84.2% 60.2%',
@@ -87,16 +87,16 @@ const themes: Record<ThemeMode, ThemeConfig> = {
       warningForeground: '0 0% 100%',
       info: '217 91% 60%',
       infoForeground: '0 0% 100%',
-      
+
       border: '214.3 31.8% 91.4%',
       input: '214.3 31.8% 91.4%',
       ring: '220 70% 50%',
-      
+
       sidebar: '0 0% 98%',
       sidebarForeground: '222.2 84% 4.9%',
       header: '0 0% 100%',
       headerForeground: '222.2 84% 4.9%',
-      
+
       chart1: '220 70% 50%',
       chart2: '160 60% 45%',
       chart3: '30 80% 55%',
@@ -114,14 +114,14 @@ const themes: Record<ThemeMode, ThemeConfig> = {
       secondaryForeground: '210 40% 98%',
       accent: '217 32.6% 20%',
       accentForeground: '0 0% 98%',
-      
+
       background: '222.2 84% 4.9%',
       foreground: '210 40% 98%',
       card: '217.2 32.6% 8%',
       cardForeground: '210 40% 98%',
       popover: '217.2 32.6% 8%',
       popoverForeground: '210 40% 98%',
-      
+
       muted: '217.2 32.6% 15%',
       mutedForeground: '0 0% 75%',
       destructive: '0 84% 60%',
@@ -132,16 +132,16 @@ const themes: Record<ThemeMode, ThemeConfig> = {
       warningForeground: '222.2 84% 4.9%',
       info: '217 91% 70%',
       infoForeground: '222.2 84% 4.9%',
-      
+
       border: '217.2 32.6% 17.5%',
       input: '217.2 32.6% 17.5%',
       ring: '217 91% 60%',
-      
+
       sidebar: '217.2 32.6% 3%',
       sidebarForeground: '0 0% 98%',
       header: '217.2 32.6% 5%',
       headerForeground: '0 0% 98%',
-      
+
       chart1: '217 91% 60%',
       chart2: '142 76% 45%',
       chart3: '38 92% 60%',
@@ -159,14 +159,14 @@ const themes: Record<ThemeMode, ThemeConfig> = {
       secondaryForeground: '142 76% 16%',
       accent: '138 76% 90%',
       accentForeground: '142 76% 16%',
-      
+
       background: '138 76% 99%',
       foreground: '142 76% 16%',
       card: '0 0% 100%',
       cardForeground: '142 76% 16%',
       popover: '0 0% 100%',
       popoverForeground: '142 76% 16%',
-      
+
       muted: '138 76% 94%',
       mutedForeground: '142 40% 46%',
       destructive: '0 84% 60%',
@@ -177,16 +177,16 @@ const themes: Record<ThemeMode, ThemeConfig> = {
       warningForeground: '0 0% 100%',
       info: '200 76% 45%',
       infoForeground: '0 0% 100%',
-      
+
       border: '138 76% 85%',
       input: '138 76% 85%',
       ring: '142 76% 36%',
-      
+
       sidebar: '138 76% 96%',
       sidebarForeground: '142 76% 16%',
       header: '138 76% 99%',
       headerForeground: '142 76% 16%',
-      
+
       chart1: '142 76% 36%',
       chart2: '120 76% 36%',
       chart3: '160 76% 36%',
@@ -204,14 +204,14 @@ const themes: Record<ThemeMode, ThemeConfig> = {
       secondaryForeground: '200 100% 16%',
       accent: '200 40% 90%',
       accentForeground: '200 100% 16%',
-      
+
       background: '200 40% 99%',
       foreground: '200 100% 16%',
       card: '0 0% 100%',
       cardForeground: '200 100% 16%',
       popover: '0 0% 100%',
       popoverForeground: '200 100% 16%',
-      
+
       muted: '200 40% 94%',
       mutedForeground: '200 40% 46%',
       destructive: '0 84% 60%',
@@ -222,16 +222,16 @@ const themes: Record<ThemeMode, ThemeConfig> = {
       warningForeground: '0 0% 100%',
       info: '200 100% 50%',
       infoForeground: '0 0% 100%',
-      
+
       border: '200 40% 85%',
       input: '200 40% 85%',
       ring: '200 100% 40%',
-      
+
       sidebar: '200 40% 96%',
       sidebarForeground: '200 100% 16%',
       header: '200 40% 99%',
       headerForeground: '200 100% 16%',
-      
+
       chart1: '200 100% 40%',
       chart2: '220 100% 40%',
       chart3: '180 100% 40%',
@@ -249,14 +249,14 @@ const themes: Record<ThemeMode, ThemeConfig> = {
       secondaryForeground: '120 60% 15%',
       accent: '120 30% 90%',
       accentForeground: '120 60% 15%',
-      
+
       background: '120 30% 98%',
       foreground: '120 60% 15%',
       card: '0 0% 100%',
       cardForeground: '120 60% 15%',
       popover: '0 0% 100%',
       popoverForeground: '120 60% 15%',
-      
+
       muted: '120 30% 93%',
       mutedForeground: '120 30% 45%',
       destructive: '0 84% 60%',
@@ -267,16 +267,16 @@ const themes: Record<ThemeMode, ThemeConfig> = {
       warningForeground: '0 0% 100%',
       info: '200 76% 45%',
       infoForeground: '0 0% 100%',
-      
+
       border: '120 30% 85%',
       input: '120 30% 85%',
       ring: '120 60% 25%',
-      
+
       sidebar: '120 30% 95%',
       sidebarForeground: '120 60% 15%',
       header: '120 30% 98%',
       headerForeground: '120 60% 15%',
-      
+
       chart1: '120 60% 25%',
       chart2: '100 60% 25%',
       chart3: '140 60% 25%',
@@ -294,14 +294,14 @@ const themes: Record<ThemeMode, ThemeConfig> = {
       secondaryForeground: '0 0% 0%',
       accent: '0 0% 0%',
       accentForeground: '0 0% 100%',
-      
+
       background: '0 0% 100%',
       foreground: '0 0% 0%',
       card: '0 0% 100%',
       cardForeground: '0 0% 0%',
       popover: '0 0% 100%',
       popoverForeground: '0 0% 0%',
-      
+
       muted: '0 0% 90%',
       mutedForeground: '0 0% 0%',
       destructive: '0 100% 40%',
@@ -312,16 +312,16 @@ const themes: Record<ThemeMode, ThemeConfig> = {
       warningForeground: '0 0% 100%',
       info: '240 100% 35%',
       infoForeground: '0 0% 100%',
-      
+
       border: '0 0% 0%',
       input: '0 0% 0%',
       ring: '0 0% 0%',
-      
+
       sidebar: '0 0% 100%',
       sidebarForeground: '0 0% 0%',
       header: '0 0% 100%',
       headerForeground: '0 0% 0%',
-      
+
       chart1: '0 0% 0%',
       chart2: '120 100% 20%',
       chart3: '240 100% 35%',
@@ -346,9 +346,9 @@ interface ThemeProviderProps {
   defaultTheme?: ThemeMode;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ 
-  children, 
-  defaultTheme = 'nature' 
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({
+  children,
+  defaultTheme = 'nature'
 }) => {
   const [theme, setThemeState] = useState<ThemeMode>(() => {
     // Intentar obtener el tema guardado desde sessionStorage
@@ -377,12 +377,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const root = document.documentElement;
-      
+
       // Aplicar todas las variables CSS
       Object.entries(themeConfig.colors).forEach(([key, value]) => {
         root.style.setProperty(`--${key}`, value);
       });
-      
+
       // Agregar clase del tema al body para transiciones
       document.body.className = document.body.className.replace(/theme-\w+/g, '');
       document.body.classList.add(`theme-${theme}`);
@@ -422,7 +422,7 @@ export const useTheme = (): ThemeContextType => {
 // Hook para obtener clases CSS basadas en el tema actual
 export const useThemeClasses = () => {
   const { theme } = useTheme();
-  
+
   return {
     // Clases base
     background: 'bg-background text-foreground',
@@ -437,11 +437,11 @@ export const useThemeClasses = () => {
     input: 'border border-input bg-background text-foreground placeholder:text-muted-foreground',
     sidebar: 'bg-sidebar text-sidebar-foreground border-r border-border',
     header: 'bg-header text-header-foreground border-b border-border',
-    
+
     // Estados
     muted: 'text-muted-foreground',
     accent: 'bg-accent text-accent-foreground',
-    
+
     // Utilidades específicas del tema
     themeClass: `theme-${theme}`,
     isDark: theme === 'dark',

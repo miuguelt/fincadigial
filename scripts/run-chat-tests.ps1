@@ -14,14 +14,14 @@ try {
 } catch {
     Write-Host "❌ Backend no esta disponible en localhost:8181" -ForegroundColor Red
     Write-Host "Por favor inicia el backend primero:" -ForegroundColor Yellow
-    Write-Host "  cd BackFinca && python run.py" -ForegroundColor White
+    Write-Host "  cd backend && python run.py" -ForegroundColor White
     exit 1
 }
 
 # Ir al directorio del frontend
 Write-Host ""
-Write-Host "[2/4] Cambiando a directorio VillaLuzFront..." -ForegroundColor Yellow
-$frontendPath = "C:\Users\Miguel\Documents\Aplicaciones\_projects/villaluz\VillaLuzFront"
+Write-Host "[2/4] Cambiando a directorio frontend..." -ForegroundColor Yellow
+$frontendPath = "C:\Users\Miguel\Documents\Aplicaciones\_projects/villaluz\frontend"
 
 try {
     Set-Location -Path $frontendPath -ErrorAction Stop
@@ -92,7 +92,7 @@ Write-Host "  - Chat tests: $(if ($chatExitCode -eq 0) {'PASS ✅'} else {'FAIL 
 Write-Host "  - Stress tests: $(if ($stressExitCode -eq 0) {'PASS ✅'} else {'FAIL ❌'})" -ForegroundColor $(if ($stressExitCode -eq 0) {'Green'} else {'Red'})
 Write-Host ""
 Write-Host "Para ver reporte detallado:" -ForegroundColor Yellow
-Write-Host "  cd VillaLuzFront" -ForegroundColor White
+Write-Host "  cd frontend" -ForegroundColor White
 Write-Host "  npx playwright show-report" -ForegroundColor White
 Write-Host ""
 

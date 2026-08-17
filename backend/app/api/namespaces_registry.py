@@ -1,5 +1,6 @@
 import logging
 
+
 def register_namespaces(api):
     logger = logging.getLogger(__name__)
 
@@ -22,14 +23,18 @@ def register_namespaces(api):
     from ..namespaces.analytics.predictions import predictions_ns
     from ..namespaces.analytics.live import live_ns
     from ..namespaces.analytics.calendar import calendar_ns
-    from ..namespaces.analytics.inventory_analytics_namespace import inventory_analytics_ns
+    from ..namespaces.analytics.inventory_analytics_namespace import (
+        inventory_analytics_ns,
+    )
     from ..namespaces.core.security_namespace import security_ns
     from ..namespaces.animals.species_namespace import species_ns
     from ..namespaces.animals.breeds_namespace import breeds_ns
     from ..namespaces.health.control_namespace import control_ns
     from ..namespaces.farm.fields_namespace import fields_ns
     from ..namespaces.health.diseases_namespace import diseases_ns
-    from ..namespaces.animals.genetic_improvements_namespace import genetic_improvements_ns
+    from ..namespaces.animals.genetic_improvements_namespace import (
+        genetic_improvements_ns,
+    )
     from ..namespaces.farm.food_types_namespace import food_types_ns
     from ..namespaces.health.treatments_namespace import treatments_ns
     from ..namespaces.health.vaccinations_namespace import vaccinations_ns
@@ -38,7 +43,9 @@ def register_namespaces(api):
     from ..namespaces.farm.route_administration_namespace import route_admin_ns
     from ..namespaces.animals.animal_diseases_namespace import animal_diseases_ns
     from ..namespaces.animals.animal_fields_namespace import animal_fields_ns
-    from ..namespaces.health.treatment_medications_namespace import treatment_medications_ns
+    from ..namespaces.health.treatment_medications_namespace import (
+        treatment_medications_ns,
+    )
     from ..namespaces.health.treatment_vaccines_namespace import treatment_vaccines_ns
     from ..namespaces.users.user_preferences_namespace import prefs_ns
     from ..namespaces.core.navigation_namespace import nav_ns
@@ -52,7 +59,9 @@ def register_namespaces(api):
     from ..namespaces.core.public_namespace import public_ns
     from ..namespaces.animals.animal_movements_namespace import animal_movements_ns
     from ..namespaces.farm.finca_images_namespace import finca_images_ns
-    from ..namespaces.health.treatment_recommendations_namespace import treatment_recommendations_ns
+    from ..namespaces.health.treatment_recommendations_namespace import (
+        treatment_recommendations_ns,
+    )
     from ..namespaces.core.p2p_signal_namespace import p2p_signal_ns
     from ..namespaces.system.monitor_namespace import monitor_ns
     from ..namespaces.system.projects_namespace import projects_ns
@@ -64,7 +73,8 @@ def register_namespaces(api):
     from ..namespaces.users.membership_namespace import membership_ns
     from ..namespaces.users.invitations_namespace import invitations_ns
     from ..namespaces.users.notifications_namespace import (
-        user_notifications_ns, notifications_ns,
+        user_notifications_ns,
+        notifications_ns,
     )
     from ..namespaces.core.location_namespace import location_ns
     from ..namespaces.core.client_errors_namespace import client_errors_ns
@@ -83,7 +93,9 @@ def register_namespaces(api):
     from ..namespaces.farm.infrastructure_namespace import infrastructure_ns
     from ..namespaces.farm.management_plans_namespace import management_plans_ns
     from ..namespaces.users.producer_profiles_namespace import producer_profiles_ns
-    from ..namespaces.users.professional_credentials_namespace import professional_credentials_ns
+    from ..namespaces.users.professional_credentials_namespace import (
+        professional_credentials_ns,
+    )
     from ..namespaces.farm.campesino_namespace import (
         crop_plots_ns,
         crop_activities_ns,
@@ -161,18 +173,18 @@ def register_namespaces(api):
     api.add_namespace(push_ns)
     api.add_namespace(docs_ns)
     api.add_namespace(fincas_ns)
-    api.add_namespace(membership_ns, path='/membership')
-    api.add_namespace(invitations_ns, path='/invitations')
-    api.add_namespace(user_notifications_ns, path='/users')
-    api.add_namespace(notifications_ns, path='/notifications')
-    api.add_namespace(location_ns, path='/location')
-    api.add_namespace(chat_ns, path='/chat')
-    api.add_namespace(sync_ns, path='/sync')
-    api.add_namespace(corral_ns, path='/corral')
-    api.add_namespace(devices_ns, path='/devices')
-    api.add_namespace(node_messages_ns, path='/node-messages')
-    api.add_namespace(attachments_ns, path='/attachments')
-    api.add_namespace(financial_ns, path='/financial')
+    api.add_namespace(membership_ns, path="/membership")
+    api.add_namespace(invitations_ns, path="/invitations")
+    api.add_namespace(user_notifications_ns, path="/users")
+    api.add_namespace(notifications_ns, path="/notifications")
+    api.add_namespace(location_ns, path="/location")
+    api.add_namespace(chat_ns, path="/chat")
+    api.add_namespace(sync_ns, path="/sync")
+    api.add_namespace(corral_ns, path="/corral")
+    api.add_namespace(devices_ns, path="/devices")
+    api.add_namespace(node_messages_ns, path="/node-messages")
+    api.add_namespace(attachments_ns, path="/attachments")
+    api.add_namespace(financial_ns, path="/financial")
     api.add_namespace(tasks_ns)
     api.add_namespace(operational_ns)
     api.add_namespace(animal_groups_ns)
@@ -188,26 +200,39 @@ def register_namespaces(api):
     api.add_namespace(management_plans_ns)
     api.add_namespace(producer_profiles_ns)
     api.add_namespace(professional_credentials_ns)
-    api.add_namespace(kb_ns, path='/knowledge_base')
+    api.add_namespace(kb_ns, path="/knowledge_base")
     api.add_namespace(search_ns)
-    api.add_namespace(enums_ns, path='/enums')
-    api.add_namespace(weather_ns, path='/weather')
-    api.add_namespace(client_errors_ns, path='/errors')
+    api.add_namespace(enums_ns, path="/enums")
+    api.add_namespace(weather_ns, path="/weather")
+    api.add_namespace(client_errors_ns, path="/errors")
 
     stress_ns.authorizations = {}
-    api.add_namespace(stress_ns, path='/stress')
+    api.add_namespace(stress_ns, path="/stress")
 
     from ..utils.health_check import health_ns
-    api.add_namespace(health_ns, path='/health')
+
+    api.add_namespace(health_ns, path="/health")
 
     return {
-        'auth': auth_ns,
-        'users': users_ns,
-        'activity': activity_ns,
-        'exempt_list': [
-            diseases_ns, genetic_improvements_ns, food_types_ns, treatments_ns, vaccinations_ns,
-            vaccines_ns, medications_ns, route_admin_ns, animal_diseases_ns, animal_fields_ns,
-            treatment_medications_ns, treatment_vaccines_ns, prefs_ns, nav_ns, animal_images_ns,
-            fincas_ns
-        ]
+        "auth": auth_ns,
+        "users": users_ns,
+        "activity": activity_ns,
+        "exempt_list": [
+            diseases_ns,
+            genetic_improvements_ns,
+            food_types_ns,
+            treatments_ns,
+            vaccinations_ns,
+            vaccines_ns,
+            medications_ns,
+            route_admin_ns,
+            animal_diseases_ns,
+            animal_fields_ns,
+            treatment_medications_ns,
+            treatment_vaccines_ns,
+            prefs_ns,
+            nav_ns,
+            animal_images_ns,
+            fincas_ns,
+        ],
     }

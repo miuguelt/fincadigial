@@ -2,6 +2,7 @@ from app.services.weather_data_service import WeatherDataService
 from app.models.weather import WeatherCondition
 from app.models.finca import Finca, FarmType
 
+
 def test_weather_data_service_decodes_wmo():
     desc, cond = WeatherDataService.decode_wmo_code(0)
     assert cond == WeatherCondition.CLEAR
@@ -10,6 +11,7 @@ def test_weather_data_service_decodes_wmo():
     desc, cond = WeatherDataService.decode_wmo_code(61)
     assert cond == WeatherCondition.RAIN
     assert desc == "Lluvia"
+
 
 def test_save_weather_record_supports_weather_code_with_underscore(app, db_session):
     data = {
@@ -27,11 +29,17 @@ def test_save_weather_record_supports_weather_code_with_underscore(app, db_sessi
             "sunrise": ["2026-06-14T06:00:00"],
             "sunset": ["2026-06-14T18:00:00"],
             "uv_index_max": [4.5],
-        }
+        },
     }
 
     with app.app_context():
-        finca = Finca.create(name="Finca Test Weather", type=FarmType.Tradicional, is_active=True, latitude=4.14, longitude=-73.6)
+        finca = Finca.create(
+            name="Finca Test Weather",
+            type=FarmType.Tradicional,
+            is_active=True,
+            latitude=4.14,
+            longitude=-73.6,
+        )
         db_session.session.commit()
 
         record = WeatherDataService.save_weather_record(finca.id, 4.14, -73.6, data)
@@ -39,6 +47,7 @@ def test_save_weather_record_supports_weather_code_with_underscore(app, db_sessi
         assert record.weather_code == 61
         assert record.weather_condition == WeatherCondition.RAIN
         assert record.precipitation_mm == 1.5
+
 
 def test_save_weather_record_supports_weathercode_legacy(app, db_session):
     data = {
@@ -56,11 +65,17 @@ def test_save_weather_record_supports_weathercode_legacy(app, db_session):
             "sunrise": ["2026-06-14T06:00:00"],
             "sunset": ["2026-06-14T18:00:00"],
             "uv_index_max": [5.0],
-        }
+        },
     }
 
     with app.app_context():
-        finca = Finca.create(name="Finca Test Weather 2", type=FarmType.Tradicional, is_active=True, latitude=4.14, longitude=-73.6)
+        finca = Finca.create(
+            name="Finca Test Weather 2",
+            type=FarmType.Tradicional,
+            is_active=True,
+            latitude=4.14,
+            longitude=-73.6,
+        )
         db_session.session.commit()
 
         record = WeatherDataService.save_weather_record(finca.id, 4.14, -73.6, data)
@@ -69,12 +84,18 @@ def test_save_weather_record_supports_weathercode_legacy(app, db_session):
         assert record.weather_condition == WeatherCondition.CLEAR
         assert record.precipitation_mm == 0.0
 
+
 def test_update_finca_weather_without_coordinates(app, db_session):
     with app.app_context():
-        finca = Finca.create(name="Finca No Coords", type=FarmType.Tradicional, is_active=True, latitude=None, longitude=None)
+        finca = Finca.create(
+            name="Finca No Coords",
+            type=FarmType.Tradicional,
+            is_active=True,
+            latitude=None,
+            longitude=None,
+        )
         db_session.session.commit()
 
         res = WeatherDataService.update_finca_weather(finca.id)
         assert res["success"] is False
         assert res["error"] == "Finca sin coordenadas"
-

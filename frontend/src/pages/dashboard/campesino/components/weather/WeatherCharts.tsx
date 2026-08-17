@@ -56,7 +56,7 @@ export function WeatherCharts({ history, forecast }: Props) {
 							<h3 className="font-bold text-sm">Próximas 24 horas</h3>
 							<p className="text-xs text-muted-foreground mt-0.5">Tendencia para planear riego, fumigación y labores</p>
 						</div>
-						<span className="text-[10px] rounded-full bg-sky-600 text-white font-bold px-2 py-1">Pronóstico</span>
+						<span className="text-[11px] rounded-full bg-sky-600 text-white font-bold px-2 py-1">Pronóstico</span>
 					</div>
 					<ResponsiveContainer width="100%" height={240}>
 						<LineChart data={forecastChartData}>

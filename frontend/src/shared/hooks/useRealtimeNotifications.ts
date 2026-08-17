@@ -89,7 +89,7 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
       setNotifications(prev => {
         const seenMessages = new Set<string>();
         const uniqueList: EnrichedAlert[] = [];
-        
+
         // Add new alerts first, tracking seen messages
         mapped.forEach(a => {
           if (a.message) {
@@ -100,7 +100,7 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
             }
           }
         });
-        
+
         // Add previous alerts if they don't have a duplicate message
         prev.forEach(a => {
           if (a.message) {

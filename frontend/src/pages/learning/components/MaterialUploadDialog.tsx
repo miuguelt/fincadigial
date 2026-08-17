@@ -197,4 +197,3 @@ export function MaterialUploadDialog({ isOpen, onOpenChange, onSuccess }: Materi
     </Dialog>
   );
 }
-

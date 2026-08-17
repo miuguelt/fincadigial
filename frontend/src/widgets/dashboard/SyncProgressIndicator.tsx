@@ -96,7 +96,7 @@ export const SyncProgressIndicator: React.FC = () => {
           )}
 
           {pendingCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-destructive text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">
+            <span className="absolute -top-2 -right-2 bg-destructive text-[11px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">
               {pendingCount}
             </span>
           )}

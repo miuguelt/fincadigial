@@ -164,7 +164,7 @@ export default function SirePerformance() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-muted/30 text-[10px] font-black uppercase tracking-wider text-muted-foreground border-b border-border/20">
+                  <tr className="bg-muted/30 text-[11px] font-black uppercase tracking-wider text-muted-foreground border-b border-border/20">
                     <th className="px-6 py-4">Toro</th>
                     <th className="px-6 py-4">Raza</th>
                     <th className="px-6 py-4 text-center">Inseminaciones</th>
@@ -205,7 +205,7 @@ export default function SirePerformance() {
                         {sire.avg_birth_weight_kg > 0 ? `${sire.avg_birth_weight_kg} kg` : '—'}
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <Badge className={`${getGradeBadgeClass(sire.grade)} font-black uppercase text-[10px] tracking-wider rounded-lg`}>
+                        <Badge className={`${getGradeBadgeClass(sire.grade)} font-black uppercase text-[11px] tracking-wider rounded-lg`}>
                           CLASE {sire.grade}
                         </Badge>
                       </td>
@@ -216,7 +216,7 @@ export default function SirePerformance() {
             </div>
           </CardContent>
           <div className="p-4 sm:p-6 bg-muted/20 border-t border-border/30 text-center">
-            <p className="text-[10px] font-black text-muted-foreground/45 uppercase tracking-[0.25em]">VillaLuz Intelligence Reporting System</p>
+            <p className="text-[11px] font-black text-muted-foreground/45 uppercase tracking-[0.25em]">VillaLuz Intelligence Reporting System</p>
           </div>
         </Card>
       </motion.div>

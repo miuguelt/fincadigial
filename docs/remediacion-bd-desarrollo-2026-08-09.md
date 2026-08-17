@@ -32,4 +32,3 @@ El procedimiento reproducible está en `backend/scripts/remap_dev_catalog_data.p
 - Fixtures marcados restantes: 0.
 
 `farm_entity_alert_configs` queda documentada como tabla legacy no usada por el modelo activo; la tabla operativa vigente es `animal_alert_configs`, con cobertura 36/36.
-

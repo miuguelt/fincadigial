@@ -53,4 +53,3 @@ class KBService extends BaseService<any> {
 }
 
 export const kbService = new KBService();
-

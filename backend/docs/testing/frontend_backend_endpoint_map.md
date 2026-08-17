@@ -1,6 +1,6 @@
 # Frontend ↔ Backend Endpoint Map
 - Backend swagger: `http://127.0.0.1:8081/api/v1/swagger.json`
-- Frontend dir: `C:\Users\Miguel\Documents\Flask Projects\Front_finca`
+- Frontend dir: `C:\Users\Miguel\Documents\Aplicaciones\_projects\villaluz\frontend`
 - Total swagger endpoints: **250**
 - Unused by frontend (best-effort): **137**
 
@@ -57,5 +57,5 @@
 - `GET /route-administrations/active`
 
 ## Notes
-- Matching is heuristic: it scans `Front_finca/src/services` for `api.<method>(...)` calls and compares by method + normalized path.
+- Matching is heuristic: it scans `frontend/src` for `api.<method>(...)` calls and compares by method + normalized path.
 - If an endpoint is marked unused but has a UI, confirm by running the app and checking real traffic.

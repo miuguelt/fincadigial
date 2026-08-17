@@ -7,9 +7,15 @@ from app.services.treatment_recommendation_control_service import (
     TreatmentRecommendationControlService,
 )
 from app.services.treatment_recommendation_service import TreatmentRecommendationService
-from app.services.treatment_recommendation_serializer import TreatmentRecommendationSerializer
+from app.services.treatment_recommendation_serializer import (
+    TreatmentRecommendationSerializer,
+)
 from app.utils.response_handler import APIResponse
-from app.utils.tenant_context import get_current_finca_id, get_current_user_id, get_current_user_role
+from app.utils.tenant_context import (
+    get_current_finca_id,
+    get_current_user_id,
+    get_current_user_role,
+)
 
 
 treatment_recommendations_ns = Namespace(
@@ -18,24 +24,30 @@ treatment_recommendations_ns = Namespace(
     path="/treatment-recommendations",
 )
 
-recommendation_model = treatment_recommendations_ns.model("TreatmentRecommendation", {
-    "animal_id": fields.Integer(required=True),
-    "title": fields.String(required=True),
-    "recommendation": fields.String(required=True),
-    "responsible": fields.String,
-    "start_date": fields.String(required=True),
-    "estimated_end_date": fields.String,
-    "duration_days": fields.Integer,
-    "control_interval_days": fields.Integer(required=True),
-    "status": fields.String(enum=["en_curso", "completado", "suspendido"]),
-    "final_notes": fields.String,
-    "finca_id": fields.Integer,
-})
-control_update_model = treatment_recommendations_ns.model("TreatmentRecommendationControlUpdate", {
-    "completed": fields.Boolean,
-    "control_date": fields.String,
-    "observation": fields.String,
-})
+recommendation_model = treatment_recommendations_ns.model(
+    "TreatmentRecommendation",
+    {
+        "animal_id": fields.Integer(required=True),
+        "title": fields.String(required=True),
+        "recommendation": fields.String(required=True),
+        "responsible": fields.String,
+        "start_date": fields.String(required=True),
+        "estimated_end_date": fields.String,
+        "duration_days": fields.Integer,
+        "control_interval_days": fields.Integer(required=True),
+        "status": fields.String(enum=["en_curso", "completado", "suspendido"]),
+        "final_notes": fields.String,
+        "finca_id": fields.Integer,
+    },
+)
+control_update_model = treatment_recommendations_ns.model(
+    "TreatmentRecommendationControlUpdate",
+    {
+        "completed": fields.Boolean,
+        "control_date": fields.String,
+        "observation": fields.String,
+    },
+)
 
 
 def _write_finca_id(data: dict) -> int | None:
@@ -80,14 +92,18 @@ class TreatmentRecommendationListResource(Resource):
         data = flask.request.get_json(silent=True) or {}
         finca_id = _write_finca_id(data)
         if not finca_id:
-            raise ValidationError("Selecciona una finca antes de registrar la recomendación")
+            raise ValidationError(
+                "Selecciona una finca antes de registrar la recomendación"
+            )
         recommendation = TreatmentRecommendationService.create_recommendation(
             data,
             finca_id=finca_id,
             user_id=get_current_user_id(),
         )
         return APIResponse.success(
-            TreatmentRecommendationSerializer.serialize_recommendation(recommendation, True),
+            TreatmentRecommendationSerializer.serialize_recommendation(
+                recommendation, True
+            ),
             "Recomendación veterinaria creada",
             status_code=201,
         )
@@ -97,9 +113,13 @@ class TreatmentRecommendationListResource(Resource):
 class TreatmentRecommendationResource(Resource):
     @jwt_required()
     def get(self, recommendation_id: int):
-        recommendation = TreatmentRecommendationService.get_recommendation(recommendation_id)
+        recommendation = TreatmentRecommendationService.get_recommendation(
+            recommendation_id
+        )
         return APIResponse.success(
-            TreatmentRecommendationSerializer.serialize_recommendation(recommendation, True),
+            TreatmentRecommendationSerializer.serialize_recommendation(
+                recommendation, True
+            ),
             "Recomendación veterinaria obtenida",
         )
 
@@ -114,7 +134,9 @@ class TreatmentRecommendationResource(Resource):
             user_id=get_current_user_id(),
         )
         return APIResponse.success(
-            TreatmentRecommendationSerializer.serialize_recommendation(recommendation, True),
+            TreatmentRecommendationSerializer.serialize_recommendation(
+                recommendation, True
+            ),
             "Recomendación veterinaria actualizada",
         )
 
@@ -128,18 +150,27 @@ class TreatmentRecommendationResource(Resource):
 class TreatmentRecommendationControlListResource(Resource):
     @jwt_required()
     def get(self, recommendation_id: int):
-        controls = TreatmentRecommendationControlService.list_controls(recommendation_id)
+        controls = TreatmentRecommendationControlService.list_controls(
+            recommendation_id
+        )
         return APIResponse.success(
-            [TreatmentRecommendationSerializer.serialize_control(item) for item in controls],
+            [
+                TreatmentRecommendationSerializer.serialize_control(item)
+                for item in controls
+            ],
             "Controles de seguimiento obtenidos",
         )
 
 
-@treatment_recommendations_ns.route("/<int:recommendation_id>/controls/<int:control_id>")
+@treatment_recommendations_ns.route(
+    "/<int:recommendation_id>/controls/<int:control_id>"
+)
 class TreatmentRecommendationControlResource(Resource):
     @jwt_required()
     def get(self, recommendation_id: int, control_id: int):
-        control = TreatmentRecommendationControlService.get_control(recommendation_id, control_id)
+        control = TreatmentRecommendationControlService.get_control(
+            recommendation_id, control_id
+        )
         return APIResponse.success(
             TreatmentRecommendationSerializer.serialize_control(control),
             "Control de seguimiento obtenido",

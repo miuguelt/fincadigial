@@ -1,5 +1,6 @@
 from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
+
 try:
     import bcrypt
 except Exception:
@@ -7,20 +8,22 @@ except Exception:
 from app.models.base_model import BaseModel, ValidationError
 import enum
 
+
 class Role(enum.Enum):
-    Aprendiz = 'Aprendiz'
-    Instructor = 'Instructor'
-    Administrador = 'Administrador'
-    Propietario = 'Propietario'
-    Capataz = 'Capataz'
-    Operario = 'Operario'
-    Veterinario = 'Veterinario'
+    Aprendiz = "Aprendiz"
+    Instructor = "Instructor"
+    Administrador = "Administrador"
+    Propietario = "Propietario"
+    Capataz = "Capataz"
+    Operario = "Operario"
+    Veterinario = "Veterinario"
+
 
 class ApprovalStatus(enum.Enum):
-    Pending = 'Pending'
-    Approved = 'Approved'
-    Rejected = 'Rejected'
-    Suspended = 'Suspended'
+    Pending = "Pending"
+    Approved = "Approved"
+    Rejected = "Rejected"
+    Suspended = "Suspended"
 
     @classmethod
     def get_choices(cls):
@@ -32,30 +35,34 @@ class ApprovalStatus(enum.Enum):
     def __repr__(self):
         return f"{self.__class__.__name__}.{self.name}"
 
+
 ROLE_FINCA_TYPE_MAP = {
-    'Educativa': {'Aprendiz', 'Instructor', 'Administrador'},
-    'Tradicional': {'Propietario', 'Capataz', 'Operario', 'Veterinario'},
+    "Educativa": {"Aprendiz", "Instructor", "Administrador"},
+    "Tradicional": {"Propietario", "Capataz", "Operario", "Veterinario"},
 }
 
 ROLE_DEFAULTS = {
-    'Educativa': 'Administrador',
-    'Tradicional': 'Propietario',
+    "Educativa": "Administrador",
+    "Tradicional": "Propietario",
 }
+
 
 def is_role_valid_for_finca(role_value: str, finca_type: str) -> bool:
     valid_roles = ROLE_FINCA_TYPE_MAP.get(finca_type, set())
     return role_value in valid_roles
 
+
 def get_default_role_for_finca(finca_type: str) -> str:
-    return ROLE_DEFAULTS.get(finca_type, 'Operario')
+    return ROLE_DEFAULTS.get(finca_type, "Operario")
+
 
 class User(BaseModel):
-    __tablename__ = 'user'
+    __tablename__ = "user"
     __table_args__ = (
-        db.Index('ix_user_updated_at', 'updated_at'),
-        db.Index('ix_user_created_at', 'created_at'),
-        db.Index('ix_user_finca_id', 'finca_id'),
-        db.Index('ix_user_role', 'role'),
+        db.Index("ix_user_updated_at", "updated_at"),
+        db.Index("ix_user_created_at", "created_at"),
+        db.Index("ix_user_finca_id", "finca_id"),
+        db.Index("ix_user_role", "role"),
     )
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -67,80 +74,142 @@ class User(BaseModel):
     address = db.Column(db.String(255), nullable=True)
     role = db.Column(db.Enum(Role), nullable=False)
     status = db.Column(db.Boolean, default=True)
-    approval_status = db.Column(db.Enum(ApprovalStatus), default=ApprovalStatus.Pending, nullable=False)
-    finca_id = db.Column(db.Integer, db.ForeignKey('finca.id'), nullable=True)
+    approval_status = db.Column(
+        db.Enum(ApprovalStatus), default=ApprovalStatus.Pending, nullable=False
+    )
+    finca_id = db.Column(db.Integer, db.ForeignKey("finca.id"), nullable=True)
     avatar_url = db.Column(db.String(255), nullable=True)
 
-    finca = db.relationship('Finca', backref='users', lazy='selectin')
+    finca = db.relationship("Finca", backref="users", lazy="selectin")
 
     _namespace_fields = [
-        'id', 'identification', 'fullname', 'email', 'phone', 'address', 'role', 'status', 'approval_status',
-        'finca_id', 'avatar_url', 'created_at', 'updated_at', 'fincas', 'is_multi_finca', 'finca_name', 'finca_type',
-        'is_system_admin'
+        "id",
+        "identification",
+        "fullname",
+        "email",
+        "phone",
+        "address",
+        "role",
+        "status",
+        "approval_status",
+        "finca_id",
+        "avatar_url",
+        "created_at",
+        "updated_at",
+        "fincas",
+        "is_multi_finca",
+        "finca_name",
+        "finca_type",
+        "is_system_admin",
     ]
     _namespace_relations = {
-        'diseases': {'fields': ['id', 'animal_id', 'disease_id', 'diagnosis_date'], 'depth': 1},
-        'vaccines_as_apprentice': {'fields': ['id', 'animal_id', 'vaccine_id', 'vaccination_date'], 'depth': 1},
-        'vaccines_as_instructor': {'fields': ['id', 'animal_id', 'vaccine_id', 'vaccination_date'], 'depth': 1}
+        "diseases": {
+            "fields": ["id", "animal_id", "disease_id", "diagnosis_date"],
+            "depth": 1,
+        },
+        "vaccines_as_apprentice": {
+            "fields": ["id", "animal_id", "vaccine_id", "vaccination_date"],
+            "depth": 1,
+        },
+        "vaccines_as_instructor": {
+            "fields": ["id", "animal_id", "vaccine_id", "vaccination_date"],
+            "depth": 1,
+        },
     }
-    _searchable_fields = ['fullname', 'email']
-    _filterable_fields = ['role', 'status', 'approval_status', 'created_at']
-    _sortable_fields = ['id', 'fullname', 'email', 'identification', 'created_at', 'updated_at']
-    _required_fields = ['identification', 'fullname', 'password', 'email', 'phone', 'role']
-    _unique_fields = ['identification', 'email', 'phone']
-    _enum_fields = {'role': Role, 'approval_status': ApprovalStatus}
+    _searchable_fields = ["fullname", "email"]
+    _filterable_fields = ["role", "status", "approval_status", "created_at"]
+    _sortable_fields = [
+        "id",
+        "fullname",
+        "email",
+        "identification",
+        "created_at",
+        "updated_at",
+    ]
+    _required_fields = [
+        "identification",
+        "fullname",
+        "password",
+        "email",
+        "phone",
+        "role",
+    ]
+    _unique_fields = ["identification", "email", "phone"]
+    _enum_fields = {"role": Role, "approval_status": ApprovalStatus}
 
     _cache_config = {
-        'ttl': 60,
-        'type': 'private',
-        'strategy': 'network-first',
-        'max_age': 60,
-        'stale_while_revalidate': 30,
+        "ttl": 60,
+        "type": "private",
+        "strategy": "network-first",
+        "max_age": 60,
+        "stale_while_revalidate": 30,
     }
 
-    diseases = db.relationship('AnimalDiseases', back_populates='instructor', lazy='dynamic')
-    vaccines_as_apprentice = db.relationship('Vaccinations', foreign_keys='Vaccinations.apprentice_id', back_populates='apprentice', lazy='dynamic')
-    vaccines_as_instructor = db.relationship('Vaccinations', foreign_keys='Vaccinations.instructor_id', back_populates='instructor', lazy='dynamic')
+    diseases = db.relationship(
+        "AnimalDiseases", back_populates="instructor", lazy="dynamic"
+    )
+    vaccines_as_apprentice = db.relationship(
+        "Vaccinations",
+        foreign_keys="Vaccinations.apprentice_id",
+        back_populates="apprentice",
+        lazy="dynamic",
+    )
+    vaccines_as_instructor = db.relationship(
+        "Vaccinations",
+        foreign_keys="Vaccinations.instructor_id",
+        back_populates="instructor",
+        lazy="dynamic",
+    )
 
     @classmethod
     def _validate_and_normalize(cls, data, is_update=False, instance_id=None):
         sanitized = dict(data or {})
         errors = []
 
-        for field in ['fullname', 'email', 'phone', 'address', 'password']:
+        for field in ["fullname", "email", "phone", "address", "password"]:
             if field in sanitized and isinstance(sanitized[field], str):
                 sanitized[field] = sanitized[field].strip()
-        if 'email' in sanitized and isinstance(sanitized['email'], str):
-            sanitized['email'] = sanitized['email'].lower()
+        if "email" in sanitized and isinstance(sanitized["email"], str):
+            sanitized["email"] = sanitized["email"].lower()
 
-        if 'identification' in sanitized:
+        if "identification" in sanitized:
             try:
-                sanitized['identification'] = int(str(sanitized['identification']).strip())
+                sanitized["identification"] = int(
+                    str(sanitized["identification"]).strip()
+                )
             except (TypeError, ValueError, AttributeError):
                 errors.append("El campo 'identification' debe ser numérico")
 
-        password = sanitized.get('password')
+        password = sanitized.get("password")
         if password is not None:
             if isinstance(password, str):
                 password = password.strip()
-                sanitized['password'] = password
+                sanitized["password"] = password
             if password:
                 if len(password) < 8:
-                    errors.append("El campo 'password' debe tener al menos 8 caracteres")
+                    errors.append(
+                        "El campo 'password' debe tener al menos 8 caracteres"
+                    )
             elif not is_update:
                 errors.append("El campo 'password' es requerido")
         elif not is_update:
             errors.append("El campo 'password' es requerido")
 
-        email_value = sanitized.get('email')
+        email_value = sanitized.get("email")
         if email_value:
-            if not isinstance(email_value, str) or '@' not in email_value or email_value.count('@') != 1:
+            if (
+                not isinstance(email_value, str)
+                or "@" not in email_value
+                or email_value.count("@") != 1
+            ):
                 errors.append("El campo 'email' debe ser un correo válido")
 
         if errors:
-            raise ValidationError('; '.join(errors), errors=errors)
+            raise ValidationError("; ".join(errors), errors=errors)
 
-        return super()._validate_and_normalize(sanitized, is_update=is_update, instance_id=instance_id)
+        return super()._validate_and_normalize(
+            sanitized, is_update=is_update, instance_id=instance_id
+        )
 
     def set_password(self, password: str) -> None:
         self.password = generate_password_hash(password)
@@ -157,19 +226,19 @@ class User(BaseModel):
         if not bcrypt:
             return False
         try:
-            stored_hash = self.password.encode('utf-8')
-            if stored_hash.startswith(b'$2y$'):
-                stored_hash = b'$2b$' + stored_hash[4:]
-            if stored_hash.startswith((b'$2a$', b'$2b$')):
-                return bcrypt.checkpw(password.encode('utf-8'), stored_hash)
+            stored_hash = self.password.encode("utf-8")
+            if stored_hash.startswith(b"$2y$"):
+                stored_hash = b"$2b$" + stored_hash[4:]
+            if stored_hash.startswith((b"$2a$", b"$2b$")):
+                return bcrypt.checkpw(password.encode("utf-8"), stored_hash)
         except Exception:
             return False
         return False
 
     @classmethod
     def create(cls, commit=True, **kwargs):
-        if 'password' in kwargs:
-            kwargs['password'] = generate_password_hash(kwargs['password'])
+        if "password" in kwargs:
+            kwargs["password"] = generate_password_hash(kwargs["password"])
 
         # Call super().create with commit=False to avoid premature commit
         user = super().create(commit=False, **kwargs)
@@ -177,13 +246,14 @@ class User(BaseModel):
         # Sincronizar con UserFinca
         if user and user.finca_id:
             from app.models.user_finca import UserFinca
+
             UserFinca.assign(
                 user_id=user.id,
                 finca_id=user.finca_id,
-                role=getattr(user.role, 'value', str(user.role)),
+                role=getattr(user.role, "value", str(user.role)),
                 is_active=True,
                 is_primary=True,
-                commit=False
+                commit=False,
             )
 
         if commit:
@@ -195,21 +265,22 @@ class User(BaseModel):
         return user
 
     def update(self, commit=True, **kwargs):
-        if 'password' in kwargs:
-            kwargs['password'] = generate_password_hash(kwargs['password'])
+        if "password" in kwargs:
+            kwargs["password"] = generate_password_hash(kwargs["password"])
 
         updated_user = super().update(commit=False, **kwargs)
 
         # Sincronizar con UserFinca si cambió finca_id o role
-        if 'finca_id' in kwargs or 'role' in kwargs:
+        if "finca_id" in kwargs or "role" in kwargs:
             from app.models.user_finca import UserFinca
+
             UserFinca.assign(
                 user_id=self.id,
                 finca_id=self.finca_id,
-                role=getattr(self.role, 'value', str(self.role)),
+                role=getattr(self.role, "value", str(self.role)),
                 is_active=True,
                 is_primary=True,
-                commit=False
+                commit=False,
             )
 
         if commit:
@@ -222,7 +293,7 @@ class User(BaseModel):
 
     def to_namespace_dict(self, include_relations=False, depth=1, fields=None):
         data = super().to_namespace_dict(include_relations, depth, fields)
-        data.pop('password', None)
+        data.pop("password", None)
         return data
 
     @classmethod
@@ -230,13 +301,15 @@ class User(BaseModel):
         """Serialize /users with the role held in the active farm."""
         payload = super().get_paginated_response(query_result, include_relations, depth)
         from app.utils.tenant_context import get_current_finca_id
+
         finca_id = get_current_finca_id()
-        items = payload.get('items', [])
+        items = payload.get("items", [])
         if not finca_id or not items:
             return payload
 
         from app.models.user_finca import UserFinca
-        user_ids = [item['id'] for item in items if item.get('id') is not None]
+
+        user_ids = [item["id"] for item in items if item.get("id") is not None]
         memberships = UserFinca.query.filter(
             UserFinca.user_id.in_(user_ids),
             UserFinca.finca_id == finca_id,
@@ -244,19 +317,21 @@ class User(BaseModel):
         ).all()
         roles = {membership.user_id: membership.role for membership in memberships}
         for item in items:
-            item['global_role'] = item.get('role')
-            if item.get('id') in roles:
-                item['role'] = roles[item['id']]
+            item["global_role"] = item.get("role")
+            if item.get("id") in roles:
+                item["role"] = roles[item["id"]]
         return payload
 
     @property
     def fincas(self):
         from app.models.user_finca import UserFinca
+
         return UserFinca.get_user_fincas(self.id)
 
     @property
     def is_multi_finca(self):
         from app.models.user_finca import UserFinca
+
         return UserFinca.is_multi_finca(self.id)
 
     @property
@@ -265,13 +340,18 @@ class User(BaseModel):
 
     @property
     def finca_type(self):
-        return getattr(self.finca.type, 'value', str(self.finca.type)) if self.finca and self.finca.type else None
+        return (
+            getattr(self.finca.type, "value", str(self.finca.type))
+            if self.finca and self.finca.type
+            else None
+        )
 
     @property
     def is_system_admin(self):
         from app.utils.tenant_context import is_system_admin_identity
-        role_value = getattr(self.role, 'value', str(self.role))
+
+        role_value = getattr(self.role, "value", str(self.role))
         return is_system_admin_identity(role_value, self.identification)
 
     def __repr__(self):
-        return f'<User {self.id}: {self.fullname}>'
+        return f"<User {self.id}: {self.fullname}>"

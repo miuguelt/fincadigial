@@ -27,12 +27,12 @@ class PredictionsService extends BaseService<any> {
     // El endpoint en el backend es POST /analytics/predictions/anomalies
     const res = await this.customRequest<any>('anomalies', 'POST');
     const anomaliesList = res?.anomalies || [];
-    
+
     return anomaliesList.map((a: any, idx: number) => {
       let mappedType: GrowthAnomaly['type'] = 'stagnation';
       if (a.type === 'LACK_OF_DATA') mappedType = 'weight_loss';
       if (a.type === 'MARKET_READY') mappedType = 'rapid_gain';
-      
+
       return {
         id: a.id || idx,
         animal_id: a.animal_id,
@@ -64,4 +64,3 @@ class PredictionsService extends BaseService<any> {
 
 export const predictionsService = new PredictionsService();
 export default predictionsService;
-

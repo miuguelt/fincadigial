@@ -8,7 +8,9 @@ from app.models.animals import Animals
 from app.models.treatment_recommendations import TreatmentRecommendations
 from app.utils.custom_exceptions import ConflictException, ResourceNotFoundException
 from app.utils.tenant_context import apply_tenant_filter
-from app.services.treatment_recommendation_schedule import TreatmentRecommendationSchedule
+from app.services.treatment_recommendation_schedule import (
+    TreatmentRecommendationSchedule,
+)
 
 
 class TreatmentRecommendationService:
@@ -82,7 +84,9 @@ class TreatmentRecommendationService:
             return recommendation
         except IntegrityError as exc:
             db.session.rollback()
-            raise ConflictException("No se pudo guardar la recomendación veterinaria") from exc
+            raise ConflictException(
+                "No se pudo guardar la recomendación veterinaria"
+            ) from exc
 
     @classmethod
     def update_recommendation(
@@ -94,7 +98,9 @@ class TreatmentRecommendationService:
     ) -> TreatmentRecommendations:
         recommendation = cls.get_recommendation(recommendation_id)
         if finca_id and recommendation.finca_id != finca_id:
-            raise ResourceNotFoundException("La recomendación veterinaria no fue encontrada")
+            raise ResourceNotFoundException(
+                "La recomendación veterinaria no fue encontrada"
+            )
         payload = TreatmentRecommendationSchedule.prepare_payload(
             data,
             recommendation.finca_id,
@@ -111,7 +117,9 @@ class TreatmentRecommendationService:
             return recommendation
         except IntegrityError as exc:
             db.session.rollback()
-            raise ConflictException("No se pudo actualizar la recomendación veterinaria") from exc
+            raise ConflictException(
+                "No se pudo actualizar la recomendación veterinaria"
+            ) from exc
 
     @classmethod
     def delete_recommendation(cls, recommendation_id: int) -> None:

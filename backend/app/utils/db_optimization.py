@@ -16,6 +16,7 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 class DatabaseOptimizer:
     """Clase para manejar optimizaciones de base de datos"""
 
@@ -42,39 +43,43 @@ class DatabaseOptimizer:
 
     def configure_connection_pool(self, app):
         """Configurar connection pooling optimizado"""
-        existing = app.config.get('SQLALCHEMY_ENGINE_OPTIONS') or {}
+        existing = app.config.get("SQLALCHEMY_ENGINE_OPTIONS") or {}
         pool_config = dict(existing)
-        pool_config.setdefault('poolclass', QueuePool)
-        pool_config.setdefault('pool_size', 20)
-        pool_config.setdefault('max_overflow', 10)
-        pool_config.setdefault('pool_timeout', 30)
-        pool_config.setdefault('pool_recycle', 1800)
-        pool_config.setdefault('pool_pre_ping', True)
-        app.config.update({'SQLALCHEMY_ENGINE_OPTIONS': pool_config})
-        logger.info("Connection pooling configurado: pool_size=%s, max_overflow=%s", pool_config.get('pool_size'), pool_config.get('max_overflow'))
+        pool_config.setdefault("poolclass", QueuePool)
+        pool_config.setdefault("pool_size", 20)
+        pool_config.setdefault("max_overflow", 10)
+        pool_config.setdefault("pool_timeout", 30)
+        pool_config.setdefault("pool_recycle", 1800)
+        pool_config.setdefault("pool_pre_ping", True)
+        app.config.update({"SQLALCHEMY_ENGINE_OPTIONS": pool_config})
+        logger.info(
+            "Connection pooling configurado: pool_size=%s, max_overflow=%s",
+            pool_config.get("pool_size"),
+            pool_config.get("max_overflow"),
+        )
 
     def setup_slow_query_logging(self):
         """Configurar logging de consultas lentas"""
 
         @event.listens_for(Engine, "before_cursor_execute")
-        def receive_before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+        def receive_before_cursor_execute(
+            conn, cursor, statement, parameters, context, executemany
+        ):
             context._query_start_time = time.time()
 
         @event.listens_for(Engine, "after_cursor_execute")
-        def receive_after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+        def receive_after_cursor_execute(
+            conn, cursor, statement, parameters, context, executemany
+        ):
             total = time.time() - context._query_start_time
 
             # Log consultas que toman más de 1 segundo
             if total > 1.0:
-                logger.warning(
-                    f"SLOW QUERY ({total:.2f}s): {statement[:200]}..."
-                )
+                logger.warning(f"SLOW QUERY ({total:.2f}s): {statement[:200]}...")
 
             # Log consultas muy lentas (más de 5 segundos)
             if total > 5.0:
-                logger.error(
-                    f"VERY SLOW QUERY ({total:.2f}s): {statement}"
-                )
+                logger.error(f"VERY SLOW QUERY ({total:.2f}s): {statement}")
 
     def configure_mysql_optimizations(self):
         """Configurar optimizaciones específicas de MySQL"""
@@ -82,12 +87,16 @@ class DatabaseOptimizer:
         # SQLALCHEMY_DATABASE_URI targets MySQL. This avoids errors when using
         # SQLite in testing or other drivers where flask.session variables aren't supported.
         try:
-            db_uri = (self.app.config.get('SQLALCHEMY_DATABASE_URI') or '').lower() if self.app else ''
+            db_uri = (
+                (self.app.config.get("SQLALCHEMY_DATABASE_URI") or "").lower()
+                if self.app
+                else ""
+            )
         except Exception:
-            db_uri = ''
+            db_uri = ""
 
-        if 'mysql' not in db_uri:
-            logger.info('Skipping MySQL optimizations for non-MySQL database URI')
+        if "mysql" not in db_uri:
+            logger.info("Skipping MySQL optimizations for non-MySQL database URI")
             return
 
         @event.listens_for(Engine, "connect")
@@ -99,8 +108,8 @@ class DatabaseOptimizer:
                     optimizations = [
                         "SET SESSION sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO'",
                         "SET SESSION innodb_lock_wait_timeout = 50",
-                        "SET SESSION tmp_table_size = 67108864",    # 64MB
-                        "SET SESSION max_heap_table_size = 67108864", # 64MB
+                        "SET SESSION tmp_table_size = 67108864",  # 64MB
+                        "SET SESSION max_heap_table_size = 67108864",  # 64MB
                     ]
 
                     for optimization in optimizations:
@@ -117,19 +126,31 @@ class DatabaseOptimizer:
                 logger.warning(f"No se pudieron aplicar optimizaciones MySQL: {e}")
 
         @event.listens_for(Engine, "before_cursor_execute")
-        def enforce_readonly_mode(conn, cursor, statement, parameters, context, executemany):
+        def enforce_readonly_mode(
+            conn, cursor, statement, parameters, context, executemany
+        ):
             """Bloquear escrituras si el modo mantenimiento está activo (Hardening)"""
-            maintenance_mode = os.getenv('MAINTENANCE_MODE', 'false').lower() == 'true'
+            maintenance_mode = os.getenv("MAINTENANCE_MODE", "false").lower() == "true"
 
             if maintenance_mode:
                 # Lista de comandos prohibidos en mantenimiento
-                forbidden = ['INSERT', 'UPDATE', 'DELETE', 'DROP', 'ALTER', 'CREATE', 'REPLACE', 'TRUNCATE']
+                forbidden = [
+                    "INSERT",
+                    "UPDATE",
+                    "DELETE",
+                    "DROP",
+                    "ALTER",
+                    "CREATE",
+                    "REPLACE",
+                    "TRUNCATE",
+                ]
                 stmt_upper = statement.strip().upper()
 
                 if any(stmt_upper.startswith(cmd) for cmd in forbidden):
                     msg = "🚫 MODO MANTENIMIENTO: Operaciones de escritura deshabilitadas globalmente."
                     logger.error(msg)
                     raise RuntimeError(msg)
+
 
 class QueryCache:
     """Cache simple para consultas frecuentes"""
@@ -160,11 +181,14 @@ class QueryCache:
         """Obtener tamaño del cache"""
         return len(self.cache)
 
+
 # Instancia global del cache
 query_cache = QueryCache()
 
+
 def cached_query(timeout=300):
     """Decorador para cachear resultados de consultas"""
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -183,8 +207,11 @@ def cached_query(timeout=300):
             query_cache.set(cache_key, result)
 
             return result
+
         return wrapper
+
     return decorator
+
 
 class DBInsights:
     """Utilidades para optimización de consultas"""
@@ -195,7 +222,8 @@ class DBInsights:
         from app import db
 
         try:
-            result = db.session.execute(text("""
+            result = db.session.execute(
+                text("""
                 SELECT
                     c.relname,
                     COALESCE(s.n_live_tup, 0),
@@ -208,15 +236,17 @@ class DBInsights:
                 WHERE n.nspname = current_schema()
                   AND c.relname = :table_name
                   AND c.relkind IN ('r', 'p')
-            """), {'table_name': table_name}).fetchone()
+            """),
+                {"table_name": table_name},
+            ).fetchone()
 
             if result:
                 return {
-                    'table_name': result[0],
-                    'rows': result[1],
-                    'data_size': result[2],
-                    'index_size': result[3],
-                    'total_size': result[4]
+                    "table_name": result[0],
+                    "rows": result[1],
+                    "data_size": result[2],
+                    "index_size": result[3],
+                    "total_size": result[4],
                 }
 
         except Exception as e:
@@ -230,13 +260,16 @@ class DBInsights:
         from app import db
 
         try:
-            extension_enabled = db.session.execute(text(
-                "SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_stat_statements')"
-            )).scalar()
+            extension_enabled = db.session.execute(
+                text(
+                    "SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_stat_statements')"
+                )
+            ).scalar()
             if not extension_enabled:
                 return []
 
-            result = db.session.execute(text("""
+            result = db.session.execute(
+                text("""
                 SELECT
                     query,
                     calls,
@@ -246,14 +279,18 @@ class DBInsights:
                 WHERE mean_exec_time >= 1000
                 ORDER BY total_exec_time DESC
                 LIMIT 10
-            """)).fetchall()
+            """)
+            ).fetchall()
 
-            return [{
-                'query': row[0][:200] + '...' if len(row[0]) > 200 else row[0],
-                'count': row[1],
-                'avg_time': round(row[2], 3),
-                'max_time': round(row[3], 3)
-            } for row in result]
+            return [
+                {
+                    "query": row[0][:200] + "..." if len(row[0]) > 200 else row[0],
+                    "count": row[1],
+                    "avg_time": round(row[2], 3),
+                    "max_time": round(row[3], 3),
+                }
+                for row in result
+            ]
 
         except Exception as e:
             logger.error(f"Error analizando consultas lentas: {e}")
@@ -265,7 +302,8 @@ class DBInsights:
         from app import db
 
         try:
-            result = db.session.execute(text("""
+            result = db.session.execute(
+                text("""
                 SELECT
                     relname,
                     indexrelname,
@@ -273,40 +311,47 @@ class DBInsights:
                     pg_relation_size(indexrelid)
                 FROM pg_stat_user_indexes
                 ORDER BY relname, idx_scan DESC
-            """)).fetchall()
+            """)
+            ).fetchall()
 
-            return [{
-                'table': row[0],
-                'index': row[1],
-                'scans': int(row[2] or 0),
-                'size': int(row[3] or 0)
-            } for row in result]
+            return [
+                {
+                    "table": row[0],
+                    "index": row[1],
+                    "scans": int(row[2] or 0),
+                    "size": int(row[3] or 0),
+                }
+                for row in result
+            ]
 
         except Exception as e:
             logger.error(f"Error obteniendo uso de índices: {e}")
             return []
 
+
 # Instancia global del optimizador
 db_optimizer = DatabaseOptimizer()
+
 
 def init_db_optimizations(app):
     """Inicializar todas las optimizaciones de base de datos"""
     db_optimizer.init_app(app)
     logger.info("Optimizaciones de base de datos inicializadas")
 
+
 def get_performance_stats() -> dict[str, Any]:
     """Obtener estadísticas de rendimiento de la base de datos"""
     insights = DBInsights()
 
     return {
-        'cache_size': query_cache.size(),
-        'slow_queries': insights.analyze_slow_queries(),
-        'index_usage': insights.get_index_usage(),
-        'table_stats': {
-            'animals': insights.get_table_stats('animals'),
-            'control': insights.get_table_stats('control'),
-            'breeds': insights.get_table_stats('breeds'),
-            'treatments': insights.get_table_stats('treatments'),
-            'vaccinations': insights.get_table_stats('vaccinations')
-        }
+        "cache_size": query_cache.size(),
+        "slow_queries": insights.analyze_slow_queries(),
+        "index_usage": insights.get_index_usage(),
+        "table_stats": {
+            "animals": insights.get_table_stats("animals"),
+            "control": insights.get_table_stats("control"),
+            "breeds": insights.get_table_stats("breeds"),
+            "treatments": insights.get_table_stats("treatments"),
+            "vaccinations": insights.get_table_stats("vaccinations"),
+        },
     }

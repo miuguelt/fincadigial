@@ -109,10 +109,10 @@ por los que pasa casi todo el texto de la web.
 
 | Componente | Alcance | Qué ajusta |
 |---|---|---|
-| `CardTitle` (`shared/ui/card`) | 82 ficheros | El `text-2xl` fijo del título de tarjeta. `maxLines={0}` lo desactiva. |
-| `KPICard` | 13 ficheros | Título, cifra y subtítulo. Antes los tres se **recortaban** con `truncate`. |
-| `DataScreenHeader` | 12 ficheros | Título y descripción de pantalla de datos. |
-| `PageHeader` | 9 ficheros | Título y descripción de página. |
+| `CardTitle` (`shared/ui/card`) | 82 archivos | El `text-2xl` fijo del título de tarjeta. `maxLines={0}` lo desactiva. |
+| `KPICard` | 13 archivos | Título, cifra y subtítulo. Antes los tres se **recortaban** con `truncate`. |
+| `DataScreenHeader` | 12 archivos | Título y descripción de pantalla de datos. |
+| `PageHeader` | 9 archivos | Título y descripción de página. |
 | Acciones rápidas del campesino | 1 pantalla | El caso que originó el estándar. |
 
 ### 2.2c Rendimiento
@@ -180,7 +180,7 @@ Cuánto texto se gana frente a `truncate`, medido:
 | Juan Sebastián Martínez | 100 px / 14 px | 15 de 23 | **18 de 23** |
 
 **Suelo de legibilidad: 11 px.** Un `minScale` relativo no basta —sobre un
-`text-xs` de 12 px, el 62 % son 7,4 px, ilegibles a pleno sol con el móvil en la
+`text-xs` de 12 px, el 62 % son 7,4 px, ilegibles a pleno sol con el celular en la
 mano, que es como se usa esta aplicación—. Por debajo de 11 px se prefiere
 recortar antes que seguir encogiendo. El suelo es absoluto y vale para todo el
 sistema, también para `<FitText>`.
@@ -208,7 +208,7 @@ pide a propósito y se ve en la revisión.
 ## 3b. `truncate` está retirado
 
 La utilidad `truncate` ya no se usa en `frontend/src`: sus **196 apariciones en
-100 ficheros** son ahora `.fit-clamp` (§2.5). No quedan usos; si aparece uno
+100 archivos** son ahora `.fit-clamp` (§2.5). No quedan usos; si aparece uno
 nuevo, es una regresión.
 
 El cambio fue una sustitución de clase, sin tocar la estructura del JSX, porque

@@ -90,4 +90,3 @@ export class TreatmentVaccinesService extends BaseService<TreatmentVaccineRespon
 }
 
 export const treatmentVaccinesService = new TreatmentVaccinesService();
-

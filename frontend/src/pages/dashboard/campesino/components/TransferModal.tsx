@@ -1,11 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, CheckCircle2, WifiOff } from "lucide-react";
-import type React from "react";
-import { useState } from "react";
-import { useToast } from "@/app/providers/ToastContext";
-import { animalFieldsService } from "@/entities/animal-field/api/animalFields.service";
-import { offlineQueue } from "@/shared/api/offline/offlineQueue";
-import { useOnlineStatus } from "@/shared/hooks/useOnlineStatus";
+import { useCampesinoTransfer } from "../hooks/useCampesinoTransfer";
 import { IconRoute as IconRouteCattle } from "@/shared/icons/cattle";
 import { Button } from "@/shared/ui/button";
 import {
@@ -23,7 +18,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/shared/ui/select";
-import { getTodayColombia } from "@/shared/utils/dateUtils";
 
 interface TransferModalProps {
 	isOpen: boolean;
@@ -40,140 +34,22 @@ export function TransferModal({
 	fields,
 	onSuccess,
 }: TransferModalProps) {
-	const { showToast } = useToast();
-	const { isOnline } = useOnlineStatus();
-	const [savingForm, setSavingForm] = useState(false);
-	const [successData, setSuccessData] = useState<{
-		animalName: string;
-		targetFieldName: string;
-		targetFieldOldCount: number;
-		targetFieldNewCount: number;
-	} | null>(null);
-
-	const [transferForm, setTransferForm] = useState({
-		animalId: "",
-		fieldId: "",
-		date: getTodayColombia(),
-	});
-
-	const handleTransferSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!transferForm.animalId || !transferForm.fieldId) {
-			showToast("Seleccione animal y potrero de destino", "error");
-			return;
-		}
-
-		setSavingForm(true);
-		const payload = {
-			animal_id: Number(transferForm.animalId),
-			field_id: Number(transferForm.fieldId),
-			assignment_date: transferForm.date,
-		};
-
-		try {
-			if (!isOnline) {
-				await offlineQueue.enqueue("POST", "animal-fields", payload);
-				showToast(
-					"Traslado guardado sin señal. Se sincronizará pronto.",
-					"success",
-				);
-				onSuccess();
-				onClose();
-				setTransferForm({
-					animalId: "",
-					fieldId: "",
-					date: getTodayColombia(),
-				});
-				return;
-			}
-
-			const animalName =
-				animals.find((a) => a.id === Number(transferForm.animalId))?.record ??
-				`Animal ${transferForm.animalId}`;
-			const targetField = fields.find(
-				(f) => f.id === Number(transferForm.fieldId),
-			);
-			const targetFieldName = targetField?.name ?? "el potrero seleccionado";
-			const targetFieldOldCount = targetField?.animal_count ?? 0;
-
-			const result = await animalFieldsService.bulkTransfer({
-				animal_ids: [Number(transferForm.animalId)],
-				field_id: Number(transferForm.fieldId),
-				date: transferForm.date,
-			});
-
-			if (!result.success) {
-				showToast(result.message || "Error al registrar traslado", "error");
-				return;
-			}
-
-			const meta = (result as any).meta as
-				| {
-						transferred_count?: number;
-						skipped_count?: number;
-						fields?: Array<{ id: number; animal_count?: number }>;
-				  }
-				| undefined;
-
-			const transferredCount =
-				meta?.transferred_count ??
-				(Array.isArray(result.data) ? result.data.length : 0);
-			const skippedCount = meta?.skipped_count ?? 0;
-
-			if (transferredCount === 0 && skippedCount > 0) {
-				showToast(
-					`⚠️ El animal ya estaba en «${targetFieldName}». No se realizó ningún cambio — el conteo del potrero refleja su situación actual.`,
-					"warning",
-				);
-				onSuccess();
-				onClose();
-				setTransferForm({
-					animalId: "",
-					fieldId: "",
-					date: getTodayColombia(),
-				});
-				return;
-			}
-
-			// Disparar evento global para que todos los componentes refresquen
-			window.dispatchEvent(new CustomEvent("animal-fields:updated"));
-
-			// Mostrar animación de éxito con conteos. El conteo nuevo lo manda el
-			// backend ya recalculado; sumar 1 al viejo fallaba si otra persona
-			// había movido ganado a ese potrero mientras tanto.
-			const reportedTarget = meta?.fields?.find(
-				(f) => Number(f.id) === Number(transferForm.fieldId),
-			);
-			setSuccessData({
-				animalName,
-				targetFieldName,
-				targetFieldOldCount,
-				targetFieldNewCount: reportedTarget?.animal_count ?? targetFieldOldCount + 1,
-			});
-
-			setTransferForm({ animalId: "", fieldId: "", date: getTodayColombia() });
-		} catch {
-			showToast("Error al registrar traslado", "error");
-			setSavingForm(false);
-		} finally {
-			setSavingForm(false);
-		}
-	};
-
-	const handleCloseSuccess = () => {
-		setSuccessData(null);
-		onSuccess();
-		onClose();
-	};
+	const {
+		form: transferForm,
+		setForm: setTransferForm,
+		saving: savingForm,
+		successData,
+		isOnline,
+		submit: handleTransferSubmit,
+		closeSuccess: handleCloseSuccess,
+		dismiss: handleDismiss,
+	} = useCampesinoTransfer({ animals, fields, onClose, onSuccess });
 
 	return (
 		<Dialog
 			open={isOpen}
 			onOpenChange={(open) => {
-				if (!open) {
-					setSuccessData(null);
-					onClose();
-				}
+				if (!open) handleDismiss();
 			}}
 		>
 			<DialogContent

@@ -420,7 +420,7 @@ export default function ProjectsPage() {
 												<Badge
 													variant="outline"
 													className={cn(
-														"shrink-0 text-[10px] font-bold uppercase tracking-wider",
+														"shrink-0 text-[11px] font-bold uppercase tracking-wider",
 														typeColor(project.type),
 													)}
 												>

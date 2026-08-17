@@ -16,12 +16,16 @@ def _as_decimal(value) -> Decimal:
         return value
     return Decimal(str(value or 0))
 
+
 class FinancialSummary(BaseModel):
     """Resumen incremental para finanzas."""
+
     __tablename__ = "financial_summary"
 
     id = db.Column(db.Integer, primary_key=True)
-    finca_id = db.Column(db.Integer, db.ForeignKey('finca.id'), unique=True, nullable=False)
+    finca_id = db.Column(
+        db.Integer, db.ForeignKey("finca.id"), unique=True, nullable=False
+    )
 
     total_income = db.Column(db.Numeric(15, 2), default=0.00)
     total_expense = db.Column(db.Numeric(15, 2), default=0.00)
@@ -41,10 +45,24 @@ class FinancialSummary(BaseModel):
     def recalculate(self):
         """Recalcula desde cero basado en transacciones reales."""
         from app.models.financial import Transaction, TransactionType
-        incomes = db.session.query(db.func.sum(Transaction.amount)).filter_by(
-            finca_id=self.finca_id, transaction_type=TransactionType.Income, is_deleted=False).scalar() or 0
-        expenses = db.session.query(db.func.sum(Transaction.amount)).filter_by(
-            finca_id=self.finca_id, transaction_type=TransactionType.Expense, is_deleted=False).scalar() or 0
+        from app.utils.financial_filters import exclude_simulated_transactions
+
+        income_query = db.session.query(db.func.sum(Transaction.amount)).filter_by(
+            finca_id=self.finca_id,
+            transaction_type=TransactionType.Income,
+            is_deleted=False,
+        )
+        expense_query = db.session.query(db.func.sum(Transaction.amount)).filter_by(
+            finca_id=self.finca_id,
+            transaction_type=TransactionType.Expense,
+            is_deleted=False,
+        )
+        incomes = (
+            exclude_simulated_transactions(income_query, Transaction).scalar() or 0
+        )
+        expenses = (
+            exclude_simulated_transactions(expense_query, Transaction).scalar() or 0
+        )
 
         self.total_income = _as_decimal(incomes)
         self.total_expense = _as_decimal(expenses)
@@ -55,6 +73,7 @@ class FinancialSummary(BaseModel):
     def apply_transaction(self, tx_type, amount, is_reversion=False):
         """Aplica un cambio incremental a las finanzas."""
         from app.models.financial import TransactionType
+
         delta = _as_decimal(amount)
         if is_reversion:
             delta = -delta
@@ -67,12 +86,16 @@ class FinancialSummary(BaseModel):
         self.balance = _as_decimal(self.total_income) - _as_decimal(self.total_expense)
         self.last_update = datetime.now(UTC)
 
+
 class MilkSummary(BaseModel):
     """Resumen incremental para producción láctea."""
+
     __tablename__ = "milk_summary"
 
     id = db.Column(db.Integer, primary_key=True)
-    finca_id = db.Column(db.Integer, db.ForeignKey('finca.id'), unique=True, nullable=False)
+    finca_id = db.Column(
+        db.Integer, db.ForeignKey("finca.id"), unique=True, nullable=False
+    )
 
     total_liters = db.Column(db.Float, default=0.0)
     avg_liters_per_animal = db.Column(db.Float, default=0.0)
@@ -93,16 +116,21 @@ class MilkSummary(BaseModel):
         """Recalcula desde cero basado en registros reales."""
         from app.models.milk_production import MilkProduction
         from app.models.animals import Animals
-        stats = db.session.query(
-            db.func.sum(MilkProduction.liters),
-            db.func.count(MilkProduction.id),
-            db.func.avg(MilkProduction.liters)
-        ).join(Animals, Animals.id == MilkProduction.animal_id)\
-         .filter(
-             MilkProduction.finca_id == self.finca_id,
-             MilkProduction.is_deleted == False,
-             Animals.is_deleted == False
-         ).first()
+
+        stats = (
+            db.session.query(
+                db.func.sum(MilkProduction.liters),
+                db.func.count(MilkProduction.id),
+                db.func.avg(MilkProduction.liters),
+            )
+            .join(Animals, Animals.id == MilkProduction.animal_id)
+            .filter(
+                MilkProduction.finca_id == self.finca_id,
+                MilkProduction.is_deleted == False,
+                Animals.is_deleted == False,
+            )
+            .first()
+        )
 
         self.total_liters = stats[0] or 0.0
         self.total_entries = stats[1] or 0

@@ -88,7 +88,7 @@ const MilkControl: React.FC = () => {
               >
                 <div className="flex justify-between items-start mb-8">
                   <div>
-                    <span className="bg-info/5 text-info px-3 py-1 rounded-[var(--radius-full)] text-[10px] font-semibold text-sm">
+                    <span className="bg-info/5 text-info px-3 py-1 rounded-[var(--radius-full)] text-[11px] font-semibold text-sm">
                       Registrando
                     </span>
                     <h2 className="text-4xl font-black text-foreground mt-2">

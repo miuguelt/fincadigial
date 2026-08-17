@@ -1,6 +1,7 @@
 """
 Utilidades para revocar tokens JWT usando el sistema de cache ya inicializado.
 """
+
 import logging
 import time
 from datetime import timedelta
@@ -17,6 +18,7 @@ def _get_cache():
     """Obtiene la instancia de cache inicializada sin causar import circular."""
     try:
         from app import cache as app_cache
+
         return app_cache
     except Exception:
         pass
@@ -47,7 +49,9 @@ def _cache_timeout_for(decoded_token: dict) -> int:
         if isinstance(delta, timedelta):
             return max(int(delta.total_seconds()), 60)
     except Exception:
-        logger.debug("No se pudo calcular TTL exacto para token revocado", exc_info=True)
+        logger.debug(
+            "No se pudo calcular TTL exacto para token revocado", exc_info=True
+        )
     return 3600  # fallback conservador
 
 
@@ -77,14 +81,20 @@ def mark_token_revoked(decoded_token: dict | None) -> bool:
         expires_at = time.time() + timeout
         _fallback_blocklist[jti] = expires_at
         _cleanup_fallback()
-        logger.warning("Cache no disponible; usando blocklist en memoria para jti=%s", jti)
+        logger.warning(
+            "Cache no disponible; usando blocklist en memoria para jti=%s", jti
+        )
         return True
     try:
         cache.set(_build_cache_key(jti), True, timeout=timeout)
-        logger.info("Token revocado registrado en cache (jti=%s, ttl=%ss)", jti, timeout)
+        logger.info(
+            "Token revocado registrado en cache (jti=%s, ttl=%ss)", jti, timeout
+        )
         return True
     except Exception:
-        logger.exception("No se pudo marcar el token como revocado en cache (jti=%s)", jti)
+        logger.exception(
+            "No se pudo marcar el token como revocado en cache (jti=%s)", jti
+        )
         return False
 
 
@@ -102,9 +112,17 @@ def is_token_revoked(decoded_token: dict) -> bool:
     except Exception as exc:
         err_msg = str(exc)
         err_type = type(exc).__name__
-        is_network = ("timeout" in err_type.lower() or "connection" in err_type.lower() or "10061" in err_msg)
+        is_network = (
+            "timeout" in err_type.lower()
+            or "connection" in err_type.lower()
+            or "10061" in err_msg
+        )
         if is_network:
-            logger.warning("Error de conexion al verificar token revocado (%s: %s). Permitiendo acceso por fail-safe.", err_type, err_msg)
+            logger.warning(
+                "Error de conexion al verificar token revocado (%s: %s). Permitiendo acceso por fail-safe.",
+                err_type,
+                err_msg,
+            )
         else:
             logger.exception("Error inesperado verificando si el token fue revocado")
         # Regla Global / SSoT: Fail-safe para operacion de seguridad.

@@ -45,7 +45,7 @@ export const useNotifications = () => {
       }
     };
     refreshWhenVisible();
-    
+
     const interval = setInterval(refreshWhenVisible, 120000);
     document.addEventListener('visibilitychange', refreshWhenVisible);
     return () => {
@@ -59,8 +59,8 @@ export const useNotifications = () => {
   }, [notifications]);
 
   const farmPending = useMemo(() => {
-    return notifications.filter(n => 
-      n.status === 'pending' && 
+    return notifications.filter(n =>
+      n.status === 'pending' &&
       (n.type === 'JOIN_REQUEST' || n.type === 'INVITATION_RECEIVED')
     ).length;
   }, [notifications]);
@@ -68,10 +68,10 @@ export const useNotifications = () => {
   const handleAction = async (id: number, action: 'approve' | 'reject' | 'read') => {
     try {
       await api.patch(`/notifications/${id}`, { action });
-      
+
       // Actualización optimista
       setNotifications(prev => prev.filter(n => n.id !== id));
-      
+
       if (action === 'approve') {
         showToast('Solicitud aprobada correctamente', 'success');
       } else if (action === 'reject') {

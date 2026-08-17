@@ -136,7 +136,7 @@ export const AnimalMiniCard: React.FC<AnimalMiniCardProps> = ({
         <div className="mb-2">
           <span
             className={cn(
-              "px-3 py-1 rounded-full text-[10px] font-bold shadow-md backdrop-blur-sm",
+              "px-3 py-1 rounded-full text-[11px] font-bold shadow-md backdrop-blur-sm",
               "border transition-all duration-200",
               isFather &&
                 !isMother &&

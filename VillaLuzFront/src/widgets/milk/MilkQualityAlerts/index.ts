@@ -1,1 +1,0 @@
-export { MilkQualityAlerts } from './MilkQualityAlerts';

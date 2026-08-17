@@ -25,6 +25,7 @@ import AssistedCalvingForm from '@/widgets/reproduction/AssistedCalvingForm';
 import { getStatusBadgeClass } from '@/shared/utils/badgeStyles';
 import { motion } from 'framer-motion';
 import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
+import { getTotalInseminations } from '@/pages/dashboard/admin/analytics/components/analyticsAdapters';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
@@ -192,7 +193,7 @@ export default function FertilityDashboard() {
           },
           {
             title: 'Inseminaciones Totales',
-            value: data.top_females.reduce((sum, f) => sum + f.inseminations, 0),
+            value: getTotalInseminations(data),
             subtitle: `En el período analizado`,
             borderColor: 'border-l-pink-500',
             bg: 'bg-pink-500/5',
@@ -207,7 +208,7 @@ export default function FertilityDashboard() {
           >
             <Card className={`border-border/50 border-l-4 ${card.borderColor} shadow-xl shadow-primary/5 bg-card/40 backdrop-blur-xl rounded-xl overflow-hidden group hover:-translate-y-1 transition-all duration-300`}>
               <CardHeader className="pb-1 flex flex-row items-center justify-between">
-                <CardDescription className="font-bold uppercase tracking-widest text-[10px] text-muted-foreground">{card.title}</CardDescription>
+                <CardDescription className="font-bold uppercase tracking-widest text-[11px] text-muted-foreground">{card.title}</CardDescription>
                 <div className={`p-2 rounded-xl ${card.bg}`}>{card.icon}</div>
               </CardHeader>
               <CardContent className="pb-4">
@@ -339,7 +340,7 @@ export default function FertilityDashboard() {
                     <Badge className={getStatusBadgeClass('success') + " rounded-lg"}>#{index + 1}</Badge>
                     <div>
                       <p className="font-bold text-sm text-foreground">{female.record}</p>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5">
+                      <p className="text-[11px] font-bold text-muted-foreground uppercase mt-0.5">
                         {female.inseminations} insem • {female.positive} positivas
                       </p>
                     </div>
@@ -379,7 +380,7 @@ export default function FertilityDashboard() {
                     <Badge className={getStatusBadgeClass('danger') + " rounded-lg"}>#{index + 1}</Badge>
                     <div>
                       <p className="font-bold text-sm text-foreground">{female.record}</p>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5">
+                      <p className="text-[11px] font-bold text-muted-foreground uppercase mt-0.5">
                         {female.inseminations} insem • {female.positive} positivas
                       </p>
                     </div>

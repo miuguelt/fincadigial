@@ -6,6 +6,7 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 class EventService:
     """
     Servicio para centralizar el envío de eventos a través del EventBus.
@@ -14,10 +15,16 @@ class EventService:
 
     @staticmethod
     def _get_bus():
-        return flask.current_app.extensions.get('event_bus')
+        return flask.current_app.extensions.get("event_bus")
 
     @classmethod
-    def emit(cls, endpoint: str, action: str, record_id: Any | None = None, data: dict | None = None):
+    def emit(
+        cls,
+        endpoint: str,
+        action: str,
+        record_id: Any | None = None,
+        data: dict | None = None,
+    ):
         """Emite un evento genérico al bus."""
         bus = cls._get_bus()
         if not bus:
@@ -29,11 +36,11 @@ class EventService:
             "action": action,
             "id": record_id,
             "data": data,
-            "timestamp": time.time()
+            "timestamp": time.time(),
         }
 
         try:
-            if hasattr(bus, 'publish_payload'):
+            if hasattr(bus, "publish_payload"):
                 bus.publish_payload(payload)
             else:
                 bus.publish(endpoint, action, record_id)
@@ -52,14 +59,18 @@ class EventService:
             "event": event_type,
             "recipient_id": user_id,
             "data": data,
-            "timestamp": time.time()
+            "timestamp": time.time(),
         }
 
         try:
-            if hasattr(bus, 'publish_payload'):
+            if hasattr(bus, "publish_payload"):
                 bus.publish_payload(payload)
             else:
-                bus.publish(endpoint="user_notification", action=event_type, record_id=json.dumps(payload))
+                bus.publish(
+                    endpoint="user_notification",
+                    action=event_type,
+                    record_id=json.dumps(payload),
+                )
         except Exception as e:
             logger.error(f"Error al emitir evento a usuario {user_id}: {e}")
 
@@ -69,21 +80,21 @@ class EventService:
         Emite un evento de nuevo mensaje de chat.
         Este evento debe ser escuchado por el frontend para actualización en tiempo real.
         """
-        recipient_data = {**message_data, 'type': 'chat_message'}
-        sender_data = {**message_data, 'type': 'chat_message_sent'}
+        recipient_data = {**message_data, "type": "chat_message"}
+        sender_data = {**message_data, "type": "chat_message_sent"}
 
         # Notificar al destinatario. `event` es el contrato canónico; `type`
         # dentro de data permite a consumidores antiguos reconocerlo también.
         cls.emit_to_user(
-            user_id=message_data['recipient_id'],
-            event_type='chat_message',
+            user_id=message_data["recipient_id"],
+            event_type="chat_message",
             data=recipient_data,
         )
 
         # También al remitente (para sincronizar entre múltiples pestañas/dispositivos)
         cls.emit_to_user(
-            user_id=message_data['sender_id'],
-            event_type='chat_message_sent',
+            user_id=message_data["sender_id"],
+            event_type="chat_message_sent",
             data=sender_data,
         )
 
@@ -101,24 +112,20 @@ class EventService:
             return
         cls.emit_to_user(
             user_id=sender_id,
-            event_type='chat_message_read',
+            event_type="chat_message_read",
             data={
-                'type': 'chat_message_read',
-                'message_ids': message_ids,
-                'reader_id': reader_id,
-                'finca_id': finca_id,
+                "type": "chat_message_read",
+                "message_ids": message_ids,
+                "reader_id": reader_id,
+                "finca_id": finca_id,
             },
         )
 
     @classmethod
-    def emit_system_alert(cls, title: str, message: str, alert_type: str = 'info'):
+    def emit_system_alert(cls, title: str, message: str, alert_type: str = "info"):
         """Emite una alerta de sistema global."""
         cls.emit(
             endpoint="system_alert",
             action="new_alert",
-            data={
-                "title": title,
-                "message": message,
-                "type": alert_type
-            }
+            data={"title": title, "message": message, "type": alert_type},
         )

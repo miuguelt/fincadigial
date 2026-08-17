@@ -48,4 +48,3 @@ export const GlobalRealtimeListener: React.FC = () => {
 };
 
 export default GlobalRealtimeListener;
-

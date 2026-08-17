@@ -58,7 +58,7 @@ export function useGenericCRUD<T extends { id?: number }>(
   options: UseGenericCRUDOptions = {}
 ): UseGenericCRUDResult<T> {
   const { cacheTTL = 15 * 60 * 1000, enableCache = true, autoRefresh = true } = options;
-  
+
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,43 +67,43 @@ export function useGenericCRUD<T extends { id?: number }>(
   const itemCancelTokenSourceRef = useRef<ReturnType<typeof axios.CancelToken.source> | null>(axios.CancelToken.source());
   // Nuevo estado: refresco en segundo plano (no bloquea tabla)
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  
+
   // Estado de listado unificado: page, limit, search, fields
   const [pageState, setPageState] = useState<number>(1);
   const [limitState, setLimitState] = useState<number>(10);
   const [searchState, setSearchState] = useState<string | undefined>(undefined);
   const [fieldsState, setFieldsState] = useState<string | undefined>(undefined);
-  
+
   // Sincronización con URL (?page, ?limit, ?search, ?fields)
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   // Meta de paginación unificada
   const [total, setTotal] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(0);
   const [hasNextPage, setHasNextPage] = useState<boolean>(false);
   const [hasPreviousPage, setHasPreviousPage] = useState<boolean>(false);
-  
+
   const { getCache, setCache, invalidateByEndpoint } = useCache();
   const { generateKey } = useCacheKey();
-  
+
   // Helper para construir mensajes de error más útiles
   const extractErrorMessage = (err: any, fallback: string): string => {
     // Cancelación controlada por axios
     if (axios.isCancel(err)) {
       return 'Operación cancelada';
     }
-  
+
     // Errores de red (certificado, CORS, servidor caído)
     if (err?.code === 'ERR_NETWORK') {
       return 'No se pudo conectar con el servidor. Verifica el certificado HTTPS y que la API esté disponible.';
     }
-  
+
     // AxiosError con respuesta del servidor
     if (axios.isAxiosError(err)) {
       const status = err.response?.status;
       const data = err.response?.data as any;
       const serverMsg = (data?.message || data?.error || (Array.isArray(data?.errors) ? data.errors.map((e: any) => e.message || e).join(', ') : data?.errors)) as string | undefined;
-  
+
       if (status === 401) return serverMsg || 'No autorizado. Inicia sesión para continuar.';
       if (status === 403) return serverMsg || 'Acceso denegado. Requiere permisos de Administrador.';
       if (status === 404) return serverMsg || 'Recurso no encontrado.';
@@ -113,15 +113,15 @@ export function useGenericCRUD<T extends { id?: number }>(
         // Mensaje amistoso para errores del servidor
         return serverMsg || 'Error del servidor. Intenta nuevamente más tarde o contacta al administrador.';
       }
-  
+
       // Fallback genérico de Axios
       return serverMsg || err.message || fallback;
     }
-  
+
     // Fallback genérico
     return (err instanceof Error ? err.message : undefined) || fallback;
   };
-  
+
   // Leer cambios de query params y sincronizar al estado
   useEffect(() => {
     try {
@@ -129,7 +129,7 @@ export function useGenericCRUD<T extends { id?: number }>(
       const ql = Number(searchParams.get('limit') || '') || 10;
       const qs = searchParams.get('search') || undefined;
       const qf = searchParams.get('fields') || undefined;
-  
+
       // Solo actualizar si realmente cambian, para evitar bucles
       setPageState(prev => (prev !== qp ? qp : prev));
       setLimitState(prev => (prev !== ql ? ql : prev));
@@ -138,12 +138,12 @@ export function useGenericCRUD<T extends { id?: number }>(
     } catch (e) {
       // Ignorar errores de parseo/lectura de query params en entornos de desarrollo
       if (process.env.NODE_ENV !== 'production') {
-         
+
         console.debug('[useGenericCRUD] searchParams parse error', e);
       }
     }
   }, [searchParams]);
-  
+
   // Setters que también actualizan la URL
   const setPage = useCallback((p: number) => {
     setPageState(p);
@@ -151,7 +151,7 @@ export function useGenericCRUD<T extends { id?: number }>(
     sp.set('page', String(p));
     setSearchParams(sp, { replace: true });
   }, [searchParams, setSearchParams]);
-  
+
   const setLimit = useCallback((l: number) => {
     setLimitState(l);
     const sp = new URLSearchParams(searchParams);
@@ -159,7 +159,7 @@ export function useGenericCRUD<T extends { id?: number }>(
     sp.set('page', '1');
     setSearchParams(sp, { replace: true });
   }, [searchParams, setSearchParams]);
-  
+
   const setSearch = useCallback((s: string) => {
     setSearchState(s || undefined);
     const sp = new URLSearchParams(searchParams);
@@ -167,19 +167,19 @@ export function useGenericCRUD<T extends { id?: number }>(
     sp.set('page', '1');
     setSearchParams(sp, { replace: true });
   }, [searchParams, setSearchParams]);
-  
+
   const setFields = useCallback((f: string) => {
     setFieldsState(f || undefined);
     const sp = new URLSearchParams(searchParams);
     if (f) sp.set('fields', f); else sp.delete('fields');
     setSearchParams(sp, { replace: true });
   }, [searchParams, setSearchParams]);
-  
+
   // Obtener todos los elementos (paginated) con caché
   const fetchItems = useCallback(async (forceRefresh: boolean = false) => {
     const cacheKey = generateKey(entityName, { page: pageState, limit: limitState, search: searchState, fields: fieldsState });
     const hadDataAtStart = Array.isArray(items) && items.length > 0;
-    
+
     // Intentar obtener del caché primero
      if (enableCache && !forceRefresh) {
        const cachedData = getCache<{ items: T[]; meta: any }>(cacheKey);
@@ -195,7 +195,7 @@ export function useGenericCRUD<T extends { id?: number }>(
          return cachedData.items;
        }
      }
-    
+
     // Loading inicial sólo si no hay datos; si ya hay, usar "refreshing" para evitar parpadeo
     if (!hadDataAtStart) {
       setLoading(true);
@@ -234,7 +234,7 @@ export function useGenericCRUD<T extends { id?: number }>(
           cacheTTL
         );
       }
-      
+
       return arrayData;
     } catch (err) {
       if (!axios.isCancel(err)) {
@@ -257,7 +257,7 @@ export function useGenericCRUD<T extends { id?: number }>(
   // Obtener un elemento por ID con Potreros opcionales
   const fetchItemById = useCallback(async (id: number, params?: FetchByIdParams, forceRefresh: boolean = false): Promise<T | null> => {
     const cacheKey = generateKey(entityName, { id, ...(params?.fields ? { fields: params.fields } : {}) });
-    
+
     // Intentar obtener del caché primero
      if (enableCache && !forceRefresh) {
        const cachedData = getCache<T>(cacheKey);
@@ -267,7 +267,7 @@ export function useGenericCRUD<T extends { id?: number }>(
          return cachedData;
        }
      }
-    
+
     setLoading(true);
     setError(null);
     // Cancelar cualquier solicitud de item en curso y crear un nuevo token
@@ -277,12 +277,12 @@ export function useGenericCRUD<T extends { id?: number }>(
     itemCancelTokenSourceRef.current = axios.CancelToken.source();
     try {
       const data = await service.getById(id, { ...(params || {}), cancelToken: itemCancelTokenSourceRef.current?.token });
-      
+
       // Guardar en caché
       if (enableCache) {
         setCache(cacheKey, data, cacheTTL);
       }
-      
+
       return data;
     } catch (err) {
       if (!axios.isCancel(err)) {
@@ -300,10 +300,10 @@ export function useGenericCRUD<T extends { id?: number }>(
     setError(null);
     try {
       const newItem = await service.create(itemData);
-      
+
       // Actualizar estado local (en primera página visiblemente)
       setItems(prev => [...prev, newItem]);
-      
+
       // Invalidar caché del endpoint y limpiar caché interno del servicio
       if (enableCache) {
         const endpoint = (service as any)?.endpoint || entityName;
@@ -312,7 +312,7 @@ export function useGenericCRUD<T extends { id?: number }>(
           (service as any).clearCache();
         }
       }
-      
+
       return newItem;
     } catch (err) {
       setError(extractErrorMessage(err, 'Error al crear el elemento'));
@@ -328,12 +328,12 @@ export function useGenericCRUD<T extends { id?: number }>(
     setError(null);
     try {
       const updatedItem = await service.update(id, itemData);
-      
+
       // Actualizar estado local
-      setItems(prev => prev.map(item => 
+      setItems(prev => prev.map(item =>
         item.id === id ? { ...item, ...updatedItem } : item
       ));
-      
+
       // Invalidar caché del endpoint y limpiar caché interno del servicio
       if (enableCache) {
         const endpoint = (service as any)?.endpoint || entityName;
@@ -342,7 +342,7 @@ export function useGenericCRUD<T extends { id?: number }>(
           (service as any).clearCache();
         }
       }
-      
+
       return updatedItem;
     } catch (err) {
       setError(extractErrorMessage(err, 'Error al actualizar el elemento'));
@@ -358,10 +358,10 @@ export function useGenericCRUD<T extends { id?: number }>(
     setError(null);
     try {
       await service.delete(id);
-      
+
       // Actualizar estado local
       setItems(prev => prev.filter(item => item.id !== id));
-      
+
       // Invalidar caché del endpoint y limpiar caché interno del servicio
       if (enableCache) {
         const endpoint = (service as any)?.endpoint || entityName;
@@ -370,7 +370,7 @@ export function useGenericCRUD<T extends { id?: number }>(
           (service as any).clearCache();
         }
       }
-      
+
       return true;
     } catch (err) {
       setError(extractErrorMessage(err, 'Error al eliminar el elemento'));
@@ -461,7 +461,7 @@ export function useGenericCRUD<T extends { id?: number }>(
 }
 
 export function createCRUDHook<T extends { id?: number }>(
-  service: BaseService<T>, 
+  service: BaseService<T>,
   entityName: string,
   options?: UseGenericCRUDOptions
 ): SpecificCRUDHook<T> {

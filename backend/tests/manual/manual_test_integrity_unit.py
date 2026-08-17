@@ -4,10 +4,12 @@ Prueba unitaria simple del verificador de integridad sin necesidad de BD
 
 import sys
 import os
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from app.utils.integrity_checker import OptimizedIntegrityChecker, IntegrityWarning
 import time
+
 
 def test_integrity_warning():
     """Prueba la clase IntegrityWarning"""
@@ -18,12 +20,13 @@ def test_integrity_warning():
         dependent_count=5,
         dependent_field="breeds_id",
         cascade_delete=True,
-        warning_message="Se eliminarán 5 animales automáticamente"
+        warning_message="Se eliminarán 5 animales automáticamente",
     )
 
     print(f"Advertencia creada: {warning}")
     print(f"Dict: {warning.to_dict()}")
     print("✓ IntegrityWarning funciona correctamente\n")
+
 
 def test_cache_mechanism():
     """Prueba el mecanismo de cache del integrity checker"""
@@ -43,7 +46,7 @@ def test_cache_mechanism():
     # Probar almacenamiento en cache
     test_warnings = [
         IntegrityWarning("table1", 1, "field1", False, "Test warning 1"),
-        IntegrityWarning("table2", 2, "field2", True, "Test warning 2")
+        IntegrityWarning("table2", 2, "field2", True, "Test warning 2"),
     ]
 
     OptimizedIntegrityChecker._cache_result(cache_key, test_warnings)
@@ -58,6 +61,7 @@ def test_cache_mechanism():
 
     print("✓ Mecanismo de cache funciona correctamente\n")
 
+
 def test_display_names():
     """Prueba la función de nombres legibles"""
     print("=== Prueba Nombres Legibles ===")
@@ -66,7 +70,7 @@ def test_display_names():
         ("animals", "Animales"),
         ("breeds", "Razas"),
         ("treatments", "Tratamientos"),
-        ("unknown_table", "Unknown_table")
+        ("unknown_table", "Unknown_table"),
     ]
 
     for table_name, expected in test_cases:
@@ -75,6 +79,7 @@ def test_display_names():
         assert display_name == expected, f"Error: {display_name} != {expected}"
 
     print("✓ Nombres legibles funcionan correctamente\n")
+
 
 def test_warning_messages():
     """Prueba generación de mensajes de advertencia"""
@@ -91,6 +96,7 @@ def test_warning_messages():
     assert "No se puede eliminar" in msg2
 
     print("✓ Mensajes de advertencia funcionan correctamente\n")
+
 
 def test_summary_message():
     """Prueba generación de mensajes de resumen"""
@@ -112,6 +118,7 @@ def test_summary_message():
     assert "No se puede eliminar" in msg3
 
     print("✓ Mensajes de resumen funcionan correctamente\n")
+
 
 def test_performance_simulation():
     """Simula prueba de rendimiento sin BD"""
@@ -142,14 +149,17 @@ def test_performance_simulation():
     print(f"Tiempo simulado segundas 3 llamadas: {second_round:.3f}s")
 
     if first_round > 0:
-        improvement = ((first_round - second_round) / first_round * 100)
+        improvement = (first_round - second_round) / first_round * 100
         print(f"Mejora simulada con cache: {improvement:.1f}%")
 
     print("✓ Simulación de rendimiento completada\n")
 
+
 class MockModel:
     """Modelo mock para pruebas"""
+
     __name__ = "MockModel"
+
 
 if __name__ == "__main__":
     try:
@@ -174,4 +184,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"❌ Error en prueba unitaria: {e}")
         import traceback
+
         traceback.print_exc()

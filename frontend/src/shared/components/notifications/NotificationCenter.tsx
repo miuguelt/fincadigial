@@ -53,7 +53,7 @@ export function NotificationCenter() {
         <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-xl hover:bg-primary/10 transition-all">
           <Bell className="h-5 w-5 text-muted-foreground" />
           {totalUnread > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-white shadow-sm ring-2 ring-background animate-in zoom-in duration-300">
+            <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[11px] font-bold text-white shadow-sm ring-2 ring-background animate-in zoom-in duration-300">
               {totalUnread > 9 ? '9+' : totalUnread}
             </span>
           )}
@@ -68,7 +68,7 @@ export function NotificationCenter() {
                     <Bell className="h-5 w-5 text-primary" />
                     Notificaciones
                 </h3>
-                <button 
+                <button
                     onClick={() => { refreshAlerts(); }}
                     className="p-2 rounded-lg hover:bg-primary/10 text-primary transition-all active:rotate-180 duration-500"
                 >
@@ -86,7 +86,7 @@ export function NotificationCenter() {
                     )}
                 >
                     Alertas del Ganado
-                    {unreadAlerts > 0 && <Badge variant="destructive" className="h-4 px-1 min-w-[1rem] text-[8px]">{unreadAlerts}</Badge>}
+                    {unreadAlerts > 0 && <Badge variant="destructive" className="h-4 px-1 min-w-[1rem] text-[11px]">{unreadAlerts}</Badge>}
                 </button>
                 <button
                     onClick={() => setMainTab('accesos')}
@@ -96,7 +96,7 @@ export function NotificationCenter() {
                     )}
                 >
                     Accesos
-                    {unreadRequests > 0 && <Badge variant="destructive" className="h-4 px-1 min-w-[1rem] text-[8px]">{unreadRequests}</Badge>}
+                    {unreadRequests > 0 && <Badge variant="destructive" className="h-4 px-1 min-w-[1rem] text-[11px]">{unreadRequests}</Badge>}
                 </button>
             </div>
         </div>
@@ -113,7 +113,7 @@ export function NotificationCenter() {
                        <div className={cn("h-2 w-2 rounded-full mt-1.5 shrink-0", n.priority === 'Crítica' ? "bg-destructive" : "bg-primary")} />
                        <div className="flex-1 min-w-0">
                           <p className="text-sm font-bold text-foreground leading-tight">{n.message}</p>
-                          <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                          <p className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
                              <Clock size={10} /> {new Date(n.timestamp).toLocaleTimeString('es-CO')}
                           </p>
                        </div>
@@ -130,16 +130,16 @@ export function NotificationCenter() {
           ) : (
             <div className="flex flex-col h-full">
                 <div className="flex border-b border-border/10">
-                    <button onClick={() => setAccesoTab('recibidas')} className={cn("flex-1 py-3 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all", accesoTab === 'recibidas' ? "border-primary text-primary" : "border-transparent text-muted-foreground")}>Recibidas</button>
-                    <button onClick={() => setAccesoTab('enviadas')} className={cn("flex-1 py-3 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all", accesoTab === 'enviadas' ? "border-primary text-primary" : "border-transparent text-muted-foreground")}>Enviadas</button>
+                    <button onClick={() => setAccesoTab('recibidas')} className={cn("flex-1 py-3 text-[11px] font-black uppercase tracking-widest border-b-2 transition-all", accesoTab === 'recibidas' ? "border-primary text-primary" : "border-transparent text-muted-foreground")}>Recibidas</button>
+                    <button onClick={() => setAccesoTab('enviadas')} className={cn("flex-1 py-3 text-[11px] font-black uppercase tracking-widest border-b-2 transition-all", accesoTab === 'enviadas' ? "border-primary text-primary" : "border-transparent text-muted-foreground")}>Enviadas</button>
                 </div>
-                
+
                 <div className="p-3 space-y-2">
                     {(accesoTab === 'recibidas' ? received : sent).length === 0 ? (
-                        <EmptyNotifications 
-                            icon={accesoTab === 'recibidas' ? <Inbox size={48} /> : <Send size={48} />} 
-                            title={accesoTab === 'recibidas' ? "Bandeja vacía" : "Sin envíos"} 
-                            description={accesoTab === 'recibidas' ? "No tiene invitaciones de otras fincas pendientes." : "No ha solicitado entrar a ninguna finca todavía."} 
+                        <EmptyNotifications
+                            icon={accesoTab === 'recibidas' ? <Inbox size={48} /> : <Send size={48} />}
+                            title={accesoTab === 'recibidas' ? "Bandeja vacía" : "Sin envíos"}
+                            description={accesoTab === 'recibidas' ? "No tiene invitaciones de otras fincas pendientes." : "No ha solicitado entrar a ninguna finca todavía."}
                         />                    ) : (
                         (accesoTab === 'recibidas' ? received : sent).map((r) => (
                             <div key={r.id} className="p-4 rounded-[1.5rem] border border-border/40 bg-background shadow-sm hover:border-primary/30 transition-all">
@@ -151,21 +151,21 @@ export function NotificationCenter() {
                                         <p className="text-xs font-black uppercase tracking-tighter text-muted-foreground">{r.farm_name}</p>
                                         <p className="text-sm font-bold text-foreground fit-clamp">{r.type === 'INVITE' ? `De: ${r.user_name}` : 'Solicitud de unión'}</p>
                                         {r.message && <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 italic italic-muted">"{r.message}"</p>}
-                                        
+
                                         {accesoTab === 'recibidas' && r.status === 'pending' && (
                                             <div className="flex gap-2 mt-4">
-                                                <Button size="sm" onClick={() => handleRespond(r.id, 'accept')} className="flex-1 rounded-xl h-8 bg-emerald-600 hover:bg-emerald-700 font-bold text-[10px]">
+                                                <Button size="sm" onClick={() => handleRespond(r.id, 'accept')} className="flex-1 rounded-xl h-8 bg-emerald-600 hover:bg-emerald-700 font-bold text-[11px]">
                                                     <Check size={14} className="mr-1" /> Aceptar
                                                 </Button>
-                                                <Button size="sm" variant="ghost" onClick={() => handleRespond(r.id, 'reject')} className="flex-1 rounded-xl h-8 text-rose-600 hover:bg-rose-50 font-bold text-[10px]">
+                                                <Button size="sm" variant="ghost" onClick={() => handleRespond(r.id, 'reject')} className="flex-1 rounded-xl h-8 text-rose-600 hover:bg-rose-50 font-bold text-[11px]">
                                                     <X size={14} className="mr-1" /> Rechazar
                                                 </Button>
                                             </div>
                                         )}
 
                                         <div className="flex items-center justify-between mt-3">
-                                            <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest">{r.status}</Badge>
-                                            <span className="text-[9px] text-muted-foreground font-medium">{formatLongDateColombia(r.created_at)}</span>
+                                            <Badge variant="outline" className="text-[11px] font-black uppercase tracking-widest">{r.status}</Badge>
+                                            <span className="text-[11px] text-muted-foreground font-medium">{formatLongDateColombia(r.created_at)}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -179,9 +179,9 @@ export function NotificationCenter() {
 
         {mainTab === 'alertas' && unreadAlerts > 0 && (
             <div className="p-4 border-t border-border/20 bg-muted/20">
-                <button 
+                <button
                     onClick={() => markAllAsRead()}
-                    className="w-full py-2.5 rounded-xl border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest hover:bg-primary/5 transition-all"
+                    className="w-full py-2.5 rounded-xl border border-primary/20 text-primary text-[11px] font-black uppercase tracking-widest hover:bg-primary/5 transition-all"
                 >
                     Marcar todas como leídas
                 </button>

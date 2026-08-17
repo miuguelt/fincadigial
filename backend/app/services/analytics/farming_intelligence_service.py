@@ -6,8 +6,9 @@ from app.models.treatments import Treatments
 from app.models.system_content import SystemContent
 from app.services.push_notification_service import PushNotificationService
 
+
 def _get_farming_param(key: str) -> float | None:
-    entry = SystemContent.get_by_key(f'param.alert.{key}')
+    entry = SystemContent.get_by_key(f"param.alert.{key}")
     if entry:
         try:
             return float(entry.content)
@@ -15,10 +16,10 @@ def _get_farming_param(key: str) -> float | None:
             pass
     return None
 
+
 def _get_farming_param_int(key: str) -> int | None:
     v = _get_farming_param(key)
     return int(v) if v is not None else None
-
 
 
 class FarmingIntelligenceService:
@@ -32,35 +33,47 @@ class FarmingIntelligenceService:
             "days_in_milk": 0,
             "is_withdrawing": False,
             "withdrawal_remaining": 0,
-            "status_color": "green" # default
+            "status_color": "green",  # default
         }
 
         # 1. Días Abiertos (DA): Hoy - Último Parto (si no está preñada)
         if animal.sex == Sex.Hembra:
-            last_parto = ReproductiveEvent.query.filter_by(
-                animal_id=animal.id,
-                event_type=EventType.Parto
-            ).order_by(ReproductiveEvent.event_date.desc()).first()
+            last_parto = (
+                ReproductiveEvent.query.filter_by(
+                    animal_id=animal.id, event_type=EventType.Parto
+                )
+                .order_by(ReproductiveEvent.event_date.desc())
+                .first()
+            )
 
             if last_parto:
                 # Si está preñada, los DA se "congelan" o se cuentan hasta la concepción
-                last_service = ReproductiveEvent.query.filter_by(
-                    animal_id=animal.id,
-                    event_type=EventType.Inseminacion
-                ).filter(ReproductiveEvent.event_date > last_parto.event_date).order_by(ReproductiveEvent.event_date.desc()).first()
+                last_service = (
+                    ReproductiveEvent.query.filter_by(
+                        animal_id=animal.id, event_type=EventType.Inseminacion
+                    )
+                    .filter(ReproductiveEvent.event_date > last_parto.event_date)
+                    .order_by(ReproductiveEvent.event_date.desc())
+                    .first()
+                )
 
                 # Verificar si el servicio fue exitoso (diagnóstico positivo posterior)
                 is_conceived = False
                 if last_service:
-                    diag = ReproductiveEvent.query.filter_by(
-                        animal_id=animal.id,
-                        event_type=EventType.Diagnostico
-                    ).filter(ReproductiveEvent.event_date > last_service.event_date).first()
+                    diag = (
+                        ReproductiveEvent.query.filter_by(
+                            animal_id=animal.id, event_type=EventType.Diagnostico
+                        )
+                        .filter(ReproductiveEvent.event_date > last_service.event_date)
+                        .first()
+                    )
                     if diag and diag.diagnosis_result == DiagnosisResult.Positivo:
                         is_conceived = True
 
                 if is_conceived and last_service:
-                    kpis["open_days"] = (last_service.event_date - last_parto.event_date).days
+                    kpis["open_days"] = (
+                        last_service.event_date - last_parto.event_date
+                    ).days
                 else:
                     kpis["open_days"] = (date.today() - last_parto.event_date).days
 
@@ -71,27 +84,37 @@ class FarmingIntelligenceService:
                     kpis["status_color"] = "yellow"
 
                 # 2. Intervalo Entre Partos (IEP)
-                previous_partos = ReproductiveEvent.query.filter_by(
-                    animal_id=animal.id,
-                    event_type=EventType.Parto
-                ).order_by(ReproductiveEvent.event_date.desc()).limit(2).all()
+                previous_partos = (
+                    ReproductiveEvent.query.filter_by(
+                        animal_id=animal.id, event_type=EventType.Parto
+                    )
+                    .order_by(ReproductiveEvent.event_date.desc())
+                    .limit(2)
+                    .all()
+                )
 
                 if len(previous_partos) >= 2:
-                    kpis["calving_interval"] = (previous_partos[0].event_date - previous_partos[1].event_date).days
+                    kpis["calving_interval"] = (
+                        previous_partos[0].event_date - previous_partos[1].event_date
+                    ).days
 
                 # 3. Días en Leche (DEL)
                 if animal.is_lactating:
                     kpis["days_in_milk"] = (date.today() - last_parto.event_date).days
 
         # 4. Tiempos de Retiro
-        active_treatment = Treatments.query.filter_by(animal_id=animal.id).filter(
-            Treatments.withdrawal_end_date >= date.today()
-        ).first()
+        active_treatment = (
+            Treatments.query.filter_by(animal_id=animal.id)
+            .filter(Treatments.withdrawal_end_date >= date.today())
+            .first()
+        )
 
         if active_treatment:
             kpis["is_withdrawing"] = True
-            kpis["withdrawal_remaining"] = (active_treatment.withdrawal_end_date - date.today()).days
-            kpis["status_color"] = "red" # Bloqueo por seguridad alimentaria
+            kpis["withdrawal_remaining"] = (
+                active_treatment.withdrawal_end_date - date.today()
+            ).days
+            kpis["status_color"] = "red"  # Bloqueo por seguridad alimentaria
 
         return kpis
 
@@ -107,7 +130,7 @@ class FarmingIntelligenceService:
             "warning_cases": 0,
             "withdrawing_animals": 0,
             "lactating_count": 0,
-            "pregnant_count": 0
+            "pregnant_count": 0,
         }
 
         for animal in animals:
@@ -116,30 +139,37 @@ class FarmingIntelligenceService:
             if kpis["status_color"] == "red":
                 stats["critical_cases"] += 1
                 if kpis["is_withdrawing"]:
-                    alerts.append({
-                        "animal": animal.record,
-                        "reason": "Tiempo de Retiro Activo",
-                        "detail": f"Restan {kpis['withdrawal_remaining']} días",
-                        "type": "danger"
-                    })
+                    alerts.append(
+                        {
+                            "animal": animal.record,
+                            "reason": "Tiempo de Retiro Activo",
+                            "detail": f"Restan {kpis['withdrawal_remaining']} días",
+                            "type": "danger",
+                        }
+                    )
                 elif kpis["open_days"] > 120:
-                    alerts.append({
-                        "animal": animal.record,
-                        "reason": "Días Abiertos Críticos",
-                        "detail": f"{kpis['open_days']} días sin preñez",
-                        "type": "danger"
-                    })
+                    alerts.append(
+                        {
+                            "animal": animal.record,
+                            "reason": "Días Abiertos Críticos",
+                            "detail": f"{kpis['open_days']} días sin preñez",
+                            "type": "danger",
+                        }
+                    )
 
             if kpis["status_color"] == "yellow":
                 stats["warning_cases"] += 1
 
-            if animal.is_lactating: stats["lactating_count"] += 1
-            if animal.is_pregnant: stats["pregnant_count"] += 1
-            if kpis["is_withdrawing"]: stats["withdrawing_animals"] += 1
+            if animal.is_lactating:
+                stats["lactating_count"] += 1
+            if animal.is_pregnant:
+                stats["pregnant_count"] += 1
+            if kpis["is_withdrawing"]:
+                stats["withdrawing_animals"] += 1
 
         return {
             "stats": stats,
-            "priority_alerts": alerts[:10] # Top 10 alertas
+            "priority_alerts": alerts[:10],  # Top 10 alertas
         }
 
     @staticmethod
@@ -161,7 +191,7 @@ class FarmingIntelligenceService:
             title="⚠️ Alerta Ganadera Crítica",
             body=body,
             tag="critical-intelligence",
-            data={"url": "/dashboard/peasant", "type": "critical_summary"}
+            data={"url": "/dashboard/peasant", "type": "critical_summary"},
         )
 
         # Opcional: Notificar animal por animal si son pocos (<3) para no saturar
@@ -172,5 +202,5 @@ class FarmingIntelligenceService:
                     title=f"Alerta: {alert['animal']}",
                     body=f"{alert['reason']}: {alert['detail']}",
                     tag=f"animal-alert-{alert['animal']}",
-                    data={"url": f"/animals/{alert['animal']}", "type": "animal_alert"}
+                    data={"url": f"/animals/{alert['animal']}", "type": "animal_alert"},
                 )

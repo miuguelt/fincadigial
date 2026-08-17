@@ -13,6 +13,7 @@ import enum
 
 logger = logging.getLogger(__name__)
 
+
 class JSONEncoder:
     """
     Codificador JSON optimizado con soporte para tipos adicionales.
@@ -23,10 +24,10 @@ class JSONEncoder:
     def serialize(obj: Any) -> Any:
         """
         Serializa un objeto para JSON, manejando tipos especiales.
-        
+
         Args:
             obj: El objeto a serializar
-            
+
         Returns:
             Una versión serializable del objeto
         """
@@ -43,9 +44,9 @@ class JSONEncoder:
             if isinstance(obj, datetime):
                 # Normalizar al formato JSON preferido: ISO-8601 con 'Z' para UTC
                 if obj.tzinfo is not None:
-                    return obj.isoformat().replace('+00:00', 'Z')
+                    return obj.isoformat().replace("+00:00", "Z")
                 # Sin timezone, asumir UTC
-                return obj.replace(tzinfo=UTC).isoformat().replace('+00:00', 'Z')
+                return obj.replace(tzinfo=UTC).isoformat().replace("+00:00", "Z")
 
             if isinstance(obj, date):
                 return obj.isoformat()
@@ -65,6 +66,7 @@ class JSONEncoder:
             # Usar el registro de enums para serialización consistente
             try:
                 from app.utils.enum_registry import EnumRegistry
+
                 if EnumRegistry.is_enum(obj):
                     return EnumRegistry.serialize_enum(obj)
             except ImportError:
@@ -83,28 +85,34 @@ class JSONEncoder:
                 return [JSONEncoder.serialize(item) for item in obj]
 
             # SQLAlchemy models con to_dict/to_json
-            if hasattr(obj, 'to_json'):
+            if hasattr(obj, "to_json"):
                 return JSONEncoder.serialize(obj.to_json())
 
-            if hasattr(obj, 'to_dict'):
+            if hasattr(obj, "to_dict"):
                 return JSONEncoder.serialize(obj.to_dict())
 
-            if hasattr(obj, 'to_namespace_dict'):
+            if hasattr(obj, "to_namespace_dict"):
                 return JSONEncoder.serialize(obj.to_namespace_dict())
 
             # SQLAlchemy models sin métodos pero con __table__
-            if hasattr(obj, '__table__'):
+            if hasattr(obj, "__table__"):
                 from sqlalchemy import inspect
-                return JSONEncoder.serialize({c.name: getattr(obj, c.name)
-                        for c in inspect(obj.__class__).columns})
+
+                return JSONEncoder.serialize(
+                    {
+                        c.name: getattr(obj, c.name)
+                        for c in inspect(obj.__class__).columns
+                    }
+                )
 
             # Bytearrays/bytes -> str base64
             if isinstance(obj, (bytearray, bytes)):
                 import base64
-                return base64.b64encode(obj).decode('utf-8')
+
+                return base64.b64encode(obj).decode("utf-8")
 
             # Objetos con __dict__ (como dataclass)
-            if hasattr(obj, '__dict__'):
+            if hasattr(obj, "__dict__"):
                 return JSONEncoder.serialize(obj.__dict__)
 
             # Cualquier otro objeto -> str()
@@ -118,23 +126,24 @@ class JSONEncoder:
     def sanitize_object(cls, data: Any) -> Any:
         """
         Sanitiza un objeto completo para asegurar que es JSON-serializable.
-        
+
         Args:
             data: El objeto a sanitizar
-            
+
         Returns:
             Una versión completamente serializable del objeto
         """
         return cls.serialize(data)
 
+
 def safe_json_dumps(obj: Any, **kwargs) -> str:
     """
     Convierte un objeto a JSON de manera segura con el encoder optimizado.
-    
+
     Args:
         obj: El objeto a serializar
         **kwargs: Argumentos adicionales para json.dumps
-        
+
     Returns:
         String JSON
     """
@@ -143,6 +152,7 @@ def safe_json_dumps(obj: Any, **kwargs) -> str:
     # Usar el encoder de EnumRegistry si está disponible
     try:
         from app.utils.enum_registry import EnumJSONEncoder
+
         encoder_cls = EnumJSONEncoder
     except ImportError:
         # Encoder de fallback si no está disponible EnumRegistry
@@ -153,6 +163,7 @@ def safe_json_dumps(obj: Any, **kwargs) -> str:
                     return o.value
                 # Manejar cualquier otro objeto con nuestro serializador
                 return JSONEncoder.serialize(o)
+
         encoder_cls = FallbackJSONEncoder
 
     try:

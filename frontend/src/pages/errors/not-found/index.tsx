@@ -12,29 +12,29 @@ const Custom404: React.FC = () => {
         <div className="flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 mx-auto mb-8">
           <IconMap2 size={48} className="text-primary opacity-80" />
         </div>
-        
+
         <h1 className="text-3xl sm:text-4xl font-black text-foreground mb-4 tracking-tighter">
           No encontramos esa página
         </h1>
-        
+
         <p className="text-base sm:text-lg text-muted-foreground mb-10 leading-relaxed">
-          Parece que se perdió caminando por la finca digital. No se preocupe, 
+          Parece que se perdió caminando por la finca digital. No se preocupe,
           incluso a los mejores vaqueros se les escapa el camino a veces.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Button 
-            onClick={() => navigate('/dashboard')} 
-            size="lg" 
+          <Button
+            onClick={() => navigate('/dashboard')}
+            size="lg"
             className="w-full sm:w-auto rounded-2xl font-bold px-8 py-6 h-auto shadow-lg shadow-primary/20"
           >
             <IconHome2 size={20} className="mr-2" />
             Volver al Inicio
           </Button>
-          <Button 
-            onClick={() => navigate(-1)} 
-            variant="outline" 
-            size="lg" 
+          <Button
+            onClick={() => navigate(-1)}
+            variant="outline"
+            size="lg"
             className="w-full sm:w-auto rounded-2xl font-bold px-8 py-6 h-auto border-border/60"
           >
             Regresar

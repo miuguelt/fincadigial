@@ -33,18 +33,21 @@ class PushSubscription(db.Model):
     Tabla de suscripciones Web Push.
     Cada entrada representa un dispositivo suscrito por un usuario.
     """
-    __tablename__ = 'push_subscription'
+
+    __tablename__ = "push_subscription"
     __table_args__ = (
         # Índice para búsquedas por usuario
-        db.Index('ix_push_subscription_user_id', 'user_id'),
+        db.Index("ix_push_subscription_user_id", "user_id"),
         # Índice para buscar por endpoint (útil para unsubscribe)
-        db.Index('ix_push_subscription_endpoint', 'endpoint', unique=True),
+        db.Index("ix_push_subscription_endpoint", "endpoint", unique=True),
         # Índice para suscripciones activas
-        db.Index('ix_push_subscription_is_active', 'is_active'),
+        db.Index("ix_push_subscription_is_active", "is_active"),
     )
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
 
     # Datos de la suscripción Web Push (requeridos por el protocolo)
     endpoint = db.Column(db.String(500), nullable=False)
@@ -58,24 +61,37 @@ class PushSubscription(db.Model):
 
     # Estado
     is_active = db.Column(db.Boolean, default=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC), nullable=False)
-    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))
+    created_at = db.Column(
+        db.DateTime, default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
     last_used = db.Column(db.DateTime, nullable=True)
 
     # Relación con User
-    user = db.relationship('User', backref='push_subscriptions', lazy='selectin')
+    user = db.relationship("User", backref="push_subscriptions", lazy="selectin")
 
     def __repr__(self):
-        return f'<PushSubscription user={self.user_id} active={self.is_active}>'
+        return f"<PushSubscription user={self.user_id} active={self.is_active}>"
 
     # =============================================================================
     # Métodos de clase
     # =============================================================================
 
     @classmethod
-    def create(cls, user_id: int, endpoint: str, p256dh: str, auth: str,
-               user_agent: str | None = None, platform: str | None = None,
-               browser: str | None = None) -> 'PushSubscription':
+    def create(
+        cls,
+        user_id: int,
+        endpoint: str,
+        p256dh: str,
+        auth: str,
+        user_agent: str | None = None,
+        platform: str | None = None,
+        browser: str | None = None,
+    ) -> "PushSubscription":
         """
         Crear una nueva suscripción push.
 
@@ -93,7 +109,9 @@ class PushSubscription(db.Model):
         """
         # Detectar plataforma y navegador desde user_agent si no se proporciona
         if user_agent and not (platform and browser):
-            detected_platform, detected_browser = cls._detect_platform_browser(user_agent)
+            detected_platform, detected_browser = cls._detect_platform_browser(
+                user_agent
+            )
             platform = platform or detected_platform
             browser = browser or detected_browser
 
@@ -121,12 +139,12 @@ class PushSubscription(db.Model):
             user_agent=user_agent,
             platform=platform,
             browser=browser,
-            is_active=True
+            is_active=True,
         )
         db.session.add(subscription)
         db.session.commit()
 
-        logger.info(f'Suscripción push creada para usuario {user_id}')
+        logger.info(f"Suscripción push creada para usuario {user_id}")
         return subscription
 
     @classmethod
@@ -135,29 +153,35 @@ class PushSubscription(db.Model):
         user_agent_lower = user_agent.lower()
 
         # Detectar navegador
-        if 'chrome' in user_agent_lower or 'chromium' in user_agent_lower:
-            browser = 'chrome'
-        elif 'firefox' in user_agent_lower:
-            browser = 'firefox'
-        elif 'safari' in user_agent_lower:
-            browser = 'safari'
-        elif 'edge' in user_agent_lower:
-            browser = 'edge'
+        if "chrome" in user_agent_lower or "chromium" in user_agent_lower:
+            browser = "chrome"
+        elif "firefox" in user_agent_lower:
+            browser = "firefox"
+        elif "safari" in user_agent_lower:
+            browser = "safari"
+        elif "edge" in user_agent_lower:
+            browser = "edge"
         else:
-            browser = 'unknown'
+            browser = "unknown"
 
         # Detectar plataforma
-        if 'mobile' in user_agent_lower or 'android' in user_agent_lower or 'iphone' in user_agent_lower:
-            platform = 'mobile'
-        elif 'tablet' in user_agent_lower or 'ipad' in user_agent_lower:
-            platform = 'tablet'
+        if (
+            "mobile" in user_agent_lower
+            or "android" in user_agent_lower
+            or "iphone" in user_agent_lower
+        ):
+            platform = "mobile"
+        elif "tablet" in user_agent_lower or "ipad" in user_agent_lower:
+            platform = "tablet"
         else:
-            platform = 'desktop'
+            platform = "desktop"
 
         return platform, browser
 
     @classmethod
-    def get_user_subscriptions(cls, user_id: int, active_only: bool = True) -> list['PushSubscription']:
+    def get_user_subscriptions(
+        cls, user_id: int, active_only: bool = True
+    ) -> list["PushSubscription"]:
         """
         Obtener todas las suscripciones de un usuario.
 
@@ -174,7 +198,7 @@ class PushSubscription(db.Model):
         return query.all()
 
     @classmethod
-    def get_all_active_subscriptions(cls) -> list['PushSubscription']:
+    def get_all_active_subscriptions(cls) -> list["PushSubscription"]:
         """Obtener todas las suscripciones activas."""
         return cls.query.filter_by(is_active=True).all()
 
@@ -195,7 +219,7 @@ class PushSubscription(db.Model):
             subscription.is_active = False
             subscription.updated_at = datetime.now(UTC)
             db.session.commit()
-            logger.info(f'Suscripción desactivada: {endpoint[:50]}...')
+            logger.info(f"Suscripción desactivada: {endpoint[:50]}...")
             return True
         return False
 
@@ -211,11 +235,11 @@ class PushSubscription(db.Model):
             Número de suscripciones desactivadas
         """
         count = cls.query.filter_by(user_id=user_id, is_active=True).update(
-            {'is_active': False, 'updated_at': datetime.now(UTC)},
-            synchronize_session=False
+            {"is_active": False, "updated_at": datetime.now(UTC)},
+            synchronize_session=False,
         )
         db.session.commit()
-        logger.info(f'Desactivadas {count} suscripciones para usuario {user_id}')
+        logger.info(f"Desactivadas {count} suscripciones para usuario {user_id}")
         return count
 
     @classmethod
@@ -232,12 +256,11 @@ class PushSubscription(db.Model):
         cutoff_date = datetime.now(UTC) - timedelta(days=days)
 
         result = cls.query.filter(
-            cls.is_active == False,
-            cls.updated_at < cutoff_date
+            cls.is_active == False, cls.updated_at < cutoff_date
         ).delete(synchronize_session=False)
 
         db.session.commit()
-        logger.info(f'Eliminadas {result} suscripciones inactivas antiguas')
+        logger.info(f"Eliminadas {result} suscripciones inactivas antiguas")
         return result
 
     # =============================================================================
@@ -247,14 +270,14 @@ class PushSubscription(db.Model):
     def to_dict(self) -> dict[str, Any]:
         """Convertir a diccionario (sin datos sensibles)."""
         return {
-            'id': self.id,
-            'user_id': self.user_id,
-            'platform': self.platform,
-            'browser': self.browser,
-            'is_active': self.is_active,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
-            'last_used': self.last_used.isoformat() if self.last_used else None,
+            "id": self.id,
+            "user_id": self.user_id,
+            "platform": self.platform,
+            "browser": self.browser,
+            "is_active": self.is_active,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "last_used": self.last_used.isoformat() if self.last_used else None,
         }
 
     def mark_used(self):

@@ -160,11 +160,11 @@ export default function ChatPage() {
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-    
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
     setIsOnline(navigator.onLine);
-    
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -305,7 +305,7 @@ export default function ChatPage() {
     const textOnly = !selectedFile;
     try {
       let attachmentData = null;
-      
+
       // Subir archivo si existe
       if (selectedFile) {
         setUploading(true);
@@ -438,7 +438,7 @@ export default function ChatPage() {
               </p>
             </div>
           )}
-          
+
           {/* Búsqueda */}
           <div style={{ position: 'relative' }}>
             <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', height: '16px', width: '16px', color: '#666' }} />
@@ -556,8 +556,8 @@ export default function ChatPage() {
                     {message.attachment_url && (
                       <div style={{ marginBottom: '8px' }}>
                         {message.attachment_type === 'image' ? (
-                          <img 
-                            src={message.attachment_url} 
+                          <img
+                            src={message.attachment_url}
                             alt={message.attachment_name}
                             style={{ borderRadius: '4px', maxWidth: '100%', height: 'auto' }}
                             loading="lazy"
@@ -566,8 +566,8 @@ export default function ChatPage() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
                             <FileImage style={{ height: '16px', width: '16px' }} />
                             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{message.attachment_name}</span>
-                            <a 
-                              href={message.attachment_url} 
+                            <a
+                              href={message.attachment_url}
                               download={message.attachment_name}
                               style={{ color: '#3b82f6', textDecoration: 'none' }}
                               target="_blank"
@@ -631,7 +631,7 @@ export default function ChatPage() {
               >
                 <Paperclip style={{ height: '20px', width: '20px' }} />
               </button>
-              
+
               {/* Input de mensaje */}
               <input
                 type="text"
@@ -648,7 +648,7 @@ export default function ChatPage() {
                 }}
                 disabled={false}
               />
-              
+
               {/* Emoji picker */}
               <div className="emoji-picker" style={{ position: 'relative' }}>
                 <button
@@ -659,7 +659,7 @@ export default function ChatPage() {
                 >
                   <Smile style={{ height: '20px', width: '20px' }} />
                 </button>
-                
+
                 {showEmojiPicker && (
                   <div style={{
                     position: 'absolute',
@@ -687,7 +687,7 @@ export default function ChatPage() {
                   </div>
                 )}
               </div>
-              
+
               {/* Botón de enviar */}
               <button
                 type="submit"
@@ -704,7 +704,7 @@ export default function ChatPage() {
                 <Send style={{ height: '20px', width: '20px' }} />
               </button>
             </div>
-            
+
             <input
               id="file-input"
               type="file"

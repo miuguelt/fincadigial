@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 // Usar el servidor existente en puerto 3000
 const port = 3005;
-const baseURL = `https://localhost:${port}`;
+const baseURL = process.env.E2E_BASE_URL || `http://localhost:${port}`;
 
 export default defineConfig({
   testDir: 'playwright-tests',

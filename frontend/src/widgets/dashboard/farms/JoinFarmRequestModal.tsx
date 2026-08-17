@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
   DialogFooter,
   DialogDescription
 } from '@/shared/ui/dialog';
@@ -43,7 +43,7 @@ export function JoinFarmRequestModal({
         finca_id: selectedFarm.id,
         message
       });
-      
+
       showToast(`Solicitud enviada a ${selectedFarm.name}`, 'success');
       if (onSuccess) onSuccess();
       onClose();
@@ -76,13 +76,13 @@ export function JoinFarmRequestModal({
 
           <div className="grid gap-2">
             <Label>Mensaje de presentación</Label>
-            <Textarea 
-              placeholder="Hola, me gustaría unirme a tu finca para colaborar en..." 
+            <Textarea
+              placeholder="Hola, me gustaría unirme a tu finca para colaborar en..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               maxLength={280}
             />
-            <span className="text-[10px] text-right text-[var(--color-text-muted)]">
+            <span className="text-[11px] text-right text-[var(--color-text-muted)]">
               {message.length}/280
             </span>
           </div>

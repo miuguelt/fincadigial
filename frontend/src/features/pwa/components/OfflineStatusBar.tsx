@@ -8,13 +8,13 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { 
-	Wifi, 
-	WifiOff, 
-	Radio, 
-	MessageCircle, 
-	Clock, 
-	RefreshCw, 
+import {
+	Wifi,
+	WifiOff,
+	Radio,
+	MessageCircle,
+	Clock,
+	RefreshCw,
 	ChevronUp,
 	Download,
 	Upload
@@ -170,7 +170,7 @@ export const OfflineStatusBar = React.memo(function OfflineStatusBar() {
 			)}
 			style={{ fontFamily: "Inter, system-ui, sans-serif" }}
 		>
-			<div 
+			<div
 				className={cn(
 					"bg-zinc-900/95 dark:bg-zinc-950/95 backdrop-blur-2xl overflow-hidden shadow-2xl transition-all duration-300",
 					"border border-zinc-800/60",
@@ -188,13 +188,13 @@ export const OfflineStatusBar = React.memo(function OfflineStatusBar() {
 				>
 					{/* Icono de estado con pulso suave */}
 					<div className={cn(
-						"flex items-center justify-center w-9 h-9 rounded-full border", 
+						"flex items-center justify-center w-9 h-9 rounded-full border",
 						COLORS[level],
 						GLOW_COLORS[level]
 					)}>
 						<StatusIcon className="w-4 h-4" />
 					</div>
-					
+
 					{/* Textos Principales */}
 					<div className="flex-1 min-w-0">
 						<p className="font-semibold text-sm text-zinc-100">{LABELS[level]}</p>
@@ -248,7 +248,7 @@ export const OfflineStatusBar = React.memo(function OfflineStatusBar() {
 				</div>
 
 				{/* Panel expandible (Contenido) */}
-				<div 
+				<div
 					className={cn(
 						"grid transition-all duration-300 ease-in-out",
 						isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
@@ -256,13 +256,13 @@ export const OfflineStatusBar = React.memo(function OfflineStatusBar() {
 				>
 					<div className="overflow-hidden bg-zinc-900/50">
 						<div className="p-4 border-t border-zinc-800/60 flex flex-col gap-4">
-							
+
 							{/* Progreso de prefetch */}
 							{prefetchProgress && !prefetchProgress.done && (
 								<div className="p-3 bg-blue-900/20 border border-blue-900/50 rounded-xl">
 									<div className="flex justify-between text-xs mb-2 text-blue-200">
 										<span className="flex items-center gap-1">
-											<Download className="w-3 h-3" /> 
+											<Download className="w-3 h-3" />
 											{prefetchProgress.step}
 										</span>
 										<span className="font-mono">
@@ -285,7 +285,7 @@ export const OfflineStatusBar = React.memo(function OfflineStatusBar() {
 							{/* Peers cercanos */}
 							{peers.length > 0 && (
 								<div className="space-y-2">
-									<p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
+									<p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
 										Dispositivos en Rango
 									</p>
 									<div className="flex flex-col gap-1.5">

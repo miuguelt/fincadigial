@@ -20,12 +20,12 @@ export default function OfflineLearningView() {
   const { toast } = useToast();
   const { role } = useAuth();
 
-  const isAdmin = useMemo(() => 
+  const isAdmin = useMemo(() =>
     ['Instructor', 'Administrador', 'Propietario'].includes(role || ''),
     [role]
   );
 
-  const categories = useMemo(() => 
+  const categories = useMemo(() =>
     ['Todos', ...new Set(materials.map(m => m.category).filter(Boolean))],
     [materials]
   );
@@ -58,7 +58,7 @@ export default function OfflineLearningView() {
     const checkCache = async () => {
       const cache = await caches.open('documents');
       const newCachedMap: Record<string, boolean> = {};
-      
+
       for (const mat of materials) {
         if (mat.local_uri) {
           const match = await cache.match(mat.local_uri);
@@ -75,22 +75,22 @@ export default function OfflineLearningView() {
 
   const handleDownload = async (mat: OfflineLearningMaterial) => {
     if (!mat.local_uri) return;
-    
+
     // Abrir en nueva pestaña para que el SW lo intercepte y lo cachee
     window.open(mat.local_uri, '_blank');
-    
+
     // Simular actualización inmediata del estado
     setCachedMap(prev => ({ ...prev, [mat.id!]: true }));
-    
+
     toast({
       title: "Material descargado",
       description: "El archivo se ha guardado en la caché para uso offline.",
     });
   };
 
-  const filteredMaterials = materials.filter(m => 
+  const filteredMaterials = materials.filter(m =>
     (activeCategory === 'Todos' || m.category === activeCategory) &&
-    (m.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    (m.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
      m.category.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
@@ -102,7 +102,7 @@ export default function OfflineLearningView() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      
+
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-emerald-900 to-emerald-700 p-8 rounded-lg shadow-md text-white">
         <div>
@@ -116,8 +116,8 @@ export default function OfflineLearningView() {
         </div>
         <div className="flex gap-2">
           {isAdmin && (
-            <Button 
-              variant="secondary" 
+            <Button
+              variant="secondary"
               className="bg-card text-emerald-900 hover:bg-emerald-50 font-semibold shadow-sm"
               onClick={() => setIsUploadOpen(true)}
             >
@@ -128,18 +128,18 @@ export default function OfflineLearningView() {
         </div>
       </div>
 
-      <MaterialUploadDialog 
-        isOpen={isUploadOpen} 
-        onOpenChange={setIsUploadOpen} 
-        onSuccess={fetchMaterials} 
+      <MaterialUploadDialog
+        isOpen={isUploadOpen}
+        onOpenChange={setIsUploadOpen}
+        onSuccess={fetchMaterials}
       />
 
       {/* Search and Filters */}
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="relative w-full md:w-96">
           <IconSearch size="md" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-          <Input 
-            placeholder="Buscar guías, manuales, enfermedades..." 
+          <Input
+            placeholder="Buscar guías, manuales, enfermedades..."
             className="pl-10 border-emerald-200 focus-visible:ring-emerald-500"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -179,7 +179,7 @@ export default function OfflineLearningView() {
                   <IconCircleCheck size="sm" />
                 </div>
               )}
-              
+
               <CardHeader className="flex flex-row items-start gap-4 pb-2">
                 <div className="bg-emerald-50 p-3 rounded-xl group-hover:scale-110 transition-transform duration-300">
                   {getIcon(mat.content_type || 'text')}
@@ -202,8 +202,8 @@ export default function OfflineLearningView() {
               </CardContent>
               <CardFooter className="pt-4 border-t bg-muted/50/50 rounded-b-xl flex justify-between items-center gap-2">
                 {mat.id && cachedMap[mat.id] ? (
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full text-emerald-700 border-emerald-300 bg-emerald-50/50 hover:bg-emerald-100"
                     onClick={() => mat.local_uri && window.open(mat.local_uri, '_blank')}
                   >
@@ -211,8 +211,8 @@ export default function OfflineLearningView() {
                     Abrir Material
                   </Button>
                 ) : (
-                  <Button 
-                    variant="primary" 
+                  <Button
+                    variant="primary"
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
                     onClick={() => handleDownload(mat)}
                   >
@@ -225,7 +225,7 @@ export default function OfflineLearningView() {
           ))}
         </div>
       )}
-      
+
       {!isLoading && filteredMaterials.length === 0 && (
         <div className="text-center py-20 bg-emerald-50/50 rounded-lg border-2 border-dashed border-emerald-200">
           <IconBook className="w-16 h-16 text-emerald-300 mx-auto mb-4" />
@@ -236,4 +236,3 @@ export default function OfflineLearningView() {
     </div>
   );
 }
-

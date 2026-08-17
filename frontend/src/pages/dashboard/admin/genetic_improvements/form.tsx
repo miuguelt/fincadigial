@@ -67,10 +67,10 @@ export default function GeneticImprovementForm() {
       </div>
       <div>
         <label>Fecha</label>
-        <input 
-          type="date" 
+        <input
+          type="date"
           max={today}
-          {...register('date', { 
+          {...register('date', {
             required: 'La fecha es obligatoria',
             validate: value => {
               const improvementDate = new Date(value);
@@ -78,7 +78,7 @@ export default function GeneticImprovementForm() {
               todayDate.setHours(0, 0, 0, 0);
               return improvementDate <= todayDate || 'La fecha no puede ser futura';
             }
-          })} 
+          })}
         />
         {renderError(errors.date)}
       </div>

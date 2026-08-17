@@ -4,7 +4,12 @@ from collections import defaultdict
 from datetime import date, timedelta
 
 from app.models.animals import Animals, AnimalStatus, Sex
-from app.models.reproduction import DiagnosisResult, EventType, Offspring, ReproductiveEvent
+from app.models.reproduction import (
+    DiagnosisResult,
+    EventType,
+    Offspring,
+    ReproductiveEvent,
+)
 
 
 def _rate(numerator: int, denominator: int) -> float:
@@ -24,16 +29,22 @@ class SirePerformanceService:
             status=AnimalStatus.Vivo,
         ).all()
         sire_by_id = {sire.id: sire for sire in sires}
-        events = ReproductiveEvent.query.filter(
-            ReproductiveEvent.finca_id == finca_id,
-            ReproductiveEvent.event_date >= since,
-        ).order_by(ReproductiveEvent.event_date.asc(), ReproductiveEvent.id.asc()).all()
+        events = (
+            ReproductiveEvent.query.filter(
+                ReproductiveEvent.finca_id == finca_id,
+                ReproductiveEvent.event_date >= since,
+            )
+            .order_by(ReproductiveEvent.event_date.asc(), ReproductiveEvent.id.asc())
+            .all()
+        )
 
-        stats = defaultdict(lambda: {
-            "inseminations": 0,
-            "positive_diagnoses": 0,
-            "total_offspring": 0,
-        })
+        stats = defaultdict(
+            lambda: {
+                "inseminations": 0,
+                "positive_diagnoses": 0,
+                "total_offspring": 0,
+            }
+        )
         last_insemination: dict[int, ReproductiveEvent] = {}
         confirmed: set[int] = set()
         birth_sires: dict[int, int] = {}
@@ -48,7 +59,11 @@ class SirePerformanceService:
                 and event.diagnosis_result == DiagnosisResult.Positivo
             ):
                 source = last_insemination.get(event.animal_id)
-                if source and source.id not in confirmed and source.sire_id in sire_by_id:
+                if (
+                    source
+                    and source.id not in confirmed
+                    and source.sire_id in sire_by_id
+                ):
                     confirmed.add(source.id)
                     stats[source.sire_id]["positive_diagnoses"] += 1
             elif event.event_type == EventType.Parto and event.sire_id in sire_by_id:
@@ -69,19 +84,22 @@ class SirePerformanceService:
         for sire_id, values in stats.items():
             sire = sire_by_id[sire_id]
             sire_weights = weights.get(sire_id, [])
-            performance.append({
-                "sire_id": sire_id,
-                "record": sire.record,
-                "breed": sire.breed.name if sire.breed else None,
-                **values,
-                "conception_rate_pct": _rate(
-                    values["positive_diagnoses"], values["inseminations"]
-                ),
-                "avg_birth_weight_kg": (
-                    round(sum(sire_weights) / len(sire_weights), 1)
-                    if sire_weights else None
-                ),
-            })
+            performance.append(
+                {
+                    "sire_id": sire_id,
+                    "record": sire.record,
+                    "breed": sire.breed.name if sire.breed else None,
+                    **values,
+                    "conception_rate_pct": _rate(
+                        values["positive_diagnoses"], values["inseminations"]
+                    ),
+                    "avg_birth_weight_kg": (
+                        round(sum(sire_weights) / len(sire_weights), 1)
+                        if sire_weights
+                        else None
+                    ),
+                }
+            )
 
         performance.sort(
             key=lambda item: (-item["conception_rate_pct"], item["record"])

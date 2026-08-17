@@ -93,4 +93,3 @@ export function useTreatment(): UseTreatmentResult {
     setFields: (resource as any).setFields,
   };
 }
-

@@ -13,13 +13,16 @@ import time
 
 logger = logging.getLogger(__name__)
 
+
 class ValidationError(Exception):
     """Excepción personalizada para errores de validación"""
+
     def __init__(self, message: str, field: str = None, code: str = None):
         super().__init__(message)
         self.message = message
         self.field = field
-        self.code = code or 'validation_error'
+        self.code = code or "validation_error"
+
 
 class SecurityValidator:
     """Validador de seguridad para detectar patrones maliciosos"""
@@ -34,7 +37,7 @@ class SecurityValidator:
         r"(javascript\s*:)",
         r"(\bEXEC\s*\()",
         r"(\bSP_)",
-        r"(\bXP_)"
+        r"(\bXP_)",
     ]
 
     XSS_PATTERNS = [
@@ -50,7 +53,7 @@ class SecurityValidator:
         r"(\beval\s*\()",
         r"(\balert\s*\()",
         r"(\bconfirm\s*\()",
-        r"(\bprompt\s*\()"
+        r"(\bprompt\s*\()",
     ]
 
     PATH_TRAVERSAL_PATTERNS = [
@@ -59,7 +62,7 @@ class SecurityValidator:
         r"(%2e%2e%2f)",
         r"(%2e%2e%5c)",
         r"(\.\.%2f)",
-        r"(\.\.%5c)"
+        r"(\.\.%5c)",
     ]
 
     @classmethod
@@ -73,11 +76,13 @@ class SecurityValidator:
         # Verificar SQL injection
         for pattern in cls.SQL_INJECTION_PATTERNS:
             if re.search(pattern, value_lower, re.IGNORECASE):
-                logger.warning(f"Posible SQL injection detectado en {field_name}: {value[:100]}")
+                logger.warning(
+                    f"Posible SQL injection detectado en {field_name}: {value[:100]}"
+                )
                 raise ValidationError(
                     f"Contenido no permitido detectado en {field_name}",
                     field=field_name,
-                    code="malicious_content"
+                    code="malicious_content",
                 )
 
         # Verificar XSS
@@ -87,60 +92,76 @@ class SecurityValidator:
                 raise ValidationError(
                     f"Contenido no permitido detectado en {field_name}",
                     field=field_name,
-                    code="malicious_content"
+                    code="malicious_content",
                 )
 
         # Verificar path traversal
         for pattern in cls.PATH_TRAVERSAL_PATTERNS:
             if re.search(pattern, value, re.IGNORECASE):
-                logger.warning(f"Posible path traversal detectado en {field_name}: {value[:100]}")
+                logger.warning(
+                    f"Posible path traversal detectado en {field_name}: {value[:100]}"
+                )
                 raise ValidationError(
                     f"Contenido no permitido detectado en {field_name}",
                     field=field_name,
-                    code="malicious_content"
+                    code="malicious_content",
                 )
 
     @staticmethod
     def require_admin_role(f):
         """Decorator que requiere rol de Administrador"""
+
         @wraps(f)
         def decorated_function(*args, **kwargs):
             try:
                 user_id = get_jwt_identity()
                 user_claims = get_jwt()
-                token_role = user_claims.get('role') if user_claims else None
+                token_role = user_claims.get("role") if user_claims else None
 
                 # Revalidar rol contra la base de datos para evitar privilegios desactualizados
                 db_role = None
                 current_status = None
                 if user_id:
                     try:
-                        from app.models.user import User  # Import local para evitar ciclos
+                        from app.models.user import (
+                            User,
+                        )  # Import local para evitar ciclos
+
                         user_obj = User.get_by_id(user_id)
                         if user_obj:
                             db_role = user_obj.role.value if user_obj.role else None
                             current_status = user_obj.status
                     except Exception as db_err:
-                        logger.debug(f"No se pudo cargar usuario para validación de rol admin: {db_err}")
+                        logger.debug(
+                            f"No se pudo cargar usuario para validación de rol admin: {db_err}"
+                        )
 
                 effective_role = db_role or token_role
-                if not user_id or effective_role != 'Administrador' or current_status is False:
+                if (
+                    not user_id
+                    or effective_role != "Administrador"
+                    or current_status is False
+                ):
                     from app.utils.response_handler import APIResponse
+
                     # Mensaje uniforme pero con detalles opcionales para diagnosticar en front si se requiere
                     return APIResponse.forbidden(
                         "Se requiere rol de Administrador para esta operación",
                         details={
-                            'token_role': token_role,
-                            'db_role': db_role,
-                            'user_status': current_status
-                        }
+                            "token_role": token_role,
+                            "db_role": db_role,
+                            "user_status": current_status,
+                        },
                     )
             except Exception:
                 from app.utils.response_handler import APIResponse
+
                 return APIResponse.unauthorized("Token JWT inválido")
 
             return f(*args, **kwargs)
+
         return decorated_function
+
 
 def sanitize_string(value: str, max_length: int = None) -> str:
     """Limpiar y sanitizar string de entrada"""
@@ -148,19 +169,22 @@ def sanitize_string(value: str, max_length: int = None) -> str:
         return str(value)
 
     # Normalizar unicode
-    value = unicodedata.normalize('NFKC', value)
+    value = unicodedata.normalize("NFKC", value)
 
     # Remover caracteres de control
-    value = ''.join(char for char in value if not unicodedata.category(char).startswith('C'))
+    value = "".join(
+        char for char in value if not unicodedata.category(char).startswith("C")
+    )
 
     # Limpiar espacios
-    value = ' '.join(value.split())
+    value = " ".join(value.split())
 
     # Aplicar longitud máxima si se especifica
     if max_length and len(value) > max_length:
         value = value[:max_length]
 
     return value
+
 
 def validate_email(email: str, field_name: str = "email") -> str:
     """Validar formato de email con sanitización"""
@@ -173,25 +197,24 @@ def validate_email(email: str, field_name: str = "email") -> str:
     SecurityValidator.check_malicious_content(email, field_name)
 
     # Patrón de email más estricto
-    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
 
     if not re.match(email_pattern, email):
         raise ValidationError(
             f"{field_name} debe tener un formato válido",
             field=field_name,
-            code="invalid_format"
+            code="invalid_format",
         )
 
     # Verificar longitud de partes
-    local_part, domain = email.split('@')
+    local_part, domain = email.split("@")
     if len(local_part) > 64:  # RFC 5321 limit
         raise ValidationError(
-            f"{field_name} demasiado largo",
-            field=field_name,
-            code="too_long"
+            f"{field_name} demasiado largo", field=field_name, code="too_long"
         )
 
     return email.lower()
+
 
 def validate_phone(phone: str, field_name: str = "teléfono") -> str:
     """Validar número de teléfono"""
@@ -204,21 +227,24 @@ def validate_phone(phone: str, field_name: str = "teléfono") -> str:
     SecurityValidator.check_malicious_content(phone, field_name)
 
     # Limpiar caracteres no numéricos excepto + y espacios
-    clean_phone = re.sub(r'[^\d\+\s\-\(\)]', '', phone)
+    clean_phone = re.sub(r"[^\d\+\s\-\(\)]", "", phone)
 
     # Patrón para teléfono (colombiano principalmente)
-    phone_pattern = r'^(\+57\s?)?[0-9\s\-\(\)]{7,15}$'
+    phone_pattern = r"^(\+57\s?)?[0-9\s\-\(\)]{7,15}$"
 
     if not re.match(phone_pattern, clean_phone):
         raise ValidationError(
             f"{field_name} debe tener un formato válido",
             field=field_name,
-            code="invalid_format"
+            code="invalid_format",
         )
 
     return clean_phone
 
-def validate_identification(identification: Any, field_name: str = "identificación") -> int:
+
+def validate_identification(
+    identification: Any, field_name: str = "identificación"
+) -> int:
     """Validar número de identificación"""
     if identification is None:
         raise ValidationError(f"{field_name} es requerido", field=field_name)
@@ -227,26 +253,23 @@ def validate_identification(identification: Any, field_name: str = "identificaci
         identification = int(identification)
     except (ValueError, TypeError):
         raise ValidationError(
-            f"{field_name} debe ser un número",
-            field=field_name,
-            code="invalid_type"
+            f"{field_name} debe ser un número", field=field_name, code="invalid_type"
         )
 
     if identification <= 0:
         raise ValidationError(
             f"{field_name} debe ser un número positivo",
             field=field_name,
-            code="invalid_range"
+            code="invalid_range",
         )
 
     if identification > 9999999999:  # 10 dígitos máximo
         raise ValidationError(
-            f"{field_name} es demasiado largo",
-            field=field_name,
-            code="too_long"
+            f"{field_name} es demasiado largo", field=field_name, code="too_long"
         )
 
     return identification
+
 
 def validate_password(password: str, field_name: str = "contraseña") -> None:
     """Validar fortaleza de contraseña"""
@@ -258,14 +281,12 @@ def validate_password(password: str, field_name: str = "contraseña") -> None:
         raise ValidationError(
             f"{field_name} debe tener al menos 8 caracteres",
             field=field_name,
-            code="too_short"
+            code="too_short",
         )
 
     if len(password) > 128:
         raise ValidationError(
-            f"{field_name} es demasiado larga",
-            field=field_name,
-            code="too_long"
+            f"{field_name} es demasiado larga", field=field_name, code="too_long"
         )
 
     # Verificar complejidad básica
@@ -278,8 +299,9 @@ def validate_password(password: str, field_name: str = "contraseña") -> None:
         raise ValidationError(
             f"{field_name} debe contener al menos 3 de: mayúscula, minúscula, número, símbolo",
             field=field_name,
-            code="weak_password"
+            code="weak_password",
         )
+
 
 class RequestValidator:
     """Sistema de validaciones automáticas para endpoints"""
@@ -287,13 +309,15 @@ class RequestValidator:
     @staticmethod
     def validate_json_required(f):
         """Decorator que valida que la petición tenga JSON válido"""
+
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if not flask.request.is_json:
                 from app.utils.response_handler import APIResponse
+
                 return APIResponse.validation_error(
                     {"content_type": "Se requiere Content-Type: application/json"},
-                    "Formato de petición inválido"
+                    "Formato de petición inválido",
                 )
 
             try:
@@ -303,19 +327,23 @@ class RequestValidator:
                     validate_request_size(data)
             except Exception as e:
                 from app.utils.response_handler import APIResponse
+
                 return APIResponse.validation_error(
-                    {"json": f"JSON inválido: {str(e)}"},
-                    "Error de formato JSON"
+                    {"json": f"JSON inválido: {str(e)}"}, "Error de formato JSON"
                 )
 
             return f(*args, **kwargs)
+
         return decorated_function
 
     @staticmethod
-    def validate_fields(required_fields: list[str] = None,
-                       optional_fields: list[str] = None,
-                       field_types: dict[str, type] = None):
+    def validate_fields(
+        required_fields: list[str] = None,
+        optional_fields: list[str] = None,
+        field_types: dict[str, type] = None,
+    ):
         """Decorator que valida campos requeridos y tipos de datos"""
+
         def decorator(f):
             @wraps(f)
             def decorated_function(*args, **kwargs):
@@ -335,7 +363,9 @@ class RequestValidator:
                     for field, expected_type in field_types.items():
                         if field in data and data[field] is not None:
                             if not isinstance(data[field], expected_type):
-                                errors[field] = f"Campo '{field}' debe ser de tipo {expected_type.__name__}"
+                                errors[field] = (
+                                    f"Campo '{field}' debe ser de tipo {expected_type.__name__}"
+                                )
 
                 # Validar campos no permitidos
                 allowed_fields = set((required_fields or []) + (optional_fields or []))
@@ -346,18 +376,22 @@ class RequestValidator:
 
                 if errors:
                     from app.utils.response_handler import APIResponse
+
                     return APIResponse.validation_error(errors)
 
                 return f(*args, **kwargs)
+
             return decorated_function
+
         return decorator
+
 
 def validate_request_size(data: dict[str, Any], max_fields: int = 50) -> None:
     """Validar tamaño de flask.request para prevenir DoS"""
     if len(data) > max_fields:
         raise ValidationError(
             f"Demasiados campos en la solicitud (máximo {max_fields})",
-            code="request_too_large"
+            code="request_too_large",
         )
 
     # Verificar tamaño total de strings
@@ -367,9 +401,9 @@ def validate_request_size(data: dict[str, Any], max_fields: int = 50) -> None:
             total_string_length += len(value)
         if total_string_length > 100000:  # 100KB de strings
             raise ValidationError(
-                "Solicitud demasiado grande",
-                code="request_too_large"
+                "Solicitud demasiado grande", code="request_too_large"
             )
+
 
 class PerformanceLogger:
     """Sistema de logging de rendimiento y métricas"""
@@ -377,6 +411,7 @@ class PerformanceLogger:
     @staticmethod
     def log_request_performance(f):
         """Decorator que registra métricas de rendimiento de requests"""
+
         @wraps(f)
         def decorated_function(*args, **kwargs):
             start_time = time.time()

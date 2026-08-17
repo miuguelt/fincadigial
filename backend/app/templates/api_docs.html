@@ -195,7 +195,7 @@
             .hero-section h1 {
                 font-size: 2rem;
             }
-            
+
             .sidebar {
                 position: static;
                 margin-bottom: 2rem;
@@ -238,7 +238,7 @@
         <div class="container text-center">
             <h1>📚 Documentación de la API - Sistema de Gestión Ganadera</h1>
             <p class="subtitle">API RESTful completa para la gestión integral de fincas ganaderas - Versión Optimizada 2.0</p>
-            
+
             <div class="alert alert-success">
                 <h4>🚀 Nuevas Características v2.0</h4>
                 <ul>
@@ -273,7 +273,7 @@
                     <p>Endpoints estándar y bien documentados</p>
                 </div>
             </div>
-            
+
             <!-- Nuevos Namespaces v2.0 -->
             <div class="row mt-5">
                 <div class="col-md-3">
@@ -345,7 +345,7 @@
                         </div>
                         <div class="card-body">
                             <p>La API utiliza tokens JWT para la autenticación. Todos los endpoints (excepto login) requieren un token válido.</p>
-                            
+
                             <h6 class="mt-4">Métodos de Autenticación:</h6>
                             <ul>
                                 <li><strong>Header Authorization:</strong> <code>Authorization: Bearer &lt;token&gt;</code></li>
@@ -358,12 +358,12 @@
                                         <h6><span class="method-badge method-post">POST</span> /api/v1/auth/login</h6>
                                     </div>
                                     <p>Autenticar usuario y generar tokens JWT</p>
-                                    
+
                                     <h6>Request Body:</h6>
                                     <div class="code-block">
 {
   "identification": 12345678,
-  "password": "password123"
+  "password": "<TEST_PASSWORD>"
 }
                                     </div>
 
@@ -381,7 +381,7 @@
             "role": "Instructor",
             "status": true
         },
-        "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+        "access_token": "<ACCESS_TOKEN>"
     },
     "status_code": 200,
     "timestamp": "2024-01-01T12:00:00Z"
@@ -421,7 +421,7 @@
                                         <small class="text-muted">🔒 Requiere autenticación</small>
                                     </div>
                                     <p>Obtener lista de usuarios con filtros opcionales</p>
-                                    
+
                                     <h6>Parámetros de consulta:</h6>
                                     <ul>
                                         <li><code>fullname</code> - Filtrar por nombre (búsqueda parcial)</li>
@@ -477,13 +477,13 @@ GET /api/v1/users/?role=Instructor&status=true
                                         <small class="text-muted">🔒 Requiere rol Administrador</small>
                                     </div>
                                     <p>Crear un nuevo usuario en el sistema</p>
-                                    
+
                                     <h6>Request Body:</h6>
                                     <div class="code-block">
 {
   "identification": 87654321,
   "fullname": "María García",
-  "password": "password123",
+  "password": "<TEST_PASSWORD>",
   "email": "maria@example.com",
   "phone": "3001234567",
   "address": "Calle 123 #45-67",
@@ -525,7 +525,7 @@ GET /api/v1/users/?role=Instructor&status=true
                                         <small class="text-muted">🔒 Requiere autenticación</small>
                                     </div>
                                     <p>Obtener inventario completo de animales con filtros avanzados</p>
-                                    
+
                                     <h6>Parámetros de consulta:</h6>
                                     <ul>
                                         <li><code>record</code> - Filtrar por registro del animal</li>
@@ -585,7 +585,7 @@ GET /api/v1/animals/?sex=Hembra&status=Vivo&min_weight=400
                                         <small class="text-muted">🔒 Requiere rol Administrador</small>
                                     </div>
                                     <p>Registrar un nuevo animal en el inventario</p>
-                                    
+
                                     <h6>Request Body:</h6>
                                     <div class="code-block">
 {
@@ -810,7 +810,7 @@ curl -k -X POST {{ config.get('API_BASE_URL', 'https://localhost:8081/api/v1') }
   -H "Content-Type: application/json" \
   -d '{
     "identification": 12345678,
-    "password": "password123"
+    "password": "<TEST_PASSWORD>"
   }'
 
 # 2. Usar el token en requests posteriores
@@ -855,7 +855,7 @@ curl -k -X GET "{{ config.get('API_BASE_URL', 'https://localhost:8081/api/v1') }
                                     <h6>Códigos de Éxito:</h6>
                                     <p><span class="status-code status-200">200</span> OK - Solicitud exitosa</p>
                                     <p><span class="status-code status-201">201</span> Created - Recurso creado exitosamente</p>
-                                    
+
                                     <h6>Códigos de Error del Cliente:</h6>
                                     <p><span class="status-code status-400">400</span> Bad Request - Datos inválidos</p>
                                     <p><span class="status-code status-401">401</span> Unauthorized - Token requerido o inválido</p>
@@ -866,7 +866,7 @@ curl -k -X GET "{{ config.get('API_BASE_URL', 'https://localhost:8081/api/v1') }
                                     <p><span class="status-code status-404">404</span> Not Found - Recurso no encontrado</p>
                                     <p><span class="status-code status-409">409</span> Conflict - Error de integridad</p>
                                     <p><span class="status-code status-500">500</span> Internal Server Error - Error del servidor</p>
-                                    
+
                                     <h6>Ejemplo de respuesta de error:</h6>
                                     <div class="code-block">
 {
@@ -923,7 +923,7 @@ curl -k -X GET "{{ config.get('API_BASE_URL', 'https://localhost:8081/api/v1') }
         window.addEventListener('scroll', function() {
             const sections = document.querySelectorAll('section[id]');
             const navLinks = document.querySelectorAll('.sidebar .nav-link');
-            
+
             let current = '';
             sections.forEach(section => {
                 const sectionTop = section.offsetTop;

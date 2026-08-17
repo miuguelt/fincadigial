@@ -10,15 +10,17 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def validate_request(schema_class=None, validate_json=True, validate_args=False):
     """
     Decorador para validar requests de manera estandarizada.
-    
+
     Args:
         schema_class: Clase Schema de Marshmallow para validación
         validate_json: Si se debe validar el cuerpo JSON
         validate_args: Si se deben validar los argumentos de query
     """
+
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
@@ -29,7 +31,7 @@ def validate_request(schema_class=None, validate_json=True, validate_args=False)
                         return APIResponse.error(
                             message="Content-Type debe ser application/json",
                             status_code=400,
-                            error_code="INVALID_CONTENT_TYPE"
+                            error_code="INVALID_CONTENT_TYPE",
                         )
 
                     json_data = flask.request.get_json(silent=True)
@@ -37,7 +39,7 @@ def validate_request(schema_class=None, validate_json=True, validate_args=False)
                         return APIResponse.error(
                             message="Cuerpo JSON requerido",
                             status_code=400,
-                            error_code="JSON_BODY_REQUIRED"
+                            error_code="JSON_BODY_REQUIRED",
                         )
 
                     schema = schema_class()
@@ -50,7 +52,7 @@ def validate_request(schema_class=None, validate_json=True, validate_args=False)
                             message="Datos inválidos",
                             status_code=422,
                             error_code="VALIDATION_ERROR",
-                            details={"errors": err.messages}
+                            details={"errors": err.messages},
                         )
 
                 # Validar argumentos de query si se solicita
@@ -66,7 +68,7 @@ def validate_request(schema_class=None, validate_json=True, validate_args=False)
                                 message="Argumentos inválidos",
                                 status_code=422,
                                 error_code="ARGS_VALIDATION_ERROR",
-                                details={"errors": err.messages}
+                                details={"errors": err.messages},
                             )
 
                 return f(*args, **kwargs)
@@ -76,20 +78,22 @@ def validate_request(schema_class=None, validate_json=True, validate_args=False)
                 return APIResponse.error(
                     message="Error de validación interno",
                     status_code=500,
-                    error_code="VALIDATION_INTERNAL_ERROR"
+                    error_code="VALIDATION_INTERNAL_ERROR",
                 )
 
         return decorated_function
+
     return decorator
 
 
 def validate_required_fields(required_fields):
     """
     Decorador para validar campos requeridos básicos.
-    
+
     Args:
         required_fields: Lista de campos requeridos
     """
+
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
@@ -98,7 +102,7 @@ def validate_required_fields(required_fields):
                     return APIResponse.error(
                         message="Content-Type debe ser application/json",
                         status_code=400,
-                        error_code="INVALID_CONTENT_TYPE"
+                        error_code="INVALID_CONTENT_TYPE",
                     )
 
                 json_data = flask.request.get_json(silent=True)
@@ -106,12 +110,16 @@ def validate_required_fields(required_fields):
                     return APIResponse.error(
                         message="Cuerpo JSON requerido",
                         status_code=400,
-                        error_code="JSON_BODY_REQUIRED"
+                        error_code="JSON_BODY_REQUIRED",
                     )
 
                 missing_fields = []
                 for field in required_fields:
-                    if field not in json_data or json_data[field] is None or json_data[field] == '':
+                    if (
+                        field not in json_data
+                        or json_data[field] is None
+                        or json_data[field] == ""
+                    ):
                         missing_fields.append(field)
 
                 if missing_fields:
@@ -119,7 +127,7 @@ def validate_required_fields(required_fields):
                         message="Campos requeridos faltantes",
                         status_code=400,
                         error_code="REQUIRED_FIELDS_MISSING",
-                        details={"missing_fields": missing_fields}
+                        details={"missing_fields": missing_fields},
                     )
 
                 return f(*args, **kwargs)
@@ -129,10 +137,11 @@ def validate_required_fields(required_fields):
                 return APIResponse.error(
                     message="Error de validación interno",
                     status_code=500,
-                    error_code="VALIDATION_INTERNAL_ERROR"
+                    error_code="VALIDATION_INTERNAL_ERROR",
                 )
 
         return decorated_function
+
     return decorator
 
 
@@ -140,6 +149,7 @@ def sanitize_input(f):
     """
     Decorador para sanitizar inputs básicos.
     """
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
         try:
@@ -152,11 +162,14 @@ def sanitize_input(f):
                             # Trim whitespace
                             json_data[key] = value.strip()
                             # Prevenir script injection básico
-                            if '<script' in value.lower() or 'javascript:' in value.lower():
+                            if (
+                                "<script" in value.lower()
+                                or "javascript:" in value.lower()
+                            ):
                                 return APIResponse.error(
                                     message="Contenido no permitido",
                                     status_code=400,
-                                    error_code="INVALID_CONTENT"
+                                    error_code="INVALID_CONTENT",
                                 )
 
                     flask.request.sanitized_data = json_data
@@ -168,7 +181,7 @@ def sanitize_input(f):
             return APIResponse.error(
                 message="Error de procesamiento interno",
                 status_code=500,
-                error_code="SANITIZATION_ERROR"
+                error_code="SANITIZATION_ERROR",
             )
 
     return decorated_function

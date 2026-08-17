@@ -5,7 +5,7 @@ describe('Infraestructura de Pruebas Villa Luz', () => {
     const mockFn = vi.fn();
     mockFn('test');
     expect(mockFn).toHaveBeenCalledWith('test');
-    
+
     // Verificar que import.meta no rompe la ejecución (gracias al transformador)
     const env = (globalThis as any).import_meta_env || {};
     expect(env).toBeDefined();
@@ -16,4 +16,3 @@ describe('Infraestructura de Pruebas Villa Luz', () => {
     expect(calcWeight(100, 0.5, 10)).toBe(105);
   });
 });
-

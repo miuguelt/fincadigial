@@ -912,7 +912,7 @@ api.interceptors.response.use(
       }
 
       // Re-throw as ApiFetchError
-      const validationErrors = parsed.validationErrors || 
+      const validationErrors = parsed.validationErrors ||
         (parsed.code === 'VALIDATION_ERROR' ? (parsed.details?.validation_errors || parsed.details?.errors) : undefined);
 
       throw new ApiFetchError(detailMsg, {
@@ -1186,6 +1186,3 @@ export function startWebSocket(): void {
 export function startRealtime(): void {
   // Disabled: Use lib/events.ts instead
 }
-
-
-

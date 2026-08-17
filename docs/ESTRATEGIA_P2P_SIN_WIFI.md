@@ -36,4 +36,3 @@ Android/iOS empaquetada (Capacitor/React Native) con Google Nearby Connections o
 Wi‑Fi Direct. Esas APIs pueden descubrir y transportar datos sin conectividad IP
 convencional, pero no están disponibles de forma equivalente para una PWA de
 navegador.
-

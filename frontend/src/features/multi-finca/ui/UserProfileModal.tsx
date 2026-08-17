@@ -144,7 +144,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 									</h4>
 									<div className="space-y-2.5 text-sm">
 										<div className="space-y-0.5">
-											<p className="text-[10px] font-bold text-muted-foreground uppercase">
+											<p className="text-[11px] font-bold text-muted-foreground uppercase">
 												Identificación
 											</p>
 											<p className="font-semibold text-foreground">
@@ -152,7 +152,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 											</p>
 										</div>
 										<div className="space-y-0.5 border-t border-border/40 pt-1.5">
-											<p className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+											<p className="text-[11px] font-bold text-muted-foreground uppercase flex items-center gap-1">
 												<Mail size={10} /> Correo
 											</p>
 											<p
@@ -163,7 +163,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 											</p>
 										</div>
 										<div className="space-y-0.5 border-t border-border/40 pt-1.5">
-											<p className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+											<p className="text-[11px] font-bold text-muted-foreground uppercase flex items-center gap-1">
 												<Phone size={10} /> Teléfono
 											</p>
 											<p className="font-semibold text-foreground">
@@ -171,7 +171,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 											</p>
 										</div>
 										<div className="space-y-0.5 border-t border-border/40 pt-1.5">
-											<p className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+											<p className="text-[11px] font-bold text-muted-foreground uppercase flex items-center gap-1">
 												<MapPin size={10} /> Ubicación
 											</p>
 											<p className="font-semibold text-foreground leading-tight">

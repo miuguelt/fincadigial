@@ -24,6 +24,7 @@ def _open_image(data: bytes):
     """Abre bytes de imagen con Pillow."""
     try:
         from PIL import Image
+
         return Image.open(io.BytesIO(data))
     except Exception as exc:
         raise ValueError(f"No se pudo abrir la imagen: {exc}") from exc
@@ -128,6 +129,7 @@ def is_valid_image(data: bytes, max_size_mb: float = 10.0) -> tuple[bool, str]:
 
     try:
         from PIL import Image
+
         img = Image.open(io.BytesIO(data))
         img.verify()  # Detecta archivos corruptos sin descodificar por completo
         return True, ""

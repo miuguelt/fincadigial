@@ -82,10 +82,10 @@ export default function TreatmentForm() {
       </div>
       <div>
         <label>Fecha de tratamiento</label>
-        <input 
-          type="date" 
+        <input
+          type="date"
           max={today}
-          {...register('treatment_date', { 
+          {...register('treatment_date', {
             required: 'La fecha es obligatoria',
             validate: value => {
               const treatmentDate = new Date(value);
@@ -93,7 +93,7 @@ export default function TreatmentForm() {
               todayDate.setHours(0, 0, 0, 0);
               return treatmentDate <= todayDate || 'La fecha de tratamiento no puede ser futura';
             }
-          })} 
+          })}
         />
         {renderError(errors.treatment_date)}
       </div>
@@ -120,8 +120,8 @@ export default function TreatmentForm() {
       </div>
       <div>
         <label>Fecha de seguimiento</label>
-        <input 
-          type="date" 
+        <input
+          type="date"
           {...register('follow_up_date', {
             validate: value => {
               if (!value) return true; // Es opcional
@@ -135,7 +135,7 @@ export default function TreatmentForm() {
               todayDate.setHours(0, 0, 0, 0);
               return followUpDate >= todayDate || 'La fecha de seguimiento no puede ser anterior a hoy';
             }
-          })} 
+          })}
         />
         {renderError(errors.follow_up_date)}
       </div>

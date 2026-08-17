@@ -12,7 +12,11 @@ logger = logging.getLogger(__name__)
 
 
 def init_compression(app):
-    min_size = int(app.config.get("COMPRESS_MIN_SIZE", app.config.get("COMPRESSION_MIN_SIZE", 1024)))
+    min_size = int(
+        app.config.get(
+            "COMPRESS_MIN_SIZE", app.config.get("COMPRESSION_MIN_SIZE", 1024)
+        )
+    )
     level = int(app.config.get("COMPRESS_LEVEL", 6))
 
     @app.after_request
@@ -26,12 +30,19 @@ def init_compression(app):
             if response.headers.get("Content-Encoding"):
                 return response
 
-            accept = flask.request.headers.get("Accept-Encoding", "") if flask.request else ""
+            accept = (
+                flask.request.headers.get("Accept-Encoding", "")
+                if flask.request
+                else ""
+            )
             if "gzip" not in accept.lower():
                 return response
 
             content_type = (response.mimetype or "").lower()
-            if not (content_type.startswith("application/json") or content_type.startswith("text/")):
+            if not (
+                content_type.startswith("application/json")
+                or content_type.startswith("text/")
+            ):
                 return response
 
             data = response.get_data()

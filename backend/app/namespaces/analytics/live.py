@@ -17,8 +17,7 @@ from app.utils.tenant_context import apply_tenant_filter, get_current_finca_id
 logger = logging.getLogger(__name__)
 
 live_ns = Namespace(
-    'analytics/live',
-    description='⚡ Analytics - KPIs en tiempo real (SSE)'
+    "analytics/live", description="⚡ Analytics - KPIs en tiempo real (SSE)"
 )
 
 
@@ -37,12 +36,12 @@ def calculate_live_kpis_by_finca(finca_ids) -> dict[int, dict]:
     timestamp = datetime.now().isoformat()
     metrics = {
         finca_id: {
-            'total_animals': 0,
-            'active_animals': 0,
-            'sick_animals': 0,
-            'vaccinations_30d': 0,
-            'active_treatments': 0,
-            'controls_7d': 0,
+            "total_animals": 0,
+            "active_animals": 0,
+            "sick_animals": 0,
+            "vaccinations_30d": 0,
+            "active_treatments": 0,
+            "controls_7d": 0,
         }
         for finca_id in ids
     }
@@ -58,8 +57,8 @@ def calculate_live_kpis_by_finca(finca_ids) -> dict[int, dict]:
         .all()
     )
     for finca_id, total, active in animal_rows:
-        metrics[finca_id]['total_animals'] = int(total or 0)
-        metrics[finca_id]['active_animals'] = int(active or 0)
+        metrics[finca_id]["total_animals"] = int(total or 0)
+        metrics[finca_id]["active_animals"] = int(active or 0)
 
     sick_rows = (
         db.session.query(
@@ -69,7 +68,7 @@ def calculate_live_kpis_by_finca(finca_ids) -> dict[int, dict]:
         .join(Animals, Animals.id == AnimalDiseases.animal_id)
         .filter(
             AnimalDiseases.finca_id.in_(ids),
-            AnimalDiseases.status.in_(['Activo', 'En Tratamiento', 'Recurrente']),
+            AnimalDiseases.status.in_(["Activo", "En Tratamiento", "Recurrente"]),
             AnimalDiseases.is_deleted == False,
             Animals.is_deleted == False,
         )
@@ -77,14 +76,19 @@ def calculate_live_kpis_by_finca(finca_ids) -> dict[int, dict]:
         .all()
     )
     for finca_id, count in sick_rows:
-        metrics[finca_id]['sick_animals'] = int(count or 0)
+        metrics[finca_id]["sick_animals"] = int(count or 0)
 
     thirty_days_ago = datetime.now() - timedelta(days=30)
     seven_days_ago = datetime.now() - timedelta(days=7)
     grouped_queries = (
-        ('vaccinations_30d', Vaccinations, Vaccinations.vaccination_date, thirty_days_ago),
-        ('active_treatments', Treatments, Treatments.treatment_date, thirty_days_ago),
-        ('controls_7d', Control, Control.checkup_date, seven_days_ago),
+        (
+            "vaccinations_30d",
+            Vaccinations,
+            Vaccinations.vaccination_date,
+            thirty_days_ago,
+        ),
+        ("active_treatments", Treatments, Treatments.treatment_date, thirty_days_ago),
+        ("controls_7d", Control, Control.checkup_date, seven_days_ago),
     )
     for key, model, date_column, cutoff in grouped_queries:
         rows = (
@@ -104,30 +108,34 @@ def calculate_live_kpis_by_finca(finca_ids) -> dict[int, dict]:
 
     result = {}
     for finca_id, values in metrics.items():
-        active = values['active_animals']
-        sick = values['sick_animals']
-        values['health_rate'] = round(((active - sick) / active * 100), 1) if active else 100
-        result[finca_id] = {'timestamp': timestamp, 'kpis': values}
+        active = values["active_animals"]
+        sick = values["sick_animals"]
+        values["health_rate"] = (
+            round(((active - sick) / active * 100), 1) if active else 100
+        )
+        result[finca_id] = {"timestamp": timestamp, "kpis": values}
     return result
 
 
 def combine_live_kpis(items) -> dict:
     """Combine per-farm results into a global payload without more SQL."""
     totals = {
-        'total_animals': 0,
-        'active_animals': 0,
-        'sick_animals': 0,
-        'vaccinations_30d': 0,
-        'active_treatments': 0,
-        'controls_7d': 0,
+        "total_animals": 0,
+        "active_animals": 0,
+        "sick_animals": 0,
+        "vaccinations_30d": 0,
+        "active_treatments": 0,
+        "controls_7d": 0,
     }
     payloads = list(items)
     for payload in payloads:
         for key in totals:
-            totals[key] += int(payload.get('kpis', {}).get(key, 0) or 0)
-    active = totals['active_animals']
-    totals['health_rate'] = round(((active - totals['sick_animals']) / active * 100), 1) if active else 100
-    return {'timestamp': datetime.now().isoformat(), 'kpis': totals}
+            totals[key] += int(payload.get("kpis", {}).get(key, 0) or 0)
+    active = totals["active_animals"]
+    totals["health_rate"] = (
+        round(((active - totals["sick_animals"]) / active * 100), 1) if active else 100
+    )
+    return {"timestamp": datetime.now().isoformat(), "kpis": totals}
 
 
 def calculate_live_kpis(finca_id=None) -> dict:
@@ -141,11 +149,12 @@ def calculate_live_kpis(finca_id=None) -> dict:
             )
 
         from app.models.finca import Finca
+
         finca_ids = [row[0] for row in db.session.query(Finca.id).all()]
         return combine_live_kpis(calculate_live_kpis_by_finca(finca_ids).values())
     except Exception as e:
-        logger.error('Error calculando KPIs live: %s', e)
-        return {'timestamp': datetime.now().isoformat(), 'kpis': {}, 'error': str(e)}
+        logger.error("Error calculando KPIs live: %s", e)
+        return {"timestamp": datetime.now().isoformat(), "kpis": {}, "error": str(e)}
 
 
 def _close_pubsub(pubsub) -> None:
@@ -178,22 +187,22 @@ def _stream_from_redis(redis_client, channel: str, finca_id):
             backoff = 1
             if not initial_sent:
                 # Enviar un primer paquete inmediato para no dejar la UI vacía
-                yield f'data: {json.dumps(calculate_live_kpis(finca_id))}\n\n'
+                yield f"data: {json.dumps(calculate_live_kpis(finca_id))}\n\n"
                 initial_sent = True
 
             for message in pubsub.listen():
-                if message['type'] == 'message':
+                if message["type"] == "message":
                     # El cliente no usa decode_responses: el payload llega en bytes.
-                    data = message['data']
+                    data = message["data"]
                     if isinstance(data, bytes):
-                        data = data.decode('utf-8')
-                    yield f'data: {data}\n\n'
+                        data = data.decode("utf-8")
+                    yield f"data: {data}\n\n"
         except Exception as exc:
             now = time.time()
             # Rule: at most one warning per minute for repeating errors.
             if now - last_warning >= 60:
                 logger.warning(
-                    'SSE PubSub desconectado (%s). Reintentando en %ss', exc, backoff
+                    "SSE PubSub desconectado (%s). Reintentando en %ss", exc, backoff
                 )
                 last_warning = now
         finally:
@@ -201,27 +210,29 @@ def _stream_from_redis(redis_client, channel: str, finca_id):
 
         # Comentario SSE: mantiene viva la conexión y detecta al cliente ido
         # (si se desconectó, este yield rompe el generador en vez de dormir).
-        yield ': reconnecting\n\n'
+        yield ": reconnecting\n\n"
         time.sleep(backoff)
         backoff = min(backoff * 2, 30)
 
 
-@live_ns.route('/stream')
+@live_ns.route("/stream")
 class LiveAnalyticsStream(Resource):
     @live_ns.doc(
-        'live_analytics_stream',
-        description='Stream SSE con KPIs actualizados cada 30 segundos.',
-        security=['Bearer', 'Cookie'],
-        responses={200: 'Stream SSE', 401: 'No autorizado'},
+        "live_analytics_stream",
+        description="Stream SSE con KPIs actualizados cada 30 segundos.",
+        security=["Bearer", "Cookie"],
+        responses={200: "Stream SSE", 401: "No autorizado"},
     )
     @jwt_required()
     def get(self):
         """Stream de KPIs en tiempo real via Server-Sent Events (Optimizadas con Redis Pub/Sub)"""
+
         def generate_sse():
             finca_id = get_current_finca_id()
             channel = f"live_kpis_{finca_id}" if finca_id else "live_kpis_global"
 
             from app.extensions import redis_client
+
             if redis_client:
                 yield from _stream_from_redis(redis_client, channel, finca_id)
             else:
@@ -229,15 +240,15 @@ class LiveAnalyticsStream(Resource):
                 while True:
                     try:
                         data = calculate_live_kpis(finca_id)
-                        yield f'data: {json.dumps(data)}\n\n'
+                        yield f"data: {json.dumps(data)}\n\n"
                         time.sleep(30)
                     except Exception as e:
-                        logger.error('Error en SSE stream: %s', e)
-                        yield f'data: {json.dumps({"error": str(e), "timestamp": datetime.now().isoformat()})}\n\n'
+                        logger.error("Error en SSE stream: %s", e)
+                        yield f"data: {json.dumps({'error': str(e), 'timestamp': datetime.now().isoformat()})}\n\n"
                         time.sleep(30)
 
         return flask.Response(
             flask.stream_with_context(generate_sse()),
-            mimetype='text/event-stream',
-            headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'},
+            mimetype="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
         )

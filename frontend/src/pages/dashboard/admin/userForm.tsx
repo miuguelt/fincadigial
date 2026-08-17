@@ -32,7 +32,7 @@ const UserForm = ({ isEdit, user, onSuccess }: UserFormProps) => {
     fullname: "",
     role: "Aprendiz",
     identification: 0,
-    password: "SENA2024",
+    password: "",
     email: "",
     phone: "",
     address: "",
@@ -47,7 +47,7 @@ const UserForm = ({ isEdit, user, onSuccess }: UserFormProps) => {
         fullname: "",
         role: "Aprendiz",
         identification: 0,
-        password: "SENA2024",
+        password: "",
         email: "",
         phone: "",
         address: "",
@@ -181,6 +181,24 @@ const UserForm = ({ isEdit, user, onSuccess }: UserFormProps) => {
                 placeholder="Ej: 3001234567"
               />
             </div>
+            {!isEdit && (
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium">
+                  Contraseña temporal *
+                </Label>
+                <Input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  autoComplete="new-password"
+                  className="w-full"
+                  placeholder="Define una contraseña temporal"
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="address" className="text-sm font-medium">
                 Dirección

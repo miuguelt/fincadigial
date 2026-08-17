@@ -16,7 +16,7 @@ export const courseBasics: Course = {
       title: 'Introducción al Manejo Bovino',
       duration: '15 min',
       content: `## Objetivo del Módulo
-      
+
 El manejo bovino es el conjunto de prácticas y técnicas que garantizan el bienestar, la productividad y la salud del ganado. Este curso está diseñado para que adquieras los conocimientos fundamentales necesarios para el cuidado diario del ganado.
 
 ### ¿Por qué es importante el buen manejo?

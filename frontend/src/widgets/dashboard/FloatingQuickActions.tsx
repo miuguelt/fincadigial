@@ -303,7 +303,7 @@ function mapAlertToActionId(alert: Alert): string {
   if (message.includes('agua') || message.includes('hidrat')) return 'water';
   if (message.includes('genet') || message.includes('cruce')) return 'genetics';
   if (message.includes('report') || message.includes('predic')) return 'reports';
-  
+
   return 'tasks';
 }
 
@@ -591,7 +591,7 @@ export const FloatingQuickActions: React.FC = () => {
         </motion.div>
 
         {totalBadgeCount > 0 && !isOpen && (
-          <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-black h-5 min-w-[20px] px-1 rounded-full flex items-center justify-center border-2 border-card shadow-sm animate-bounce">
+          <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[11px] font-black h-5 min-w-[20px] px-1 rounded-full flex items-center justify-center border-2 border-card shadow-sm animate-bounce">
             {totalBadgeCount > 99 ? '99+' : totalBadgeCount}
           </span>
         )}
@@ -638,12 +638,12 @@ const ActionGrid: React.FC<ActionGridProps> = ({
               Acceso Rápido
             </p>
             {totalBadgeCount > 0 && (
-              <span className="bg-rose-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+              <span className="bg-rose-500 text-white text-[11px] font-black px-2 py-0.5 rounded-full shadow-sm animate-pulse">
                 {totalBadgeCount} {totalBadgeCount === 1 ? 'pendiente' : 'pendientes'}
               </span>
             )}
           </div>
-          <p className="text-[10px] text-muted-foreground/70 mt-0.5">
+          <p className="text-[11px] text-muted-foreground/70 mt-0.5">
             Finca Digital · Campo sin señal
           </p>
         </div>
@@ -670,11 +670,11 @@ const ActionGrid: React.FC<ActionGridProps> = ({
             return (
               <div key={cat}>
                 <div className="flex items-center justify-between mb-2 px-0.5">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">
                     {CATEGORY_LABELS[cat] || cat}
                   </p>
                   {catBadgeTotal > 0 && (
-                    <span className="bg-rose-500/15 text-rose-600 dark:text-rose-400 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-rose-500/30 flex items-center gap-1">
+                    <span className="bg-rose-500/15 text-rose-600 dark:text-rose-400 text-[11px] font-extrabold px-2 py-0.5 rounded-full border border-rose-500/30 flex items-center gap-1">
                       <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
                       {catBadgeTotal} {catBadgeTotal === 1 ? 'notificación' : 'notificaciones'}
                     </span>
@@ -763,7 +763,7 @@ const Tile: React.FC<TileProps> = ({ action, badgeCount = 0, isExtraNotif = fals
     >
       {action.icon}
       {badgeCount > 0 && (
-        <span className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[10px] font-black h-5 min-w-[20px] px-1 rounded-full flex items-center justify-center border-2 border-card shadow-md animate-pulse z-10">
+        <span className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[11px] font-black h-5 min-w-[20px] px-1 rounded-full flex items-center justify-center border-2 border-card shadow-md animate-pulse z-10">
           {badgeCount > 99 ? '99+' : badgeCount}
         </span>
       )}
@@ -776,7 +776,7 @@ const Tile: React.FC<TileProps> = ({ action, badgeCount = 0, isExtraNotif = fals
           {action.label}
         </p>
         {badgeCount > 0 && (
-          <span className="bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0 shadow-sm animate-pulse">
+          <span className="bg-rose-500 text-white text-[11px] font-black px-1.5 py-0.5 rounded-full shrink-0 shadow-sm animate-pulse">
             {badgeCount} {action.id === 'chat' ? (badgeCount === 1 ? 'nuevo' : 'nuevos') : (badgeCount === 1 ? 'pendiente' : 'pendientes')}
           </span>
         )}
@@ -807,7 +807,7 @@ const EditPanel: React.FC<EditPanelProps> = ({
   maxFav,
 }) => {
   const count = favIds.length;
-  
+
   // Group catalog by category
   const grouped = catalog.reduce((acc, item) => {
     const cat = item.category || 'registro';
@@ -854,7 +854,7 @@ const EditPanel: React.FC<EditPanelProps> = ({
       <div className="space-y-4">
         {Object.entries(grouped).map(([cat, catItems]) => (
           <div key={cat}>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-2">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-2">
               {CATEGORY_LABELS[cat] || cat}
             </p>
             <div className="space-y-1.5">
@@ -887,7 +887,7 @@ const EditPanel: React.FC<EditPanelProps> = ({
                     >
                       {action.icon}
                       {badgeCount > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-extrabold h-4 min-w-[16px] px-0.5 rounded-full flex items-center justify-center border border-card shadow-sm animate-pulse z-10">
+                        <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[11px] font-extrabold h-4 min-w-[16px] px-0.5 rounded-full flex items-center justify-center border border-card shadow-sm animate-pulse z-10">
                           {badgeCount > 99 ? '99+' : badgeCount}
                         </span>
                       )}
@@ -905,7 +905,7 @@ const EditPanel: React.FC<EditPanelProps> = ({
                           {action.label}
                         </p>
                         {badgeCount > 0 && (
-                          <span className="bg-rose-500/20 text-rose-600 dark:text-rose-400 text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
+                          <span className="bg-rose-500/20 text-rose-600 dark:text-rose-400 text-[11px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
                             {badgeCount}
                           </span>
                         )}

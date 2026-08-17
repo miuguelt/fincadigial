@@ -52,7 +52,7 @@ export const useAnimalFields = () => {
             assignment_date: animalFieldData.assignment_date,
             removal_date: animalFieldData.removal_date,
           };
-          const updatedAnimalFieldData = await animalFieldsService.update(id, payload as Partial<AnimalFieldInput>); 
+          const updatedAnimalFieldData = await animalFieldsService.update(id, payload as Partial<AnimalFieldInput>);
           setAnimalFields((prev) => prev.map((animalField) => animalField.id === id ? mapAnimalFieldResponseToLocal(updatedAnimalFieldData as AnimalFieldResponse) : animalField));
         } catch (err) {
           setError('Error al actualizar el campo de animal');

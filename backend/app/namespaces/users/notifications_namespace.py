@@ -12,42 +12,46 @@ from app.utils.response_handler import APIResponse
 logger = logging.getLogger(__name__)
 
 user_notifications_ns = Namespace(
-    'user-notifications', description='🔔 Notificaciones del usuario autenticado'
+    "user-notifications", description="🔔 Notificaciones del usuario autenticado"
 )
 notifications_ns = Namespace(
-    'notifications', description='🔔 Acciones sobre notificaciones'
+    "notifications", description="🔔 Acciones sobre notificaciones"
 )
 
-action_model = notifications_ns.model('NotificationAction', {
-    'action': fields.String(
-        required=True, enum=['approve', 'reject', 'read'],
-        description='Acción a aplicar sobre la notificación'
-    ),
-})
+action_model = notifications_ns.model(
+    "NotificationAction",
+    {
+        "action": fields.String(
+            required=True,
+            enum=["approve", "reject", "read"],
+            description="Acción a aplicar sobre la notificación",
+        ),
+    },
+)
 
 
-@user_notifications_ns.route('/me/notifications')
+@user_notifications_ns.route("/me/notifications")
 class MyNotifications(Resource):
-    @user_notifications_ns.doc('list_my_notifications', security=['Bearer'])
+    @user_notifications_ns.doc("list_my_notifications", security=["Bearer"])
     @jwt_required()
     def get(self):
         user_id = int(get_jwt_identity())
-        status = flask.request.args.get('status')
+        status = flask.request.args.get("status")
         items = NotificationFeedService.list_for_user(user_id, status=status)
         return APIResponse.success(data=items)
 
 
-@notifications_ns.route('/<int:notification_id>')
+@notifications_ns.route("/<int:notification_id>")
 class NotificationAction(Resource):
-    @notifications_ns.doc('act_on_notification', security=['Bearer'])
+    @notifications_ns.doc("act_on_notification", security=["Bearer"])
     @notifications_ns.expect(action_model)
     @jwt_required()
     def patch(self, notification_id):
         user_id = int(get_jwt_identity())
         data = flask.request.get_json() or {}
-        action = data.get('action')
+        action = data.get("action")
         if not action:
-            return APIResponse.validation_error({'action': 'Requerido'})
+            return APIResponse.validation_error({"action": "Requerido"})
 
         item = NotificationFeedService.apply_action(notification_id, user_id, action)
         return APIResponse.success(data=item, message="Notificación actualizada")

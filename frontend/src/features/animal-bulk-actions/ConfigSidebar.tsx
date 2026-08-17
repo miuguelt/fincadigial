@@ -45,7 +45,7 @@ export const ConfigSidebar: React.FC<ConfigSidebarProps> = ({
         <div className="space-y-3">
           <div className="flex items-center gap-4">
             <Layers size={16} className="text-indigo-400/60" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-300/50">
+            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-indigo-300/50">
               Formato Papel
             </span>
           </div>
@@ -57,7 +57,7 @@ export const ConfigSidebar: React.FC<ConfigSidebarProps> = ({
                 size="sm"
                 onClick={() => onPaperFormatChange(format.value)}
                 className={cn(
-                  "flex-1 h-10 rounded-xl text-[10px] font-black uppercase tracking-widest",
+                  "flex-1 h-10 rounded-xl text-[11px] font-black uppercase tracking-widest",
                   paperFormat === format.value
                     ? "bg-indigo-500 text-black border-indigo-500"
                     : "bg-card border-white/10 text-indigo-300/50 hover:text-white"
@@ -72,7 +72,7 @@ export const ConfigSidebar: React.FC<ConfigSidebarProps> = ({
         <div className="space-y-3">
           <div className="flex items-center gap-4">
             <Fingerprint size={16} className="text-emerald-400/60" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-300/50">
+            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-indigo-300/50">
               Definición QR
             </span>
           </div>
@@ -84,7 +84,7 @@ export const ConfigSidebar: React.FC<ConfigSidebarProps> = ({
                 size="sm"
                 onClick={() => onQrDefinitionChange(def.value)}
                 className={cn(
-                  "flex-1 h-10 rounded-xl text-[10px] font-black uppercase tracking-widest",
+                  "flex-1 h-10 rounded-xl text-[11px] font-black uppercase tracking-widest",
                   qrDefinition === def.value
                     ? "bg-emerald-500 text-black border-emerald-500"
                     : "bg-card border-white/10 text-indigo-300/50 hover:text-white"

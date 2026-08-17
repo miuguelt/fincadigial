@@ -22,8 +22,12 @@ class TreatmentRecommendationSchedule:
             payload.get("start_date", getattr(current, "start_date", None)),
             "start_date",
         )
-        end_raw = payload.get("estimated_end_date", getattr(current, "estimated_end_date", None))
-        duration_raw = payload.get("duration_days", getattr(current, "duration_days", None))
+        end_raw = payload.get(
+            "estimated_end_date", getattr(current, "estimated_end_date", None)
+        )
+        duration_raw = payload.get(
+            "duration_days", getattr(current, "duration_days", None)
+        )
         end = cls.parse_date(end_raw, "estimated_end_date") if end_raw else None
         try:
             duration = int(duration_raw) if duration_raw is not None else None
@@ -34,7 +38,9 @@ class TreatmentRecommendationSchedule:
         if duration is None and end is not None:
             duration = (end - start).days + 1
         if end is None or duration is None:
-            raise ValidationError("Indica la duración o la fecha estimada de finalización")
+            raise ValidationError(
+                "Indica la duración o la fecha estimada de finalización"
+            )
         if duration != (end - start).days + 1:
             raise ValidationError("La duración debe coincidir con las fechas indicadas")
         interval_raw = payload.get(
@@ -44,7 +50,9 @@ class TreatmentRecommendationSchedule:
         try:
             interval = int(interval_raw) if interval_raw is not None else None
         except (TypeError, ValueError) as exc:
-            raise ValidationError("El intervalo de control debe ser un número entero") from exc
+            raise ValidationError(
+                "El intervalo de control debe ser un número entero"
+            ) from exc
         if interval is None:
             raise ValidationError("El intervalo de control es obligatorio")
         payload.update(
@@ -70,7 +78,9 @@ class TreatmentRecommendationSchedule:
 
     @staticmethod
     def scheduled_dates(recommendation: TreatmentRecommendations) -> list[date]:
-        current = recommendation.start_date + timedelta(days=recommendation.control_interval_days)
+        current = recommendation.start_date + timedelta(
+            days=recommendation.control_interval_days
+        )
         dates: list[date] = []
         while current <= recommendation.estimated_end_date:
             dates.append(current)
@@ -85,7 +95,9 @@ class TreatmentRecommendationSchedule:
         all_controls = TreatmentRecommendationControls.query.filter_by(
             treatment_recommendation_id=recommendation.id,
         ).all()
-        active_controls = [control for control in all_controls if not control.is_deleted]
+        active_controls = [
+            control for control in all_controls if not control.is_deleted
+        ]
         controls_by_date = {control.scheduled_date: control for control in all_controls}
         for control in active_controls:
             if not control.completed and control.scheduled_date not in expected_dates:

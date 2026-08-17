@@ -1,15 +1,15 @@
 import { ReactNode } from 'react';
 
-export type CRUDFieldType = 
-  | 'text' 
-  | 'number' 
-  | 'email' 
-  | 'date' 
+export type CRUDFieldType =
+  | 'text'
+  | 'number'
+  | 'email'
+  | 'date'
   | 'datetime-local'
   | 'tel'
-  | 'select' 
-  | 'textarea' 
-  | 'checkbox' 
+  | 'select'
+  | 'textarea'
+  | 'checkbox'
   | 'searchable-select'
   | 'multiselect';
 
@@ -96,6 +96,8 @@ export interface CRUDConfig<T = any, TInput = any> {
   enableCreateModal?: boolean;
   enableEditModal?: boolean;
   enableDelete?: boolean;
+  /** Consulta el endpoint genérico de dependencias antes de eliminar. */
+  checkDependencies?: boolean;
   customHeader?: ReactNode;
   customToolbar?: ReactNode;
   customActions?: (
@@ -146,4 +148,3 @@ export interface CRUDConfig<T = any, TInput = any> {
     render: (item: T, handlers?: any) => React.ReactNode;
   }>;
 }
-

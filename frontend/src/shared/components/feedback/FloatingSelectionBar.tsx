@@ -16,7 +16,7 @@ interface FloatingSelectionBarProps {
 
 /**
  * FloatingSelectionBar
- * 
+ *
  * Un dock flotante premium "Crystal" que aparece cuando se seleccionan elementos.
  * Proporciona acciones masivas con una estética de alta fidelidad.
  */
@@ -52,7 +52,7 @@ export const FloatingSelectionBar: React.FC<FloatingSelectionBarProps> = ({
             </div>
             <div className="hidden xs:block">
               <p className="text-sm font-black tracking-tight leading-none">{count} {entityLabel}</p>
-              <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest mt-1">Seleccionados</p>
+              <p className="text-[11px] font-bold text-white/50 uppercase tracking-widest mt-1">Seleccionados</p>
             </div>
           </div>
 
@@ -69,7 +69,7 @@ export const FloatingSelectionBar: React.FC<FloatingSelectionBarProps> = ({
                 <span className="hidden md:inline">Editar</span>
               </Button>
             )}
-            
+
             {onExport && (
               <Button
                 variant="ghost"

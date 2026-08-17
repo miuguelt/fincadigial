@@ -26,6 +26,7 @@ def _get_predictive_param(key: str) -> float | None:
             pass
     return None
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -41,21 +42,27 @@ class PredictiveEngineService:
         Escanea todos los animales de una finca y genera alertas predictivas
         usando reglas predefinidas en la tabla `system_contents`.
         """
-        animals = Animals.query.filter_by(finca_id=finca_id, status=AnimalStatus.Vivo).all()
+        animals = Animals.query.filter_by(
+            finca_id=finca_id, status=AnimalStatus.Vivo
+        ).all()
         if not animals:
-            return {"status": "success", "alerts_created": 0, "message": "No hay animales activos para analizar."}
+            return {
+                "status": "success",
+                "alerts_created": 0,
+                "message": "No hay animales activos para analizar.",
+            }
 
         animal_ids = [animal.id for animal in animals]
         alerts_created = 0
         alerts_updated = 0
 
         content_keys = {
-            'param.predictive.weight_loss_pct',
-            'param.predictive.control_overdue_days',
-            'param.predictive.adg_low',
-            'recommendation.weight_loss_critical',
-            'recommendation.control_overdue',
-            'recommendation.slow_growth',
+            "param.predictive.weight_loss_pct",
+            "param.predictive.control_overdue_days",
+            "param.predictive.adg_low",
+            "recommendation.weight_loss_critical",
+            "recommendation.control_overdue",
+            "recommendation.slow_growth",
         }
         content_rows = SystemContent.query.filter(
             SystemContent.key.in_(content_keys),
@@ -66,49 +73,58 @@ class PredictiveEngineService:
 
         def numeric_param(key):
             try:
-                return float(content[f'param.predictive.{key}'])
+                return float(content[f"param.predictive.{key}"])
             except (KeyError, TypeError, ValueError):
                 return None
 
         params = {
-            'weight_loss_pct': numeric_param('weight_loss_pct'),
-            'control_overdue_days': numeric_param('control_overdue_days'),
-            'adg_low': numeric_param('adg_low'),
+            "weight_loss_pct": numeric_param("weight_loss_pct"),
+            "control_overdue_days": numeric_param("control_overdue_days"),
+            "adg_low": numeric_param("adg_low"),
         }
 
-        ranked_controls = db.session.query(
-            Control.id.label('control_id'),
-            func.row_number().over(
-                partition_by=Control.animal_id,
-                order_by=(Control.checkup_date.desc(), Control.id.desc()),
-            ).label('position'),
-        ).filter(Control.animal_id.in_(animal_ids)).subquery()
+        ranked_controls = (
+            db.session.query(
+                Control.id.label("control_id"),
+                func.row_number()
+                .over(
+                    partition_by=Control.animal_id,
+                    order_by=(Control.checkup_date.desc(), Control.id.desc()),
+                )
+                .label("position"),
+            )
+            .filter(Control.animal_id.in_(animal_ids))
+            .subquery()
+        )
 
-        controls = db.session.query(Control).options(
-            noload(Control.animals)
-        ).join(
-            ranked_controls,
-            Control.id == ranked_controls.c.control_id,
-        ).filter(
-            ranked_controls.c.position <= 3
-        ).order_by(
-            Control.animal_id,
-            Control.checkup_date.desc(),
-            Control.id.desc(),
-        ).all()
+        controls = (
+            db.session.query(Control)
+            .options(noload(Control.animals))
+            .join(
+                ranked_controls,
+                Control.id == ranked_controls.c.control_id,
+            )
+            .filter(ranked_controls.c.position <= 3)
+            .order_by(
+                Control.animal_id,
+                Control.checkup_date.desc(),
+                Control.id.desc(),
+            )
+            .all()
+        )
 
         controls_by_animal = defaultdict(list)
         for control in controls:
             controls_by_animal[control.animal_id].append(control)
 
         def category_for_message(message):
-            normalized = (message or '').lower()
-            if 'caída de peso' in normalized:
-                return 'weight_loss'
-            if 'sin control veterinario' in normalized:
-                return 'control_overdue'
-            if 'crecimiento lento' in normalized:
-                return 'slow_growth'
+            normalized = (message or "").lower()
+            if "caída de peso" in normalized:
+                return "weight_loss"
+            if "sin control veterinario" in normalized:
+                return "control_overdue"
+            if "crecimiento lento" in normalized:
+                return "slow_growth"
             return None
 
         existing_alerts = AnimalAlert.query.filter(
@@ -178,44 +194,51 @@ class PredictiveEngineService:
                 weight_loss_pct = (w_prev - w_actual) / w_prev * 100
 
                 # Regla 1: Caída de peso >10%
-                wl_threshold = params['weight_loss_pct']
+                wl_threshold = params["weight_loss_pct"]
                 if wl_threshold is not None and weight_loss_pct > wl_threshold:
                     upsert_alert(
                         animal,
-                        'weight_loss',
+                        "weight_loss",
                         f"⚠️ Caída de peso detectada: -{weight_loss_pct:.1f}% ({w_prev}→{w_actual} kg). Evaluar estado de salud y nutrición.",
-                        content.get('recommendation.weight_loss_critical'),
+                        content.get("recommendation.weight_loss_critical"),
                         AlertPriority.HIGH,
                     )
 
                 # Regla 2: Animal sin control reciente (>90 días)
                 last_ctrl = recent_controls[0]
                 days_since = (datetime.now(UTC).date() - last_ctrl.checkup_date).days
-                ctrl_days = params['control_overdue_days']
-                if ctrl_days is not None and days_since > ctrl_days and animal.age_in_months and animal.age_in_months >= 6:
+                ctrl_days = params["control_overdue_days"]
+                if (
+                    ctrl_days is not None
+                    and days_since > ctrl_days
+                    and animal.age_in_months
+                    and animal.age_in_months >= 6
+                ):
                     upsert_alert(
                         animal,
-                        'control_overdue',
+                        "control_overdue",
                         f"📊 Sin control veterinario hace {days_since} días. Programar revisión completa.",
-                        content.get('recommendation.control_overdue'),
+                        content.get("recommendation.control_overdue"),
                         AlertPriority.MEDIUM,
                     )
 
                 # Regla 3: ADG bajo sostenido
                 if len(recent_controls) >= 3:
-                    dates = [c.checkup_date for c in reversed(recent_controls) if c.weight]
+                    dates = [
+                        c.checkup_date for c in reversed(recent_controls) if c.weight
+                    ]
                     weights = [c.weight for c in reversed(recent_controls) if c.weight]
                     if len(dates) >= 3 and len(weights) >= 3:
                         total_days = (dates[-1] - dates[0]).days
                         if total_days > 0:
                             adg = (weights[-1] - weights[0]) / total_days
-                            adg_threshold = params['adg_low']
+                            adg_threshold = params["adg_low"]
                             if adg_threshold is not None and adg < adg_threshold:
                                 upsert_alert(
                                     animal,
-                                    'slow_growth',
+                                    "slow_growth",
                                     f"📉 Crecimiento lento: ADG {adg:.3f} kg/día en {total_days} días de observación.",
-                                    content.get('recommendation.slow_growth'),
+                                    content.get("recommendation.slow_growth"),
                                     AlertPriority.MEDIUM,
                                 )
 
@@ -232,31 +255,37 @@ class PredictiveEngineService:
         )
 
         heat_alerts = PredictiveEngineService.predict_heat_cycles(finca_id)
-        alerts_created += heat_alerts.get('alerts_created', 0)
-        alerts_updated += heat_alerts.get('alerts_updated', 0)
+        alerts_created += heat_alerts.get("alerts_created", 0)
+        alerts_updated += heat_alerts.get("alerts_updated", 0)
 
         return {
             "status": "success",
             "alerts_created": alerts_created,
             "alerts_updated": alerts_updated,
-            "total_analyzed": len(animals)
+            "total_analyzed": len(animals),
         }
 
     @staticmethod
     def predict_heat_cycles(finca_id):
-        from app.models.reproduction import ReproductiveEvent, EventType, DiagnosisResult
+        from app.models.reproduction import (
+            ReproductiveEvent,
+            EventType,
+            DiagnosisResult,
+        )
         from app.models.animals import Sex
 
         cows_query = Animals.query.filter_by(
-            finca_id=finca_id,
-            status=AnimalStatus.Vivo,
-            sex=Sex.Hembra
+            finca_id=finca_id, status=AnimalStatus.Vivo, sex=Sex.Hembra
         ).all()
 
-        heat_age_param = _get_predictive_param('heat_detection_age_months')
+        heat_age_param = _get_predictive_param("heat_detection_age_months")
         if heat_age_param is not None:
             heat_age = int(heat_age_param)
-            cows = [c for c in cows_query if c.age_in_months is not None and c.age_in_months >= heat_age]
+            cows = [
+                c
+                for c in cows_query
+                if c.age_in_months is not None and c.age_in_months >= heat_age
+            ]
         else:
             cows = cows_query
 
@@ -268,32 +297,53 @@ class PredictiveEngineService:
         today = datetime.now(UTC).date()
         cow_ids = [cow.id for cow in cows]
         heat_window_start_param = _get_predictive_param("heat_window_start")
-        recommendation = SystemContent.get_by_key('recommendation.heat_cycle')
+        recommendation = SystemContent.get_by_key("recommendation.heat_cycle")
 
-        ranked_events = db.session.query(
-            ReproductiveEvent.id.label('event_id'),
-            func.row_number().over(
-                partition_by=ReproductiveEvent.animal_id,
-                order_by=(ReproductiveEvent.event_date.desc(), ReproductiveEvent.id.desc()),
-            ).label('position'),
-        ).filter(
-            ReproductiveEvent.animal_id.in_(cow_ids),
-            ReproductiveEvent.event_type.in_([EventType.Celo, EventType.Inseminacion]),
-        ).subquery()
-        latest_events = db.session.query(ReproductiveEvent).join(
-            ranked_events,
-            ReproductiveEvent.id == ranked_events.c.event_id,
-        ).filter(ranked_events.c.position == 1).all()
+        ranked_events = (
+            db.session.query(
+                ReproductiveEvent.id.label("event_id"),
+                func.row_number()
+                .over(
+                    partition_by=ReproductiveEvent.animal_id,
+                    order_by=(
+                        ReproductiveEvent.event_date.desc(),
+                        ReproductiveEvent.id.desc(),
+                    ),
+                )
+                .label("position"),
+            )
+            .filter(
+                ReproductiveEvent.animal_id.in_(cow_ids),
+                ReproductiveEvent.event_type.in_(
+                    [EventType.Celo, EventType.Inseminacion]
+                ),
+            )
+            .subquery()
+        )
+        latest_events = (
+            db.session.query(ReproductiveEvent)
+            .join(
+                ranked_events,
+                ReproductiveEvent.id == ranked_events.c.event_id,
+            )
+            .filter(ranked_events.c.position == 1)
+            .all()
+        )
         latest_by_animal = {event.animal_id: event for event in latest_events}
 
-        positive_diagnoses = dict(db.session.query(
-            ReproductiveEvent.animal_id,
-            func.max(ReproductiveEvent.event_date),
-        ).filter(
-            ReproductiveEvent.animal_id.in_(cow_ids),
-            ReproductiveEvent.event_type == EventType.Diagnostico,
-            ReproductiveEvent.diagnosis_result == DiagnosisResult.Positivo,
-        ).group_by(ReproductiveEvent.animal_id).all())
+        positive_diagnoses = dict(
+            db.session.query(
+                ReproductiveEvent.animal_id,
+                func.max(ReproductiveEvent.event_date),
+            )
+            .filter(
+                ReproductiveEvent.animal_id.in_(cow_ids),
+                ReproductiveEvent.event_type == EventType.Diagnostico,
+                ReproductiveEvent.diagnosis_result == DiagnosisResult.Positivo,
+            )
+            .group_by(ReproductiveEvent.animal_id)
+            .all()
+        )
 
         existing_alerts = AnimalAlert.query.filter(
             AnimalAlert.finca_id == finca_id,
@@ -301,7 +351,7 @@ class PredictiveEngineService:
             AnimalAlert.alert_type == AlertType.REPRODUCTION,
             AnimalAlert.is_read.is_(False),
             AnimalAlert.superseded_by_id.is_(None),
-            AnimalAlert.message.ilike('%celo probable%'),
+            AnimalAlert.message.ilike("%celo probable%"),
         ).all()
         existing_by_animal = {alert.animal_id: alert for alert in existing_alerts}
 
@@ -316,15 +366,23 @@ class PredictiveEngineService:
                 days_since = (today - last_event.event_date).days
                 cycle_day = days_since % 21
 
-                if heat_window_start_param is not None and (int(heat_window_start_param) <= cycle_day <= 21 or cycle_day == 0):
-                    next_heat = today + timedelta(days=(21 - cycle_day) if cycle_day != 0 else 0)
-                    message = f"🔔 Celo probable para el {next_heat.strftime('%d/%m/%Y')}."
+                if heat_window_start_param is not None and (
+                    int(heat_window_start_param) <= cycle_day <= 21 or cycle_day == 0
+                ):
+                    next_heat = today + timedelta(
+                        days=(21 - cycle_day) if cycle_day != 0 else 0
+                    )
+                    message = (
+                        f"🔔 Celo probable para el {next_heat.strftime('%d/%m/%Y')}."
+                    )
                     existing = existing_by_animal.get(cow.id)
 
                     if existing:
                         if existing.message != message:
                             existing.message = message
-                            existing.recommendation = recommendation.content if recommendation else None
+                            existing.recommendation = (
+                                recommendation.content if recommendation else None
+                            )
                             existing.triggered_at = datetime.now(UTC)
                             alerts_updated += 1
                     else:
@@ -333,7 +391,9 @@ class PredictiveEngineService:
                             finca_id=finca_id,
                             alert_type=AlertType.REPRODUCTION,
                             message=message,
-                            recommendation=recommendation.content if recommendation else None,
+                            recommendation=recommendation.content
+                            if recommendation
+                            else None,
                             priority=AlertPriority.HIGH,
                             is_read=False,
                             triggered_at=datetime.now(UTC),
@@ -342,7 +402,7 @@ class PredictiveEngineService:
                                 animal_id=cow.id,
                                 alert_type=AlertType.REPRODUCTION,
                                 message=message,
-                                category='heat_cycle',
+                                category="heat_cycle",
                             ),
                         )
                         db.session.add(alert)
@@ -358,7 +418,7 @@ class PredictiveEngineService:
         from app.models.livestock_summary import LivestockSummary
 
         summary = LivestockSummary.get_for_finca(finca_id)
-        entry = SystemContent.get_by_key('insight.executive_summary', finca_id=finca_id)
+        entry = SystemContent.get_by_key("insight.executive_summary", finca_id=finca_id)
 
         if entry:
             base = entry.content
@@ -367,7 +427,11 @@ class PredictiveEngineService:
 
         detail_parts = []
         if summary:
-            detail_parts.append(f"Total animales: {summary.total_animals}" if hasattr(summary, 'total_animals') else "")
+            detail_parts.append(
+                f"Total animales: {summary.total_animals}"
+                if hasattr(summary, "total_animals")
+                else ""
+            )
 
         detail = " | ".join(filter(None, detail_parts))
-        return f"{base}\n{detail}" if detail and base else (base or detail or '')
+        return f"{base}\n{detail}" if detail and base else (base or detail or "")

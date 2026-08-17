@@ -1,6 +1,6 @@
 {
   "base_url": "http://127.0.0.1:8081/api/v1",
-  "frontend_dir": "C:\\Users\\Miguel\\Documents\\Flask Projects\\Front_finca",
+  "frontend_dir": "C:\\Users\\Miguel\\Documents\\Aplicaciones\\_projects\\villaluz\\frontend",
   "swagger_endpoint_count": 250,
   "frontend_service_call_count": 113,
   "swagger_endpoints_unused_by_frontend": 137,

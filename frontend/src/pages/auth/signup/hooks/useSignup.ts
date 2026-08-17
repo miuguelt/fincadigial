@@ -50,9 +50,9 @@ export const useSignup = () => {
       identification: 'identification_number',
       identification_number: 'identification_number',
       address: 'address',
-      ['password']: 'password',
-      ['confirm_password']: 'confirmPassword',
-      ['confirmPassword']: 'confirmPassword',
+      password: 'password',
+      confirm_password: 'confirmPassword',
+      confirmPassword: 'confirmPassword',
     };
     return m[field];
   };
@@ -69,8 +69,8 @@ export const useSignup = () => {
       phone: 'phone',
       identification: 'identification_number',
       identification_number: 'identification_number',
-      ['password']: 'password',
-      ['confirmPassword']: 'confirmPassword',
+      password: 'password',
+      confirmPassword: 'confirmPassword',
       address: 'address',
     };
 
@@ -127,15 +127,15 @@ export const useSignup = () => {
 
     const unmetPasswordRules = PASSWORD_RULES.filter((rule) => !rule.test(data.password));
     if (!data.password) {
-      newErrors['password'] = 'La contraseña es obligatoria';
+      newErrors.password = 'La contraseña es obligatoria';
     } else if (unmetPasswordRules.length) {
-      newErrors['password'] = `La contraseña debe cumplir: ${unmetPasswordRules.map((rule) => rule.label.toLowerCase()).join(', ')}`;
+      newErrors.password = `La contraseña debe cumplir: ${unmetPasswordRules.map((rule) => rule.label.toLowerCase()).join(', ')}`;
     }
 
     if (!data.confirmPassword) {
-      newErrors['confirmPassword'] = 'La confirmación de contraseña es obligatoria';
+      newErrors.confirmPassword = 'La confirmación de contraseña es obligatoria';
     } else if (data.password !== data.confirmPassword) {
-      newErrors['confirmPassword'] = 'Las contraseñas no coinciden';
+      newErrors.confirmPassword = 'Las contraseñas no coinciden';
     }
 
     return newErrors;
@@ -145,7 +145,7 @@ export const useSignup = () => {
     () => PASSWORD_RULES.map((rule) => ({ ...rule, valid: rule.test(formData.password) })),
     [formData.password]
   );
-  
+
   const validationSnapshot = useMemo(() => buildValidationErrors(formData), [formData]);
   const isFormValid = Object.keys(validationSnapshot).length === 0;
   const hasInteracted = submitAttempted || Object.keys(touched).length > 0;
@@ -171,8 +171,8 @@ export const useSignup = () => {
       email: 'Correo electrónico',
       phone: 'Teléfono',
       identification_number: 'Número de identificación',
-      ['password']: 'Contraseña',
-      ['confirmPassword']: 'Confirmar contraseña',
+      password: 'Contraseña',
+      confirmPassword: 'Confirmar contraseña',
     };
 
     return (Object.entries(validationSnapshot) as Array<[keyof FormErrors, string | undefined]>)
@@ -319,4 +319,3 @@ export const useSignup = () => {
     getFieldError,
   };
 };
-

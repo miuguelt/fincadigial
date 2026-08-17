@@ -225,7 +225,7 @@ El script mostrará:
 # 1. Login para obtener token
 curl -X POST http://localhost:5000/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username": "admin", "password": "admin123"}'
+  -d '{"username": "admin", "password": "<ADMIN_PASSWORD>"}'
 
 # 2. Usar el token obtenido
 curl -X GET http://localhost:5000/api/v1/analytics/dashboard/complete \
@@ -466,7 +466,7 @@ Si tienes preguntas o encuentras algún problema:
 
 ## 📄 Licencia
 
-Este código es parte del proyecto BackFinca y está sujeto a la licencia del proyecto.
+Este código es parte del proyecto VillaLuz y está sujeto a la licencia del proyecto.
 
 ---
 

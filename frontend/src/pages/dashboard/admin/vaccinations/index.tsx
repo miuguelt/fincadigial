@@ -258,5 +258,3 @@ function AdminVaccinationsPage() {
 }
 
 export default AdminVaccinationsPage;
-
-

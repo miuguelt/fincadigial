@@ -13,9 +13,9 @@ def build_relations_from_instance(instance):
     try:
         for col in instance.__table__.columns:
             name = col.name
-            if name == 'id':
+            if name == "id":
                 continue
-            if name.endswith('_id') or name in ('animal_id', 'user_id'):
+            if name.endswith("_id") or name in ("animal_id", "user_id"):
                 value = getattr(instance, name, None)
                 if value is not None:
                     relations[name] = value
@@ -40,17 +40,18 @@ def log_activity_event(
     entity_id=None,
     title=None,
     description=None,
-    severity='info',
+    severity="info",
     relations=None,
     actor_id=None,
     animal_id=None,
 ):
-    if not entity or entity in ('activity_log', 'activitylog', 'ActivityLog'):
+    if not entity or entity in ("activity_log", "activitylog", "ActivityLog"):
         return
 
     if actor_id is None:
         try:
             from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
+
             verify_jwt_in_request(optional=True)
             actor_id = get_jwt_identity()
         except Exception:
@@ -58,7 +59,7 @@ def log_activity_event(
 
     actor_id = _safe_actor_id(actor_id)
     if animal_id is None and relations:
-        animal_id = relations.get('animal_id')
+        animal_id = relations.get("animal_id")
 
     try:
         log_entry = ActivityLog(
@@ -143,7 +144,9 @@ def log_activity_event(
                         )
                     )
         except Exception as agg_exc:
-            logger.debug("No se pudo actualizar activity_daily_agg: %s", agg_exc, exc_info=True)
+            logger.debug(
+                "No se pudo actualizar activity_daily_agg: %s", agg_exc, exc_info=True
+            )
 
         db.session.commit()
     except Exception as exc:

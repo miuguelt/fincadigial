@@ -122,7 +122,7 @@ export default function OperarioDashboard() {
             y registra las novedades del día.
           </p>
         </div>
-        
+
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           {/* Estado de conexión */}
           <Badge className={`${getStatusBadgeClass(isOnline ? 'success' : 'danger')} px-3 py-1.5 shadow-sm`}>
@@ -132,7 +132,7 @@ export default function OperarioDashboard() {
               <><IconWifiOff size="sm" className="mr-1" /> Sin conexión</>
             )}
           </Badge>
-          
+
           {/* Operaciones pendientes */}
           {totalOperations > 0 && (
             <Badge className={getStatusBadgeClass('warning')}>
@@ -195,7 +195,7 @@ export default function OperarioDashboard() {
                       Modo sin conexión activo
                     </h4>
                     <p className="text-sm text-warning-foreground mt-1">
-                      Tus registros se guardarán localmente y se sincronizarán 
+                      Tus registros se guardarán localmente y se sincronizarán
                       automáticamente cuando recuperes conexión.
                     </p>
                     {totalOperations > 0 && (
@@ -264,13 +264,13 @@ export default function OperarioDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
-      
+
       {/* Modales Operativos Reutilizados */}
       <TransferModal open={activeModal === 'transfer'} onClose={closeModal} form={transferForm} setForm={setTransferForm} animals={animals} fields={fields} saving={savingForm} onSubmit={handleTransferSubmit} />
       <DiseaseModal open={activeModal === 'disease'} onClose={closeModal} form={diseaseForm} setForm={setDiseaseForm} animals={animals} diseases={diseases} saving={savingForm} onSubmit={handleDiseaseSubmit} />
       <TreatmentModal open={activeModal === 'treatment'} onClose={closeModal} form={treatmentForm} setForm={setTreatmentForm} animals={animals} medications={medications} saving={savingForm} onSubmit={handleTreatmentSubmit} />
       <ControlModal open={activeModal === 'control'} onClose={closeModal} form={controlForm} setForm={setControlForm} animals={animals} saving={savingForm} onSubmit={handleControlSubmit} />
-      
+
       </div>
     </div>
   );

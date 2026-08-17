@@ -208,7 +208,7 @@ export function AIInsightsWidget() {
             <div className="flex items-center gap-2 flex-wrap">
               <Badge
                 variant="default"
-                className="text-[10px] gap-1 bg-primary/80"
+                className="text-[11px] gap-1 bg-primary/80"
               >
                 <IconRobot size="sm" />
                 {data.model}
@@ -217,7 +217,7 @@ export function AIInsightsWidget() {
               {data.cached && (
                 <Badge
                   variant="outline"
-                  className="text-[10px] gap-1 text-emerald-600 border-emerald-300"
+                  className="text-[11px] gap-1 text-emerald-600 border-emerald-300"
                 >
                   <IconBolt size="sm" />
                   Cacheado
@@ -225,7 +225,7 @@ export function AIInsightsWidget() {
               )}
 
               {data.usage?.output_tokens && (
-                <span className="text-[10px] text-muted-foreground ml-auto">
+                <span className="text-[11px] text-muted-foreground ml-auto">
                   {data.usage.output_tokens} tokens
                 </span>
               )}

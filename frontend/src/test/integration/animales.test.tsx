@@ -85,7 +85,7 @@ describe('Módulo Animales — Integración', () => {
     // Resetear completamente las caches en memoria de BaseService singleton
     await animalsService.clearCache();
     await breedsService.clearCache();
-    
+
     // Desactivar caché por completo durante los tests de integración para evitar colisiones asíncronas
     (animalsService as any).options.enableCache = false;
     (breedsService as any).options.enableCache = false;
@@ -118,7 +118,7 @@ describe('Módulo Animales — Integración', () => {
 
   it('carga y muestra la lista de animales', async () => {
     render(<AdminAnimalsPage />, { wrapper: AppProviders })
-    
+
     // Esperar a que se carguen los datos
     await screen.findByText('COL-001', {}, { timeout: 4000 })
     await screen.findByText('COL-002', {}, { timeout: 4000 })
@@ -129,7 +129,7 @@ describe('Módulo Animales — Integración', () => {
 
   it('abre el modal de creación al hacer clic en Nuevo', async () => {
     render(<AdminAnimalsPage />, { wrapper: AppProviders })
-    
+
     // Esperar a que carguen los datos
     await screen.findByText('COL-001', {}, { timeout: 4000 })
 
@@ -139,7 +139,7 @@ describe('Módulo Animales — Integración', () => {
 
     // Esperar y verificar que el modal con el título "Crear Animal" se abre
     await screen.findByText('Crear Animal', {}, { timeout: 4000 })
-    
+
     // Usar ID único para evitar colisiones de etiquetas con cabeceras de tabla en JSDOM
     const recordInput = document.getElementById('record')
     expect(recordInput).toBeInTheDocument()
@@ -153,7 +153,7 @@ describe('Módulo Animales — Integración', () => {
     )
 
     render(<AdminAnimalsPage />, { wrapper: AppProviders })
-    
+
     // Esperar a que se muestre el contenedor de Error
     await screen.findByText('Error de Sistema', {}, { timeout: 4000 })
     expect(screen.getByText(/status code 500/i)).toBeInTheDocument()

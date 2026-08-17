@@ -73,7 +73,7 @@ const ActionItem: React.FC<ActionItemProps> = ({
         hoverColor
       )}
     />
-    <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.18em] mt-1.5 whitespace-nowrap text-white/70 group-hover:text-white transition-all duration-700 relative z-10">
+    <span className="text-[11px] sm:text-[11px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.18em] mt-1.5 whitespace-nowrap text-white/70 group-hover:text-white transition-all duration-700 relative z-10">
       {label}
     </span>
   </button>
@@ -137,7 +137,7 @@ export const BatchActionToolbar: React.FC<BatchActionToolbarProps> = ({
               <span className="text-[11px] font-bold uppercase tracking-[0.2em] leading-none text-white/90">
                 Sujetos
               </span>
-              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-emerald-400 leading-none mt-1.5 flex items-center gap-1.5">
+              <span className="text-[11px] font-black uppercase tracking-[0.3em] text-emerald-400 leading-none mt-1.5 flex items-center gap-1.5">
                 <div className="h-1.5 w-1.5 rounded-[var(--radius-full)] bg-emerald-400 animate-pulse" />
                 Lote Activo
               </span>

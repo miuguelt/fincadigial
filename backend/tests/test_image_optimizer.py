@@ -8,6 +8,7 @@ from app.utils.image_optimizer import (
     is_valid_image,
 )
 
+
 @pytest.fixture
 def dummy_image_bytes():
     # Crear una imagen RGB simple en memoria
@@ -15,6 +16,7 @@ def dummy_image_bytes():
     buf = io.BytesIO()
     img.save(buf, format="JPEG")
     return buf.getvalue()
+
 
 @pytest.fixture
 def dummy_png_rgba_bytes():
@@ -24,6 +26,7 @@ def dummy_png_rgba_bytes():
     img.save(buf, format="PNG")
     return buf.getvalue()
 
+
 @pytest.fixture
 def dummy_large_image_bytes():
     # Crear una imagen grande en memoria
@@ -31,6 +34,7 @@ def dummy_large_image_bytes():
     buf = io.BytesIO()
     img.save(buf, format="JPEG")
     return buf.getvalue()
+
 
 @pytest.mark.unit
 class TestImageOptimizer:
@@ -50,13 +54,15 @@ class TestImageOptimizer:
         assert len(webp_bytes) > 0
         img = Image.open(io.BytesIO(webp_bytes))
         assert img.format == "WEBP"
-        assert img.mode == "RGB" # Convertido a RGB
+        assert img.mode == "RGB"  # Convertido a RGB
 
     def test_optimize_image_to_webp_with_thumbnail(self, dummy_image_bytes):
-        webp_bytes, thumb_bytes = optimize_image_to_webp(dummy_image_bytes, generate_thumb=True)
+        webp_bytes, thumb_bytes = optimize_image_to_webp(
+            dummy_image_bytes, generate_thumb=True
+        )
         assert webp_bytes is not None
         assert thumb_bytes is not None
-        
+
         # Verificar miniatura
         thumb_img = Image.open(io.BytesIO(thumb_bytes))
         assert thumb_img.format == "WEBP"
@@ -64,9 +70,11 @@ class TestImageOptimizer:
         assert thumb_img.size[1] <= 320
 
     def test_optimize_image_to_webp_resize_large(self, dummy_large_image_bytes):
-        webp_bytes, thumb_bytes = optimize_image_to_webp(dummy_large_image_bytes, max_dimension=1000)
+        webp_bytes, thumb_bytes = optimize_image_to_webp(
+            dummy_large_image_bytes, max_dimension=1000
+        )
         assert webp_bytes is not None
-        
+
         img = Image.open(io.BytesIO(webp_bytes))
         assert max(img.size) == 1000
 
@@ -93,10 +101,10 @@ class TestImageOptimizer:
 
         # Optimizar en disco
         webp_path = optimize_file_on_disk(img_path)
-        
+
         assert webp_path.exists()
         assert webp_path.suffix == ".webp"
-        assert not img_path.exists() # El original debe haber sido borrado
+        assert not img_path.exists()  # El original debe haber sido borrado
 
         # Comprobar que no existe el archivo origen
         with pytest.raises(FileNotFoundError):

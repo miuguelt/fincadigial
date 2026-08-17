@@ -130,7 +130,7 @@ export const FastWeightEntry: React.FC = () => {
                       <p className="text-xs font-bold text-info">
                         {animal.weight || "?"} kg
                       </p>
-                      <p className="text-[10px] text-muted-foreground">Último peso</p>
+                      <p className="text-[11px] text-muted-foreground">Último peso</p>
                     </div>
                   </button>
                 ))}
@@ -181,7 +181,7 @@ export const FastWeightEntry: React.FC = () => {
                 >
                   <AlertCircle size={16} className="mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-wider mb-1 flex items-center gap-2">
+                    <p className="text-[11px] font-black uppercase tracking-wider mb-1 flex items-center gap-2">
                       Diagnóstico Local IA
                       <span className="opacity-40">•</span>
                       Score: {insight.score}/100

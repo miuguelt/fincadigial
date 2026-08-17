@@ -1,8 +1,19 @@
-from app.models import Animals, Species, Breeds, Finca, FarmType, LivestockSummary, Transaction, AnimalMovement, MovementType
+from app.models import (
+    Animals,
+    Species,
+    Breeds,
+    Finca,
+    FarmType,
+    LivestockSummary,
+    Transaction,
+    AnimalMovement,
+    MovementType,
+)
 from app.models.animals import Sex, AnimalStatus
 from datetime import date
 from flask_jwt_extended import decode_token
 from app import db
+
 
 def test_animal_movements_flow(client, auth_headers, app):
     """
@@ -11,15 +22,15 @@ def test_animal_movements_flow(client, auth_headers, app):
     """
     with app.app_context():
         # Obtener el finca_id (Finca A) de los headers
-        token_str = auth_headers['Authorization'].split(' ')[1]
+        token_str = auth_headers["Authorization"].split(" ")[1]
         claims = decode_token(token_str)
-        finca_origen_id = claims['finca_id']
+        finca_origen_id = claims["finca_id"]
 
         # 1. Crear finca destino para el traslado interno (Finca B)
         finca_destino = Finca.create(
             name="Finca Destino Test",
             type=FarmType.Tradicional,
-            ica_registration="123456789012"  # RPP ICA
+            ica_registration="123456789012",  # RPP ICA
         )
         db.session.commit()
         finca_destino_id = finca_destino.id
@@ -41,7 +52,7 @@ def test_animal_movements_flow(client, auth_headers, app):
             birth_date=date.today(),
             breeds_id=breed.id,
             finca_id=finca_origen_id,
-            status=AnimalStatus.Vivo
+            status=AnimalStatus.Vivo,
         )
         db.session.commit()
         animal_id = animal.id
@@ -59,7 +70,7 @@ def test_animal_movements_flow(client, auth_headers, app):
         payload_transfer = {
             "animal_id": animal_id,
             "tipo_movimiento": "Traslado_Interno",
-            "fecha_movimiento": date.today().strftime('%Y-%m-%d'),
+            "fecha_movimiento": date.today().strftime("%Y-%m-%d"),
             "finca_destino_id": finca_destino_id,
             "guia_movilizacion": "GSMI-100200",
             "arete_sinigan": "DIB-790123456",
@@ -68,14 +79,16 @@ def test_animal_movements_flow(client, auth_headers, app):
             "nombre_conductor": "Juan Perez",
             "cedula_conductor": "1015123456",
             "precinto_seguridad": "P-9988",
-            "notes": "Traslado de prueba de pasturas"
+            "notes": "Traslado de prueba de pasturas",
         }
 
-        resp = client.post('/api/v1/animals/movements/', json=payload_transfer, headers=auth_headers)
+        resp = client.post(
+            "/api/v1/animals/movements/", json=payload_transfer, headers=auth_headers
+        )
         assert resp.status_code == 200
         json_data = resp.get_json()
         assert json_data["success"] is True
-        
+
         # Validar cambios en el Animal
         db.session.expire_all()
         animal_moved = Animals.query.get(animal_id)
@@ -107,7 +120,7 @@ def test_animal_movements_flow(client, auth_headers, app):
             birth_date=date.today(),
             breeds_id=breed.id,
             finca_id=finca_origen_id,
-            status=AnimalStatus.Vivo
+            status=AnimalStatus.Vivo,
         )
         db.session.commit()
         animal_sale_id = animal_sale.id
@@ -117,7 +130,7 @@ def test_animal_movements_flow(client, auth_headers, app):
         payload_sale = {
             "animal_id": animal_sale_id,
             "tipo_movimiento": "Venta_Traslado_Externo",
-            "fecha_movimiento": date.today().strftime('%Y-%m-%d'),
+            "fecha_movimiento": date.today().strftime("%Y-%m-%d"),
             "finca_destino_externa": "Hacienda El Rubí",
             "rpp_destino_externo": "050880001234",  # 12 dígitos ICA
             "precio_venta": 1850000.0,
@@ -125,10 +138,12 @@ def test_animal_movements_flow(client, auth_headers, app):
             "comprador_nit": "900.123.456-1",
             "guia_movilizacion": "GSMI-300400",
             "arete_sinigan": "DIB-790555666",
-            "placa_vehiculo": "TLK789"
+            "placa_vehiculo": "TLK789",
         }
 
-        resp_sale = client.post('/api/v1/animals/movements/', json=payload_sale, headers=auth_headers)
+        resp_sale = client.post(
+            "/api/v1/animals/movements/", json=payload_sale, headers=auth_headers
+        )
         assert resp_sale.status_code == 200
         assert resp_sale.get_json()["success"] is True
 
@@ -155,11 +170,13 @@ def test_animal_movements_flow(client, auth_headers, app):
             "animal_id": animal_moved.id,  # Actualmente en Finca B, pero operamos con Finca A en token,
             # así que intentamos moverlo (dará error de pertenencia o estado)
             "tipo_movimiento": "Traslado_Interno",
-            "fecha_movimiento": date.today().strftime('%Y-%m-%d'),
-            "finca_destino_id": finca_origen_id
+            "fecha_movimiento": date.today().strftime("%Y-%m-%d"),
+            "finca_destino_id": finca_origen_id,
         }
         # Animal ya no está en Finca A, dará error 403 Forbidden
-        resp_inv_1 = client.post('/api/v1/animals/movements/', json=payload_invalid_1, headers=auth_headers)
+        resp_inv_1 = client.post(
+            "/api/v1/animals/movements/", json=payload_invalid_1, headers=auth_headers
+        )
         assert resp_inv_1.status_code == 403
 
         # Formato de RPP ICA incorrecto
@@ -170,18 +187,25 @@ def test_animal_movements_flow(client, auth_headers, app):
             birth_date=date.today(),
             breeds_id=breed.id,
             finca_id=finca_origen_id,
-            status=AnimalStatus.Vivo
+            status=AnimalStatus.Vivo,
         )
         db.session.commit()
 
         payload_invalid_rpp = {
             "animal_id": animal_err.id,
             "tipo_movimiento": "Venta_Traslado_Externo",
-            "fecha_movimiento": date.today().strftime('%Y-%m-%d'),
+            "fecha_movimiento": date.today().strftime("%Y-%m-%d"),
             "finca_destino_externa": "Predio Test",
             "rpp_destino_externo": "123",  # Menos de 12 dígitos, debe fallar
-            "guia_movilizacion": "GSMI-888"
+            "guia_movilizacion": "GSMI-888",
         }
-        resp_inv_rpp = client.post('/api/v1/animals/movements/', json=payload_invalid_rpp, headers=auth_headers)
+        resp_inv_rpp = client.post(
+            "/api/v1/animals/movements/", json=payload_invalid_rpp, headers=auth_headers
+        )
         assert resp_inv_rpp.status_code == 422
-        assert "RPP" in resp_inv_rpp.get_json()["error"]["details"]["validation_errors"]["rpp_destino_externo"]
+        assert (
+            "RPP"
+            in resp_inv_rpp.get_json()["error"]["details"]["validation_errors"][
+                "rpp_destino_externo"
+            ]
+        )

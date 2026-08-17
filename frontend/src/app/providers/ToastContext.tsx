@@ -37,9 +37,9 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
 
     const id = Date.now() + Math.random();
     const effectiveDuration = typeof duration === 'number' ? duration : (ToastDurations[type] ?? 3500);
-    
+
     setToasts((prev) => [...prev, { id, message, type, duration: effectiveDuration }]);
-    
+
     setTimeout(() => {
       removeToast(id);
       activeMessagesRef.current.delete(key);

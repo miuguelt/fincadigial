@@ -178,4 +178,3 @@ export const useUserActivityData = (user: any) => {
         userControls,
     };
 };
-

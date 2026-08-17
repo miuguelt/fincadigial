@@ -23,11 +23,11 @@ describe('dateUtils', () => {
     it('debe calcular la edad correctamente para una fecha pasada', () => {
       // Mockeamos la fecha actual para que el test sea determinista
       vi.setSystemTime(new Date('2026-05-16'))
-      
+
       const birthDate = '2023-05-16'
       const age = calculateAge(birthDate)
       expect(age).toBe('3 años')
-      
+
       const birthDate2 = '2023-02-16'
       const age2 = calculateAge(birthDate2)
       expect(age2).toBe('3 años, 3 meses')

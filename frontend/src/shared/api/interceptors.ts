@@ -56,7 +56,7 @@ export const setupInterceptors = (instance: typeof api) => {
         const hasAccessCsrf = !!getCookie('csrf_access_token');
         const hasRefreshCsrf = !!getCookie('csrf_refresh_token');
         const isProtected = (!isPublicEndpoint(path) || isAuthMe) && !skipAuthHeader;
-        
+
         if (!isAuthLogin && !isAuthRefresh && !isAuthMe && isProtected) {
           if (API_CONFIG.useBearerAuth && token && shouldRefreshToken(token)) {
             await performRefresh({ retryOnCsrfError: true });
@@ -143,7 +143,7 @@ export const setupInterceptors = (instance: typeof api) => {
 
     if (status === 429) {
       try {
-        const delayMs = 30000; 
+        const delayMs = 30000;
         rateLimitBackoff.set(path, Date.now() + delayMs);
       } catch (e) {
         if (API_CONFIG.debugMode) console.warn(e);
@@ -218,7 +218,7 @@ export const setupInterceptors = (instance: typeof api) => {
     const isNetworkLike = codeStr === 'ERR_NETWORK' || (!status && msgStr.includes('network'));
     const skipRetry = (originalRequest as any)?.skipTimeoutRetry === true;
     const aborted = isCancel(error) || (!!(originalRequest as any)?.signal && (originalRequest as any).signal.aborted === true);
-    
+
     if (!skipRetry && !aborted && (method === 'get' || method === 'head') && (isTimeoutLike || isNetworkLike)) {
       const attempt = Number((originalRequest as any)._timeoutAttempt ?? 0) + 1;
       if (attempt <= API_CONFIG.timeoutRetryAttempts) {
@@ -273,7 +273,7 @@ export const setupInterceptors = (instance: typeof api) => {
         showToastOnce(`error-${status}`, { title: "Error", description: String(detailMsg), variant: "destructive" });
       }
 
-      const validationErrors = parsed.validationErrors || 
+      const validationErrors = parsed.validationErrors ||
         (parsed.code === 'VALIDATION_ERROR' ? (parsed.details?.validation_errors || parsed.details?.errors) : undefined);
 
       throw new ApiFetchError(detailMsg, {
@@ -290,4 +290,3 @@ export const setupInterceptors = (instance: typeof api) => {
   }
 );
 };
-

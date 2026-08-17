@@ -16,6 +16,7 @@ yarn-debug.log*
 __pycache__/
 *.py[cod]
 *$py.class
+.ruff_cache/
 .venv/
 venv/
 ENV/
@@ -85,8 +86,10 @@ backend/scratch/
 !package-lock.json
 !IDENTITY.json
 !.devbrain/config/IDENTITY.json
+!.devbrain/modularity-baseline.json
 
 # --- Runtime artifacts (NO COMMIT) ---
+.pm2/
 *.pid
 *.db
 celerybeat-schedule*
@@ -99,9 +102,30 @@ nul
 frontend/errors.txt
 frontend/eslint_report.json
 
+# --- Canonical artifact boundaries ---
+/artifacts/
+/reports/
+/restored_*/
+/backups*/
+cleanup_backups/
+*.7z
+*.bak
+*.tmp
+test-results/
+playwright-report/
+maintenance/*.log
+backend/maintenance/logs/
+
 # --- Local dev environments (NO COMMIT) ---
+backend/venv/
+backend/venv_win/
 backend/venv_wsl/
-ecosystem.config.cjs
+backend/instance/
+backend/artifacts/
+backend/logs/
+frontend/certificates/
+frontend/logs/
+frontend/maintenance/
 docker-compose.override.yml
 
 # --- One-off scratch scripts (NO COMMIT) ---
@@ -131,10 +155,12 @@ backend/update_db_texts.py
 
 # --- Agent tooling, not part of the product ---
 GEMINI.md
-PROJECT_GENOME.md
-.cbmignore
 
 # --- Copia temporal de validacion del frontend (no es parte del producto) ---
 # Se dejo de versionar el 2026-07-30; los archivos siguen en disco y en el
 # historial hasta ese commit: git checkout f4201c0 -- frontend_VALIDATED_TMP
 frontend_VALIDATED_TMP/
+
+# --- DevBrain repo hygiene (managed block) ---
+debug_*
+# --- end DevBrain repo hygiene ---

@@ -15,12 +15,16 @@ export function useCrudFormState<TInput extends Record<string, any>>(initialForm
   }, [initialFormData]);
 
   const updateFieldValue = useCallback((field: CRUDFormField<TInput>, value: any) => {
-    const nextData = { ...formData, [String(field.name)]: value } as TInput;
-    const validation = validateFormSections(config.formSections || [], nextData);
-    setFormErrors(validation.errors);
-    setFormErrorMessages(validation.messages);
-    setFormData(nextData);
-  }, [config.formSections, formData]);
+    // Usar el updater funcional conserva todos los cambios aunque varios
+    // campos se modifiquen antes del siguiente render de React.
+    setFormData((previousData) => {
+      const nextData = { ...previousData, [String(field.name)]: value } as TInput;
+      const validation = validateFormSections(config.formSections || [], nextData);
+      setFormErrors(validation.errors);
+      setFormErrorMessages(validation.messages);
+      return nextData;
+    });
+  }, [config.formSections]);
 
   return {
     formData,

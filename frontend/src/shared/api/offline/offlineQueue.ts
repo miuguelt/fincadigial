@@ -60,7 +60,7 @@ function inferEntityFromUrl(url: string): { entityType: string; entityId?: strin
   // Si el último componente es un número o UUID, es el entityId
   const lastPart = parts[parts.length - 1];
   const isId = lastPart && (
-    !isNaN(Number(lastPart)) || 
+    !isNaN(Number(lastPart)) ||
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(lastPart)
   );
 

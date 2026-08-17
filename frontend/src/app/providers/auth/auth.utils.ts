@@ -134,5 +134,3 @@ export const canAccessUsersModule = (): boolean => {
     return false
   }
 }
-
-

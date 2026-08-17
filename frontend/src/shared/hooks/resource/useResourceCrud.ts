@@ -181,4 +181,3 @@ export function useResourceCrud<T extends { id?: number | string }>(
 
   return { createItem, updateItem, deleteItem };
 }
-

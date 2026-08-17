@@ -32,4 +32,3 @@ class TaskService extends BaseService<Task> {
 
 export const taskService = new TaskService();
 export default taskService;
-

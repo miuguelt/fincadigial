@@ -16,7 +16,13 @@ interface KPICardProps {
   loading?: boolean;
   subtitle?: string;
   goodWhenHigher?: boolean;
-  trendData?: { value: number }[]; // Datos opcionales para la mini-gráfica
+  /**
+   * Serie real para la mini-gráfica. Sin ella no se dibuja nada: antes había
+   * una constante `DEFAULT_TREND` con siete puntos inventados que se pintaba
+   * como si fuera la tendencia del indicador. Una línea falsa junto a una cifra
+   * real se lee como dato y lleva a decidir sobre algo que no ocurrió.
+   */
+  trendData?: { value: number }[];
   /**
    * Versión de una sola línea: sin sparkline ni reserva para el badge.
    * Para encabezados que comparten pantalla con una tabla.
@@ -24,10 +30,8 @@ interface KPICardProps {
   compact?: boolean;
 }
 
-const DEFAULT_TREND = [
-  { value: 40 }, { value: 30 }, { value: 45 }, { value: 50 },
-  { value: 35 }, { value: 60 }, { value: 55 },
-];
+/** Con menos de dos puntos no hay línea que trazar, sólo un adorno. */
+const MIN_TREND_POINTS = 2;
 
 const KPISkeleton = () => (
   <div className="bg-card rounded-lg border border-border/40 p-4 sm:p-5 animate-pulse">
@@ -85,7 +89,7 @@ const KPIFootnote = ({ tone, formattedChange, subtitle, compact }: {
     )}>
       {formattedChange && (
         <span className={cn(
-          "inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[10px] font-extrabold tracking-wide shrink-0",
+          "inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[11px] font-extrabold tracking-wide shrink-0",
           tone.bgColor, tone.changeColor
         )}>
           <BadgeIcon className="w-3 h-3 flex-shrink-0" />
@@ -93,7 +97,7 @@ const KPIFootnote = ({ tone, formattedChange, subtitle, compact }: {
         </span>
       )}
       {subtitle && (
-        <FitText as="p" minScale={0.8} className="min-w-0 flex-1 text-[10px] font-medium text-muted-foreground/70">
+        <FitText as="p" minScale={0.8} className="min-w-0 flex-1 text-[11px] font-medium text-muted-foreground/70">
           {subtitle}
         </FitText>
       )}
@@ -111,7 +115,7 @@ const KPICard: React.FC<KPICardProps> = ({
   subtitle,
   goodWhenHigher = true,
   compact = false,
-  trendData = DEFAULT_TREND,
+  trendData,
 }) => {
   const tone = getKpiTone(change, goodWhenHigher);
   const formattedChange = useMemo(() => formatChangePercentage(change), [change]);
@@ -146,7 +150,7 @@ const KPICard: React.FC<KPICardProps> = ({
 
         <KPIFootnote tone={tone} formattedChange={formattedChange} subtitle={subtitle} compact={compact} />
 
-        {!compact && (
+        {!compact && trendData && trendData.length >= MIN_TREND_POINTS && (
           <KPISparkline data={trendData} color={tone.chartColor} gradientId={gradientId} />
         )}
       </div>

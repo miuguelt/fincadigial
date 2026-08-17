@@ -168,15 +168,15 @@ const SignUpForm: React.FC = () => {
 
     const unmetPasswordRules = PASSWORD_RULES.filter((rule) => !rule.test(data.password));
     if (!data.password) {
-      newErrors['password'] = 'La contraseña es obligatoria';
+      newErrors.password = 'La contraseña es obligatoria';
     } else if (unmetPasswordRules.length) {
-      newErrors['password'] = `La contraseña debe cumplir: ${unmetPasswordRules.map((rule) => rule.label.toLowerCase()).join(', ')}`;
+      newErrors.password = `La contraseña debe cumplir: ${unmetPasswordRules.map((rule) => rule.label.toLowerCase()).join(', ')}`;
     }
 
     if (!data.confirmPassword) {
-      newErrors['confirmPassword'] = 'La confirmación de contraseña es obligatoria';
+      newErrors.confirmPassword = 'La confirmación de contraseña es obligatoria';
     } else if (data.password !== data.confirmPassword) {
-      newErrors['confirmPassword'] = 'Las contraseñas no coinciden';
+      newErrors.confirmPassword = 'Las contraseñas no coinciden';
     }
 
     return newErrors;
@@ -474,7 +474,7 @@ const SignUpForm: React.FC = () => {
                    <Info className="h-4 w-4" /> Importante: Pendiente de aprobación
                 </p>
                 <p className="text-warning text-xs leading-relaxed">
-                  Tu cuenta ha sido creada, pero un administrador de la finca Villa Luz debe <strong>aprobar tu registro</strong> antes de que puedas acceder. 
+                  Tu cuenta ha sido creada, pero un administrador de la finca Villa Luz debe <strong>aprobar tu registro</strong> antes de que puedas acceder.
                   <br /><br />
                   Este proceso suele ser rápido. Intenta iniciar sesión más tarde para verificar tu estado.
                 </p>

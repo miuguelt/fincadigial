@@ -5,11 +5,13 @@ Script para probar las correcciones del verificador de integridad
 
 import sys
 import os
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app import create_app, db
 from app.models.animals import Animals
 from app.utils.integrity_checker import OptimizedIntegrityChecker
+
 
 def test_integrity_checker():
     """Prueba el verificador de integridad con las correcciones"""
@@ -32,18 +34,24 @@ def test_integrity_checker():
 
         try:
             # Probar verificación de integridad
-            warnings = OptimizedIntegrityChecker.check_integrity_fast(Animals, animal.id)
+            warnings = OptimizedIntegrityChecker.check_integrity_fast(
+                Animals, animal.id
+            )
 
             print("✅ Verificación completada sin errores")
             print(f"📊 Se encontraron {len(warnings)} advertencias de integridad:")
 
             for warning in warnings:
-                print(f"   - Tabla: {warning.dependent_table}, Campo: {warning.dependent_field}, "
-                      f"Count: {warning.dependent_count}, Cascade: {warning.cascade_delete}")
+                print(
+                    f"   - Tabla: {warning.dependent_table}, Campo: {warning.dependent_field}, "
+                    f"Count: {warning.dependent_count}, Cascade: {warning.cascade_delete}"
+                )
                 print(f"     Mensaje: {warning.warning_message}")
 
             # Probar método can_delete_safely
-            can_delete, delete_warnings = OptimizedIntegrityChecker.can_delete_safely(Animals, animal.id)
+            can_delete, delete_warnings = OptimizedIntegrityChecker.can_delete_safely(
+                Animals, animal.id
+            )
             print(f"🔒 ¿Se puede eliminar seguramente?: {'Sí' if can_delete else 'No'}")
 
             # Probar método get_deletion_summary
@@ -59,8 +67,10 @@ def test_integrity_checker():
         except Exception as e:
             print(f"❌ Error durante la verificación de integridad: {e}")
             import traceback
+
             traceback.print_exc()
             assert False
+
 
 def test_relationships_detection():
     """Prueba la detección de relaciones"""
@@ -89,8 +99,10 @@ def test_relationships_detection():
         except Exception as e:
             print(f"❌ Error detectando relaciones: {e}")
             import traceback
+
             traceback.print_exc()
             assert False
+
 
 if __name__ == "__main__":
     print("🚀 Iniciando pruebas del verificador de integridad corregido")
@@ -109,7 +121,9 @@ if __name__ == "__main__":
     print("\n" + "=" * 60)
     if success:
         print("🎉 Todas las pruebas pasaron correctamente")
-        print("✅ El verificador de integridad funciona correctamente con las correcciones")
+        print(
+            "✅ El verificador de integridad funciona correctamente con las correcciones"
+        )
     else:
         print("❌ Algunas pruebas fallaron")
         print("⚠️  Revisa los errores mostrados arriba")

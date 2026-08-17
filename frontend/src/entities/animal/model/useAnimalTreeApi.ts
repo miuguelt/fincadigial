@@ -173,18 +173,18 @@ export function useAnimalTreeApi() {
   const fetchAncestors = useCallback(async (rootId: number, maxDepth: number = 3, fields: string = 'id,record,sex') => {
     setLoading(true); setError(null);
     const key = cacheKey('ancestors', rootId, maxDepth, fields);
-    
+
     try {
       // Primero verificar dependencias para dar mejor retroalimentación
       const dependencies = await animalDependenciesService.getAnimalDependencies(rootId);
       setDependencyInfo(dependencies);
-      
+
       // Si no hay padres, podemos anticipar que el árbol estará vacío
       if (!dependencies.has_parents) {
         console.warn(`[useAnimalTreeApi] Este animal no tiene padres registrados. El árbol de ancestros mostrará solo la raíz.`);
         // No retornamos error, solo registramos la advertencia
       }
-      
+
       const cached = await getIndexedDBCache<AnimalTreeGraph>(key);
       if (cached) {
         setGraph(cached);
@@ -200,18 +200,18 @@ export function useAnimalTreeApi() {
       }
 
       const resp = await animalsService.getAncestorTree({ animal_id: rootId, max_depth: maxDepth, fields });
-      
+
       // Verificar si el árbol solo contiene la raíz
       if (resp && resp.counts && resp.counts.edges === 0 && dependencies.has_parents) {
         console.warn(`[useAnimalTreeApi] El backend indicó padres en BD pero el árbol no tiene aristas. Posible inconsistencia de datos o max_depth demasiado bajo.`);
       }
-      
+
       setGraph(resp);
       await setIndexedDBCache(key, resp, DEFAULT_TTL_MS);
       return resp;
     } catch (e: any) {
       console.error(`[useAnimalTreeApi] Error cargando ancestros para animal ${rootId}:`, e);
-      
+
       // Proporcionar mensajes de error más específicos
       if (e?.message?.includes('401')) {
         setError('No autorizado: inicie sesión nuevamente');
@@ -231,18 +231,18 @@ export function useAnimalTreeApi() {
   const fetchDescendants = useCallback(async (rootId: number, maxDepth: number = 3, fields: string = 'id,record,sex') => {
     setLoading(true); setError(null);
     const key = cacheKey('descendants', rootId, maxDepth, fields);
-    
+
     try {
       // Primero verificar dependencias para dar mejor retroalimentación
       const dependencies = await animalDependenciesService.getAnimalDependencies(rootId);
       setDependencyInfo(dependencies);
-      
+
       // Si no hay hijos, podemos anticipar que el árbol estará vacío
       if (!dependencies.has_children) {
         console.warn(`[useAnimalTreeApi] Este animal no tiene hijos registrados. El árbol de descendientes mostrará solo la raíz.`);
         // No retornamos error, solo registramos la advertencia
       }
-      
+
       const cached = await getIndexedDBCache<AnimalTreeGraph>(key);
       if (cached) {
         setGraph(cached);
@@ -257,18 +257,18 @@ export function useAnimalTreeApi() {
       }
 
       const resp = await animalsService.getDescendantTree({ animal_id: rootId, max_depth: maxDepth, fields });
-      
+
       // Verificar si el árbol solo contiene la raíz
       if (resp && resp.counts && resp.counts.edges === 0 && dependencies.has_children) {
         console.warn(`[useAnimalTreeApi] El backend indicó hijos en BD pero el árbol no tiene aristas. Posible inconsistencia de datos o max_depth demasiado bajo.`);
       }
-      
+
       setGraph(resp);
       await setIndexedDBCache(key, resp, DEFAULT_TTL_MS);
       return resp;
     } catch (e: any) {
       console.error(`[useAnimalTreeApi] Error cargando descendientes para animal ${rootId}:`, e);
-      
+
       // Proporcionar mensajes de error más específicos
       if (e?.message?.includes('401')) {
         setError('No autorizado: inicie sesión nuevamente');

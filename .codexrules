@@ -1,6 +1,6 @@
 # DevBrain — estándar canónico de desarrollo multi-IDE
 
-**Versión:** 8.0 · **Fecha:** 2026-08-13
+**Versión:** 8.1 · **Fecha:** 2026-08-15
 
 ## 1. Autoridad y contexto
 
@@ -54,12 +54,26 @@
 - En un proyecto nuevo, `New-DevBrainProject.ps1` crea la estructura modular inicial. No crear un archivo monolítico como punto de acumulación futura (`app`, `utils`, `helpers`, `manager`, `service` o `index`) sin límites y responsabilidad documentados.
 - El handoff de un cambio estructural informa: patrón y justificación, árbol afectado, responsabilidad por archivo, contratos y dirección de dependencias, pruebas/comandos, deuda o excepciones y resultado de `Test-DevBrainModularity.ps1 -ChangedOnly`.
 
+### 6.1 Higiene de repositorio y límites de artefactos
+
+- Cada proyecto mantiene una sola raíz por aplicación y runtime. Para un monorepo web, el código de aplicación vive en `backend/` y `frontend/`; las copias históricas, validaciones temporales y raíces con nombres alternativos (`BackFinca`, `VillaLuzFront`, `*_copy`, `restored_*`) no son fuentes válidas y deben eliminarse o moverse a una cuarentena ignorada.
+- La raíz del repositorio solo contiene configuración, documentación de entrada, composición y entrypoints explícitos. Los scripts viven en `scripts/` o en una carpeta operativa del módulo; los logs, resultados, PIDs, bases locales, volcados, artefactos de build y archivos comprimidos no viven junto al código fuente.
+- Todo proceso que genere un reporte debe resolver una ruta absoluta desde el proyecto y escribir bajo `test-results/`, `maintenance/` o `artifacts/`. Nunca debe depender del directorio actual ni crear `*_report.json`, `*.log`, `*.pid`, `*.db`, `restored_*` o copias completas en la raíz.
+- Las copias de seguridad del código se resuelven con Git y un remoto. Las bases de datos se respaldan mediante dumps externos, cifrados y con checksum; el destino por defecto debe estar fuera del repositorio. Una herramienta de restauración debe rechazar destinos dentro del proyecto y restaurar primero en una carpeta externa de inspección.
+- Todo proyecto debe tener una guardia de estructura local además de `Test-DevBrainRepoHygiene.ps1` y `Test-DevBrainModularity.ps1`. El hook/CI debe bloquear raíces duplicadas, archivos sueltos no permitidos, referencias a rutas eliminadas y crecimiento de archivos que ya superan el presupuesto.
+- Antes de mover una carpeta se actualizan imports, entrypoints, compose, hooks, documentación activa y scripts. Después se ejecutan compilación/importación, pruebas afectadas, guardias de higiene y modularidad, y se refresca Codebase Memory. Los documentos históricos pueden conservar nombres antiguos si están fechados y marcados como históricos; no pueden ser consumidos por automatizaciones.
+- La organización se hace por responsabilidad y funcionalidad, no por acumular `utils`, `helpers`, `misc` o `temp`. Un archivo temporal se archiva con fecha o se elimina tras verificar que no tiene referencias. Los scripts de mantenimiento se promueven a código mantenido solo cuando tienen propietario, propósito, entrada/salida documentada y prueba mínima.
+
 ## 7. UI, legibilidad y Colombia
 
-- Interfaz en español de Colombia (`es-CO`), con fechas y números que declaren el locale.
+- Interfaz en español de Colombia (`es-CO`), con fechas y números que declaren el locale. Prohibido `es-ES` y `toLocale*String()` sin argumento; en `.html` cuenta también el JS embebido en `<script>`.
+- El tag de locale no basta: el **léxico** también debe ser colombiano. La lista vinculante vive en `_core/knowledge_base/rules/es-co-lexicon.json` (regla 7.3) y la aplican `validate-rules.ps1` y el hook post-edición sobre `.ts/.tsx/.js/.jsx/.html/.py/.md`. Prohibidos los regionalismos de España (`ordenador`, `fichero`, `coche`, `pulsar`, `cortafuegos`, `vosotros`), de México (`computadora`, `checar`, `alberca`, `elevador`) y del Cono Sur (`pileta`, `frutilla`, `palta`). Se dice `computador`, `archivo`, `carro`, `hacer clic`, `firewall`, `ustedes`, `celular`, `mouse`.
+- Son colombianos y no se marcan: `vereda` (división rural), `coger`, el voseo paisa y vallecaucano. Las citas textuales de fuentes externas (títulos NTC de ICONTEC, artículos publicados) se respetan literalmente: se registran en `exclude_paths` o `known_exceptions` del léxico, nunca se reescriben.
+- `date-fns` no publica un locale `es-CO`: su `es` es peninsular. Al usarlo, declarar el locale de forma explícita en `Intl`/`toLocale*String()` para fecha, hora y moneda, que es donde la divergencia se ve (España usa 24 h; Colombia, 12 h con `a. m.`/`p. m.`).
 - Nunca truncar contenido con `text-overflow: ellipsis` como primera opción: antes de perder texto hay que ajustar el tamaño de la letra al espacio disponible. Cuando la caja no puede crecer de alto (celdas, listas, chrome compacto), se encoge primero y solo se recortan los caracteres que aún no quepan. La reducción tiene un suelo absoluto de legibilidad (11 px); por debajo se recorta o se envuelve, nunca se sigue encogiendo.
 - Una palabra nunca se parte a la mitad: lo que cede es el tamaño de la letra. Prohibidos `word-break: break-word`, `word-break: break-all` y la clase `break-all` sobre texto en lenguaje natural, porque reducen `min-content` a un carácter y el contenedor se encoge por debajo de la palabra. Para texto que no cabe se usa ajuste tipográfico al contenedor (`FitText`/`useFitText` o `clamp()` con unidades `cqi`); el corte a la brava solo se autoriza explícitamente y en cadenas sin espacios (identificadores, hashes, URLs, correos).
 - Mobile-first desde 320 px y soporte hasta 2560 px. Usar `clamp()`, Grid con `minmax()` y breakpoints ascendentes.
+- La responsividad se valida por la capacidad real de cada componente, no solo por el ancho del viewport ni por la ausencia de overflow en la página. Rejillas y filas con texto o controles esenciales deben reestructurarse antes de comprimir su contenido: preferir `auto-fit` con `minmax(min(100%, <ancho-legible>), 1fr)`, consultas de contenedor, `min-width: 0` en hijos flex/grid y acciones en una fila adicional cuando falte espacio. Prohibido aceptar títulos, rutas, etiquetas o valores reducidos a una columna de una letra. Verificar contenido largo, 200 % de zoom y 320, 390, 768, 1440, 1920 y 2560 px mediante inspección renderizada del componente, no únicamente con análisis estático.
 - Tablas y bloques de código: scroll horizontal seguro; bloques de código con `white-space: pre-wrap` y `word-break: break-word`.
 - Contraste suficiente, fondos sólidos para texto y estados legibles sin depender solo del color.
 - En HTML, escapar `<` y `>` dentro de ejemplos de código y cerrar siempre `<textarea></textarea>`.

@@ -244,12 +244,12 @@ export function useOptimizedData<T = any>(
               }
             });
             const merged = Array.from(dataMap.values());
-            
+
             // Avisar si hay callback
             if (onDataUpdated) {
               onDataUpdated(merged);
             }
-            
+
             return merged;
           });
         }

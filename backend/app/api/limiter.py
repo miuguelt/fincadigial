@@ -1,5 +1,6 @@
 import logging
 
+
 def apply_rate_limit_exemptions(app, api, api_bp, limiter, namespaces_to_exempt):
     logger = logging.getLogger(__name__)
     if not limiter:
@@ -13,7 +14,9 @@ def apply_rate_limit_exemptions(app, api, api_bp, limiter, namespaces_to_exempt)
             app.view_functions[endpoint_name] = limiter.exempt(vf)
             app.view_functions[endpoint_name]._rate_limit_exempted = True
         except Exception:
-            logger.exception("No se pudo eximir rate limit para endpoint %s", endpoint_name)
+            logger.exception(
+                "No se pudo eximir rate limit para endpoint %s", endpoint_name
+            )
 
     def _exempt_ns(ns):
         try:
@@ -24,7 +27,7 @@ def apply_rate_limit_exemptions(app, api, api_bp, limiter, namespaces_to_exempt)
             _exempt_endpoint(f"{base}_model_detail_resource")
             _exempt_endpoint(f"{base}_model_stats_resource")
         except Exception:
-            logger.exception('No se pudo eximir rate limit para namespace')
+            logger.exception("No se pudo eximir rate limit para namespace")
 
     for ns in namespaces_to_exempt:
         _exempt_ns(ns)

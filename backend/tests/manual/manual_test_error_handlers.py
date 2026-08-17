@@ -1,4 +1,3 @@
-
 import logging
 
 # Configure dummy logger
@@ -8,10 +7,12 @@ try:
     print("Importing error_handlers...")
     # We need to mock app structure to test this in isolation or use create_app
     from app import create_app
-    app = create_app('testing')
+
+    app = create_app("testing")
 
     with app.app_context():
         from app.utils.error_handlers import internal_error, handle_integrity_error
+
         print("Registration function imported.")
 
         # Test internal_error logic (calling it directly with a dummy error)
@@ -22,6 +23,7 @@ try:
         except Exception as e:
             print(f"internal_error FAILED: {e}")
             import traceback
+
             traceback.print_exc()
 
         # Test integrity_error logic
@@ -35,9 +37,11 @@ try:
         except Exception as e:
             print(f"handle_integrity_error FAILED: {e}")
             import traceback
+
             traceback.print_exc()
 
 except Exception as e:
     print(f"CRITICAL FAILURE: {e}")
     import traceback
+
     traceback.print_exc()

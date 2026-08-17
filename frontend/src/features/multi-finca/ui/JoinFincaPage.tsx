@@ -77,26 +77,26 @@ export const JoinFincaPage: React.FC = () => {
       {" "}
       <div className="p-6 sm:p-10 space-y-12 max-w-7xl mx-auto pb-32">
         {" "}
-        {/* HEADER CRYSTAL */} 
-        <header className="relative flex flex-col md:flex-row items-center justify-between gap-6 py-8 px-6 sm:px-8 rounded-[2rem] bg-surface-raised border border-border shadow-sm overflow-hidden h-auto md:h-[120px]"> 
-          <div className="relative z-10 space-y-1 w-full md:w-auto"> 
-            <h1 className="text-2xl font-black text-foreground"> 
-              Explorar fincas 
-            </h1> 
-            <p className="text-sm text-muted-foreground font-medium"> 
-              Encuentra fincas productivas, solicita unirte o responde invitaciones pendientes. 
-            </p> 
-          </div> 
-          <div className="relative group w-full md:w-80 shrink-0 z-10"> 
+        {/* HEADER CRYSTAL */}
+        <header className="relative flex flex-col md:flex-row items-center justify-between gap-6 py-8 px-6 sm:px-8 rounded-[2rem] bg-surface-raised border border-border shadow-sm overflow-hidden h-auto md:h-[120px]">
+          <div className="relative z-10 space-y-1 w-full md:w-auto">
+            <h1 className="text-2xl font-black text-foreground">
+              Explorar fincas
+            </h1>
+            <p className="text-sm text-muted-foreground font-medium">
+              Encuentra fincas productivas, solicita unirte o responde invitaciones pendientes.
+            </p>
+          </div>
+          <div className="relative group w-full md:w-80 shrink-0 z-10">
             <Input
               placeholder="Busca por nombre o ubicación..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="h-12 rounded-xl border border-border pl-12 text-sm bg-card/50 shadow-inner focus:border-primary transition-all"
-            /> 
-            <IconSearch className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" /> 
-          </div> 
-        </header> 
+            />
+            <IconSearch className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          </div>
+        </header>
         {/* EXPLORADOR DE FINCAS */}
         <section className="space-y-10">
           {" "}
@@ -131,7 +131,7 @@ export const JoinFincaPage: React.FC = () => {
                   <IconBuilding className="h-10 w-10 text-primary animate-pulse" />{" "}
                 </div>{" "}
               </div>{" "}
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">
+              <p className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground">
                 Escaneando Red Productiva...
               </p>{" "}
             </div>
@@ -222,7 +222,7 @@ export const JoinFincaPage: React.FC = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.35, delay: 0.2 }}
             >
-            <Button 
+            <Button
               onClick={() => navigate('/register/finca')}
               className="rounded-xl h-20 px-12 bg-card text-foreground hover:bg-muted font-black uppercase text-sm tracking-[0.2em] shadow-[0_20px_50px_rgba(255,255,255,0.1)] hover:shadow-white/20 transition-all active:scale-95 group-hover:translate-x-2"
             >

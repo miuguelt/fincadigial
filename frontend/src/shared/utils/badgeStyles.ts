@@ -1,9 +1,9 @@
 /**
  * statusBadgeClasses — Mapa de clases CSS semánticas para badges de estado.
- * 
+ *
  * Cumple WCAG AA (contraste ≥ 4.5:1) en light y dark mode.
  * Usa tokens del sistema de temas en lugar de colores hardcodeados.
- * 
+ *
  * @example
  * import { getStatusBadgeClass } from '@/shared/utils/badgeStyles';
  * <Badge className={getStatusBadgeClass('success')}>Positivo</Badge>
@@ -107,7 +107,7 @@ const valueToStatusMap: Record<string, BadgeStatus> = {
 /**
  * Auto-detecta el estado semántico de un valor y retorna las clases CSS.
  * Fallback a 'neutral' si no se reconoce el valor.
- * 
+ *
  * @example
  * <Badge className={getAutoStatusClass('Positivo')}>Positivo</Badge>
  */

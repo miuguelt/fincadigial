@@ -17,7 +17,7 @@ interface Options {
 }
 
 /**
- * Arrastrar y soltar por punteros, activo solo con ratón.
+ * Arrastrar y soltar por punteros, activo solo con mouse.
  *
  * En pantalla táctil el arrastre provocaba traslados accidentales y era casi
  * imposible de completar entre columnas, así que allí se usa la selección.

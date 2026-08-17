@@ -44,7 +44,7 @@ export function useGeneticTree({
 	const [animalDetailStack, setAnimalDetailStack] = React.useState<{id: number; data: any}[]>([]);
 	const isDetailModalOpen = animalDetailStack.length > 0;
 	const detailAnimal = animalDetailStack.length > 0 ? animalDetailStack[animalDetailStack.length - 1].data : null;
-	
+
 	const [isHistoryOpen, setIsHistoryOpen] = React.useState(false);
 	const [historyAnimal, setHistoryAnimal] = React.useState<any | null>(null);
 
@@ -56,7 +56,7 @@ export function useGeneticTree({
 	const openAnimalDetail = async (clickedAnimal: AnimalNode) => {
 		const id = getId(clickedAnimal);
 		if (!id) return;
-		
+
 		setAnimalDetailStack((prev) => [...prev, { id, data: clickedAnimal }]);
 		try {
 			const full = await animalsService.getAnimalById(id);

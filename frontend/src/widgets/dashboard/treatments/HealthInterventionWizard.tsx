@@ -181,7 +181,7 @@ export const HealthInterventionWizard: React.FC<HealthInterventionWizardProps> =
         {step === 3 && (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
             <h3 className="text-lg font-medium text-foreground">¿Qué insumos aplicaste? (Opcional)</h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Vaccines */}
               <div className="space-y-3">
@@ -192,8 +192,8 @@ export const HealthInterventionWizard: React.FC<HealthInterventionWizardProps> =
                 <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
                   {vaccines.map(v => (
                     <label key={v.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedVaccines.includes(v.id) ? 'bg-primary/10 border-primary' : 'bg-card hover:bg-secondary/50'}`}>
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         checked={selectedVaccines.includes(v.id)}
                         onChange={() => toggleVaccine(v.id)}
                         className="w-5 h-5 text-primary rounded"
@@ -214,8 +214,8 @@ export const HealthInterventionWizard: React.FC<HealthInterventionWizardProps> =
                 <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
                   {medications.map(m => (
                     <label key={m.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedMedications.includes(m.id) ? 'bg-primary/10 border-primary' : 'bg-card hover:bg-secondary/50'}`}>
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         checked={selectedMedications.includes(m.id)}
                         onChange={() => toggleMedication(m.id)}
                         className="w-5 h-5 text-primary rounded"
@@ -235,7 +235,7 @@ export const HealthInterventionWizard: React.FC<HealthInterventionWizardProps> =
           <Button variant="outline" onClick={step === 1 ? onClose : handlePrev} size="lg">
             {step === 1 ? 'Cancelar' : <><ChevronLeft className="w-4 h-4 mr-2" /> Atrás</>}
           </Button>
-          
+
           {step < 3 ? (
             <Button onClick={handleNext} disabled={step === 1 && !animalId || step === 2 && !diagnosis} size="lg">
               Siguiente <ChevronRight className="w-4 h-4 ml-2" />

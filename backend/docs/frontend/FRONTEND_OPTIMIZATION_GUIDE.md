@@ -1,4 +1,4 @@
-# 🎨 Frontend Optimization Guide - BackFinca
+# 🎨 Frontend Optimization Guide - VillaLuz
 
 ## 📋 Table of Contents
 

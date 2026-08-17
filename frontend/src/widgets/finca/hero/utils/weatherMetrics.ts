@@ -1,5 +1,6 @@
 import { CloudRain, Droplets, Sun, Sunrise, Thermometer, Wind } from 'lucide-react';
 import type { WeatherRecord } from '@/entities/weather';
+import { formatClockTime } from '@/shared/lib/formatClockTime';
 import type { WeatherMetricItem } from '../FincaHeroBanner.types';
 
 const DASH = '—';
@@ -7,13 +8,6 @@ const DASH = '—';
 function num(value: number | null | undefined, unit: string, digits = 0): string {
   if (value === null || value === undefined || !Number.isFinite(value)) return DASH;
   return `${value.toFixed(digits)} ${unit}`;
-}
-
-function hour(value: string | null | undefined): string {
-  if (!value) return DASH;
-  const parsed = new Date(value.length <= 5 ? `1970-01-01T${value}:00` : value);
-  if (Number.isNaN(parsed.getTime())) return DASH;
-  return parsed.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
 }
 
 /** Devuelve la primera etiqueta cuyo umbral supera el valor real. */
@@ -106,13 +100,17 @@ function feelsMetric(r: WeatherRecord): WeatherMetricItem {
   };
 }
 
+/**
+ * Sólo se juntan con "·" las horas que de verdad se pudieron leer: mostrar
+ * "— · —" ocupa una casilla entera para no decir nada.
+ */
 function daylightMetric(r: WeatherRecord): WeatherMetricItem {
-  const hasDaylight = Boolean(r.sunrise_time || r.sunset_time);
+  const hours = [formatClockTime(r.sunrise_time), formatClockTime(r.sunset_time)].filter(Boolean);
   return {
     key: 'daylight',
     label: 'Jornada',
-    value: hasDaylight ? `${hour(r.sunrise_time)} · ${hour(r.sunset_time)}` : DASH,
-    hint: 'Amanecer y atardecer',
+    value: hours.length > 0 ? hours.join(' · ') : DASH,
+    hint: hours.length === 2 ? 'Amanecer y atardecer' : 'Amanecer y atardecer (dato incompleto)',
     icon: Sunrise,
     tone: 'violet',
   };

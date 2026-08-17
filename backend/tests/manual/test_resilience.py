@@ -2,6 +2,7 @@
 Resilience stress test: simulates Redis/PostgreSQL failures and verifies
 the backend stays up and responds gracefully.
 """
+
 import subprocess
 import time
 import sys
@@ -11,7 +12,9 @@ import urllib.error
 import os
 import signal
 
-BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+BACKEND_DIR = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+)
 BACKEND_PORT = 8092
 HEALTH_URL = f"http://127.0.0.1:{BACKEND_PORT}/api/v1/health/"
 BASE_URL = f"http://127.0.0.1:{BACKEND_PORT}"
@@ -19,6 +22,7 @@ BASE_URL = f"http://127.0.0.1:{BACKEND_PORT}"
 passed = 0
 failed = 0
 errors = []
+
 
 def check(label, condition, detail=""):
     global passed, failed
@@ -30,6 +34,7 @@ def check(label, condition, detail=""):
         msg = f"  ❌ {label} — {detail}"
         print(msg)
         errors.append(msg)
+
 
 def http_get(path, timeout=5):
     try:
@@ -45,6 +50,7 @@ def http_get(path, timeout=5):
     except Exception as e:
         return 0, {"error": str(e)}
 
+
 def wait_for_backend(retries=20):
     for i in range(retries):
         status, data = http_get("/api/v1/health/", timeout=3)
@@ -53,26 +59,39 @@ def wait_for_backend(retries=20):
         time.sleep(1)
     return False
 
+
 def stop_service(name):
     """Stop a Windows service."""
     result = subprocess.run(
-        ["powershell", "-Command", f"Stop-Service -Name '{name}' -Force; Start-Sleep 2"],
-        capture_output=True, text=True, timeout=30
+        [
+            "powershell",
+            "-Command",
+            f"Stop-Service -Name '{name}' -Force; Start-Sleep 2",
+        ],
+        capture_output=True,
+        text=True,
+        timeout=30,
     )
     return result.returncode == 0 or "has not been started" in result.stderr
+
 
 def start_service(name):
     """Start a Windows service."""
     result = subprocess.run(
         ["powershell", "-Command", f"Start-Service -Name '{name}'; Start-Sleep 2"],
-        capture_output=True, text=True, timeout=30
+        capture_output=True,
+        text=True,
+        timeout=30,
     )
     return result.returncode == 0
+
 
 def is_service_running(name):
     result = subprocess.run(
         ["powershell", "-Command", f"(Get-Service -Name '{name}').Status"],
-        capture_output=True, text=True, timeout=10
+        capture_output=True,
+        text=True,
+        timeout=10,
     )
     return "Running" in result.stdout
 
@@ -93,11 +112,19 @@ def main():
         cwd=BACKEND_DIR,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
-        env={**os.environ, "FLASK_ENV": "development", "PYTHONUNBUFFERED": "1"}
+        env={**os.environ, "FLASK_ENV": "development", "PYTHONUNBUFFERED": "1"},
     )
     time.sleep(10)
-    check("Backend process started", backend_proc.poll() is None, f"PID={backend_proc.pid}")
-    check("Backend responds on health endpoint", wait_for_backend(), "HTTP 200 on /api/v1/health/")
+    check(
+        "Backend process started",
+        backend_proc.poll() is None,
+        f"PID={backend_proc.pid}",
+    )
+    check(
+        "Backend responds on health endpoint",
+        wait_for_backend(),
+        "HTTP 200 on /api/v1/health/",
+    )
 
     if backend_proc.poll() is not None:
         print("\n❌ Backend crashed immediately. Aborting.")
@@ -124,7 +151,9 @@ def main():
             redis_status = data.get("data", {}).get("redis", "unknown")
             db_status = data.get("data", {}).get("database_status", "unknown")
             overall = data.get("data", {}).get("status", "unknown")
-            print(f"    Request {i+1}: status={status}, overall={overall}, redis={redis_status}, db={db_status}")
+            print(
+                f"    Request {i + 1}: status={status}, overall={overall}, redis={redis_status}, db={db_status}"
+            )
 
     # The health endpoint might return 200 or 503 depending on configuration
     # But the app should NOT crash
@@ -132,13 +161,20 @@ def main():
 
     # Try auth-like endpoint that uses token blocklist
     status, data = http_get("/api/v1/health/", timeout=10)
-    check("Health endpoint responds during Redis outage", status in (200, 503), f"status={status}")
+    check(
+        "Health endpoint responds during Redis outage",
+        status in (200, 503),
+        f"status={status}",
+    )
 
     # Try a request that goes through JWT (will exercise token_blocklist)
     # Even if it returns 401 unauthorized, it shouldn't crash
     status, data = http_get("/api/v1/animals/", timeout=10)
-    check("API endpoint doesn't crash during Redis outage", 
-          status in (200, 401, 503), f"status={status}")
+    check(
+        "API endpoint doesn't crash during Redis outage",
+        status in (200, 401, 503),
+        f"status={status}",
+    )
     if status == 401:
         print("    → Got 401 (expected — no JWT token)")
 
@@ -153,10 +189,16 @@ def main():
         # Verify EventBus reconnects (give it time for circuit breaker)
         time.sleep(2)
         status, data = http_get("/api/v1/health/", timeout=10)
-        check("Health endpoint OK after Redis recovery", status == 200, f"status={status}")
+        check(
+            "Health endpoint OK after Redis recovery", status == 200, f"status={status}"
+        )
         if status == 200:
             redis_status = data.get("data", {}).get("redis", "unknown")
-            check("Redis status healthy after recovery", redis_status == "ok", f"redis={redis_status}")
+            check(
+                "Redis status healthy after recovery",
+                redis_status == "ok",
+                f"redis={redis_status}",
+            )
 
     print()
 
@@ -176,17 +218,25 @@ def main():
     print("  Testing requests during PostgreSQL outage...")
     for i in range(3):
         status, data = http_get("/api/v1/health/", timeout=15)
-        print(f"    Request {i+1}: status={status}")
+        print(f"    Request {i + 1}: status={status}")
         if isinstance(data, dict):
             msg = data.get("message", data.get("error", {}).get("message", ""))
             if msg:
                 print(f"      message: {msg[:80]}")
 
-    check("App still running after PostgreSQL kill", backend_proc.poll() is None, f"PID={backend_proc.pid}")
+    check(
+        "App still running after PostgreSQL kill",
+        backend_proc.poll() is None,
+        f"PID={backend_proc.pid}",
+    )
 
     # Try a DB-dependent endpoint
     status, data = http_get("/api/v1/health/database", timeout=15)
-    check("DB health endpoint responds during PG outage", status in (200, 503), f"status={status}")
+    check(
+        "DB health endpoint responds during PG outage",
+        status in (200, 503),
+        f"status={status}",
+    )
 
     print()
     print("  Restarting PostgreSQL...")
@@ -201,7 +251,11 @@ def main():
         check("Health endpoint OK after PG recovery", status == 200, f"status={status}")
         if status == 200:
             db_status = data.get("data", {}).get("database_status", "unknown")
-            check("Database status connected after recovery", db_status == "connected", f"db={db_status}")
+            check(
+                "Database status connected after recovery",
+                db_status == "connected",
+                f"db={db_status}",
+            )
 
     print()
 
@@ -216,9 +270,13 @@ def main():
 
     for i in range(2):
         status, data = http_get("/api/v1/health/", timeout=15)
-        print(f"    Request {i+1}: status={status}")
+        print(f"    Request {i + 1}: status={status}")
 
-    check("App still running with BOTH services down", backend_proc.poll() is None, f"PID={backend_proc.pid}")
+    check(
+        "App still running with BOTH services down",
+        backend_proc.poll() is None,
+        f"PID={backend_proc.pid}",
+    )
 
     print()
     print("  Recovering all services...")
@@ -234,7 +292,7 @@ def main():
             db = data.get("data", {}).get("database_status", "")
             rd = data.get("data", {}).get("redis", "")
             if db == "connected" and rd == "ok":
-                print(f"  ✅ Both services recovered on attempt {i+1}")
+                print(f"  ✅ Both services recovered on attempt {i + 1}")
                 break
         time.sleep(2)
 
@@ -242,7 +300,11 @@ def main():
     if status == 200:
         db = data.get("data", {}).get("database_status", "")
         rd = data.get("data", {}).get("redis", "")
-        check("Full recovery after both services restored", db == "connected" and rd == "ok", f"db={db}, redis={rd}")
+        check(
+            "Full recovery after both services restored",
+            db == "connected" and rd == "ok",
+            f"db={db}, redis={rd}",
+        )
     else:
         check("Backend responds after both services restored", True, f"status={status}")
 

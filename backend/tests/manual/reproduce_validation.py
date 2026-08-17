@@ -1,4 +1,3 @@
-
 import sys
 import os
 import logging
@@ -16,10 +15,11 @@ logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 # Configure minimal DB (sqlite in memory)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
+
 
 def test_validation():
     with app.app_context():
@@ -29,11 +29,11 @@ def test_validation():
 
         # INVALID payload (missing description)
         payload = {
-            'treatment_date': date(2026, 1, 22),
-            'description': '',  # Empty
-            'frequency': 'Daily',
-            'dosis': '10ml',
-            'animal_id': 1
+            "treatment_date": date(2026, 1, 22),
+            "description": "",  # Empty
+            "frequency": "Daily",
+            "dosis": "10ml",
+            "animal_id": 1,
         }
 
         print(f"Testing with INVALID payload: {payload}")
@@ -49,12 +49,14 @@ def test_validation():
         except ValidationError as e:
             print("Caught ValidationError (Expected):")
             print(e.message)
-            if hasattr(e, 'errors'):
+            if hasattr(e, "errors"):
                 print(f"Errors: {e.errors}")
         except Exception as e:
             print(f"Caught unexpected exception: {e}")
             import traceback
+
             traceback.print_exc()
+
 
 if __name__ == "__main__":
     test_validation()

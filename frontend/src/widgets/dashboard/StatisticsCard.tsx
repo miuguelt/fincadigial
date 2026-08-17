@@ -106,7 +106,7 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({
       )} />
 
       <CardHeader className="flex flex-row items-start justify-between px-5 pt-5 pb-2 space-y-0">
-        <CardTitle className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-[0.12em] leading-tight max-w-[140px] mt-0.5">
+        <CardTitle className="text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.12em] leading-tight max-w-[140px] mt-0.5">
           {title}
         </CardTitle>
         {icon && (
@@ -127,7 +127,7 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({
           </div>
           {trend && (
             <div className={cn(
-              "inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-extrabold",
+              "inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-extrabold",
               getTrendColor()
             )}>
               {getTrendIcon()}
@@ -142,7 +142,7 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({
 
         {progress && (
           <div className="mt-3.5 space-y-1.5">
-            <div className="flex justify-between text-[10px]">
+            <div className="flex justify-between text-[11px]">
               <span className="text-muted-foreground font-medium">
                 {progress.label || "Progreso"}
               </span>

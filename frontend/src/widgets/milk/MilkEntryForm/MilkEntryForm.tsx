@@ -172,11 +172,11 @@ export function MilkEntryFormWidget({ onSuccess, defaultDate, onCancel }: MilkEn
         {/* Fecha Input */}
         <div className="space-y-2">
           <Label htmlFor="date" className="text-sm font-bold">Fecha</Label>
-          <Input 
-            id="date" 
-            type="date" 
+          <Input
+            id="date"
+            type="date"
             max={getTodayColombia()}
-            {...register('date')} 
+            {...register('date')}
             className="h-12 rounded-xl text-base sm:text-sm"
           />
           {errors.date && <p className="text-xs font-medium text-red-500">{errors.date.message}</p>}
@@ -244,9 +244,9 @@ export function MilkEntryFormWidget({ onSuccess, defaultDate, onCancel }: MilkEn
 
       <div className="sticky bottom-0 z-10 mt-auto grid grid-cols-2 gap-2 border-t border-border bg-card px-3 py-3 -mx-3 sm:-mx-5 sm:px-5">
         {onCancel && (
-          <Button 
-            type="button" 
-            variant="outline" 
+          <Button
+            type="button"
+            variant="outline"
             className="min-h-12 w-full rounded-xl font-bold active:scale-95"
             onClick={onCancel}
             disabled={isSubmitting}
@@ -254,8 +254,8 @@ export function MilkEntryFormWidget({ onSuccess, defaultDate, onCancel }: MilkEn
             Cancelar
           </Button>
         )}
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           disabled={isSubmitting || loadingAnimals}
           className={`min-h-12 w-full rounded-xl bg-blue-700 text-base font-bold text-white hover:bg-blue-800 active:scale-95 ${onCancel ? '' : 'col-span-2'}`}
         >

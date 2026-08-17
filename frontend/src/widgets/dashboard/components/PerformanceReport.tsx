@@ -151,7 +151,7 @@ export function PerformanceReport({ animal }: { animal: any }) {
     return (
       <div className="p-20 flex flex-col items-center justify-center space-y-4">
         <div className="h-10 w-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">
           Analizando Bio-Métricas...
         </p>
       </div>
@@ -171,7 +171,7 @@ export function PerformanceReport({ animal }: { animal: any }) {
                 <div className="h-12 w-12 rounded-lg bg-card/20 backdrop-blur-md flex items-center justify-center">
                   <Milk className="h-6 w-6" />
                 </div>
-                <Badge className="bg-card/20 text-white border-0 text-[9px] font-semibold text-sm px-3 py-1">
+                <Badge className="bg-card/20 text-white border-0 text-[11px] font-semibold text-sm px-3 py-1">
                   Lactancia Activa
                 </Badge>
               </div>
@@ -203,7 +203,7 @@ export function PerformanceReport({ animal }: { animal: any }) {
                 <div className="h-12 w-12 rounded-lg bg-card/20 backdrop-blur-md flex items-center justify-center">
                   <TrendingUp className="h-6 w-6" />
                 </div>
-                <Badge className="bg-card/20 text-white border-0 text-[9px] font-semibold text-sm px-3 py-1">
+                <Badge className="bg-card/20 text-white border-0 text-[11px] font-semibold text-sm px-3 py-1">
                   Desarrollo Óptimo
                 </Badge>
               </div>
@@ -233,7 +233,7 @@ export function PerformanceReport({ animal }: { animal: any }) {
             <CardTitle className="text-xl font-black tracking-tighter uppercase">
               Curva de Producción
             </CardTitle>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
               Últimos 10 registros de ordeño
             </p>
           </div>
@@ -305,7 +305,7 @@ export function PerformanceReport({ animal }: { animal: any }) {
         </Button>
       </div>
 
-      <div className="p-6 bg-secondary/50/50 dark:bg-card/50 rounded-lg border border-dashed border-border text-[10px] text-muted-foreground font-bold uppercase tracking-wider flex items-start gap-3">
+      <div className="p-6 bg-secondary/50/50 dark:bg-card/50 rounded-lg border border-dashed border-border text-[11px] text-muted-foreground font-bold uppercase tracking-wider flex items-start gap-3">
         <Activity className="h-5 w-5 shrink-0 text-muted-foreground" />
         <p className="leading-relaxed">
           Los datos reflejados en este reporte son calculados en tiempo real

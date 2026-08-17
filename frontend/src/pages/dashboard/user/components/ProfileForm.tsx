@@ -178,7 +178,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
 				</div>
 
 				<div className="space-y-2">
-					<Label htmlFor="phone">Teléfono Móvil</Label>
+					<Label htmlFor="phone">Celular</Label>
 					<div className="relative group">
 						<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
 							<Phone size={18} />

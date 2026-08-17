@@ -1,6 +1,6 @@
 /*
  * AdminCRUDPage Components
- * 
+ *
  * Exportación de todos los componentes refactorizados y optimizados.
  */
 

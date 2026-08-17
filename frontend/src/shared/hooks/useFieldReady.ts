@@ -58,4 +58,3 @@ export function useFieldReady(): UseFieldReadyResult {
 
   return { status, progress, isPrefetching, startPrefetch, clearCache, refresh };
 }
-

@@ -99,7 +99,7 @@ const RegulatoryReportsWidget: React.FC = () => {
               <CardTitle className="text-2xl font-black tracking-tighter">
                 Módulo de Cumplimiento
               </CardTitle>
-              <CardDescription className="font-bold uppercase tracking-widest text-[9px] opacity-60">
+              <CardDescription className="font-bold uppercase tracking-widest text-[11px] opacity-60">
                 Reportes Oficiales ICA / SENA
               </CardDescription>
             </div>
@@ -172,7 +172,7 @@ const RegulatoryReportsWidget: React.FC = () => {
               <AlertCircle className="h-5 w-5 text-warning" />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-warning mb-1">
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-warning mb-1">
                 Nota Técnica Importante
               </p>
               <p className="text-xs text-warning/80 leading-relaxed font-medium">

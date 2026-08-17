@@ -26,7 +26,9 @@ def _create_field(client, headers, finca_id, name):
         json={"name": name, "state": "Disponible", "area": 3.0, "finca_id": finca_id},
         headers=headers,
     )
-    assert resp.status_code in (200, 201), f"POST /fields: {resp.status_code} {resp.get_json()}"
+    assert resp.status_code in (200, 201), (
+        f"POST /fields: {resp.status_code} {resp.get_json()}"
+    )
     return resp.get_json()["data"]["id"]
 
 
@@ -34,10 +36,13 @@ def _create_field(client, headers, finca_id, name):
 def finca_id(app, db_session):
     from app.models.finca import Finca
     from app.models import FarmType
+
     with app.app_context():
         finca = Finca.query.filter_by(type=FarmType.Tradicional).first()
         if not finca:
-            finca = Finca.create(name="Finca Concurrencia", type=FarmType.Tradicional, is_active=True)
+            finca = Finca.create(
+                name="Finca Concurrencia", type=FarmType.Tradicional, is_active=True
+            )
         return finca.id
 
 
@@ -45,8 +50,11 @@ def finca_id(app, db_session):
 # 1. Visibilidad entre administradores
 # ---------------------------------------------------------------------------
 
+
 class TestVisibilidadEntreAdministradores:
-    def test_lo_que_crea_un_admin_lo_ve_el_otro_de_inmediato(self, client, token_for, finca_id):
+    def test_lo_que_crea_un_admin_lo_ve_el_otro_de_inmediato(
+        self, client, token_for, finca_id
+    ):
         admin_a = token_for(ADMIN)
         admin_b = token_for(ADMIN)
 
@@ -65,43 +73,65 @@ class TestVisibilidadEntreAdministradores:
             "B siguió viendo su lista cacheada tras la escritura de A"
         )
 
-    def test_edicion_de_un_admin_visible_en_el_detalle_del_otro(self, client, token_for, finca_id):
+    def test_edicion_de_un_admin_visible_en_el_detalle_del_otro(
+        self, client, token_for, finca_id
+    ):
         admin_a = token_for(ADMIN)
         admin_b = token_for(ADMIN)
         field_id = _create_field(client, admin_a, finca_id, "Potrero Compartido")
 
-        assert client.get(f"{BASE}/fields/{field_id}", headers=admin_b).status_code == 200
+        assert (
+            client.get(f"{BASE}/fields/{field_id}", headers=admin_b).status_code == 200
+        )
 
         resp = client.put(
-            f"{BASE}/fields/{field_id}", json={"name": "Potrero Renombrado"}, headers=admin_a
+            f"{BASE}/fields/{field_id}",
+            json={"name": "Potrero Renombrado"},
+            headers=admin_a,
         )
         assert resp.status_code == 200
 
         detalle = client.get(f"{BASE}/fields/{field_id}", headers=admin_b)
         assert detalle.get_json()["data"]["name"] == "Potrero Renombrado"
 
-    def test_borrado_de_un_admin_visible_para_el_otro(self, client, token_for, finca_id):
+    def test_borrado_de_un_admin_visible_para_el_otro(
+        self, client, token_for, finca_id
+    ):
         admin_a = token_for(ADMIN)
         admin_b = token_for(ADMIN)
         field_id = _create_field(client, admin_a, finca_id, "Potrero Efímero")
 
-        assert client.get(f"{BASE}/fields/{field_id}", headers=admin_b).status_code == 200
-        assert client.delete(f"{BASE}/fields/{field_id}", headers=admin_a).status_code == 200
-        assert client.get(f"{BASE}/fields/{field_id}", headers=admin_b).status_code == 404
+        assert (
+            client.get(f"{BASE}/fields/{field_id}", headers=admin_b).status_code == 200
+        )
+        assert (
+            client.delete(f"{BASE}/fields/{field_id}", headers=admin_a).status_code
+            == 200
+        )
+        assert (
+            client.get(f"{BASE}/fields/{field_id}", headers=admin_b).status_code == 404
+        )
 
 
 # ---------------------------------------------------------------------------
 # 2. Bloqueo optimista (edición simultánea del mismo registro)
 # ---------------------------------------------------------------------------
 
+
 class TestEdicionSimultanea:
     def test_la_respuesta_expone_version_id(self, client, token_for, finca_id):
         headers = token_for(ADMIN)
         field_id = _create_field(client, headers, finca_id, "Potrero Versionado")
-        data = client.get(f"{BASE}/fields/{field_id}", headers=headers).get_json()["data"]
-        assert "version_id" in data, "sin version_id el cliente no puede detectar conflictos"
+        data = client.get(f"{BASE}/fields/{field_id}", headers=headers).get_json()[
+            "data"
+        ]
+        assert "version_id" in data, (
+            "sin version_id el cliente no puede detectar conflictos"
+        )
 
-    def test_segunda_escritura_con_version_vieja_da_409(self, client, token_for, finca_id):
+    def test_segunda_escritura_con_version_vieja_da_409(
+        self, client, token_for, finca_id
+    ):
         admin_a = token_for(ADMIN)
         admin_b = token_for(ADMIN)
         field_id = _create_field(client, admin_a, finca_id, "Potrero Disputado")
@@ -133,7 +163,9 @@ class TestEdicionSimultanea:
         assert body["error"]["details"]["current_version"] != version_inicial
 
         # El cambio de A sigue intacto.
-        actual = client.get(f"{BASE}/fields/{field_id}", headers=admin_b).get_json()["data"]
+        actual = client.get(f"{BASE}/fields/{field_id}", headers=admin_b).get_json()[
+            "data"
+        ]
         assert actual["name"] == "Nombre de A"
 
     def test_patch_tambien_detecta_el_conflicto(self, client, token_for, finca_id):
@@ -144,9 +176,12 @@ class TestEdicionSimultanea:
             f"{BASE}/fields/{field_id}", headers=admin_a
         ).get_json()["data"]["version_id"]
 
-        assert client.patch(
-            f"{BASE}/fields/{field_id}", json={"area": 9.0}, headers=admin_a
-        ).status_code == 200
+        assert (
+            client.patch(
+                f"{BASE}/fields/{field_id}", json={"area": 9.0}, headers=admin_a
+            ).status_code
+            == 200
+        )
 
         conflicto = client.patch(
             f"{BASE}/fields/{field_id}",
@@ -155,14 +190,20 @@ class TestEdicionSimultanea:
         )
         assert conflicto.status_code == 409
 
-    def test_tras_recargar_la_version_el_guardado_procede(self, client, token_for, finca_id):
+    def test_tras_recargar_la_version_el_guardado_procede(
+        self, client, token_for, finca_id
+    ):
         admin_a = token_for(ADMIN)
         admin_b = token_for(ADMIN)
         field_id = _create_field(client, admin_a, finca_id, "Potrero Reintento")
 
-        version = client.get(f"{BASE}/fields/{field_id}", headers=admin_a).get_json()["data"]["version_id"]
+        version = client.get(f"{BASE}/fields/{field_id}", headers=admin_a).get_json()[
+            "data"
+        ]["version_id"]
         client.put(
-            f"{BASE}/fields/{field_id}", json={"name": "Primero", "version_id": version}, headers=admin_a
+            f"{BASE}/fields/{field_id}",
+            json={"name": "Primero", "version_id": version},
+            headers=admin_a,
         )
 
         # B recarga y reintenta con la versión vigente.
@@ -175,24 +216,35 @@ class TestEdicionSimultanea:
             headers=admin_b,
         )
         assert resp.status_code == 200
-        assert client.get(
-            f"{BASE}/fields/{field_id}", headers=admin_a
-        ).get_json()["data"]["name"] == "Segundo"
+        assert (
+            client.get(f"{BASE}/fields/{field_id}", headers=admin_a).get_json()["data"][
+                "name"
+            ]
+            == "Segundo"
+        )
 
-    def test_sin_version_id_se_conserva_el_comportamiento_previo(self, client, token_for, finca_id):
+    def test_sin_version_id_se_conserva_el_comportamiento_previo(
+        self, client, token_for, finca_id
+    ):
         """Clientes antiguos (sin version_id en el payload) siguen guardando."""
         headers = token_for(ADMIN)
         field_id = _create_field(client, headers, finca_id, "Potrero Legacy")
-        resp = client.put(f"{BASE}/fields/{field_id}", json={"name": "Sin versión"}, headers=headers)
+        resp = client.put(
+            f"{BASE}/fields/{field_id}", json={"name": "Sin versión"}, headers=headers
+        )
         assert resp.status_code == 200
 
     def test_if_match_tambien_sirve_como_version(self, client, token_for, finca_id):
         admin_a = token_for(ADMIN)
         admin_b = token_for(ADMIN)
         field_id = _create_field(client, admin_a, finca_id, "Potrero IfMatch")
-        version = client.get(f"{BASE}/fields/{field_id}", headers=admin_a).get_json()["data"]["version_id"]
+        version = client.get(f"{BASE}/fields/{field_id}", headers=admin_a).get_json()[
+            "data"
+        ]["version_id"]
 
-        client.put(f"{BASE}/fields/{field_id}", json={"name": "Cambio A"}, headers=admin_a)
+        client.put(
+            f"{BASE}/fields/{field_id}", json={"name": "Cambio A"}, headers=admin_a
+        )
 
         conflicto = client.put(
             f"{BASE}/fields/{field_id}",
@@ -206,17 +258,24 @@ class TestEdicionSimultanea:
 # 3. Aislamiento por finca bajo uso concurrente
 # ---------------------------------------------------------------------------
 
+
 class TestAislamientoConcurrente:
-    def test_admins_de_fincas_distintas_no_comparten_cache(self, client, token_for, finca_id):
+    def test_admins_de_fincas_distintas_no_comparten_cache(
+        self, client, token_for, finca_id
+    ):
         admin_tradicional = token_for(ADMIN, finca_type="Tradicional")
         admin_educativa = token_for(ADMIN, finca_type="Educativa")
 
         _create_field(client, admin_tradicional, finca_id, "Potrero Tradicional")
 
-        propios = client.get(f"{BASE}/fields", headers=admin_tradicional).get_json()["data"]
+        propios = client.get(f"{BASE}/fields", headers=admin_tradicional).get_json()[
+            "data"
+        ]
         assert any(f["name"] == "Potrero Tradicional" for f in propios)
 
-        ajenos = client.get(f"{BASE}/fields", headers=admin_educativa).get_json()["data"]
+        ajenos = client.get(f"{BASE}/fields", headers=admin_educativa).get_json()[
+            "data"
+        ]
         assert not any(f["name"] == "Potrero Tradicional" for f in ajenos)
 
 
@@ -224,13 +283,16 @@ class TestAislamientoConcurrente:
 # 4. Invalidación de caché entre workers de gunicorn
 # ---------------------------------------------------------------------------
 
+
 class TestInvalidacionEntreWorkers:
     def test_evento_del_bus_limpia_la_cache_local(self):
         from app.utils import cache_helpers
 
         cache_helpers.register_cache_endpoint("fields", "Fields")
         cache_helpers._LIST_CACHE["Fields"] = cache_helpers.LRUCache(max_size=10)
-        cache_helpers._LIST_CACHE["Fields"].set("user:1:key", {"value": "viejo", "ts": 0})
+        cache_helpers._LIST_CACHE["Fields"].set(
+            "user:1:key", {"value": "viejo", "ts": 0}
+        )
 
         aplicado = cache_helpers.invalidate_from_event(
             json.dumps({"endpoint": "fields", "action": "update", "id": 1})
@@ -244,7 +306,9 @@ class TestInvalidacionEntreWorkers:
 
         cache_helpers.register_cache_endpoint("fields", "Fields")
         cache_helpers._LIST_CACHE["Fields"] = cache_helpers.LRUCache(max_size=10)
-        cache_helpers._LIST_CACHE["Fields"].set("user:1:key", {"value": "vigente", "ts": 0})
+        cache_helpers._LIST_CACHE["Fields"].set(
+            "user:1:key", {"value": "vigente", "ts": 0}
+        )
 
         cache_helpers.invalidate_from_event(
             json.dumps({"endpoint": "animals", "action": "update", "id": 7})
@@ -252,7 +316,9 @@ class TestInvalidacionEntreWorkers:
 
         assert cache_helpers._LIST_CACHE["Fields"].size() == 1
 
-    def test_escritura_publica_invalidacion_en_el_bus(self, app, client, token_for, finca_id):
+    def test_escritura_publica_invalidacion_en_el_bus(
+        self, app, client, token_for, finca_id
+    ):
         """El worker que escribe avisa al resto por el bus de eventos."""
         publicados = []
 
@@ -279,13 +345,22 @@ class TestInvalidacionEntreWorkers:
     def test_los_eventos_internos_no_llegan_al_navegador(self):
         from app.api.sse import _is_internal_event
 
-        assert _is_internal_event(json.dumps({"action": "cache_invalidate", "model": "Fields"})) is True
-        assert _is_internal_event(json.dumps({"endpoint": "fields", "action": "update"})) is False
+        assert (
+            _is_internal_event(
+                json.dumps({"action": "cache_invalidate", "model": "Fields"})
+            )
+            is True
+        )
+        assert (
+            _is_internal_event(json.dumps({"endpoint": "fields", "action": "update"}))
+            is False
+        )
 
 
 # ---------------------------------------------------------------------------
 # 5. Cupos SSE: varios usuarios detrás de la misma IP
 # ---------------------------------------------------------------------------
+
 
 class TestCuposSSE:
     def test_el_cupo_es_por_usuario_no_por_ip(self, app):
@@ -307,7 +382,9 @@ class TestCuposSSE:
 
         # El usuario 2, en la misma IP, conserva el suyo.
         ok, motivo = sse._acquire_sse_slot(app, sse._sse_slot_key(2, "190.0.0.1"))
-        assert ok is True, f"segundo administrador bloqueado por la IP compartida: {motivo}"
+        assert ok is True, (
+            f"segundo administrador bloqueado por la IP compartida: {motivo}"
+        )
 
     def test_el_cupo_se_libera_al_desconectar(self, app):
         from app.api import sse

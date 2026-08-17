@@ -293,4 +293,3 @@ export const SignupFormFields: React.FC<SignupFormFieldsProps> = ({
     </form>
   );
 };
-

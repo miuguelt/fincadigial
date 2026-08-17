@@ -71,7 +71,7 @@ export function WeightAgeScatter({
     const sumX2 = filteredData.reduce((sum, a) => sum + a.age * a.age, 0);
     const sumY2 = filteredData.reduce((sum, a) => sum + a.weight * a.weight, 0);
 
-    const correlation = (n * sumXY - sumX * sumY) / 
+    const correlation = (n * sumXY - sumX * sumY) /
       Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
 
     return {
@@ -187,7 +187,7 @@ export function WeightAgeScatter({
                     return null;
                   }}
                 />
-                
+
                 {/* Línea de tendencia promedio */}
                 {statistics && (
                   <ReferenceLine
@@ -197,7 +197,7 @@ export function WeightAgeScatter({
                     label={{ value: `Peso promedio: ${statistics.avgWeight.toFixed(1)}kg`, position: 'right' }}
                   />
                 )}
-                
+
                 <Scatter
                   name="Animales"
                   data={chartData}
@@ -213,7 +213,7 @@ export function WeightAgeScatter({
             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
               Estadísticas
             </h3>
-            
+
             {statistics && (
               <>
                 <div className="space-y-3">
@@ -221,12 +221,12 @@ export function WeightAgeScatter({
                     <p className="text-xs text-muted-foreground">Promedio Peso</p>
                     <p className="text-xl font-bold">{statistics.avgWeight.toFixed(1)} kg</p>
                   </div>
-                  
+
                   <div className="p-3 bg-muted/50 rounded-lg">
                     <p className="text-xs text-muted-foreground">Promedio Edad</p>
                     <p className="text-xl font-bold">{statistics.avgAge.toFixed(1)} meses</p>
                   </div>
-                  
+
                   <div className="p-3 bg-muted/50 rounded-lg">
                     <p className="text-xs text-muted-foreground">Producción Media</p>
                     <p className="text-xl font-bold">{statistics.avgProduction.toFixed(1)} L</p>
@@ -247,10 +247,10 @@ export function WeightAgeScatter({
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {Math.abs(statistics.correlation) > 0.7 
-                      ? 'Fuerte correlación' 
-                      : Math.abs(statistics.correlation) > 0.4 
-                        ? 'Correlación moderada' 
+                    {Math.abs(statistics.correlation) > 0.7
+                      ? 'Fuerte correlación'
+                      : Math.abs(statistics.correlation) > 0.4
+                        ? 'Correlación moderada'
                         : 'Correlación débil'}
                   </p>
                 </div>

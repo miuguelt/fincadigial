@@ -1,6 +1,6 @@
 /*
  * CRUDToolbar
- * 
+ *
  * Componente optimizado para la barra de herramientas de CRUD.
  * Implementa búsqueda eficiente con clear button y acciones principales.
  */
@@ -16,6 +16,7 @@ interface CRUDToolbarProps {
   setSearchQuery: (query: string) => void;
   searchPlaceholder?: string;
   onOpenCreate?: () => void;
+  createLabel?: string;
   customToolbar?: React.ReactNode;
   saving?: boolean;
   onToggleFullScreen?: () => void;
@@ -27,6 +28,7 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
   setSearchQuery,
   searchPlaceholder,
   onOpenCreate,
+  createLabel = 'Crear nuevo registro',
   customToolbar,
   saving = false,
   onToggleFullScreen,
@@ -40,7 +42,7 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
   const handleClear = useCallback(() => {
     setSearchQuery('');
   }, [setSearchQuery]);
-  
+
   return (
     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
       <div className="relative group flex-1 min-w-0">
@@ -68,7 +70,7 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
           </button>
         )}
       </div>
-      
+
       <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
         {onToggleFullScreen && (
           <Button
@@ -104,7 +106,7 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
             className="h-10 w-10 sm:w-auto sm:px-4 rounded-xl shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20 transition-all"
             onClick={onOpenCreate}
             disabled={saving}
-            aria-label="Crear nuevo registro"
+            aria-label={createLabel}
           >
             {saving ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -114,7 +116,7 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
             <span className="hidden sm:inline">Nuevo</span>
           </Button>
         )}
-        
+
         {customToolbar && (
           <div className="flex flex-wrap items-center gap-1.5">
             {customToolbar}

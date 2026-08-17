@@ -99,4 +99,3 @@ export class FieldService extends BaseService<FieldResponse> {
 }
 
 export const fieldService = new FieldService();
-

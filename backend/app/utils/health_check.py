@@ -16,7 +16,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Crear namespace para health checks
-health_ns = Namespace('health', description='Health checks del sistema')
+health_ns = Namespace("health", description="Health checks del sistema")
 
 # ── Celery probe tuning ─────────────────────────────────────────────────────
 # ``control.inspect()`` is a broker broadcast: without ``limit`` it always burns
@@ -24,21 +24,22 @@ health_ns = Namespace('health', description='Health checks del sistema')
 # stats() at 3s each made GET /api/v1/health cost a fixed ~6s, and the telemetry
 # widget polls it every few seconds — hence the stream of
 # "Slow flask.request ...ms GET /api/v1/health" warnings in the log.
-_CELERY_INSPECT_TIMEOUT = float(os.getenv('CELERY_INSPECT_TIMEOUT', '1.5'))
-_CELERY_STATUS_TTL_SECONDS = float(os.getenv('CELERY_STATUS_TTL_SECONDS', '30'))
+_CELERY_INSPECT_TIMEOUT = float(os.getenv("CELERY_INSPECT_TIMEOUT", "1.5"))
+_CELERY_STATUS_TTL_SECONDS = float(os.getenv("CELERY_STATUS_TTL_SECONDS", "30"))
 # Workers expected to be alive.  Used as the broadcast ``limit`` so the probe
 # returns as soon as they all answer; raise it when scaling out or the census
 # gets capped at this value.
-_CELERY_EXPECTED_WORKERS = int(os.getenv('CELERY_EXPECTED_WORKERS', '1'))
+_CELERY_EXPECTED_WORKERS = int(os.getenv("CELERY_EXPECTED_WORKERS", "1"))
 
 _celery_probe_lock = threading.Lock()
-_celery_status_cache = {'value': None, 'expires_at': 0.0}
+_celery_status_cache = {"value": None, "expires_at": 0.0}
 
 
 def _celery_setting(key: str, default):
     """Valor de ``app.config`` si hay contexto Flask; si no, el de entorno."""
     try:
         import flask
+
         if flask.has_app_context():
             value = flask.current_app.config.get(key)
             if value is not None:
@@ -58,7 +59,8 @@ def _current_worker_hostname():
     """
     try:
         from celery import current_task
-        return getattr(getattr(current_task, 'request', None), 'hostname', None)
+
+        return getattr(getattr(current_task, "request", None), "hostname", None)
     except Exception:
         return None
 
@@ -74,22 +76,22 @@ class HealthChecker:
             start_time = time.time()
 
             # Query simple para testear conexión
-            result = self.db.session.execute(text('SELECT 1'))
+            result = self.db.session.execute(text("SELECT 1"))
             result.fetchone()
 
             query_time = time.time() - start_time
 
             return {
-                'status': 'healthy',
-                'response_time_ms': round(query_time * 1000, 2),
-                'timestamp': datetime.now(UTC).isoformat()
+                "status": "healthy",
+                "response_time_ms": round(query_time * 1000, 2),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
         except Exception as e:
             logger.error(f"Database health check failed: {str(e)}")
             return {
-                'status': 'unhealthy',
-                'error': str(e),
-                'timestamp': datetime.now(UTC).isoformat()
+                "status": "unhealthy",
+                "error": str(e),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
 
     def check_cache(self):
@@ -99,7 +101,7 @@ class HealthChecker:
 
             if self.cache:
                 # Test de escritura/lectura
-                test_key = 'health_check_test'
+                test_key = "health_check_test"
                 test_value = str(time.time())
 
                 self.cache.set(test_key, test_value, timeout=1)
@@ -112,28 +114,28 @@ class HealthChecker:
 
                 if retrieved == test_value:
                     return {
-                        'status': 'healthy',
-                        'response_time_ms': round(query_time * 1000, 2),
-                        'timestamp': datetime.now(UTC).isoformat()
+                        "status": "healthy",
+                        "response_time_ms": round(query_time * 1000, 2),
+                        "timestamp": datetime.now(UTC).isoformat(),
                     }
                 else:
                     return {
-                        'status': 'unhealthy',
-                        'error': 'Cache read/write mismatch',
-                        'timestamp': datetime.now(UTC).isoformat()
+                        "status": "unhealthy",
+                        "error": "Cache read/write mismatch",
+                        "timestamp": datetime.now(UTC).isoformat(),
                     }
             else:
                 return {
-                    'status': 'disabled',
-                    'message': 'Cache not configured',
-                    'timestamp': datetime.now(UTC).isoformat()
+                    "status": "disabled",
+                    "message": "Cache not configured",
+                    "timestamp": datetime.now(UTC).isoformat(),
                 }
         except Exception as e:
             logger.error(f"Cache health check failed: {str(e)}")
             return {
-                'status': 'unhealthy',
-                'error': str(e),
-                'timestamp': datetime.now(UTC).isoformat()
+                "status": "unhealthy",
+                "error": str(e),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
 
     def check_system_resources(self):
@@ -150,49 +152,43 @@ class HealthChecker:
             memory_available_gb = round(memory.available / (1024**3), 2)
 
             # Disco
-            disk = psutil.disk_usage('/')
+            disk = psutil.disk_usage("/")
             disk_percent = disk.percent
             disk_free_gb = round(disk.free / (1024**3), 2)
 
             # Determinar estado
-            status = 'healthy'
+            status = "healthy"
             warnings = []
 
             if cpu_percent > 80:
-                status = 'warning'
-                warnings.append(f'High CPU usage: {cpu_percent}%')
+                status = "warning"
+                warnings.append(f"High CPU usage: {cpu_percent}%")
 
             if memory_percent > 85:
-                status = 'warning'
-                warnings.append(f'High memory usage: {memory_percent}%')
+                status = "warning"
+                warnings.append(f"High memory usage: {memory_percent}%")
 
             if disk_percent > 90:
-                status = 'critical'
-                warnings.append(f'Low disk space: {disk_percent}% used')
+                status = "critical"
+                warnings.append(f"Low disk space: {disk_percent}% used")
 
             return {
-                'status': status,
-                'warnings': warnings,
-                'cpu': {
-                    'usage_percent': cpu_percent,
-                    'core_count': cpu_count
+                "status": status,
+                "warnings": warnings,
+                "cpu": {"usage_percent": cpu_percent, "core_count": cpu_count},
+                "memory": {
+                    "usage_percent": memory_percent,
+                    "available_gb": memory_available_gb,
                 },
-                'memory': {
-                    'usage_percent': memory_percent,
-                    'available_gb': memory_available_gb
-                },
-                'disk': {
-                    'usage_percent': disk_percent,
-                    'free_gb': disk_free_gb
-                },
-                'timestamp': datetime.now(UTC).isoformat()
+                "disk": {"usage_percent": disk_percent, "free_gb": disk_free_gb},
+                "timestamp": datetime.now(UTC).isoformat(),
             }
         except Exception as e:
             logger.error(f"System resources health check failed: {str(e)}")
             return {
-                'status': 'unhealthy',
-                'error': str(e),
-                'timestamp': datetime.now(UTC).isoformat()
+                "status": "unhealthy",
+                "error": str(e),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
 
     def check_celery(self, use_cache=True):
@@ -203,8 +199,12 @@ class HealthChecker:
         telemetría pagaba ese coste en cada poll. Usa ``use_cache=False`` para
         forzar una lectura fresca.
         """
-        cached = _celery_status_cache['value']
-        if use_cache and cached is not None and time.time() < _celery_status_cache['expires_at']:
+        cached = _celery_status_cache["value"]
+        if (
+            use_cache
+            and cached is not None
+            and time.time() < _celery_status_cache["expires_at"]
+        ):
             return cached
 
         # Only one probe at a time.  If another thread is already broadcasting,
@@ -214,14 +214,20 @@ class HealthChecker:
         if not _celery_probe_lock.acquire(blocking=cached is None or not use_cache):
             return cached
         try:
-            cached = _celery_status_cache['value']
-            if use_cache and cached is not None and time.time() < _celery_status_cache['expires_at']:
+            cached = _celery_status_cache["value"]
+            if (
+                use_cache
+                and cached is not None
+                and time.time() < _celery_status_cache["expires_at"]
+            ):
                 return cached
 
             result = self._probe_celery()
-            ttl = float(_celery_setting('CELERY_STATUS_TTL_SECONDS', _CELERY_STATUS_TTL_SECONDS))
-            _celery_status_cache['value'] = result
-            _celery_status_cache['expires_at'] = time.time() + ttl
+            ttl = float(
+                _celery_setting("CELERY_STATUS_TTL_SECONDS", _CELERY_STATUS_TTL_SECONDS)
+            )
+            _celery_status_cache["value"] = result
+            _celery_status_cache["expires_at"] = time.time() + ttl
             return result
         finally:
             _celery_probe_lock.release()
@@ -229,10 +235,20 @@ class HealthChecker:
     def _probe_celery(self):
         """Difusión real por el broker para censar workers y leer sus métricas."""
         try:
-            from celery import current_app as celery_app
+            # Probe the application configured by Villaluz.  Using Celery's
+            # process-global default can target the wrong broker when Flask
+            # and the worker are started by different launchers.
+            from app.celery_ext import celery as celery_app
 
-            timeout = float(_celery_setting('CELERY_INSPECT_TIMEOUT', _CELERY_INSPECT_TIMEOUT))
-            limit = int(_celery_setting('CELERY_EXPECTED_WORKERS', _CELERY_EXPECTED_WORKERS)) or None
+            timeout = float(
+                _celery_setting("CELERY_INSPECT_TIMEOUT", _CELERY_INSPECT_TIMEOUT)
+            )
+            limit = (
+                int(
+                    _celery_setting("CELERY_EXPECTED_WORKERS", _CELERY_EXPECTED_WORKERS)
+                )
+                or None
+            )
             inspector = celery_app.control.inspect(timeout=timeout, limit=limit)
 
             # stats() already carries every worker name, so it doubles as the
@@ -264,36 +280,38 @@ class HealthChecker:
                 # up the whole health check.
                 if not isinstance(stats, dict):
                     worker_details[worker_name] = {
-                        'status': 'online',
-                        'detail': str(stats) if stats is not None else 'sin métricas',
+                        "status": "online",
+                        "detail": str(stats) if stats is not None else "sin métricas",
                     }
                     continue
                 # Extraer métricas de uso de recursos si están disponibles
-                rusage = stats.get('rusage')
+                rusage = stats.get("rusage")
                 rusage = rusage if isinstance(rusage, dict) else {}
-                total = stats.get('total')
+                total = stats.get("total")
                 total = total if isinstance(total, dict) else {}
-                pool = stats.get('pool')
+                pool = stats.get("pool")
                 pool = pool if isinstance(pool, dict) else {}
                 worker_details[worker_name] = {
-                    'status': 'online',
-                    'processed': total.get('total', 0),
-                    'memory_usage_mb': round(rusage.get('maxrss', 0) / 1024, 2) if rusage.get('maxrss') else 0,
-                    'concurrency': pool.get('max-concurrency', 0)
+                    "status": "online",
+                    "processed": total.get("total", 0),
+                    "memory_usage_mb": round(rusage.get("maxrss", 0) / 1024, 2)
+                    if rusage.get("maxrss")
+                    else 0,
+                    "concurrency": pool.get("max-concurrency", 0),
                 }
 
             return {
-                'status': 'healthy' if worker_names else 'warning',
-                'workers_active': len(worker_names),
-                'worker_details': worker_details,
-                'timestamp': datetime.now(UTC).isoformat()
+                "status": "healthy" if worker_names else "warning",
+                "workers_active": len(worker_names),
+                "worker_details": worker_details,
+                "timestamp": datetime.now(UTC).isoformat(),
             }
         except Exception as e:
             logger.warning(f"Celery health check failed (maybe not running): {str(e)}")
             return {
-                'status': 'unhealthy',
-                'error': str(e),
-                'timestamp': datetime.now(UTC).isoformat()
+                "status": "unhealthy",
+                "error": str(e),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
 
     def check_api_endpoints(self):
@@ -302,10 +320,10 @@ class HealthChecker:
             import flask
 
             critical_endpoints = [
-                'auth_namespace.login',
-                'animals_namespace.animals',
-                'fields_namespace.fields',
-                'users_namespace.users'
+                "api.auth_login_resource",
+                "api.animals_model_list_resource",
+                "api.fields_model_list_resource",
+                "api.users_model_list_resource",
             ]
 
             results = {}
@@ -315,28 +333,22 @@ class HealthChecker:
                 try:
                     # Solo verificar que la URL se puede generar
                     url = flask.url_for(endpoint)
-                    results[endpoint] = {
-                        'status': 'healthy',
-                        'url': url
-                    }
+                    results[endpoint] = {"status": "healthy", "url": url}
                 except Exception as e:
-                    results[endpoint] = {
-                        'status': 'unhealthy',
-                        'error': str(e)
-                    }
+                    results[endpoint] = {"status": "unhealthy", "error": str(e)}
                     all_healthy = False
 
             return {
-                'status': 'healthy' if all_healthy else 'degraded',
-                'endpoints': results,
-                'timestamp': datetime.now(UTC).isoformat()
+                "status": "healthy" if all_healthy else "degraded",
+                "endpoints": results,
+                "timestamp": datetime.now(UTC).isoformat(),
             }
         except Exception as e:
             logger.error(f"API endpoints health check failed: {str(e)}")
             return {
-                'status': 'unhealthy',
-                'error': str(e),
-                'timestamp': datetime.now(UTC).isoformat()
+                "status": "unhealthy",
+                "error": str(e),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
 
     def comprehensive_health_check(self):
@@ -344,43 +356,43 @@ class HealthChecker:
         start_time = time.time()
 
         checks = {
-            'database': self.check_database(),
-            'cache': self.check_cache(),
-            'celery': self.check_celery(),
-            'system_resources': self.check_system_resources(),
-            'api_endpoints': self.check_api_endpoints()
+            "database": self.check_database(),
+            "cache": self.check_cache(),
+            "celery": self.check_celery(),
+            "system_resources": self.check_system_resources(),
+            "api_endpoints": self.check_api_endpoints(),
         }
 
         # Determinar estado general
-        overall_status = 'healthy'
+        overall_status = "healthy"
         failed_checks = []
         warning_checks = []
 
         for check_name, check_result in checks.items():
-            if check_result.get('status') == 'unhealthy':
-                overall_status = 'unhealthy'
+            if check_result.get("status") == "unhealthy":
+                overall_status = "unhealthy"
                 failed_checks.append(check_name)
-            elif check_result.get('status') in ['warning', 'degraded']:
-                if overall_status != 'unhealthy':
-                    overall_status = 'warning'
+            elif check_result.get("status") in ["warning", "degraded"]:
+                if overall_status != "unhealthy":
+                    overall_status = "warning"
                 warning_checks.append(check_name)
 
         total_time = time.time() - start_time
 
         return {
-            'status': overall_status,
-            'timestamp': datetime.now(UTC).isoformat(),
-            'response_time_ms': round(total_time * 1000, 2),
-            'checks': checks,
-            'summary': {
-                'failed_checks': failed_checks,
-                'warning_checks': warning_checks,
-                'total_checks': len(checks)
-            }
+            "status": overall_status,
+            "timestamp": datetime.now(UTC).isoformat(),
+            "response_time_ms": round(total_time * 1000, 2),
+            "checks": checks,
+            "summary": {
+                "failed_checks": failed_checks,
+                "warning_checks": warning_checks,
+                "total_checks": len(checks),
+            },
         }
 
 
-@health_ns.route('/')
+@health_ns.route("/")
 class BasicHealth(Resource):
     """Health check básico."""
 
@@ -389,6 +401,7 @@ class BasicHealth(Resource):
         try:
             from app import db, cache
             import flask
+
             health_checker = HealthChecker(db, cache)
 
             db_status = health_checker.check_database()
@@ -398,35 +411,55 @@ class BasicHealth(Resource):
 
             # Preparar payload compatible con SystemTelemetryWidget
             data = {
-                'status': 'healthy' if db_status['status'] == 'healthy' and sys_resources['status'] != 'critical' else 'unhealthy',
-                'database_status': 'connected' if db_status['status'] == 'healthy' else 'disconnected',
-                'redis': 'ok' if cache_status['status'] == 'healthy' else ('unavailable' if cache_status['status'] == 'disabled' else 'error'),
-                'celery_workers': celery_status.get('workers_active', 0),
-                'system_resources': {
-                    'cpu': sys_resources['cpu']['usage_percent'],
-                    'memory': sys_resources['memory']['usage_percent']
+                "status": "healthy"
+                if db_status["status"] == "healthy"
+                and sys_resources["status"] != "critical"
+                else "unhealthy",
+                "database_status": "connected"
+                if db_status["status"] == "healthy"
+                else "disconnected",
+                "redis": "ok"
+                if cache_status["status"] == "healthy"
+                else (
+                    "unavailable" if cache_status["status"] == "disabled" else "error"
+                ),
+                "celery_workers": celery_status.get("workers_active", 0),
+                "system_resources": {
+                    "cpu": sys_resources["cpu"]["usage_percent"],
+                    "memory": sys_resources["memory"]["usage_percent"],
                 },
-                'version': flask.current_app.config.get('APP_VERSION', '1.0.0'),
-                'uptime_seconds': time.time() - flask.current_app.config.get('START_TIME', time.time()),
-                'environment': flask.current_app.config.get('ENV', 'production'),
-                'self_healing': cache.get('system:self_healing:last_result') if cache else None,
-                'timestamp': datetime.now(UTC).isoformat()
+                "version": flask.current_app.config.get("APP_VERSION", "1.0.0"),
+                "uptime_seconds": time.time()
+                - flask.current_app.config.get("START_TIME", time.time()),
+                # Flask 3 ya no garantiza la clave histórica ``ENV``. Usar la
+                # configuración efectiva evita reportar "production" cuando
+                # la aplicación está ejecutándose en development/testing.
+                "environment": (
+                    flask.current_app.config.get("CONFIG_NAME")
+                    or flask.current_app.config.get("ENV")
+                    or os.getenv("FLASK_ENV", "production")
+                ),
+                "self_healing": cache.get("system:self_healing:last_result")
+                if cache
+                else None,
+                "timestamp": datetime.now(UTC).isoformat(),
             }
 
             return APIResponse.success(data=data)
         except Exception as e:
             import traceback
+
             error_details = traceback.format_exc()
             logger.error(f"Basic health check failed: {str(e)}\n{error_details}")
             return APIResponse.error(
                 message=f"Service unavailable: {str(e)}",
                 status_code=500,
                 error_code="HEALTH_CHECK_FAILED",
-                details={"traceback": error_details}
+                details={"traceback": error_details},
             )
 
 
-@health_ns.route('/detailed')
+@health_ns.route("/detailed")
 class DetailedHealth(Resource):
     """Health check detallado."""
 
@@ -434,33 +467,33 @@ class DetailedHealth(Resource):
         """Endpoint de health check detallado."""
         try:
             from app import db, cache
+
             health_checker = HealthChecker(db, cache)
             health_data = health_checker.comprehensive_health_check()
 
-            if health_data['status'] == 'healthy':
+            if health_data["status"] == "healthy":
                 return APIResponse.success(data=health_data)
-            elif health_data['status'] == 'warning':
+            elif health_data["status"] == "warning":
                 return APIResponse.success(
-                    data=health_data,
-                    message="System operating with warnings"
+                    data=health_data, message="System operating with warnings"
                 )
             else:
                 return APIResponse.error(
                     message="System unhealthy",
                     status_code=503,
                     error_code="SYSTEM_UNHEALTHY",
-                    details=health_data
+                    details=health_data,
                 )
         except Exception as e:
             logger.error(f"Detailed health check failed: {str(e)}")
             return APIResponse.error(
                 message="Health check failed",
                 status_code=503,
-                error_code="HEALTH_CHECK_ERROR"
+                error_code="HEALTH_CHECK_ERROR",
             )
 
 
-@health_ns.route('/database')
+@health_ns.route("/database")
 class DatabaseHealth(Resource):
     """Health check de base de datos."""
 
@@ -468,28 +501,29 @@ class DatabaseHealth(Resource):
         """Endpoint de health check de base de datos."""
         try:
             from app import db
+
             health_checker = HealthChecker(db, None)
             db_health = health_checker.check_database()
 
-            if db_health['status'] == 'healthy':
+            if db_health["status"] == "healthy":
                 return APIResponse.success(data=db_health)
             else:
                 return APIResponse.error(
                     message="Database unhealthy",
                     status_code=503,
                     error_code="DATABASE_UNHEALTHY",
-                    details=db_health
+                    details=db_health,
                 )
         except Exception as e:
             logger.error(f"Database health check failed: {str(e)}")
             return APIResponse.error(
                 message="Database health check failed",
                 status_code=503,
-                error_code="DB_HEALTH_CHECK_ERROR"
+                error_code="DB_HEALTH_CHECK_ERROR",
             )
 
 
-@health_ns.route('/cache')
+@health_ns.route("/cache")
 class CacheHealth(Resource):
     """Health check de cache."""
 
@@ -497,28 +531,29 @@ class CacheHealth(Resource):
         """Endpoint de health check de cache."""
         try:
             from app import cache
+
             health_checker = HealthChecker(None, cache)
             cache_health = health_checker.check_cache()
 
-            if cache_health['status'] in ['healthy', 'disabled']:
+            if cache_health["status"] in ["healthy", "disabled"]:
                 return APIResponse.success(data=cache_health)
             else:
                 return APIResponse.error(
                     message="Cache unhealthy",
                     status_code=503,
                     error_code="CACHE_UNHEALTHY",
-                    details=cache_health
+                    details=cache_health,
                 )
         except Exception as e:
             logger.error(f"Cache health check failed: {str(e)}")
             return APIResponse.error(
                 message="Cache health check failed",
                 status_code=503,
-                error_code="CACHE_HEALTH_CHECK_ERROR"
+                error_code="CACHE_HEALTH_CHECK_ERROR",
             )
 
 
 def init_health_check_routes(api, db, cache):
     """Inicializar rutas de health check."""
-    api.add_namespace(health_ns, path='/health')
+    api.add_namespace(health_ns, path="/health")
     logger.info("Health check routes initialized")

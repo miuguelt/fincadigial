@@ -10,7 +10,9 @@ _db_unavailable_until = 0.0
 _last_error = ""
 
 
-def mark_database_unavailable(error: object, retry_after_seconds: int = DEFAULT_RETRY_AFTER_SECONDS) -> None:
+def mark_database_unavailable(
+    error: object, retry_after_seconds: int = DEFAULT_RETRY_AFTER_SECONDS
+) -> None:
     global _db_unavailable_until, _last_error
     _db_unavailable_until = time.monotonic() + max(1, retry_after_seconds)
     _last_error = str(error)

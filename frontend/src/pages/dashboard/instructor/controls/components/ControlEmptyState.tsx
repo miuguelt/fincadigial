@@ -40,4 +40,3 @@ export const ControlEmptyState: React.FC<ControlEmptyStateProps> = ({
     </div>
   );
 };
-

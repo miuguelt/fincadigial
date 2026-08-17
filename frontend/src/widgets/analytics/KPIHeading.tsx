@@ -30,7 +30,7 @@ export const KPIHeading: React.FC<KPIHeadingProps> = ({
       <FitText
         as="h3"
         minScale={0.75}
-        className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground group-hover:text-primary/80 transition-colors"
+        className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground group-hover:text-primary/80 transition-colors"
       >
         {title}
       </FitText>

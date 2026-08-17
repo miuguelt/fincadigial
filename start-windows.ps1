@@ -17,7 +17,6 @@ param(
 	[switch]$MonitorLogs,
     [int]$Workers = 2
 )
-
 $ErrorActionPreference = "Continue"
 $ProjectRoot = "$PSScriptRoot"
 $BackendDir = "$ProjectRoot\backend"
@@ -34,12 +33,10 @@ $ScopedPm2Home = "$LogDir\pm2"
 $LegacyPm2Home = Join-Path $env:USERPROFILE '.pm2'
 $LifecycleMarker = "$LogDir\villaluz-lifecycle-v2.ready"
 $script:RedisAvailable = $true
-
 if (-not (Test-Path -LiteralPath $LifecycleModule)) {
     throw "No se encontró el módulo de lifecycle de Villaluz: $LifecycleModule"
 }
 Import-Module -Name $LifecycleModule -Force
-
 # ── Port Registry ──
 $PortsLoader = "$PSScriptRoot\..\..\_infrastructure\devbraind\config\ports-loader.ps1"
 if (Test-Path $PortsLoader) {
@@ -49,18 +46,14 @@ if (Test-Path $PortsLoader) {
     function Get-Port($Name) { switch -regex ($Name) { 'redis' { 6380 } 'postgres' { 5434 } 'villaluz-backend' { 8092 } 'villaluz-frontend' { 3005 } } }
     function Get-PortUrl($Name, $Host='127.0.0.1', $Db=0) { "redis://${Host}:$(Get-Port $Name)/${Db}" }
 }
-
 if (-not (Test-Path -LiteralPath $LogDir)) { New-Item -ItemType Directory -Path $LogDir -Force | Out-Null }
-
 function Write-Log { param($msg, $color="White") Write-Host "[$(Get-Date -Format 'HH:mm:ss')] $msg" -ForegroundColor $color }
-
 function Test-TcpPort {
     param(
         [string]$ComputerName = '127.0.0.1',
         [Parameter(Mandatory)][int]$Port,
         [int]$TimeoutMilliseconds = 750
     )
-
     $client = [Net.Sockets.TcpClient]::new()
     try {
         $connection = $client.ConnectAsync($ComputerName, $Port)
@@ -72,7 +65,6 @@ function Test-TcpPort {
         $client.Dispose()
     }
 }
-
 function Load-EnvFile {
     param([string]$Path)
     if (Test-Path $Path) {
@@ -102,9 +94,11 @@ if ([string]::IsNullOrWhiteSpace($env:DB_PASSWORD)) {
     Write-Warning "DB_PASSWORD no está definido. Configure backend/.env antes de iniciar Villaluz."
 }
 
+$BackupRoot = & "$ProjectRoot\scripts\backup\Resolve-VillaLuzBackupRoot.ps1" -ProjectRoot $ProjectRoot
+
 function Backup-Database {
     Write-Log "Creando respaldo automático de base de datos..." "Yellow"
-    
+
     # Salvaguarda: No respaldar si la base de datos está vacía, no es accesible o tiene menos de 10 tablas
     $tablesCountStr = $($env:PGPASSWORD=$env:DB_PASSWORD; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -h 127.0.0.1 -p 5434 -U villaluz -d finca_db -t -c "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public';" 2>$null)
     $tablesCountVal = 0
@@ -120,21 +114,21 @@ function Backup-Database {
     $timestamp = Get-Date -Format "yyyy-MM-ddTHH_mm_ssZ"
     $backupFileName = "db_backup_${timestamp}.tgz"
     $tmpSqlName = "finca_db_${timestamp}.sql"
-    
-    $tmpSqlPath = "$ProjectRoot\backups\$tmpSqlName"
-    $tgzPath = "$ProjectRoot\backups\$backupFileName"
-    
+
+    $tmpSqlPath = Join-Path $BackupRoot $tmpSqlName
+    $tgzPath = Join-Path $BackupRoot $backupFileName
+
     # Exportar SQL usando pg_dump nativo de Windows
     $env:PGPASSWORD=$env:DB_PASSWORD; & "C:\Program Files\PostgreSQL\18\bin\pg_dump.exe" -h 127.0.0.1 -p 5434 -U villaluz -E UTF8 -f $tmpSqlPath finca_db 2>$null
-    
+
     if (Test-Path $tmpSqlPath) {
         $compressScript = "import tarfile; tar = tarfile.open(r'$tgzPath', 'w:gz'); tar.add(r'$tmpSqlPath', arcname='$tmpSqlName'); tar.close()"
         & $PythonExe -c $compressScript
         Remove-Item -Path $tmpSqlPath -Force -ErrorAction SilentlyContinue
         Write-Log "✅ Respaldo de base de datos creado: $backupFileName" "Green"
-        
+
         # Limpieza de backups antiguos (mantener solo los últimos 10)
-        Get-ChildItem -Path "$ProjectRoot\backups" -Filter "*.tgz" | Sort-Object LastWriteTime -Descending | Select-Object -Skip 10 | ForEach-Object {
+        Get-ChildItem -Path $BackupRoot -Filter "*.tgz" | Sort-Object LastWriteTime -Descending | Select-Object -Skip 10 | ForEach-Object {
             Remove-Item $_.FullName -Force -ErrorAction SilentlyContinue
         }
     } else {
@@ -173,25 +167,25 @@ function Restore-Database-If-Empty {
                 return
             }
             Write-Log "⚠️ Base de datos vacía. Buscando respaldo reciente para restaurar..." "Yellow"
-            
-            $backupFile = Get-ChildItem -Path "$ProjectRoot\backups" -Filter "*.tgz" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-            $stableDump = "$ProjectRoot\backups\restore_point_stable\finca_db_dump.sql"
-            
+
+            $backupFile = Get-ChildItem -Path $BackupRoot -Filter "*.tgz" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+            $stableDump = Join-Path $BackupRoot 'restore_point_stable\finca_db_dump.sql'
+
             if ($backupFile) {
                 Write-Log "Encontrado respaldo: $($backupFile.Name). Restaurando..." "Yellow"
-                $tmpSql = "$ProjectRoot\backups\temp_restore.sql"
-                $tmpUtf8 = "$ProjectRoot\backups\temp_restore_utf8.sql"
+                $tmpSql = Join-Path $BackupRoot 'temp_restore.sql'
+                $tmpUtf8 = Join-Path $BackupRoot 'temp_restore_utf8.sql'
                 Remove-Item -Path $tmpSql, $tmpUtf8 -Force -ErrorAction SilentlyContinue
-                
+
                 try {
-                    $decompressScript = "import tarfile; tar = tarfile.open(r'$($backupFile.FullName)', 'r:gz'); tar.extractall(path=r'$ProjectRoot\backups'); tar.close()"
+                    $decompressScript = "import tarfile; tar = tarfile.open(r'$($backupFile.FullName)', 'r:gz'); tar.extractall(path=r'$BackupRoot'); tar.close()"
                     & $PythonExe -c $decompressScript
-                    
-                    $extractedSql = Get-ChildItem -Path "$ProjectRoot\backups" -Filter "*.sql" | Where-Object { $_.Name -ne "temp_restore_utf8.sql" } | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+
+                    $extractedSql = Get-ChildItem -Path $BackupRoot -Filter "*.sql" | Where-Object { $_.Name -ne "temp_restore_utf8.sql" } | Sort-Object LastWriteTime -Descending | Select-Object -First 1
                     if ($extractedSql) {
                         $convScript = "import codecs; f=open(r'$($extractedSql.FullName)', 'rb'); h=f.read(2); f.close(); enc='utf-16-le' if h in (b'\xff\xfe', b'\xfe\xff') else 'utf-8'; fin=codecs.open(r'$($extractedSql.FullName)', 'r', encoding=enc, errors='ignore'); fout=codecs.open(r'$tmpUtf8', 'w', encoding='utf-8'); fout.write(fin.read()); fin.close(); fout.close()"
                         & $PythonExe -c $convScript
-                        
+
                         # Restaurar con psql nativo
                         $env:PGPASSWORD = $env:DB_PASSWORD
                         & $psqlExe -h 127.0.0.1 -p 5434 -U villaluz -d finca_db -f $tmpUtf8 2>&1 | Out-Null
@@ -203,10 +197,10 @@ function Restore-Database-If-Empty {
                     Write-Log "Error al restaurar desde el tarball: $_" "Red"
                 }
             }
-            
+
             if (Test-Path $stableDump) {
                 Write-Log "Restaurando desde el volcado estable finca_db_dump.sql..." "Yellow"
-                $tmpUtf8 = "$ProjectRoot\backups\temp_stable_utf8.sql"
+                $tmpUtf8 = Join-Path $BackupRoot 'temp_stable_utf8.sql'
                 Remove-Item -Path $tmpUtf8 -Force -ErrorAction SilentlyContinue
                 $convScript = "import codecs; fin=codecs.open(r'$stableDump', 'r', encoding='utf-16-le', errors='ignore'); fout=codecs.open(r'$tmpUtf8', 'w', encoding='utf-8'); fout.write(fin.read()); fin.close(); fout.close()"
                 & $PythonExe -c $convScript
@@ -322,7 +316,7 @@ function Start-TransparentProcess {
     # Python requires -u to run unbuffered so output appears immediately in log files
     $finalArgs = if ($FilePath -match "python") { "-u " + $Arguments } else { $Arguments }
     $cmdArg = "/c `"`"$FilePath`" $finalArgs > `"$LogPath`" 2> `"$ErrPath`"`""
-    
+
     $p = Start-Process -FilePath "cmd.exe" -ArgumentList $cmdArg -WorkingDirectory $WorkingDir `
         -WindowStyle Hidden -PassThru
 
@@ -665,7 +659,7 @@ if ($Daemon -or -not $MonitorLogs) {
     exit 0
 } else {
     try { $host.UI.RawUI.WindowTitle = "Villaluz — Monitoring (press Q to stop, Ctrl+C to detach)" } catch {}
-    
+
     Write-Log "`n=== Villaluz Windows-Native Ready ===" "Green"
     Write-Log "Frontend: http://localhost:${fePort}" "Cyan"
     Write-Log "Backend:  http://localhost:${bePort}/api/v1/health" "Cyan"
@@ -673,10 +667,10 @@ if ($Daemon -or -not $MonitorLogs) {
         Write-Log "Nodo campo: http://${fieldNodeAddress}:${fePort}" "Green"
     }
     Write-Log "Logs:     npx pm2 logs" "DarkGray"
-    
+
     # Lanzar visor de logs
     & $NpxExe pm2 logs
-    
+
     # Al salir con Ctrl-C, paramos
     Write-Log "Saliendo... Parando PM2" "Yellow"
     foreach ($appName in $selectedApps) {

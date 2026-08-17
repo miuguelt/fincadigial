@@ -5,6 +5,7 @@ from datetime import date
 from flask_jwt_extended import decode_token
 from app import db
 
+
 def test_animal_field_transfer_meta(client, auth_headers, app):
     """
     Test de integración para validar la lógica de traslado masivo de animales,
@@ -13,9 +14,9 @@ def test_animal_field_transfer_meta(client, auth_headers, app):
     """
     with app.app_context():
         # Obtener el finca_id del token JWT para asociar los registros de prueba
-        token_str = auth_headers['Authorization'].split(' ')[1]
+        token_str = auth_headers["Authorization"].split(" ")[1]
         claims = decode_token(token_str)
-        finca_id = claims['finca_id']
+        finca_id = claims["finca_id"]
 
         # 1. Crear alimento/pasto
         food = FoodTypes(
@@ -24,7 +25,7 @@ def test_animal_field_transfer_meta(client, auth_headers, app):
             area=10,
             handlings="Manejo",
             gauges="G",
-            finca_id=finca_id
+            finca_id=finca_id,
         )
         # 2. Crear especie
         species = Species(name="Bovino Test")
@@ -47,7 +48,7 @@ def test_animal_field_transfer_meta(client, auth_headers, app):
             gauges="G",
             handlings="H",
             food_type_id=food.id,
-            finca_id=finca_id
+            finca_id=finca_id,
         )
         field_b = Fields(
             name="Potrero B",
@@ -58,7 +59,7 @@ def test_animal_field_transfer_meta(client, auth_headers, app):
             gauges="G",
             handlings="H",
             food_type_id=food.id,
-            finca_id=finca_id
+            finca_id=finca_id,
         )
         db.session.add_all([field_a, field_b])
         db.session.commit()
@@ -70,7 +71,7 @@ def test_animal_field_transfer_meta(client, auth_headers, app):
             weight=350,
             birth_date=date.today(),
             breeds_id=breed.id,
-            finca_id=finca_id
+            finca_id=finca_id,
         )
         animal_2 = Animals(
             record="A002",
@@ -78,7 +79,7 @@ def test_animal_field_transfer_meta(client, auth_headers, app):
             weight=400,
             birth_date=date.today(),
             breeds_id=breed.id,
-            finca_id=finca_id
+            finca_id=finca_id,
         )
         db.session.add_all([animal_1, animal_2])
         db.session.commit()
@@ -88,7 +89,7 @@ def test_animal_field_transfer_meta(client, auth_headers, app):
             animal_id=animal_1.id,
             field_id=field_b.id,
             assignment_date=date.today(),
-            finca_id=finca_id
+            finca_id=finca_id,
         )
         db.session.add(af)
         db.session.commit()
@@ -104,10 +105,12 @@ def test_animal_field_transfer_meta(client, auth_headers, app):
         "animal_ids": [animal_1_id, animal_2_id],
         "field_id": field_b_id,
         "date": date.today().isoformat(),
-        "notes": "Traslado masivo de prueba"
+        "notes": "Traslado masivo de prueba",
     }
 
-    resp = client.post('/api/v1/animal-fields/transfer', json=payload, headers=auth_headers)
+    resp = client.post(
+        "/api/v1/animal-fields/transfer", json=payload, headers=auth_headers
+    )
     assert resp.status_code == 200
 
     body = resp.get_json()
@@ -117,7 +120,7 @@ def test_animal_field_transfer_meta(client, auth_headers, app):
     meta = body["meta"]
     assert meta["total_requested"] == 2
     assert meta["transferred_count"] == 1  # Solo animal_2 fue trasladado
-    assert meta["skipped_count"] == 1      # animal_1 fue omitido
+    assert meta["skipped_count"] == 1  # animal_1 fue omitido
     assert animal_1_id in meta["skipped_animal_ids"]
 
     # Validar que el mensaje es descriptivo
@@ -127,7 +130,11 @@ def test_animal_field_transfer_meta(client, auth_headers, app):
     # la asignación histórica, no dejar al animal sin potrero.
     move_to_a = client.post(
         "/api/v1/animal-fields/transfer",
-        json={"animal_ids": [animal_2_id], "field_id": field_a_id, "date": date.today().isoformat()},
+        json={
+            "animal_ids": [animal_2_id],
+            "field_id": field_a_id,
+            "date": date.today().isoformat(),
+        },
         headers=auth_headers,
     )
     assert move_to_a.status_code == 200
@@ -135,7 +142,11 @@ def test_animal_field_transfer_meta(client, auth_headers, app):
 
     return_to_b = client.post(
         "/api/v1/animal-fields/transfer",
-        json={"animal_ids": [animal_2_id], "field_id": field_b_id, "date": date.today().isoformat()},
+        json={
+            "animal_ids": [animal_2_id],
+            "field_id": field_b_id,
+            "date": date.today().isoformat(),
+        },
         headers=auth_headers,
     )
     assert return_to_b.status_code == 200

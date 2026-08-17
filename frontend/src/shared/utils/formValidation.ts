@@ -91,14 +91,18 @@ export function validateFormSections(
   const messages: string[] = [];
 
   sections.forEach((section) => {
-    section.fields.forEach((field) => {
+    if (section.showIf?.(formData) === false) return;
+
+    section.fields
+      .filter((field) => field.showIf?.(formData) !== false)
+      .forEach((field) => {
       const key = String(field.name);
       const error = validateField(field, formData[key], formData);
       if (error) {
         errors[key] = error;
         messages.push(`${field.label}: ${error}`);
       }
-    });
+      });
   });
 
   return { errors, messages };

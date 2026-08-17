@@ -21,11 +21,11 @@ export const useCacheKey = (fincaId?: number) => {
     const resolvedFincaId = fincaId ?? getCurrentFincaId();
     const fincaSuffix = resolvedFincaId ? `@finca:${resolvedFincaId}` : '';
     const baseKey = `${apiBaseURL}/${endpoint}${fincaSuffix}`;
-    
+
     if (!params || Object.keys(params).length === 0) {
       return baseKey;
     }
-    
+
     // Ordenar parámetros para consistencia
     const sortedParams = Object.keys(params)
       .sort()
@@ -33,7 +33,7 @@ export const useCacheKey = (fincaId?: number) => {
         result[key] = params[key];
         return result;
       }, {} as Record<string, any>);
-    
+
     const paramString = JSON.stringify(sortedParams);
     return `${baseKey}:${btoa(paramString)}`;
   }, [fincaId]);
@@ -57,15 +57,15 @@ export const CacheUtils = {
     vaccines: 'api:vaccines',
     vaccinations: 'api:vaccinations'
   },
-  
+
   // Generar claves relacionadas para invalidación en cascada
   getRelatedKeys: (entity: string, id?: number): string[] => {
     const keys = [`api:${entity}`];
-    
+
     if (id) {
       keys.push(`api:${entity}:${id}`);
     }
-    
+
     // Agregar entidades relacionadas
     switch (entity) {
       case 'animals':
@@ -81,7 +81,7 @@ export const CacheUtils = {
         keys.push('api:treatmentMedications');
         break;
     }
-    
+
     return keys;
   },
 

@@ -21,7 +21,7 @@ export class GeofenceService {
     try {
       const res = await (animalFieldsService as any).getAnimalFields(); // Asumiendo que existe el método
       const data = res.items || res.data?.items || [];
-      
+
       this.fences = data
         .filter((f: any) => f.latitude && f.longitude)
         .map((f: any) => ({
@@ -32,7 +32,7 @@ export class GeofenceService {
           radius: f.radius_meters || 50,
           state: f.state
         }));
-      
+
     } catch (error) {
       console.error('[Geofence] Error al cargar geocercas:', error);
     }
@@ -46,7 +46,7 @@ export class GeofenceService {
 
     for (const fence of this.fences) {
       const distance = this.calculateDistance(lat, lng, fence.latitude, fence.longitude);
-      
+
       if (distance <= fence.radius) {
         if (this.currentInsideFenceId !== fence.id) {
           this.onEnterFence(fence);
@@ -64,12 +64,12 @@ export class GeofenceService {
 
   private onEnterFence(fence: FincaGeofence) {
     console.warn(`[Geofence] Entrando a: ${fence.name} (Estado: ${fence.state})`);
-    
+
     if (fence.state === 'Restringido' || fence.state === 'Mantenimiento' || fence.state === 'Dañado') {
       // Alerta Crítica
       try {
         if ('vibrate' in navigator) navigator.vibrate([500, 200, 500]);
-        
+
         // Notificación visual (Placeholder si toast no está configurado igual)
         alert(`⚠️ ZONA DE PELIGRO: Has ingresado a ${fence.name}. Estado: ${fence.state}. Por favor retírate inmediatamente.`);
       } catch { /* noop */ }

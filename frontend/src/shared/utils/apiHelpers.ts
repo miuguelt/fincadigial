@@ -49,7 +49,7 @@ export const extractWrappedData = <T = any>(response: any): T[] => {
  * @returns Array filtrado o array vacío
  */
 export const safeFilter = <T = any>(
-  data: any, 
+  data: any,
   predicate: (item: T) => boolean
 ): T[] => {
   const arrayData = safeArray<T>(data);
@@ -63,7 +63,7 @@ export const safeFilter = <T = any>(
  * @returns Array mapeado o array vacío
  */
 export const safeMap = <T = any, R = any>(
-  data: any, 
+  data: any,
   mapper: (item: T, index: number) => R
 ): R[] => {
   const arrayData = safeArray<T>(data);
@@ -78,7 +78,7 @@ export const safeMap = <T = any, R = any>(
  * @returns Resultado de la reducción
  */
 export const safeReduce = <T = any, R = any>(
-  data: any, 
+  data: any,
   reducer: (acc: R, item: T, index: number) => R,
   initialValue: R
 ): R => {
@@ -131,7 +131,7 @@ export const safeLast = <T = any>(data: any): T | undefined => {
  * @returns Elemento encontrado o undefined
  */
 export const safeFind = <T = any>(
-  data: any, 
+  data: any,
   predicate: (item: T) => boolean
 ): T | undefined => {
   const arrayData = safeArray<T>(data);
@@ -145,7 +145,7 @@ export const safeFind = <T = any>(
  * @returns true si algún elemento cumple la condición
  */
 export const safeSome = <T = any>(
-  data: any, 
+  data: any,
   predicate: (item: T) => boolean
 ): boolean => {
   const arrayData = safeArray<T>(data);
@@ -159,7 +159,7 @@ export const safeSome = <T = any>(
  * @returns true si todos los elementos cumplen la condición
  */
 export const safeEvery = <T = any>(
-  data: any, 
+  data: any,
   predicate: (item: T) => boolean
 ): boolean => {
   const arrayData = safeArray<T>(data);
@@ -189,7 +189,7 @@ export const getUserRoleNames = (userRolesData: any) => {
 export const getRecentControls = (controlsData: any, daysAgo: number = 30) => {
   const now = new Date();
   const cutoffDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
-  
+
   return safeFilter(controlsData, (control: any) => {
     const controlDate = new Date(control.checkup_date);
     return controlDate >= cutoffDate;

@@ -76,12 +76,12 @@ async function dbGet<T = any>(key: string): Promise<T | null> {
     const db = await getDB();
     const entry = await db.get(STORE, key) as FieldDataEntry | undefined;
     if (!entry) return null;
-    
+
     // Si estamos sin conexión (offline), permitimos usar datos expirados
     // para que la app no deje de funcionar en periodos largos sin internet.
     const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
     if (!isOffline && Date.now() > entry.expiresAt) return null; // Expirado
-    
+
     return entry.data as T;
   } catch {
     return null;
@@ -204,4 +204,3 @@ export class FieldReadyService {
     return (await dbGet<any[]>(key)) || [];
   }
 }
-

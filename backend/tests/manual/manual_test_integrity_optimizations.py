@@ -13,17 +13,18 @@ import statistics
 # Agregar el directorio raíz al path para importar la app
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+
 def test_query_optimizations():
     """Prueba las optimizaciones de queries simuladas."""
     print("PRUEBA DE OPTIMIZACIONES DE QUERIES")
-    print("="*50)
+    print("=" * 50)
 
     # Simular diferentes tipos de queries
     query_types = {
-        'COUNT tradicional': lambda: simulate_count_query(),
-        'EXISTS optimizado': lambda: simulate_exists_query(),
-        'UNION ALL batch': lambda: simulate_union_batch_query(),
-        'Individual queries': lambda: simulate_individual_queries()
+        "COUNT tradicional": lambda: simulate_count_query(),
+        "EXISTS optimizado": lambda: simulate_exists_query(),
+        "UNION ALL batch": lambda: simulate_union_batch_query(),
+        "Individual queries": lambda: simulate_individual_queries(),
     }
 
     results = {}
@@ -38,28 +39,29 @@ def test_query_optimizations():
             times.append(end_time - start_time)
 
         results[query_type] = {
-            'avg_time': statistics.mean(times),
-            'min_time': min(times),
-            'max_time': max(times),
-            'total_time': sum(times)
+            "avg_time": statistics.mean(times),
+            "min_time": min(times),
+            "max_time": max(times),
+            "total_time": sum(times),
         }
 
     # Mostrar resultados
     print(f"\nResultados de rendimiento ({iterations} iteraciones):")
     print("-" * 50)
 
-    baseline = results['COUNT tradicional']['avg_time']
+    baseline = results["COUNT tradicional"]["avg_time"]
 
     for query_type, stats in results.items():
-        improvement = ((baseline - stats['avg_time']) / baseline) * 100
-        speed_factor = baseline / stats['avg_time']
+        improvement = ((baseline - stats["avg_time"]) / baseline) * 100
+        speed_factor = baseline / stats["avg_time"]
 
         print(f"\n{query_type}:")
-        print(f"  Tiempo promedio: {stats['avg_time']*1000:.3f}ms")
-        print(f"  Tiempo mínimo: {stats['min_time']*1000:.3f}ms")
-        print(f"  Tiempo máximo: {stats['max_time']*1000:.3f}ms")
+        print(f"  Tiempo promedio: {stats['avg_time'] * 1000:.3f}ms")
+        print(f"  Tiempo mínimo: {stats['min_time'] * 1000:.3f}ms")
+        print(f"  Tiempo máximo: {stats['max_time'] * 1000:.3f}ms")
         print(f"  Mejora vs COUNT: {improvement:.1f}%")
         print(f"  Factor velocidad: {speed_factor:.1f}x")
+
 
 def simulate_count_query():
     """Simula una query COUNT tradicional."""
@@ -70,6 +72,7 @@ def simulate_count_query():
             total += 1
     return total
 
+
 def simulate_exists_query():
     """Simula una query EXISTS optimizada."""
     # Simular detener en primera coincidencia
@@ -77,6 +80,7 @@ def simulate_exists_query():
         if i % 7 == 0:  # Primera coincidencia
             return 1
     return 0
+
 
 def simulate_union_batch_query():
     """Simula una query UNION ALL batch."""
@@ -89,6 +93,7 @@ def simulate_union_batch_query():
                 break  # EXISTS se detiene
     return results
 
+
 def simulate_individual_queries():
     """Simula queries individuales para cada tabla."""
     results = []
@@ -100,10 +105,11 @@ def simulate_individual_queries():
         results.append((table, count))
     return results
 
+
 def test_cache_performance():
     """Prueba el rendimiento del cache."""
     print("\n\nPRUEBA DE RENDIMIENTO DE CACHE")
-    print("="*50)
+    print("=" * 50)
 
     # Simular cache simple
     cache = {}
@@ -149,11 +155,12 @@ def test_cache_performance():
     speed_factor = no_cache_time / cache_time
 
     print(f"\nResultados de cache ({operations} operaciones):")
-    print(f"  Tiempo sin cache: {no_cache_time*1000:.3f}ms")
-    print(f"  Tiempo con cache: {cache_time*1000:.3f}ms")
+    print(f"  Tiempo sin cache: {no_cache_time * 1000:.3f}ms")
+    print(f"  Tiempo con cache: {cache_time * 1000:.3f}ms")
     print(f"  Mejora: {improvement:.1f}%")
     print(f"  Factor velocidad: {speed_factor:.1f}x")
     print(f"  Entradas en cache: {len(cache)}")
+
 
 def simulate_integrity_check(model_class, record_id):
     """Simula una verificación de integridad."""
@@ -161,10 +168,11 @@ def simulate_integrity_check(model_class, record_id):
     time.sleep(0.0001)  # 0.1ms simulado
     return [("treatments", 1), ("vaccinations", 0)]
 
+
 def test_memory_usage():
     """Prueba el uso de memoria del cache."""
     print("\n\nPRUEBA DE USO DE MEMORIA")
-    print("="*50)
+    print("=" * 50)
 
     cache = {}
     cache_timestamps = {}
@@ -185,7 +193,8 @@ def test_memory_usage():
 
     # Limpiar cache expirado
     expired_keys = [
-        key for key, timestamp in cache_timestamps.items()
+        key
+        for key, timestamp in cache_timestamps.items()
         if (current_time - timestamp) > cache_ttl
     ]
 
@@ -197,6 +206,7 @@ def test_memory_usage():
     print(f"  Entradas totales: {len(cache)}")
     print(f"  Entradas eliminadas: {len(expired_keys)}")
     print(f"  Memoria estimada: {len(str(cache))} bytes")
+
 
 def main():
     """Función principal del script de pruebas."""
@@ -213,9 +223,9 @@ def main():
         # Probar uso de memoria
         test_memory_usage()
 
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("PRUEBAS COMPLETADAS EXITOSAMENTE")
-        print("="*60)
+        print("=" * 60)
 
         print("\nRESUMEN DE OPTIMIZACIONES IMPLEMENTADAS:")
         print("✓ EXISTS en lugar de COUNT para detener búsqueda en primer match")
@@ -230,8 +240,10 @@ def main():
     except Exception as e:
         print(f"\nERROR durante las pruebas: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
+
 
 if __name__ == "__main__":
     exit(main())

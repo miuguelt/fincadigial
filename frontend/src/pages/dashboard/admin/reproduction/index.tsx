@@ -68,7 +68,7 @@ const ReproductionPage: React.FC = () => {
                 {val ? formatDateColombia(val) : '---'}
               </span>
               {item.days_to_birth !== undefined && (
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[11px] text-muted-foreground">
                   {item.days_to_birth > 0 ? `Faltan ${item.days_to_birth} días` : item.days_to_birth === 0 ? 'Hoy' : `Vencido por ${Math.abs(item.days_to_birth)} días`}
                 </span>
               )}
@@ -113,7 +113,7 @@ const ReproductionPage: React.FC = () => {
                 </span>
               </div>
               {item.complications && (
-                <Badge variant="destructive" className="text-[9px] px-1.5 py-0 rounded font-bold w-fit">
+                <Badge variant="destructive" className="text-[11px] px-1.5 py-0 rounded font-bold w-fit">
                   Complicaciones
                 </Badge>
               )}

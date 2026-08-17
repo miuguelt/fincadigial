@@ -105,7 +105,7 @@ export default function SystemGuidesTab() {
 					<button
 						onClick={() => setSelectedCategory("all")}
 						className={cn(
-							"px-2.5 py-1 text-[10px] font-bold rounded-md border transition-colors",
+							"px-2.5 py-1 text-[11px] font-bold rounded-md border transition-colors",
 							selectedCategory === "all"
 								? "bg-primary text-primary-foreground border-primary"
 								: "bg-card text-muted-foreground border-border",
@@ -118,7 +118,7 @@ export default function SystemGuidesTab() {
 							key={c}
 							onClick={() => setSelectedCategory(c)}
 							className={cn(
-								"px-2.5 py-1 text-[10px] font-bold rounded-md border transition-colors",
+								"px-2.5 py-1 text-[11px] font-bold rounded-md border transition-colors",
 								selectedCategory === c
 									? "bg-primary text-primary-foreground border-primary"
 									: "bg-card text-muted-foreground border-border",
@@ -141,7 +141,7 @@ export default function SystemGuidesTab() {
 									{g.name.replace(".md", "")}
 								</span>
 							</div>
-							<p className="text-[10px] text-muted-foreground mt-0.5 fit-clamp">
+							<p className="text-[11px] text-muted-foreground mt-0.5 fit-clamp">
 								{g.path}
 							</p>
 						</button>

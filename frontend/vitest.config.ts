@@ -3,7 +3,7 @@ import viteConfig from './vite.config'
 
 export default defineConfig((env) => {
   const baseConfig = typeof viteConfig === 'function' ? viteConfig(env) : viteConfig
-  
+
   // Eliminar define problemático en el entorno Vitest
   if (baseConfig.define) {
     delete baseConfig.define
@@ -47,4 +47,3 @@ export default defineConfig((env) => {
     }
   })
 })
-

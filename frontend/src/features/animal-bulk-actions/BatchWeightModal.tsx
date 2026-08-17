@@ -87,7 +87,7 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
               {" "}
               <DialogTitle className="text-xl font-bold tracking-tight text-white flex items-center gap-3 fit-clamp drop-shadow-sm">
                 Control de Biomasa
-                <Badge className="bg-white/20 text-white font-bold text-[10px] px-2.5 py-0.5 rounded-[var(--radius-full)] border-white/10 shadow-sm">
+                <Badge className="bg-white/20 text-white font-bold text-[11px] px-2.5 py-0.5 rounded-[var(--radius-full)] border-white/10 shadow-sm">
                   {selectedAnimalIds.length} Sujetos
                 </Badge>
               </DialogTitle>
@@ -101,7 +101,7 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
               <span className="animate-ping absolute inline-flex h-full w-full rounded-[var(--radius-full)] bg-white opacity-75"></span>
               <span className="relative inline-flex rounded-[var(--radius-full)] h-2 w-2 bg-white"></span>
             </div>
-            <p className="text-[10px] font-bold text-white uppercase tracking-tight">
+            <p className="text-[11px] font-bold text-white uppercase tracking-tight">
               Métrica en Tiempo Real
             </p>
           </div>
@@ -150,7 +150,7 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
                   {" "}
                   <div className="space-y-2">
                     {" "}
-                    <Label className="text-[10px] font-bold uppercase text-muted-foreground/40 tracking-wider">
+                    <Label className="text-[11px] font-bold uppercase text-muted-foreground/40 tracking-wider">
                       Fecha Operativo
                     </Label>{" "}
                     <Input
@@ -162,7 +162,7 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
                   </div>{" "}
                   <div className="space-y-2">
                     {" "}
-                    <Label className="text-[10px] font-bold uppercase text-muted-foreground/40 tracking-wider">
+                    <Label className="text-[11px] font-bold uppercase text-muted-foreground/40 tracking-wider">
                       Notas de Seguimiento
                     </Label>{" "}
                     <Input
@@ -205,7 +205,7 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
                       {" "}
                       <div className="relative z-10">
                         {" "}
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40 mb-2">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/40 mb-2">
                           Impacto Lote
                         </p>{" "}
                         <h5 className="text-5xl font-bold tabular-nums tracking-tighter text-primary">
@@ -218,7 +218,7 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
                       </div>{" "}
                       <div className="bg-background rounded-xl p-5 border border-border/50 shadow-sm relative z-10">
                         {" "}
-                        <p className="text-[10px] font-bold uppercase text-muted-foreground/30 tracking-wider mb-2 flex items-center gap-2">
+                        <p className="text-[11px] font-bold uppercase text-muted-foreground/30 tracking-wider mb-2 flex items-center gap-2">
                           {" "}
                           <IconMeat
                             size="sm"
@@ -274,7 +274,7 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
               />{" "}
               <div className="flex flex-col text-right">
                 {" "}
-                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider leading-none mb-1">
+                <span className="text-[11px] font-bold text-muted-foreground/40 uppercase tracking-wider leading-none mb-1">
                   Métrica Actual
                 </span>{" "}
                 <span

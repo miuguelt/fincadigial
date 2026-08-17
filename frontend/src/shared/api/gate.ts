@@ -23,7 +23,7 @@ export function shouldSkipGate(config: InternalAxiosRequestConfig): boolean {
 
 export async function ensureAuthReady(): Promise<void> {
   if (authGateState === 'ready' || authGateState === 'unauthenticated') return;
-  
+
   // SILENCIO: Si no hay intención de sesión (flag en LS), no disparamos errores 401 innecesarios
   const hasSessionHint = localStorage.getItem(AUTH_SESSION_ACTIVE_KEY) === '1';
   if (!hasSessionHint) {
@@ -54,7 +54,7 @@ export async function ensureAuthReady(): Promise<void> {
           } catch (e2: any) {
             const st2 = e2?.response?.status ?? 0;
             if (API_CONFIG.debugMode) console.warn('[api][gate] Refresh + /auth/me reintento falló:', st2, e2?.message);
-            throw e2; 
+            throw e2;
           }
         } else {
           throw e;
@@ -64,12 +64,12 @@ export async function ensureAuthReady(): Promise<void> {
       if (API_CONFIG.debugMode) console.log('[api][gate] /auth/me status:', st);
       if (st === 200) authGateState = 'ready';
       else if (st === 401) authGateState = 'unauthenticated';
-      else authGateState = 'ready'; 
+      else authGateState = 'ready';
     } catch (e: any) {
       const st = e?.response?.status ?? 0;
       if (API_CONFIG.debugMode) console.warn('[api][gate] /auth/me error tras reintentos:', st, e?.message);
       if (st === 401) authGateState = 'unauthenticated';
-      else authGateState = 'ready'; 
+      else authGateState = 'ready';
     } finally {
       if (API_CONFIG.debugMode) console.log('[api][gate] Finalizado. Estado =', authGateState);
       authGatePromise = null;
@@ -78,4 +78,3 @@ export async function ensureAuthReady(): Promise<void> {
 
   return authGatePromise;
 }
-

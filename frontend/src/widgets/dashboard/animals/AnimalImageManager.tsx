@@ -44,7 +44,7 @@ export function AnimalImageManager({
         setActiveTab('upload');
       }
     };
-    
+
     window.addEventListener('open-upload-tab', handleOpenUploadTab as EventListener);
     return () => {
       window.removeEventListener('open-upload-tab', handleOpenUploadTab as EventListener);

@@ -20,7 +20,7 @@ function CaseHeader({ item }: { item: TechnicalAssistanceRequest }) {
     <><header className="flex min-w-0 items-start gap-3">
       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Stethoscope className="h-5 w-5" aria-hidden /></span>
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-primary">Respuesta veterinaria</p>
+        <p className="text-[11px] font-black uppercase tracking-[0.16em] text-primary">Respuesta veterinaria</p>
         <h2 className="mt-1 text-lg font-black leading-tight text-foreground">{item.title}</h2>
         <div className="mt-2 flex flex-wrap items-center gap-2"><Badge variant={priority.badge} size="sm">{priority.label}</Badge><span className="text-xs font-bold text-muted-foreground">{category.label}</span></div>
       </div>

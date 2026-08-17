@@ -1159,25 +1159,25 @@ export const AnimalHistoryModal = ({
                       <TabsTrigger value="treatments" className="text-xs">
                         Tratamientos
                         {treatmentRows.length > 0 && (
-                          <span className="ml-1 px-1.5 py-0.5 text-[10px] rounded-full bg-info/20 text-info font-bold">{treatmentRows.length}</span>
+                          <span className="ml-1 px-1.5 py-0.5 text-[11px] rounded-full bg-info/20 text-info font-bold">{treatmentRows.length}</span>
                         )}
                       </TabsTrigger>
                       <TabsTrigger value="fields" className="text-xs">
                         Potreros
                         {fieldRows.length > 0 && (
-                          <span className="ml-1 px-1.5 py-0.5 text-[10px] rounded-full bg-warning/20 text-warning font-bold">{fieldRows.length}</span>
+                          <span className="ml-1 px-1.5 py-0.5 text-[11px] rounded-full bg-warning/20 text-warning font-bold">{fieldRows.length}</span>
                         )}
                       </TabsTrigger>
                       <TabsTrigger value="diseases" className="text-xs">
                         Enfermedades
                         {diseaseRows.length > 0 && (
-                          <span className="ml-1 px-1.5 py-0.5 text-[10px] rounded-full bg-destructive/20 text-destructive font-bold">{diseaseRows.length}</span>
+                          <span className="ml-1 px-1.5 py-0.5 text-[11px] rounded-full bg-destructive/20 text-destructive font-bold">{diseaseRows.length}</span>
                         )}
                       </TabsTrigger>
                       <TabsTrigger value="controls" className="text-xs">
                         Controles
                         {controlRows.length > 0 && (
-                          <span className="ml-1 px-1.5 py-0.5 text-[10px] rounded-full bg-success/20 text-success font-bold">{controlRows.length}</span>
+                          <span className="ml-1 px-1.5 py-0.5 text-[11px] rounded-full bg-success/20 text-success font-bold">{controlRows.length}</span>
                         )}
                       </TabsTrigger>
                       <TabsTrigger value="reproductive" className="text-xs">
@@ -1482,7 +1482,7 @@ export const AnimalHistoryModal = ({
                                     {r.disease}
                                   </h3>
                                   {isActive && (
-                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-destructive/10 text-destructive px-1.5 py-0.5 rounded-full">
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider bg-destructive/10 text-destructive px-1.5 py-0.5 rounded-full">
                                       <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />Activo
                                     </span>
                                   )}

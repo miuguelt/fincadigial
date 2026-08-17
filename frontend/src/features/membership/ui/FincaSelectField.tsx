@@ -62,7 +62,7 @@ export const FincaSelectField = ({
           </span>
         ) : (
           <>
-            <Badge variant="outline" className="text-[10px]">
+            <Badge variant="outline" className="text-[11px]">
               {fincas.length} disponibles
             </Badge>
             {hiddenCount > 0 && (

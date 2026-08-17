@@ -20,7 +20,7 @@ export const PremiumAnimalsHeader: React.FC<PremiumAnimalsHeaderProps> = ({ item
 
     items.forEach(animal => {
       totalAnimals++;
-      
+
       const gender = (animal.sex || animal.gender || '').toLowerCase();
       if (gender === 'macho' || gender === 'm') totalMales++;
       if (gender === 'hembra' || gender === 'f') totalFemales++;

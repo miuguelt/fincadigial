@@ -88,7 +88,7 @@ class AnimalsService extends BaseService<AnimalResponse> {
   private buildApiPayload(data: Partial<AnimalInput> & { [k: string]: any }, isPatch = false): Record<string, any> {
     if (isPatch) {
       const payload: Record<string, any> = {};
-      
+
       if ('record' in data || 'code' in data || 'registro' in data) {
         payload.record = data.record ?? (data as any).code ?? (data as any).registro;
       }
@@ -485,4 +485,3 @@ export const animalsService = new AnimalsService();
 export const animalService = animalsService;
 export const getAnimals = (params?: any) => animalsService.getAnimals(params as any);
 export const getAnimalStatus = () => animalsService.getAnimalStatusStats();
-

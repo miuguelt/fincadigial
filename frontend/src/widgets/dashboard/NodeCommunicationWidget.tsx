@@ -152,7 +152,7 @@ export const NodeCommunicationWidget: React.FC = () => {
               Radio Enlace Mesh
             </h3>
             <p
-              className={`text-[10px] font-bold uppercase tracking-widest ${isFieldMode ? "text-indigo-400" : "text-muted-foreground"}`}
+              className={`text-[11px] font-bold uppercase tracking-widest ${isFieldMode ? "text-indigo-400" : "text-muted-foreground"}`}
             >
               {nodes.length} Nodos en Alcance
             </p>
@@ -164,7 +164,7 @@ export const NodeCommunicationWidget: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-[400px]">
         {/* Node List */}
         <div className="flex flex-col h-full">
-          <h4 className="text-[10px] font-semibold text-sm mb-3 opacity-50">
+          <h4 className="text-[11px] font-semibold text-sm mb-3 opacity-50">
             Compañeros Cercanos
           </h4>
           <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
@@ -204,7 +204,7 @@ export const NodeCommunicationWidget: React.FC = () => {
                         {node.name}
                       </p>
                       <p
-                        className={`text-[9px] font-bold uppercase opacity-60`}
+                        className={`text-[11px] font-bold uppercase opacity-60`}
                       >
                         {node.connectionType === "bluetooth"
                           ? "Bluetooth"
@@ -231,7 +231,7 @@ export const NodeCommunicationWidget: React.FC = () => {
 
         {/* Messaging Interface */}
         <div className="flex flex-col h-full">
-          <h4 className="text-[10px] font-semibold text-sm mb-3 opacity-50">
+          <h4 className="text-[11px] font-semibold text-sm mb-3 opacity-50">
             Consola de Comunicación
           </h4>
           <div
@@ -241,7 +241,7 @@ export const NodeCommunicationWidget: React.FC = () => {
               {messages.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center opacity-30">
                   <IconMessageCircle size="lg" className="mb-2" />
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-center">
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-center">
                     Sin mensajes recientes en la red
                   </p>
                 </div>
@@ -254,10 +254,10 @@ export const NodeCommunicationWidget: React.FC = () => {
                     className={`p-3 rounded-xl ${msg.type === "alert" ? (isFieldMode ? "bg-destructive text-white" : "bg-destructive/5 text-destructive border border-red-100") : isFieldMode ? "bg-zinc-800 text-white" : "bg-card text-foreground border border-border shadow-sm"}`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[9px] font-semibold text-sm opacity-60">
+                      <span className="text-[11px] font-semibold text-sm opacity-60">
                         {msg.from}
                       </span>
-                      <span className="text-[8px] opacity-40">
+                      <span className="text-[11px] opacity-40">
                         {msg.timestamp.toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -327,7 +327,7 @@ export const NodeCommunicationWidget: React.FC = () => {
               )}
             </div>
             <div className="flex-1">
-              <p className="text-[10px] font-semibold text-sm opacity-60">
+              <p className="text-[11px] font-semibold text-sm opacity-60">
                 Mensaje de {showNotification.from}
               </p>
               <p className="text-sm font-black tracking-tight">

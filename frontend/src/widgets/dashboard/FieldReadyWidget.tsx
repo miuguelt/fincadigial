@@ -167,7 +167,7 @@ export const FieldReadyWidget: React.FC = () => {
           <div className="bg-warning/10 border border-amber-300 rounded-xl p-3 flex items-start gap-3">
             <WifiOff className="h-5 w-5 text-warning shrink-0 mt-0.5" />
             <div className="text-sm text-warning">
-              <strong>Todavía no ha bajado los datos.</strong> Conéctese a internet antes de 
+              <strong>Todavía no ha bajado los datos.</strong> Conéctese a internet antes de
               salir al potrero para que la información del ganado le quede guardada.
             </div>
           </div>

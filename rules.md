@@ -4,7 +4,12 @@
 - Documentation: Always update /docs
 - Logging: All critical logs to /maintenance
 - Standards: WCAG AA for UI, ES Modules for JS, PEP8 for Python
+- Structure: Solo un backend (`backend/`) y un frontend (`frontend/`). No crear copias, raíces históricas ni archivos de código sueltos en la raíz.
+- Modularity: Las capacidades nuevas viven en carpetas por funcionalidad; los archivos grandes existentes no reciben nuevas responsabilidades.
+- Artifacts: Logs, resultados, PIDs, bases locales y backups quedan fuera del código (`maintenance/`, `test-results/` o almacenamiento externo).
+- Verification: Antes de cerrar un cambio ejecutar `npm run hygiene` y la validación de modularidad DevBrain.
+- Backups: Git para código; dumps PostgreSQL y backups cifrados fuera del repositorio, con retención y prueba de restauración.
 - DB_FIRST: IA genera contenido en desarrollo (APP_ENV=development) y lo guarda en PostgreSQL.
 - NO_AI_RUNTIME: En produccion (APP_ENV=production), prohibido llamar a APIs de IA en runtime.
-- LOCAL_PG: Desarrollo local siempre conecta a PostgreSQL local (Docker WSL). Nunca produccion.
+- LOCAL_PG: Desarrollo local siempre conecta a PostgreSQL local administrado en Windows (puerto canónico 5434) y Memurai (6380). No Docker/WSL para el runtime local.
 - ENV_VARS: Obligatorio USE_AI_CONTENT_GENERATION, DATABASE_URL y PRODUCTION_DATABASE_URL.

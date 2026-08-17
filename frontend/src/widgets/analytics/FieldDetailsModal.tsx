@@ -200,7 +200,7 @@ export const FieldDetailsModal: React.FC<FieldDetailsModalProps> = ({
     enabled: isOpen && !!f && (activeTab === 'animals' || activeTab === 'stats'),
     queryFn: async () => {
       if (!f?.id) return [];
-      
+
       // 1. Intentar obtener del cache offline local (Modo Campo / FieldReadyService)
       // Esto proporciona una velocidad de carga instantánea tanto offline como online.
       try {
@@ -326,27 +326,27 @@ export const FieldDetailsModal: React.FC<FieldDetailsModalProps> = ({
 
   const metricCards = [
     { label: 'Actuales', value: occupied },
-    { 
-      label: 'Capacidad', 
-      value: hasDefinedCapacity 
-        ? capacity 
-        : isEstimated 
-          ? `${estimatedCapacity} (Est. por área)` 
-          : 'Sin definir' 
+    {
+      label: 'Capacidad',
+      value: hasDefinedCapacity
+        ? capacity
+        : isEstimated
+          ? `${estimatedCapacity} (Est. por área)`
+          : 'Sin definir'
     },
-    { 
-      label: 'Disponibles', 
-      value: effectiveCapacity > 0 
-        ? Math.max(available, 0) 
-        : 'N/A' 
+    {
+      label: 'Disponibles',
+      value: effectiveCapacity > 0
+        ? Math.max(available, 0)
+        : 'N/A'
     },
-    { 
-      label: 'Ocupación', 
-      value: effectiveCapacity > 0 
-        ? `${occupationRate.toFixed(0)}%` 
-        : occupied > 0 
-          ? 'Sin capacidad' 
-          : '0%' 
+    {
+      label: 'Ocupación',
+      value: effectiveCapacity > 0
+        ? `${occupationRate.toFixed(0)}%`
+        : occupied > 0
+          ? 'Sin capacidad'
+          : '0%'
     },
   ];
 
@@ -462,7 +462,7 @@ export const FieldDetailsModal: React.FC<FieldDetailsModalProps> = ({
             </div>
             <div className={cn('mt-4 h-4 overflow-hidden rounded-full', tone.track)}>
               <div className={cn('flex h-full items-center justify-end rounded-full pr-2 transition-all', tone.bar)} style={{ width: `${progressRate}%` }}>
-                {progressRate > 12 && <span className="text-[10px] font-black text-white">{occupationRate.toFixed(0)}%</span>}
+                {progressRate > 12 && <span className="text-[11px] font-black text-white">{occupationRate.toFixed(0)}%</span>}
               </div>
             </div>
             {occupationRate > 100 && (
@@ -496,7 +496,7 @@ export const FieldDetailsModal: React.FC<FieldDetailsModalProps> = ({
                   {effectiveCapacity > 0 && area > 0 ? (area / effectiveCapacity).toFixed(2) : 'N/A'}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  ha / animal capacidad {isEstimated && <span className="text-[10px] text-amber-500 font-bold block">(Estimado)</span>}
+                  ha / animal capacidad {isEstimated && <span className="text-[11px] text-amber-500 font-bold block">(Estimado)</span>}
                 </p>
               </div>
               <div>
@@ -650,7 +650,7 @@ export const FieldDetailsModal: React.FC<FieldDetailsModalProps> = ({
           fatherLabel={getFatherLabel(selectedAnimal)}
           motherLabel={getMotherLabel(selectedAnimal)}
         >
-          <AnimalModalContent 
+          <AnimalModalContent
             animal={selectedAnimal}
             breedLabel={getBreedLabel(selectedAnimal)}
             fatherLabel={getFatherLabel(selectedAnimal)}

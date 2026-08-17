@@ -53,7 +53,7 @@ export function MarketOfferFormModal({
 							<button
 								key={t.value}
 								onClick={() => setForm((f) => ({ ...f, offer_type: t.value }))}
-								className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-[10px] md:text-xs font-semibold ${form.offer_type === t.value ? `${t.border} ${t.color}` : "border-border bg-background text-muted-foreground"}`}
+								className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-[11px] md:text-xs font-semibold ${form.offer_type === t.value ? `${t.border} ${t.color}` : "border-border bg-background text-muted-foreground"}`}
 							>
 								<span className="text-xl md:text-2xl">{t.emoji}</span>
 								{t.label}

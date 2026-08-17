@@ -6,12 +6,14 @@ import sqlalchemy as sa
 import time
 import hashlib
 
+
 def _safe_cache_get(key: str):
     """Intento de lectura de caché con fallback silencioso si Redis no está disponible."""
     try:
         return cache.get(key)
     except Exception:
         return None
+
 
 def _safe_cache_set(key: str, value, timeout: int | None = None) -> None:
     """Intento de escritura de caché con fallback silencioso si Redis no está disponible."""
@@ -21,6 +23,7 @@ def _safe_cache_set(key: str, value, timeout: int | None = None) -> None:
         cache.set(key, value, timeout=timeout)
     except Exception:
         pass
+
 
 def _safe_cache_delete(key: str) -> None:
     """Intento de borrado de caché con fallback silencioso si Redis no está disponible."""
@@ -34,39 +37,46 @@ def _serialize(animal: Animals, fields: list[str] | None = None) -> dict:
     if not animal:
         return {}
     base = {
-        'id': animal.id,
-        'record': animal.record,
-        'sex': str(animal.sex) if getattr(animal, 'sex', None) is not None else None,
-        'breeds_id': animal.breeds_id,
-        'idFather': animal.idFather,
-        'idMother': animal.idMother,
+        "id": animal.id,
+        "record": animal.record,
+        "sex": str(animal.sex) if getattr(animal, "sex", None) is not None else None,
+        "breeds_id": animal.breeds_id,
+        "idFather": animal.idFather,
+        "idMother": animal.idMother,
     }
     if not fields:
         return base
     return {k: base.get(k) for k in fields if k in base}
 
 
-def _cache_key(kind: str, root_id: int, max_depth: int, fields: list[str] | None) -> str:
-    fields_sig = ''
+def _cache_key(
+    kind: str, root_id: int, max_depth: int, fields: list[str] | None
+) -> str:
+    fields_sig = ""
     if fields:
         try:
-            fields_sig = hashlib.sha1((','.join(sorted(fields))).encode('utf-8')).hexdigest()[:10]
+            fields_sig = hashlib.sha1(
+                (",".join(sorted(fields))).encode("utf-8")
+            ).hexdigest()[:10]
         except Exception:
-            fields_sig = 'fields'
+            fields_sig = "fields"
     return f"animal_tree:{kind}:{root_id}:d{max_depth}:{fields_sig}"
 
 
 def _cache_timeout() -> int:
     try:
-        return int(flask.current_app.config.get('CACHE_DEFAULT_TIMEOUT', 600))
+        return int(flask.current_app.config.get("CACHE_DEFAULT_TIMEOUT", 600))
     except Exception:
         return 600
 
 
-def build_ancestor_tree(root_id: int, max_depth: int = 5, fields: list[str] | None = None) -> dict:
+def build_ancestor_tree(
+    root_id: int, max_depth: int = 5, fields: list[str] | None = None
+) -> dict:
     """Construye árbol de ancestros (padre y madre por niveles) con caché."""
     from app.utils.tenant_context import apply_tenant_filter
-    key = _cache_key('ancestors', root_id, max_depth, fields)
+
+    key = _cache_key("ancestors", root_id, max_depth, fields)
     cached = _safe_cache_get(key)
     if cached:
         return cached
@@ -78,9 +88,15 @@ def build_ancestor_tree(root_id: int, max_depth: int = 5, fields: list[str] | No
     # Obtener raíz respetando aislamiento multi-tenant
     root_query = apply_tenant_filter(Animals.query, Animals)
     root: Animals = root_query.filter(Animals.id == root_id).first()
-    
+
     if not root:
-        return {'rootId': root_id, 'nodes': {}, 'edges': [], 'depth': 0, 'counts': {'nodes': 0, 'edges': 0}}
+        return {
+            "rootId": root_id,
+            "nodes": {},
+            "edges": [],
+            "depth": 0,
+            "counts": {"nodes": 0, "edges": 0},
+        }
 
     nodes[root.id] = _serialize(root, fields)
     current_ids = [root.id]
@@ -89,11 +105,15 @@ def build_ancestor_tree(root_id: int, max_depth: int = 5, fields: list[str] | No
         # Recoger padres de este nivel en lote
         parent_ids: list[int] = []
         children_for_parent: list[tuple[int, int | None, int | None]] = []
-        
+
         # Obtenemos objetos animales actuales para saber sus padres
         # Usamos query filtrada por si acaso
-        current_animals = apply_tenant_filter(Animals.query, Animals).filter(Animals.id.in_(current_ids)).all()
-        
+        current_animals = (
+            apply_tenant_filter(Animals.query, Animals)
+            .filter(Animals.id.in_(current_ids))
+            .all()
+        )
+
         for child in current_animals:
             cid = child.id
             children_for_parent.append((cid, child.idFather, child.idMother))
@@ -106,10 +126,10 @@ def build_ancestor_tree(root_id: int, max_depth: int = 5, fields: list[str] | No
         parent_ids = list({pid for pid in parent_ids if pid})
         if not parent_ids:
             break
-            
+
         parents_query = apply_tenant_filter(db.session.query(Animals), Animals)
         parents: list[Animals] = parents_query.filter(Animals.id.in_(parent_ids)).all()
-        
+
         for p in parents:
             if p.id not in nodes:
                 nodes[p.id] = _serialize(p, fields)
@@ -118,10 +138,10 @@ def build_ancestor_tree(root_id: int, max_depth: int = 5, fields: list[str] | No
         next_ids: list[int] = []
         for cid, fid, mid in children_for_parent:
             if fid and fid in nodes:
-                edges.append({'from': fid, 'to': cid, 'relation': 'father'})
+                edges.append({"from": fid, "to": cid, "relation": "father"})
                 next_ids.append(fid)
             if mid and mid in nodes:
-                edges.append({'from': mid, 'to': cid, 'relation': 'mother'})
+                edges.append({"from": mid, "to": cid, "relation": "mother"})
                 next_ids.append(mid)
 
         current_ids = list({nid for nid in next_ids})
@@ -129,20 +149,26 @@ def build_ancestor_tree(root_id: int, max_depth: int = 5, fields: list[str] | No
 
     # Summary y ejemplos de edges por sexo/especie
     # Calcular conteos por sexo
-    sex_counts: dict[str, int] = {'Macho': 0, 'Hembra': 0, 'Unknown': 0}
+    sex_counts: dict[str, int] = {"Macho": 0, "Hembra": 0, "Unknown": 0}
     for n in nodes.values():
-        sex = n.get('sex')
-        if sex in ('Macho', 'Hembra'):
+        sex = n.get("sex")
+        if sex in ("Macho", "Hembra"):
             sex_counts[sex] += 1
         else:
-            sex_counts['Unknown'] += 1
+            sex_counts["Unknown"] += 1
 
     # Mapear breeds_id -> species_id en un solo query
-    breed_ids = list({n.get('breeds_id') for n in nodes.values() if n.get('breeds_id') is not None})
+    breed_ids = list(
+        {n.get("breeds_id") for n in nodes.values() if n.get("breeds_id") is not None}
+    )
     species_by_breed: dict[int, int] = {}
     if breed_ids:
         try:
-            for bid, sid in db.session.query(Breeds.id, Breeds.species_id).filter(Breeds.id.in_(breed_ids)).all():
+            for bid, sid in (
+                db.session.query(Breeds.id, Breeds.species_id)
+                .filter(Breeds.id.in_(breed_ids))
+                .all()
+            ):
                 species_by_breed[bid] = sid
         except Exception:
             pass
@@ -150,28 +176,44 @@ def build_ancestor_tree(root_id: int, max_depth: int = 5, fields: list[str] | No
     # Conteos por especie basados en breeds
     species_counts: dict[str, int] = {}
     for n in nodes.values():
-        bid = n.get('breeds_id')
+        bid = n.get("breeds_id")
         sid = species_by_breed.get(bid)
-        key = str(sid) if sid is not None else 'Unknown'
+        key = str(sid) if sid is not None else "Unknown"
         species_counts[key] = species_counts.get(key, 0) + 1
 
     # Ejemplos de edges por sexo (sexo del nodo origen)
-    edge_examples_by_sex: dict[str, list[dict]] = {'Macho': [], 'Hembra': [], 'Unknown': []}
+    edge_examples_by_sex: dict[str, list[dict]] = {
+        "Macho": [],
+        "Hembra": [],
+        "Unknown": [],
+    }
     # Ejemplos de edges por especie (especie del nodo origen)
     edge_examples_by_species: dict[str, list[dict]] = {}
     for e in edges:
-        src = nodes.get(e.get('from'))
+        src = nodes.get(e.get("from"))
         if not src:
             continue
-        src_sex = src.get('sex') if src.get('sex') in ('Macho', 'Hembra') else 'Unknown'
+        src_sex = src.get("sex") if src.get("sex") in ("Macho", "Hembra") else "Unknown"
         if len(edge_examples_by_sex[src_sex]) < 5:
-            edge_examples_by_sex[src_sex].append({'from': e.get('from'), 'to': e.get('to'), 'relation': e.get('relation')})
-        bid = src.get('breeds_id')
+            edge_examples_by_sex[src_sex].append(
+                {
+                    "from": e.get("from"),
+                    "to": e.get("to"),
+                    "relation": e.get("relation"),
+                }
+            )
+        bid = src.get("breeds_id")
         sid = species_by_breed.get(bid)
-        sp_key = str(sid) if sid is not None else 'Unknown'
+        sp_key = str(sid) if sid is not None else "Unknown"
         examples = edge_examples_by_species.setdefault(sp_key, [])
         if len(examples) < 5:
-            examples.append({'from': e.get('from'), 'to': e.get('to'), 'relation': e.get('relation')})
+            examples.append(
+                {
+                    "from": e.get("from"),
+                    "to": e.get("to"),
+                    "relation": e.get("relation"),
+                }
+            )
 
     # Texto preformateado de resumen para UI
     total_nodes = len(nodes)
@@ -183,34 +225,37 @@ def build_ancestor_tree(root_id: int, max_depth: int = 5, fields: list[str] | No
     )
 
     result = {
-        'rootId': root.id,
-        'nodes': nodes,
-        'edges': edges,
-        'depth': depth,
-        'counts': {'nodes': total_nodes, 'edges': total_edges},
-        'summary': {
-            'text': summary_text,
-            'sex': sex_counts,
-            'species': species_counts,
-            'relations': {
-                'father': sum(1 for e in edges if e.get('relation') == 'father'),
-                'mother': sum(1 for e in edges if e.get('relation') == 'mother'),
-            }
+        "rootId": root.id,
+        "nodes": nodes,
+        "edges": edges,
+        "depth": depth,
+        "counts": {"nodes": total_nodes, "edges": total_edges},
+        "summary": {
+            "text": summary_text,
+            "sex": sex_counts,
+            "species": species_counts,
+            "relations": {
+                "father": sum(1 for e in edges if e.get("relation") == "father"),
+                "mother": sum(1 for e in edges if e.get("relation") == "mother"),
+            },
         },
-        'edge_examples': {
-            'bySex': edge_examples_by_sex,
-            'bySpecies': edge_examples_by_species,
+        "edge_examples": {
+            "bySex": edge_examples_by_sex,
+            "bySpecies": edge_examples_by_species,
         },
-        'generated_at': int(time.time())
+        "generated_at": int(time.time()),
     }
     _safe_cache_set(key, result, timeout=_cache_timeout())
     return result
 
 
-def build_descendant_tree(root_id: int, max_depth: int = 5, fields: list[str] | None = None) -> dict:
+def build_descendant_tree(
+    root_id: int, max_depth: int = 5, fields: list[str] | None = None
+) -> dict:
     """Construye árbol de descendientes (hijos por niveles) con caché."""
     from app.utils.tenant_context import apply_tenant_filter
-    key = _cache_key('descendants', root_id, max_depth, fields)
+
+    key = _cache_key("descendants", root_id, max_depth, fields)
     cached = _safe_cache_get(key)
     if cached:
         return cached
@@ -222,9 +267,15 @@ def build_descendant_tree(root_id: int, max_depth: int = 5, fields: list[str] | 
     # Obtener raíz respetando aislamiento multi-tenant
     root_query = apply_tenant_filter(Animals.query, Animals)
     root: Animals = root_query.filter(Animals.id == root_id).first()
-    
+
     if not root:
-        return {'rootId': root_id, 'nodes': {}, 'edges': [], 'depth': 0, 'counts': {'nodes': 0, 'edges': 0}}
+        return {
+            "rootId": root_id,
+            "nodes": {},
+            "edges": [],
+            "depth": 0,
+            "counts": {"nodes": 0, "edges": 0},
+        }
 
     nodes[root.id] = _serialize(root, fields)
     current_ids = [root.id]
@@ -232,11 +283,9 @@ def build_descendant_tree(root_id: int, max_depth: int = 5, fields: list[str] | 
     while current_ids and depth < max_depth:
         # Buscar hijos donde padre o madre está en current_ids en un solo query filtrado
         children_query = apply_tenant_filter(db.session.query(Animals), Animals)
-        children: list[Animals] = (
-            children_query
-            .filter(sa.or_(Animals.idFather.in_(current_ids), Animals.idMother.in_(current_ids)))
-            .all()
-        )
+        children: list[Animals] = children_query.filter(
+            sa.or_(Animals.idFather.in_(current_ids), Animals.idMother.in_(current_ids))
+        ).all()
 
         if not children:
             break
@@ -247,54 +296,80 @@ def build_descendant_tree(root_id: int, max_depth: int = 5, fields: list[str] | 
                 nodes[child.id] = _serialize(child, fields)
             # edges desde padre/madre hacia el hijo
             if child.idFather and child.idFather in nodes:
-                edges.append({'from': child.idFather, 'to': child.id, 'relation': 'father'})
+                edges.append(
+                    {"from": child.idFather, "to": child.id, "relation": "father"}
+                )
             if child.idMother and child.idMother in nodes:
-                edges.append({'from': child.idMother, 'to': child.id, 'relation': 'mother'})
+                edges.append(
+                    {"from": child.idMother, "to": child.id, "relation": "mother"}
+                )
             next_ids.append(child.id)
 
         current_ids = list({nid for nid in next_ids})
         depth += 1
 
     # Summary y ejemplos de edges por sexo/especie
-    sex_counts: dict[str, int] = {'Macho': 0, 'Hembra': 0, 'Unknown': 0}
+    sex_counts: dict[str, int] = {"Macho": 0, "Hembra": 0, "Unknown": 0}
     for n in nodes.values():
-        sex = n.get('sex')
-        if sex in ('Macho', 'Hembra'):
+        sex = n.get("sex")
+        if sex in ("Macho", "Hembra"):
             sex_counts[sex] += 1
         else:
-            sex_counts['Unknown'] += 1
+            sex_counts["Unknown"] += 1
 
-    breed_ids = list({n.get('breeds_id') for n in nodes.values() if n.get('breeds_id') is not None})
+    breed_ids = list(
+        {n.get("breeds_id") for n in nodes.values() if n.get("breeds_id") is not None}
+    )
     species_by_breed: dict[int, int] = {}
     if breed_ids:
         try:
-            for bid, sid in db.session.query(Breeds.id, Breeds.species_id).filter(Breeds.id.in_(breed_ids)).all():
+            for bid, sid in (
+                db.session.query(Breeds.id, Breeds.species_id)
+                .filter(Breeds.id.in_(breed_ids))
+                .all()
+            ):
                 species_by_breed[bid] = sid
         except Exception:
             pass
 
     species_counts: dict[str, int] = {}
     for n in nodes.values():
-        bid = n.get('breeds_id')
+        bid = n.get("breeds_id")
         sid = species_by_breed.get(bid)
-        key = str(sid) if sid is not None else 'Unknown'
+        key = str(sid) if sid is not None else "Unknown"
         species_counts[key] = species_counts.get(key, 0) + 1
 
-    edge_examples_by_sex: dict[str, list[dict]] = {'Macho': [], 'Hembra': [], 'Unknown': []}
+    edge_examples_by_sex: dict[str, list[dict]] = {
+        "Macho": [],
+        "Hembra": [],
+        "Unknown": [],
+    }
     edge_examples_by_species: dict[str, list[dict]] = {}
     for e in edges:
-        src = nodes.get(e.get('from'))
+        src = nodes.get(e.get("from"))
         if not src:
             continue
-        src_sex = src.get('sex') if src.get('sex') in ('Macho', 'Hembra') else 'Unknown'
+        src_sex = src.get("sex") if src.get("sex") in ("Macho", "Hembra") else "Unknown"
         if len(edge_examples_by_sex[src_sex]) < 5:
-            edge_examples_by_sex[src_sex].append({'from': e.get('from'), 'to': e.get('to'), 'relation': e.get('relation')})
-        bid = src.get('breeds_id')
+            edge_examples_by_sex[src_sex].append(
+                {
+                    "from": e.get("from"),
+                    "to": e.get("to"),
+                    "relation": e.get("relation"),
+                }
+            )
+        bid = src.get("breeds_id")
         sid = species_by_breed.get(bid)
-        sp_key = str(sid) if sid is not None else 'Unknown'
+        sp_key = str(sid) if sid is not None else "Unknown"
         examples = edge_examples_by_species.setdefault(sp_key, [])
         if len(examples) < 5:
-            examples.append({'from': e.get('from'), 'to': e.get('to'), 'relation': e.get('relation')})
+            examples.append(
+                {
+                    "from": e.get("from"),
+                    "to": e.get("to"),
+                    "relation": e.get("relation"),
+                }
+            )
 
     total_nodes = len(nodes)
     total_edges = len(edges)
@@ -305,25 +380,25 @@ def build_descendant_tree(root_id: int, max_depth: int = 5, fields: list[str] | 
     )
 
     result = {
-        'rootId': root.id,
-        'nodes': nodes,
-        'edges': edges,
-        'depth': depth,
-        'counts': {'nodes': total_nodes, 'edges': total_edges},
-        'summary': {
-            'text': summary_text,
-            'sex': sex_counts,
-            'species': species_counts,
-            'relations': {
-                'father': sum(1 for e in edges if e.get('relation') == 'father'),
-                'mother': sum(1 for e in edges if e.get('relation') == 'mother'),
-            }
+        "rootId": root.id,
+        "nodes": nodes,
+        "edges": edges,
+        "depth": depth,
+        "counts": {"nodes": total_nodes, "edges": total_edges},
+        "summary": {
+            "text": summary_text,
+            "sex": sex_counts,
+            "species": species_counts,
+            "relations": {
+                "father": sum(1 for e in edges if e.get("relation") == "father"),
+                "mother": sum(1 for e in edges if e.get("relation") == "mother"),
+            },
         },
-        'edge_examples': {
-            'bySex': edge_examples_by_sex,
-            'bySpecies': edge_examples_by_species,
+        "edge_examples": {
+            "bySex": edge_examples_by_sex,
+            "bySpecies": edge_examples_by_species,
         },
-        'generated_at': int(time.time())
+        "generated_at": int(time.time()),
     }
     _safe_cache_set(key, result, timeout=_cache_timeout())
     return result
@@ -337,7 +412,7 @@ def invalidate_animal_tree_cache_for(root_id: int):
         # Generamos un conjunto de claves comunes para profundidades típicas.
         depths = [1, 2, 3, 4, 5, 6]
         for d in depths:
-            for kind in ('ancestors', 'descendants'):
+            for kind in ("ancestors", "descendants"):
                 key = _cache_key(kind, root_id, d, None)
                 _safe_cache_delete(key)
     except Exception:

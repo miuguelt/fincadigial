@@ -157,7 +157,7 @@ export function AlertsSection({ animalId, healthAlerts = [] }: AlertsSectionProp
               <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
                 Alertas del animal
               </h3>
-              <Badge variant="outline" className={cn("h-5 px-2 text-[10px] font-bold", highestCfg.color, highestCfg.border)}>
+              <Badge variant="outline" className={cn("h-5 px-2 text-[11px] font-bold", highestCfg.color, highestCfg.border)}>
                 {sortedAlerts.length}
               </Badge>
             </div>
@@ -203,7 +203,7 @@ export function AlertsSection({ animalId, healthAlerts = [] }: AlertsSectionProp
                   <Badge
                     variant="outline"
                     className={cn(
-                      "text-[9px] h-4 px-1.5 font-bold",
+                      "text-[11px] h-4 px-1.5 font-bold",
                       cfg.color,
                       cfg.border
                     )}
@@ -213,7 +213,7 @@ export function AlertsSection({ animalId, healthAlerts = [] }: AlertsSectionProp
                 </div>
                 <p className="text-foreground/80 mt-1 leading-relaxed line-clamp-3">{alert.message}</p>
                 {alert.recommendation && (
-                  <p className="text-muted-foreground italic mt-1 text-[10px] line-clamp-2">
+                  <p className="text-muted-foreground italic mt-1 text-[11px] line-clamp-2">
                     {alert.recommendation}
                   </p>
                 )}

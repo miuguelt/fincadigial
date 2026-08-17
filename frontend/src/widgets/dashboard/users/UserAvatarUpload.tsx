@@ -129,7 +129,7 @@ export function UserAvatarUpload({
           >
             <IconCamera size={size === 'sm' ? 14 : 24} className="text-white mb-1" />
             {size !== 'sm' && (
-              <span className="text-[10px] font-bold text-white uppercase">Cambiar</span>
+              <span className="text-[11px] font-bold text-white uppercase">Cambiar</span>
             )}
           </button>
         )}

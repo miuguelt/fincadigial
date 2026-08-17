@@ -58,4 +58,3 @@ Generate a self-signed certificate with OpenSSL and set `SSL_CERT_FILE` and `SSL
 
 - If the browser rejects the certificate, ensure the mkcert CA (or your chosen CA) is installed in the system/browser trust store.
 - For cross-device testing, either install the mkcert CA on the device or use a reverse proxy (Caddy) with a publicly resolvable dev domain.
-

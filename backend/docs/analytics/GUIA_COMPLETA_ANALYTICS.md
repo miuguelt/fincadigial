@@ -1,4 +1,4 @@
-# 📊 Guía Completa de Analytics - BackFinca
+# 📊 Guía Completa de Analytics - VillaLuz
 
 ## ✅ Estado de Implementación
 

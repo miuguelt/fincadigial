@@ -115,7 +115,7 @@ export function ReproductionChart({
                 <p className="text-xs text-muted-foreground">Partos</p>
               </div>
             </div>
-            
+
             <ResponsiveContainer width="100%" height={height - 100}>
               <BarChart data={eventsByType} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -168,7 +168,7 @@ export function ReproductionChart({
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            
+
             <div className="mt-4 grid grid-cols-2 gap-4">
               <div className="bg-success/5 dark:bg-green-950 rounded-lg p-3">
                 <p className="text-sm font-medium text-success dark:text-green-300">Partos Próximos</p>

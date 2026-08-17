@@ -189,11 +189,11 @@ export const usersService = new UsersService();
 async function withRetry<T>(fn: () => Promise<T>, attempts = 2, delayMs = 1000): Promise<T> {
   let lastErr: any;
   for (let i=0;i<attempts;i++) {
-    try { return await fn(); } catch (e) { 
-      lastErr = e; 
+    try { return await fn(); } catch (e) {
+      lastErr = e;
       if (i<attempts-1) {
         // Aumentar delay exponencialmente para evitar spam
-        await new Promise(r=>setTimeout(r, delayMs * Math.pow(2, i))); 
+        await new Promise(r=>setTimeout(r, delayMs * Math.pow(2, i)));
       }
     }
   }

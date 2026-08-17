@@ -29,11 +29,15 @@ class FertilityAnalyticsService:
         period_months = min(max(months, 1), 24)
         today = date.today()
         period_start = _month_start(today, period_months - 1)
-        events = ReproductiveEvent.query.filter(
-            ReproductiveEvent.finca_id == finca_id,
-            ReproductiveEvent.event_date >= period_start,
-            ReproductiveEvent.event_date <= today,
-        ).order_by(ReproductiveEvent.event_date.asc(), ReproductiveEvent.id.asc()).all()
+        events = (
+            ReproductiveEvent.query.filter(
+                ReproductiveEvent.finca_id == finca_id,
+                ReproductiveEvent.event_date >= period_start,
+                ReproductiveEvent.event_date <= today,
+            )
+            .order_by(ReproductiveEvent.event_date.asc(), ReproductiveEvent.id.asc())
+            .all()
+        )
 
         month_keys = [
             _month_start(today, offset).strftime("%Y-%m")

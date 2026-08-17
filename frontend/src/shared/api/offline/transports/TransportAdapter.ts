@@ -25,4 +25,3 @@ export interface TransportAdapter {
   send(peer: TransportPeer, packet: TransportPacket): Promise<{ accepted: boolean; receipt?: unknown }>;
   receive?(payload: unknown): Promise<TransportPacket>;
 }
-

@@ -168,4 +168,3 @@ class AlertService extends BaseService<Alert> {
 
 export const alertService = new AlertService();
 export default alertService;
-

@@ -28,18 +28,13 @@ if ($CWD.Path -match "VALIDATED|backup|archive|tmp|duplicate") {
 if (-not (Test-Path ".git")) {
     Write-Host "Inicializando repositorio Git..." -ForegroundColor Yellow
     git init
-    git add -A
-    git commit -m "chore: inicializacion del repositorio" --allow-empty
+    Write-Host "Repositorio Git inicializado; no se creará un commit automático." -ForegroundColor Yellow
 }
 
-# 3. Guardar estado actual
-Write-Host "`n[1/5] Guardando checkpoint inicial..." -ForegroundColor Yellow
-git add -A 2>$null
-$timestamp = Get-Date -Format "yyyy-MM-dd_HH:mm:ss"
-git commit -m "checkpoint: inicio de sesion $timestamp" --allow-empty 2>$null | Out-Null
-$tag = "session-start-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
-git tag $tag 2>$null | Out-Null
-Write-Host "   Tag creado: $tag" -ForegroundColor Green
+# 3. Mostrar estado actual sin modificar staging ni historial
+Write-Host "`n[1/5] Estado actual del repositorio..." -ForegroundColor Yellow
+git status --short
+Write-Host "   No se creó commit ni tag automático." -ForegroundColor DarkGray
 
 # 4. Verificar integridad (version PowerShell optimizada)
 if (-not $SkipIntegrity) {

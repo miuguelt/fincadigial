@@ -7,14 +7,14 @@ import type { CRUDConfig } from '@/shared/types/crud';
 import { TrendingUp, Activity } from 'lucide-react';
 import { Badge } from '@/shared/ui/badge';
 import { getStatusBadgeClass } from '@/shared/utils/badgeStyles';
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
   Legend
 } from 'recharts';
 
@@ -97,31 +97,31 @@ const GrowthPage: React.FC = () => {
           <ResponsiveContainer width="100%" height="90%">
             <LineChart data={growthData.data_points} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
-              <XAxis 
-                dataKey="age_months" 
-                label={{ value: 'Edad (Meses)', position: 'insideBottom', offset: -5 }} 
+              <XAxis
+                dataKey="age_months"
+                label={{ value: 'Edad (Meses)', position: 'insideBottom', offset: -5 }}
               />
-              <YAxis 
-                label={{ value: 'Peso (kg)', angle: -90, position: 'insideLeft' }} 
+              <YAxis
+                label={{ value: 'Peso (kg)', angle: -90, position: 'insideLeft' }}
               />
-              <Tooltip 
+              <Tooltip
                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
               />
               <Legend verticalAlign="top" height={36}/>
-              <Line 
-                type="monotone" 
-                dataKey="weight" 
-                stroke="#8884d8" 
-                name="Peso Real" 
+              <Line
+                type="monotone"
+                dataKey="weight"
+                stroke="#8884d8"
+                name="Peso Real"
                 strokeWidth={3}
                 dot={{ r: 6, fill: '#8884d8', strokeWidth: 2, stroke: '#fff' }}
                 activeDot={{ r: 8 }}
               />
-              <Line 
-                type="monotone" 
-                dataKey="expected_weight" 
-                stroke="#10b981" 
-                name="Referencia Bovina" 
+              <Line
+                type="monotone"
+                dataKey="expected_weight"
+                stroke="#10b981"
+                name="Referencia Bovina"
                 strokeDasharray="5 5"
                 dot={false}
               />

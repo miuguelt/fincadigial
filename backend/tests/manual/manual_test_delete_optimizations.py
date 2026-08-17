@@ -5,7 +5,9 @@ Script para probar las optimizaciones de eliminación de animales.
 
 import sys
 import os
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 
 def test_delete_optimizations():
     """Prueba las optimizaciones de eliminación."""
@@ -13,7 +15,7 @@ def test_delete_optimizations():
         from app.utils.integrity_checker import OptimizedIntegrityChecker
 
         print("PRUEBA DE OPTIMIZACIONES DE ELIMINACIÓN")
-        print("="*50)
+        print("=" * 50)
 
         # Limpiar cache para prueba fresca
         OptimizedIntegrityChecker.clear_cache()
@@ -65,8 +67,10 @@ def test_delete_optimizations():
     except Exception as e:
         print(f"Error: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 if __name__ == "__main__":
     test_delete_optimizations()

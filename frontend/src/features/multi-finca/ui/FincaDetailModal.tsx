@@ -127,11 +127,11 @@ const FincaDetailModal: React.FC<FincaDetailModalProps> = ({
 			size="3xl"
 			headerExtra={
 				<div className="flex items-center gap-1.5">
-					<span className="rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700">
+					<span className="rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-slate-700">
 						{finca.type || "Tipo no registrado"}
 					</span>
 					{finca.already_requested && (
-						<span className="flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+						<span className="flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
 							<IconInfoCircle size={12} /> En revisión
 						</span>
 					)}

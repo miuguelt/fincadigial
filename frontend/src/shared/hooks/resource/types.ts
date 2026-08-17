@@ -38,4 +38,3 @@ export interface UseResourceResult<T, P extends Record<string, any>> {
   setFields?: (f: string) => void;
   refreshing?: boolean;
 }
-

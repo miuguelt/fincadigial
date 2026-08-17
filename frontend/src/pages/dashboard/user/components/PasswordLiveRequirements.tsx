@@ -32,4 +32,3 @@ export const PasswordLiveRequirements = ({ newPassword, confirmPassword }: Passw
         </div>
     );
 };
-

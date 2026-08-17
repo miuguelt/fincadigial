@@ -14,7 +14,7 @@ const ActivityLogPage: React.FC = () => {
       render: (val: string) => (
         <div className="flex flex-col">
           <span className="text-xs font-medium">{formatDateColombia(val)}</span>
-          <span className="text-[10px] text-muted-foreground">
+          <span className="text-[11px] text-muted-foreground">
             {new Date(val).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}
           </span>
         </div>
@@ -40,7 +40,7 @@ case 'error': return <Badge variant="destructive" className="flex gap-1"><IconAl
           <div className="h-6 w-6 rounded-[var(--radius-full)] bg-muted flex items-center justify-center hidden sm:flex">
             <IconUser size="sm" className="text-muted-foreground" />
           </div>
-          <span className="text-[10px] sm:text-xs font-medium fit-clamp max-w-[80px] sm:max-w-none">
+          <span className="text-[11px] sm:text-xs font-medium fit-clamp max-w-[80px] sm:max-w-none">
             {val?.fullname || item.actor_id || 'Sistema'}
           </span>
         </div>
@@ -55,7 +55,7 @@ case 'error': return <Badge variant="destructive" className="flex gap-1"><IconAl
             <IconBox size="sm" className="text-primary/60" />
             <span className="text-xs font-bold uppercase">{val}</span>
           </div>
-          <span className="text-[10px] text-muted-foreground">ID: {item.entity_id || 'N/A'}</span>
+          <span className="text-[11px] text-muted-foreground">ID: {item.entity_id || 'N/A'}</span>
         </div>
       )
     },
@@ -63,7 +63,7 @@ case 'error': return <Badge variant="destructive" className="flex gap-1"><IconAl
       key: 'action',
       label: 'Acción',
       render: (val: string) => (
-        <Badge variant="outline" className="text-[10px] uppercase font-bold">
+        <Badge variant="outline" className="text-[11px] uppercase font-bold">
           {val}
         </Badge>
       )
@@ -75,7 +75,7 @@ case 'error': return <Badge variant="destructive" className="flex gap-1"><IconAl
         <div className="flex flex-col max-w-[150px] sm:max-w-[300px]">
           <span className="text-[11px] sm:text-xs font-medium line-clamp-1">{val || item.description || '-'}</span>
           {item.description && val !== item.description && (
-            <span className="text-[9px] sm:text-[10px] text-muted-foreground line-clamp-1 italic">{item.description}</span>
+            <span className="text-[11px] sm:text-[11px] text-muted-foreground line-clamp-1 italic">{item.description}</span>
           )}
         </div>
       )
@@ -104,4 +104,3 @@ case 'error': return <Badge variant="destructive" className="flex gap-1"><IconAl
 };
 
 export default ActivityLogPage;
-

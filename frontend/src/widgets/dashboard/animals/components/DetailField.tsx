@@ -8,7 +8,7 @@ export function DetailField({ label, value, children }: DetailFieldProps) {
   return (
     <div className="space-y-1.5">
       {" "}
-      <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/90">
+      <div className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground/90">
         {" "}
         {label}{" "}
       </div>{" "}

@@ -117,7 +117,7 @@ export const isValidTokenFormat = (token: string): boolean => {
     const payloadJson = decodeBase64Url(parts[1]);
     const header = JSON.parse(headerJson);
     const payload = JSON.parse(payloadJson);
-    
+
     // Log successful validation details
     console.debug('✅ Token validation passed:', {
       header: { type: header.typ, alg: header.alg },

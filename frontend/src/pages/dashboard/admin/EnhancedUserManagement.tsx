@@ -128,9 +128,9 @@ const EnhancedUserManagement: React.FC = () => {
     if (!fd.fullname.trim()) errors.fullname = "El nombre completo es obligatorio.";
     if (!fd.email.trim()) errors.email = "El correo es obligatorio.";
     if (!fd.password || !fd.password.trim()) {
-      errors['password'] = "Debes definir una contraseña.";
+      errors.password = "Debes definir una contraseña.";
     } else if (fd.password.trim().length < 4) {
-      errors['password'] = "La contraseña debe tener al menos 4 caracteres.";
+      errors.password = "La contraseña debe tener al menos 4 caracteres.";
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -406,8 +406,8 @@ const EnhancedUserManagement: React.FC = () => {
               </TableHeader>
               <TableBody>
                 {filteredUsers.map((user: UserResponse) => (
-                  <TableRow 
-                    key={user.id} 
+                  <TableRow
+                    key={user.id}
                     className="transition-all duration-300 hover:bg-gradient-to-r hover:from-primary/5 hover:via-primary/[0.02] hover:to-transparent"
                   >
                     <TableCell className="font-medium">{user.identification}</TableCell>

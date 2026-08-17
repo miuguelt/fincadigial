@@ -12,15 +12,7 @@ if [ -n "$UNCOMMITTED" ]; then
     echo ""
     echo "[1/5] Archivos sin commit detectados:"
     echo "$UNCOMMITTED"
-    echo ""
-    read -p "¿Deseas hacer commit automático? (s/n): " RESP
-    if [ "$RESP" = "s" ]; then
-        git add -A
-        git commit -m "session-end: cambios de sesión $(date +%Y-%m-%d_%H:%M)"
-    else
-        echo "❌ ABORTADO - No puedes cerrar sesión con archivos sin commit"
-        exit 1
-    fi
+    echo "   ⚠️ No se hará commit automático. Revisa y confirma manualmente."
 else
     echo "[1/5] ✅ Sin archivos pendientes"
 fi
@@ -43,12 +35,9 @@ echo "[4/5] Si agregaste funcionalidad crítica:"
 echo "   • Actualiza FEATURE_MANIFEST.md"
 echo "   • Agrega header ⚠️ COMPONENTE CRÍTICO al archivo"
 
-# 5. Tag de fin de sesión
+# 5. No crear tags automáticos: el historial debe ser una decisión humana.
 echo ""
-echo "[5/5] Creando tag de sesión..."
-TAG="session-end-$(date +%Y%m%d-%H%M%S)"
-git tag "$TAG" 2>/dev/null || true
-echo "   Tag creado: $TAG"
+echo "[5/5] No se creó tag automático."
 
 echo ""
 echo "✅ Protocolo de cierre completado. Sesión finalizada."

@@ -3,7 +3,7 @@
 .SYNOPSIS
     Reserva puertos específicos para el proyecto Villaluz en el stack TCP/IP de Windows.
 .DESCRIPTION
-    Utiliza 'netsh' para añadir rangos de exclusión, evitando que Hyper-V o el sistema 
+    Utiliza 'netsh' para añadir rangos de exclusión, evitando que Hyper-V o el sistema
     asignen estos puertos dinámicamente a otras aplicaciones.
 #>
 

@@ -63,4 +63,3 @@ export function useResourceParams<P extends Record<string, any>>(
     buildEffectiveParams
   };
 }
-

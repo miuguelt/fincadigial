@@ -14,8 +14,11 @@ def update_all_weather():
 
     try:
         from app.services.weather_data_service import WeatherDataService
+
         results = WeatherDataService.update_all_fincas()
-        logger.info(f"Actualización climática completada: {results['success']}/{results['total']} fincas")
+        logger.info(
+            f"Actualización climática completada: {results['success']}/{results['total']} fincas"
+        )
         return results
     except Exception as e:
         logger.error(f"Error en actualización climática: {e}")
@@ -31,6 +34,7 @@ def update_finca_weather(finca_id: int):
 
     try:
         from app.services.weather_data_service import WeatherDataService
+
         result = WeatherDataService.update_finca_weather(finca_id)
         logger.info(f"Actualización climática para finca {finca_id}: {result}")
         return result

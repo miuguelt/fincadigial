@@ -201,7 +201,7 @@ export const UserFincaGallery: React.FC<UserFincaGalleryProps> = ({
 										{finca.is_primary && (
 											<Badge
 												variant="outline"
-												className="text-[8px] font-black uppercase border-primary/40 text-primary bg-primary/10 rounded-full px-1.5 py-0"
+												className="text-[11px] font-black uppercase border-primary/40 text-primary bg-primary/10 rounded-full px-1.5 py-0"
 											>
 												Principal
 											</Badge>
@@ -215,13 +215,13 @@ export const UserFincaGallery: React.FC<UserFincaGalleryProps> = ({
 								<div className="flex items-center justify-between gap-2 border-t border-border/20 pt-2.5 mt-1">
 									<Badge
 										variant="secondary"
-										className="text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full"
+										className="text-[11px] font-black uppercase px-2.5 py-0.5 rounded-full"
 									>
 										{finca.role || fallbackRole}
 									</Badge>
 									<div
 										className={cn(
-											"flex items-center gap-1 px-2 py-0.5 rounded-full border text-[8px] font-bold uppercase",
+											"flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-bold uppercase",
 											isFincaActive
 												? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
 												: "bg-slate-500/10 text-slate-500 border-slate-500/20",
@@ -247,7 +247,7 @@ export const UserFincaGallery: React.FC<UserFincaGalleryProps> = ({
 					<h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
 						<ImageIcon size={16} className="text-primary" /> Fotos de{" "}
 						{selectedName || "la finca"}
-						<span className="text-[10px] font-black bg-muted/40 px-2.5 py-0.5 rounded-full">
+						<span className="text-[11px] font-black bg-muted/40 px-2.5 py-0.5 rounded-full">
 							{images.length}
 						</span>
 					</h3>
@@ -307,7 +307,7 @@ export const UserFincaGallery: React.FC<UserFincaGalleryProps> = ({
 								/>
 
 								{image.is_primary && (
-									<Badge className="absolute top-2 left-2 text-[8px] font-black uppercase px-2 py-0 rounded-full bg-primary text-primary-foreground">
+									<Badge className="absolute top-2 left-2 text-[11px] font-black uppercase px-2 py-0 rounded-full bg-primary text-primary-foreground">
 										Principal
 									</Badge>
 								)}

@@ -4,12 +4,12 @@ import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { Input } from '@/shared/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
-import { 
-  ShieldCheck, 
-  Search, 
-  Download, 
-  AlertTriangle, 
-  CheckCircle2, 
+import {
+  ShieldCheck,
+  Search,
+  Download,
+  AlertTriangle,
+  CheckCircle2,
   AlertCircle,
   FileText,
   Filter,
@@ -62,16 +62,16 @@ export default function ICADashboard() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'green': return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 font-black uppercase text-[10px]">Al Día</Badge>;
-      case 'yellow': return <Badge className="bg-warning/10 text-warning border-warning/20 font-black uppercase text-[10px]">Revisar</Badge>;
-      case 'red': return <Badge className="bg-destructive/10 text-destructive border-destructive/20 font-black uppercase text-[10px]">Vencido</Badge>;
+      case 'green': return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 font-black uppercase text-[11px]">Al Día</Badge>;
+      case 'yellow': return <Badge className="bg-warning/10 text-warning border-warning/20 font-black uppercase text-[11px]">Revisar</Badge>;
+      case 'red': return <Badge className="bg-destructive/10 text-destructive border-destructive/20 font-black uppercase text-[11px]">Vencido</Badge>;
       default: return null;
     }
   };
 
   const filteredAnimals = useMemo(() => {
     return data?.animals?.filter((animal: any) => {
-      const matchesSearch = animal.record.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      const matchesSearch = animal.record.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             (animal.name && animal.name.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesFilter = filter === 'all' || animal.overall === filter;
       return matchesSearch && matchesFilter;
@@ -82,16 +82,16 @@ export default function ICADashboard() {
     setIsExporting(true);
     try {
       const doc = new jsPDF() as any;
-      
+
       // Header decorativo
       doc.setFillColor(31, 41, 55);
       doc.rect(0, 0, 210, 40, 'F');
-      
+
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(22);
       doc.setFont('helvetica', 'bold');
       doc.text('REPORTE DE CUMPLIMIENTO SANITARIO', 20, 25);
-      
+
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.text(`Generado: ${new Date().toLocaleString('es-CO')}`, 20, 32);
@@ -101,7 +101,7 @@ export default function ICADashboard() {
       doc.setTextColor(31, 41, 55);
       doc.setFontSize(14);
       doc.text('Resumen del Ganado', 20, 55);
-      
+
       const stats = [
         ['Total Animales', String(data.total)],
         ['Al Día (Cumplimiento)', `${data.counts.green} (${(data.counts.green/data.total*100).toFixed(1)}%)`],
@@ -212,7 +212,7 @@ export default function ICADashboard() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
             <Card className="border-border/50 shadow-xl shadow-primary/5 bg-card/40 backdrop-blur-xl rounded-xl overflow-hidden group hover:-translate-y-1 transition-all duration-300">
               <CardHeader className="pb-2">
-                <CardDescription className="font-bold uppercase tracking-widest text-[10px] text-muted-foreground">Ganado Total</CardDescription>
+                <CardDescription className="font-bold uppercase tracking-widest text-[11px] text-muted-foreground">Ganado Total</CardDescription>
                 <CardTitle className="text-3xl sm:text-4xl font-black text-foreground">{data.total}</CardTitle>
               </CardHeader>
               <div className="h-1.5 w-full bg-muted mt-4">
@@ -220,9 +220,9 @@ export default function ICADashboard() {
               </div>
             </Card>
           </motion.div>
-          
+
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
-            <Card 
+            <Card
               className={cn(
                 "border-emerald-500/20 shadow-xl shadow-emerald-500/5 bg-emerald-500/5 backdrop-blur-xl rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1",
                 filter === 'green' && "ring-2 ring-emerald-500/50 bg-emerald-500/10"
@@ -230,7 +230,7 @@ export default function ICADashboard() {
               onClick={() => setFilter('green')}
             >
               <CardHeader className="pb-2">
-                <CardDescription className="font-bold uppercase tracking-widest text-[10px] text-emerald-600">Al Día</CardDescription>
+                <CardDescription className="font-bold uppercase tracking-widest text-[11px] text-emerald-600">Al Día</CardDescription>
                 <CardTitle className="text-3xl sm:text-4xl font-black text-emerald-600">{data.counts.green}</CardTitle>
               </CardHeader>
               <div className="h-1.5 w-full bg-emerald-500/10 mt-4">
@@ -238,9 +238,9 @@ export default function ICADashboard() {
               </div>
             </Card>
           </motion.div>
-          
+
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}>
-            <Card 
+            <Card
               className={cn(
                 "border-warning/20 shadow-xl shadow-amber-500/5 bg-warning/5 backdrop-blur-xl rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1",
                 filter === 'yellow' && "ring-2 ring-amber-500/50 bg-warning/10"
@@ -248,7 +248,7 @@ export default function ICADashboard() {
               onClick={() => setFilter('yellow')}
             >
               <CardHeader className="pb-2">
-                <CardDescription className="font-bold uppercase tracking-widest text-[10px] text-warning">Revisar</CardDescription>
+                <CardDescription className="font-bold uppercase tracking-widest text-[11px] text-warning">Revisar</CardDescription>
                 <CardTitle className="text-3xl sm:text-4xl font-black text-warning">{data.counts.yellow}</CardTitle>
               </CardHeader>
               <div className="h-1.5 w-full bg-warning/10 mt-4">
@@ -256,9 +256,9 @@ export default function ICADashboard() {
               </div>
             </Card>
           </motion.div>
-          
+
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
-            <Card 
+            <Card
               className={cn(
                 "border-destructive/20 shadow-xl shadow-rose-500/5 bg-destructive/5 backdrop-blur-xl rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1",
                 filter === 'red' && "ring-2 ring-rose-500/50 bg-destructive/10"
@@ -266,7 +266,7 @@ export default function ICADashboard() {
               onClick={() => setFilter('red')}
             >
               <CardHeader className="pb-2">
-                <CardDescription className="font-bold uppercase tracking-widest text-[10px] text-destructive">Vencidos</CardDescription>
+                <CardDescription className="font-bold uppercase tracking-widest text-[11px] text-destructive">Vencidos</CardDescription>
                 <CardTitle className="text-3xl sm:text-4xl font-black text-destructive">{data.counts.red}</CardTitle>
               </CardHeader>
               <div className="h-1.5 w-full bg-destructive/10 mt-4">
@@ -296,8 +296,8 @@ export default function ICADashboard() {
                     className="pl-11 h-12 bg-background/50 border-border/50 rounded-lg focus:ring-primary/20 transition-all"
                   />
                 </div>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className={cn(
                     "h-12 w-12 rounded-lg p-0 transition-all shrink-0",
                     filter !== 'all' && "bg-primary/10 border-primary text-primary"
@@ -317,13 +317,13 @@ export default function ICADashboard() {
                   <TableHeader className="bg-muted/30">
                     <TableRow className="hover:bg-transparent border-none">
                       <TableHead className="w-16 pl-6"></TableHead>
-                      <TableHead className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Animal</TableHead>
-                      <TableHead className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Sexo</TableHead>
-                      <TableHead className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Estado Global</TableHead>
-                      <TableHead className="text-center font-black uppercase text-[10px] tracking-widest text-muted-foreground">Aftosa</TableHead>
-                      <TableHead className="text-center font-black uppercase text-[10px] tracking-widest text-muted-foreground">Brucel.</TableHead>
-                      <TableHead className="text-center font-black uppercase text-[10px] tracking-widest text-muted-foreground">Clostrid.</TableHead>
-                      <TableHead className="text-center font-black uppercase text-[10px] tracking-widest text-muted-foreground">Despar.</TableHead>
+                      <TableHead className="font-black uppercase text-[11px] tracking-widest text-muted-foreground">Animal</TableHead>
+                      <TableHead className="font-black uppercase text-[11px] tracking-widest text-muted-foreground">Sexo</TableHead>
+                      <TableHead className="font-black uppercase text-[11px] tracking-widest text-muted-foreground">Estado Global</TableHead>
+                      <TableHead className="text-center font-black uppercase text-[11px] tracking-widest text-muted-foreground">Aftosa</TableHead>
+                      <TableHead className="text-center font-black uppercase text-[11px] tracking-widest text-muted-foreground">Brucel.</TableHead>
+                      <TableHead className="text-center font-black uppercase text-[11px] tracking-widest text-muted-foreground">Clostrid.</TableHead>
+                      <TableHead className="text-center font-black uppercase text-[11px] tracking-widest text-muted-foreground">Despar.</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -343,24 +343,24 @@ export default function ICADashboard() {
                         </motion.tr>
                       ) : (
                         filteredAnimals.map((animal: any, index: number) => (
-                          <motion.tr 
+                          <motion.tr
                             key={animal.animal_id}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.5) }}
-                            className="group cursor-pointer hover:bg-primary/[0.02] border-b border-border/30 last:border-0 transition-colors" 
+                            className="group cursor-pointer hover:bg-primary/[0.02] border-b border-border/30 last:border-0 transition-colors"
                             onClick={() => goTo(`/admin/animals/${animal.animal_id}`)}
                           >
                             <TableCell className="pl-6">{getStatusIcon(animal.overall)}</TableCell>
                             <TableCell>
                               <div className="font-black text-sm text-foreground group-hover:text-primary transition-colors">{animal.record}</div>
-                              {animal.name && <div className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5">{animal.name}</div>}
+                              {animal.name && <div className="text-[11px] font-bold text-muted-foreground uppercase mt-0.5">{animal.name}</div>}
                             </TableCell>
                             <TableCell>
-                              <Badge variant="secondary" className="text-[10px] font-bold bg-muted/50">{animal.sex}</Badge>
+                              <Badge variant="secondary" className="text-[11px] font-bold bg-muted/50">{animal.sex}</Badge>
                             </TableCell>
                             <TableCell>{getStatusBadge(animal.overall)}</TableCell>
-                            
+
                             {['aftosa', 'brucelosis', 'clostridial', 'desparasitacion'].map(check => {
                               const info = animal.checks[check];
                               let colorClass = 'bg-secondary';
@@ -368,20 +368,20 @@ export default function ICADashboard() {
                               else if (info.status === 'due_soon') colorClass = 'bg-amber-400 shadow-amber-400/50';
                               else if (info.status === 'missing') colorClass = 'bg-muted';
                               else if (info.status === 'overdue') colorClass = 'bg-destructive shadow-rose-500/50';
-                              
+
                               return (
                                 <TableCell key={check} className="text-center">
                                   <div className="flex flex-col items-center justify-center gap-1.5">
-                                    <div 
+                                    <div
                                       className={cn(
                                         "w-2.5 h-2.5 rounded-full shadow-md transition-transform group-hover:scale-125",
                                         colorClass
-                                      )} 
+                                      )}
                                       title={info.status}
                                     />
                                     {info.days !== null && (
                                       <span className={cn(
-                                        "text-[9px] font-black tracking-tighter uppercase",
+                                        "text-[11px] font-black tracking-tighter uppercase",
                                         info.status === 'overdue' ? 'text-destructive' : 'text-muted-foreground'
                                       )}>
                                         {info.days}d
@@ -401,7 +401,7 @@ export default function ICADashboard() {
             </div>
           </CardContent>
           <div className="p-4 sm:p-6 bg-muted/20 border-t border-border/30 text-center">
-            <p className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-[0.2em]">VillaLuz Intelligence Reporting System</p>
+            <p className="text-[11px] font-black text-muted-foreground/50 uppercase tracking-[0.2em]">VillaLuz Intelligence Reporting System</p>
           </div>
         </Card>
       </motion.div>

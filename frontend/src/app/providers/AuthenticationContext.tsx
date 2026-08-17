@@ -687,7 +687,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         navigator.geolocation.getCurrentPosition(
           async (position) => {
             const { latitude, longitude, accuracy } = position.coords;
-            
+
             // 1. Ejecutar check de Geofencing localmente
             geofenceService.checkLocation(latitude, longitude);
 
@@ -730,4 +730,3 @@ const RATE_LIMIT_COOLDOWN_MS = 60_000; // 60s de enfriamiento tras 429
 const AUTH_BC_NAME = 'auth:sync'
 const INFLIGHT_SUPPRESSION_WINDOW_MS = 5000
 const AUTH_BC_FALLBACK_KEY = 'auth:sync:storage'
-

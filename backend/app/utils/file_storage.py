@@ -8,34 +8,45 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp', 'gif'}
-CHAT_ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf', 'doc', 'docx', 'txt', 'xls', 'xlsx'}
+ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "gif"}
+CHAT_ALLOWED_EXTENSIONS = {
+    "jpg",
+    "jpeg",
+    "png",
+    "webp",
+    "gif",
+    "pdf",
+    "doc",
+    "docx",
+    "txt",
+    "xls",
+    "xlsx",
+}
 MIME_TYPES = {
-    'jpg': 'image/jpeg',
-    'jpeg': 'image/jpeg',
-    'png': 'image/png',
-    'webp': 'image/webp',
-    'gif': 'image/gif'
+    "jpg": "image/jpeg",
+    "jpeg": "image/jpeg",
+    "png": "image/png",
+    "webp": "image/webp",
+    "gif": "image/gif",
 }
 
 
 def allowed_file(filename):
     """Verifica si el archivo tiene una extensión permitida"""
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def get_file_extension(filename):
     """Obtiene la extensión del archivo"""
-    if '.' in filename:
-        return filename.rsplit('.', 1)[1].lower()
+    if "." in filename:
+        return filename.rsplit(".", 1)[1].lower()
     return None
 
 
 def get_mime_type(filename):
     """Obtiene el tipo MIME basado en la extensión del archivo"""
     ext = get_file_extension(filename)
-    return MIME_TYPES.get(ext, 'application/octet-stream')
+    return MIME_TYPES.get(ext, "application/octet-stream")
 
 
 def generate_unique_filename(original_filename):
@@ -45,14 +56,14 @@ def generate_unique_filename(original_filename):
     """
     ext = get_file_extension(original_filename)
     if not ext:
-        ext = 'jpg'  # extensión por defecto
+        ext = "jpg"  # extensión por defecto
 
     # Limpiar el nombre original
     safe_name = secure_filename(original_filename)
-    base_name = safe_name.rsplit('.', 1)[0] if '.' in safe_name else safe_name
+    base_name = safe_name.rsplit(".", 1)[0] if "." in safe_name else safe_name
 
     # Generar nombre único
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     unique_id = str(uuid.uuid4())[:8]
 
     return f"{timestamp}_{unique_id}_{base_name}.{ext}"
@@ -63,8 +74,8 @@ def get_animal_upload_path(animal_id):
     Genera la ruta de almacenamiento para las imágenes de un animal.
     Formato: static/uploads/animals/{animal_id}/
     """
-    upload_folder = flask.current_app.config.get('UPLOAD_FOLDER', 'static/uploads')
-    return os.path.join(upload_folder, 'animals', str(animal_id))
+    upload_folder = flask.current_app.config.get("UPLOAD_FOLDER", "static/uploads")
+    return os.path.join(upload_folder, "animals", str(animal_id))
 
 
 def get_user_avatar_path(user_id):
@@ -72,39 +83,39 @@ def get_user_avatar_path(user_id):
     Ruta para avatares de usuario.
     Formato: static/uploads/avatars/
     """
-    upload_folder = flask.current_app.config.get('UPLOAD_FOLDER', 'static/uploads')
-    return os.path.join(upload_folder, 'avatars')
+    upload_folder = flask.current_app.config.get("UPLOAD_FOLDER", "static/uploads")
+    return os.path.join(upload_folder, "avatars")
 
 
 def save_user_avatar(user_id, file):
     """Guarda la foto de perfil de un usuario."""
     upload_dir = get_user_avatar_path(user_id)
     ensure_upload_directory(upload_dir)
-    
-    ext = get_file_extension(file.filename) or 'jpg'
+
+    ext = get_file_extension(file.filename) or "jpg"
     filename = f"avatar_{user_id}.{ext}"
     full_path = os.path.join(upload_dir, filename)
-    
+
     # Procesar con Pillow para normalizar tamaño
     from PIL import Image
     import io
-    
+
     img = Image.open(file)
     if img.mode in ("RGBA", "P"):
         img = img.convert("RGB")
-    
+
     # Cuadrado centrado 400x400
     width, height = img.size
     min_dim = min(width, height)
-    left = (width - min_dim)/2
-    top = (height - min_dim)/2
-    right = (width + min_dim)/2
-    bottom = (height + min_dim)/2
+    left = (width - min_dim) / 2
+    top = (height - min_dim) / 2
+    right = (width + min_dim) / 2
+    bottom = (height + min_dim) / 2
     img = img.crop((left, top, right, bottom))
     img.thumbnail((400, 400), Image.Resampling.LANCZOS)
-    
+
     img.save(full_path, "JPEG", quality=85, optimize=True)
-    
+
     relative_path = f"static/uploads/avatars/{filename}"
     return get_public_url(relative_path)
 
@@ -119,7 +130,9 @@ def ensure_upload_directory(directory_path):
         return False
 
 
-def save_animal_image(file, animal_id, generate_thumbnail=True, skip_pillow=False, filename=None):
+def save_animal_image(
+    file, animal_id, generate_thumbnail=True, skip_pillow=False, filename=None
+):
     """
     Guarda una imagen de animal, la redimensiona si es muy grande y genera una miniatura.
 
@@ -150,11 +163,13 @@ def get_finca_upload_path(finca_id):
     Genera la ruta de almacenamiento para las imágenes de una finca.
     Formato: static/uploads/fincas/{finca_id}/
     """
-    upload_folder = flask.current_app.config.get('UPLOAD_FOLDER', 'static/uploads')
-    return os.path.join(upload_folder, 'fincas', str(finca_id))
+    upload_folder = flask.current_app.config.get("UPLOAD_FOLDER", "static/uploads")
+    return os.path.join(upload_folder, "fincas", str(finca_id))
 
 
-def save_finca_image(file, finca_id, generate_thumbnail=True, skip_pillow=False, filename=None):
+def save_finca_image(
+    file, finca_id, generate_thumbnail=True, skip_pillow=False, filename=None
+):
     """Guarda una imagen de finca. Misma semántica que save_animal_image."""
     return _save_image(
         file,
@@ -172,26 +187,37 @@ def delete_finca_image(filepath):
     return delete_animal_image(filepath)
 
 
-def _save_image(file, upload_dir, relative_dir, generate_thumbnail=True,
-                skip_pillow=False, filename=None, owner_label=""):
+def _save_image(
+    file,
+    upload_dir,
+    relative_dir,
+    generate_thumbnail=True,
+    skip_pillow=False,
+    filename=None,
+    owner_label="",
+):
     """Shared image pipeline used by the animal and finca savers."""
     try:
         import io
 
         # Determinar nombre de archivo
-        original_filename = filename if filename else getattr(file, 'filename', '')
+        original_filename = filename if filename else getattr(file, "filename", "")
         if not original_filename:
             raise ValueError("No se proporcionó nombre de archivo")
 
         if not allowed_file(original_filename):
-            raise ValueError(f"Tipo de archivo no permitido. Extensiones permitidas: {', '.join(ALLOWED_EXTENSIONS)}")
+            raise ValueError(
+                f"Tipo de archivo no permitido. Extensiones permitidas: {', '.join(ALLOWED_EXTENSIONS)}"
+            )
 
         # Leer archivo en memoria para procesar
         img_data = file.read()
         file_size = len(img_data)
 
         # Validar tamaño original
-        max_size = flask.current_app.config.get('MAX_IMAGE_SIZE', 10 * 1024 * 1024)  # 10MB para proceso
+        max_size = flask.current_app.config.get(
+            "MAX_IMAGE_SIZE", 10 * 1024 * 1024
+        )  # 10MB para proceso
         if file_size > max_size:
             raise ValueError("El archivo excede el tamaño máximo permitido")
 
@@ -205,16 +231,16 @@ def _save_image(file, upload_dir, relative_dir, generate_thumbnail=True,
         # ── Ruta rápida: archivo ya pre-optimizado (WebP), sin Pillow ──
         if skip_pillow:
             full_path = os.path.join(upload_dir, unique_filename)
-            with open(full_path, 'wb') as f:
+            with open(full_path, "wb") as f:
                 f.write(img_data)
             relative_path = f"{relative_dir}/{unique_filename}"
             mime = get_mime_type(unique_filename)
             return {
-                'filename': unique_filename,
-                'filepath': relative_path,
-                'thumb_path': None,
-                'file_size': os.path.getsize(full_path),
-                'mime_type': mime,
+                "filename": unique_filename,
+                "filepath": relative_path,
+                "thumb_path": None,
+                "file_size": os.path.getsize(full_path),
+                "mime_type": mime,
             }
 
         # ── Ruta completa: procesar con Pillow ──
@@ -226,6 +252,7 @@ def _save_image(file, upload_dir, relative_dir, generate_thumbnail=True,
         # Corregir orientación EXIF si existe
         try:
             from PIL import ImageOps
+
             img = ImageOps.exif_transpose(img)
         except Exception:
             pass
@@ -252,11 +279,11 @@ def _save_image(file, upload_dir, relative_dir, generate_thumbnail=True,
         relative_path = f"{relative_dir}/{unique_filename}"
 
         return {
-            'filename': unique_filename,
-            'filepath': relative_path,
-            'thumb_path': thumb_relative_path,
-            'file_size': os.path.getsize(full_path),
-            'mime_type': 'image/jpeg'
+            "filename": unique_filename,
+            "filepath": relative_path,
+            "thumb_path": thumb_relative_path,
+            "file_size": os.path.getsize(full_path),
+            "mime_type": "image/jpeg",
         }
 
     except Exception as e:
@@ -279,7 +306,7 @@ def delete_animal_image(filepath):
             return False
 
         # Construir ruta absoluta
-        full_path = os.path.join(flask.current_app.root_path, '..', filepath)
+        full_path = os.path.join(flask.current_app.root_path, "..", filepath)
         full_path = os.path.normpath(full_path)
 
         # Verificar que existe
@@ -319,9 +346,9 @@ def delete_animal_directory(animal_id):
     Elimina todo el directorio de uploads asociado a un animal.
     """
     try:
-        upload_folder = flask.current_app.config.get('UPLOAD_FOLDER', 'static/uploads')
-        relative_path = os.path.join(upload_folder, 'animals', str(animal_id))
-        base_path = os.path.normpath(os.path.join(flask.current_app.root_path, '..'))
+        upload_folder = flask.current_app.config.get("UPLOAD_FOLDER", "static/uploads")
+        relative_path = os.path.join(upload_folder, "animals", str(animal_id))
+        base_path = os.path.normpath(os.path.join(flask.current_app.root_path, ".."))
         full_path = os.path.normpath(os.path.join(base_path, relative_path))
         uploads_root = os.path.normpath(os.path.join(base_path, upload_folder))
 
@@ -360,20 +387,20 @@ def get_public_url(filepath):
 
     # Derivar origen preferentemente desde flask.request.host_url
     try:
-        if flask.request and getattr(flask.request, 'host_url', None):
-            base_url = (flask.request.host_url or '').rstrip('/')
+        if flask.request and getattr(flask.request, "host_url", None):
+            base_url = (flask.request.host_url or "").rstrip("/")
         elif flask.request and flask.request.host:
-            scheme = 'https' if flask.request.is_secure else 'http'
+            scheme = "https" if flask.request.is_secure else "http"
             base_url = f"{scheme}://{flask.request.host}"
         else:
-            base_url = flask.current_app.config.get('API_BASE_URL_NO_VERSION', '')
+            base_url = flask.current_app.config.get("API_BASE_URL_NO_VERSION", "")
     except Exception:
-        base_url = flask.current_app.config.get('API_BASE_URL_NO_VERSION', '')
+        base_url = flask.current_app.config.get("API_BASE_URL_NO_VERSION", "")
 
     # Normalizar filepath y extraer ruta relativa
-    relative_path = (filepath or '').replace('\\', '/')
-    if relative_path.startswith('static/uploads/'):
-        relative_path = relative_path[len('static/uploads/') :]
+    relative_path = (filepath or "").replace("\\", "/")
+    if relative_path.startswith("static/uploads/"):
+        relative_path = relative_path[len("static/uploads/") :]
     return f"{base_url}/api/v1/public/images/{relative_path}"
 
 
@@ -390,6 +417,7 @@ def validate_image_count(animal_id, max_images=20):
     """
     try:
         from app.models.animal_images import AnimalImages
+
         current_count = AnimalImages.query.filter_by(animal_id=animal_id).count()
         return (current_count < max_images, current_count)
     except Exception as e:
@@ -399,8 +427,10 @@ def validate_image_count(animal_id, max_images=20):
 
 def chat_allowed_file(filename):
     """Verifica si el archivo tiene una extensión permitida para el chat"""
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in CHAT_ALLOWED_EXTENSIONS
+    return (
+        "." in filename
+        and filename.rsplit(".", 1)[1].lower() in CHAT_ALLOWED_EXTENSIONS
+    )
 
 
 def get_chat_upload_path(finca_id):
@@ -408,8 +438,8 @@ def get_chat_upload_path(finca_id):
     Genera la ruta de almacenamiento para los archivos del chat.
     Formato: static/uploads/chat/{finca_id}/
     """
-    upload_folder = flask.current_app.config.get('UPLOAD_FOLDER', 'static/uploads')
-    return os.path.join(upload_folder, 'chat', str(finca_id))
+    upload_folder = flask.current_app.config.get("UPLOAD_FOLDER", "static/uploads")
+    return os.path.join(upload_folder, "chat", str(finca_id))
 
 
 def save_chat_file(file, finca_id):
@@ -425,20 +455,26 @@ def save_chat_file(file, finca_id):
     """
     try:
         # Validar archivo
-        if not file or file.filename == '':
+        if not file or file.filename == "":
             raise ValueError("No se proporcionó ningún archivo")
 
         if not chat_allowed_file(file.filename):
-            raise ValueError(f"Tipo de archivo no permitido. Extensiones permitidas: {', '.join(CHAT_ALLOWED_EXTENSIONS)}")
+            raise ValueError(
+                f"Tipo de archivo no permitido. Extensiones permitidas: {', '.join(CHAT_ALLOWED_EXTENSIONS)}"
+            )
 
         # Validar tamaño
         file.seek(0, os.SEEK_END)
         file_size = file.tell()
         file.seek(0)
 
-        max_size = flask.current_app.config.get('MAX_CHAT_FILE_SIZE', 10 * 1024 * 1024)  # 10MB
+        max_size = flask.current_app.config.get(
+            "MAX_CHAT_FILE_SIZE", 10 * 1024 * 1024
+        )  # 10MB
         if file_size > max_size:
-            raise ValueError(f"El archivo excede el tamaño máximo permitido de {max_size // (1024*1024)}MB")
+            raise ValueError(
+                f"El archivo excede el tamaño máximo permitido de {max_size // (1024 * 1024)}MB"
+            )
 
         # Generar nombre único
         timestamp = str(int(datetime.utcnow().timestamp()))
@@ -455,18 +491,20 @@ def save_chat_file(file, finca_id):
         file.save(file_path)
 
         # Determinar tipo
-        file_ext = safe_filename.rsplit('.', 1)[1].lower()
-        attachment_type = 'image' if file_ext in {'jpg', 'jpeg', 'png', 'webp', 'gif'} else 'file'
+        file_ext = safe_filename.rsplit(".", 1)[1].lower()
+        attachment_type = (
+            "image" if file_ext in {"jpg", "jpeg", "png", "webp", "gif"} else "file"
+        )
 
         # Generar URL pública
         relative_path = f"static/uploads/chat/{finca_id}/{unique_filename}"
         public_url = get_public_url(relative_path)
 
         return {
-            'url': public_url,
-            'type': attachment_type,
-            'name': safe_filename,
-            'file_size': file_size
+            "url": public_url,
+            "type": attachment_type,
+            "name": safe_filename,
+            "file_size": file_size,
         }
 
     except Exception as e:
@@ -477,11 +515,11 @@ def save_chat_file(file, finca_id):
 def get_chat_file_url(finca_id, filename):
     """
     Genera la URL pública para un archivo del chat.
-    
+
     Args:
         finca_id: ID de la finca
         filename: Nombre del archivo
-        
+
     Returns:
         str: URL pública del archivo
     """

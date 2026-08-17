@@ -53,4 +53,3 @@ export function useMyActivitySummary(opts: { enabled?: boolean; ttlMs?: number }
 
   return { data, loading, error, refetch };
 }
-

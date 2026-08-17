@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useReducer, useEffect, useRef, useCallback, ReactNode } from 'react';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { useToast } from './ToastContext';
-import dataPreloadService, { 
-  DashboardCriticalData, 
-  AnimalModuleData, 
+import dataPreloadService, {
+  DashboardCriticalData,
+  AnimalModuleData,
   UserModuleData,
   PreloadError,
-  PreloadErrorType 
+  PreloadErrorType
 } from '@/features/dashboard/api/dataPreload.service';
 
 /**
@@ -29,22 +29,22 @@ export interface AppState {
   // Estado general
   status: AppStateStatus;
   isOnline: boolean;
-  
+
   // Datos de la aplicación
   dashboardData: DashboardCriticalData | null;
   animalModuleData: AnimalModuleData | null;
   userModuleData: UserModuleData | null;
-  
+
   // Estado de carga
   isLoading: boolean;
   dashboardLoaded: boolean;
   animalModuleLoaded: boolean;
   userModuleLoaded: boolean;
-  
+
   // Errores
   errors: PreloadError[];
   hasCriticalErrors: boolean;
-  
+
   // Metadatos
   lastUpdate: number | null;
   sessionId: string;
@@ -109,7 +109,7 @@ function appStateReducer(state: AppState, action: AppStateAction): AppState {
       return {
         ...state,
         isOnline: action.payload,
-        status: action.payload 
+        status: action.payload
           ? (state.hasCriticalErrors ? AppStateStatus.ERROR : AppStateStatus.READY)
           : AppStateStatus.OFFLINE
       };
@@ -254,7 +254,7 @@ interface AppStateProviderProps {
 
 /**
  * Provider para el estado global de la aplicación
- * 
+ *
  * Características:
  * - Gestión centralizada del estado de la aplicación
  * - Integración con el servicio de precarga de datos
@@ -278,12 +278,12 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({
       dispatch({ type: 'SET_MODULE_LOADED', payload: { module: 'dashboard', loaded: serviceState.dashboardLoaded } });
       dispatch({ type: 'SET_MODULE_LOADED', payload: { module: 'animal', loaded: serviceState.animalModuleLoaded } });
       dispatch({ type: 'SET_MODULE_LOADED', payload: { module: 'user', loaded: serviceState.userModuleLoaded } });
-      
+
       // Actualizar datos desde caché del servicio
       const dashboardData = dataPreloadService.getDashboardData();
       const animalModuleData = dataPreloadService.getAnimalModuleData();
       const userModuleData = dataPreloadService.getUserModuleData();
-      
+
       if (dashboardData) {
         dispatch({ type: 'SET_DASHBOARD_DATA', payload: dashboardData });
       }
@@ -293,12 +293,12 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({
       if (userModuleData) {
         dispatch({ type: 'SET_USER_MODULE_DATA', payload: userModuleData });
       }
-      
+
       // Actualizar errores
       serviceState.errors.forEach(error => {
         dispatch({ type: 'ADD_ERROR', payload: error });
       });
-      
+
       // Actualizar estado general
       if (serviceState.isLoading) {
         if (serviceState.dashboardLoaded) {
@@ -337,7 +337,7 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({
         console.log('[AppStateProvider] Precarga completada exitosamente');
       } catch (error: any) {
         console.error('[AppStateProvider] Error en la precarga:', error);
-        
+
         // Añadir error al estado
         dispatch({
           type: 'ADD_ERROR',
@@ -349,9 +349,9 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({
             context: error
           }
         });
-        
+
         dispatch({ type: 'SET_STATUS', payload: AppStateStatus.ERROR });
-        
+
         showToast(
           'Error crítico al cargar los datos. La aplicación podría no funcionar correctamente.',
           'error',
@@ -369,7 +369,7 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({
   useEffect(() => {
     if (isAuthenticated) {
       dispatch({ type: 'SET_STATUS', payload: AppStateStatus.INITIALIZING });
-      
+
       if (autoStart) {
         // Pequeño retraso para asegurar que todo esté inicializado
         setTimeout(() => {
@@ -387,7 +387,7 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({
     const handleOnline = () => {
       dispatch({ type: 'SET_ONLINE_STATUS', payload: true });
       showToast('Conexión restablecida', 'success');
-      
+
       // Reintentar precarga automáticamente al recuperar conexión
       if (isAuthenticated && state.dashboardLoaded) {
         startPreload();
@@ -420,7 +420,7 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({
   const refreshDashboard = async () => {
     console.log('[AppStateProvider] Refrescando dashboard...');
     dataPreloadService.invalidateModuleData('dashboard');
-    
+
     if (!state.isLoading) {
       await startPreload();
     }
@@ -429,7 +429,7 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({
   const refreshAnimalModule = async () => {
     console.log('[AppStateProvider] Refrescando módulo Animal...');
     dataPreloadService.invalidateModuleData('animal');
-    
+
     if (!state.isLoading) {
       await startPreload();
     }
@@ -438,7 +438,7 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({
   const refreshUserModule = async () => {
     console.log('[AppStateProvider] Refrescando módulo Usuario...');
     dataPreloadService.invalidateModuleData('user');
-    
+
     if (!state.isLoading) {
       await startPreload();
     }

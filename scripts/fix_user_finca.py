@@ -7,15 +7,16 @@ import sys
 import os
 
 # Agregar el backend al path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'BackFinca'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend"))
 
 from app import create_app, db
 from app.models.user import User
 
+
 def fix_user_finca():
     """Mover usuarios Operario y Veterinario a finca Tradicional"""
     app = create_app()
-    
+
     with app.app_context():
         try:
             # Mover Operario a finca Tradicional (ID 3)
@@ -26,7 +27,7 @@ def fix_user_finca():
                 print(f"✓ Operario movido a finca ID 3 (Tradicional): {operario.fullname}")
             else:
                 print("❌ Operario no encontrado")
-            
+
             # Mover Veterinario a finca Tradicional (ID 3)
             veterinario = User.query.filter_by(identification=66666666).first()
             if veterinario:
@@ -35,20 +36,22 @@ def fix_user_finca():
                 print(f"✓ Veterinario movido a finca ID 3 (Tradicional): {veterinario.fullname}")
             else:
                 print("❌ Veterinario no encontrado")
-            
+
             print("\n✅ Usuarios movidos a finca Tradicional exitosamente")
             print("\nCredenciales para pruebas:")
-            print("  Operario:    55555555 / Operario1234! (Finca ID 3 - Tradicional)")
-            print("  Veterinario: 66666666 / Veterinario1234! (Finca ID 3 - Tradicional)")
-            
+            print("  Operario:    55555555 / contraseña definida por E2E_WORKER_PASS (Finca ID 3)")
+            print("  Veterinario: 66666666 / contraseña definida por E2E_VET_PASS (Finca ID 3)")
+
         except Exception as e:
             print(f"❌ Error moviendo usuarios: {e}")
             import traceback
+
             traceback.print_exc()
             db.session.rollback()
             return 1
-        
+
         return 0
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(fix_user_finca())

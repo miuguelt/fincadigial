@@ -1,13 +1,18 @@
 {
+  "name": "villaluz",
+  "private": true,
   "scripts": {
     "guardian": "pwsh -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\Miguel\\Documents\\Aplicaciones\\_infrastructure\\devbraind\\scripts\\DEVBRAIN_GUARDIAN.ps1 -Mode Audit -DevPort 3005",
     "guardian:repair": "pwsh -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\Miguel\\Documents\\Aplicaciones\\_infrastructure\\devbraind\\scripts\\DEVBRAIN_GUARDIAN.ps1 -Mode Audit -DevPort 3005 -Repair",
     "dev": "npm run dev --prefix frontend",
     "health": "pwsh -NoProfile -ExecutionPolicy Bypass -File start-windows.ps1 -Status",
-    "checkpoint": "git add -A && git commit -m \"checkpoint: $(date +%Y-%m-%d %H:%M)\"",
+    "hygiene": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Test-VillaLuzProjectHygiene.ps1 -FailOnViolations",
+    "modularity:changed": "pwsh -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\Miguel\\Documents\\Aplicaciones\\_infrastructure\\devbraind\\scripts\\Test-DevBrainModularity.ps1 -Path . -BaselinePath .devbrain/modularity-baseline.json -ChangedOnly -FailOnViolations",
+    "checkpoint": "pwsh -NoProfile -ExecutionPolicy Bypass -File .devbrain/checkpoint.ps1",
     "test:coverage": "npm run test:coverage --prefix frontend",
 
     "test": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/run_tests.ps1 -Layer all",
+    "test:unattended": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/run_tests.ps1 -Layer unattended",
     "test:backend": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/run_tests.ps1 -Layer backend",
     "test:frontend": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/run_tests.ps1 -Layer frontend",
     "test:e2e": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/run_tests.ps1 -Layer e2e",

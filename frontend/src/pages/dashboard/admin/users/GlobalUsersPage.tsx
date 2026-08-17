@@ -14,13 +14,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/shared/ui/dialog';
-import { 
-  Users, 
-  Building2, 
-  Mail, 
-  Phone, 
-  User as UserIcon, 
-  Search, 
+import {
+  Users,
+  Building2,
+  Mail,
+  Phone,
+  User as UserIcon,
+  Search,
   ShieldCheck,
   RefreshCw,
   ExternalLink,
@@ -59,7 +59,7 @@ const GlobalUsersPage = () => {
     fetchGlobalUsers();
   }, [fetchGlobalUsers]);
 
-  const filteredUsers = users.filter(u => 
+  const filteredUsers = users.filter(u =>
     u.fullname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     String(u.identification).includes(searchTerm)
@@ -90,11 +90,11 @@ const GlobalUsersPage = () => {
            <Badge variant="outline" className="text-success border-success/30 bg-success/5 py-1.5 px-4 font-semibold shadow-sm">
             {users.length} Usuarios Totales
           </Badge>
-          <Button 
+          <Button
             type="button"
-            variant="outline" 
-            size="sm" 
-            onClick={fetchGlobalUsers} 
+            variant="outline"
+            size="sm"
+            onClick={fetchGlobalUsers}
             disabled={loading}
             className="border-success/30 text-success hover:bg-success/5"
           >
@@ -180,15 +180,15 @@ const GlobalUsersPage = () => {
                         <div className="flex flex-wrap gap-2">
                           {user.fincas && user.fincas.length > 0 ? (
                             user.fincas.map((f: any) => (
-                              <div 
-                                key={f.id} 
+                              <div
+                                key={f.id}
                                 className="group/finca relative flex items-center gap-1.5 bg-card border border-border/50 rounded-lg px-2 py-1 shadow-sm hover:border-success/40 transition-all"
                                 title={`${f.name} - Rol: ${f.role}`}
                               >
                                 <Building2 className="h-3 w-3 text-success" />
                                 <div className="flex flex-col leading-tight">
-                                  <span className="text-[10px] font-bold text-foreground/80">{f.name}</span>
-                                  <span className="text-[8px] text-muted-foreground uppercase tracking-tighter">{f.role}</span>
+                                  <span className="text-[11px] font-bold text-foreground/80">{f.name}</span>
+                                  <span className="text-[11px] text-muted-foreground uppercase tracking-tighter">{f.role}</span>
                                 </div>
                                 {f.is_active && (
                                   <div className="absolute -top-1 -right-1 h-2 w-2 bg-success-500 rounded-full border border-white" title="Activa" />
@@ -201,7 +201,7 @@ const GlobalUsersPage = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={getAutoStatusClass(user.status ? 'Activo' : 'Inactivo') + ' rounded-full px-2 py-0 h-5 text-[10px]'}>
+                        <Badge className={getAutoStatusClass(user.status ? 'Activo' : 'Inactivo') + ' rounded-full px-2 py-0 h-5 text-[11px]'}>
                           {user.status ? 'Activo' : 'Inactivo'}
                         </Badge>
                       </TableCell>

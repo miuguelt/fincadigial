@@ -33,6 +33,5 @@ Notas:
 - No modifica la base de datos real de la aplicación
 """
 
-__version__ = '1.0.0'
-__author__ = 'DevBrain Team'
-
+__version__ = "1.0.0"
+__author__ = "DevBrain Team"

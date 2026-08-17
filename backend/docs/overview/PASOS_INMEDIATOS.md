@@ -1,4 +1,4 @@
-# 🚀 Pasos Inmediatos - BackFinca
+# 🚀 Pasos Inmediatos - VillaLuz
 
 **Fecha**: 2025-01-10
 **Tiempo estimado**: 15-30 minutos
@@ -10,7 +10,7 @@
 ### Paso 1: Instalar Dependencias (2 minutos)
 
 ```bash
-cd "C:\Users\Miguel\Documents\Flask Projects\BackFinca"
+cd "C:\Users\Miguel\Documents\Aplicaciones\_projects\villaluz\backend"
 
 # Reinstalar todas las dependencias
 pip install -r requirements.txt

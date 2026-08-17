@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { 
-  IconSearch, 
-  IconLoader2, 
+import {
+  IconSearch,
+  IconLoader2,
   IconCheck,
 } from '@/shared/ui/icons';
 import { cn } from '@/shared/ui/cn';
@@ -80,7 +80,7 @@ export function FarmSearchCombobox({
                   {selectedFarm.logo_url ? (
                     <img src={selectedFarm.logo_url} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-primary/20 text-primary text-[10px] font-bold uppercase">
+                    <div className="w-full h-full flex items-center justify-center bg-primary/20 text-primary text-[11px] font-bold uppercase">
                       {selectedFarm.name[0]}
                     </div>
                   )}
@@ -99,8 +99,8 @@ export function FarmSearchCombobox({
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
         <Command shouldFilter={false}>
-          <CommandInput 
-            placeholder="Escribe nombre de la finca..." 
+          <CommandInput
+            placeholder="Escribe nombre de la finca..."
             value={query}
             onValueChange={setQuery}
           />
@@ -138,7 +138,7 @@ export function FarmSearchCombobox({
                     </div>
                     <div className="flex flex-col">
                       <span className="text-sm font-bold text-[var(--color-text)]">{farm.name}</span>
-                      <span className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest">{farm.type}</span>
+                      <span className="text-[11px] text-[var(--color-text-muted)] uppercase tracking-widest">{farm.type}</span>
                     </div>
                   </div>
                   {selectedFarmId === farm.id && <IconCheck size={14} className="text-primary" />}

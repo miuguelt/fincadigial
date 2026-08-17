@@ -119,7 +119,7 @@ const DashboardLayout: React.FC = () => {
           isSidebarOpen={isSidebarOpen}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         />
-        <main 
+        <main
           className={cn(
             "flex-1 min-h-0 flex flex-col overflow-y-auto overflow-x-hidden bg-background transition-all duration-500 ease-out w-full max-w-full",
             // Con el menú abierto reservamos exactamente el ancho del menú + su margen (296px).

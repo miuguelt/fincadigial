@@ -7,6 +7,7 @@ Cubre el ciclo completo del endpoint /api/v1/analytics/calendar/:
 - Eventos de vacuna próxima (next_due_date), fin de retiro y tareas
 - Filtro por rango de fechas y error de formato inválido
 """
+
 from datetime import date, datetime, timedelta
 
 from app import db
@@ -117,6 +118,7 @@ class TestCalendarEventosFuturos:
 
     def _seed_with_auth_finca(self, app, headers) -> None:
         from flask_jwt_extended import decode_token
+
         token_str = headers["Authorization"].split(" ")[1]
         finca_id = decode_token(token_str)["finca_id"]
         with app.app_context():
@@ -166,19 +168,19 @@ class TestCalendarAlertVolume:
         finca_id = decode_token(token_str)["finca_id"]
         now = datetime.now().replace(microsecond=0)
         for index in range(total):
-            db.session.add(AnimalAlert(
-                animal_id=None,
-                finca_id=finca_id,
-                alert_type=AlertType.PREDICTIVE,
-                message=f"Alerta de volumen {index}",
-                priority=(
-                    AlertPriority.CRITICAL
-                    if index % 2 == 0
-                    else AlertPriority.HIGH
-                ),
-                is_read=False,
-                triggered_at=now,
-            ))
+            db.session.add(
+                AnimalAlert(
+                    animal_id=None,
+                    finca_id=finca_id,
+                    alert_type=AlertType.PREDICTIVE,
+                    message=f"Alerta de volumen {index}",
+                    priority=(
+                        AlertPriority.CRITICAL if index % 2 == 0 else AlertPriority.HIGH
+                    ),
+                    is_read=False,
+                    triggered_at=now,
+                )
+            )
         db.session.commit()
         return now.date()
 
@@ -187,8 +189,7 @@ class TestCalendarAlertVolume:
         event_date = self._seed_alerts(headers)
 
         resp = client.get(
-            f"{BASE}/analytics/calendar/?start_date={event_date}"
-            f"&end_date={event_date}",
+            f"{BASE}/analytics/calendar/?start_date={event_date}&end_date={event_date}",
             headers=headers,
         )
 

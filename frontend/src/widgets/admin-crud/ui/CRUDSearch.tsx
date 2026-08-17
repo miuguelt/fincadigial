@@ -1,6 +1,6 @@
 /*
  * CRUDSearch
- * 
+ *
  * Componente optimizado para la búsqueda en tablas.
  * Implementa debouncing eficiente y mejor experiencia de usuario.
  */
@@ -29,7 +29,7 @@ export const CRUDSearch = memo<CRUDSearchProps>(({
   const handleSearchChange = useCallback((value: string) => {
     setSearchQuery(value);
   }, [setSearchQuery]);
-  
+
   return (
     <div className="flex items-center gap-2">
       <div className="relative">

@@ -1,1 +1,0 @@
-// Stress test utility placeholder

@@ -169,7 +169,7 @@ services:
 #      - DB_DUMP_BEGIN=+0
 #      - DB_DUMP_KEEP_FILES=7
 #    volumes:
-#      - ./backups:/backups
+#      - backup_data:/backups
 ##    depends_on:
 ##      db:
 ##        condition: service_healthy
@@ -183,3 +183,4 @@ networks:
 volumes:
   mysql_data:
   redis_data:
+  backup_data:

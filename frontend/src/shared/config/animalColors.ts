@@ -15,7 +15,7 @@ export const BREED_COLORS: Record<string, string> = {
   'Gyr': '#f59e0b',      // Dorado / Amarillo
   'Girolando': '#0ea5e9', // Celeste
   'Normando': '#4d7c0f', // Verde oliva
-  
+
   // Genéricos / Default
   'Cruce': '#6b7280',    // Gris
   'Desconocida': '#9ca3af',
@@ -28,13 +28,13 @@ export const BREED_COLORS: Record<string, string> = {
  */
 export const getBreedColor = (breedName?: string | null): string => {
   if (!breedName) return BREED_COLORS['Desconocida'];
-  
+
   // Normalizar nombre (quitar espacios, tildes, etc.)
   const normalized = breedName.trim();
-  
+
   // Búsqueda directa
   if (BREED_COLORS[normalized]) return BREED_COLORS[normalized];
-  
+
   // Búsqueda parcial (ej: "Angus Rojo" -> "Angus")
   const key = Object.keys(BREED_COLORS).find(k => normalized.includes(k));
   if (key) return BREED_COLORS[key];

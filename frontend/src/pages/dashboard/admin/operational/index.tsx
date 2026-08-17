@@ -121,4 +121,3 @@ const OperationalCostsPage: React.FC = () => {
 };
 
 export default OperationalCostsPage;
-

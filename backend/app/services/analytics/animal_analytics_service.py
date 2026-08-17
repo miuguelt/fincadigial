@@ -8,14 +8,16 @@ from app.models.inventory import InventoryLot
 from app.models.financial import Transaction, TransactionType, TransactionCategory
 from app.models.system_content import SystemContent
 
+
 def _get_milk_price():
-    entry = SystemContent.get_by_key('param.milk_price_per_liter')
+    entry = SystemContent.get_by_key("param.milk_price_per_liter")
     if entry:
         try:
             return float(entry.content)
         except (ValueError, TypeError):
             pass
     return None
+
 
 class AnimalAnalyticsService:
     @staticmethod
@@ -33,33 +35,60 @@ class AnimalAnalyticsService:
 
         # 1. INGRESOS
         # 1.1 Producción de Leche
-        total_liters = db.session.query(func.sum(MilkProduction.liters)).filter_by(animal_id=animal_id).scalar() or 0
+        total_liters = (
+            db.session.query(func.sum(MilkProduction.liters))
+            .filter_by(animal_id=animal_id)
+            .scalar()
+            or 0
+        )
         milk_income = total_liters * price_per_liter
 
         # 1.2 Ingresos por Venta (si aplica)
-        sale_income = db.session.query(func.sum(Transaction.amount)).filter(
-            Transaction.animal_id == animal_id,
-            Transaction.transaction_type == TransactionType.Income,
-            Transaction.category == TransactionCategory.Animal
-        ).scalar() or 0
+        sale_income = (
+            db.session.query(func.sum(Transaction.amount))
+            .filter(
+                Transaction.animal_id == animal_id,
+                Transaction.transaction_type == TransactionType.Income,
+                Transaction.category == TransactionCategory.Animal,
+            )
+            .scalar()
+            or 0
+        )
 
         # 2. COSTOS
         # 2.1 Costo de Adquisición (Compra)
-        purchase_cost = db.session.query(func.sum(Transaction.amount)).filter(
-            Transaction.animal_id == animal_id,
-            Transaction.transaction_type == TransactionType.Expense,
-            Transaction.category == TransactionCategory.Animal
-        ).scalar() or 0
+        purchase_cost = (
+            db.session.query(func.sum(Transaction.amount))
+            .filter(
+                Transaction.animal_id == animal_id,
+                Transaction.transaction_type == TransactionType.Expense,
+                Transaction.category == TransactionCategory.Animal,
+            )
+            .scalar()
+            or 0
+        )
 
         # 2.2 Costos Sanitarios (Medicamentos)
-        med_costs = db.session.query(func.sum(TreatmentMedications.quantity * InventoryLot.unit_cost)).join(
-            InventoryLot, TreatmentMedications.lot_id == InventoryLot.id
-        ).filter(TreatmentMedications.treatments.has(animal_id=animal_id)).scalar() or 0
+        med_costs = (
+            db.session.query(
+                func.sum(TreatmentMedications.quantity * InventoryLot.unit_cost)
+            )
+            .join(InventoryLot, TreatmentMedications.lot_id == InventoryLot.id)
+            .filter(TreatmentMedications.treatments.has(animal_id=animal_id))
+            .scalar()
+            or 0
+        )
 
         # 2.3 Costos Sanitarios (Vacunas)
-        vac_costs = db.session.query(func.sum(TreatmentVaccines.quantity * InventoryLot.unit_cost)).join(
-            InventoryLot, TreatmentVaccines.lot_id == InventoryLot.id
-        ).filter(TreatmentVaccines.treatments.has(animal_id=animal_id)).scalar() or 0
+        vac_costs = (
+            db.session.query(
+                func.sum(TreatmentVaccines.quantity * InventoryLot.unit_cost)
+            )
+            .join(InventoryLot, TreatmentVaccines.lot_id == InventoryLot.id)
+            .filter(TreatmentVaccines.treatments.has(animal_id=animal_id))
+            .scalar()
+            or 0
+        )
 
         # 3. RESULTADOS
         f_milk_income = float(milk_income or 0)
@@ -83,14 +112,14 @@ class AnimalAnalyticsService:
             "total_income": round(float(total_income), 2),
             "total_costs": round(float(total_costs), 2),
             "net_profit": round(float(net_profit), 2),
-            "roi_percentage": round(float(roi_percentage), 2)
+            "roi_percentage": round(float(roi_percentage), 2),
         }
 
     @staticmethod
     def get_top_profitable_animals(finca_id, limit=5):
         """Identifica los animales más rentables de la finca"""
         # Esta es una operación pesada, en producción se usaría una tabla materializada
-        all_animals = Animals.query.filter_by(finca_id=finca_id, status='Vivo').all()
+        all_animals = Animals.query.filter_by(finca_id=finca_id, status="Vivo").all()
         roi_list = []
         for animal in all_animals:
             roi_data = AnimalAnalyticsService.calculate_animal_roi(animal.id)
@@ -98,4 +127,4 @@ class AnimalAnalyticsService:
                 roi_list.append(roi_data)
 
         # Ordenar por utilidad neta descendente
-        return sorted(roi_list, key=lambda x: x['net_profit'], reverse=True)[:limit]
+        return sorted(roi_list, key=lambda x: x["net_profit"], reverse=True)[:limit]

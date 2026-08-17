@@ -10,15 +10,14 @@ Uso:
 """
 
 import sys
-import os
-import re
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
 
-ERRORS   = []
+ERRORS = []
 WARNINGS = []
-OK       = []
+OK = []
+
 
 def check(condition: bool, ok_msg: str, err_msg: str, warn: bool = False):
     if condition:
@@ -27,6 +26,7 @@ def check(condition: bool, ok_msg: str, err_msg: str, warn: bool = False):
         WARNINGS.append(f"⚠️   {err_msg}")
     else:
         ERRORS.append(f"❌  {err_msg}")
+
 
 # ── 1. Archivos críticos existen ──────────────────────────────────────
 required_files = [
@@ -47,16 +47,21 @@ compose_path = ROOT / "docker-compose.coolify.yml"
 if compose_path.exists():
     compose_text = compose_path.read_text()
     required_vars = [
-        "FLASK_SECRET_KEY", "JWT_SECRET_KEY", "DB_USER",
-        "DB_PASSWORD", "DB_NAME", "DOMAIN",
-        "VITE_API_BASE_URL", "VITE_FRONTEND_URL"
+        "FLASK_SECRET_KEY",
+        "JWT_SECRET_KEY",
+        "DB_USER",
+        "DB_PASSWORD",
+        "DB_NAME",
+        "DOMAIN",
+        "VITE_API_BASE_URL",
+        "VITE_FRONTEND_URL",
     ]
     for var in required_vars:
         check(
             # Match both ${VAR} and ${VAR:-default} patterns
             f"${{{var}}}" in compose_text or f"${{{var}:-" in compose_text,
             f"Variable referenciada en compose: {var}",
-            f"Variable faltante en compose: {var}"
+            f"Variable faltante en compose: {var}",
         )
 
 
@@ -67,8 +72,11 @@ if env_example.exists():
     insecure_markers = ["GENERAR_CLAVE_SEGURA", "CONTRASEÑA_SEGURA"]
     has_insecure = any(m in content for m in insecure_markers)
     # El example DEBE tener los marcadores (es un template)
-    check(has_insecure, ".env.production.example es un template (no tiene claves reales)", 
-          ".env.production.example parece tener valores reales — ¡no commitear!")
+    check(
+        has_insecure,
+        ".env.production.example es un template (no tiene claves reales)",
+        ".env.production.example parece tener valores reales — ¡no commitear!",
+    )
 
 # ── 4. .gitignore protege archivos sensibles ──────────────────────────
 gitignore = ROOT / ".gitignore"
@@ -82,12 +90,17 @@ if gitignore.exists():
 back_dockerfile = ROOT / "backend" / "Dockerfile"
 if back_dockerfile.exists():
     df_text = back_dockerfile.read_text()
-    check("AS builder" in df_text and "AS production" in df_text,
-          "Backend Dockerfile usa Multi-Stage build",
-          "Backend Dockerfile NO usa Multi-Stage (imagen pesada)")
-    check("appuser" in df_text,
-          "Backend corre con usuario no-root (appuser)",
-          "Backend corre como root (riesgo de seguridad)", warn=True)
+    check(
+        "AS builder" in df_text and "AS production" in df_text,
+        "Backend Dockerfile usa Multi-Stage build",
+        "Backend Dockerfile NO usa Multi-Stage (imagen pesada)",
+    )
+    check(
+        "appuser" in df_text,
+        "Backend corre con usuario no-root (appuser)",
+        "Backend corre como root (riesgo de seguridad)",
+        warn=True,
+    )
 
 # ── 6. Nginx tiene headers de seguridad ───────────────────────────────
 nginx_conf = ROOT / "frontend" / "nginx.conf"
@@ -96,28 +109,41 @@ if nginx_conf.exists():
     security_headers = ["X-Frame-Options", "X-Content-Type-Options", "Content-Security-Policy"]
     for h in security_headers:
         check(h in nc_text, f"Nginx header de seguridad: {h}", f"Nginx falta header: {h}")
-    check("server_tokens off" in nc_text,
-          "Nginx oculta su versión (server_tokens off)",
-          "Nginx expone su versión (server_tokens)", warn=True)
+    check(
+        "server_tokens off" in nc_text,
+        "Nginx oculta su versión (server_tokens off)",
+        "Nginx expone su versión (server_tokens)",
+        warn=True,
+    )
 
 # ── 7. PostgreSQL en vez de MySQL ────────────────────────────────────
 compose_text2 = (ROOT / "docker-compose.coolify.yml").read_text() if compose_path.exists() else ""
-check("postgres" in compose_text2.lower(),
-      "Compose usa PostgreSQL (óptimo para Contabo)",
-      "Compose NO usa PostgreSQL — revisar configuración de DB")
-check("image: mysql" not in compose_text2.lower() and "image: mariadb" not in compose_text2.lower(),
-      "Compose no depende de MySQL/MariaDB",
-      "Compose tiene MySQL/MariaDB — se recomienda migrar a PostgreSQL", warn=True)
+check(
+    "postgres" in compose_text2.lower(),
+    "Compose usa PostgreSQL (óptimo para Contabo)",
+    "Compose NO usa PostgreSQL — revisar configuración de DB",
+)
+check(
+    "image: mysql" not in compose_text2.lower() and "image: mariadb" not in compose_text2.lower(),
+    "Compose no depende de MySQL/MariaDB",
+    "Compose tiene MySQL/MariaDB — se recomienda migrar a PostgreSQL",
+    warn=True,
+)
 
 # ── 8. Healthchecks definidos ─────────────────────────────────────────
-check("healthcheck" in compose_text2.lower() and compose_text2.lower().count("healthcheck") >= 3,
-      "Healthchecks definidos para backend, DB y Redis",
-      "Faltan healthchecks en el compose", warn=True)
+check(
+    "healthcheck" in compose_text2.lower() and compose_text2.lower().count("healthcheck") >= 3,
+    "Healthchecks definidos para backend, DB y Redis",
+    "Faltan healthchecks en el compose",
+    warn=True,
+)
 
 # ── 9. Volúmenes persistentes ─────────────────────────────────────────
-check("pg_data" in compose_text2 and "uploads_data" in compose_text2,
-      "Volúmenes persistentes configurados (pg_data, uploads_data)",
-      "Faltan volúmenes persistentes — se perderán datos en reinicios")
+check(
+    "pg_data" in compose_text2 and "uploads_data" in compose_text2,
+    "Volúmenes persistentes configurados (pg_data, uploads_data)",
+    "Faltan volúmenes persistentes — se perderán datos en reinicios",
+)
 
 # ── Reporte final ──────────────────────────────────────────────────────
 print("\n" + "═" * 60)
@@ -139,7 +165,9 @@ if ERRORS:
 
 print("\n" + "═" * 60)
 total = len(OK) + len(WARNINGS) + len(ERRORS)
-print(f"  Resultado: {len(OK)}/{total} OK  |  {len(WARNINGS)} Avisos  |  {len(ERRORS)} Errores Críticos")
+print(
+    f"  Resultado: {len(OK)}/{total} OK  |  {len(WARNINGS)} Avisos  |  {len(ERRORS)} Errores Críticos"
+)
 print("═" * 60 + "\n")
 
 if ERRORS:

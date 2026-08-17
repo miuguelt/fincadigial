@@ -141,7 +141,7 @@ export function AlertsPage() {
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold tracking-tight">Centro de Alertas</h1>
               {criticalCount > 0 && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-destructive/10 text-destructive dark:bg-red-950/60 dark:text-red-300 border border-destructive/30 dark:border-red-800 animate-pulse">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-destructive/10 text-destructive dark:bg-red-950/60 dark:text-red-300 border border-destructive/30 dark:border-red-800 animate-pulse">
                   <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
                   {criticalCount} crítica{criticalCount > 1 ? 's' : ''}
                 </span>

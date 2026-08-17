@@ -59,6 +59,7 @@ class LearningContentType(enum.Enum):
 
 class CropPlot(BaseModel):
     """Parcela o lote productivo agricola dentro de una finca."""
+
     __tablename__ = "crop_plots"
     __table_args__ = (
         db.Index("ix_crop_plots_finca_status", "finca_id", "status"),
@@ -83,20 +84,41 @@ class CropPlot(BaseModel):
     field = db.relationship("Fields", lazy="selectin")
 
     _namespace_fields = [
-        "id", "finca_id", "field_id", "name", "crop_name", "variety", "area",
-        "area_unit", "sowing_date", "expected_harvest_date", "harvest_date",
-        "status", "seed_source", "notes", "created_at", "updated_at",
+        "id",
+        "finca_id",
+        "field_id",
+        "name",
+        "crop_name",
+        "variety",
+        "area",
+        "area_unit",
+        "sowing_date",
+        "expected_harvest_date",
+        "harvest_date",
+        "status",
+        "seed_source",
+        "notes",
+        "created_at",
+        "updated_at",
     ]
     _namespace_relations = {"field": {"fields": ["id", "name"]}}
     _searchable_fields = ["name", "crop_name", "variety", "seed_source", "notes"]
     _filterable_fields = ["finca_id", "field_id", "crop_name", "status", "sowing_date"]
-    _sortable_fields = ["id", "name", "crop_name", "sowing_date", "expected_harvest_date", "created_at"]
+    _sortable_fields = [
+        "id",
+        "name",
+        "crop_name",
+        "sowing_date",
+        "expected_harvest_date",
+        "created_at",
+    ]
     _required_fields = ["name", "crop_name"]
     _enum_fields = {"status": CropStatus}
 
 
 class CropActivity(BaseModel):
     """Bitacora offline de labores, plagas, cosecha y observaciones de cultivos."""
+
     __tablename__ = "crop_activities"
     __table_args__ = (
         db.Index("ix_crop_activities_plot_date", "crop_plot_id", "activity_date"),
@@ -114,23 +136,45 @@ class CropActivity(BaseModel):
     unit = db.Column(db.String(50), nullable=True)
     cost = db.Column(db.Float, nullable=True)
     performed_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
-    attachment_blob_id = db.Column(db.Integer, db.ForeignKey("attachment_blobs.id"), nullable=True)
+    attachment_blob_id = db.Column(
+        db.Integer, db.ForeignKey("attachment_blobs.id"), nullable=True
+    )
     notes = db.Column(db.Text, nullable=True)
 
-    crop_plot = db.relationship("CropPlot", backref=db.backref("activities", lazy="dynamic"), lazy="selectin")
+    crop_plot = db.relationship(
+        "CropPlot", backref=db.backref("activities", lazy="dynamic"), lazy="selectin"
+    )
     actor = db.relationship("User", foreign_keys=[performed_by], lazy="selectin")
 
     _namespace_fields = [
-        "id", "finca_id", "crop_plot_id", "activity_type", "activity_date",
-        "description", "input_name", "quantity", "unit", "cost", "performed_by",
-        "attachment_blob_id", "notes", "created_at", "updated_at",
+        "id",
+        "finca_id",
+        "crop_plot_id",
+        "activity_type",
+        "activity_date",
+        "description",
+        "input_name",
+        "quantity",
+        "unit",
+        "cost",
+        "performed_by",
+        "attachment_blob_id",
+        "notes",
+        "created_at",
+        "updated_at",
     ]
     _namespace_relations = {
         "crop_plot": {"fields": ["id", "name", "crop_name"]},
         "actor": {"fields": ["id", "fullname"]},
     }
     _searchable_fields = ["description", "input_name", "notes"]
-    _filterable_fields = ["finca_id", "crop_plot_id", "activity_type", "activity_date", "performed_by"]
+    _filterable_fields = [
+        "finca_id",
+        "crop_plot_id",
+        "activity_type",
+        "activity_date",
+        "performed_by",
+    ]
     _sortable_fields = ["id", "activity_date", "activity_type", "created_at"]
     _required_fields = ["crop_plot_id", "activity_type", "activity_date"]
     _enum_fields = {"activity_type": CropActivityType}
@@ -139,10 +183,16 @@ class CropActivity(BaseModel):
     def create(cls, **kwargs):
         instance = super().create(**kwargs)
         if instance and instance.cost and float(instance.cost) > 0:
-            from app.models.financial import Transaction, TransactionType, TransactionCategory
+            from app.models.financial import (
+                Transaction,
+                TransactionType,
+                TransactionCategory,
+            )
+
             try:
                 # Tratar de obtener el nombre de la parcela para la descripción
                 from app.models.campesino import CropPlot
+
                 plot = CropPlot.query.get(instance.crop_plot_id)
                 plot_name = plot.name if plot else str(instance.crop_plot_id)
 
@@ -160,11 +210,14 @@ class CropActivity(BaseModel):
                     amount=instance.cost,
                     date=instance.activity_date,
                     description=desc,
-                    created_by_user=instance.performed_by
+                    created_by_user=instance.performed_by,
                 )
             except Exception as e:
                 import logging
-                logging.getLogger(__name__).error(f"Error creating transaction for CropActivity {instance.id}: {e}")
+
+                logging.getLogger(__name__).error(
+                    f"Error creating transaction for CropActivity {instance.id}: {e}"
+                )
         return instance
 
     def update(self, commit=True, **kwargs):
@@ -176,17 +229,27 @@ class CropActivity(BaseModel):
 
         result = super().update(commit=False, **kwargs)
 
-        if (old_cost != self.cost or old_type != self.activity_type or old_date != self.activity_date or old_finca != self.finca_id):
-            from app.models.financial import Transaction, TransactionType, TransactionCategory
+        if (
+            old_cost != self.cost
+            or old_type != self.activity_type
+            or old_date != self.activity_date
+            or old_finca != self.finca_id
+        ):
+            from app.models.financial import (
+                Transaction,
+                TransactionType,
+                TransactionCategory,
+            )
+
             desc_prefix_old = f"Labor de cultivo ({old_type.value})"
-            
+
             # Buscar la transacción vieja
             tx = Transaction.query.filter(
                 Transaction.finca_id == old_finca,
                 Transaction.date == old_date,
                 Transaction.amount == old_cost,
                 Transaction.description.like(f"{desc_prefix_old}%"),
-                Transaction.is_deleted == False
+                Transaction.is_deleted == False,
             ).first()
 
             if tx:
@@ -194,12 +257,13 @@ class CropActivity(BaseModel):
                     tx.delete(commit=False)
                 else:
                     from app.models.campesino import CropPlot
+
                     plot = CropPlot.query.get(self.crop_plot_id)
                     plot_name = plot.name if plot else str(self.crop_plot_id)
                     desc = f"Labor de cultivo ({self.activity_type.value}) - Lote: {plot_name}"
                     if self.input_name:
                         desc += f" | Insumo: {self.input_name}"
-                    
+
                     cat = TransactionCategory.Agriculture
                     tx.update(
                         commit=False,
@@ -207,14 +271,17 @@ class CropActivity(BaseModel):
                         amount=self.cost,
                         date=self.activity_date,
                         description=desc,
-                        category=cat
+                        category=cat,
                     )
             elif self.cost and float(self.cost) > 0:
                 # Si no existía pero ahora sí tiene costo positivo, crearla
                 from app.models.campesino import CropPlot
+
                 plot = CropPlot.query.get(self.crop_plot_id)
                 plot_name = plot.name if plot else str(self.crop_plot_id)
-                desc = f"Labor de cultivo ({self.activity_type.value}) - Lote: {plot_name}"
+                desc = (
+                    f"Labor de cultivo ({self.activity_type.value}) - Lote: {plot_name}"
+                )
                 if self.input_name:
                     desc += f" | Insumo: {self.input_name}"
                 cat = TransactionCategory.Agriculture
@@ -226,7 +293,7 @@ class CropActivity(BaseModel):
                     amount=self.cost,
                     date=self.activity_date,
                     description=desc,
-                    created_by_user=self.performed_by
+                    created_by_user=self.performed_by,
                 )
 
         if commit:
@@ -237,13 +304,14 @@ class CropActivity(BaseModel):
         """Sobreescribe delete para soft-deletar la transacción asociada."""
         if self.cost and float(self.cost) > 0:
             from app.models.financial import Transaction
+
             desc_prefix = f"Labor de cultivo ({self.activity_type.value})"
             tx = Transaction.query.filter(
                 Transaction.finca_id == self.finca_id,
                 Transaction.date == self.activity_date,
                 Transaction.amount == self.cost,
                 Transaction.description.like(f"{desc_prefix}%"),
-                Transaction.is_deleted == False
+                Transaction.is_deleted == False,
             ).first()
             if tx:
                 tx.delete(commit=commit)
@@ -253,22 +321,30 @@ class CropActivity(BaseModel):
         """Sobreescribe restore para restaurar o recrear la transacción asociada."""
         result = super().restore(commit=commit)
         if self.cost and float(self.cost) > 0:
-            from app.models.financial import Transaction, TransactionType, TransactionCategory
+            from app.models.financial import (
+                Transaction,
+                TransactionType,
+                TransactionCategory,
+            )
+
             desc_prefix = f"Labor de cultivo ({self.activity_type.value})"
             tx = Transaction.query.filter(
                 Transaction.finca_id == self.finca_id,
                 Transaction.date == self.activity_date,
                 Transaction.amount == self.cost,
                 Transaction.description.like(f"{desc_prefix}%"),
-                Transaction.is_deleted == True
+                Transaction.is_deleted == True,
             ).first()
             if tx:
                 tx.restore(commit=commit)
             else:
                 from app.models.campesino import CropPlot
+
                 plot = CropPlot.query.get(self.crop_plot_id)
                 plot_name = plot.name if plot else str(self.crop_plot_id)
-                desc = f"Labor de cultivo ({self.activity_type.value}) - Lote: {plot_name}"
+                desc = (
+                    f"Labor de cultivo ({self.activity_type.value}) - Lote: {plot_name}"
+                )
                 if self.input_name:
                     desc += f" | Insumo: {self.input_name}"
                 cat = TransactionCategory.Agriculture
@@ -280,13 +356,14 @@ class CropActivity(BaseModel):
                     amount=self.cost,
                     date=self.activity_date,
                     description=desc,
-                    created_by_user=self.performed_by
+                    created_by_user=self.performed_by,
                 )
         return result
 
 
 class WaterSource(BaseModel):
     """Fuente de agua usada por la finca o comunidad."""
+
     __tablename__ = "water_sources"
     __table_args__ = (
         db.Index("ix_water_sources_finca_type", "finca_id", "source_type"),
@@ -296,7 +373,9 @@ class WaterSource(BaseModel):
     finca_id = db.Column(db.Integer, db.ForeignKey("finca.id"), nullable=False)
     territory_id = db.Column(db.Integer, db.ForeignKey("territories.id"), nullable=True)
     name = db.Column(db.String(160), nullable=False)
-    source_type = db.Column(db.Enum(WaterSourceType), nullable=False, default=WaterSourceType.OTHER)
+    source_type = db.Column(
+        db.Enum(WaterSourceType), nullable=False, default=WaterSourceType.OTHER
+    )
     latitude = db.Column(db.Float, nullable=True)
     longitude = db.Column(db.Float, nullable=True)
     capacity_liters = db.Column(db.Float, nullable=True)
@@ -307,11 +386,23 @@ class WaterSource(BaseModel):
     territory = db.relationship("Territory", lazy="selectin")
 
     _namespace_fields = [
-        "id", "finca_id", "territory_id", "name", "source_type", "latitude",
-        "longitude", "capacity_liters", "is_potable", "reliability", "notes",
-        "created_at", "updated_at",
+        "id",
+        "finca_id",
+        "territory_id",
+        "name",
+        "source_type",
+        "latitude",
+        "longitude",
+        "capacity_liters",
+        "is_potable",
+        "reliability",
+        "notes",
+        "created_at",
+        "updated_at",
     ]
-    _namespace_relations = {"territory": {"fields": ["id", "name", "vereda", "municipality"]}}
+    _namespace_relations = {
+        "territory": {"fields": ["id", "name", "vereda", "municipality"]}
+    }
     _searchable_fields = ["name", "reliability", "notes"]
     _filterable_fields = ["finca_id", "territory_id", "source_type", "is_potable"]
     _sortable_fields = ["id", "name", "source_type", "created_at"]
@@ -321,14 +412,19 @@ class WaterSource(BaseModel):
 
 class WaterMeasurement(BaseModel):
     """Medicion simple y offline de nivel/calidad de una fuente de agua."""
+
     __tablename__ = "water_measurements"
     __table_args__ = (
         db.Index("ix_water_measurements_source_date", "water_source_id", "measured_at"),
     )
 
     id = db.Column(db.Integer, primary_key=True)
-    finca_id = db.Column(db.Integer, db.ForeignKey("finca.id"), nullable=False, index=True)
-    water_source_id = db.Column(db.Integer, db.ForeignKey("water_sources.id"), nullable=False)
+    finca_id = db.Column(
+        db.Integer, db.ForeignKey("finca.id"), nullable=False, index=True
+    )
+    water_source_id = db.Column(
+        db.Integer, db.ForeignKey("water_sources.id"), nullable=False
+    )
     measured_at = db.Column(db.DateTime, nullable=False)
     level_percent = db.Column(db.Float, nullable=True)
     flow_liters_minute = db.Column(db.Float, nullable=True)
@@ -338,13 +434,27 @@ class WaterMeasurement(BaseModel):
     measured_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     notes = db.Column(db.Text, nullable=True)
 
-    water_source = db.relationship("WaterSource", backref=db.backref("measurements", lazy="dynamic"), lazy="selectin")
+    water_source = db.relationship(
+        "WaterSource",
+        backref=db.backref("measurements", lazy="dynamic"),
+        lazy="selectin",
+    )
     actor = db.relationship("User", foreign_keys=[measured_by], lazy="selectin")
 
     _namespace_fields = [
-        "id", "finca_id", "water_source_id", "measured_at", "level_percent",
-        "flow_liters_minute", "ph", "turbidity", "rainfall_mm", "measured_by",
-        "notes", "created_at", "updated_at",
+        "id",
+        "finca_id",
+        "water_source_id",
+        "measured_at",
+        "level_percent",
+        "flow_liters_minute",
+        "ph",
+        "turbidity",
+        "rainfall_mm",
+        "measured_by",
+        "notes",
+        "created_at",
+        "updated_at",
     ]
     _namespace_relations = {
         "water_source": {"fields": ["id", "name", "source_type"]},
@@ -358,6 +468,7 @@ class WaterMeasurement(BaseModel):
 
 class ClimateRiskAlert(BaseModel):
     """Alerta local de clima/riesgo compartible entre nodos."""
+
     __tablename__ = "climate_risk_alerts"
     __table_args__ = (
         db.Index("ix_climate_risk_alerts_finca_severity", "finca_id", "severity"),
@@ -369,7 +480,9 @@ class ClimateRiskAlert(BaseModel):
     territory_id = db.Column(db.Integer, db.ForeignKey("territories.id"), nullable=True)
     title = db.Column(db.String(180), nullable=False)
     risk_type = db.Column(db.String(100), nullable=False)
-    severity = db.Column(db.Enum(RiskSeverity), nullable=False, default=RiskSeverity.MEDIUM)
+    severity = db.Column(
+        db.Enum(RiskSeverity), nullable=False, default=RiskSeverity.MEDIUM
+    )
     description = db.Column(db.Text, nullable=True)
     recommendation = db.Column(db.Text, nullable=True)
     valid_from = db.Column(db.DateTime, nullable=True)
@@ -380,13 +493,38 @@ class ClimateRiskAlert(BaseModel):
     territory = db.relationship("Territory", lazy="selectin")
 
     _namespace_fields = [
-        "id", "finca_id", "territory_id", "title", "risk_type", "severity",
-        "description", "recommendation", "valid_from", "valid_until", "source",
-        "is_active", "created_at", "updated_at",
+        "id",
+        "finca_id",
+        "territory_id",
+        "title",
+        "risk_type",
+        "severity",
+        "description",
+        "recommendation",
+        "valid_from",
+        "valid_until",
+        "source",
+        "is_active",
+        "created_at",
+        "updated_at",
     ]
-    _namespace_relations = {"territory": {"fields": ["id", "name", "vereda", "municipality"]}}
-    _searchable_fields = ["title", "risk_type", "description", "recommendation", "source"]
-    _filterable_fields = ["finca_id", "territory_id", "risk_type", "severity", "is_active"]
+    _namespace_relations = {
+        "territory": {"fields": ["id", "name", "vereda", "municipality"]}
+    }
+    _searchable_fields = [
+        "title",
+        "risk_type",
+        "description",
+        "recommendation",
+        "source",
+    ]
+    _filterable_fields = [
+        "finca_id",
+        "territory_id",
+        "risk_type",
+        "severity",
+        "is_active",
+    ]
     _sortable_fields = ["id", "severity", "valid_until", "created_at"]
     _required_fields = ["title", "risk_type"]
     _enum_fields = {"severity": RiskSeverity}
@@ -394,6 +532,7 @@ class ClimateRiskAlert(BaseModel):
 
 class MarketOffer(BaseModel):
     """Oferta campesina local para venta, compra o trueque."""
+
     __tablename__ = "market_offers"
     __table_args__ = (
         db.Index("ix_market_offers_finca_status", "finca_id", "status"),
@@ -403,7 +542,9 @@ class MarketOffer(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     finca_id = db.Column(db.Integer, db.ForeignKey("finca.id"), nullable=False)
     territory_id = db.Column(db.Integer, db.ForeignKey("territories.id"), nullable=True)
-    offer_type = db.Column(db.Enum(MarketOfferType), nullable=False, default=MarketOfferType.SALE)
+    offer_type = db.Column(
+        db.Enum(MarketOfferType), nullable=False, default=MarketOfferType.SALE
+    )
     product_name = db.Column(db.String(180), nullable=False)
     quantity = db.Column(db.Float, nullable=True)
     unit = db.Column(db.String(50), nullable=True)
@@ -420,14 +561,36 @@ class MarketOffer(BaseModel):
     territory = db.relationship("Territory", lazy="selectin")
 
     _namespace_fields = [
-        "id", "finca_id", "territory_id", "offer_type", "product_name",
-        "quantity", "unit", "price", "currency", "available_from",
-        "available_until", "contact_name", "contact_phone", "delivery_location",
-        "status", "notes", "created_at", "updated_at",
+        "id",
+        "finca_id",
+        "territory_id",
+        "offer_type",
+        "product_name",
+        "quantity",
+        "unit",
+        "price",
+        "currency",
+        "available_from",
+        "available_until",
+        "contact_name",
+        "contact_phone",
+        "delivery_location",
+        "status",
+        "notes",
+        "created_at",
+        "updated_at",
     ]
-    _namespace_relations = {"territory": {"fields": ["id", "name", "vereda", "municipality"]}}
+    _namespace_relations = {
+        "territory": {"fields": ["id", "name", "vereda", "municipality"]}
+    }
     _searchable_fields = ["product_name", "contact_name", "delivery_location", "notes"]
-    _filterable_fields = ["finca_id", "territory_id", "offer_type", "product_name", "status"]
+    _filterable_fields = [
+        "finca_id",
+        "territory_id",
+        "offer_type",
+        "product_name",
+        "status",
+    ]
     _sortable_fields = ["id", "product_name", "price", "available_until", "created_at"]
     _required_fields = ["offer_type", "product_name"]
     _enum_fields = {"offer_type": MarketOfferType}
@@ -435,6 +598,7 @@ class MarketOffer(BaseModel):
 
 class TechnicalAssistanceRequest(BaseModel):
     """Solicitud de asistencia tecnica o comunitaria, usable offline."""
+
     __tablename__ = "technical_assistance_requests"
     __table_args__ = (
         db.Index("ix_assistance_finca_status", "finca_id", "status"),
@@ -450,19 +614,35 @@ class TechnicalAssistanceRequest(BaseModel):
     category = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
     priority = db.Column(db.String(50), nullable=False, default="medium")
-    status = db.Column(db.Enum(AssistanceStatus), nullable=False, default=AssistanceStatus.OPEN)
+    status = db.Column(
+        db.Enum(AssistanceStatus), nullable=False, default=AssistanceStatus.OPEN
+    )
     requested_at = db.Column(db.DateTime, nullable=True)
     resolved_at = db.Column(db.DateTime, nullable=True)
     resolution_notes = db.Column(db.Text, nullable=True)
 
     territory = db.relationship("Territory", lazy="selectin")
-    requester = db.relationship("User", foreign_keys=[requester_user_id], lazy="selectin")
+    requester = db.relationship(
+        "User", foreign_keys=[requester_user_id], lazy="selectin"
+    )
     assignee = db.relationship("User", foreign_keys=[assigned_user_id], lazy="selectin")
 
     _namespace_fields = [
-        "id", "finca_id", "territory_id", "requester_user_id", "assigned_user_id",
-        "title", "category", "description", "priority", "status", "requested_at",
-        "resolved_at", "resolution_notes", "created_at", "updated_at",
+        "id",
+        "finca_id",
+        "territory_id",
+        "requester_user_id",
+        "assigned_user_id",
+        "title",
+        "category",
+        "description",
+        "priority",
+        "status",
+        "requested_at",
+        "resolved_at",
+        "resolution_notes",
+        "created_at",
+        "updated_at",
     ]
     _namespace_relations = {
         "territory": {"fields": ["id", "name", "vereda", "municipality"]},
@@ -478,6 +658,7 @@ class TechnicalAssistanceRequest(BaseModel):
 
 class OfflineLearningMaterial(BaseModel):
     """Material de aprendizaje descargable para consulta sin conexion."""
+
     __tablename__ = "offline_learning_materials"
     __table_args__ = (
         db.Index("ix_learning_territory_category", "territory_id", "category"),
@@ -488,10 +669,14 @@ class OfflineLearningMaterial(BaseModel):
     territory_id = db.Column(db.Integer, db.ForeignKey("territories.id"), nullable=True)
     title = db.Column(db.String(180), nullable=False)
     category = db.Column(db.String(100), nullable=False)
-    content_type = db.Column(db.Enum(LearningContentType), nullable=False, default=LearningContentType.TEXT)
+    content_type = db.Column(
+        db.Enum(LearningContentType), nullable=False, default=LearningContentType.TEXT
+    )
     summary = db.Column(db.Text, nullable=True)
     local_uri = db.Column(db.String(500), nullable=True)
-    attachment_blob_id = db.Column(db.Integer, db.ForeignKey("attachment_blobs.id"), nullable=True)
+    attachment_blob_id = db.Column(
+        db.Integer, db.ForeignKey("attachment_blobs.id"), nullable=True
+    )
     language = db.Column(db.String(50), nullable=True, default="es")
     reading_level = db.Column(db.String(80), nullable=True)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
@@ -499,13 +684,31 @@ class OfflineLearningMaterial(BaseModel):
     territory = db.relationship("Territory", lazy="selectin")
 
     _namespace_fields = [
-        "id", "territory_id", "title", "category", "content_type", "summary",
-        "local_uri", "attachment_blob_id", "language", "reading_level", "is_active",
-        "created_at", "updated_at",
+        "id",
+        "territory_id",
+        "title",
+        "category",
+        "content_type",
+        "summary",
+        "local_uri",
+        "attachment_blob_id",
+        "language",
+        "reading_level",
+        "is_active",
+        "created_at",
+        "updated_at",
     ]
-    _namespace_relations = {"territory": {"fields": ["id", "name", "vereda", "municipality"]}}
+    _namespace_relations = {
+        "territory": {"fields": ["id", "name", "vereda", "municipality"]}
+    }
     _searchable_fields = ["title", "category", "summary", "reading_level"]
-    _filterable_fields = ["territory_id", "category", "content_type", "language", "is_active"]
+    _filterable_fields = [
+        "territory_id",
+        "category",
+        "content_type",
+        "language",
+        "is_active",
+    ]
     _sortable_fields = ["id", "title", "category", "created_at"]
     _required_fields = ["title", "category"]
     _enum_fields = {"content_type": LearningContentType}

@@ -3,7 +3,7 @@ import enum
 import re
 from app.models.base_model import BaseModel, ValidationError
 
-_NUMERIC_TOKEN = re.compile(r'[-+]?\d[\d.,]*')
+_NUMERIC_TOKEN = re.compile(r"[-+]?\d[\d.,]*")
 
 
 def parse_numeric_text(value) -> float:
@@ -23,15 +23,15 @@ def parse_numeric_text(value) -> float:
     if not match:
         return 0.0
 
-    token = match.group(0).rstrip('.,')
-    if ',' in token and '.' in token:
+    token = match.group(0).rstrip(".,")
+    if "," in token and "." in token:
         # "1.234,5" (es-CO) vs "1,234.5" (en-US): the last separator is the decimal one.
-        if token.rfind(',') > token.rfind('.'):
-            token = token.replace('.', '').replace(',', '.')
+        if token.rfind(",") > token.rfind("."):
+            token = token.replace(".", "").replace(",", ".")
         else:
-            token = token.replace(',', '')
-    elif ',' in token:
-        token = token.replace(',', '.')
+            token = token.replace(",", "")
+    elif "," in token:
+        token = token.replace(",", ".")
 
     try:
         return float(token)
@@ -41,6 +41,7 @@ def parse_numeric_text(value) -> float:
 
 class LandStatus(enum.Enum):
     """Estados posibles para los campos/potreros"""
+
     Disponible = "Disponible"
     Ocupado = "Ocupado"
     Mantenimiento = "Mantenimiento"
@@ -58,13 +59,15 @@ class LandStatus(enum.Enum):
     def __repr__(self):
         return f"{self.__class__.__name__}.{self.name}"
 
+
 class Fields(BaseModel):
     """Modelo para campos/potreros de la finca optimizado para namespaces"""
+
     __tablename__ = "fields"
 
     __table_args__ = (
-        db.UniqueConstraint('name', 'finca_id', name='uq_fields_name_finca'),
-        db.Index('ix_fields_finca_id', 'finca_id'),
+        db.UniqueConstraint("name", "finca_id", name="uq_fields_name_finca"),
+        db.Index("ix_fields_finca_id", "finca_id"),
     )
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -75,8 +78,8 @@ class Fields(BaseModel):
     handlings = db.Column(db.String(255), nullable=True)
     gauges = db.Column(db.String(255), nullable=True)
     area = db.Column(db.String(255), nullable=False, default="0")
-    food_type_id = db.Column(db.Integer, db.ForeignKey('food_types.id'), nullable=True)
-    finca_id     = db.Column(db.Integer, db.ForeignKey('finca.id'), nullable=False)
+    food_type_id = db.Column(db.Integer, db.ForeignKey("food_types.id"), nullable=True)
+    finca_id = db.Column(db.Integer, db.ForeignKey("finca.id"), nullable=False)
 
     # Coordenadas para Geofencing
     latitude = db.Column(db.Float, nullable=True)
@@ -107,12 +110,17 @@ class Fields(BaseModel):
         if count is None:
             from app.models.animals import Animals, AnimalStatus
             from app.models.animalFields import AnimalFields
-            count = self.animal_fields.join(Animals).filter(
-                AnimalFields.removal_date == None,
-                AnimalFields.is_deleted == False,
-                Animals.is_deleted == False,
-                Animals.status == AnimalStatus.Vivo
-            ).count()
+
+            count = (
+                self.animal_fields.join(Animals)
+                .filter(
+                    AnimalFields.removal_date == None,
+                    AnimalFields.is_deleted == False,
+                    Animals.is_deleted == False,
+                    Animals.status == AnimalStatus.Vivo,
+                )
+                .count()
+            )
         return min(round((count / self.capacity_num) * 100, 1), 100.0)
 
     @property
@@ -121,6 +129,7 @@ class Fields(BaseModel):
         if not self.last_grazing_date:
             return True
         from datetime import date
+
         days_passed = (date.today() - self.last_grazing_date).days
         return days_passed >= (self.rest_days or 30)
 
@@ -130,44 +139,87 @@ class Fields(BaseModel):
         if not self.last_grazing_date:
             return 0
         from datetime import date
+
         days_passed = (date.today() - self.last_grazing_date).days
         remaining = (self.rest_days or 30) - days_passed
         return max(0, remaining)
 
     # Configuración específica para namespaces
-    _namespace_fields = ['id', 'name', 'ubication', 'capacity', 'state', 'handlings', 'gauges', 'area', 'food_type_id', 'finca_id', 'animal_count', 'latitude', 'longitude', 'radius_meters', 'last_grazing_date', 'rest_days', 'grazing_days', 'is_grazing_ready', 'rest_days_remaining', 'capacity_num', 'area_num', 'occupancy_rate', 'created_at', 'updated_at']
+    _namespace_fields = [
+        "id",
+        "name",
+        "ubication",
+        "capacity",
+        "state",
+        "handlings",
+        "gauges",
+        "area",
+        "food_type_id",
+        "finca_id",
+        "animal_count",
+        "latitude",
+        "longitude",
+        "radius_meters",
+        "last_grazing_date",
+        "rest_days",
+        "grazing_days",
+        "is_grazing_ready",
+        "rest_days_remaining",
+        "capacity_num",
+        "area_num",
+        "occupancy_rate",
+        "created_at",
+        "updated_at",
+    ]
     _namespace_relations = {
-        'food_types': {'fields': ['id', 'food_type', 'handlings'], 'depth': 1},
-        'animal_fields': {'fields': ['id', 'animal_id'], 'depth': 1}
+        "food_types": {"fields": ["id", "food_type", "handlings"], "depth": 1},
+        "animal_fields": {"fields": ["id", "animal_id"], "depth": 1},
     }
-    _searchable_fields = ['name', 'ubication', 'handlings', 'area', 'capacity']
-    _filterable_fields = ['state', 'food_type_id', 'capacity', 'area', 'finca_id', 'created_at']
-    _sortable_fields = ['id', 'name', 'capacity', 'area', 'state', 'created_at', 'updated_at']
-    _required_fields = ['name', 'state', 'area']
+    _searchable_fields = ["name", "ubication", "handlings", "area", "capacity"]
+    _filterable_fields = [
+        "state",
+        "food_type_id",
+        "capacity",
+        "area",
+        "finca_id",
+        "created_at",
+    ]
+    _sortable_fields = [
+        "id",
+        "name",
+        "capacity",
+        "area",
+        "state",
+        "created_at",
+        "updated_at",
+    ]
+    _required_fields = ["name", "state", "area"]
     _unique_fields = []
     _input_aliases = {
-        'location': 'ubication',
-        'management': 'handlings',
-        'measurements': 'gauges'
+        "location": "ubication",
+        "management": "handlings",
+        "measurements": "gauges",
     }
-    _enum_fields = {'state': LandStatus}
+    _enum_fields = {"state": LandStatus}
 
     # Relaciones optimizadas
-    animal_fields = db.relationship('AnimalFields', back_populates='field', lazy='dynamic')
-    food_types = db.relationship('FoodTypes', back_populates='fields', lazy='selectin')
+    animal_fields = db.relationship(
+        "AnimalFields", back_populates="field", lazy="dynamic"
+    )
+    food_types = db.relationship("FoodTypes", back_populates="fields", lazy="selectin")
 
     @classmethod
     def _validate_namespace_data(cls, data):
         """Validación estándar del modelo."""
         errors = []
 
-        if not data.get('name', '').strip():
+        if not data.get("name", "").strip():
             errors.append("El nombre es obligatorio")
 
-        if not data.get('area', '').strip():
+        if not data.get("area", "").strip():
             errors.append("El área es obligatoria")
 
-        capacity = data.get('capacity')
+        capacity = data.get("capacity")
         if capacity and capacity.strip():
             try:
                 cap = int(capacity)
@@ -176,16 +228,20 @@ class Fields(BaseModel):
             except ValueError:
                 errors.append("La capacidad debe ser un número entero válido")
 
-        state = data.get('state')
+        state = data.get("state")
         if state and state not in [e.value for e in LandStatus]:
-            errors.append(f"Estado inválido: {state}. Opciones: {', '.join(e.value for e in LandStatus)}")
+            errors.append(
+                f"Estado inválido: {state}. Opciones: {', '.join(e.value for e in LandStatus)}"
+            )
 
         if errors:
-            raise ValidationError('; '.join(errors), code="validation_error")
+            raise ValidationError("; ".join(errors), code="validation_error")
 
     def to_namespace_dict(self, include_relations=False, depth=1, fields=None):
         """Override para agregar cantidad de animales asignados al campo y métricas calculadas."""
-        data = super().to_namespace_dict(include_relations=include_relations, depth=depth, fields=fields)
+        data = super().to_namespace_dict(
+            include_relations=include_relations, depth=depth, fields=fields
+        )
 
         prefetched = getattr(self, "_prefetched_animal_count", None)
         if prefetched is not None:
@@ -193,38 +249,54 @@ class Fields(BaseModel):
         else:
             from app.models.animals import Animals, AnimalStatus
             from app.models.animalFields import AnimalFields
-            animal_count = self.animal_fields.join(Animals).filter(
-                AnimalFields.removal_date == None,
-                AnimalFields.is_deleted == False,
-                Animals.is_deleted == False,
-                Animals.status == AnimalStatus.Vivo
-            ).count()
 
-        data['animal_count'] = animal_count
-        data['capacity_num'] = self.capacity_num
-        data['area_num'] = self.area_num
-        data['occupancy_rate'] = self.occupancy_rate
+            animal_count = (
+                self.animal_fields.join(Animals)
+                .filter(
+                    AnimalFields.removal_date == None,
+                    AnimalFields.is_deleted == False,
+                    Animals.is_deleted == False,
+                    Animals.status == AnimalStatus.Vivo,
+                )
+                .count()
+            )
+
+        data["animal_count"] = animal_count
+        data["capacity_num"] = self.capacity_num
+        data["area_num"] = self.area_num
+        data["occupancy_rate"] = self.occupancy_rate
 
         return data
 
     @classmethod
-    def get_namespace_query(cls, filters=None, search=None, search_type='auto', sort_by=None, sort_order='asc',
-                           page=None, per_page=None, include_relations=False):
+    def get_namespace_query(
+        cls,
+        filters=None,
+        search=None,
+        search_type="auto",
+        sort_by=None,
+        sort_order="asc",
+        page=None,
+        per_page=None,
+        include_relations=False,
+    ):
         """Override para soportar ordenamiento por animal_count."""
-        if sort_by == 'animal_count':
+        if sort_by == "animal_count":
             from app.models.animals import Animals, AnimalStatus
             from app.models.animalFields import AnimalFields
             from sqlalchemy import func, desc, asc
 
             # Subconsulta para contar animales activos por potrero
             animal_counts = (
-                db.session.query(AnimalFields.field_id, func.count(AnimalFields.id).label('acount'))
+                db.session.query(
+                    AnimalFields.field_id, func.count(AnimalFields.id).label("acount")
+                )
                 .join(Animals, AnimalFields.animal_id == Animals.id)
                 .filter(
                     AnimalFields.removal_date.is_(None),
                     AnimalFields.is_deleted == False,
                     Animals.is_deleted == False,
-                    Animals.status == AnimalStatus.Vivo
+                    Animals.status == AnimalStatus.Vivo,
                 )
                 .group_by(AnimalFields.field_id)
                 .subquery()
@@ -232,20 +304,40 @@ class Fields(BaseModel):
 
             # Construir consulta base (reusando filtros de BaseModel)
             # Llamamos a super() con sort_by=None para aplicar filtros sin ordenar aún
-            query = super().get_namespace_query(filters, search, search_type, None, sort_order, None, None, include_relations)
-            
+            query = super().get_namespace_query(
+                filters,
+                search,
+                search_type,
+                None,
+                sort_order,
+                None,
+                None,
+                include_relations,
+            )
+
             # Join con los conteos y ordenar
             query = query.outerjoin(animal_counts, cls.id == animal_counts.c.field_id)
-            
-            order_func = asc if sort_order.lower() == 'asc' else desc
+
+            order_func = asc if sort_order.lower() == "asc" else desc
             # Coalesce para tratar nulos como 0
-            query = query.order_by(order_func(func.coalesce(animal_counts.c.acount, 0)), desc(cls.id))
-            
+            query = query.order_by(
+                order_func(func.coalesce(animal_counts.c.acount, 0)), desc(cls.id)
+            )
+
             if page and per_page:
                 return query.paginate(page=page, per_page=per_page, error_out=False)
             return query
-            
-        return super().get_namespace_query(filters, search, search_type, sort_by, sort_order, page, per_page, include_relations)
+
+        return super().get_namespace_query(
+            filters,
+            search,
+            search_type,
+            sort_by,
+            sort_order,
+            page,
+            per_page,
+            include_relations,
+        )
 
     @classmethod
     def get_paginated_response(cls, query_result, include_relations=False, depth=1):
@@ -260,7 +352,9 @@ class Fields(BaseModel):
             from app.models.animalFields import AnimalFields
             from app.models.animals import Animals, AnimalStatus
 
-            field_ids = [inst.id for inst in instances if getattr(inst, "id", None) is not None]
+            field_ids = [
+                inst.id for inst in instances if getattr(inst, "id", None) is not None
+            ]
             counts = {}
             if field_ids:
                 rows = (
@@ -271,7 +365,7 @@ class Fields(BaseModel):
                         AnimalFields.removal_date.is_(None),
                         AnimalFields.is_deleted == False,
                         Animals.is_deleted == False,
-                        Animals.status == AnimalStatus.Vivo
+                        Animals.status == AnimalStatus.Vivo,
                     )
                     .group_by(AnimalFields.field_id)
                     .all()
@@ -284,7 +378,10 @@ class Fields(BaseModel):
         except Exception:
             pass
 
-        items = [inst.to_namespace_dict(include_relations=include_relations, depth=depth) for inst in instances]
+        items = [
+            inst.to_namespace_dict(include_relations=include_relations, depth=depth)
+            for inst in instances
+        ]
 
         if hasattr(query_result, "items"):
             return {
@@ -318,4 +415,4 @@ class Fields(BaseModel):
         }
 
     def __repr__(self):
-        return f'<Field {self.id}: {self.name}>'
+        return f"<Field {self.id}: {self.name}>"

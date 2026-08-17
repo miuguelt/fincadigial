@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
     ⚠️ DEPRECATED — Frontend native via Vite dev server (start-windows.ps1)
-    
+
 .DESCRIPTION
     Este script usaba Docker para rebuild del frontend.
     Ahora el frontend corre nativo via Vite (npm run dev) con HMR instantáneo.
-    
+
     Para desarrollo: solo guarda el archivo → hot-reload automático.
     Para builds de producción: npm run build en frontend/.
 #>

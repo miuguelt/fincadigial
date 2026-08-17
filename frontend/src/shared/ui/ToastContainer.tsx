@@ -50,4 +50,3 @@ export const ToastContainer: React.FC = () => {
 
 // Animación fade-in (Tailwind v4)
 // Ya definida en tailwind.config.js como 'animate-fade-in'; no se requiere CSS adicional.
-

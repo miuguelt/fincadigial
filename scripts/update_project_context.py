@@ -1,4 +1,4 @@
-﻿"""
+"""
 Mantenedor de contexto de proyecto en DevBrain PostgreSQL.
 
 Uso:
@@ -12,7 +12,7 @@ DevBrain PostgreSQL: 172.19.44.126:5432
 import sys
 import json
 import argparse
-from datetime import datetime, timezone
+import os
 
 try:
     import psycopg2
@@ -21,38 +21,35 @@ except ImportError:
     print("Instalar: pip install psycopg2-binary")
     sys.exit(1)
 
-CONN = {
-    "host": "localhost",
-    "port": 5432,
-    "dbname": "devbrain",
-    "user": "sennova",
-    "password": "sennova123",
-    "connect_timeout": 5,
-}
-
 PHASES = {
-    "F1": {"name": "Modelo Finca + migración BD",        "status": "done"},
-    "F2": {"name": "JWT + Tenant Context",               "status": "done"},
-    "F3": {"name": "Unicidad por finca",                 "status": "done"},
-    "F5": {"name": "RBAC 7 roles",                       "status": "done"},
+    "F1": {"name": "Modelo Finca + migración BD", "status": "done"},
+    "F2": {"name": "JWT + Tenant Context", "status": "done"},
+    "F3": {"name": "Unicidad por finca", "status": "done"},
+    "F5": {"name": "RBAC 7 roles", "status": "done"},
     "F4": {"name": "Registro público finca+propietario", "status": "done"},
-    "F6": {"name": "Mobile/PWA offline-first",           "status": "done",
-           "items": {
-               "useOfflineSync+badge": "done",
-               "OperarioDashboard":    "done",
-               "Docker Compose":       "done",
-               "QR scanner":          "done",
-               "Offline fallback page":"done",
-               "Error Boundaries":    "done",
-           }},
-    "F7": {"name": "SSE real-time + IA predictiva",      "status": "done",
-           "items": {
-               "LiveStats SSE":        "done",
-               "cortex_service base":  "done",
-               "Endpoint API Claude":  "done",
-               "Alertas predictivas":  "done",
-               "Informe ICA":          "done",
-           }},
+    "F6": {
+        "name": "Mobile/PWA offline-first",
+        "status": "done",
+        "items": {
+            "useOfflineSync+badge": "done",
+            "OperarioDashboard": "done",
+            "Docker Compose": "done",
+            "QR scanner": "done",
+            "Offline fallback page": "done",
+            "Error Boundaries": "done",
+        },
+    },
+    "F7": {
+        "name": "SSE real-time + IA predictiva",
+        "status": "done",
+        "items": {
+            "LiveStats SSE": "done",
+            "cortex_service base": "done",
+            "Endpoint API Claude": "done",
+            "Alertas predictivas": "done",
+            "Informe ICA": "done",
+        },
+    },
 }
 
 SCHEMA = """
@@ -79,18 +76,39 @@ CREATE TABLE IF NOT EXISTS villa_luz_decisions (
 """
 
 DECISIONS = [
-    ("architecture", "Row-level tenancy con finca_id en 16 tablas", "Simplicidad vs schema-per-tenant"),
-    ("auth",         "JWT en cookies HttpOnly + withCredentials:true", "CSRF protection"),
-    ("offline",      "IndexedDB (VillaLuzQueue) para cola offline", "Límite 5-10MB localStorage insuficiente"),
-    ("offline",      "BackgroundSync en Service Worker para escrituras", "Opera aunque el tab esté cerrado"),
-    ("api",          "food_types usa underscore, alias food-types→308", "Consistencia de naming en Flask"),
-    ("api",          "Dashboard endpoint: /analytics/dashboard/complete", "No /analytics/dashboard (ceros)"),
-    ("datetime",     "datetime.now(timezone.utc) en todo el backend", "datetime.utcnow() deprecado Python 3.12+"),
+    (
+        "architecture",
+        "Row-level tenancy con finca_id en 16 tablas",
+        "Simplicidad vs schema-per-tenant",
+    ),
+    ("auth", "JWT en cookies HttpOnly + withCredentials:true", "CSRF protection"),
+    (
+        "offline",
+        "IndexedDB (VillaLuzQueue) para cola offline",
+        "Límite 5-10MB localStorage insuficiente",
+    ),
+    (
+        "offline",
+        "BackgroundSync en Service Worker para escrituras",
+        "Opera aunque el tab esté cerrado",
+    ),
+    ("api", "food_types usa underscore, alias food-types→308", "Consistencia de naming en Flask"),
+    ("api", "Dashboard endpoint: /analytics/dashboard/complete", "No /analytics/dashboard (ceros)"),
+    (
+        "datetime",
+        "datetime.now(timezone.utc) en todo el backend",
+        "datetime.utcnow() deprecado Python 3.12+",
+    ),
 ]
 
 
 def get_conn():
-    return psycopg2.connect(**CONN)
+    dsn = os.environ.get("DEVBRAIN_PG_DSN")
+    if not dsn:
+        raise RuntimeError(
+            "Falta DEVBRAIN_PG_DSN. Inicializa DevBrain para cargar la conexión segura."
+        )
+    return psycopg2.connect(dsn, connect_timeout=5)
 
 
 def setup_schema(cur):
@@ -161,7 +179,7 @@ def mark_phase(cur, phase_id: str, status: str):
 
 def main():
     parser = argparse.ArgumentParser(description="Context manager VillaLuz ↔ DevBrain")
-    parser.add_argument("--show",  action="store_true", help="Mostrar estado actual")
+    parser.add_argument("--show", action="store_true", help="Mostrar estado actual")
     parser.add_argument("--phase", help="ID de fase (F1-F7)")
     parser.add_argument("--status", default="done", help="Status: done|in_progress|pending")
     args = parser.parse_args()
@@ -190,7 +208,7 @@ def main():
 
     except Exception as e:
         print(f"Error conectando a DevBrain PostgreSQL: {e}")
-        print("Verificar: WSL activo, Redis/Postgres corriendo en 172.19.44.126")
+        print("Verificar DEVBRAIN_PG_DSN y que PostgreSQL esté disponible.")
         sys.exit(1)
 
 

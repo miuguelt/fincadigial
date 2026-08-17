@@ -15,16 +15,25 @@ class TreatmentRecommendationSerializer:
     ) -> dict[str, Any]:
         data = recommendation.to_namespace_dict()
         data["animal"] = (
-            recommendation.animal.to_namespace_dict(fields=["id", "record", "sex", "status"])
-            if recommendation.animal else None
+            recommendation.animal.to_namespace_dict(
+                fields=["id", "record", "sex", "status"]
+            )
+            if recommendation.animal
+            else None
         )
         data["finca"] = (
             recommendation.finca.to_namespace_dict(fields=["id", "name"])
-            if recommendation.finca else None
+            if recommendation.finca
+            else None
         )
         if include_controls:
-            controls = [control for control in recommendation.controls if not control.is_deleted]
-            data["controls"] = [TreatmentRecommendationSerializer.serialize_control(control) for control in controls]
+            controls = [
+                control for control in recommendation.controls if not control.is_deleted
+            ]
+            data["controls"] = [
+                TreatmentRecommendationSerializer.serialize_control(control)
+                for control in controls
+            ]
             data["next_control"] = next(
                 (
                     TreatmentRecommendationSerializer.serialize_control(control)

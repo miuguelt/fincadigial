@@ -225,14 +225,69 @@ const noTruncate = {
   },
 };
 
+/**
+ * Suelo de legibilidad: 11 px.
+ *
+ * El estándar fija ese mínimo absoluto porque por debajo el texto deja de
+ * leerse en el celular a pleno sol, que es donde se usa la app. Las clases
+ * `text-[10px]` y menores lo saltan; se corrigen solas a `text-[11px]`.
+ */
+const BELOW_FONT_FLOOR = /text-\[(?:[0-9]|10)px\]/;
+
+const noTinyText = {
+  meta: {
+    type: 'problem',
+    docs: {
+      description: 'Disallow font sizes below the 11px legibility floor.',
+      recommended: true,
+    },
+    fixable: 'code',
+    messages: {
+      noTinyText:
+        'Texto por debajo del suelo de 11 px: no se lee en el celular a pleno sol. Usa `text-[11px]` o mayor.',
+    },
+  },
+  create(context) {
+    // `text-[10px]` es sintaxis de Tailwind: no aparece en prosa, así que se
+    // puede revisar cualquier cadena y no sólo el atributo `className`. Muchas
+    // pantallas guardan sus clases en una constante (`const labelClass = "…"`),
+    // fuera del JSX, y ahí es donde quedaban los últimos textos ilegibles.
+    const report = (node) => {
+      const source = context.sourceCode.getText(node);
+      if (!BELOW_FONT_FLOOR.test(source)) return;
+      context.report({
+        node,
+        messageId: 'noTinyText',
+        fix: (fixer) =>
+          fixer.replaceText(node, source.replace(new RegExp(BELOW_FONT_FLOOR, 'g'), 'text-[11px]')),
+      });
+    };
+
+    return {
+      JSXAttribute(node) {
+        if (node.name.type !== 'JSXIdentifier') return;
+        if (node.name.name !== 'className' && node.name.name !== 'class') return;
+        if (node.value) report(node.value);
+      },
+      Literal(node) {
+        if (typeof node.value === 'string') report(node);
+      },
+      TemplateElement(node) {
+        report(node);
+      },
+    };
+  },
+};
+
 const plugin = {
-  meta: { name: 'devbrain', version: '1.3.0' },
+  meta: { name: 'devbrain', version: '1.4.0' },
   rules: {
     'no-es-es': noEsEs,
     'require-locale': requireLocale,
     'no-legacy-screen-header': noLegacyScreenHeader,
     'no-mid-word-break': noMidWordBreak,
     'no-truncate': noTruncate,
+    'no-tiny-text': noTinyText,
   },
   configs: {
     recommended: {
@@ -243,6 +298,7 @@ const plugin = {
         'devbrain/no-legacy-screen-header': 'error',
         'devbrain/no-mid-word-break': 'error',
         'devbrain/no-truncate': 'error',
+        'devbrain/no-tiny-text': 'error',
       },
     },
   },

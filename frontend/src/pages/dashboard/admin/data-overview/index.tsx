@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Badge } from '@/shared/ui/badge';
 import { Skeleton } from '@/shared/ui/skeleton';
-import { 
-  Milk, 
-  Activity, 
-  DollarSign, 
-  Package, 
-  Users, 
+import {
+  Milk,
+  Activity,
+  DollarSign,
+  Package,
+  Users,
   Bell,
   Radar,
   ScatterChart,
@@ -20,9 +20,9 @@ import { useFinancial } from '@/entities/financial/hooks';
 import { useReproductionStats } from '@/entities/reproduction/hooks';
 import { inventoryService } from '@/entities/inventory/api';
 import { reproductionService } from '@/entities/reproduction/api';
-import { 
-  MilkProductionChart, 
-  FinancialChart, 
+import {
+  MilkProductionChart,
+  FinancialChart,
   ReproductionChart,
   AnimalMetricsRadar,
   WeightAgeScatter,
@@ -70,24 +70,24 @@ export default function DataOverviewDashboard() {
   const { data: dashboardData, isLoading: dashboardStatsLoading } = useDashboard();
 
   // Hooks para datos principales
-  const { 
-    productions, 
-    summary: milkSummary, 
-    loading: milkLoading 
+  const {
+    productions,
+    summary: milkSummary,
+    loading: milkLoading
   } = useMilkProduction({ fincaId, autoFetch: true });
 
 
-  const { 
-    transactions, 
-    summary: financialSummary, 
+  const {
+    transactions,
+    summary: financialSummary,
     balance,
-    loading: financialLoading 
+    loading: financialLoading
   } = useFinancial({ fincaId, autoFetch: true });
 
-  const { 
-    summary: reproSummary, 
+  const {
+    summary: reproSummary,
     pendingBirths,
-    loading: reproLoading 
+    loading: reproLoading
   } = useReproductionStats({ fincaId, autoFetch: true });
 
   // Hook para datos de animales (para gráficos avanzados)
@@ -171,7 +171,7 @@ export default function DataOverviewDashboard() {
 
   const totalTablesCount = dbTables.length;
 
-  const populatedTablesCount = dashboardData 
+  const populatedTablesCount = dashboardData
     ? dbTables.filter(t => {
         const val = dashboardData[t.key]?.valor;
         return typeof val === 'number' && val > 0;
@@ -188,8 +188,8 @@ export default function DataOverviewDashboard() {
   // Registros de actividad operativa reciente (tratamientos + vacunas aplicadas + controles realizados + tareas pendientes)
   const addedRecordsCount = dashboardData
     ? (
-        (dashboardData.tratamientos_totales?.valor || 0) + 
-        (dashboardData.vacunas_aplicadas?.valor || 0) + 
+        (dashboardData.tratamientos_totales?.valor || 0) +
+        (dashboardData.vacunas_aplicadas?.valor || 0) +
         (dashboardData.controles_realizados?.valor || 0) +
         (dashboardData.tareas_pendientes?.valor || 0)
       )
@@ -242,11 +242,11 @@ export default function DataOverviewDashboard() {
             loading={isLoading}
           />
         </div>
-        
+
         {/* Gráfico de Producción Láctea */}
         <div className="mt-6">
-          <MilkProductionChart 
-            data={productions} 
+          <MilkProductionChart
+            data={productions}
             title="Tendencia de Producción de Leche"
             height={350}
           />
@@ -288,11 +288,11 @@ export default function DataOverviewDashboard() {
             loading={isLoading}
           />
         </div>
-        
+
         {/* Gráfico de Finanzas */}
         <div className="mt-6">
-          <FinancialChart 
-            data={transactions} 
+          <FinancialChart
+            data={transactions}
             title="Resumen Financiero"
             height={400}
           />
@@ -328,17 +328,17 @@ export default function DataOverviewDashboard() {
           />
           <StatCard
             title="Tasa Concepción"
-            value={stats?.reproduction.conceptionRate !== null 
-              ? `${stats?.reproduction.conceptionRate.toFixed(1)}%` 
+            value={stats?.reproduction.conceptionRate !== null
+              ? `${stats?.reproduction.conceptionRate.toFixed(1)}%`
               : 'N/A'}
             description="Efectividad inseminación"
             loading={isLoading}
           />
         </div>
-        
+
         {/* Gráfico de Reproducción */}
         <div className="mt-6">
-          <ReproductionChart 
+          <ReproductionChart
             summary={reproSummary}
             pendingBirths={pendingBirths}
             title="Estadísticas Reproductivas"
@@ -426,7 +426,7 @@ export default function DataOverviewDashboard() {
             const animalProductions = productions?.filter((p: any) => p.animal_id === animal.id) || [];
             const totalLiters = animalProductions.reduce((sum: number, p: any) => sum + p.liters, 0);
             const avgLiters = animalProductions.length > 0 ? totalLiters / animalProductions.length : 0;
-            const productionScore = (animal.sex === 'Hembra' || animal.sex === 'Female') 
+            const productionScore = (animal.sex === 'Hembra' || animal.sex === 'Female')
               ? Math.min(100, (avgLiters / 30) * 100)
               : 0;
 
@@ -554,7 +554,7 @@ export default function DataOverviewDashboard() {
                   </span>
                   <span className="text-sm text-muted-foreground">de {totalTablesCount}</span>
                 </div>
-                <span className="text-[10px] text-muted-foreground mt-2">Tablas con datos activos en la finca</span>
+                <span className="text-[11px] text-muted-foreground mt-2">Tablas con datos activos en la finca</span>
               </div>
 
               <div className="p-4 rounded-lg bg-success/5 border border-success/10 flex flex-col justify-between">
@@ -568,7 +568,7 @@ export default function DataOverviewDashboard() {
                     )}
                   </span>
                 </div>
-                <span className="text-[10px] text-muted-foreground mt-2">Capacidad operativa cubierta</span>
+                <span className="text-[11px] text-muted-foreground mt-2">Capacidad operativa cubierta</span>
               </div>
 
               <div className="p-4 rounded-lg bg-info/5 border border-info/10 flex flex-col justify-between">
@@ -578,7 +578,7 @@ export default function DataOverviewDashboard() {
                     {dashboardStatsLoading ? <Skeleton className="h-8 w-24" /> : totalRecordsCount.toLocaleString('es-CO')}
                   </span>
                 </div>
-                <span className="text-[10px] text-muted-foreground mt-2">Registros reales de esta finca en BD</span>
+                <span className="text-[11px] text-muted-foreground mt-2">Registros reales de esta finca en BD</span>
               </div>
 
               <div className="p-4 rounded-lg bg-purple-500/5 border border-purple-500/10 flex flex-col justify-between">
@@ -588,7 +588,7 @@ export default function DataOverviewDashboard() {
                     {dashboardStatsLoading ? <Skeleton className="h-8 w-20" /> : `+${addedRecordsCount.toLocaleString('es-CO')}`}
                   </span>
                 </div>
-                <span className="text-[10px] text-muted-foreground mt-2">Suma de tratamientos, vacunas, controles y tareas</span>
+                <span className="text-[11px] text-muted-foreground mt-2">Suma de tratamientos, vacunas, controles y tareas</span>
               </div>
             </div>
 

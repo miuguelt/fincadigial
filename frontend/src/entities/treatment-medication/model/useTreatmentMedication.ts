@@ -11,7 +11,7 @@ export interface UseTreatmentMedicationsResult {
   updateItem: (id: number | string, payload: any) => Promise<any | null>;
   deleteItem: (id: number | string) => Promise<boolean>;
   setData: Dispatch<SetStateAction<any[]>>;
-  
+
   // Pagination from useResource
   meta?: {
     page: number;
@@ -43,7 +43,7 @@ export function useTreatmentMedications(): UseTreatmentMedicationsResult {
     updateItem: resource.updateItem,
     deleteItem: resource.deleteItem,
     setData: resource.setData,
-    
+
     // Expose pagination controls
     meta: resource.meta,
     setPage: resource.setPage,

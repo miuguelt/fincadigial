@@ -4,7 +4,7 @@ Tests Unitarios para RBAC Multi-Tenant (7 Roles)
 Valida que cada rol tiene los permisos correctos según la matriz de RBAC.
 
 Uso:
-    cd BackFinca
+    cd backend
     python -m pytest tests/test_multi_tenant_rbac.py -v
 """
 
@@ -21,9 +21,9 @@ class TestRBACMultiTenant(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Configurar aplicación de prueba."""
-        cls.app = create_app('testing')
-        cls.app.config['TESTING'] = True
-        cls.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+        cls.app = create_app("testing")
+        cls.app.config["TESTING"] = True
+        cls.app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
         cls.client = cls.app.test_client()
 
         with cls.app.app_context():
@@ -47,9 +47,7 @@ class TestRBACMultiTenant(unittest.TestCase):
 
             # Crear finca de prueba
             self.finca = Finca.create(
-                name='Finca Test',
-                type=FarmType.Tradicional,
-                is_active=True
+                name="Finca Test", type=FarmType.Tradicional, is_active=True
             )
 
             # Crear usuarios con diferentes roles
@@ -57,10 +55,10 @@ class TestRBACMultiTenant(unittest.TestCase):
             for role in Role:
                 user = User.create(
                     identification=100000 + role.value.__hash__() % 100000,
-                    fullname=f'Usuario {role.value}',
-                    email=f'{role.value.lower()}@test.com',
-                    phone=f'300{role.value.__hash__() % 1000000:06d}',
-                    password='TestPass123!',
+                    fullname=f"Usuario {role.value}",
+                    email=f"{role.value.lower()}@test.com",
+                    phone=f"300{role.value.__hash__() % 1000000:06d}",
+                    password="TestPass123!",
                     role=role,
                     status=True,
                     finca_id=self.finca.id,
@@ -84,13 +82,13 @@ class TestRBACMultiTenant(unittest.TestCase):
 
         # Administrador debe poder hacer cualquier operación
         rutas_permitidas = [
-            ('GET', '/api/v1/users'),
-            ('POST', '/api/v1/users'),
-            ('PUT', '/api/v1/users/1'),
-            ('DELETE', '/api/v1/users/1'),
-            ('GET', '/api/v1/animals'),
-            ('POST', '/api/v1/animals'),
-            ('GET', '/api/v1/security/audit'),
+            ("GET", "/api/v1/users"),
+            ("POST", "/api/v1/users"),
+            ("PUT", "/api/v1/users/1"),
+            ("DELETE", "/api/v1/users/1"),
+            ("GET", "/api/v1/animals"),
+            ("POST", "/api/v1/animals"),
+            ("GET", "/api/v1/security/audit"),
         ]
 
         for method, path in rutas_permitidas:
@@ -99,7 +97,7 @@ class TestRBACMultiTenant(unittest.TestCase):
                 # Aquí verificamos que el usuario tiene el rol correcto
                 self.assertTrue(
                     admin_user.role in [Role.Administrador, Role.Propietario],
-                    f"Administrador debería poder {method} {path}"
+                    f"Administrador debería poder {method} {path}",
                 )
 
     def test_propietario_acceso_total(self):
@@ -112,7 +110,7 @@ class TestRBACMultiTenant(unittest.TestCase):
         # Propietario tiene acceso total sobre su finca
         self.assertTrue(
             owner_user.role in {Role.Administrador, Role.Propietario},
-            "Propietario debe tener acceso total"
+            "Propietario debe tener acceso total",
         )
 
     # =========================================================================
@@ -126,7 +124,7 @@ class TestRBACMultiTenant(unittest.TestCase):
         self.assertEqual(aprendiz_user.role, Role.Aprendiz)
 
         # Aprendiz NO debe poder hacer POST, PUT, PATCH, DELETE
-        metodos_prohibidos = ['POST', 'PUT', 'PATCH', 'DELETE']
+        metodos_prohibidos = ["POST", "PUT", "PATCH", "DELETE"]
 
         for method in metodos_prohibidos:
             with self.subTest(method=method):
@@ -134,7 +132,7 @@ class TestRBACMultiTenant(unittest.TestCase):
                 self.assertNotEqual(
                     aprendiz_user.role,
                     Role.Administrador,
-                    f"Aprendiz no debería poder hacer {method}"
+                    f"Aprendiz no debería poder hacer {method}",
                 )
 
     def test_aprendiz_puede_ver_animales(self):
@@ -142,10 +140,7 @@ class TestRBACMultiTenant(unittest.TestCase):
         aprendiz_user = self.users[Role.Aprendiz]
 
         # Aprendiz puede hacer GET
-        self.assertTrue(
-            aprendiz_user.status,
-            "Aprendiz activo debe poder hacer GET"
-        )
+        self.assertTrue(aprendiz_user.status, "Aprendiz activo debe poder hacer GET")
 
     # =========================================================================
     # TESTS: INSTRUCTOR (GET + POST Salud)
@@ -161,7 +156,7 @@ class TestRBACMultiTenant(unittest.TestCase):
         self.assertNotIn(
             instructor_user.role,
             {Role.Administrador, Role.Propietario},
-            "Instructor no debe poder modificar/eliminar"
+            "Instructor no debe poder modificar/eliminar",
         )
 
     def test_instructor_puede_crear_salud(self):
@@ -169,15 +164,20 @@ class TestRBACMultiTenant(unittest.TestCase):
         instructor_user = self.users[Role.Instructor]
 
         # Instructor puede crear registros de salud
-        rutas_salud = ['/api/v1/vaccinations', '/api/v1/treatments', '/api/v1/controls']
+        rutas_salud = ["/api/v1/vaccinations", "/api/v1/treatments", "/api/v1/controls"]
 
         for path in rutas_salud:
             with self.subTest(path=path):
                 # Verificar que tiene permiso para crear en salud
                 self.assertIn(
                     instructor_user.role,
-                    {Role.Instructor, Role.Administrador, Role.Propietario, Role.Veterinario},
-                    f"Instructor debe poder POST en {path}"
+                    {
+                        Role.Instructor,
+                        Role.Administrador,
+                        Role.Propietario,
+                        Role.Veterinario,
+                    },
+                    f"Instructor debe poder POST en {path}",
                 )
 
     # =========================================================================
@@ -192,9 +192,7 @@ class TestRBACMultiTenant(unittest.TestCase):
 
         # Capataz NO puede eliminar
         self.assertNotEqual(
-            capataz_user.role,
-            Role.Administrador,
-            "Capataz no debe poder DELETE"
+            capataz_user.role, Role.Administrador, "Capataz no debe poder DELETE"
         )
 
     def test_capataz_no_puede_gestionar_usuarios(self):
@@ -205,7 +203,7 @@ class TestRBACMultiTenant(unittest.TestCase):
         self.assertNotIn(
             capataz_user.role,
             {Role.Administrador, Role.Propietario},
-            "Capataz no debe gestionar usuarios"
+            "Capataz no debe gestionar usuarios",
         )
 
     def test_capataz_puede_editar_animales_y_potreros(self):
@@ -216,7 +214,7 @@ class TestRBACMultiTenant(unittest.TestCase):
         self.assertIn(
             capataz_user.role,
             {Role.Capataz, Role.Administrador, Role.Propietario},
-            "Capataz debe poder editar animales y potreros"
+            "Capataz debe poder editar animales y potreros",
         )
 
     # =========================================================================
@@ -231,24 +229,24 @@ class TestRBACMultiTenant(unittest.TestCase):
 
         # Rutas de salud permitidas
         rutas_salud = [
-            '/api/v1/vaccinations',
-            '/api/v1/treatments',
-            '/api/v1/animal-diseases',
-            '/api/v1/controls',
+            "/api/v1/vaccinations",
+            "/api/v1/treatments",
+            "/api/v1/animal-diseases",
+            "/api/v1/controls",
         ]
 
         # Rutas NO permitidas
         rutas_no_permitidas = [
-            '/api/v1/users',
-            '/api/v1/animals',  # Solo GET, no POST/PUT
-            '/api/v1/fields',
+            "/api/v1/users",
+            "/api/v1/animals",  # Solo GET, no POST/PUT
+            "/api/v1/fields",
         ]
 
         for path in rutas_salud:
             with self.subTest(path=path):
                 self.assertTrue(
                     vet_user.role == Role.Veterinario,
-                    f"Veterinario debe poder acceder a {path}"
+                    f"Veterinario debe poder acceder a {path}",
                 )
 
     def test_veterinario_no_puede_modificar(self):
@@ -259,7 +257,7 @@ class TestRBACMultiTenant(unittest.TestCase):
         self.assertNotIn(
             vet_user.role,
             {Role.Administrador, Role.Propietario, Role.Capataz},
-            "Veterinario no debe poder modificar"
+            "Veterinario no debe poder modificar",
         )
 
     # =========================================================================
@@ -276,7 +274,7 @@ class TestRBACMultiTenant(unittest.TestCase):
         self.assertIn(
             operario_user.role,
             {Role.Operario, Role.Administrador, Role.Capataz, Role.Propietario},
-            "Operario debe poder registrar controles"
+            "Operario debe poder registrar controles",
         )
 
     def test_operario_puede_registrar_traslados(self):
@@ -287,7 +285,7 @@ class TestRBACMultiTenant(unittest.TestCase):
         self.assertIn(
             operario_user.role,
             {Role.Operario, Role.Administrador, Role.Capataz, Role.Propietario},
-            "Operario debe poder registrar traslados"
+            "Operario debe poder registrar traslados",
         )
 
     def test_operario_no_puede_put_patch_delete(self):
@@ -298,7 +296,7 @@ class TestRBACMultiTenant(unittest.TestCase):
         self.assertNotIn(
             operario_user.role,
             {Role.Administrador, Role.Propietario, Role.Capataz, Role.Instructor},
-            "Operario no debe poder PUT/PATCH/DELETE"
+            "Operario no debe poder PUT/PATCH/DELETE",
         )
 
     # =========================================================================
@@ -314,19 +312,24 @@ class TestRBACMultiTenant(unittest.TestCase):
                 self.assertIn(
                     role,
                     roles_educativa,
-                    f"{role.value} debe ser válido para finca educativa"
+                    f"{role.value} debe ser válido para finca educativa",
                 )
 
     def test_roles_validos_finca_tradicional(self):
         """Roles válidos para finca tradicional."""
-        roles_tradicional = {Role.Propietario, Role.Capataz, Role.Operario, Role.Veterinario}
+        roles_tradicional = {
+            Role.Propietario,
+            Role.Capataz,
+            Role.Operario,
+            Role.Veterinario,
+        }
 
         for role in roles_tradicional:
             with self.subTest(role=role):
                 self.assertIn(
                     role,
                     roles_tradicional,
-                    f"{role.value} debe ser válido para finca tradicional"
+                    f"{role.value} debe ser válido para finca tradicional",
                 )
 
     def test_usuario_tiene_finca_asignada(self):
@@ -334,13 +337,12 @@ class TestRBACMultiTenant(unittest.TestCase):
         for role, user in self.users.items():
             with self.subTest(role=role):
                 self.assertIsNotNone(
-                    user.finca_id,
-                    f"Usuario {role.value} debe tener finca_id"
+                    user.finca_id, f"Usuario {role.value} debe tener finca_id"
                 )
                 self.assertEqual(
                     user.finca_id,
                     self.finca.id,
-                    f"Usuario {role.value} debe pertenecer a la finca de prueba"
+                    f"Usuario {role.value} debe pertenecer a la finca de prueba",
                 )
 
 
@@ -350,9 +352,9 @@ class TestJWTClaims(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Configurar aplicación de prueba."""
-        cls.app = create_app('testing')
-        cls.app.config['TESTING'] = True
-        cls.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+        cls.app = create_app("testing")
+        cls.app.config["TESTING"] = True
+        cls.app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
         cls.client = cls.app.test_client()
 
         with cls.app.app_context():
@@ -369,36 +371,35 @@ class TestJWTClaims(unittest.TestCase):
         """JWT debe incluir finca_id en claims."""
         with self.app.app_context():
             # Crear finca y usuario
-            finca = Finca.create(name='Finca JWT', type=FarmType.Tradicional)
+            finca = Finca.create(name="Finca JWT", type=FarmType.Tradicional)
             user = User.create(
                 identification=123456789,
-                fullname='Test User',
-                email='test@jwt.com',
-                phone='3001234567',
-                password='TestPass123!',
+                fullname="Test User",
+                email="test@jwt.com",
+                phone="3001234567",
+                password="TestPass123!",
                 role=Role.Administrador,
-                finca_id=finca.id
-            ,
+                finca_id=finca.id,
                 approval_status=ApprovalStatus.Approved,
             )
             db.session.commit()
 
             # Simular claims JWT
             user_claims = {
-                'id': user.id,
-                'identification': user.identification,
-                'role': user.role.value,
-                'fullname': user.fullname,
-                'finca_id': user.finca_id,
-                'finca_type': finca.type.value,
+                "id": user.id,
+                "identification": user.identification,
+                "role": user.role.value,
+                "fullname": user.fullname,
+                "finca_id": user.finca_id,
+                "finca_type": finca.type.value,
             }
 
             # Verificar claims
-            self.assertIn('finca_id', user_claims)
-            self.assertEqual(user_claims['finca_id'], finca.id)
-            self.assertIn('finca_type', user_claims)
-            self.assertEqual(user_claims['finca_type'], 'Tradicional')
+            self.assertIn("finca_id", user_claims)
+            self.assertEqual(user_claims["finca_id"], finca.id)
+            self.assertIn("finca_type", user_claims)
+            self.assertEqual(user_claims["finca_type"], "Tradicional")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

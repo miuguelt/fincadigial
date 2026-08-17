@@ -6,11 +6,13 @@ import time
 
 logger = logging.getLogger(__name__)
 
+
 class RedisEventBus:
     """
     Bus de eventos escalable utilizando Redis Pub/Sub.
     Permite que múltiples instancias de servidor compartan el mismo stream de eventos.
     """
+
     # Backoff bounds and log throttle for the listener loop.
     MIN_BACKOFF_SECONDS = 1
     MAX_BACKOFF_SECONDS = 30
@@ -21,11 +23,14 @@ class RedisEventBus:
         # Dedicated handle for the subscriber side: a connection in subscribe
         # mode cannot serve regular commands, so publishers never share it.
         # If no dedicated pubsub client is provided, fall back to the shared client.
-        self.redis_sub = redis_pubsub_client if redis_pubsub_client is not None else redis_client
+        self.redis_sub = (
+            redis_pubsub_client if redis_pubsub_client is not None else redis_client
+        )
         # Nombre de canal semántico con namespace Redis (villaluz:events).
         # Configurable via REDIS_CHANNEL_NAME para soporte multi-tenant.
         import os as _os
-        self.channel = _os.getenv('REDIS_CHANNEL_NAME', 'villaluz:events')
+
+        self.channel = _os.getenv("REDIS_CHANNEL_NAME", "villaluz:events")
         self.local_subscribers = []
         # Callbacks invocados con cada payload recibido del canal, además de las
         # colas SSE. Los usa la invalidación de caché entre workers.
@@ -35,7 +40,9 @@ class RedisEventBus:
         self._circuit_open_until = 0.0
 
         # Hilo para escuchar eventos de Redis y distribuirlos localmente
-        self.listener_thread = threading.Thread(target=self._listen_to_redis, daemon=True)
+        self.listener_thread = threading.Thread(
+            target=self._listen_to_redis, daemon=True
+        )
         self.listener_thread.start()
         logger.info("Redis EventBus inicializado y escuchando...")
 
@@ -63,11 +70,11 @@ class RedisEventBus:
                     )
                     if not message:
                         continue
-                    if message.get('type') == 'message':
+                    if message.get("type") == "message":
                         self._consecutive_failures = 0
-                        payload = message['data']
+                        payload = message["data"]
                         if isinstance(payload, bytes):
-                            payload = payload.decode('utf-8')
+                            payload = payload.decode("utf-8")
                         self._dispatch_local(payload)
             except Exception as exc:
                 self._consecutive_failures += 1
@@ -80,7 +87,9 @@ class RedisEventBus:
                     err_type = type(exc).__name__
                     logger.warning(
                         "Redis EventBus desconectado (%s: %s). Reintentando en %ss (throttled)",
-                        err_type, err_msg, backoff
+                        err_type,
+                        err_msg,
+                        backoff,
                     )
                     last_warning = now
             finally:
@@ -140,12 +149,14 @@ class RedisEventBus:
                 pass
 
     def publish(self, endpoint: str, action: str, record_id=None):
-        payload = json.dumps({
-            "endpoint": endpoint,
-            "action": action,
-            "id": record_id,
-            "timestamp": time.time()
-        })
+        payload = json.dumps(
+            {
+                "endpoint": endpoint,
+                "action": action,
+                "id": record_id,
+                "timestamp": time.time(),
+            }
+        )
         try:
             self.redis.publish(self.channel, payload)
         except Exception as e:
@@ -171,8 +182,10 @@ class RedisEventBus:
                     except Exception:
                         pass
 
+
 class InMemoryEventBus:
     """Fallback para cuando Redis no está disponible."""
+
     def __init__(self):
         self.subscribers = []
         self.event_hooks = []
@@ -221,4 +234,3 @@ class InMemoryEventBus:
                     q.put_nowait(payload)
                 except Exception:
                     pass
-

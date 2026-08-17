@@ -63,7 +63,7 @@ function InboxFilterButton({ filter, active, count, label, onClick }: { filter: 
       onClick={() => onClick(filter)}
       className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold transition ${active ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-muted/45 text-muted-foreground hover:bg-muted hover:text-foreground'}`}
     >
-      {label}<span className={`rounded-full px-1.5 py-0.5 text-[10px] ${active ? 'bg-primary-foreground/20' : 'bg-background/70'}`}>{count}</span>
+      {label}<span className={`rounded-full px-1.5 py-0.5 text-[11px] ${active ? 'bg-primary-foreground/20' : 'bg-background/70'}`}>{count}</span>
     </button>
   );
 }

@@ -7,10 +7,10 @@ import { SanidadTabs } from '@/widgets/dashboard/treatments/SanidadTabs';
 
 // Columnas de la tabla (width numérico -> w-{n})
 const columns: CRUDColumn<DiseaseResponse & { [k: string]: any }>[] = [
-  
-  { 
-    key: 'name', 
-    label: 'Nombre', 
+
+  {
+    key: 'name',
+    label: 'Nombre',
     render: (_v, item) => {
       const name = (item as any).name ?? (item as any).disease ?? '-';
       return (

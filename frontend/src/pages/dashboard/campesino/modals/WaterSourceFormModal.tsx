@@ -65,7 +65,7 @@ export function WaterSourceFormModal({
 							<button
 								key={t.value}
 								onClick={() => setForm((f) => ({ ...f, source_type: t.value }))}
-								className={`flex flex-col items-center gap-1 p-2 md:p-2.5 rounded-xl border-2 text-[10px] md:text-xs font-semibold transition-all ${form.source_type === t.value ? `${t.border} ${t.color}` : "border-border bg-background text-muted-foreground"}`}
+								className={`flex flex-col items-center gap-1 p-2 md:p-2.5 rounded-xl border-2 text-[11px] md:text-xs font-semibold transition-all ${form.source_type === t.value ? `${t.border} ${t.color}` : "border-border bg-background text-muted-foreground"}`}
 							>
 								<span className="text-lg md:text-xl">{t.emoji}</span>
 								<span className="break-words leading-tight text-center">
@@ -110,7 +110,7 @@ export function WaterSourceFormModal({
 							<button
 								key={r.value}
 								onClick={() => setForm((f) => ({ ...f, reliability: r.value }))}
-								className={`flex flex-col items-center gap-1 p-2 md:p-2.5 rounded-xl border-2 text-[10px] md:text-xs font-semibold transition-all ${form.reliability === r.value ? "border-cyan-400 bg-cyan-50 dark:bg-cyan-950/30 text-cyan-800 dark:text-cyan-300" : "border-border bg-background text-muted-foreground"}`}
+								className={`flex flex-col items-center gap-1 p-2 md:p-2.5 rounded-xl border-2 text-[11px] md:text-xs font-semibold transition-all ${form.reliability === r.value ? "border-cyan-400 bg-cyan-50 dark:bg-cyan-950/30 text-cyan-800 dark:text-cyan-300" : "border-border bg-background text-muted-foreground"}`}
 							>
 								<span>{r.emoji}</span>
 								<span className="break-words leading-tight text-center">

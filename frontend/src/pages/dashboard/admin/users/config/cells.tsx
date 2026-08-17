@@ -13,7 +13,7 @@ export function PersonCell(value: unknown, item: UserRecord, avatarOverride?: st
       </div>
       <div className="flex flex-col min-w-0">
         <span className="font-bold text-foreground fit-clamp">{name}</span>
-        <span className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">{String(item.role ?? '')}</span>
+        <span className="text-[11px] text-muted-foreground uppercase font-black tracking-widest">{String(item.role ?? '')}</span>
       </div>
     </div>
   );
@@ -28,7 +28,7 @@ const approvalStatus = {
 
 export function ApprovalCell(value: unknown) {
   const status = approvalStatus[value as keyof typeof approvalStatus] ?? { label: String(value ?? ''), color: '' };
-  return <Badge variant="outline" className={cn('text-[10px] font-black uppercase py-0.5', status.color)}>{status.label}</Badge>;
+  return <Badge variant="outline" className={cn('text-[11px] font-black uppercase py-0.5', status.color)}>{status.label}</Badge>;
 }
 
 export function ActiveCell(value: unknown) {

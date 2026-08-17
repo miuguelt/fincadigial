@@ -129,10 +129,10 @@ export const WorkerMap: React.FC = () => {
                   className="overflow-visible pointer-events-none"
                 >
                   <div className="bg-card/90 backdrop-blur-sm border border-border/50 rounded-lg p-1.5 shadow-xl">
-                    <p className="text-[8px] font-bold text-foreground leading-none whitespace-nowrap">
+                    <p className="text-[11px] font-bold text-foreground leading-none whitespace-nowrap">
                       Usuario #{worker.user_id}
                     </p>
-                    <p className="text-[6px] text-muted-foreground mt-0.5">
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
                       {worker.detection_method} •{" "}
                       {new Date(worker.created_at).toLocaleTimeString([], {
                         hour: "2-digit",
@@ -150,13 +150,13 @@ export const WorkerMap: React.FC = () => {
         <div className="absolute bottom-6 left-6 space-y-2 bg-card/80 backdrop-blur-md p-3 rounded-lg border border-white/20 shadow-lg">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-info rounded-full" />
-            <span className="text-[10px] font-bold text-muted-foreground">
+            <span className="text-[11px] font-bold text-muted-foreground">
               GPS DIRECTO
             </span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-success rounded-full" />
-            <span className="text-[10px] font-bold text-muted-foreground">
+            <span className="text-[11px] font-bold text-muted-foreground">
               MESH / PROXIMIDAD
             </span>
           </div>
@@ -164,7 +164,7 @@ export const WorkerMap: React.FC = () => {
 
         {/* Indicador de Cobertura */}
         <div className="absolute top-6 right-6">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-success text-white rounded-full text-[10px] font-bold shadow-lg">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-success text-white rounded-full text-[11px] font-bold shadow-lg">
             <div className="w-1.5 h-1.5 bg-card rounded-full animate-pulse" />
             RED VILLA LUZ ACTIVA
           </div>

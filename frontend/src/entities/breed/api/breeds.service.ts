@@ -101,4 +101,3 @@ export class BreedsService extends BaseService<BreedResponse> {
 }
 
 export const breedsService = new BreedsService();
-

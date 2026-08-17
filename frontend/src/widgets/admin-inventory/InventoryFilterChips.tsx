@@ -39,7 +39,7 @@ function Chip({ label, count, active, tone = "neutral", onClick }: ChipProps) {
 			{count !== undefined && (
 				<span
 					className={cn(
-						"rounded-full px-1.5 py-0.5 text-[10px] font-black tabular-nums",
+						"rounded-full px-1.5 py-0.5 text-[11px] font-black tabular-nums",
 						active ? "bg-black/20 dark:bg-white/25" : "bg-black/10 dark:bg-white/15",
 					)}
 				>

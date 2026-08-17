@@ -21,22 +21,23 @@ logger = logging.getLogger(__name__)
 
 
 vaccinations_ns = create_optimized_namespace(
-    name='vaccinations',
-    description='Vacunaciones',
+    name="vaccinations",
+    description="Vacunaciones",
     model_class=Vaccinations,
-    path='/vaccinations'
+    path="/vaccinations",
 )
+
 
 # Deshabilitado: CRUD estándar manejado por create_optimized_namespace
 # @vaccinations_ns.route('/<int:record_id>')
 class VaccinationDetail(Resource):
-    @vaccinations_ns.doc('get_vaccination', description='Obtener vacunación por ID')
+    @vaccinations_ns.doc("get_vaccination", description="Obtener vacunación por ID")
     @jwt_required()
     def get(self, record_id):
         vaccination = Vaccinations.query.get_or_404(record_id)
         return APIResponse.success(data=vaccination.to_json())
 
-    @vaccinations_ns.doc('update_vaccination', description='Actualizar vacunación')
+    @vaccinations_ns.doc("update_vaccination", description="Actualizar vacunación")
     @jwt_required()
     def put(self, record_id):
         vaccination = Vaccinations.query.get_or_404(record_id)
@@ -48,29 +49,42 @@ class VaccinationDetail(Resource):
         db.session.refresh(vaccination)
         return APIResponse.success(data=vaccination.to_json())
 
-    @vaccinations_ns.doc('delete_vaccination', description='Eliminar vacunación')
+    @vaccinations_ns.doc("delete_vaccination", description="Eliminar vacunación")
     @jwt_required()
     def delete(self, record_id):
         vaccination = Vaccinations.query.get_or_404(record_id)
         db.session.delete(vaccination)
         db.session.commit()
-        return APIResponse.success(message='Vacunación eliminada')
+        return APIResponse.success(message="Vacunación eliminada")
+
 
 # Deshabilitado: CRUD estándar manejado por create_optimized_namespace
 # @vaccinations_ns.route('')
 class VaccinationsList(Resource):
-    @vaccinations_ns.doc('get_vaccinations', description='Listar todas las vacunaciones')
+    @vaccinations_ns.doc(
+        "get_vaccinations", description="Listar todas las vacunaciones"
+    )
     @jwt_required()
     def get(self):
         # Nota: Deshabilitado; esta clase no está registrada (decorador comentado). Se deja paginado por seguridad si se reactivara.
-        page = flask.request.args.get('page', default=1, type=int) or 1
-        limit = flask.request.args.get('limit', type=int) or flask.request.args.get('per_page', type=int) or 50
+        page = flask.request.args.get("page", default=1, type=int) or 1
+        limit = (
+            flask.request.args.get("limit", type=int)
+            or flask.request.args.get("per_page", type=int)
+            or 50
+        )
         query = Vaccinations.query
         pagination = query.paginate(page=page, per_page=int(limit), error_out=False)
         items = [v.to_json() for v in pagination.items]
-        return APIResponse.paginated_success(data=items, page=page, limit=int(limit), total_items=pagination.total, message='Vacunaciones obtenidas')
+        return APIResponse.paginated_success(
+            data=items,
+            page=page,
+            limit=int(limit),
+            total_items=pagination.total,
+            message="Vacunaciones obtenidas",
+        )
 
-    @vaccinations_ns.doc('create_vaccination', description='Crear nueva vacunación')
+    @vaccinations_ns.doc("create_vaccination", description="Crear nueva vacunación")
     @jwt_required()
     def post(self):
         data = vaccinations_ns.payload
@@ -79,4 +93,6 @@ class VaccinationsList(Resource):
         db.session.flush()
         db.session.commit()
         db.session.refresh(vaccination)
-        return APIResponse.success(data=vaccination.to_json(), message='Vacunación creada')
+        return APIResponse.success(
+            data=vaccination.to_json(), message="Vacunación creada"
+        )

@@ -2,11 +2,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { COLORS } from '@/shared/utils/colors';
+import { getDiseaseLabel } from './analyticsAdapters';
 
 interface ExecutiveHealthProps {
   healthTimeSeries: any;
   enfermedadesComunes: any[];
-  treatmentSuccessRate: number;
+  healthyControlRate: number | null;
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -30,7 +31,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export const ExecutiveHealth: React.FC<ExecutiveHealthProps> = ({
   healthTimeSeries,
   enfermedadesComunes,
-  treatmentSuccessRate
+  healthyControlRate
 }) => {
   const chartData = healthTimeSeries?.labels?.map((label: string, index: number) => {
     const dataObj: any = { period: label };
@@ -43,7 +44,7 @@ export const ExecutiveHealth: React.FC<ExecutiveHealthProps> = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       {/* Gráfico principal de evolución */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.5 }}
@@ -95,31 +96,31 @@ export const ExecutiveHealth: React.FC<ExecutiveHealthProps> = ({
       </motion.div>
 
       {/* Enfermedades comunes y Success Rate */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.6 }}
         className="flex flex-col gap-6"
       >
         <div className="bg-card/40 dark:bg-card/20 backdrop-blur-xl border border-border/50 rounded-xl p-6 shadow-sm flex-1">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Éxito en Tratamientos</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Controles en buen estado</h2>
           <div className="flex flex-col items-center justify-center h-32 relative">
             <svg className="w-24 h-24 transform -rotate-90">
               <circle cx="48" cy="48" r="36" stroke="hsl(var(--muted)/0.3)" strokeWidth="8" fill="none" />
-              <motion.circle 
-                cx="48" cy="48" r="36" 
-                stroke={COLORS.charts.primary} 
-                strokeWidth="8" 
-                fill="none" 
+              <motion.circle
+                cx="48" cy="48" r="36"
+                stroke={COLORS.charts.primary}
+                strokeWidth="8"
+                fill="none"
                 strokeDasharray={`${2 * Math.PI * 36}`}
                 initial={{ strokeDashoffset: 2 * Math.PI * 36 }}
-                animate={{ strokeDashoffset: (2 * Math.PI * 36) * (1 - (treatmentSuccessRate / 100)) }}
+                animate={{ strokeDashoffset: (2 * Math.PI * 36) * (1 - ((healthyControlRate ?? 0) / 100)) }}
                 transition={{ duration: 1.5, ease: "easeOut" }}
                 strokeLinecap="round"
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-xl font-black text-foreground">{treatmentSuccessRate}%</span>
+              <span className="text-xl font-black text-foreground">{healthyControlRate === null ? '—' : `${healthyControlRate}%`}</span>
             </div>
           </div>
         </div>
@@ -130,7 +131,7 @@ export const ExecutiveHealth: React.FC<ExecutiveHealthProps> = ({
             <div className="space-y-3">
               {enfermedadesComunes.slice(0, 4).map((disease, idx) => (
                 <div key={idx} className="flex items-center justify-between group">
-                  <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors">{disease.disease_name}</span>
+                  <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors">{getDiseaseLabel(disease)}</span>
                   <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-danger-500/10 text-danger-600 dark:text-danger-400">{disease.count}</span>
                 </div>
               ))}

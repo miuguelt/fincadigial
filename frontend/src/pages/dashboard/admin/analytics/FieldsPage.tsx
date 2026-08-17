@@ -20,11 +20,11 @@ const FieldsPage: React.FC = () => {
   const { data: fieldsData, isLoading } = useQuery({
     queryKey: ['fields', searchTerm],
     queryFn: async () => {
-      return fieldService.getPaginated({ 
-        limit: 24, 
-        sort_by: 'animal_count', 
+      return fieldService.getPaginated({
+        limit: 24,
+        sort_by: 'animal_count',
         sort_order: 'desc',
-        search: searchTerm 
+        search: searchTerm
       });
     },
   });
@@ -78,7 +78,7 @@ const FieldsPage: React.FC = () => {
       )}
 
       {/* Estadísticas adicionales y Buscador */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5 }}
         className="flex flex-col xl:flex-row gap-6 items-start"
       >
@@ -90,7 +90,7 @@ const FieldsPage: React.FC = () => {
                 {occupation.fields.map((fieldStat: any, index: number) => {
                   const rate = fieldStat.occupation_rate;
                   const colorClass = rate > 100 ? 'bg-destructive' : rate > 80 ? 'bg-warning' : 'bg-success-500';
-                  
+
                   return (
                     <motion.div
                       key={index}
@@ -118,7 +118,7 @@ const FieldsPage: React.FC = () => {
                           className={`h-full rounded-full transition-colors ${colorClass}`}
                         />
                       </div>
-                      <p className="text-[10px] font-black tracking-widest text-muted-foreground mt-2 text-right uppercase">
+                      <p className="text-[11px] font-black tracking-widest text-muted-foreground mt-2 text-right uppercase">
                         {rate.toFixed(0)}% Ocupado
                       </p>
                     </motion.div>
@@ -177,7 +177,7 @@ const FieldsPage: React.FC = () => {
             </AnimatePresence>
           </div>
         ) : (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             className="text-center py-20 bg-card/20 backdrop-blur-xl rounded-[2.5rem] border border-border/30"
           >

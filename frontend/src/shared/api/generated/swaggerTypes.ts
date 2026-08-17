@@ -1,6 +1,6 @@
 /**
  * Tipos TypeScript reflejando la API real del backend.
- * 
+ *
  * Fuente de verdad: modelos SQLAlchemy y schemas Flask-RESTX.
  * NO modificar sin verificar el backend correspondiente.
  */
@@ -588,33 +588,52 @@ export interface DashboardData {
 }
 
 export interface AnimalStatistics {
-  total: number;
+  total_animals: number;
   by_status: Record<AnimalStatus, number>;
   by_sex: Record<Sex, number>;
-  by_breed: Array<{ breed_name: string; count: number }>;
+  by_sex_active?: Record<Sex, number>;
+  by_breed: Array<{ breed: string; count: number }>;
   average_weight: number;
   age_distribution: Array<{ age_range: string; count: number }>;
 }
 
 export interface HealthStatistics {
-  total_treatments: number;
-  active_treatments: number;
-  total_vaccinations: number;
-  pending_vaccinations: number;
-  common_diseases: Array<{ disease_name: string; count: number }>;
-  treatment_success_rate: number;
+  common_diseases: Array<{ diagnosis: string; count: number }>;
+  healthy_control_rate: number | null;
+  summary: {
+    total_treatments: number;
+    total_vaccinations: number;
+    period_months: number;
+  };
   treatments_by_month?: Array<{ period: string; count: number }>;
   vaccinations_by_month?: Array<{ period: string; count: number }>;
 }
 
 export interface ProductionStatistics {
-  total_fields: number;
-  field_utilization: number;
-  animals_per_field: number;
-  feed_consumption: number;
-  monthly_costs: number;
-  productivity_index: number;
+  field_metrics: {
+    total_fields: number;
+    occupied_fields: number;
+    assigned_animals: number;
+    total_capacity: number;
+    utilization_percent: number | null;
+    animals_per_field: number | null;
+  };
+  financial_metrics: {
+    month: string;
+    monthly_expenses: number;
+  };
+  productivity_metrics: {
+    total_animals_analyzed: number;
+    average_daily_gain_kg: number;
+    best_daily_gain_kg: number;
+    worst_daily_gain_kg: number;
+    period_analyzed: string;
+  };
   weight_trends?: Array<{ period: string; avg_weight: number }>;
+  growth_rates?: Array<Record<string, any>>;
+  best_performers?: Array<Record<string, any>>;
+  group_statistics?: Record<string, any>;
+  summary?: Record<string, any>;
 }
 
 // =============================================

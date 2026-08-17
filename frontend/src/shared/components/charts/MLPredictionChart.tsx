@@ -59,14 +59,14 @@ export function MLPredictionChart({
     const totalAm = data.predictions.am.reduce((sum, p) => sum + p.predicted_liters, 0);
     const totalPm = data.predictions.pm.reduce((sum, p) => sum + p.predicted_liters, 0);
     const total = totalAm + totalPm;
-    
-    const firstTotal = (data.predictions.am[0]?.predicted_liters || 0) + 
+
+    const firstTotal = (data.predictions.am[0]?.predicted_liters || 0) +
                       (data.predictions.pm[0]?.predicted_liters || 0);
-    const lastTotal = (data.predictions.am[data.predictions.am.length - 1]?.predicted_liters || 0) + 
+    const lastTotal = (data.predictions.am[data.predictions.am.length - 1]?.predicted_liters || 0) +
                      (data.predictions.pm[data.predictions.pm.length - 1]?.predicted_liters || 0);
-    
+
     const trend = firstTotal > 0 ? ((lastTotal - firstTotal) / firstTotal) * 100 : 0;
-    
+
     return {
       total,
       average: total / 7,
@@ -107,7 +107,7 @@ export function MLPredictionChart({
           <CardTitle className="text-lg font-medium flex items-center gap-2">
             Predicciones ML - Próximos 7 Días
             <Badge className={confidenceColor}>
-              {stats?.confidence === 'high' ? 'Alta Confianza' : 
+              {stats?.confidence === 'high' ? 'Alta Confianza' :
                stats?.confidence === 'medium' ? 'Confianza Media' : 'Baja Confianza'}
             </Badge>
           </CardTitle>
@@ -115,7 +115,7 @@ export function MLPredictionChart({
             Modelo: Regresión Polinomial (R²: {stats?.modelR2?.toFixed(3)})
           </p>
         </div>
-        
+
         <div className="flex gap-4 text-sm">
           <div className="text-right">
             <p className="text-muted-foreground">Total 7 días</p>
@@ -152,9 +152,9 @@ export function MLPredictionChart({
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
             <XAxis
               dataKey="date"
-              tickFormatter={(value) => new Date(value).toLocaleDateString('es-CO', { 
-                month: 'short', 
-                day: 'numeric' 
+              tickFormatter={(value) => new Date(value).toLocaleDateString('es-CO', {
+                month: 'short',
+                day: 'numeric'
               })}
               className="text-xs"
             />
@@ -191,7 +191,7 @@ export function MLPredictionChart({
               }}
             />
             <Legend />
-            
+
             {/* Línea promedio */}
             <ReferenceLine
               y={stats?.average}
@@ -199,7 +199,7 @@ export function MLPredictionChart({
               strokeDasharray="5 5"
               label={{ value: `Promedio: ${stats?.average?.toFixed(1)}L`, position: 'right' }}
             />
-            
+
             {/* Área de confianza AM */}
             {showConfidence && (
               <Area
@@ -211,7 +211,7 @@ export function MLPredictionChart({
                 name="Confianza AM"
               />
             )}
-            
+
             {/* Línea AM */}
             <Line
               type="monotone"
@@ -222,7 +222,7 @@ export function MLPredictionChart({
               dot={{ fill: '#10b981', r: 4 }}
               activeDot={{ r: 6 }}
             />
-            
+
             {/* Línea PM */}
             <Line
               type="monotone"
@@ -233,7 +233,7 @@ export function MLPredictionChart({
               dot={{ fill: '#f59e0b', r: 4 }}
               activeDot={{ r: 6 }}
             />
-            
+
             {/* Línea Total */}
             <Line
               type="monotone"

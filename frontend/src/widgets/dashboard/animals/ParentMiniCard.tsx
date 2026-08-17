@@ -84,7 +84,7 @@ export function ParentMiniCard({ parentId, parentLabel, gender, onClick }: Paren
       <div className="relative group rounded-xl overflow-hidden bg-gradient-to-br from-muted/30 to-muted/10 border-2 border-dashed border-border/50 w-full max-w-[340px] aspect-[16/10] mx-auto flex flex-col items-center justify-center p-3">
         <ImageIcon className="w-8 h-8 text-muted-foreground/40 mb-1.5" />
         <p className="text-xs font-medium text-muted-foreground/60">{gender}</p>
-        <p className="text-[10px] text-muted-foreground/40">Sin registro</p>
+        <p className="text-[11px] text-muted-foreground/40">Sin registro</p>
       </div>
     );
   }
@@ -104,7 +104,7 @@ export function ParentMiniCard({ parentId, parentLabel, gender, onClick }: Paren
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted/20 to-muted/5">
             <div className="text-center">
               <ImageIcon className="w-10 h-10 mx-auto text-muted-foreground/40 mb-1" />
-              <p className="text-[10px] text-muted-foreground/50">Sin fotos</p>
+              <p className="text-[11px] text-muted-foreground/50">Sin fotos</p>
             </div>
           </div>
         ) : (
@@ -182,7 +182,7 @@ export function ParentMiniCard({ parentId, parentLabel, gender, onClick }: Paren
 
       {/* Información del padre/madre - siempre visible */}
       <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-black/70 via-black/50 to-transparent backdrop-blur-[1px]">
-        <div className="text-[10px] uppercase tracking-wider font-bold text-white/80 mb-0.5">
+        <div className="text-[11px] uppercase tracking-wider font-bold text-white/80 mb-0.5">
           {gender}
         </div>
         <div className="text-sm font-bold text-white fit-clamp drop-shadow-lg" title={parentLabel}>

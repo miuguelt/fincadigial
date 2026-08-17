@@ -92,7 +92,7 @@ export function CampesinoAlertsSection() {
 				{urgentAlerts.length > 0 && (
 					<Badge
 						variant="destructive"
-						className="h-5 px-1.5 text-[9px] font-bold"
+						className="h-5 px-1.5 text-[11px] font-bold"
 					>
 						{urgentAlerts.length}
 					</Badge>
@@ -129,14 +129,14 @@ export function CampesinoAlertsSection() {
 									<div className="flex items-center gap-2 mb-0.5">
 										<span
 											className={cn(
-												"inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider",
+												"inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider",
 												style.dot,
 												"text-white",
 											)}
 										>
 											{style.label}
 										</span>
-										<span className="text-[10px] text-muted-foreground flex items-center gap-1">
+										<span className="text-[11px] text-muted-foreground flex items-center gap-1">
 											<Clock className="h-3 w-3" />
 											{timeAgo(alert.timestamp)}
 										</span>

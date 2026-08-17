@@ -5,6 +5,7 @@ import flask
 
 logger = logging.getLogger(__name__)
 
+
 @celery.task(name="app.tasks.predictive_tasks.run_finca_predictive_analysis")
 def run_finca_predictive_analysis(finca_id):
     """
@@ -27,11 +28,12 @@ def run_finca_predictive_analysis(finca_id):
         try:
             from app.extensions import redis_client
             import json
+
             if redis_client:
-                redis_client.publish(f'predictive_analysis_status_{finca_id}', json.dumps({
-                    'status': 'completed',
-                    'result': result
-                }))
+                redis_client.publish(
+                    f"predictive_analysis_status_{finca_id}",
+                    json.dumps({"status": "completed", "result": result}),
+                )
         except Exception as re:
             logger.warning(f"No se pudo publicar el estado en Redis: {re}")
 
@@ -43,11 +45,12 @@ def run_finca_predictive_analysis(finca_id):
         try:
             from app.extensions import redis_client
             import json
+
             if redis_client:
-                redis_client.publish(f'predictive_analysis_status_{finca_id}', json.dumps({
-                    'status': 'error',
-                    'message': str(e)
-                }))
+                redis_client.publish(
+                    f"predictive_analysis_status_{finca_id}",
+                    json.dumps({"status": "error", "message": str(e)}),
+                )
         except:
             pass
 

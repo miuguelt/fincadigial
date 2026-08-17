@@ -44,9 +44,9 @@ export const SyncPulse: React.FC = () => {
       setStatusMessage(msg);
       setStatusType(type);
       setIsVisible(true);
-      
+
       if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
-      
+
       // Ocultar mensaje después de 5 segundos
       hideTimeoutRef.current = setTimeout(() => {
         setIsVisible(false);
@@ -55,8 +55,8 @@ export const SyncPulse: React.FC = () => {
       }, 5000);
     });
 
-    return () => { 
-      unsubSync(); 
+    return () => {
+      unsubSync();
       unsubStatus();
       if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
     };
@@ -85,13 +85,13 @@ export const SyncPulse: React.FC = () => {
       {isVisible && (
         <motion.div
           initial={{ opacity: 0, y: -40, scale: 0.9, filter: 'blur(10px)' }}
-          animate={{ 
-            opacity: 1, 
-            y: 0, 
-            scale: 1, 
+          animate={{
+            opacity: 1,
+            y: 0,
+            scale: 1,
             filter: 'blur(0px)'
           }}
-          transition={{ 
+          transition={{
             default: { type: 'spring', stiffness: 300, damping: 25 },
             filter: { type: 'tween', duration: 0.3, ease: 'easeOut' }
           }}
@@ -103,13 +103,13 @@ export const SyncPulse: React.FC = () => {
         >
           {/* Brillo ambiental dinámico */}
           <div className="absolute -inset-1 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-          
+
           <div className="relative flex items-center justify-center w-8 h-8 rounded-xl bg-card/20 shadow-inner">
             {getStatusIcon()}
           </div>
-          
+
           <div className="relative flex flex-col min-w-[120px]">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70 leading-none mb-1">
+            <span className="text-[11px] font-black uppercase tracking-[0.2em] opacity-70 leading-none mb-1">
               {syncState.isSyncing ? 'Sincronizando' : 'VLMSP Hub'}
             </span>
             <span className="text-xs font-bold whitespace-nowrap tracking-tight">
@@ -119,20 +119,20 @@ export const SyncPulse: React.FC = () => {
 
           {syncState.isSyncing && (
             <div className="relative flex items-end gap-1 h-3 ml-1">
-              <motion.div 
-                animate={{ height: ['40%', '100%', '40%'] }} 
+              <motion.div
+                animate={{ height: ['40%', '100%', '40%'] }}
                 transition={{ repeat: Infinity, duration: 0.6, delay: 0 }}
-                className="w-1 bg-card/50 rounded-[var(--radius-full)]" 
+                className="w-1 bg-card/50 rounded-[var(--radius-full)]"
               />
-              <motion.div 
-                animate={{ height: ['60%', '100%', '60%'] }} 
+              <motion.div
+                animate={{ height: ['60%', '100%', '60%'] }}
                 transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }}
-                className="w-1 bg-card rounded-[var(--radius-full)] shadow-[0_0_8px_rgba(255,255,255,0.5)]" 
+                className="w-1 bg-card rounded-[var(--radius-full)] shadow-[0_0_8px_rgba(255,255,255,0.5)]"
               />
-              <motion.div 
-                animate={{ height: ['40%', '100%', '40%'] }} 
+              <motion.div
+                animate={{ height: ['40%', '100%', '40%'] }}
                 transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }}
-                className="w-1 bg-card/50 rounded-[var(--radius-full)]" 
+                className="w-1 bg-card/50 rounded-[var(--radius-full)]"
               />
             </div>
           )}
@@ -141,4 +141,3 @@ export const SyncPulse: React.FC = () => {
     </AnimatePresence>
   );
 };
-

@@ -112,8 +112,8 @@ const MembershipRequestsPage = () => {
               </div>
               <h3 className="text-lg font-medium text-foreground">No hay solicitudes pendientes</h3>
               <p className="text-muted-foreground mt-1">Cuando alguien solicite unirse, aparecerá aquí.</p>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={fetchRequests}
                 className="mt-4 border-success/30 text-success hover:bg-success/5"
               >
@@ -139,10 +139,10 @@ const MembershipRequestsPage = () => {
                         <span className="font-bold text-foreground">{request.user?.fullname || 'Usuario'}</span>
                         <div className="flex items-center gap-3 mt-1">
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <FaIdCard className="text-[10px]" /> {request.user?.identification}
+                            <FaIdCard className="text-[11px]" /> {request.user?.identification}
                           </span>
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <FaEnvelope className="text-[10px]" /> {request.user?.email}
+                            <FaEnvelope className="text-[11px]" /> {request.user?.email}
                           </span>
                         </div>
                       </div>

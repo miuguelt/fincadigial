@@ -2,6 +2,7 @@
 Activity service — query helpers and formatters for activity_namespace.
 Extracted to reduce namespace file size; behavior unchanged.
 """
+
 import base64
 import json
 from datetime import date, datetime, timedelta, UTC
@@ -24,12 +25,12 @@ def _parse_datetime(value):
         text = str(value).strip()
         if not text:
             return None
-        if text.endswith('Z'):
-            text = text[:-1] + '+00:00'
+        if text.endswith("Z"):
+            text = text[:-1] + "+00:00"
         return datetime.fromisoformat(text)
     except Exception:
         try:
-            return datetime.strptime(text, '%Y-%m-%d')
+            return datetime.strptime(text, "%Y-%m-%d")
         except Exception:
             return None
 
@@ -51,9 +52,9 @@ def _iso(dt):
     if isinstance(dt, str):
         return dt
     try:
-        if getattr(dt, 'tzinfo', None) is None:
-            return dt.replace(tzinfo=UTC).isoformat().replace('+00:00', 'Z')
-        return dt.astimezone(UTC).isoformat().replace('+00:00', 'Z')
+        if getattr(dt, "tzinfo", None) is None:
+            return dt.replace(tzinfo=UTC).isoformat().replace("+00:00", "Z")
+        return dt.astimezone(UTC).isoformat().replace("+00:00", "Z")
     except Exception:
         return None
 
@@ -73,25 +74,31 @@ def _normalize_dt_for_db(dt: datetime | None) -> datetime | None:
     return dt
 
 
-def _format_activity(item, *, include_actor=True, include_relations=True, fields_set: set[str] | None = None):
+def _format_activity(
+    item,
+    *,
+    include_actor=True,
+    include_relations=True,
+    fields_set: set[str] | None = None,
+):
     actor = None
     if include_actor and getattr(item, "actor", None):
         actor = {
-            'id': item.actor.id,
-            'fullname': item.actor.fullname,
+            "id": item.actor.id,
+            "fullname": item.actor.fullname,
         }
     payload = {
-        'id': item.id,
-        'action': item.action,
-        'entity': item.entity,
-        'entity_id': item.entity_id,
-        'title': item.title,
-        'description': item.description,
-        'severity': item.severity,
-        'created_at': _iso(item.created_at),
-        'actor': actor if include_actor else None,
-        'relations': (item.relations or {}) if include_relations else None,
-        'animal_id': item.animal_id,
+        "id": item.id,
+        "action": item.action,
+        "entity": item.entity,
+        "entity_id": item.entity_id,
+        "title": item.title,
+        "description": item.description,
+        "severity": item.severity,
+        "created_at": _iso(item.created_at),
+        "actor": actor if include_actor else None,
+        "relations": (item.relations or {}) if include_relations else None,
+        "animal_id": item.animal_id,
     }
     if not include_actor:
         payload.pop("actor", None)
@@ -124,12 +131,24 @@ def _decode_cursor(cursor: str | None) -> tuple[datetime | None, int | None]:
         return None, None
 
 
-def _activity_load_only(fields_set: set[str] | None, *, include_actor: bool, include_relations: bool):
+def _activity_load_only(
+    fields_set: set[str] | None, *, include_actor: bool, include_relations: bool
+):
     wanted = {"id", "created_at"}
     if fields_set:
         wanted |= set(fields_set)
     else:
-        wanted |= {"action", "entity", "entity_id", "title", "description", "severity", "animal_id", "relations", "actor"}
+        wanted |= {
+            "action",
+            "entity",
+            "entity_id",
+            "title",
+            "description",
+            "severity",
+            "animal_id",
+            "relations",
+            "actor",
+        }
 
     cols = [ActivityLog.id, ActivityLog.created_at]
     if "action" in wanted:
@@ -155,16 +174,17 @@ def _activity_load_only(fields_set: set[str] | None, *, include_actor: bool, inc
 
 def _build_query(user_id=None):
     from app.utils.tenant_context import apply_tenant_filter
+
     query = apply_tenant_filter(ActivityLog.query, ActivityLog)
 
-    entity = flask.request.args.get('entity')
-    action = flask.request.args.get('action')
-    severity = flask.request.args.get('severity')
-    entity_id = flask.request.args.get('entity_id', type=int)
-    actor_id = flask.request.args.get('user_id', type=int)
-    animal_id = flask.request.args.get('animal_id', type=int)
-    from_value = flask.request.args.get('from')
-    to_value = flask.request.args.get('to')
+    entity = flask.request.args.get("entity")
+    action = flask.request.args.get("action")
+    severity = flask.request.args.get("severity")
+    entity_id = flask.request.args.get("entity_id", type=int)
+    actor_id = flask.request.args.get("user_id", type=int)
+    animal_id = flask.request.args.get("animal_id", type=int)
+    from_value = flask.request.args.get("from")
+    to_value = flask.request.args.get("to")
 
     if user_id is not None:
         query = query.filter(ActivityLog.actor_id == user_id)
@@ -193,8 +213,8 @@ def _build_query(user_id=None):
 
 
 def _window_bounds(days: int | None = None):
-    from_value = flask.request.args.get('from')
-    to_value = flask.request.args.get('to')
+    from_value = flask.request.args.get("from")
+    to_value = flask.request.args.get("to")
 
     from_dt = _parse_datetime(from_value)
     to_dt = _parse_datetime(to_value)
@@ -211,11 +231,11 @@ def _window_bounds(days: int | None = None):
 
 def _apply_bounds(query, from_dt, to_dt):
     if from_dt:
-        if getattr(from_dt, 'tzinfo', None) is not None:
+        if getattr(from_dt, "tzinfo", None) is not None:
             from_dt = from_dt.astimezone(UTC).replace(tzinfo=None)
         query = query.filter(ActivityLog.created_at >= from_dt)
     if to_dt:
-        if getattr(to_dt, 'tzinfo', None) is not None:
+        if getattr(to_dt, "tzinfo", None) is not None:
             to_dt = to_dt.astimezone(UTC).replace(tzinfo=None)
         query = query.filter(ActivityLog.created_at <= to_dt)
     return query
@@ -229,47 +249,68 @@ def _stats_payload(base_query, *, from_dt, to_dt, window_days: int | None = None
     ).first()
 
     by_entity = (
-        base_query.with_entities(ActivityLog.entity.label('key'), func.count(ActivityLog.id).label('count'))
+        base_query.with_entities(
+            ActivityLog.entity.label("key"), func.count(ActivityLog.id).label("count")
+        )
         .group_by(ActivityLog.entity)
         .order_by(func.count(ActivityLog.id).desc(), ActivityLog.entity.asc())
         .all()
     )
     by_action = (
-        base_query.with_entities(ActivityLog.action.label('key'), func.count(ActivityLog.id).label('count'))
+        base_query.with_entities(
+            ActivityLog.action.label("key"), func.count(ActivityLog.id).label("count")
+        )
         .group_by(ActivityLog.action)
         .order_by(func.count(ActivityLog.id).desc(), ActivityLog.action.asc())
         .all()
     )
     by_severity = (
-        base_query.with_entities(ActivityLog.severity.label('key'), func.count(ActivityLog.id).label('count'))
+        base_query.with_entities(
+            ActivityLog.severity.label("key"), func.count(ActivityLog.id).label("count")
+        )
         .group_by(ActivityLog.severity)
         .order_by(func.count(ActivityLog.id).desc(), ActivityLog.severity.asc())
         .all()
     )
     daily = (
-        base_query.with_entities(func.date(ActivityLog.created_at).label('day'), func.count(ActivityLog.id).label('count'))
+        base_query.with_entities(
+            func.date(ActivityLog.created_at).label("day"),
+            func.count(ActivityLog.id).label("count"),
+        )
         .group_by(func.date(ActivityLog.created_at))
         .order_by(func.date(ActivityLog.created_at).asc())
         .all()
     )
 
     window = {
-        'days': int(window_days) if window_days else None,
-        'from': from_dt.isoformat().replace('+00:00', 'Z') if from_dt else None,
-        'to': to_dt.isoformat().replace('+00:00', 'Z') if to_dt else None,
+        "days": int(window_days) if window_days else None,
+        "from": from_dt.isoformat().replace("+00:00", "Z") if from_dt else None,
+        "to": to_dt.isoformat().replace("+00:00", "Z") if to_dt else None,
     }
 
     return {
-        'window': window,
-        'totals': {
-            'events': int(totals[0] or 0),
-            'distinct_entities': int(totals[1] or 0),
-            'distinct_animals': int(totals[2] or 0),
+        "window": window,
+        "totals": {
+            "events": int(totals[0] or 0),
+            "distinct_entities": int(totals[1] or 0),
+            "distinct_animals": int(totals[2] or 0),
         },
-        'by_entity': [{'entity': row.key, 'count': int(row.count)} for row in by_entity],
-        'by_action': [{'action': row.key, 'count': int(row.count)} for row in by_action],
-        'by_severity': [{'severity': row.key, 'count': int(row.count)} for row in by_severity],
-        'daily': [{'date': (row.day.isoformat() if row.day else None), 'count': int(row.count)} for row in daily],
+        "by_entity": [
+            {"entity": row.key, "count": int(row.count)} for row in by_entity
+        ],
+        "by_action": [
+            {"action": row.key, "count": int(row.count)} for row in by_action
+        ],
+        "by_severity": [
+            {"severity": row.key, "count": int(row.count)} for row in by_severity
+        ],
+        "daily": [
+            {
+                "date": (row.day.isoformat() if row.day else None),
+                "count": int(row.count),
+            }
+            for row in daily
+        ],
     }
 
 
@@ -292,16 +333,23 @@ def _window_date_bounds(days: int | None):
 def _can_use_daily_agg(from_dt, to_dt) -> bool:
     if flask.request.args.get("entity_id"):
         return False
-    if from_dt and (from_dt.hour or from_dt.minute or from_dt.second or from_dt.microsecond):
+    if from_dt and (
+        from_dt.hour or from_dt.minute or from_dt.second or from_dt.microsecond
+    ):
         return False
     if to_dt and (to_dt.hour or to_dt.minute or to_dt.second or to_dt.microsecond):
         return False
     return True
 
 
-def _agg_stats_payload(*, actor_id: int | None, start_date: date, end_date: date, days: int | None):
+def _agg_stats_payload(
+    *, actor_id: int | None, start_date: date, end_date: date, days: int | None
+):
     from app.utils.tenant_context import apply_tenant_filter
-    base = apply_tenant_filter(db.session.query(ActivityDailyAgg), ActivityDailyAgg).filter(
+
+    base = apply_tenant_filter(
+        db.session.query(ActivityDailyAgg), ActivityDailyAgg
+    ).filter(
         ActivityDailyAgg.date >= start_date,
         ActivityDailyAgg.date <= end_date,
     )
@@ -321,8 +369,14 @@ def _agg_stats_payload(*, actor_id: int | None, start_date: date, end_date: date
     if animal_id is not None:
         base = base.filter(ActivityDailyAgg.animal_id == int(animal_id))
 
-    totals_events = base.with_entities(func.coalesce(func.sum(ActivityDailyAgg.count), 0)).scalar() or 0
-    distinct_entities = base.with_entities(func.count(func.distinct(ActivityDailyAgg.entity))).scalar() or 0
+    totals_events = (
+        base.with_entities(func.coalesce(func.sum(ActivityDailyAgg.count), 0)).scalar()
+        or 0
+    )
+    distinct_entities = (
+        base.with_entities(func.count(func.distinct(ActivityDailyAgg.entity))).scalar()
+        or 0
+    )
     distinct_animals = (
         base.filter(ActivityDailyAgg.animal_id != 0)
         .with_entities(func.count(func.distinct(ActivityDailyAgg.animal_id)))
@@ -331,25 +385,43 @@ def _agg_stats_payload(*, actor_id: int | None, start_date: date, end_date: date
     )
 
     by_entity = (
-        base.with_entities(ActivityDailyAgg.entity.label("key"), func.sum(ActivityDailyAgg.count).label("count"))
+        base.with_entities(
+            ActivityDailyAgg.entity.label("key"),
+            func.sum(ActivityDailyAgg.count).label("count"),
+        )
         .group_by(ActivityDailyAgg.entity)
-        .order_by(func.sum(ActivityDailyAgg.count).desc(), ActivityDailyAgg.entity.asc())
+        .order_by(
+            func.sum(ActivityDailyAgg.count).desc(), ActivityDailyAgg.entity.asc()
+        )
         .all()
     )
     by_action = (
-        base.with_entities(ActivityDailyAgg.action.label("key"), func.sum(ActivityDailyAgg.count).label("count"))
+        base.with_entities(
+            ActivityDailyAgg.action.label("key"),
+            func.sum(ActivityDailyAgg.count).label("count"),
+        )
         .group_by(ActivityDailyAgg.action)
-        .order_by(func.sum(ActivityDailyAgg.count).desc(), ActivityDailyAgg.action.asc())
+        .order_by(
+            func.sum(ActivityDailyAgg.count).desc(), ActivityDailyAgg.action.asc()
+        )
         .all()
     )
     by_severity = (
-        base.with_entities(ActivityDailyAgg.severity.label("key"), func.sum(ActivityDailyAgg.count).label("count"))
+        base.with_entities(
+            ActivityDailyAgg.severity.label("key"),
+            func.sum(ActivityDailyAgg.count).label("count"),
+        )
         .group_by(ActivityDailyAgg.severity)
-        .order_by(func.sum(ActivityDailyAgg.count).desc(), ActivityDailyAgg.severity.asc())
+        .order_by(
+            func.sum(ActivityDailyAgg.count).desc(), ActivityDailyAgg.severity.asc()
+        )
         .all()
     )
     daily = (
-        base.with_entities(ActivityDailyAgg.date.label("day"), func.sum(ActivityDailyAgg.count).label("count"))
+        base.with_entities(
+            ActivityDailyAgg.date.label("day"),
+            func.sum(ActivityDailyAgg.count).label("count"),
+        )
         .group_by(ActivityDailyAgg.date)
         .order_by(ActivityDailyAgg.date.asc())
         .all()
@@ -367,14 +439,28 @@ def _agg_stats_payload(*, actor_id: int | None, start_date: date, end_date: date
             "distinct_entities": int(distinct_entities),
             "distinct_animals": int(distinct_animals),
         },
-        "by_entity": [{"entity": row.key, "count": int(row.count)} for row in by_entity],
-        "by_action": [{"action": row.key, "count": int(row.count)} for row in by_action],
-        "by_severity": [{"severity": row.key, "count": int(row.count)} for row in by_severity],
-        "daily": [{"date": (row.day.isoformat() if row.day else None), "count": int(row.count)} for row in daily],
+        "by_entity": [
+            {"entity": row.key, "count": int(row.count)} for row in by_entity
+        ],
+        "by_action": [
+            {"action": row.key, "count": int(row.count)} for row in by_action
+        ],
+        "by_severity": [
+            {"severity": row.key, "count": int(row.count)} for row in by_severity
+        ],
+        "daily": [
+            {
+                "date": (row.day.isoformat() if row.day else None),
+                "count": int(row.count),
+            }
+            for row in daily
+        ],
     }
 
 
-def _make_cached_response(cache_key: str, ttl_seconds: int, compute_fn, *, private=True):
+def _make_cached_response(
+    cache_key: str, ttl_seconds: int, compute_fn, *, private=True
+):
     payload, status, headers = cached_json_with_etag(
         cache_key=cache_key,
         ttl_seconds=int(ttl_seconds),

@@ -41,7 +41,7 @@ export const ControlDetailModal: React.FC<ControlDetailModalProps> = ({
             Información completa del control sanitario
           </DialogDescription>
         </DialogHeader>
-        
+
         {selectedControl && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -49,17 +49,17 @@ export const ControlDetailModal: React.FC<ControlDetailModalProps> = ({
                 <label className="text-sm font-medium text-muted-foreground">ID del Control</label>
                 <p className="text-base">{selectedControl.id}</p>
               </div>
-              
+
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground">Animal</label>
                 <p className="text-base">{getAnimalName(selectedControl.animal_id)}</p>
               </div>
-              
+
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground">Fecha de Control</label>
                 <p className="text-base">{new Date(selectedControl.checkup_date).toLocaleDateString('es-CO')}</p>
               </div>
-              
+
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground">Estado de Salud</label>
                 <Badge className={getHealthStatusColor(selectedControl.health_status || selectedControl.healt_status || 'Sano')}>
@@ -67,7 +67,7 @@ export const ControlDetailModal: React.FC<ControlDetailModalProps> = ({
                 </Badge>
               </div>
             </div>
-            
+
             {(selectedControl.weight != null || selectedControl.height != null) && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {selectedControl.weight != null && (
@@ -76,7 +76,7 @@ export const ControlDetailModal: React.FC<ControlDetailModalProps> = ({
                     <p className="text-base">{Number(selectedControl.weight).toFixed(1)} kg</p>
                   </div>
                 )}
-                
+
                 {selectedControl.height != null && (
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-muted-foreground">Altura</label>
@@ -85,14 +85,14 @@ export const ControlDetailModal: React.FC<ControlDetailModalProps> = ({
                 )}
               </div>
             )}
-            
+
             {selectedControl.description && (
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground">Descripción</label>
                 <p className="text-base bg-muted/50 p-3 rounded-lg">{selectedControl.description}</p>
               </div>
             )}
-            
+
             {selectedAnimal && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -101,7 +101,7 @@ export const ControlDetailModal: React.FC<ControlDetailModalProps> = ({
                     {selectedAnimal.record || `Animal #${selectedAnimal.id}`}
                   </Badge>
                 </div>
-                
+
                 <ImageManager
                   animalId={selectedAnimal.id}
                   title={`Imágenes de ${selectedAnimal.record || `Animal #${selectedAnimal.id}`}`}
@@ -112,7 +112,7 @@ export const ControlDetailModal: React.FC<ControlDetailModalProps> = ({
             )}
           </div>
         )}
-        
+
         <div className="flex justify-end pt-4 border-t">
           <Button onClick={() => {
             setShowDetailModal(false);
@@ -125,4 +125,3 @@ export const ControlDetailModal: React.FC<ControlDetailModalProps> = ({
     </Dialog>
   );
 };
-

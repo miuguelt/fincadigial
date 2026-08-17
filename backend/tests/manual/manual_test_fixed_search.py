@@ -5,9 +5,11 @@ Script para probar la funcionalidad de búsqueda corregida
 
 import sys
 import os
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from datetime import datetime
+
 
 def test_search_logic():
     """Probar la lógica de búsqueda corregida"""
@@ -16,49 +18,51 @@ def test_search_logic():
 
     test_cases = [
         {
-            'search': '2025',
-            'search_type': 'auto',
-            'expected': 'Solo búsqueda por fechas (año 2025)'
+            "search": "2025",
+            "search_type": "auto",
+            "expected": "Solo búsqueda por fechas (año 2025)",
         },
         {
-            'search': '2025',
-            'search_type': 'dates',
-            'expected': 'Solo búsqueda por fechas (año 2025)'
+            "search": "2025",
+            "search_type": "dates",
+            "expected": "Solo búsqueda por fechas (año 2025)",
         },
         {
-            'search': '2025',
-            'search_type': 'text',
-            'expected': 'Solo búsqueda por texto y ID (2025)'
+            "search": "2025",
+            "search_type": "text",
+            "expected": "Solo búsqueda por texto y ID (2025)",
         },
         {
-            'search': '2025',
-            'search_type': 'all',
-            'expected': 'Búsqueda en todos los campos (texto, ID, y fechas)'
+            "search": "2025",
+            "search_type": "all",
+            "expected": "Búsqueda en todos los campos (texto, ID, y fechas)",
         },
         {
-            'search': 'vaca',
-            'search_type': 'auto',
-            'expected': 'Solo búsqueda por texto (no es fecha)'
+            "search": "vaca",
+            "search_type": "auto",
+            "expected": "Solo búsqueda por texto (no es fecha)",
         },
         {
-            'search': '2024-12',
-            'search_type': 'auto',
-            'expected': 'Solo búsqueda por fechas (diciembre 2024)'
+            "search": "2024-12",
+            "search_type": "auto",
+            "expected": "Solo búsqueda por fechas (diciembre 2024)",
         },
         {
-            'search': '25/12/2024',
-            'search_type': 'auto',
-            'expected': 'Solo búsqueda por fechas (25 diciembre 2024)'
-        }
+            "search": "25/12/2024",
+            "search_type": "auto",
+            "expected": "Solo búsqueda por fechas (25 diciembre 2024)",
+        },
     ]
 
     for i, case in enumerate(test_cases, 1):
-        print(f"\n📋 Test {i}: '{case['search']}' con search_type='{case['search_type']}'")
+        print(
+            f"\n📋 Test {i}: '{case['search']}' con search_type='{case['search_type']}'"
+        )
         print(f"   Expected: {case['expected']}")
 
         # Simular la lógica del método corregido
-        search = case['search']
-        search_type = case['search_type']
+        search = case["search"]
+        search_type = case["search_type"]
 
         is_date_search = False
         year_only = None
@@ -78,9 +82,9 @@ def test_search_logic():
                     pass
 
             # Detectar si es año-mes (YYYY-MM o YYYY/MM)
-            elif len(search) in [6, 7] and ('-' in search or '/' in search):
+            elif len(search) in [6, 7] and ("-" in search or "/" in search):
                 try:
-                    parts = search.replace('/', '-').split('-')
+                    parts = search.replace("/", "-").split("-")
                     if len(parts) == 2:
                         year_only = int(parts[0])
                         month_only = int(parts[1])
@@ -90,10 +94,13 @@ def test_search_logic():
 
             # Intentar parsear como fecha completa
             else:
-                date_formats = ['%Y-%m-%d', '%d/%m/%Y', '%Y/%m/%d']
+                date_formats = ["%Y-%m-%d", "%d/%m/%Y", "%Y/%m/%d"]
                 datetime_formats = [
-                    '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M',
-                    '%d/%m/%Y %H:%M:%S', '%d/%m/%Y %H:%M'
+                    "%Y-%m-%dT%H:%M:%S",
+                    "%Y-%m-%d %H:%M:%S",
+                    "%Y-%m-%d %H:%M",
+                    "%d/%m/%Y %H:%M:%S",
+                    "%d/%m/%Y %H:%M",
                 ]
 
                 for fmt in date_formats:
@@ -114,7 +121,7 @@ def test_search_logic():
                             continue
 
         # Determinar qué tipo de búsqueda se aplicará
-        if search_type == 'dates' or (search_type == 'auto' and is_date_search):
+        if search_type == "dates" or (search_type == "auto" and is_date_search):
             actual = "Solo búsqueda por fechas"
             if year_only:
                 actual += f" (año {year_only})"
@@ -124,9 +131,9 @@ def test_search_logic():
                 actual += f" (fecha {parsed_date})"
             if parsed_datetime:
                 actual += f" (datetime {parsed_datetime})"
-        elif search_type == 'text' or (search_type == 'auto' and not is_date_search):
+        elif search_type == "text" or (search_type == "auto" and not is_date_search):
             actual = "Solo búsqueda por texto e ID"
-        elif search_type == 'all':
+        elif search_type == "all":
             actual = "Búsqueda en todos los campos (texto, ID, y fechas)"
         else:
             actual = "Tipo de búsqueda desconocido"
@@ -134,7 +141,7 @@ def test_search_logic():
         print(f"   Actual:   {actual}")
 
         # Verificar si el resultado es el esperado
-        if case['expected'] in actual or actual in case['expected']:
+        if case["expected"] in actual or actual in case["expected"]:
             print("   ✅ PASS")
         else:
             print("   ❌ FAIL")
@@ -160,6 +167,7 @@ def test_search_logic():
     print("")
     print("GET /api/v1/animals/?search=2025&search_type=all")
     print("   → Busca en todos los campos (comportamiento anterior)")
+
 
 if __name__ == "__main__":
     test_search_logic()

@@ -53,4 +53,3 @@ export type ActivityActionFilter = ActivityAction | 'all';
 export type ActivitySeverityFilter = ActivitySeverity | 'all';
 
 export const PASSWORD_POLICY_HELP = 'La nueva contraseña debe tener mínimo 8 caracteres e incluir al menos 1 mayúscula y 1 minúscula. Ejemplo: Abcdefgh';
-

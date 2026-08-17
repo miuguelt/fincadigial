@@ -268,7 +268,7 @@ const CropActivitiesPage: React.FC = () => {
                           className="relative"
                         >
                           {/* Punto en la línea */}
-                          <div className={`absolute -left-3 top-4 w-4 h-4 rounded-full border-2 border-background flex items-center justify-center text-[10px] ${cfg.color}`}>
+                          <div className={`absolute -left-3 top-4 w-4 h-4 rounded-full border-2 border-background flex items-center justify-center text-[11px] ${cfg.color}`}>
                             {cfg.emoji}
                           </div>
 

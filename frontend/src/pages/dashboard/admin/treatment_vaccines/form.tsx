@@ -95,8 +95,8 @@ export default function TreatmentVaccineForm() {
       </div>
       <div>
         <label>Fecha de expiración</label>
-        <input 
-          type="date" 
+        <input
+          type="date"
           {...register('expiry_date', {
             validate: value => {
               if (!value) return true; // Es opcional
@@ -105,14 +105,14 @@ export default function TreatmentVaccineForm() {
               todayDate.setHours(0, 0, 0, 0);
               return expiryDate >= todayDate || 'La fecha de expiración no puede ser anterior a hoy';
             }
-          })} 
+          })}
         />
         {renderError(errors.expiry_date)}
       </div>
       <div>
         <label>Fecha programada</label>
-        <input 
-          type="date" 
+        <input
+          type="date"
           {...register('scheduled_date', {
             validate: value => {
               if (!value) return true; // Es opcional
@@ -121,14 +121,14 @@ export default function TreatmentVaccineForm() {
               todayDate.setHours(0, 0, 0, 0);
               return scheduledDate >= todayDate || 'La fecha programada no puede ser anterior a hoy';
             }
-          })} 
+          })}
         />
         {renderError(errors.scheduled_date)}
       </div>
       <div>
         <label>Fecha de administración</label>
-        <input 
-          type="date" 
+        <input
+          type="date"
           max={today}
           {...register('administered_date', {
             validate: value => {
@@ -138,7 +138,7 @@ export default function TreatmentVaccineForm() {
               todayDate.setHours(0, 0, 0, 0);
               return administeredDate <= todayDate || 'La fecha de administración no puede ser futura';
             }
-          })} 
+          })}
         />
         {renderError(errors.administered_date)}
       </div>

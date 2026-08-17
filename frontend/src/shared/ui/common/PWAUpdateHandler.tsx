@@ -55,7 +55,7 @@ export function PWAUpdateHandler() {
         for (const registration of registrations) {
           await registration.update();
         }
-        
+
         // Esperar un momento y recargar
         setTimeout(() => {
           window.location.reload();
@@ -109,7 +109,7 @@ export function PWAUpdateHandler() {
         </CardHeader>
         <CardContent className="pt-0">
           <div className="flex space-x-2">
-            <Button 
+            <Button
               onClick={handleUpdate}
               disabled={isUpdating}
               size="sm"
@@ -122,7 +122,7 @@ export function PWAUpdateHandler() {
               )}
               {isUpdating ? 'Actualizando...' : 'Actualizar Ahora'}
             </Button>
-            <Button 
+            <Button
               onClick={handleSkipUpdate}
               variant="outline"
               size="sm"

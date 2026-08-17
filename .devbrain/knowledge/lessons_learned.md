@@ -72,4 +72,3 @@ Refactorización de variable en toda la infraestructura de orquestación DevBrai
 > [!IMPORTANT]
 > **REGLA DE SCRIPTING Y AUTOMATIZACIÓN POWERSHELL:**
 > **Nunca utilizar la variable $args** para el pase de parámetros manuales en funciones o la definición local de arrays de comandos. Es una variable reservada y su reasignación causa fallos en cascada de red y subprocesos. Utilizar siempre alternativas explícitas como $CommandArgs o $procArgs.
-

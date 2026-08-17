@@ -93,7 +93,7 @@ if ($envPort -eq $null) {
     } else {
         Write-Host "✅ VITE_API_BASE_URL está sincronizado con el puerto del backend" -ForegroundColor Green
     }
-    
+
     if ($viteProxyTarget -ne $null -and $viteProxyTarget -ne $envPort) {
         Write-Host "⚠️ ADVERTENCIA: vite.config.ts tiene un fallback quemado ($viteProxyTarget) que difiere de .env ($envPort)." -ForegroundColor Yellow
     }

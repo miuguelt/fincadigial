@@ -253,7 +253,7 @@ export function AnimalModal({
 function DetailField({ label, value }: { label: string; value: any }) {
   return (
     <div className="space-y-1.5">
-      <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/70">
+      <div className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground/70">
         {label}
       </div>
       <div className="text-sm font-semibold text-foreground">

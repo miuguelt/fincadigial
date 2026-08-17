@@ -109,7 +109,7 @@ const FieldsPage = lazy(() => import('@/pages/dashboard/admin/analytics/FieldsPa
 const CustomReports = lazy(() => import('@/pages/dashboard/admin/analytics/CustomReports'));
 const ICADashboard = lazy(() => import('@/pages/dashboard/admin/analytics/ICADashboard'));
 const FinancialDashboard = lazy(() => import('@/pages/dashboard/admin/financial/index'));
-const MultiFincaAnalytics = lazy(() => import('@/pages/dashboard/admin/analytics/MultiFincaAnalytics'));
+const MultiFincaAnalytics = lazy(() => import('@/pages/dashboard/admin/analytics/multi-finca'));
 
 // Auth & Loading
 import { useAuth } from '@/features/auth/model/useAuth';

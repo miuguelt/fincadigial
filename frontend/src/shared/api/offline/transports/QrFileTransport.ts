@@ -25,4 +25,3 @@ export class QrFileTransport implements TransportAdapter {
     return payload as TransportPacket;
   }
 }
-

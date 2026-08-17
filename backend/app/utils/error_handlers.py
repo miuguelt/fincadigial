@@ -15,13 +15,14 @@ logger = logging.getLogger(__name__)
 
 def _rollback_db_session():
     try:
-        db = flask.current_app.extensions.get('sqlalchemy')
+        db = flask.current_app.extensions.get("sqlalchemy")
         if not db:
             from app import db
         if db:
             db.session.rollback()
     except Exception as rollback_error:
         logger.error(f"Error during rollback: {rollback_error}")
+
 
 def register_error_handlers(app):
     """Registrar todos los manejadores de error centralizados"""
@@ -32,20 +33,20 @@ def register_error_handlers(app):
     def bad_request(error):
         logger.warning(f"Bad flask.request: {error}")
         return APIResponse.error(
-            message='Solicitud incorrecta',
+            message="Solicitud incorrecta",
             status_code=400,
-            error_code='BAD_REQUEST',
-            details={'error': str(error)}
+            error_code="BAD_REQUEST",
+            details={"error": str(error)},
         )
 
     @app.errorhandler(401)
     def unauthorized(error):
         logger.warning(f"Unauthorized access attempt: {error}")
         return APIResponse.error(
-            message='No autorizado',
+            message="No autorizado",
             status_code=401,
-            error_code='UNAUTHORIZED',
-            details={'error': 'Credenciales inválidas o token expirado'}
+            error_code="UNAUTHORIZED",
+            details={"error": "Credenciales inválidas o token expirado"},
         )
 
     @app.errorhandler(403)
@@ -53,14 +54,14 @@ def register_error_handlers(app):
         logger.warning(f"Forbidden access attempt: {error}")
         log_suspicious_activity(
             "Intento de acceso a recurso prohibido",
-            severity='MEDIUM',
-            additional_data={'error': str(error)}
+            severity="MEDIUM",
+            additional_data={"error": str(error)},
         )
         return APIResponse.error(
-            message='Acceso prohibido',
+            message="Acceso prohibido",
             status_code=403,
-            error_code='FORBIDDEN',
-            details={'error': 'No tienes permisos para acceder a este recurso'}
+            error_code="FORBIDDEN",
+            details={"error": "No tienes permisos para acceder a este recurso"},
         )
 
     @app.errorhandler(404)
@@ -69,10 +70,14 @@ def register_error_handlers(app):
         method = flask.request.method
         logger.info(f"Resource not found: {method} {path} - {error}")
         return APIResponse.error(
-            message='Recurso no encontrado',
+            message="Recurso no encontrado",
             status_code=404,
-            error_code='NOT_FOUND',
-            details={'error': 'El recurso solicitado no existe', 'path': path, 'method': method}
+            error_code="NOT_FOUND",
+            details={
+                "error": "El recurso solicitado no existe",
+                "path": path,
+                "method": method,
+            },
         )
 
     @app.errorhandler(405)
@@ -81,20 +86,26 @@ def register_error_handlers(app):
         method = flask.request.method
         logger.warning(f"Method not allowed: {method} {path} - {error}")
         return APIResponse.error(
-            message='Método no permitido',
+            message="Método no permitido",
             status_code=405,
-            error_code='METHOD_NOT_ALLOWED',
-            details={'error': 'El método HTTP usado no está permitido para este endpoint', 'path': path, 'method': method}
+            error_code="METHOD_NOT_ALLOWED",
+            details={
+                "error": "El método HTTP usado no está permitido para este endpoint",
+                "path": path,
+                "method": method,
+            },
         )
 
     @app.errorhandler(409)
     def conflict(error):
         logger.warning(f"Data conflict: {error}")
         return APIResponse.error(
-            message='Conflicto de datos',
+            message="Conflicto de datos",
             status_code=409,
-            error_code='CONFLICT',
-            details={'error': 'Los datos enviados entran en conflicto con el estado actual'}
+            error_code="CONFLICT",
+            details={
+                "error": "Los datos enviados entran en conflicto con el estado actual"
+            },
         )
 
     @app.errorhandler(StaleDataError)
@@ -105,40 +116,42 @@ def register_error_handlers(app):
         _rollback_db_session()
 
         return APIResponse.error(
-            message='Conflicto de edición: El registro fue modificado por otro usuario o dispositivo',
+            message="Conflicto de edición: El registro fue modificado por otro usuario o dispositivo",
             status_code=409,
-            error_code='STALE_DATA',
+            error_code="STALE_DATA",
             details={
-                'error': 'Version mismatch. Please refresh and try again.',
-                'conflict_type': 'optimistic_locking'
-            }
+                "error": "Version mismatch. Please refresh and try again.",
+                "conflict_type": "optimistic_locking",
+            },
         )
 
     @app.errorhandler(413)
     def request_entity_too_large(error):
         logger.warning(f"Request too large: {error}")
         log_suspicious_activity(
-            "Intento de envío de payload excesivamente grande",
-            severity='MEDIUM'
+            "Intento de envío de payload excesivamente grande", severity="MEDIUM"
         )
         return APIResponse.error(
-            message='Solicitud demasiado grande',
+            message="Solicitud demasiado grande",
             status_code=413,
-            error_code='PAYLOAD_TOO_LARGE',
-            details={'error': 'El tamaño de los datos enviados excede el límite permitido'}
+            error_code="PAYLOAD_TOO_LARGE",
+            details={
+                "error": "El tamaño de los datos enviados excede el límite permitido"
+            },
         )
 
     @app.errorhandler(422)
     def unprocessable_entity(error):
         logger.warning(f"Validation error: {error}")
         return APIResponse.error(
-            message='Error de validación',
+            message="Error de validación",
             status_code=422,
-            error_code='VALIDATION_ERROR',
-            details={'error': 'Los datos enviados no pasaron la validación'}
+            error_code="VALIDATION_ERROR",
+            details={"error": "Los datos enviados no pasaron la validación"},
         )
 
     from app.models.base_model import ValidationError
+
     @app.errorhandler(ValidationError)
     def handle_validation_error(error):
         """Maneja errores de validación de BaseModel."""
@@ -146,7 +159,7 @@ def register_error_handlers(app):
         return APIResponse.validation_error(
             errors=error.errors or [error.message],
             message=error.message,
-            status_code=422
+            status_code=422,
         )
 
     @app.errorhandler(429)
@@ -154,17 +167,17 @@ def register_error_handlers(app):
         logger.warning(f"Rate limit exceeded: {error}")
         log_suspicious_activity(
             "Límite de tasa excedido",
-            severity='HIGH',
-            additional_data={'error': str(error)}
+            severity="HIGH",
+            additional_data={"error": str(error)},
         )
         return APIResponse.error(
-            message='Demasiadas solicitudes',
+            message="Demasiadas solicitudes",
             status_code=429,
-            error_code='RATE_LIMIT_EXCEEDED',
+            error_code="RATE_LIMIT_EXCEEDED",
             details={
-                'error': 'Has excedido el límite de solicitudes permitidas',
-                'retry_after': getattr(error, 'retry_after', 60)
-            }
+                "error": "Has excedido el límite de solicitudes permitidas",
+                "retry_after": getattr(error, "retry_after", 60),
+            },
         )
 
     @app.errorhandler(500)
@@ -175,40 +188,40 @@ def register_error_handlers(app):
         _rollback_db_session()
 
         return APIResponse.error(
-            message='Error interno del servidor',
+            message="Error interno del servidor",
             status_code=500,
-            error_code='INTERNAL_ERROR',
-            details={'error': 'Ha ocurrido un error inesperado en el servidor'}
+            error_code="INTERNAL_ERROR",
+            details={"error": "Ha ocurrido un error inesperado en el servidor"},
         )
 
     @app.errorhandler(502)
     def bad_gateway(error):
         logger.error(f"Bad gateway: {error}")
         return APIResponse.error(
-            message='Error de gateway',
+            message="Error de gateway",
             status_code=502,
-            error_code='BAD_GATEWAY',
-            details={'error': 'Error de comunicación con servicios externos'}
+            error_code="BAD_GATEWAY",
+            details={"error": "Error de comunicación con servicios externos"},
         )
 
     @app.errorhandler(503)
     def service_unavailable(error):
         logger.error(f"Service unavailable: {error}")
         return APIResponse.error(
-            message='Servicio no disponible',
+            message="Servicio no disponible",
             status_code=503,
-            error_code='SERVICE_UNAVAILABLE',
-            details={'error': 'El servicio está temporalmente no disponible'}
+            error_code="SERVICE_UNAVAILABLE",
+            details={"error": "El servicio está temporalmente no disponible"},
         )
 
     @app.errorhandler(504)
     def gateway_timeout(error):
         logger.error(f"Gateway timeout: {error}")
         return APIResponse.error(
-            message='Timeout del gateway',
+            message="Timeout del gateway",
             status_code=504,
-            error_code='GATEWAY_TIMEOUT',
-            details={'error': 'El servidor tardó demasiado en responder'}
+            error_code="GATEWAY_TIMEOUT",
+            details={"error": "El servidor tardó demasiado en responder"},
         )
 
     @app.errorhandler(IntegrityError)
@@ -220,24 +233,31 @@ def register_error_handlers(app):
         # Analizar el tipo de error de integridad
         error_message = str(error.orig)
 
-        if 'UNIQUE constraint failed' in error_message or 'Duplicate entry' in error_message:
-            message = 'Ya existe un registro con esos datos'
-            code = 'duplicate_entry'
-        elif 'FOREIGN KEY constraint failed' in error_message:
-            message = 'No se puede completar la operación: datos relacionados no válidos'
-            code = 'foreign_key_violation'
-        elif 'NOT NULL constraint failed' in error_message:
-            message = 'Faltan datos requeridos'
-            code = 'missing_required_data'
+        if (
+            "UNIQUE constraint failed" in error_message
+            or "Duplicate entry" in error_message
+        ):
+            message = "Ya existe un registro con esos datos"
+            code = "duplicate_entry"
+        elif "FOREIGN KEY constraint failed" in error_message:
+            message = (
+                "No se puede completar la operación: datos relacionados no válidos"
+            )
+            code = "foreign_key_violation"
+        elif "NOT NULL constraint failed" in error_message:
+            message = "Faltan datos requeridos"
+            code = "missing_required_data"
         else:
-            message = 'Error de integridad en los datos'
-            code = 'integrity_error'
+            message = "Error de integridad en los datos"
+            code = "integrity_error"
 
         return APIResponse.error(
             message=message,
             status_code=409,
             error_code=code.upper(),
-            details={'error': 'Los datos no cumplen con las restricciones de la base de datos'}
+            details={
+                "error": "Los datos no cumplen con las restricciones de la base de datos"
+            },
         )
 
     @app.errorhandler(OperationalError)
@@ -248,22 +268,24 @@ def register_error_handlers(app):
             mark_database_unavailable,
         )
 
-        mark_database_unavailable(error, retry_after_seconds=DEFAULT_RETRY_AFTER_SECONDS)
+        mark_database_unavailable(
+            error, retry_after_seconds=DEFAULT_RETRY_AFTER_SECONDS
+        )
         _rollback_db_session()
 
         logger.error(
             "Database unavailable: %s",
             error,
-            exc_info=app.config.get('DEBUG', False),
+            exc_info=app.config.get("DEBUG", False),
         )
 
         body, status = APIResponse.error(
-            message='Base de datos temporalmente no disponible',
+            message="Base de datos temporalmente no disponible",
             status_code=503,
-            error_code='DATABASE_UNAVAILABLE',
+            error_code="DATABASE_UNAVAILABLE",
             details=database_unavailable_details(),
         )
-        return body, status, {'Retry-After': str(DEFAULT_RETRY_AFTER_SECONDS)}
+        return body, status, {"Retry-After": str(DEFAULT_RETRY_AFTER_SECONDS)}
 
     @app.errorhandler(SQLAlchemyError)
     def handle_sqlalchemy_error(error):
@@ -272,10 +294,10 @@ def register_error_handlers(app):
         _rollback_db_session()
 
         return APIResponse.error(
-            message='Error de base de datos',
+            message="Error de base de datos",
             status_code=500,
-            error_code='DATABASE_ERROR',
-            details={'error': 'Ha ocurrido un error al acceder a la base de datos'}
+            error_code="DATABASE_ERROR",
+            details={"error": "Ha ocurrido un error al acceder a la base de datos"},
         )
 
     @app.errorhandler(CSRFError)
@@ -284,15 +306,16 @@ def register_error_handlers(app):
         # Log del evento JWT/CSRF para seguridad
         try:
             from app.utils.security_logger import log_jwt_token_event
-            log_jwt_token_event('ERROR', token_info={'csrf_error': str(error)})
+
+            log_jwt_token_event("ERROR", token_info={"csrf_error": str(error)})
         except Exception:
             pass
 
         return APIResponse.error(
-            message='CSRF token inválido o ausente',
+            message="CSRF token inválido o ausente",
             status_code=401,
-            error_code='CSRF_ERROR',
-            details={'error': str(error)}
+            error_code="CSRF_ERROR",
+            details={"error": str(error)},
         )
 
     @app.errorhandler(JWTExtendedException)
@@ -301,34 +324,38 @@ def register_error_handlers(app):
 
         # Log del evento JWT para seguridad
         from app.utils.security_logger import log_jwt_token_event
-        log_jwt_token_event('ERROR', token_info={'error': str(error)})
+
+        log_jwt_token_event("ERROR", token_info={"error": str(error)})
 
         return APIResponse.error(
-            message='Error de autenticación',
+            message="Error de autenticación",
             status_code=401,
-            error_code='JWT_ERROR',
-            details={'error': str(error)}
+            error_code="JWT_ERROR",
+            details={"error": str(error)},
         )
 
     @app.errorhandler(ValueError)
     def handle_value_error(error):
         logger.warning(f"Value error: {error}")
         return APIResponse.error(
-            message='Error en los datos',
+            message="Error en los datos",
             status_code=400,
-            error_code='VALUE_ERROR',
-            details={'error': str(error)}
+            error_code="VALUE_ERROR",
+            details={"error": str(error)},
         )
 
     @app.errorhandler(KeyError)
     def handle_key_error(error):
         import traceback
-        logger.error(f"❌ KeyError: Missing key {error} - Traceback: {traceback.format_exc()}")
+
+        logger.error(
+            f"❌ KeyError: Missing key {error} - Traceback: {traceback.format_exc()}"
+        )
         return APIResponse.error(
-            message='Datos incompletos',
+            message="Datos incompletos",
             status_code=400,
-            error_code='MISSING_FIELD',
-            details={'error': f'Falta el campo requerido: {str(error)}'}
+            error_code="MISSING_FIELD",
+            details={"error": f"Falta el campo requerido: {str(error)}"},
         )
 
     @app.errorhandler(Exception)
@@ -338,45 +365,48 @@ def register_error_handlers(app):
         # Si es un HTTPException no capturado por handlers específicos, respetar su status code
         if isinstance(error, HTTPException):
             status_code = error.code or 500
-            description = getattr(error, 'description', None) or 'Error HTTP'
-            name = getattr(error, 'name', None) or 'HTTP_ERROR'
+            description = getattr(error, "description", None) or "Error HTTP"
+            name = getattr(error, "name", None) or "HTTP_ERROR"
             return APIResponse.error(
                 message=description,
                 status_code=status_code,
-                error_code=name.upper().replace(' ', '_'),
+                error_code=name.upper().replace(" ", "_"),
                 details={
-                    'error': str(error),
-                    'path': flask.request.path if flask.request else None,
-                    'method': flask.request.method if flask.request else None,
-                }
+                    "error": str(error),
+                    "path": flask.request.path if flask.request else None,
+                    "method": flask.request.method if flask.request else None,
+                },
             )
 
         # Log como actividad sospechosa si no es un error HTTP conocido
         log_suspicious_activity(
             f"Excepción no manejada: {type(error).__name__}",
-            severity='HIGH',
-            additional_data={'error': str(error)}
+            severity="HIGH",
+            additional_data={"error": str(error)},
         )
 
         # En desarrollo, mostrar más detalles
-        if flask.current_app.config.get('DEBUG', False):
+        if flask.current_app.config.get("DEBUG", False):
             return APIResponse.error(
-                message='Error no manejado',
+                message="Error no manejado",
                 status_code=500,
-                error_code='UNHANDLED_EXCEPTION',
-                details={'error': str(error), 'type': type(error).__name__}
+                error_code="UNHANDLED_EXCEPTION",
+                details={"error": str(error), "type": type(error).__name__},
             )
         return APIResponse.error(
-            message='Error interno del servidor',
+            message="Error interno del servidor",
             status_code=500,
-            error_code='INTERNAL_ERROR',
-            details={'error': 'Ha ocurrido un error inesperado'}
+            error_code="INTERNAL_ERROR",
+            details={"error": "Ha ocurrido un error inesperado"},
         )
 
     # --- Manejadores de Excepciones Estandarizadas ---
     from app.utils.custom_exceptions import (
-        BusinessRuleException, ResourceNotFoundException,
-        ForbiddenException, UnauthorizedException, ConflictException
+        BusinessRuleException,
+        ResourceNotFoundException,
+        ForbiddenException,
+        UnauthorizedException,
+        ConflictException,
     )
 
     @app.errorhandler(BusinessRuleException)
@@ -386,7 +416,7 @@ def register_error_handlers(app):
             message=error.message,
             status_code=error.status_code,
             error_code=error.error_code,
-            details=error.details
+            details=error.details,
         )
 
     @app.errorhandler(ResourceNotFoundException)
@@ -395,43 +425,43 @@ def register_error_handlers(app):
         return APIResponse.error(
             message=error.message,
             status_code=404,
-            error_code='NOT_FOUND',
+            error_code="NOT_FOUND",
             details={
-                'resource_name': error.resource_name,
-                'resource_id': error.resource_id
-            }
+                "resource_name": error.resource_name,
+                "resource_id": error.resource_id,
+            },
         )
 
     @app.errorhandler(ForbiddenException)
     def handle_forbidden_exception(error):
         logger.warning(f"Forbidden access: {error.message}")
         return APIResponse.error(
-            message=error.message,
-            status_code=403,
-            error_code='FORBIDDEN'
+            message=error.message, status_code=403, error_code="FORBIDDEN"
         )
 
     @app.errorhandler(UnauthorizedException)
     def handle_unauthorized_exception(error):
         logger.warning(f"Unauthorized access: {error.message}")
         return APIResponse.error(
-            message=error.message,
-            status_code=401,
-            error_code='UNAUTHORIZED'
+            message=error.message, status_code=401, error_code="UNAUTHORIZED"
         )
 
     @app.errorhandler(ConflictException)
     def handle_conflict_exception(error):
         logger.warning(f"Conflict: {error.message}")
         return APIResponse.error(
-            message=error.message,
-            status_code=409,
-            error_code='CONFLICT'
+            message=error.message, status_code=409, error_code="CONFLICT"
         )
+
 
 def create_custom_abort(code, message, error_code=None, additional_data=None):
     """Función helper para crear abortos personalizados"""
     from app.utils.response_handler import APIResponse
-    details = additional_data or {}
-    return APIResponse.error(message=message, status_code=code, error_code=error_code or f'ERROR_{code}', details=details)
 
+    details = additional_data or {}
+    return APIResponse.error(
+        message=message,
+        status_code=code,
+        error_code=error_code or f"ERROR_{code}",
+        details=details,
+    )

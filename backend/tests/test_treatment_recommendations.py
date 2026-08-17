@@ -83,10 +83,13 @@ def test_recommendation_flow_generates_and_updates_controls(client, auth_headers
             headers=auth_headers,
         )
         assert delete_response.status_code == 200
-        assert client.get(
-            f"/api/v1/treatment-recommendations/{created['id']}",
-            headers=auth_headers,
-        ).status_code == 404
+        assert (
+            client.get(
+                f"/api/v1/treatment-recommendations/{created['id']}",
+                headers=auth_headers,
+            ).status_code
+            == 404
+        )
 
 
 def test_controls_are_placeholders_and_alert_rules_are_reused(

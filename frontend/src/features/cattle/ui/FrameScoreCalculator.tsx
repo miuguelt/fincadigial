@@ -179,7 +179,7 @@ const FrameScoreCalculator: React.FC = () => {
             </div>
           )}{" "}
         </AnimatePresence>{" "}
-        <div className="pt-4 text-[10px] text-muted-foreground text-center leading-relaxed italic">
+        <div className="pt-4 text-[11px] text-muted-foreground text-center leading-relaxed italic">
           {" "}
           * El Frame Score predice el tamaño adulto potencial del bovino
           basándose en la relación altura/edad.{" "}

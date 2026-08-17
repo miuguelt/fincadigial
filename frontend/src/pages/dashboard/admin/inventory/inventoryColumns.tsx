@@ -18,7 +18,7 @@ export const inventoryColumns: CRUDColumn<InventoryLotResponse>[] = [
 					<span className="font-bold text-foreground inline-flex max-w-full items-center gap-1.5 fit-clamp">
 						<span>{isVaccine ? "💉" : "💊"}</span> {val}
 					</span>
-					<span className="mt-1 inline-flex w-fit text-[10px] uppercase font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">
+					<span className="mt-1 inline-flex w-fit text-[11px] uppercase font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">
 						{item.product_type}
 					</span>
 				</div>
@@ -62,13 +62,13 @@ export const inventoryColumns: CRUDColumn<InventoryLotResponse>[] = [
 					{val ? formatDateColombia(val) : "---"}
 				</span>
 				{item.is_expired ? (
-					<span className="text-[10px] text-destructive font-semibold">
+					<span className="text-[11px] text-destructive font-semibold">
 						Vencido
 					</span>
 				) : item.days_to_expiry !== undefined &&
 					item.days_to_expiry > 0 &&
 					item.days_to_expiry <= 30 ? (
-					<span className="text-[10px] text-warning font-medium">
+					<span className="text-[11px] text-warning font-medium">
 						Vence en {item.days_to_expiry} días
 					</span>
 				) : null}

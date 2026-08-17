@@ -24,7 +24,7 @@ const Sparkline: React.FC<SparklineProps> = ({
 }) => {
   if (!values.length) {
     return (
-      <div className={"text-[10px] text-muted-foreground " + (className || "")}>
+      <div className={"text-[11px] text-muted-foreground " + (className || "")}>
         —
       </div>
     );

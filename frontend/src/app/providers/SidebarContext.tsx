@@ -26,7 +26,7 @@ interface SidebarProviderProps {
 export const SidebarProvider: React.FC<SidebarProviderProps> = ({ children }) => {
   const [sidebarWidth, setSidebarWidth] = useState(288); // 18rem = 288px por defecto
   const [isResizing, setIsResizing] = useState(false);
-  
+
   const minWidth = 240; // 15rem mínimo
   const maxWidth = 400; // 25rem máximo
 

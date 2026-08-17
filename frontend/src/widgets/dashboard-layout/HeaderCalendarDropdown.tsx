@@ -111,7 +111,7 @@ export default function HeaderCalendarDropdown() {
 				>
 					<CalendarDays className="h-4 w-4" />
 					{todayEventCount > 0 && (
-						<span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-primary text-[9px] font-bold text-primary-foreground flex items-center justify-center shadow-sm">
+						<span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-primary text-[11px] font-bold text-primary-foreground flex items-center justify-center shadow-sm">
 							{todayEventCount > 9 ? "9+" : todayEventCount}
 						</span>
 					)}
@@ -125,7 +125,7 @@ export default function HeaderCalendarDropdown() {
 				<div className="p-4 border-b border-border/30">
 					<div className="flex items-center justify-between">
 						<h3 className="text-sm font-bold text-foreground">Calendario</h3>
-						<Badge variant="outline" className="text-[10px]">
+						<Badge variant="outline" className="text-[11px]">
 							{totalCount} eventos
 						</Badge>
 					</div>
@@ -180,7 +180,7 @@ export default function HeaderCalendarDropdown() {
 														{event.title}
 													</span>
 													<span
-														className="text-[9px] font-bold uppercase tracking-wider"
+														className="text-[11px] font-bold uppercase tracking-wider"
 														style={{ color: event.color }}
 													>
 														{cfg.label}

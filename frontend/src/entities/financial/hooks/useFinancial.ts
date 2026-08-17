@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { financialService, Transaction, FinancialSummary } from '../api/financial.service';
+import { financialService, isIncomeTransaction, Transaction, FinancialSummary } from '../api/financial.service';
 
 interface UseFinancialOptions {
   fincaId?: number;
@@ -11,7 +11,7 @@ interface UseFinancialOptions {
 
 export function useFinancial(options: UseFinancialOptions = {}) {
   const { fincaId, dateFrom, dateTo, category, autoFetch = true } = options;
-  
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [summary, setSummary] = useState<FinancialSummary | null>(null);
   const [loading, setLoading] = useState(false);
@@ -20,14 +20,14 @@ export function useFinancial(options: UseFinancialOptions = {}) {
   const fetchTransactions = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const params: Record<string, any> = {};
       if (fincaId) params.finca_id = fincaId;
       if (category) params.category = category;
       if (dateFrom) params.date_from = dateFrom;
       if (dateTo) params.date_to = dateTo;
-      
+
       const data = await financialService.getAll(params);
       setTransactions(data);
       return data;
@@ -41,7 +41,7 @@ export function useFinancial(options: UseFinancialOptions = {}) {
 
   const fetchSummary = useCallback(async () => {
     if (!fincaId) return;
-    
+
     try {
       const data = await financialService.getSummary(fincaId, dateFrom, dateTo);
       setSummary(data);
@@ -69,7 +69,7 @@ export function useFinancial(options: UseFinancialOptions = {}) {
   const getBalance = useCallback(() => {
     if (!transactions.length) return 0;
     return transactions.reduce((balance, t) => {
-      return t.transaction_type === 'Income' 
+      return isIncomeTransaction(t)
         ? balance + Number(t.amount)
         : balance - Number(t.amount);
     }, 0);

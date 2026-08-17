@@ -8,33 +8,51 @@ interface BreadcrumbItem {
 }
 
 const routeMap: Record<string, string> = {
-  '/admin': 'Admin',
+  '/admin': 'Administración',
   '/admin/dashboard': 'Panel',
   '/admin/animals': 'Animales',
   '/admin/fields': 'Potreros',
-  '/admin/reproduction': 'Reproducción',
+  '/admin/reproduction': 'Cría y Reproducción',
   '/admin/reproduction/fertility': 'Fertilidad',
-  '/admin/reproduction/sire-performance': 'Toros',
-  '/admin/treatments': 'Tratamientos',
+  '/admin/reproduction/sire-performance': 'Toros y Reproductores',
+  '/admin/treatments': 'Tratamientos e Insumos',
   '/admin/vaccinations': 'Vacunaciones',
   '/admin/inventory': 'Inventario',
-  '/admin/users': 'Usuarios',
+  '/admin/users': 'Personal de la Finca',
   '/admin/regulatory-reports': 'Reportes ICA',
-  '/admin/reports': 'Reportes',
+  '/admin/reports': 'Informes y Exportación',
   '/admin/analytics/reports': 'Reportes Personalizados',
   '/admin/analytics/ica-compliance': 'Cumplimiento ICA',
   '/apprentice/dashboard': 'Panel',
   '/operario/dashboard': 'Panel',
   '/instructor/dashboard': 'Panel',
   '/veterinario/dashboard': 'Panel',
+  '/campesino': 'Mi Espacio',
+  '/campesino/registro-operativo': 'Mi registro diario',
+  '/campesino/ganaderia': 'Ganadería operativa',
+  '/campesino/crop-plots': 'Cultivos y parcelas',
+  '/campesino/crop-activities': 'Labores de cultivo',
+  '/campesino/water-sources': 'Fuentes de agua',
+  '/campesino/climate-alerts': 'Alertas de clima',
+  '/campesino/weather': 'Clima y alertas',
+  '/campesino/market-offers': 'Mercado campesino',
+  '/campesino/technical-assistance': 'Asistencia técnica',
 };
+
+function formatSegment(name: string): string {
+  return name
+    .split(/[-_]/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+}
 
 export default function Breadcrumbs() {
   const location = useLocation();
 
   const getBreadcrumbs = (): BreadcrumbItem[] => {
     const pathnames = location.pathname.split('/').filter(Boolean);
-    
+
     const breadcrumbs: BreadcrumbItem[] = [
       { label: 'Inicio', path: '/dashboard' }
     ];
@@ -42,7 +60,7 @@ export default function Breadcrumbs() {
     let currentPath = '';
     pathnames.forEach((name) => {
       currentPath += `/${name}`;
-      const label = routeMap[currentPath] || name.charAt(0).toUpperCase() + name.slice(1);
+      const label = routeMap[currentPath] || formatSegment(name);
       breadcrumbs.push({ label, path: currentPath });
     });
 

@@ -136,7 +136,9 @@ export const sidebarItems: SidebarItemConfig[] = [
     roles: TechnicalRoles,
     children: [
       {
-        title: "Vista Panorámica",
+        // El mismo nombre que el título de la pantalla: si el menú dice una cosa
+        // y el encabezado otra, no se sabe si se llegó adonde se hizo clic.
+        title: "Mis fincas",
         icon: <IconWorld size={20} />,
         path: "analytics/multi-finca",
         activePaths: ["analytics/multi-finca"],

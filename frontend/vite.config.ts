@@ -171,7 +171,7 @@ export default defineConfig(({ command, mode }) => {
       host: '0.0.0.0',
       port: 3005,
       strictPort: true,
-      cors: true, 
+      cors: true,
       hmr: {
         // Let Vite infer protocol/host/port from the actual dev server URL.
         // Hardcoding localhost + configured port breaks HMR when npm/CLI starts Vite on a fallback port.
@@ -180,7 +180,7 @@ export default defineConfig(({ command, mode }) => {
       watch: {
         // Desactivado por defecto en Windows local para evitar escaneos constantes de disco y CPU altos tras cambios.
         // Habilitar con VITE_USE_POLLING=true solo si se ejecuta dentro de WSL2 con volúmenes montados NTFS.
-        usePolling: env.VITE_USE_POLLING === 'true', 
+        usePolling: env.VITE_USE_POLLING === 'true',
         interval: 100,
         ignored: ['**/node_modules/**', '**/dist/**'],
       },
@@ -190,7 +190,7 @@ export default defineConfig(({ command, mode }) => {
           changeOrigin: true,
           secure: false,
           // Optimización para SSE y conexiones largas
-          timeout: 0, 
+          timeout: 0,
           proxyTimeout: 0,
           headers: {
             Connection: 'keep-alive',
@@ -204,7 +204,7 @@ export default defineConfig(({ command, mode }) => {
             proxy.on('proxyReq', (proxyReq, req) => {
               const origin = req.headers.origin || (disableHttps ? 'http://localhost:3005' : 'https://localhost:3005');
               proxyReq.setHeader('Origin', origin);
-              
+
               // Deshabilitar buffering para SSE
               if (req.url?.includes('sse')) {
                 proxyReq.setHeader('Cache-Control', 'no-cache');

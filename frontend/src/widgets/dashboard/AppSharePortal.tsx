@@ -103,7 +103,7 @@ export const AppSharePortal: React.FC = () => {
                   {accessUrl ? <QRCodeSVG value={accessUrl} size={128} includeMargin /> : <QrCode size={64} />}
                 </div>
                 <div className="text-center">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">
+                  <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-1">
                     Escanea para abrir este enlace
                   </p>
                   <code className="text-xs font-mono bg-card px-3 py-1 rounded-full border border-border/50 text-success">
@@ -126,7 +126,7 @@ export const AppSharePortal: React.FC = () => {
               </div>
             ))}
           </div>
-          <p className="text-[10px] text-muted-foreground font-medium">
+          <p className="text-[11px] text-muted-foreground font-medium">
             <span className="text-success font-bold">3 dispositivos</span> se
             han sincronizado hoy vía Mesh en esta zona.
           </p>

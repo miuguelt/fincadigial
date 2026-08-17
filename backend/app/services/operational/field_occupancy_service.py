@@ -18,7 +18,9 @@ from app.models.fields import Fields, LandStatus
 # Estados que el movimiento de ganado puede alternar por su cuenta.
 # Mantenimiento, Restringido y Dañado los pone una persona por un motivo que el
 # traslado no conoce, así que se respetan.
-AUTOMATIC_STATES = frozenset({LandStatus.Disponible, LandStatus.Ocupado, LandStatus.Activo})
+AUTOMATIC_STATES = frozenset(
+    {LandStatus.Disponible, LandStatus.Ocupado, LandStatus.Activo}
+)
 
 
 def live_animal_counts(field_ids: list[int]) -> dict[int, int]:
@@ -55,7 +57,10 @@ def _had_livestock_on(field_id: int, on_date: date) -> bool:
             AnimalFields.field_id == field_id,
             AnimalFields.is_deleted == False,  # noqa: E712
             AnimalFields.assignment_date <= on_date,
-            or_(AnimalFields.removal_date.is_(None), AnimalFields.removal_date >= on_date),
+            or_(
+                AnimalFields.removal_date.is_(None),
+                AnimalFields.removal_date >= on_date,
+            ),
         )
         .exists()
     ).scalar()
@@ -65,15 +70,17 @@ def _summary(field: Fields, animal_count: int) -> dict:
     """Datos que la tarjeta del potrero necesita para repintarse sin recargar."""
     field._prefetched_animal_count = animal_count
     return {
-        'id': field.id,
-        'name': field.name,
-        'animal_count': animal_count,
-        'state': field.state.value if field.state else None,
-        'last_grazing_date': field.last_grazing_date.isoformat() if field.last_grazing_date else None,
-        'is_grazing_ready': field.is_grazing_ready,
-        'rest_days_remaining': field.rest_days_remaining,
-        'capacity_num': field.capacity_num,
-        'occupancy_rate': field.occupancy_rate,
+        "id": field.id,
+        "name": field.name,
+        "animal_count": animal_count,
+        "state": field.state.value if field.state else None,
+        "last_grazing_date": field.last_grazing_date.isoformat()
+        if field.last_grazing_date
+        else None,
+        "is_grazing_ready": field.is_grazing_ready,
+        "rest_days_remaining": field.rest_days_remaining,
+        "capacity_num": field.capacity_num,
+        "occupancy_rate": field.occupancy_rate,
     }
 
 

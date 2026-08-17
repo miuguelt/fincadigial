@@ -8,7 +8,7 @@ import { SectionCard, InfoField, modalStyles } from '@/shared/ui/common/ModalSty
 import { getStatusBadgeClass } from '@/shared/utils/badgeStyles';
 import { AnimalLink } from '@/entities/animal/ui';
 import { parseDateOnlyLocal } from '../controlPage.utils';
-import { 
+import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar
 } from 'recharts';
@@ -99,7 +99,7 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
 
   return (
     <div className="flex flex-col gap-4 py-1 sm:gap-6 sm:px-1">
-      
+
       {/* Resumen del Control Actual */}
       <div className="flex flex-col gap-3 rounded-xl border bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
         <div className="flex min-w-0 items-center gap-3">
@@ -150,7 +150,7 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
                   <InfoField label="Altura Actual" value={item.height != null ? `${Number(item.height).toFixed(1)} m` : '-'} valueSize="xlarge" />
                 </div>
               </SectionCard>
-              
+
               <details className="rounded-xl border border-border bg-muted/20">
                 <summary className="cursor-pointer px-4 py-3 text-sm font-bold">Datos del sistema</summary>
                 <div className="grid grid-cols-1 gap-4 border-t border-border p-4 min-[380px]:grid-cols-2">
@@ -165,7 +165,7 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
         {/* CONTENIDO 2: HISTORIAL FISICO (PESO Y ALTURA + GRAFICO) */}
         <TabsContent value="historial-fisico" className="mt-0 space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
+
             {/* Gráfico de Evolución */}
             <div className="lg:col-span-2 bg-background border rounded-lg p-4 shadow-sm min-h-[300px] flex flex-col">
               <h3 className="text-base font-bold text-foreground mb-4">📈 Evolución Física (Peso y Altura)</h3>
@@ -225,7 +225,7 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
         {/* CONTENIDO 3: HISTORIAL DE LECHE */}
         <TabsContent value="historial-leche" className="mt-0 space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
+
             {/* Gráfico de Leche */}
             <div className="lg:col-span-2 bg-background border rounded-lg p-4 shadow-sm min-h-[300px] flex flex-col">
               <h3 className="text-base font-bold text-foreground mb-4">📊 Evolución de Producción (Litros)</h3>
@@ -266,7 +266,7 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
                         <div className="font-semibold text-muted-foreground">
                           {parseDateOnlyLocal(String(m.date))?.toLocaleDateString('es-CO') ?? '-'}
                         </div>
-                        <div className="text-[10px] text-muted-foreground">Sesión: {m.milking_session}</div>
+                        <div className="text-[11px] text-muted-foreground">Sesión: {m.milking_session}</div>
                       </div>
                       <div className="font-bold text-indigo-600 text-sm">
                         {m.liters ? `${Number(m.liters).toFixed(1)} Litros` : '0 L'}
@@ -282,7 +282,7 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
           </div>
         </TabsContent>
       </Tabs>
-      
+
     </div>
   );
 };

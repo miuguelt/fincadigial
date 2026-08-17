@@ -1,6 +1,6 @@
 # POLÍTICA DE TRATAMIENTO DE DATOS PERSONALES (HABEAS DATA)
 
-**Fecha de última actualización:** 10 de Agosto de 2026  
+**Fecha de última actualización:** 10 de Agosto de 2026
 **Cumplimiento Normativo:** Ley Estatutaria 1581 de 2012, Decreto 1377 de 2013 (República de Colombia) y Reglamento General de Protección de Datos (GDPR - UE 2016/679).
 
 ---

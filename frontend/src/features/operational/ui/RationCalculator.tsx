@@ -79,7 +79,7 @@ export const RationCalculator: React.FC = () => {
               <h1 className="text-sm font-black uppercase tracking-tight">
                 Calculadora de Raciones
               </h1>{" "}
-              <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">
+              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
                 Optimización de Insumos
               </p>{" "}
             </div>{" "}
@@ -94,7 +94,7 @@ export const RationCalculator: React.FC = () => {
           <button
             onClick={() => setMode("concentrate")}
             className={cn(
-              "flex-1 py-3 px-4 rounded-xl text-[10px] font-semibold text-sm transition-all",
+              "flex-1 py-3 px-4 rounded-xl text-[11px] font-semibold text-sm transition-all",
               calcType === "concentrate"
                 ? "bg-card shadow-md text-emerald-600"
                 : "text-muted-foreground hover:text-foreground",
@@ -106,7 +106,7 @@ export const RationCalculator: React.FC = () => {
           <button
             onClick={() => setMode("salt")}
             className={cn(
-              "flex-1 py-3 px-4 rounded-xl text-[10px] font-semibold text-sm transition-all",
+              "flex-1 py-3 px-4 rounded-xl text-[11px] font-semibold text-sm transition-all",
               calcType === "salt"
                 ? "bg-card shadow-md text-info"
                 : "text-muted-foreground hover:text-foreground",
@@ -126,7 +126,7 @@ export const RationCalculator: React.FC = () => {
               {/* Cantidad de Animales */}{" "}
               <div className="space-y-4">
                 {" "}
-                <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">
+                <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">
                   ¿Cuántos animales vas a alimentar?
                 </Label>{" "}
                 <div className="flex items-center justify-between gap-4">
@@ -161,7 +161,7 @@ export const RationCalculator: React.FC = () => {
               {/* Peso Promedio */}{" "}
               <div className="space-y-4">
                 {" "}
-                <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">
+                <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">
                   Peso promedio del animal (kg)
                 </Label>{" "}
                 <div className="relative group">
@@ -178,7 +178,7 @@ export const RationCalculator: React.FC = () => {
                     size="md"
                     className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-warning transition-colors"
                   />{" "}
-                  <span className="absolute right-6 top-1/2 -translate-y-1/2 font-black text-[10px] text-muted-foreground/70 uppercase">
+                  <span className="absolute right-6 top-1/2 -translate-y-1/2 font-black text-[11px] text-muted-foreground/70 uppercase">
                     Kg/Vaca
                   </span>{" "}
                 </div>{" "}
@@ -186,7 +186,7 @@ export const RationCalculator: React.FC = () => {
               {/* Parámetro de Calculo (Porcentaje o Gramos) */}{" "}
               <div className="space-y-4">
                 {" "}
-                <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">
+                <Label className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">
                   {" "}
                   {calcType === "concentrate"
                     ? "Porcentaje del peso vivo (%)"
@@ -209,7 +209,7 @@ export const RationCalculator: React.FC = () => {
                     size="md"
                     className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-emerald-500 transition-colors"
                   />{" "}
-                  <span className="absolute right-6 top-1/2 -translate-y-1/2 font-black text-[10px] text-muted-foreground/70 uppercase">
+                  <span className="absolute right-6 top-1/2 -translate-y-1/2 font-black text-[11px] text-muted-foreground/70 uppercase">
                     {" "}
                     {calcType === "concentrate" ? "%" : "g/Vaca"}{" "}
                   </span>{" "}
@@ -238,7 +238,7 @@ export const RationCalculator: React.FC = () => {
               </div>{" "}
               <div className="space-y-1 z-10">
                 {" "}
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-70">
+                <p className="text-[11px] font-black uppercase tracking-[0.3em] opacity-70">
                   Total a suministrar hoy
                 </p>{" "}
                 <h2 className="text-6xl font-black tracking-tighter tabular-nums">
@@ -253,7 +253,7 @@ export const RationCalculator: React.FC = () => {
                 {" "}
                 <div className="flex-1 bg-card/10 backdrop-blur-md rounded-lg p-4 border border-white/10">
                   {" "}
-                  <p className="text-[8px] font-black uppercase opacity-60">
+                  <p className="text-[11px] font-black uppercase opacity-60">
                     Peso Total Lote
                   </p>{" "}
                   <p className="text-lg font-black">
@@ -262,7 +262,7 @@ export const RationCalculator: React.FC = () => {
                 </div>{" "}
                 <div className="flex-1 bg-card/10 backdrop-blur-md rounded-lg p-4 border border-white/10">
                   {" "}
-                  <p className="text-[8px] font-black uppercase opacity-60">
+                  <p className="text-[11px] font-black uppercase opacity-60">
                     Bultos (40kg)
                   </p>{" "}
                   <p className="text-lg font-black">~{bagsCount}</p>{" "}
@@ -270,7 +270,7 @@ export const RationCalculator: React.FC = () => {
               </div>{" "}
               <Button
                 variant="ghost"
-                className="w-full h-10 rounded-lg bg-card/20 border-white/20 text-white font-black uppercase text-[10px] tracking-widest gap-2 hover:bg-card hover:text-emerald-700"
+                className="w-full h-10 rounded-lg bg-card/20 border-white/20 text-white font-black uppercase text-[11px] tracking-widest gap-2 hover:bg-card hover:text-emerald-700"
                 onClick={() =>
                   showToast("Cálculo registrado en el log de hoy", "success")
                 }
@@ -287,7 +287,7 @@ export const RationCalculator: React.FC = () => {
           <div className="flex items-center gap-2 px-1 text-muted-foreground">
             {" "}
             <IconPackage size="sm" />{" "}
-            <h2 className="text-[10px] font-black uppercase tracking-[0.25em]">
+            <h2 className="text-[11px] font-black uppercase tracking-[0.25em]">
               Stock en Bodega
             </h2>{" "}
           </div>{" "}
@@ -310,10 +310,10 @@ export const RationCalculator: React.FC = () => {
                   </div>{" "}
                   <div>
                     {" "}
-                    <p className="text-[10px] font-black uppercase text-foreground line-clamp-1">
+                    <p className="text-[11px] font-black uppercase text-foreground line-clamp-1">
                       {lot.product_name || "Insumo"}
                     </p>{" "}
-                    <p className="text-[9px] font-bold text-muted-foreground">
+                    <p className="text-[11px] font-bold text-muted-foreground">
                       Lote: {lot.lot_number || "S/N"}
                     </p>{" "}
                   </div>{" "}
@@ -323,7 +323,7 @@ export const RationCalculator: React.FC = () => {
                   <p className="text-sm font-black text-emerald-600">
                     {lot.quantity} {lot.unit || "uds"}
                   </p>{" "}
-                  <p className="text-[8px] font-bold text-muted-foreground uppercase">
+                  <p className="text-[11px] font-bold text-muted-foreground uppercase">
                     Disponible
                   </p>{" "}
                 </div>{" "}

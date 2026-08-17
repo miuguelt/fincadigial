@@ -22,23 +22,41 @@ class ActivityDailyAgg(BaseModel):
         ),
         db.Index("ix_activity_daily_agg_date", "date"),
         db.Index("ix_activity_daily_agg_actor_date", "actor_id", "date"),
-        db.Index("ix_activity_daily_agg_actor_date_entity", "actor_id", "date", "entity"),
+        db.Index(
+            "ix_activity_daily_agg_actor_date_entity", "actor_id", "date", "entity"
+        ),
         db.Index("ix_activity_daily_agg_finca_id", "finca_id"),
     )
 
-    id        = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    date      = db.Column(db.Date, nullable=False)
-    actor_id  = db.Column(db.Integer, nullable=False, default=0)
-    entity    = db.Column(db.String(50), nullable=False)
-    action    = db.Column(db.String(20), nullable=False)
-    severity  = db.Column(db.String(20), nullable=False, default="info")
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    date = db.Column(db.Date, nullable=False)
+    actor_id = db.Column(db.Integer, nullable=False, default=0)
+    entity = db.Column(db.String(50), nullable=False)
+    action = db.Column(db.String(20), nullable=False)
+    severity = db.Column(db.String(20), nullable=False, default="info")
     animal_id = db.Column(db.Integer, nullable=False, default=0)
-    count     = db.Column(db.Integer, nullable=False, default=0)
-    finca_id  = db.Column(db.Integer, db.ForeignKey('finca.id'), nullable=True)
+    count = db.Column(db.Integer, nullable=False, default=0)
+    finca_id = db.Column(db.Integer, db.ForeignKey("finca.id"), nullable=True)
 
     _namespace_fields = [
-        "id", "date", "actor_id", "entity", "action", "severity",
-        "animal_id", "count", "finca_id", "created_at", "updated_at",
+        "id",
+        "date",
+        "actor_id",
+        "entity",
+        "action",
+        "severity",
+        "animal_id",
+        "count",
+        "finca_id",
+        "created_at",
+        "updated_at",
     ]
-    _filterable_fields = ["date", "actor_id", "entity", "action", "severity", "animal_id", "finca_id"]
-
+    _filterable_fields = [
+        "date",
+        "actor_id",
+        "entity",
+        "action",
+        "severity",
+        "animal_id",
+        "finca_id",
+    ]
