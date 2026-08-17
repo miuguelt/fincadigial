@@ -1,4 +1,4 @@
-import  { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
@@ -8,28 +8,28 @@ import {
   ShieldCheck,
   Search,
   Download,
-  AlertTriangle,
-  CheckCircle2,
-  AlertCircle,
   FileText,
   Filter,
-  RefreshCw
+  RefreshCw,
+  Truck,
 } from 'lucide-react';
 import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import analyticsService from '@/features/reporting/api/analytics.service';
 import { useToast } from '@/app/providers/ToastContext';
 import { CSVLink } from 'react-csv';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { cn } from '@/shared/ui/cn.ts';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
+import { GSMIAssistantModal } from '@/widgets/regulatory';
+import { getICAStatusBadge, getICAStatusIcon } from './components/ICAStatus';
+import { exportICACompliancePdf } from './components/icaReportPdf';
 
 export default function ICADashboard() {
   const { goTo } = useRoleNavigation();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
+  const [showGSMIModal, setShowGSMIModal] = useState(false);
   const [data, setData] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'red' | 'yellow' | 'green'>('all');
@@ -51,24 +51,6 @@ export default function ICADashboard() {
     loadData();
   }, [loadData]);
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'green': return <CheckCircle2 className="w-5 h-5 text-emerald-500" />;
-      case 'yellow': return <AlertTriangle className="w-5 h-5 text-warning" />;
-      case 'red': return <AlertCircle className="w-5 h-5 text-destructive" />;
-      default: return null;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'green': return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 font-black uppercase text-[11px]">Al Día</Badge>;
-      case 'yellow': return <Badge className="bg-warning/10 text-warning border-warning/20 font-black uppercase text-[11px]">Revisar</Badge>;
-      case 'red': return <Badge className="bg-destructive/10 text-destructive border-destructive/20 font-black uppercase text-[11px]">Vencido</Badge>;
-      default: return null;
-    }
-  };
-
   const filteredAnimals = useMemo(() => {
     return data?.animals?.filter((animal: any) => {
       const matchesSearch = animal.record.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -81,75 +63,7 @@ export default function ICADashboard() {
   const exportToPDF = () => {
     setIsExporting(true);
     try {
-      const doc = new jsPDF() as any;
-
-      // Header decorativo
-      doc.setFillColor(31, 41, 55);
-      doc.rect(0, 0, 210, 40, 'F');
-
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(22);
-      doc.setFont('helvetica', 'bold');
-      doc.text('REPORTE DE CUMPLIMIENTO SANITARIO', 20, 25);
-
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Generado: ${new Date().toLocaleString('es-CO')}`, 20, 32);
-      doc.text('Finca VillaLuz - Sistema de Gestión Premium', 140, 32);
-
-      // Resumen de estado
-      doc.setTextColor(31, 41, 55);
-      doc.setFontSize(14);
-      doc.text('Resumen del Ganado', 20, 55);
-
-      const stats = [
-        ['Total Animales', String(data.total)],
-        ['Al Día (Cumplimiento)', `${data.counts.green} (${(data.counts.green/data.total*100).toFixed(1)}%)`],
-        ['Próximos a Vencer', String(data.counts.yellow)],
-        ['Vencidos / Críticos', String(data.counts.red)]
-      ];
-
-      autoTable(doc, {
-        startY: 60,
-        head: [['Métrica', 'Valor']],
-        body: stats,
-        theme: 'striped',
-        headStyles: { fillColor: [79, 70, 229] }
-      });
-
-      // Detalle por animal
-      doc.text('Detalle de Vacunación por Animal', 20, doc.lastAutoTable.finalY + 15);
-
-      const tableData = filteredAnimals.map((a: any) => [
-        a.record,
-        a.name || '---',
-        a.overall === 'green' ? 'AL DÍA' : a.overall === 'yellow' ? 'REVISAR' : 'VENCIDO',
-        a.checks.aftosa.status === 'ok' ? 'OK' : a.checks.aftosa.days + 'd',
-        a.checks.brucelosis.status === 'ok' ? 'OK' : a.checks.brucelosis.days + 'd',
-        a.checks.clostridial.status === 'ok' ? 'OK' : a.checks.clostridial.days + 'd',
-        a.checks.desparasitacion.status === 'ok' ? 'OK' : a.checks.desparasitacion.days + 'd'
-      ]);
-
-      autoTable(doc, {
-        startY: doc.lastAutoTable.finalY + 20,
-        head: [['ID', 'Nombre', 'Estado', 'Aftosa', 'Brucel.', 'Clostrid.', 'Despar.']],
-        body: tableData,
-        theme: 'grid',
-        headStyles: { fillColor: [31, 41, 55] },
-        columnStyles: {
-          2: { fontStyle: 'bold' }
-        },
-        didParseCell: (data: any) => {
-          if (data.section === 'body' && data.column.index === 2) {
-            const val = data.cell.raw;
-            if (val === 'AL DÍA') data.cell.styles.textColor = [16, 185, 129];
-            if (val === 'REVISAR') data.cell.styles.textColor = [245, 158, 11];
-            if (val === 'VENCIDO') data.cell.styles.textColor = [239, 68, 68];
-          }
-        }
-      });
-
-      doc.save(`reporte-cumplimiento-villaluz-${new Date().toISOString().split('T')[0]}.pdf`);
+      exportICACompliancePdf(data, filteredAnimals);
       showToast('Reporte PDF generado con éxito', 'success');
     } catch (error) {
       console.error('Error generando PDF:', error);
@@ -201,6 +115,13 @@ export default function ICADashboard() {
             >
               {isExporting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
               <span className="hidden sm:inline">Reporte PDF</span>
+            </Button>
+            <Button
+              onClick={() => setShowGSMIModal(true)}
+              className="rounded-lg h-9 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-lg shadow-emerald-600/20"
+            >
+              <Truck className="h-4 w-4" />
+              <span className="hidden sm:inline">Guía GSMI</span>
             </Button>
           </>
         )}
@@ -351,7 +272,7 @@ export default function ICADashboard() {
                             className="group cursor-pointer hover:bg-primary/[0.02] border-b border-border/30 last:border-0 transition-colors"
                             onClick={() => goTo(`/admin/animals/${animal.animal_id}`)}
                           >
-                            <TableCell className="pl-6">{getStatusIcon(animal.overall)}</TableCell>
+                            <TableCell className="pl-6">{getICAStatusIcon(animal.overall)}</TableCell>
                             <TableCell>
                               <div className="font-black text-sm text-foreground group-hover:text-primary transition-colors">{animal.record}</div>
                               {animal.name && <div className="text-[11px] font-bold text-muted-foreground uppercase mt-0.5">{animal.name}</div>}
@@ -359,7 +280,7 @@ export default function ICADashboard() {
                             <TableCell>
                               <Badge variant="secondary" className="text-[11px] font-bold bg-muted/50">{animal.sex}</Badge>
                             </TableCell>
-                            <TableCell>{getStatusBadge(animal.overall)}</TableCell>
+                            <TableCell>{getICAStatusBadge(animal.overall)}</TableCell>
 
                             {['aftosa', 'brucelosis', 'clostridial', 'desparasitacion'].map(check => {
                               const info = animal.checks[check];
@@ -405,6 +326,9 @@ export default function ICADashboard() {
           </div>
         </Card>
       </motion.div>
+
+      {/* Modal Asistente GSMI */}
+      <GSMIAssistantModal open={showGSMIModal} onClose={() => setShowGSMIModal(false)} />
     </div>
   );
 }

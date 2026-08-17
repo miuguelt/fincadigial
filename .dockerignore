@@ -1,22 +1,96 @@
-node_modules/
-dist/
+# Generated baseline for a hypothetical repository-root Docker context.
+# Real Compose builds use backend/.dockerignore and frontend/.dockerignore.
+
+# --- VCS and DevBrain metadata ---
 .git/
+.gitignore
+.dockerignore
+.gitattributes
+.github/
+.devbrain/
+.antigravityrules
+.codexrules
+.cursorrules
+.opencoderules
+.windsurfrules
+
+# --- Secrets and private keys: no exceptions in an image context ---
 .env
 .env.*
-logs/
-maintenance/
-test-results/
-playwright-report/
-_archive/
-backups*/
-cleanup_backups/
-restored_*/
-scratch/
-coverage/
-htmlcov/
-.DS_Store
+**/.env
+**/.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+secrets.json
+credentials.json
 
-# --- DevBrain repo hygiene (managed block) ---
-__pycache__/
+# --- Dependencies and caches ---
+node_modules/
+**/node_modules/
 .venv/
-# --- end DevBrain repo hygiene ---
+**/.venv/
+venv/
+**/venv*/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.vite/
+*.tsbuildinfo
+
+# --- Build, tests and reports ---
+dist/
+**/dist/
+build/
+**/build/
+coverage/
+**/coverage/
+htmlcov/
+test-results/
+**/test-results/
+playwright-report/
+**/playwright-report/
+tests/
+**/tests/
+e2e/
+**/e2e/
+playwright-tests/
+**/playwright-tests/
+*.log
+logs/
+**/logs/
+*.pid
+
+# --- Documentation, maintenance and local data ---
+*.md
+docs/
+maintenance/
+scripts/
+scratch/
+_archive/
+_graveyard/
+backups/
+vault/
+*.bak
+*.bak-*
+*_OLD*
+*.db
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+_data/
+mariadb_data/
+
+# --- IDE and OS state ---
+.vscode/
+.idea/
+.claude/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo

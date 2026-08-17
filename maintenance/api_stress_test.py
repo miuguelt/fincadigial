@@ -1,31 +1,50 @@
-import requests
-import time
+"""Stress test for the dashboard API using credentials injected at runtime."""
+
 import concurrent.futures
 import json
+import os
+import time
+from pathlib import Path
 
-BASE_URL = "http://127.0.0.1:8092/api/v1"
-LOGIN_DATA = {
-    "identifier": "1098",
-    "password": "DevMiguel2024!"
-}
+import requests
 
-def get_token():
+
+BASE_URL = os.getenv("VILLALUZ_STRESS_BASE_URL", "http://127.0.0.1:8092/api/v1")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+RESULTS_PATH = PROJECT_ROOT / "test-results" / "api_stress_results.json"
+
+
+def get_required_env(name: str) -> str:
+    """Return a required environment value without exposing its content."""
+    value = os.getenv(name)
+    if not value:
+        raise RuntimeError(f"Falta {name}. Defínela en el entorno antes de ejecutar la prueba.")
+    return value
+
+
+def get_token() -> str | None:
+    identifier = get_required_env("VILLALUZ_STRESS_TEST_ID")
+    password = get_required_env("VILLALUZ_STRESS_TEST_PASSWORD")
     print(f"🔐 Intentando login en {BASE_URL}/auth/login...")
-    response = requests.post(f"{BASE_URL}/auth/login", json=LOGIN_DATA)
-    if response.status_code == 200:
-        data = response.json()
-        # El token puede estar en 'access_token' o 'data.access_token'
-        token = data.get('access_token') or data.get('data', {}).get('access_token')
-        if not token:
-            # Reintentar con el formato que devuelve el unwrapApi si es necesario
-            token = data.get('token')
-        print("✅ Login exitoso.")
-        return token
-    else:
-        print(f"❌ Error en login: {response.status_code} - {response.text}")
+    response = requests.post(
+        f"{BASE_URL}/auth/login",
+        json={"identifier": identifier, "password": password},
+        timeout=30,
+    )
+    if response.status_code != 200:
+        print(f"❌ Login rechazado por el backend (HTTP {response.status_code}).")
         return None
 
-def hit_endpoint(token, endpoint_name, url):
+    data = response.json()
+    token = data.get("access_token") or data.get("data", {}).get("access_token")
+    if not token:
+        print("❌ La respuesta de login no contiene un token de acceso.")
+        return None
+    print("✅ Login exitoso.")
+    return token
+
+
+def hit_endpoint(token: str, endpoint_name: str, url: str) -> dict:
     headers = {"Authorization": f"Bearer {token}"}
     start = time.time()
     try:
@@ -35,61 +54,57 @@ def hit_endpoint(token, endpoint_name, url):
             "endpoint": endpoint_name,
             "status": response.status_code,
             "duration": duration,
-            "success": response.status_code == 200
+            "success": response.status_code == 200,
         }
-    except Exception as e:
+    except Exception as error:
         return {
             "endpoint": endpoint_name,
             "status": "Error",
             "duration": time.time() - start,
             "success": False,
-            "error": str(e)
+            "error": type(error).__name__,
         }
 
-def run_stress_test(token, concurrency=5, iterations=10):
+
+def run_stress_test(token: str, concurrency: int = 5, iterations: int = 10) -> list[dict]:
     url = f"{BASE_URL}/analytics/dashboard/complete"
     print(f"🚀 Iniciando prueba de estrés en {url}")
     print(f"👥 Concurrencia: {concurrency}, Iteraciones: {iterations}")
 
-    results = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=concurrency) as executor:
-        futures = [executor.submit(hit_endpoint, token, "dashboard_complete", url) for _ in range(iterations)]
-        for future in concurrent.futures.as_completed(futures):
-            results.append(future.result())
+        futures = [
+            executor.submit(hit_endpoint, token, "dashboard_complete", url)
+            for _ in range(iterations)
+        ]
+        return [future.result() for future in concurrent.futures.as_completed(futures)]
 
-    return results
 
-def main():
+def main() -> int:
     token = get_token()
     if not token:
-        return
-
-    # Prueba de estrés
-    concurrency_levels = [1, 5, 10]
-    total_iterations = 20
+        return 1
 
     all_results = {}
+    for concurrency in (1, 5, 10):
+        print(f"\n--- Nivel de Concurrencia: {concurrency} ---")
+        results = run_stress_test(token, concurrency=concurrency, iterations=20)
+        all_results[f"concurrency_{concurrency}"] = results
 
-    for c in concurrency_levels:
-        print(f"\n--- Nivel de Concurrencia: {c} ---")
-        results = run_stress_test(token, concurrency=c, iterations=total_iterations)
-        all_results[f"concurrency_{c}"] = results
-
-        durations = [r['duration'] for r in results if r['success']]
+        durations = [result["duration"] for result in results if result["success"]]
         if durations:
-            avg = sum(durations) / len(durations)
-            max_d = max(durations)
-            min_d = min(durations)
-            success_count = len(durations)
-            print(f"📊 Resultados: Exitosos {success_count}/{total_iterations}")
-            print(f"⏱️ Promedio: {avg:.4f}s, Max: {max_d:.4f}s, Min: {min_d:.4f}s")
+            print(
+                f"📊 Exitosos {len(durations)}/{len(results)} | "
+                f"Promedio: {sum(durations) / len(durations):.4f}s | "
+                f"Máximo: {max(durations):.4f}s | Mínimo: {min(durations):.4f}s"
+            )
         else:
             print("❌ Todas las peticiones fallaron.")
 
-    # Guardar resultados
-    with open("maintenance/api_stress_results.json", "w") as f:
-        json.dump(all_results, f, indent=4)
-    print("\n✅ Resultados guardados en maintenance/api_stress_results.json")
+    RESULTS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    RESULTS_PATH.write_text(json.dumps(all_results, indent=2), encoding="utf-8")
+    print(f"\n✅ Resultados guardados en {RESULTS_PATH}")
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

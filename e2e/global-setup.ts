@@ -22,15 +22,25 @@ interface E2EUser {
   storageStateFile: string;
 }
 
+function getRequiredPassword(primaryName: string, legacyName: string): string {
+  const value = process.env[primaryName] || process.env[legacyName];
+  if (!value) {
+    throw new Error(
+      `[E2E Setup] Falta ${primaryName}. Inyecta la contraseña desde el entorno; no existe un valor por defecto.`,
+    );
+  }
+  return value;
+}
+
 const E2E_USERS: E2EUser[] = [
   {
     identifier: process.env.E2E_ADMIN_ID || '10000001',
-    password: process.env.E2E_ADMIN_PASS || 'TestE2E_Admin2024!',
+    password: getRequiredPassword('VILLALUZ_E2E_ADMIN_PASSWORD', 'E2E_ADMIN_PASS'),
     storageStateFile: 'e2e/.auth/admin.json',
   },
   {
     identifier: process.env.E2E_OP_ID || '10000002',
-    password: process.env.E2E_OP_PASS || 'TestE2E_Op2024!',
+    password: getRequiredPassword('VILLALUZ_E2E_WORKER_PASSWORD', 'E2E_OP_PASS'),
     storageStateFile: 'e2e/.auth/operario.json',
   },
 ];
@@ -75,7 +85,7 @@ async function ensureUserExists(user: E2EUser): Promise<void> {
   }
 
   // 2. Si no existe, registrarlo
-  const isAdmin = user.identifier === (process.env.E2E_ADMIN_ID || '10000001');
+  const isAdmin = user.identifier === E2E_USERS[0].identifier;
   const registerRes = await fetch(`${BACKEND_URL}/api/v1/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

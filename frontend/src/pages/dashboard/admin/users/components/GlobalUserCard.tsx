@@ -90,7 +90,7 @@ export function GlobalUserCard({ user, onOpenDetail }: GlobalUserCardProps) {
       <div className="relative z-10 space-y-4">
         {/* Header: Avatar, Name, Global Role, Status */}
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3 min-w-0">
+          <div className="flex min-w-0 flex-1 items-start gap-3">
             <div className="relative shrink-0">
               <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 border border-primary/20 flex items-center justify-center text-primary font-black text-lg shadow-sm">
                 {user.fullname ? user.fullname.charAt(0).toUpperCase() : <UserIcon className="h-6 w-6" />}
@@ -104,27 +104,12 @@ export function GlobalUserCard({ user, onOpenDetail }: GlobalUserCardProps) {
               />
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="font-black text-base leading-snug tracking-tight text-foreground break-words group-hover:text-primary transition-colors">
+              <h3
+                className="font-black text-[clamp(0.8125rem,1.6vw,1rem)] leading-snug tracking-tight text-foreground [overflow-wrap:normal] hyphens-none group-hover:text-primary transition-colors"
+                title={user.fullname || 'Sin Nombre'}
+              >
                 {user.fullname || 'Sin Nombre'}
               </h3>
-              <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                <Badge
-                  variant="outline"
-                  className={cn('text-[11px] font-black uppercase px-2 py-0.5 rounded-md border', getRoleBadgeVariant(roleText))}
-                >
-                  <ShieldCheck className="h-3 w-3 mr-1 opacity-70" />
-                  {roleText}
-                </Badge>
-                {isMultiFinca && (
-                  <Badge
-                    variant="outline"
-                    className="border-indigo-500/30 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold px-1.5 py-0.5 rounded-md"
-                  >
-                    <Layers className="h-2.5 w-2.5 mr-0.5" />
-                    Multi-Finca ({fincas.length})
-                  </Badge>
-                )}
-              </div>
             </div>
           </div>
 
@@ -139,6 +124,29 @@ export function GlobalUserCard({ user, onOpenDetail }: GlobalUserCardProps) {
             <div className={cn('h-1.5 w-1.5 rounded-full', isActive ? 'bg-emerald-500 animate-pulse' : 'bg-muted-foreground')} />
             {isActive ? 'Activo' : 'Inactivo'}
           </div>
+        </div>
+
+        {/* Role badges: fila propia a ancho completo para que la palabra nunca desborde */}
+        <div className="-mt-2 flex flex-wrap items-center gap-1.5">
+          <Badge
+            variant="outline"
+            className={cn(
+              'w-fit max-w-full whitespace-normal [overflow-wrap:normal] hyphens-none text-left text-[11px] font-black uppercase leading-tight px-2 py-0.5 rounded-md border',
+              getRoleBadgeVariant(roleText)
+            )}
+          >
+            <ShieldCheck className="h-3 w-3 mr-1 shrink-0 opacity-70" />
+            {roleText}
+          </Badge>
+          {isMultiFinca && (
+            <Badge
+              variant="outline"
+              className="w-fit max-w-full whitespace-normal [overflow-wrap:normal] hyphens-none text-left leading-tight border-indigo-500/30 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold px-1.5 py-0.5 rounded-md"
+            >
+              <Layers className="h-2.5 w-2.5 mr-0.5 shrink-0" />
+              Multi-Finca ({fincas.length})
+            </Badge>
+          )}
         </div>
 
         {/* Contact info cards */}
@@ -210,14 +218,14 @@ export function GlobalUserCard({ user, onOpenDetail }: GlobalUserCardProps) {
               fincas.map((finca: any, idx: number) => (
                 <div
                   key={finca.id || finca.finca_id || idx}
-                  className="group/finca flex items-center gap-1.5 rounded-lg border border-border/60 bg-muted/40 px-2.5 py-1 text-[11px] shadow-sm hover:border-primary/40 hover:bg-muted/70 transition-all"
+                  className="group/finca flex min-w-0 max-w-full items-center gap-1.5 rounded-lg border border-border/60 bg-muted/40 px-2.5 py-1 text-[11px] shadow-sm hover:border-primary/40 hover:bg-muted/70 transition-all"
                   title={`${finca.name || finca.finca_name || 'Finca'} (${finca.type || finca.finca_type || 'Finca'}) - Rol: ${finca.role || 'Miembro'}`}
                 >
                   <Building2 className="h-3 w-3 text-primary shrink-0 opacity-70" />
-                  <span className="font-bold text-foreground/90 max-w-[120px] truncate">
+                  <span className="min-w-0 max-w-[120px] truncate font-bold text-foreground/90">
                     {finca.name || finca.finca_name || 'Finca'}
                   </span>
-                  <span className="text-[10px] text-muted-foreground uppercase font-semibold">
+                  <span className="min-w-0 truncate whitespace-nowrap text-[10px] uppercase font-semibold text-muted-foreground">
                     • {typeof finca.role === 'string' ? finca.role : 'Miembro'}
                   </span>
                   {finca.is_primary && (

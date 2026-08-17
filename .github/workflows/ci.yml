@@ -31,12 +31,22 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Generate ephemeral test secrets
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          import secrets
+
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as env_file:
+              env_file.write(f"FLASK_SECRET_KEY={secrets.token_hex(32)}\n")
+              env_file.write(f"JWT_SECRET_KEY={secrets.token_hex(32)}\n")
+          PY
+
       - name: Run unit tests
         env:
           FLASK_ENV: testing
           SQLALCHEMY_DATABASE_URI: "sqlite:///:memory:"
-          FLASK_SECRET_KEY: test_secret_32_chars_minimum_ok
-          JWT_SECRET_KEY: test_jwt_secret_32_chars_minimum
           DB_ENGINE: sqlite
           REDIS_URL: ""
           CELERY_BROKER_URL: ""

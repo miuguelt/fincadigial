@@ -9,15 +9,25 @@ import * as path from 'path';
 const CREDENTIALS = {
   admin: {
     identifier: process.env.E2E_ADMIN_ID || '10000001',
-    password: process.env.E2E_ADMIN_PASS || 'TestE2E_Admin2024!',
+    password: getRequiredPassword('VILLALUZ_E2E_ADMIN_PASSWORD', 'E2E_ADMIN_PASS'),
     storageStateFile: path.resolve(__dirname, '../.auth/admin.json'),
   },
   operario: {
     identifier: process.env.E2E_OP_ID || '10000002',
-    password: process.env.E2E_OP_PASS || 'TestE2E_Op2024!',
+    password: getRequiredPassword('VILLALUZ_E2E_WORKER_PASSWORD', 'E2E_OP_PASS'),
     storageStateFile: path.resolve(__dirname, '../.auth/operario.json'),
   },
 } as const;
+
+function getRequiredPassword(primaryName: string, legacyName: string): string {
+  const value = process.env[primaryName] || process.env[legacyName];
+  if (!value) {
+    throw new Error(
+      `Falta ${primaryName}. Inyecta la contraseña E2E desde el entorno; no existe un valor por defecto.`,
+    );
+  }
+  return value;
+}
 
 export type E2ERole = keyof typeof CREDENTIALS;
 

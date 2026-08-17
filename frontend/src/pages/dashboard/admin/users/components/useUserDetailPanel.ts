@@ -1,8 +1,68 @@
 import { useEffect, useMemo, useState } from "react";
+import { fetchActivityStats } from "@/features/activity";
 import { usersService } from "@/entities/user/api/user.service";
 import { devLogger } from "@/shared/utils/devLogger";
 import type { UserWithProfile } from "../types";
 import { daysSince, getAccessStatus, getUserFincas } from "../utils/user.utils";
+
+type ActivityStats = {
+	window?: { days?: number };
+	totals?: {
+		events?: number;
+		distinct_entities?: number;
+		distinct_animals?: number;
+	};
+	by_entity?: Array<{ entity?: string | null; count?: number }>;
+	daily?: Array<{ date?: string | null; count?: number }>;
+};
+
+const activityEntityLabels: Record<string, string> = {
+	control: "Controles",
+	controls: "Controles",
+	treatment: "Tratamientos",
+	treatments: "Tratamientos",
+	vaccination: "Vacunaciones",
+	vaccinations: "Vacunaciones",
+	animal: "Animales",
+	animals: "Animales",
+	task: "Tareas",
+	tasks: "Tareas",
+	field: "Potreros",
+	fields: "Potreros",
+};
+
+const activityEntityColors: Record<string, string> = {
+	control: "#10b981",
+	controls: "#10b981",
+	treatment: "#6366f1",
+	treatments: "#6366f1",
+	vaccination: "#8b5cf6",
+	vaccinations: "#8b5cf6",
+	animal: "#0ea5e9",
+	animals: "#0ea5e9",
+	task: "#f59e0b",
+	tasks: "#f59e0b",
+	field: "#14b8a6",
+	fields: "#14b8a6",
+};
+
+const getEntityLabel = (entity?: string | null) => {
+	const normalized = String(entity || "otros").toLowerCase();
+	return activityEntityLabels[normalized] || normalized.replace(/_/g, " ");
+};
+
+const getEntityColor = (entity?: string | null) =>
+	activityEntityColors[String(entity || "").toLowerCase()] || "#8b5cf6";
+
+const formatChartDate = (date?: string | null) => {
+	if (!date) return "-";
+	const parsed = new Date(`${date}T12:00:00`);
+	if (Number.isNaN(parsed.getTime())) return date;
+	return new Intl.DateTimeFormat("es-CO", {
+		day: "2-digit",
+		month: "short",
+	}).format(parsed);
+};
 
 export const useUserDetailPanel = (item: UserWithProfile) => {
 	const [activities, setActivities] = useState<any[]>([]);
@@ -12,6 +72,8 @@ export const useUserDetailPanel = (item: UserWithProfile) => {
 	const [hasMore, setHasMore] = useState(false);
 
 	const [statsActivities, setStatsActivities] = useState<any[]>([]);
+	const [activityStats, setActivityStats] = useState<ActivityStats | null>(null);
+	const [loadingActivityStats, setLoadingActivityStats] = useState(true);
 	const [loadingStats, setLoadingStats] = useState(true);
 	const [activeTab, setActiveTab] = useState<
 		"performance" | "history" | "fincas" | "contact"
@@ -101,6 +163,34 @@ export const useUserDetailPanel = (item: UserWithProfile) => {
 		};
 	}, [item.id]);
 
+	// Los conteos del panel se calculan con el endpoint agregado para evitar
+	// presentar como totales los primeros 150 eventos de la actividad.
+	useEffect(() => {
+		let active = true;
+		const fetchAggregatedStats = async () => {
+			if (!item.id) {
+				setLoadingActivityStats(false);
+				return;
+			}
+
+			setLoadingActivityStats(true);
+			setActivityStats(null);
+			try {
+				const result = await fetchActivityStats({ userId: item.id, days: 30 });
+				if (active) setActivityStats((result || null) as ActivityStats | null);
+			} catch (err) {
+				devLogger.error("Error fetching aggregated user activity stats:", err);
+			} finally {
+				if (active) setLoadingActivityStats(false);
+			}
+		};
+
+		void fetchAggregatedStats();
+		return () => {
+			active = false;
+		};
+	}, [item.id]);
+
 	const handleLoadMore = () => {
 		if (!loadingActivities && hasMore) {
 			setActivityPage((prev) => prev + 1);
@@ -157,19 +247,44 @@ export const useUserDetailPanel = (item: UserWithProfile) => {
 		[statsActivities],
 	);
 
-	const distributionData = useMemo(
-		() =>
-			[
-				{ name: "Controles", cantidad: controlsCount, fill: "#10b981" },
-				{ name: "Tratamientos", cantidad: treatmentsCount, fill: "#6366f1" },
-				{ name: "Animales", cantidad: animalsCount, fill: "#0ea5e9" },
-				{ name: "Tareas", cantidad: tasksCount, fill: "#f59e0b" },
-				{ name: "Otros", cantidad: otherCount, fill: "#8b5cf6" },
-			].filter((x) => x.cantidad > 0),
-		[controlsCount, treatmentsCount, animalsCount, tasksCount, otherCount],
-	);
+	const distributionData = useMemo(() => {
+		if (activityStats?.by_entity) {
+			return activityStats.by_entity
+				.filter((entry) => Number(entry.count) > 0)
+				.map((entry) => ({
+					name: getEntityLabel(entry.entity),
+					cantidad: Number(entry.count),
+					fill: getEntityColor(entry.entity),
+				}));
+		}
+
+		return [
+			{ name: "Controles", cantidad: controlsCount, fill: "#10b981" },
+			{ name: "Tratamientos", cantidad: treatmentsCount, fill: "#6366f1" },
+			{ name: "Animales", cantidad: animalsCount, fill: "#0ea5e9" },
+			{ name: "Tareas", cantidad: tasksCount, fill: "#f59e0b" },
+			{ name: "Otros", cantidad: otherCount, fill: "#8b5cf6" },
+		].filter((x) => x.cantidad > 0);
+	}, [
+		activityStats,
+		animalsCount,
+		controlsCount,
+		otherCount,
+		tasksCount,
+		treatmentsCount,
+	]);
 
 	const trendData = useMemo(() => {
+		if (activityStats?.daily) {
+			return activityStats.daily
+				.filter((entry) => entry.date && Number(entry.count) > 0)
+				.map((entry) => ({
+					date: formatChartDate(entry.date),
+					acciones: Number(entry.count),
+				}))
+				.slice(-8);
+		}
+
 		const groups: Record<string, number> = {};
 		statsActivities.forEach((a) => {
 			if (!a.created_at) return;
@@ -188,7 +303,14 @@ export const useUserDetailPanel = (item: UserWithProfile) => {
 				};
 			})
 			.slice(-8);
-	}, [statsActivities]);
+	}, [activityStats, statsActivities]);
+
+	const recentEventsCount = activityStats?.totals?.events ?? null;
+	const distinctAnimalsCount = activityStats?.totals?.distinct_animals ?? null;
+	const activeDaysCount = activityStats?.daily?.filter(
+		(entry) => Number(entry.count) > 0,
+	).length ?? null;
+	const isStatsLoading = loadingStats || loadingActivityStats;
 
 	const filteredActivitiesForTimeline = useMemo(() => {
 		return activities.filter((act) => {
@@ -225,7 +347,12 @@ export const useUserDetailPanel = (item: UserWithProfile) => {
 		loadingActivities,
 		totalActivities,
 		hasMore,
-		loadingStats,
+		loadingStats: isStatsLoading,
+		hasRecentStats: Boolean(activityStats),
+		recentEventsCount,
+		distinctAnimalsCount,
+		activeDaysCount,
+		recentStatsDays: activityStats?.window?.days ?? 30,
 		activeTab,
 		setActiveTab,
 		historyFilter,

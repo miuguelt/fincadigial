@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { MoreVertical, Beef, ChevronDown, CalendarCheck, LogOut } from "lucide-react";
+import { MoreVertical, Beef, ChevronDown, CalendarCheck, LogOut, Baby } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,6 +7,7 @@ import {
 } from "@/shared/ui/dropdown-menu";
 import { AnimalActionModalInstance } from "./AnimalActionModalInstance";
 import { AnimalExitModal } from "@/widgets/animals/AnimalExitModal";
+import { WeaningModal } from "@/widgets/animals/WeaningModal";
 import type { AnimalActionsMenuProps, ModalType, ModalMode, ModalState } from "./AnimalActionsMenu.types";
 import {
   IconHistory, IconEdit, IconTrash, IconGitBranch, IconBabyCarriage,
@@ -46,6 +47,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({ animal, cu
   const [modalStack, setModalStack] = useState<ModalState[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
+  const [isWeaningModalOpen, setIsWeaningModalOpen] = useState(false);
 
   const handleOpenModal = useCallback((type: ModalType, mode: ModalMode = "create", item: any = null) => {
     // One action at a time prevents duplicate forms and duplicate POSTs.
@@ -77,6 +79,7 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({ animal, cu
           </div>
           <div className="grid grid-cols-2 gap-1.5 py-2">
             <ActionButton label="Historial Completo" icon={<IconHistory className="h-4 w-4 text-blue-500" />} onClick={onOpenHistory} className="col-span-2" />
+            <ActionButton label="Destetar Ternero" icon={<Baby className="h-4 w-4 text-indigo-500" />} onClick={() => { setMenuOpen(false); setIsWeaningModalOpen(true); }} className="col-span-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 font-bold" />
             <ActionButton label="Dar de Baja / Salida" icon={<LogOut className="h-4 w-4 text-rose-500" />} onClick={() => { setMenuOpen(false); setIsExitModalOpen(true); }} className="col-span-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 font-bold" />
             {onEditAnimal && <ActionButton label="Editar Animal" icon={<IconEdit className="h-4 w-4 text-emerald-500" />} onClick={onEditAnimal} />}
             {onDeleteAnimal && <ActionButton label="Eliminar Animal" icon={<IconTrash className="h-4 w-4" />} onClick={onDeleteAnimal} className="text-destructive hover:bg-destructive/10" />}
@@ -123,6 +126,12 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({ animal, cu
       <AnimalExitModal
         open={isExitModalOpen}
         onClose={() => setIsExitModalOpen(false)}
+        animal={animal}
+        onSuccess={onRefresh}
+      />
+      <WeaningModal
+        open={isWeaningModalOpen}
+        onClose={() => setIsWeaningModalOpen(false)}
         animal={animal}
         onSuccess={onRefresh}
       />

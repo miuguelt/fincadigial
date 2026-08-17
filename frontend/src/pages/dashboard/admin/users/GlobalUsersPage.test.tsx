@@ -5,6 +5,7 @@ import GlobalUsersPage from './GlobalUsersPage';
 const mocks = vi.hoisted(() => ({
   getGlobalUsers: vi.fn(),
   getUserActivity: vi.fn(),
+  getActivityStats: vi.fn(),
   toast: vi.fn(),
   navigate: vi.fn(),
 }));
@@ -14,6 +15,10 @@ vi.mock('@/entities/user/api/user.service', () => ({
     getGlobalUsers: mocks.getGlobalUsers,
     getUserActivity: mocks.getUserActivity,
   },
+}));
+
+vi.mock('@/features/activity', () => ({
+  fetchActivityStats: mocks.getActivityStats,
 }));
 
 vi.mock('@/shared/hooks/use-toast', () => ({
@@ -307,6 +312,16 @@ describe('GlobalUsersPage', () => {
     vi.clearAllMocks();
     mocks.getGlobalUsers.mockResolvedValue(sampleUsers);
     mocks.getUserActivity.mockResolvedValue({ data: [], total_items: 0 });
+    mocks.getActivityStats.mockResolvedValue({
+      window: { days: 30 },
+      totals: { events: 12, distinct_entities: 3, distinct_animals: 7 },
+      by_entity: [
+        { entity: 'control', count: 5 },
+        { entity: 'treatment', count: 4 },
+        { entity: 'animal', count: 3 },
+      ],
+      daily: [{ date: '2026-08-15', count: 12 }],
+    });
   });
 
   it('renders top Bento KPIs and user cards by default', async () => {
@@ -331,6 +346,8 @@ describe('GlobalUsersPage', () => {
     expect(screen.getByRole('heading', { name: 'Administrador Sistema' })).toBeInTheDocument();
     expect(screen.getAllByText('Finca Villa Luz').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Administrador').length).toBeGreaterThan(0);
+    expect(await screen.findByRole('group', { name: 'Eventos en los últimos 30 días' })).toHaveTextContent('12');
+    expect(screen.getByRole('group', { name: 'Animales atendidos en los últimos 30 días' })).toHaveTextContent('7');
   });
 
   it('switches between Cards and Table view modes', async () => {
@@ -360,5 +377,14 @@ describe('GlobalUsersPage', () => {
 
     expect(screen.queryByText('Administrador Sistema')).not.toBeInTheDocument();
     expect(screen.getByText('Dr. Martínez Vet')).toBeInTheDocument();
+  });
+
+  it('keeps the filters toolbar at content height so cards remain visible', async () => {
+    render(<GlobalUsersPage />);
+
+    const searchInput = await screen.findByPlaceholderText('Buscar por nombre, correo, cédula o finca...');
+    const toolbarCard = searchInput.closest('.relative.isolate');
+
+    expect(toolbarCard).toHaveClass('!h-auto');
   });
 });

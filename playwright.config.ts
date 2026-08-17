@@ -1,4 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
+import { randomBytes } from 'node:crypto';
+
+const E2E_JWT_SECRET = process.env.E2E_JWT_SECRET || randomBytes(32).toString('hex');
 
 /**
  * playwright.config.ts
@@ -69,8 +72,8 @@ export default defineConfig({
         TEST_SQLALCHEMY_DATABASE_URI: process.env.CI
           ? 'sqlite:///:memory:'
           : 'sqlite:///./instance/e2e_test.db',
-        // JWT secret fijo para testing
-        JWT_SECRET_KEY: process.env.E2E_JWT_SECRET || 'e2e-test-secret-key-not-for-production',
+        // Secret efímero para testing; se puede sobreescribir desde el entorno.
+        JWT_SECRET_KEY: E2E_JWT_SECRET,
         // Deshabilitar Redis en tests (usar cache simple)
         REDIS_URL: '',
         CACHE_TYPE: 'simple',

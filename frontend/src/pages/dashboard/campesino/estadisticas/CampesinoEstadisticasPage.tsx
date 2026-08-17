@@ -9,6 +9,7 @@ import {
   Sprout,
   Calculator,
   Heart,
+  Milk,
 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { useCampesinoEstadisticas } from './hooks/useCampesinoEstadisticas';
@@ -19,12 +20,15 @@ import { OsciladorProduccionLechera } from './components/OsciladorProduccionLech
 import { DistribucionHatoCampesina } from './components/DistribucionHatoCampesina';
 import { CalculadorasCampesinas } from './components/CalculadorasCampesinas';
 import { AlertasReproductivasCampesinas } from './components/AlertasReproductivasCampesinas';
+import { SemaforoPotrerosCard } from '@/features/potreros';
+import { LiquidacionLecheModal } from '@/widgets/milk';
 
 type TabType = 'termometro' | 'engorde_leche' | 'potreros' | 'reproduccion' | 'calculadoras';
 
 export const CampesinoEstadisticasPage: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>('termometro');
+  const [showLiquidacion, setShowLiquidacion] = useState(false);
 
   const {
     isLoading,
@@ -178,13 +182,36 @@ export const CampesinoEstadisticasPage: React.FC = () => {
 
             {activeTab === 'engorde_leche' && (
               <>
+                <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-cyan-600 to-teal-700 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-lg shadow-cyan-900/20">
+                  <div className="space-y-1">
+                    <h3 className="text-base sm:text-lg font-black flex items-center gap-2">
+                      <Milk className="w-5 h-5" />
+                      Liquidación Quincenal de Leche (Res. MinAgricultura 0017)
+                    </h3>
+                    <p className="text-xs opacity-90">
+                      Calcula el pago por litro según calidad composicional (grasa/sólidos), bonificación higiénica (UFC) y deducción de fomento.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="rounded-2xl font-black shrink-0 text-cyan-900 bg-white hover:bg-white/90 shadow-md"
+                    onClick={() => setShowLiquidacion(true)}
+                  >
+                    🥛 Abrir Liquidación
+                  </Button>
+                </div>
+
                 <OsciladorGananciaPeso stats={weightStats} />
                 <OsciladorProduccionLechera stats={milkStats} />
               </>
             )}
 
             {activeTab === 'potreros' && (
-              <OsciladorCargaPotreros stats={fieldStats} />
+              <>
+                <SemaforoPotrerosCard />
+                <OsciladorCargaPotreros stats={fieldStats} />
+              </>
             )}
 
             {activeTab === 'reproduccion' && (
@@ -196,6 +223,12 @@ export const CampesinoEstadisticasPage: React.FC = () => {
             )}
           </motion.div>
         )}
+
+        <LiquidacionLecheModal
+          open={showLiquidacion}
+          onClose={() => setShowLiquidacion(false)}
+          onSuccess={refetchAll}
+        />
       </div>
     </div>
   );

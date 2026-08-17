@@ -23,6 +23,9 @@ import {
   ControlModal,
   CorralRapidoModal,
   AnimalExitModal,
+  WeaningModal,
+  LiquidacionLecheModal,
+  GSMIAssistantModal,
 } from '@/widgets/registro-operativo';
 import { IconMilk } from '@/shared/icons/cattle';
 
@@ -217,6 +220,9 @@ const RegistroOperativoPage: React.FC = () => {
       <ControlModal open={activeModal === 'control'} onClose={closeModal} form={controlForm} setForm={setControlForm} animals={animals} saving={savingForm} onSubmit={handleControlSubmit} />
       <CorralRapidoModal open={activeModal === 'corral-rapido'} onClose={closeModal} animals={animals} fields={fields} onSuccess={loadHistoryRecords} />
       <AnimalExitModal open={activeModal === 'exit'} onClose={closeModal} animals={animals} onSuccess={() => { loadMasterData(); loadHistoryRecords(); }} />
+      <WeaningModal open={activeModal === 'weaning'} onClose={closeModal} animals={animals} fields={fields} onSuccess={() => { loadMasterData(); loadHistoryRecords(); }} />
+      <LiquidacionLecheModal open={activeModal === 'milk-settlement'} onClose={closeModal} onSuccess={() => { loadMasterData(); loadHistoryRecords(); }} />
+      <GSMIAssistantModal open={activeModal === 'gsmi'} onClose={closeModal} animals={animals} />
     </div>
   );
 };

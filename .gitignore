@@ -1,136 +1,126 @@
-# ==========================================
-# VILLALUZ MONOREPO GITIGNORE (COOLIFY-READY)
-# ==========================================
+# Generated baseline: DevBrain repo-hygiene catalog + VillaLuz monorepo rules.
+# Regenerate/repair with Test-DevBrainRepoHygiene.ps1; do not add secrets here.
 
-# --- Node.js / Frontend ---
-frontend/node_modules/
-node_modules/
-dist/
-build/
-.npm
-.eslintcache
-npm-debug.log*
-yarn-debug.log*
-
-# --- Python / Backend ---
-__pycache__/
-*.py[cod]
-*$py.class
-.ruff_cache/
-.venv/
-venv/
-ENV/
-env/
-.pytest_cache/
-.coverage
-htmlcov/
-
-# --- Environment & Secrets ---
+# --- Secrets and local configuration ---
 .env
 .env.*
 !.env.example
-frontend/.env
-backend/.env
-# Vault / Secrets
-.vault/
+!.env.*.example
+!.env.*.template
+!.env.*.sample
+.envrc
 .credentials/
+.vault/
+secrets.json
+credentials.json
 *.pem
 *.key
-# Entornos de producción (contienen claves reales)
-.env.production
-# Backups de base de datos (archivos pesados, no deben ir al repo)
-/backups/
+*.p12
+*.pfx
+*.jks
 
+# --- Dependencies and language caches ---
+node_modules/
+frontend/node_modules/
+backend/.venv/
+backend/venv/
+backend/venv_*/
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.tox/
+.cache/
+.vite/
+*.tsbuildinfo
 
-# --- Databases ---
-backend/finca.db
-finca.db
-*.sqlite
-*.sqlite3
-# Docker Data (Local Only)
-_data/
-mariadb_data/
-
-# --- Logs ---
-*.log
-logs/
-backend_error.log
-frontend_error.log
-maintenance/logs/
-
-# --- IDEs / OS Artifacts ---
-.vscode/
-.idea/
-.DS_Store
-Thumbs.db
-
-# --- DevBrain / AI Specific ---
-.claude/
-.antigravityrules
-.cursorrules
-.windsurfrules
-.gemini/
-_tmp*/
-_archive*/
-
-# --- Generated / Coverage (NO COMMIT) ---
+# --- Build, coverage and test output ---
+dist/
+build/
+frontend/dist/
+frontend/build/
+coverage/
+htmlcov/
 frontend/coverage/
-frontend/test-results/
 test-results/
+frontend/test-results/
+playwright-report/
+frontend/playwright-report/
+e2e/.auth/
+frontend/e2e/.auth/
 *.lcov
 *.lcov-report/
-scratch/
-backend/scratch/
-*.json
-!package.json
-!package-lock.json
-!IDENTITY.json
-!.devbrain/config/IDENTITY.json
-!.devbrain/modularity-baseline.json
 
-# --- Runtime artifacts (NO COMMIT) ---
-.pm2/
+# --- Runtime data, databases and logs ---
+*.log
+logs/
 *.pid
+.pm2/
 *.db
-celerybeat-schedule*
-flask_monitoringdashboard.db
-playwright-report/
-frontend_logs*.txt
-frontend_ui_*.txt
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+backend/instance/
 backend/static/uploads/
-nul
-frontend/errors.txt
-frontend/eslint_report.json
+_data/
+mariadb_data/
+/backups/
+/backups*/
+cleanup_backups/
+maintenance/logs/
+maintenance/*.json
+backend/logs/
+frontend/logs/
 
-# --- Canonical artifact boundaries ---
+# --- Reports, scratch and quarantine ---
 /artifacts/
 /reports/
 /restored_*/
-/backups*/
-cleanup_backups/
-*.7z
+scratch/
+backend/scratch/
+_tmp*/
+_archive/
+_graveyard/
 *.bak
-*.tmp
-test-results/
-playwright-report/
-maintenance/*.log
-backend/maintenance/logs/
+*.bak-*
+*_OLD*
+debug_*
 
-# --- Local dev environments (NO COMMIT) ---
-backend/venv/
-backend/venv_win/
-backend/venv_wsl/
-backend/instance/
-backend/artifacts/
-backend/logs/
-frontend/certificates/
-frontend/logs/
-frontend/maintenance/
-docker-compose.override.yml
+# --- IDE and operating-system files ---
+.vscode/
+.idea/
+.claude/
+.gemini/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
 
-# --- One-off scratch scripts (NO COMMIT) ---
-# Ad-hoc scripts kept on disk for local debugging only. Anything meant to
-# survive belongs in scripts/, maintenance/ or a proper test suite.
+# --- DevBrain generated integration files ---
+.antigravityrules
+.codexrules
+.cursorrules
+.opencoderules
+.windsurfrules
+GEMINI.md
+
+# --- Temporary frontend validation copy ---
+frontend_VALIDATED_TMP/
+
+# --- Known generated frontend reports (do not hide source/config JSON globally) ---
+frontend/*_report.json
+frontend/lint_results*.json
+frontend/coverage_enhanced.json
+frontend/service_optimization_report.json
+
+# --- One-off scripts that do not belong in the product ---
 /refactor.py
 /fix_ux.py
 /filter_ui.py
@@ -153,14 +143,6 @@ backend/test_login_query.py
 backend/test_predictive.py
 backend/update_db_texts.py
 
-# --- Agent tooling, not part of the product ---
-GEMINI.md
-
-# --- Copia temporal de validacion del frontend (no es parte del producto) ---
-# Se dejo de versionar el 2026-07-30; los archivos siguen en disco y en el
-# historial hasta ese commit: git checkout f4201c0 -- frontend_VALIDATED_TMP
-frontend_VALIDATED_TMP/
-
-# --- DevBrain repo hygiene (managed block) ---
-debug_*
-# --- end DevBrain repo hygiene ---
+# --- Compose overrides and local certificates ---
+docker-compose.override.yml
+frontend/certificates/

@@ -14,6 +14,9 @@ export { FinanceModal } from './modals/FinanceModal';
 export { ControlModal } from './modals/ControlModal';
 export { CorralRapidoModal } from './modals/CorralRapidoModal';
 export { AnimalExitModal } from '@/widgets/animals/AnimalExitModal';
+export { WeaningModal } from '@/widgets/animals/WeaningModal';
+export { LiquidacionLecheModal } from '@/widgets/milk/LiquidacionLecheModal';
+export { GSMIAssistantModal } from '@/widgets/regulatory/GSMIAssistantModal';
 export {
   ACTIVITY_TYPES, getActivityCfg,
   CATEGORIAS_INGRESO, CATEGORIAS_GASTO, getFinanceCategories,

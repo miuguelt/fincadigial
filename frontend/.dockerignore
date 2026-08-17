@@ -1,12 +1,52 @@
-node_modules
-dist
-.git
+# Generated for frontend/Dockerfile. Keep only Vite build inputs.
+
+# --- Secrets, VCS and local tooling ---
+.git/
 .gitignore
-.env
-README.md
-Dockerfile
 .dockerignore
-venv
-venv_win
-__pycache__
-*.pyc
+.github/
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+certificates/
+.vscode/
+.idea/
+.claude/
+
+# --- Dependencies and build caches ---
+node_modules/
+.npm/
+.pnpm-store/
+.yarn/
+.pnp.*
+.cache/
+.vite/
+*.tsbuildinfo
+dist/
+build/
+dev-dist/
+
+# --- Test-only code and output ---
+e2e/
+playwright-tests/
+playwright-report/
+test-results/
+coverage/
+.nyc_output/
+**/*.test.*
+**/*.spec.*
+*.lcov
+*.lcov-report/
+
+# --- Documentation, logs and local state ---
+*.md
+*.log
+logs/
+*.pid
+opencodetmp/
+tmp/
+temp/
+scratch/

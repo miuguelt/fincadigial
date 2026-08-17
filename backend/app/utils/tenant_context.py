@@ -23,7 +23,9 @@ def is_system_admin_identity(role: str | None, identification) -> bool:
         return False
 
     configured = (
-        os.getenv("SYSTEM_ADMIN_IDENTIFICATION") or os.getenv("ADMIN_ID")
+        os.getenv("SYSTEM_ADMIN_IDENTIFICATION")
+        or os.getenv("VILLALUZ_ADMIN_IDENTIFICATION")
+        or os.getenv("ADMIN_ID")
     )
     if not configured:
         return True

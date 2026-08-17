@@ -1,4 +1,5 @@
 from flask_jwt_extended import create_access_token
+from sqlalchemy import event
 
 from app import db
 from app.models import FarmType, Finca
@@ -69,6 +70,10 @@ def test_users_list_is_always_scoped_to_active_farm(app, client, monkeypatch):
     assert expected <= ids
     assert remote_id not in ids
     assert items_by_id[multi_farm_id]["role"] == Role.Veterinario.value
+    assert {
+        finca["finca_id"]
+        for finca in items_by_id[multi_farm_id]["fincas"]
+    } == {farm_a.id}
 
 
 def test_global_users_requires_master_administrator(app, client, monkeypatch):
@@ -94,6 +99,60 @@ def test_global_users_requires_master_administrator(app, client, monkeypatch):
     items_by_id = {item["id"]: item for item in allowed.get_json()["data"]}
     assert remote_id in items_by_id
     assert items_by_id[remote_id]["fincas"][0]["id"] == farm_b_id
+
+
+def test_global_users_does_not_query_once_per_user(app, client, monkeypatch):
+    with app.app_context():
+        farm = _farm("Global users performance")
+        master = _user(31, "Administrador maestro rendimiento", farm, Role.Administrador)
+        for seed in range(32, 62):
+            _user(seed, f"Usuario global {seed}", farm)
+
+        monkeypatch.setenv("SYSTEM_ADMIN_IDENTIFICATION", str(master.identification))
+        headers = _headers(master, farm)
+
+    queries: list[str] = []
+
+    def collect_queries(_conn, _cursor, statement, _parameters, _context, _executemany):
+        queries.append(statement)
+
+    event.listen(db.engine, "before_cursor_execute", collect_queries)
+    try:
+        response = client.get("/api/v1/users/global", headers=headers)
+    finally:
+        event.remove(db.engine, "before_cursor_execute", collect_queries)
+
+    assert response.status_code == 200
+    assert len(response.get_json()["data"]) >= 31
+    assert len(queries) <= 8
+
+
+def test_users_list_does_not_query_once_per_user(app, client, monkeypatch):
+    with app.app_context():
+        farm = _farm("Local users performance")
+        master = _user(71, "Administrador maestro local rendimiento", farm, Role.Administrador)
+        for seed in range(72, 102):
+            _user(seed, f"Usuario local {seed}", farm)
+
+        monkeypatch.setenv("SYSTEM_ADMIN_IDENTIFICATION", str(master.identification))
+        headers = _headers(master, farm)
+
+    queries: list[str] = []
+
+    def collect_queries(_conn, _cursor, statement, _parameters, _context, _executemany):
+        queries.append(statement)
+
+    event.listen(db.engine, "before_cursor_execute", collect_queries)
+    try:
+        response = client.get(
+            "/api/v1/users?limit=100&cache_bust=1", headers=headers
+        )
+    finally:
+        event.remove(db.engine, "before_cursor_execute", collect_queries)
+
+    assert response.status_code == 200
+    assert len(response.get_json()["data"]) >= 31
+    assert len(queries) <= 8
 
 
 def test_farm_catalog_is_global_only_for_master_administrator(app, client, monkeypatch):

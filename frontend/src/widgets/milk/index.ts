@@ -4,3 +4,4 @@ export { MilkEntryFormWidget } from './MilkEntryForm';
 export { MilkTrendChart } from './MilkTrendChart';
 export { MilkQualityAlerts } from './MilkQualityAlerts';
 export { MilkBulkImport } from './MilkBulkImport';
+export { LiquidacionLecheModal } from './LiquidacionLecheModal';

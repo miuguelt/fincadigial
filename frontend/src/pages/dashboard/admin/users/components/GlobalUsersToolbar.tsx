@@ -33,7 +33,7 @@ export const GlobalUsersToolbar = ({
   viewMode,
   onViewModeChange,
 }: GlobalUsersToolbarProps) => (
-  <Card className="border-border/60 shadow-sm bg-card/80 backdrop-blur-sm">
+  <Card className="!h-auto border-border/60 shadow-sm bg-card/80 backdrop-blur-sm">
     <CardContent className="p-4 sm:p-5">
       <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
         <div className="relative flex-1 min-w-[260px]">

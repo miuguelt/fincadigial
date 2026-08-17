@@ -46,6 +46,7 @@ import { UserAvatarUpload } from "@/widgets/dashboard/users/UserAvatarUpload";
 import type { UserWithProfile } from "../types";
 import { getChatAvailability } from "../utils/user.utils";
 import { UserFincaGallery } from "./UserFincaGallery";
+import { UserActivityOverview } from "./UserActivityOverview";
 import { useUserDetailPanel } from "./useUserDetailPanel";
 
 const localFormatDateTime = (dateStr?: string | null) => {
@@ -156,6 +157,11 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 		totalActivities,
 		hasMore,
 		loadingStats,
+		hasRecentStats,
+		recentEventsCount,
+		distinctAnimalsCount,
+		activeDaysCount,
+		recentStatsDays,
 		activeTab,
 		setActiveTab,
 		historyFilter,
@@ -164,8 +170,6 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 		linkedDays,
 		access,
 		isActive,
-		controlsCount,
-		treatmentsCount,
 		distributionData,
 		trendData,
 		filteredActivitiesForTimeline,
@@ -303,99 +307,16 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 			<div className="flex-1 min-h-0 overflow-y-auto pr-1 pb-4">
 				{activeTab === "performance" && (
 					<div className="space-y-6">
-						<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-							<div className="rounded-[2rem] border border-border/40 bg-card p-5 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col justify-between group">
-								<div className="flex items-center justify-between">
-									<Activity className="h-5 w-5 text-primary group-hover:scale-110 transition-transform duration-300" />
-									<Badge
-										variant="secondary"
-										className="text-[11px] font-black uppercase"
-									>
-										Total
-									</Badge>
-								</div>
-								<div className="mt-4">
-									<p className="text-3xl font-black leading-none text-foreground">
-										{loadingStats ? (
-											<Loader2 className="h-6 w-6 animate-spin text-primary" />
-										) : (
-											totalActivities || 0
-										)}
-									</p>
-									<p className="text-[11px] font-black uppercase text-muted-foreground mt-1">
-										Eventos Registrados
-									</p>
-								</div>
-							</div>
-
-							<div className="rounded-[2rem] border border-border/40 bg-card p-5 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col justify-between group">
-								<div className="flex items-center justify-between">
-									<Heart className="h-5 w-5 text-emerald-500 group-hover:scale-110 transition-transform duration-300" />
-									<Badge
-										variant="secondary"
-										className="text-[11px] font-black uppercase"
-									>
-										Salud
-									</Badge>
-								</div>
-								<div className="mt-4">
-									<p className="text-3xl font-black leading-none text-foreground">
-										{loadingStats ? (
-											<Loader2 className="h-6 w-6 animate-spin text-emerald-500" />
-										) : (
-											controlsCount
-										)}
-									</p>
-									<p className="text-[11px] font-black uppercase text-muted-foreground mt-1">
-										Controles Médicos
-									</p>
-								</div>
-							</div>
-
-							<div className="rounded-[2rem] border border-border/40 bg-card p-5 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col justify-between group">
-								<div className="flex items-center justify-between">
-									<Syringe className="h-5 w-5 text-indigo-500 group-hover:scale-110 transition-transform duration-300" />
-									<Badge
-										variant="secondary"
-										className="text-[11px] font-black uppercase"
-									>
-										Tratamientos
-									</Badge>
-								</div>
-								<div className="mt-4">
-									<p className="text-3xl font-black leading-none text-foreground">
-										{loadingStats ? (
-											<Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
-										) : (
-											treatmentsCount
-										)}
-									</p>
-									<p className="text-[11px] font-black uppercase text-muted-foreground mt-1">
-										Vacunas e Inyecciones
-									</p>
-								</div>
-							</div>
-
-							<div className="rounded-[2rem] border border-border/40 bg-card p-5 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col justify-between group">
-								<div className="flex items-center justify-between">
-									<Clock className="h-5 w-5 text-amber-500 group-hover:scale-110 transition-transform duration-300" />
-									<Badge
-										variant="secondary"
-										className="text-[11px] font-black uppercase"
-									>
-										Permanencia
-									</Badge>
-								</div>
-								<div className="mt-4">
-									<p className="text-3xl font-black leading-none text-foreground">
-										{linkedDays ?? "-"}
-									</p>
-									<p className="text-[11px] font-black uppercase text-muted-foreground mt-1">
-										Días en la Finca
-									</p>
-								</div>
-							</div>
-						</div>
+						<UserActivityOverview
+							fincaCount={fincas.length}
+							totalActivities={totalActivities}
+							recentEventsCount={recentEventsCount}
+							distinctAnimalsCount={distinctAnimalsCount}
+							activeDaysCount={activeDaysCount}
+							recentStatsDays={recentStatsDays}
+							loading={loadingStats}
+							hasRecentStats={hasRecentStats}
+						/>
 
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 							<div className="bg-card border border-border/40 p-6 rounded-[2.5rem] shadow-sm flex flex-col">

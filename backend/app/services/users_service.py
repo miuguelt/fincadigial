@@ -2,9 +2,11 @@
 
 from datetime import datetime, UTC
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 from app import db
 from app.models.user import User
 from app.models.activity_log import ActivityLog
+from app.models.user_finca import UserFinca
 
 
 def _parse_activity_datetime(value):
@@ -160,3 +162,68 @@ def build_user_activity_query(user_id: int, args: dict):
         query = query.filter(ActivityLog.created_at <= to_dt)
 
     return query.order_by(ActivityLog.created_at.desc(), ActivityLog.id.desc())
+
+
+def get_global_users() -> list[dict]:
+    """Return the system directory using a constant number of database queries."""
+    users = db.session.query(User).options(joinedload(User.finca)).all()
+    if not users:
+        return []
+
+    user_ids = [user.id for user in users]
+    memberships = (
+        db.session.query(UserFinca)
+        .options(joinedload(UserFinca.finca))
+        .filter(UserFinca.user_id.in_(user_ids))
+        .all()
+    )
+    memberships_by_user: dict[int, list[UserFinca]] = {}
+    for membership in memberships:
+        memberships_by_user.setdefault(membership.user_id, []).append(membership)
+
+    result = []
+    serialized_fields = [
+        field
+        for field in User._namespace_fields
+        if field not in {"fincas", "is_multi_finca"}
+    ] + ["version_id"]
+
+    for user in users:
+        user_data = user.to_namespace_dict(fields=serialized_fields)
+        user_memberships = memberships_by_user.get(user.id, [])
+        finca_ids = set()
+        fincas = []
+        for membership in user_memberships:
+            if not membership.finca:
+                continue
+            finca_ids.add(membership.finca.id)
+            fincas.append(
+                {
+                    "id": membership.finca.id,
+                    "name": membership.finca.name,
+                    "type": membership.finca.type.value if membership.finca.type else None,
+                    "role": membership.role,
+                    "is_active": membership.is_active,
+                    "is_primary": membership.is_primary,
+                }
+            )
+
+        if user.finca and user.finca.id not in finca_ids:
+            fincas.append(
+                {
+                    "id": user.finca.id,
+                    "name": user.finca.name,
+                    "type": user.finca.type.value if user.finca.type else None,
+                    "role": getattr(user.role, "value", str(user.role)),
+                    "is_active": bool(user.status),
+                    "is_primary": True,
+                }
+            )
+
+        user_data["fincas"] = fincas
+        user_data["is_multi_finca"] = sum(
+            bool(membership.is_active) for membership in user_memberships
+        ) > 1
+        result.append(user_data)
+
+    return result

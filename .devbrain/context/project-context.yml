@@ -54,3 +54,6 @@ policies:
   - Keep generated output ignored and out of AI context.
   - Prefer small modular files; document justified legacy exceptions.
   - Do not commit secrets, local databases, logs, or virtual environments.
+  - Credentials come from Windows Credential Manager or ignored local environment files; scripts fail when required credentials are absent.
+  - E2E and CI passwords are injected or generated ephemerally; no password fallback is allowed in source code.
+  - Root and module ignore files follow the DevBrain repo-hygiene catalog; Docker contexts exclude all environment files and private keys.

@@ -1,4 +1,12 @@
 import { test, expect } from '@playwright/test';
+import { randomBytes } from 'node:crypto';
+
+const ADMIN_PASSWORD = process.env.VILLALUZ_E2E_ADMIN_PASSWORD || process.env.E2E_ADMIN_PASS;
+if (!ADMIN_PASSWORD) {
+  throw new Error(
+    'Falta VILLALUZ_E2E_ADMIN_PASSWORD. Inyecta la contraseña E2E desde el entorno; no existe un valor por defecto.',
+  );
+}
 import { loginAs } from './helpers/auth';
 
 /**
@@ -16,7 +24,7 @@ test.describe('Flujos de Autenticación', () => {
     await page.waitForSelector('[name=identifier]', { state: 'visible' });
 
     await page.fill('[name=identifier]', process.env.E2E_ADMIN_ID || '10000001');
-    await page.fill('[name=password]', process.env.E2E_ADMIN_PASS || 'TestE2E_Admin2024!');
+    await page.fill('[name=password]', ADMIN_PASSWORD);
     await page.click('button[type=submit]');
 
     await expect(page).toHaveURL(/.*dashboard/, { timeout: 15_000 });
@@ -43,7 +51,7 @@ test.describe('Flujos de Autenticación', () => {
     await page.waitForSelector('[name=identifier]', { state: 'visible' });
 
     await page.fill('[name=identifier]', '99999999');
-    await page.fill('[name=password]', 'PasswordQueNoExiste999!');
+    await page.fill('[name=password]', randomBytes(18).toString('hex'));
     await page.click('button[type=submit]');
 
     // El backend debe responder con un error, el frontend debe mostrarlo

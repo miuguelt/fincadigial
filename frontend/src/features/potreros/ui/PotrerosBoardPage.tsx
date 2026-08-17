@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { AlertTriangle, CircleAlert, GripVertical, MapPin, RefreshCw, Search } from 'lucide-react';
+import { AlertTriangle, CircleAlert, GripVertical, MapPin, RefreshCw, Search, Sprout } from 'lucide-react';
 import { AppLayout } from '@/widgets/layout/AppLayout';
 import { PageHeader } from '@/widgets/layout/PageHeader';
 import { Button } from '@/shared/ui/button';
@@ -13,6 +13,7 @@ import { MoveAnimalsDialog } from './MoveAnimalsDialog';
 import { AnimalChip } from './AnimalChip';
 import { PotreroColumn } from './PotreroColumn';
 import { BoardNotice, BoardTotalsGrid, UndoBar } from './BoardSummary';
+import { SemaforoPotrerosCard } from './SemaforoPotrerosCard';
 import { UNASSIGNED_COLUMN, useBoardDragDrop, type ColumnKey } from '../model/useBoardDragDrop';
 import { MAX_BOARD_ANIMALS, usePotrerosBoard, type BoardAnimal } from '../model/usePotrerosBoard';
 import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
@@ -50,6 +51,7 @@ export function PotrerosBoardPage({ viewSwitcher }: PotrerosBoardPageProps) {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [collapsed, setCollapsed] = useState<Set<ColumnKey>>(new Set());
   const [moveOpen, setMoveOpen] = useState(false);
+  const [showSemaforo, setShowSemaforo] = useState(false);
 
   const term = query.trim().toLowerCase();
   const matches = useCallback(
@@ -234,7 +236,22 @@ export function PotrerosBoardPage({ viewSwitcher }: PotrerosBoardPageProps) {
           <CircleAlert className="mr-2 h-5 w-5" />
           Solo sin potrero ({totals.unassigned})
         </Button>
+        <Button
+          variant={showSemaforo ? 'primary' : 'outline'}
+          className="h-12 justify-center"
+          onClick={() => setShowSemaforo((v) => !v)}
+          aria-pressed={showSemaforo}
+        >
+          <Sprout className="mr-2 h-5 w-5" />
+          Semáforo Forrajero
+        </Button>
       </div>
+
+      {showSemaforo && (
+        <div className="animate-in fade-in-50 duration-300">
+          <SemaforoPotrerosCard showTitle={false} />
+        </div>
+      )}
 
       {drag.active && (
         <p className="flex items-center gap-2 text-sm text-muted-foreground">

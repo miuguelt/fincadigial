@@ -1,0 +1,85 @@
+{
+	"$schema": "Villa Luz OS - Critical Files Manifest",
+	"$description": "Este archivo define los componentes CANÓNICOS del frontend. Las IAs y desarrolladores deben consultarlo ANTES de modificar archivos de layout, sidebar, o estilos. Modificar archivos fuera de esta lista puede causar regresiones silenciosas.",
+	"$updated": "2026-05-18",
+
+	"canonical_components": {
+		"layout": {
+			"file": "src/widgets/dashboard-layout/DashboardLayout.tsx",
+			"role": "Layout principal de la app autenticada. Usa React Router <Outlet>.",
+			"DO_NOT_CONFUSE_WITH": "src/widgets/dashboard/DashboardLayout.tsx (LEGACY/MUERTO)"
+		},
+		"sidebar": {
+			"file": "src/widgets/dashboard/RoleBasedSideBar.tsx",
+			"role": "Sidebar por roles con menú colapsable, accesibilidad, y tokens semánticos.",
+			"DO_NOT_CONFUSE_WITH": [
+				"src/widgets/dashboard/sideBar.tsx (LEGACY/MUERTO)",
+				"src/widgets/dashboard-layout/Sidebar.tsx (LEGACY/MUERTO)",
+				"src/components/Navigation/NavigationSidebar.tsx (EXPERIMENTAL/MUERTO)"
+			]
+		},
+		"sidebar_config": {
+			"file": "src/widgets/dashboard/sidebarConfig.tsx",
+			"role": "Definición de menú por categorías y roles. SSOT para el sidebar."
+		},
+		"header": {
+			"file": "src/widgets/dashboard-layout/Header.tsx",
+			"role": "Header premium con búsqueda global, FincaSelector, NotificationCenter."
+		},
+		"floating_menu": {
+			"file": "src/widgets/dashboard/FloatingQuickActions.tsx",
+			"role": "FAB (Floating Action Button) con accesos rápidos. Importado en DashboardLayout."
+		},
+		"styles": {
+			"file": "src/app/styles/index.css",
+			"role": "Design system completo con @theme tokens, light/dark, grid utilities (vl-grid-*)."
+		},
+		"routes": {
+			"file": "src/app/routes/AppRoutes.tsx",
+			"role": "Definición de todas las rutas con lazy loading y ProtectedRoute."
+		},
+		"entry": {
+			"file": "src/app/main.tsx",
+			"role": "Entry point de React con providers, QueryClient, SSE, PWA."
+		}
+	},
+
+	"design_system_rules": {
+		"backgrounds": [
+			"bg-background",
+			"bg-card",
+			"bg-surface",
+			"bg-surface-secondary"
+		],
+		"text": [
+			"text-foreground",
+			"text-text-primary",
+			"text-text-secondary",
+			"text-muted-foreground"
+		],
+		"borders": ["border-border", "border-border-strong"],
+		"semantic_colors": [
+			"bg-primary",
+			"bg-success",
+			"bg-warning",
+			"bg-danger",
+			"bg-info"
+		],
+		"NEVER_USE": [
+			"bg-gray-*",
+			"text-white (hardcoded)",
+			"bg-green-*",
+			"bg-red-*",
+			"bg-blue-*",
+			"bg-sidebar",
+			"text-sidebar-foreground"
+		]
+	},
+
+	"dead_files_DO_NOT_EDIT": [
+		"src/widgets/dashboard/DashboardLayout.tsx",
+		"src/widgets/dashboard/sideBar.tsx",
+		"src/widgets/dashboard-layout/Sidebar.tsx",
+		"src/components/Navigation/NavigationSidebar.tsx"
+	]
+}

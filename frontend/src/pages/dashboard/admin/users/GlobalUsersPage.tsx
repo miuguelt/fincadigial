@@ -78,7 +78,7 @@ const GlobalUsersPage = () => {
       {filteredUsers.length === 0 ? (
         <GlobalUsersEmptyState hasActiveFilters={hasActiveFilters} onResetFilters={resetFilters} />
       ) : viewMode === 'cards' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,17rem),1fr))] gap-4 sm:gap-6 [&>*]:min-w-0">
           {filteredUsers.map((user) => (
             <GlobalUserCard key={user.id} user={user} onOpenDetail={(u) => setSelectedUser(u)} />
           ))}

@@ -7,6 +7,7 @@ Este directorio contiene documentación del sistema. La información operativa v
 - [Arquitectura](../ARCHITECTURE.md): límites de backend/frontend y flujo de capas.
 - [Contexto para IA](../.devbrain/context/project-context.yml): ficha compacta para ahorrar tokens.
 - [Higiene del proyecto](architecture/PROJECT_HYGIENE.md): reglas para mantener el repositorio limpio y escalable.
+- [Secretos e ignores](architecture/SECURITY_AND_IGNORE_STRATEGY.md): credenciales, gates y contextos `.gitignore`/`.dockerignore`.
 - [Excepciones de modularidad](architecture/exceptions.md): deuda técnica conocida y acotada.
 - [Arranque](ARRANQUE.md): instrucciones operativas existentes.
 

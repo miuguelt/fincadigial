@@ -110,6 +110,17 @@ services:
       # ── Observabilidad ──
       SENTRY_DSN: ${SENTRY_DSN:-}
       SENTRY_TRACES_SAMPLE_RATE: "0.05"
+      # El bootstrap solo corre en villaluz-db-init; estas variables también
+      # quedan disponibles para que el backend identifique al admin global.
+      VILLALUZ_BOOTSTRAP_ENABLED: ${VILLALUZ_BOOTSTRAP_ENABLED:-true}
+      VILLALUZ_ADMIN_IDENTIFICATION: ${VILLALUZ_ADMIN_IDENTIFICATION}
+      VILLALUZ_ADMIN_EMAIL: ${VILLALUZ_ADMIN_EMAIL}
+      VILLALUZ_ADMIN_PASSWORD: ${VILLALUZ_ADMIN_PASSWORD}
+      VILLALUZ_ADMIN_FULLNAME: ${VILLALUZ_ADMIN_FULLNAME:-Administrador Villa Luz}
+      VILLALUZ_ADMIN_PHONE: ${VILLALUZ_ADMIN_PHONE:-3000000000}
+      VILLALUZ_BOOTSTRAP_FINCAS_JSON: ${VILLALUZ_BOOTSTRAP_FINCAS_JSON:-}
+      VILLALUZ_SEED_DEMO_DATA: ${VILLALUZ_SEED_DEMO_DATA:-false}
+      VILLALUZ_DEMO_PASSWORD: ${VILLALUZ_DEMO_PASSWORD:-}
     volumes:
       # Uploads persistentes (fotos de animales, adjuntos)
       - uploads_data:/app/static/uploads
@@ -140,13 +151,8 @@ services:
         sleep 5 &&
         echo '🔧 Ejecutando migraciones...' &&
         flask db upgrade &&
-        echo '🌱 Ejecutando seed de Base de Conocimiento...' &&
-        python -c \"
-        from app.utils.seed_master import run_master_seed;
-        app = create_app('production');
-        with app.app_context():
-            run_master_seed();
-        \" &&
+        echo '🌱 Ejecutando bootstrap global, por finca y admin...' &&
+        python -m app.scripts.bootstrap_database &&
         echo '✅ Inicialización completa.'
       "
     environment:
@@ -161,6 +167,16 @@ services:
       SQLALCHEMY_DATABASE_URI: "postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@villaluz-db:5432/${DB_NAME:-villaluz}"
       FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_COOKIE_DOMAIN: ${DOMAIN}
+      VILLALUZ_BOOTSTRAP_ENABLED: ${VILLALUZ_BOOTSTRAP_ENABLED:-true}
+      VILLALUZ_ADMIN_IDENTIFICATION: ${VILLALUZ_ADMIN_IDENTIFICATION}
+      VILLALUZ_ADMIN_EMAIL: ${VILLALUZ_ADMIN_EMAIL}
+      VILLALUZ_ADMIN_PASSWORD: ${VILLALUZ_ADMIN_PASSWORD}
+      VILLALUZ_ADMIN_FULLNAME: ${VILLALUZ_ADMIN_FULLNAME:-Administrador Villa Luz}
+      VILLALUZ_ADMIN_PHONE: ${VILLALUZ_ADMIN_PHONE:-3000000000}
+      VILLALUZ_BOOTSTRAP_FINCAS_JSON: ${VILLALUZ_BOOTSTRAP_FINCAS_JSON:-}
+      VILLALUZ_SEED_DEMO_DATA: ${VILLALUZ_SEED_DEMO_DATA:-false}
+      VILLALUZ_DEMO_PASSWORD: ${VILLALUZ_DEMO_PASSWORD:-}
     depends_on:
       villaluz-db:
         condition: service_healthy

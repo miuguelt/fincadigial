@@ -26,6 +26,22 @@
 - Antes de commit se ejecutan el detector de secretos y `validate-rules.ps1`.
 - En documentación, guías de prueba (`.md`) y `.env.example`, todo valor simulado de token, JWT, API key, password o credencial debe usar delimitadores explícitos de plantilla (como `<TU_TOKEN_JWT>`, `<CLAVE_AQUI>`) o placeholders estándar (`changeme`, `example`). Queda prohibido usar cadenas pseudo-reales o tokens truncados (ej. `eyJ0eXAiOiJKV1Qi...`) que activan los escáneres de seguridad.
 
+### 3.1 Estrategia operativa de secretos
+
+1. **Una sola fuente por entorno.** Desarrollo local obtiene credenciales desde Windows Credential Manager o desde un `.env` local protegido; CI obtiene secretos desde el almacén del proveedor; producción obtiene secretos desde Coolify/Windows Credential Manager. El repositorio solo contiene nombres de variables y placeholders.
+2. **Inyección en tiempo de ejecución.** El código, los scripts, Docker Compose y los manifiestos CI reciben referencias a variables (`${DB_PASSWORD}`, `process.env...`, `os.environ...`), nunca el valor. Un DSN con contraseña embebida también es un secreto y se compone en ejecución o se lee de una variable completa.
+3. **Sin defaults sensibles.** Toda contraseña, token o secreto de firma requerido debe fallar con un mensaje accionable si falta. No se permiten contraseñas por defecto, credenciales E2E literales ni secretos fijos de pruebas en el código.
+4. **Pruebas reproducibles sin secretos persistentes.** Los secretos criptográficos de CI se generan de forma efímera por ejecución. Las credenciales E2E se inyectan desde el entorno local o se generan temporalmente en CI; se borran al terminar y sus estados de autenticación quedan ignorados.
+5. **Superficie de salida cero.** No se imprimen, serializan, registran ni pasan por argumentos de comandos valores de credenciales. Los diagnósticos solo informan el nombre de la variable, su presencia/ausencia y el archivo/línea del hallazgo, nunca el valor.
+6. **Escaneo y respuesta.** El pre-commit usa `_infrastructure/devbraind/scripts/pre-commit-secrets.ps1 -Staged`; el gate completo usa `Test-DevBrainSecrets.ps1`/`SecretScanner.psm1` y `Test-DevBrainRepoHygiene.ps1`. Un secreto que haya entrado al historial se trata como incidente: rotar primero, retirar del índice después y reescribir historial solo mediante coordinación explícita.
+7. **Placeholders permitidos.** Los ejemplos versionados usan `<...>`, `${VARIABLE}`, `changeme` o `example`. No se aceptan tokens truncados, JWT con apariencia real ni cadenas pseudoaleatorias que parezcan credenciales.
+
+### 3.2 Contrato de nombres
+
+- Variables sensibles terminan en `_PASSWORD`, `_SECRET`, `_TOKEN`, `_API_KEY`, `_PRIVATE_KEY` o `_DSN`.
+- Las credenciales de pruebas usan prefijo de alcance (`VILLALUZ_E2E_`, `VILLALUZ_SEED_`, `VILLALUZ_STRESS_`) y nunca se reutilizan como credenciales de producción.
+- `VITE_*` se considera público porque termina en el navegador; solo puede contener configuración pública o una contraseña efímera de cuentas desechables de desarrollo local.
+
 ## 4. Autonomía objetiva
 
 - Investigar, leer, comparar, probar y diagnosticar proactivamente dentro del alcance solicitado.
@@ -61,6 +77,9 @@
 - Todo proceso que genere un reporte debe resolver una ruta absoluta desde el proyecto y escribir bajo `test-results/`, `maintenance/` o `artifacts/`. Nunca debe depender del directorio actual ni crear `*_report.json`, `*.log`, `*.pid`, `*.db`, `restored_*` o copias completas en la raíz.
 - Las copias de seguridad del código se resuelven con Git y un remoto. Las bases de datos se respaldan mediante dumps externos, cifrados y con checksum; el destino por defecto debe estar fuera del repositorio. Una herramienta de restauración debe rechazar destinos dentro del proyecto y restaurar primero en una carpeta externa de inspección.
 - Todo proyecto debe tener una guardia de estructura local además de `Test-DevBrainRepoHygiene.ps1` y `Test-DevBrainModularity.ps1`. El hook/CI debe bloquear raíces duplicadas, archivos sueltos no permitidos, referencias a rutas eliminadas y crecimiento de archivos que ya superan el presupuesto.
+- `.gitignore` y `.dockerignore` se generan desde el catálogo central `_infrastructure/devbraind/templates/repo-hygiene/ignore-templates.json` y se ajustan con fragmentos específicos del stack. No se usa un `*.json` global ni reglas amplias que oculten configuración válida; las exclusiones deben apuntar a artefactos, dependencias, secretos y salidas regenerables.
+- En monorepos, la raíz cubre artefactos compartidos y cada contexto Docker mantiene su `.dockerignore` local. Los archivos anidados solo contienen reglas propias del módulo; no se copian plantillas completas de otro stack.
+- Toda generación de ignores debe ser idempotente, conservar excepciones explícitas para templates seguros (`.env.example`, `.env.*.example`, `.env.*.template`) y validar el estado real con `git check-ignore`, no solo la presencia de texto en el archivo.
 - Antes de mover una carpeta se actualizan imports, entrypoints, compose, hooks, documentación activa y scripts. Después se ejecutan compilación/importación, pruebas afectadas, guardias de higiene y modularidad, y se refresca Codebase Memory. Los documentos históricos pueden conservar nombres antiguos si están fechados y marcados como históricos; no pueden ser consumidos por automatizaciones.
 - La organización se hace por responsabilidad y funcionalidad, no por acumular `utils`, `helpers`, `misc` o `temp`. Un archivo temporal se archiva con fecha o se elimina tras verificar que no tiene referencias. Los scripts de mantenimiento se promueven a código mantenido solo cuando tienen propietario, propósito, entrada/salida documentada y prueba mínima.
 
@@ -85,6 +104,7 @@
 3. Tras cambios DevBrain: sincronizar conocimiento en modo estricto, validar configuración canónica, sincronizar IDEs y ejecutar las pruebas MCP.
 4. Verificar el gateway en `/health`, los puertos canónicos y el contexto de tareas representativas.
 5. Un fallo de validación bloquea el commit; un hook posterior solo actualiza índices y nunca sustituye la validación previa.
+6. Para proyectos con DevBrain instalado, el pre-commit bloqueante ejecuta `pre-commit-secrets.ps1 -Staged` y `validate-rules.ps1`; el pre-push ejecuta `Test-DevBrainRepoHygiene.ps1 -SingleRepository -FailOnViolations`.
 
 ## 9. Registro automático de proyectos (v8.7 Zero-Touch)
 

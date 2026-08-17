@@ -1,0 +1,36 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "devbrain-lightning-proxy": {
+      "type": "local",
+      "command": [
+        "node",
+        "C:/Users/Miguel/Documents/Aplicaciones/_infrastructure/devbraind/mcp/scripts/mcp-stdio-bridge.mjs",
+        "--",
+        "C:/Users/Miguel/Documents/Aplicaciones/_infrastructure/devbraind/mcp/go/bin/mcp-lightning-proxy.exe",
+        "stdio",
+        "--port",
+        "8010"
+      ],
+      "environment": {
+        "MCP_MODE": "relay",
+        "MCP_LOG_LEVEL": "warn"
+      },
+      "enabled": true,
+      "timeout": 10000,
+      "description": "Relay unico al gateway DevBrain compartido en 127.0.0.1:8010."
+    }
+  },
+  "lsp": {
+    "typescript": {
+      "command": ["npx.cmd", "-y", "typescript-language-server", "--stdio"],
+      "extensions": [".ts", ".tsx", ".js", ".jsx"],
+      "disabled": false
+    },
+    "python": {
+      "command": ["npx.cmd", "-y", "pyright-langserver", "--stdio"],
+      "extensions": [".py"],
+      "disabled": false
+    }
+  }
+}

@@ -1,6 +1,12 @@
 repos:
   - repo: local
     hooks:
+      - id: devbrain-secret-scan
+        name: DevBrain secret scan (staged content)
+        language: system
+        entry: pwsh -NoProfile -ExecutionPolicy Bypass -File C:\Users\Miguel\Documents\Aplicaciones\_infrastructure\devbraind\scripts\pre-commit-secrets.ps1 -Staged
+        pass_filenames: false
+        always_run: true
       - id: villaluz-project-hygiene
         name: VillaLuz project hygiene
         language: system

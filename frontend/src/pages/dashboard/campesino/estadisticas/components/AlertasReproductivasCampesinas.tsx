@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Calendar, BellRing, Baby, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Calendar, BellRing, Baby, CheckCircle2, ChevronRight, Milk } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { reproductionService } from '@/entities/reproduction/api/reproduction.service';
@@ -9,7 +9,7 @@ export const AlertasReproductivasCampesinas: React.FC = () => {
 
   const { data: pendingBirths = [], isLoading: loadingBirths } = useQuery({
     queryKey: ['campesino-pending-births'],
-    queryFn: () => reproductionService.getPendingBirths(45).catch(() => []),
+    queryFn: () => reproductionService.getPendingBirths(65).catch(() => []),
     staleTime: 60000,
   });
 
@@ -21,7 +21,13 @@ export const AlertasReproductivasCampesinas: React.FC = () => {
 
   const isLoading = loadingBirths || loadingHeats;
 
-  const totalAlerts = (pendingBirths?.length || 0) + (heatAlerts?.length || 0);
+  // Filtrar vacas que están en ventana de secado (entre 45 y 65 días antes del parto, o <= 60 días)
+  const dryOffCows = (pendingBirths || []).filter((birth: any) => {
+    const daysToBirth = birth.days_to_birth ?? 60;
+    return daysToBirth <= 60 && daysToBirth > 0;
+  });
+
+  const totalAlerts = (pendingBirths?.length || 0) + (heatAlerts?.length || 0) + (dryOffCows?.length || 0);
 
   if (isLoading) {
     return (
@@ -30,7 +36,7 @@ export const AlertasReproductivasCampesinas: React.FC = () => {
   }
 
   return (
-    <div className="rounded-3xl border border-rose-200/70 bg-gradient-to-br from-rose-50/60 via-card to-amber-50/30 p-5 sm:p-6 shadow-md dark:border-rose-900/30 dark:from-rose-950/20 dark:via-card dark:to-amber-950/10 space-y-4">
+    <div className="rounded-3xl border border-rose-200/70 bg-gradient-to-br from-rose-50/60 via-card to-amber-50/30 p-5 sm:p-6 shadow-md dark:border-rose-900/30 dark:from-rose-950/20 dark:via-card dark:to-amber-950/10 space-y-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="bg-rose-100 dark:bg-rose-900/50 p-2.5 rounded-2xl text-rose-600 dark:text-rose-400">
@@ -38,7 +44,7 @@ export const AlertasReproductivasCampesinas: React.FC = () => {
           </div>
           <div>
             <h2 className="text-lg sm:text-xl font-black text-foreground tracking-tight flex items-center gap-2">
-              <span>Reproducción y Partos</span>
+              <span>Reproducción, Celo y Secado</span>
               {totalAlerts > 0 && (
                 <span className="text-xs bg-rose-600 text-white font-extrabold px-2.5 py-0.5 rounded-full">
                   {totalAlerts} alertas
@@ -46,7 +52,7 @@ export const AlertasReproductivasCampesinas: React.FC = () => {
               )}
             </h2>
             <p className="text-xs text-muted-foreground">
-              Retornos al celo (18-24 días) y partos calculados por fecha de monta
+              Retornos al celo (18-24d), secado de ubres (60d pre-parto) y partos calculados
             </p>
           </div>
         </div>
@@ -61,10 +67,51 @@ export const AlertasReproductivasCampesinas: React.FC = () => {
         </button>
       </div>
 
+      {/* 🥛 Sección Especial: Alertas de Secado Pre-Parto */}
+      {dryOffCows.length > 0 && (
+        <div className="p-4 rounded-2xl bg-cyan-50/70 dark:bg-cyan-950/30 border-2 border-cyan-300 dark:border-cyan-800 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Milk className="w-5 h-5 text-cyan-700 dark:text-cyan-400" />
+              <h3 className="text-xs font-black uppercase tracking-wider text-cyan-950 dark:text-cyan-200">
+                🥛 Alerta de Secado Pre-Parto (Suspender Ordeño 60 Días Antes)
+              </h3>
+            </div>
+            <span className="text-[10px] font-extrabold bg-cyan-200 dark:bg-cyan-900 text-cyan-900 dark:text-cyan-200 px-2 py-0.5 rounded-md">
+              {dryOffCows.length} {dryOffCows.length === 1 ? 'vaca' : 'vacas'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {dryOffCows.map((cow: any, idx: number) => {
+              const daysToBirth = cow.days_to_birth ?? 50;
+              return (
+                <div
+                  key={`dry-${cow.id || idx}`}
+                  className="p-3 rounded-xl bg-card border border-cyan-200 dark:border-cyan-800/60 shadow-2xs space-y-1"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-foreground">
+                      Vaca {cow.animal?.record || cow.animal_record || `#${cow.animal_id}`}
+                    </span>
+                    <span className="text-[10px] font-bold bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 px-2 py-0.5 rounded">
+                      Parto en {daysToBirth}d
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    ⚠️ Suspender ordeño, aplicar sellador/pomo de secado intramamario y pasar al potrero de descanso maternal.
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {totalAlerts === 0 ? (
         <div className="p-4 rounded-2xl bg-card border border-border/60 flex items-center gap-3 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-          <span>No hay vacas próximas a parto ni en ventana de celo para los próximos días. ¡Hato al día!</span>
+          <span>No hay vacas próximas a parto, en secado ni en ventana de celo para los próximos días. ¡Hato al día!</span>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -132,8 +179,8 @@ export const AlertasReproductivasCampesinas: React.FC = () => {
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {isVeryClose
-                      ? '⚠️ Trasladar al potrero de maternidad y vigilar ubre/ubre baja.'
-                      : 'Gestación normal de 283 días. Mantener buen forraje y sal mineral.'}
+                      ? '⚠️ Trasladar al potrero de maternidad y vigilar ubre baja y signos de parto.'
+                      : 'Gestación normal de 283 días. Mantener buen forraje y sal mineralizada.'}
                   </p>
                 </div>
               </div>

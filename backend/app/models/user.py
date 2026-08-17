@@ -298,29 +298,20 @@ class User(BaseModel):
 
     @classmethod
     def get_paginated_response(cls, query_result, include_relations=False, depth=1):
-        """Serialize /users with the role held in the active farm."""
-        payload = super().get_paginated_response(query_result, include_relations, depth)
         from app.utils.tenant_context import get_current_finca_id
 
         finca_id = get_current_finca_id()
-        items = payload.get("items", [])
-        if not finca_id or not items:
-            return payload
+        if not finca_id:
+            return super().get_paginated_response(query_result, include_relations, depth)
+        from app.services.user_scope_serializer import serialize_scoped_user_response
 
-        from app.models.user_finca import UserFinca
-
-        user_ids = [item["id"] for item in items if item.get("id") is not None]
-        memberships = UserFinca.query.filter(
-            UserFinca.user_id.in_(user_ids),
-            UserFinca.finca_id == finca_id,
-            UserFinca.is_active.is_(True),
-        ).all()
-        roles = {membership.user_id: membership.role for membership in memberships}
-        for item in items:
-            item["global_role"] = item.get("role")
-            if item.get("id") in roles:
-                item["role"] = roles[item["id"]]
-        return payload
+        return serialize_scoped_user_response(
+            cls,
+            query_result,
+            include_relations=include_relations,
+            depth=depth,
+            finca_id=finca_id,
+        )
 
     @property
     def fincas(self):

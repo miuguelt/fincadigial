@@ -15,8 +15,21 @@ Los sufijos `<ROL>` los define `scripts/test_credentials.py`:
 `ADMIN`, `OWNER`, `FOREMAN`, `INSTRUCTOR`, `APPRENTICE`, `WORKER`, `VET`.
 Si falta una variable, el script se detiene con un mensaje que dice cuál definir.
 
-`frontend/.env`, `backend/.env` y todo `.env.*` están en `.gitignore`. No los subas ni los pegues en
-documentación, prompts o logs. Para producción, la fuente es Windows Credential Manager.
+`frontend/.env`, `backend/.env` y todo `.env.*` están ignorados; solo se permiten versionar
+plantillas explícitas como `.env.example`, `.env.*.example` y `.env.*.template`, siempre con
+placeholders. No subas valores reales ni los pegues en documentación, prompts, argumentos o logs.
+Para producción, la fuente es Windows Credential Manager o el almacén de secretos del proveedor.
+
+## 🔐 Flujo seguro recomendado
+
+1. Guarda cada contraseña real en Windows Credential Manager con un nombre por entorno y rol.
+2. Inyéctala únicamente al proceso que la necesita, como variable de entorno temporal. No la
+   escribas en el código, en un JSON, en una orden de shell ni en un archivo rastreable.
+3. Si falta una variable, el script debe detenerse; no hay contraseñas de respaldo en el código.
+4. Al terminar la sesión, elimina las variables temporales y los estados de autenticación E2E.
+
+Para una sesión local interactiva se puede usar `Get-Credential` y mantener el valor solo en el
+proceso actual. No guardes la salida en un archivo ni la incluyas en el historial de PowerShell.
 
 ---
 
@@ -50,6 +63,10 @@ Si `VITE_DEV_PROFILE_PASSWORD` no está definida en `frontend/.env`, los botones
 funcionando pero dejan la contraseña vacía: la escribes a mano. Después de editar `frontend/.env`
 hay que reiniciar Vite para que tome el valor.
 
+`VITE_DEV_PROFILE_PASSWORD` es una comodidad exclusiva de desarrollo local: Vite la expone al
+navegador. Úsala únicamente con usuarios desechables de desarrollo, nunca con una cuenta real ni
+en un build de producción.
+
 ---
 
 ## 🛠️ Resincronizar usuarios
@@ -69,3 +86,13 @@ Para reescribir solo las contraseñas de Operario y Veterinario:
 
 Ambos scripts leen las credenciales del entorno mediante `scripts/test_credentials.py`
 y fallan de forma explícita si falta una variable, en lugar de usar un valor por defecto inseguro.
+
+## ✅ Gates antes de commit y push
+
+- Pre-commit: el hook DevBrain ejecuta `pre-commit-secrets.ps1 -Staged` y `validate-rules.ps1`.
+- Pre-push: `Test-DevBrainRepoHygiene.ps1 -SingleRepository -FailOnViolations` valida los dos
+  archivos de exclusión y el estado real del índice.
+- Auditoría completa manual: `pwsh -File C:\Users\Miguel\Documents\Aplicaciones\_infrastructure\devbraind\scripts\pre-commit-secrets.ps1 -Path .`.
+
+Si una contraseña ya fue comprometida en Git, agregarla al `.gitignore` no basta: rótala primero,
+retírala del índice y coordina la limpieza del historial con el equipo.
