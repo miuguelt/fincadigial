@@ -3,7 +3,11 @@ import { getPageSizeOptions } from '../crudPage.helpers';
 
 const PAGE_SIZE_STORAGE_PREFIX = 'crud:pageSize:';
 
-function readStoredPageSize(entityKey: string): number | null {
+/**
+ * Se exporta porque el tamaño guardado hace falta antes de que useResource
+ * arranque, para pedir la primera página con el límite correcto.
+ */
+export function readStoredPageSize(entityKey: string): number | null {
   try {
     const raw = window.localStorage.getItem(`${PAGE_SIZE_STORAGE_PREFIX}${entityKey}`);
     const parsed = Number(raw);

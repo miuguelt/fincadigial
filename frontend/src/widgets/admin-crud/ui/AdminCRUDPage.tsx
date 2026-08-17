@@ -20,21 +20,15 @@ import { useAuth } from '@/features/auth/model/useAuth';
 import { useT } from '@/shared/i18n';
 
 // Componentes especializados
-import { CRUDTable } from './CRUDTable';
-import { CRUDForm } from './CRUDForm';
 import { CRUDPagination } from './CRUDPagination';
-import { DetailModal, ConfirmDeleteDialog } from './CRUDModals';
 import { CRUDToolbar } from './CRUDToolbar';
-import { CRUDCardGrid } from './CRUDCardGrid';
+import { CRUDPageBody } from './CRUDPageBody';
+import { CRUDPageModals } from './CRUDPageModals';
+import { CRUDErrorState, CRUDLoadingState, CRUDOfflineBanner } from './CRUDPageStates';
 
 // Componentes de UI
 import { AppLayout } from '@/widgets/layout/AppLayout';
 import { PageHeader } from '@/widgets/layout/PageHeader';
-import { EmptyState } from '@/widgets/feedback/EmptyState';
-import { ErrorState } from '@/widgets/feedback/ErrorState';
-import { SkeletonTable } from '@/widgets/feedback/SkeletonTable';
-import { FloatingScrollArea } from '@/shared/ui/FloatingScrollArea';
-import { Plus } from 'lucide-react';
 import { cn } from '@/shared/ui/cn';
 import { withoutTombstones } from './crudPage.helpers';
 
@@ -46,7 +40,8 @@ import type { CRUDConfig } from '../../../shared/types/crud';
 import { useCrudFormState } from './hooks/useCrudFormState';
 import { useCrudSelection } from './hooks/useCrudSelection';
 import { useCrudPermissions } from './hooks/useCrudPermissions';
-import { useCrudPageSize } from './hooks/useCrudPageSize';
+import { useCrudPageSize, readStoredPageSize } from './hooks/useCrudPageSize';
+import { useOfflineFlag } from './hooks/useOfflineFlag';
 import { useCrudUrlSync } from './hooks/useCrudUrlSync';
 import { useCrudSubmit } from './hooks/useCrudSubmit';
 import { useCrudDelete } from './hooks/useCrudDelete';
@@ -96,7 +91,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
 }: AdminCRUDPageProps<T, TInput>) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<T | null>(null);
-  const [isOffline, setIsOffline] = useState(() => (typeof navigator !== 'undefined' ? !navigator.onLine : false));
+  const isOffline = useOfflineFlag();
 
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [detailItem, setDetailItem] = useState<T | null>(null);
@@ -115,17 +110,6 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
 
   const { canCreate, canUpdate, canDelete } = useCrudPermissions(config, role, user);
 
-  useEffect(() => {
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
   // Clave de entidad para tombstones persistentes
   const entityKey = useMemo(() => (config.entityName || 'entity').toLowerCase(), [config.entityName]);
 
@@ -133,15 +117,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     clearExpired(entityKey);
   }, [entityKey]);
 
-  const storedPageSizeSeed = useMemo(() => {
-    try {
-      const raw = window.localStorage.getItem(`crud:pageSize:${entityKey}`);
-      const parsed = Number(raw);
-      return Number.isFinite(parsed) && parsed > 0 && parsed <= 1000 ? parsed : null;
-    } catch {
-      return null;
-    }
-  }, [entityKey]);
+  const storedPageSizeSeed = useMemo(() => readStoredPageSize(entityKey), [entityKey]);
 
   const {
     data: items, loading, error, meta, setPage, setLimit,
@@ -317,13 +293,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
         className="px-2 sm:px-3 pt-0 sm:pt-1 pb-0 max-w-full min-h-0"
         contentClassName="space-y-0"
       >
-        <div className="bg-card/95 backdrop-blur-sm border border-border/30 rounded-lg shadow-lg overflow-hidden">
-          <SkeletonTable
-            columnLabels={config.columns.map((c: any) => c.label)}
-            columnWidths={config.columns.map((c: any) => c.width)}
-            rows={8}
-          />
-        </div>
+        <CRUDLoadingState config={config} />
       </AppLayout>
     );
   }
@@ -336,23 +306,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
         className="px-2 sm:px-3 pt-1 sm:pt-2 pb-0 max-w-full min-h-0"
         contentClassName="space-y-0"
       >
-        {isOffline ? (
-          <EmptyState
-            title="Sin conexión al servidor"
-            description="Actualmente no hay señal de internet y no se encontraron registros previos guardados en este dispositivo. Conéctese una vez para precargar la base de datos de la finca."
-            action={
-              <button
-                type="button"
-                onClick={() => refetch()}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
-              >
-                Reintentar conexión
-              </button>
-            }
-          />
-        ) : (
-          <ErrorState message={String(error)} onRetry={() => refetch()} />
-        )}
+        <CRUDErrorState isOffline={isOffline} error={error} onRetry={() => refetch()} />
       </AppLayout>
     );
   }
@@ -396,149 +350,71 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
         autoHeight ? 'h-auto' : 'flex-1 min-h-0'
       )}
     >
-      {isOffline && (
-        <div className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs sm:text-sm rounded-lg shadow-sm animate-in fade-in duration-300">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-2.5 w-2.5 relative flex-shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
-            </span>
-            <span>
-              <strong>Modo de campo (Sin internet):</strong> Operando con datos guardados localmente. Los registros nuevos o modificaciones se guardarán en este dispositivo y se sincronizarán al recuperar cobertura.
-            </span>
-          </div>
-        </div>
-      )}
+      {isOffline && <CRUDOfflineBanner />}
 
       {config.customHeader && !usesScrollableHeader && (
         <div className="flex-shrink-0">{config.customHeader}</div>
       )}
 
-      {empty ? (
-        <EmptyState
-          title={config.emptyStateMessage || `${t('state.empty.title', 'Sin datos')}: ${config.entityName}`}
-          description={config.emptyStateDescription || t('state.empty.description', 'Crea el primer registro para comenzar.')}
-          icon={config.emptyStateIcon}
-          action={canCreate && (
-            <button onClick={() => openCreate()} aria-label={`${t('common.create', 'Crear')} registro desde el estado vacío`}>
-              <Plus className="h-4 w-4 mr-2" />
-              {t('common.create', 'Crear')} {config.entityName.toLowerCase()}
-            </button>
-          )}
-        />
-      ) : isCardsView ? (
-        <div className="flex flex-col flex-1 min-h-0 mt-1">
-          {config.renderGrouped ? (
-            <div className="flex-1 min-h-0 rounded-xl flex flex-col overflow-hidden">
-              {config.renderGrouped(filteredItems)}
-            </div>
-          ) : (
-            <FloatingScrollArea
-              containerClassName="flex-1 rounded-xl"
-              horizontal={false}
-              className="p-2 sm:p-3 lg:p-4 pb-20 md:pb-24"
-            >
-              {usesScrollableHeader && config.customHeader}
-              <CRUDCardGrid<T>
-                items={filteredItems}
-                config={config}
-                selectedIds={selectedIds}
-                onToggleSelect={toggleSelect}
-                onOpenDetail={openDetail}
-              />
-            </FloatingScrollArea>
-          )}
-          {pagination}
-        </div>
-      ) : (
-        <>
-          <div className="bg-card/95 backdrop-blur-sm border border-border/30 rounded-xl shadow-lg overflow-hidden flex-1 flex flex-col min-h-0 mt-1">
-            <CRUDTable
-              headerSlot={usesScrollableHeader ? config.customHeader : undefined}
-              items={filteredItems}
-              columns={config.columns}
-              config={{
-                ...config,
-                customActions: config.customActions
-                  ? (item: T) => config.customActions!(item, { openCreate })
-                  : undefined,
-              }}
-              onOpenDetail={config.enableDetailModal !== false ? openDetail : undefined}
-              onOpenEdit={canUpdate ? openEdit : undefined}
-              onOpenDelete={canDelete ? openDeleteConfirm : undefined}
-              enhancedHover={enhancedHover}
-              refreshing={refreshing}
-              selectedIds={selectedIds}
-              onToggleSelect={toggleSelect}
-              onToggleSelectAll={toggleSelectAll}
-              onUpdateCell={canUpdate ? handleUpdateCell : undefined}
-            />
-          </div>
-          {pagination}
-        </>
-      )}
+      <CRUDPageBody<T>
+        config={config}
+        t={t}
+        items={filteredItems}
+        empty={empty}
+        usesScrollableHeader={usesScrollableHeader}
+        isCardsView={isCardsView}
+        pagination={pagination}
+        canCreate={canCreate}
+        canUpdate={canUpdate}
+        canDelete={canDelete}
+        openCreate={openCreate}
+        openEdit={openEdit}
+        openDetail={openDetail}
+        openDeleteConfirm={openDeleteConfirm}
+        selectedIds={selectedIds}
+        onToggleSelect={toggleSelect}
+        onToggleSelectAll={toggleSelectAll}
+        onUpdateCell={canUpdate ? handleUpdateCell : undefined}
+        enhancedHover={enhancedHover}
+        refreshing={refreshing}
+      />
 
       {config.enableSelection && selectedIds.length > 0 && config.batchActions && (
         config.batchActions(selectedIds, filteredItems, clearSelection, { openCreate })
       )}
 
-      {(canCreate || canUpdate) && (
-        <CRUDForm
-          isOpen={isModalOpen}
-          onOpenChange={handleModalClose}
-          title={editingItem
-            ? `${t('common.edit', 'Editar')} ${config.entityName}: ${editingItem.id}`
-            : `${t('common.create', 'Crear')} ${config.entityName}`}
-          formData={formData}
-          setFormData={setFormData as unknown as React.Dispatch<React.SetStateAction<Record<string, any>>>}
-          formSections={config.formSections || []}
-          fieldErrors={formErrors}
-          onFieldValueChange={updateFieldValue}
-          onSubmit={handleSubmit}
-          saving={saving}
-          editingItem={editingItem}
-          showEditTimestamps={config.showEditTimestamps}
-          additionalFormContent={additionalFormContent as any}
-        />
-      )}
-
-      {config.enableDetailModal !== false && (
-        <DetailModal
-          isOpen={isDetailOpen}
-          onOpenChange={setIsDetailOpen}
-          title={detailItem
-            ? `Detalle del ${config.entityName}${config.showIdInDetailTitle === false ? '' : `: ${detailItem.id}`}`
-            : `Detalle del ${config.entityName}`}
-          item={detailItem}
-          config={config}
-          onEdit={canUpdate ? openEdit : undefined}
-          customDetailContent={customDetailContent}
-          showDetailTimestamps={config.showDetailTimestamps}
-          showIdInDetailTitle={config.showIdInDetailTitle}
-          detailIndex={detailIndex}
-          setDetailIndex={setDetailIndex}
-          items={filteredItems}
-          setDetailItem={setDetailItem}
-        />
-      )}
-
-      {canDelete && (
-        <ConfirmDeleteDialog
-          open={confirmOpen}
-          onOpenChange={(open) => {
-            setConfirmOpen(open);
-            if (!open) resetConfirmState();
-          }}
-          title={config.confirmDeleteTitle || '⚠️ Confirmar eliminación'}
-          description={config.confirmDeleteDescription || `¿Está seguro que desea eliminar este ${config.entityName.toLowerCase()}? Esta acción no se puede deshacer.`}
-          onConfirm={handleConfirmDelete}
-          confirmLabel={t('common.delete', 'Eliminar')}
-          cancelLabel={t('common.cancel', 'Cancelar')}
-          entityName={config.entityName}
-          loadingDependencies={isCheckingDependencies}
-          dependencyInfo={dependencyInfo}
-        />
-      )}
+      <CRUDPageModals<T, TInput>
+        config={config}
+        t={t}
+        canCreate={canCreate}
+        canUpdate={canUpdate}
+        canDelete={canDelete}
+        isModalOpen={isModalOpen}
+        onModalClose={handleModalClose}
+        editingItem={editingItem}
+        formData={formData}
+        setFormData={setFormData}
+        formErrors={formErrors}
+        updateFieldValue={updateFieldValue}
+        onSubmit={handleSubmit}
+        saving={saving}
+        additionalFormContent={additionalFormContent}
+        isDetailOpen={isDetailOpen}
+        setIsDetailOpen={setIsDetailOpen}
+        detailItem={detailItem}
+        setDetailItem={setDetailItem}
+        detailIndex={detailIndex}
+        setDetailIndex={setDetailIndex}
+        items={filteredItems}
+        openEdit={openEdit}
+        customDetailContent={customDetailContent}
+        confirmOpen={confirmOpen}
+        setConfirmOpen={setConfirmOpen}
+        resetConfirmState={resetConfirmState}
+        onConfirmDelete={handleConfirmDelete}
+        isCheckingDependencies={isCheckingDependencies}
+        dependencyInfo={dependencyInfo}
+      />
     </AppLayout>
   );
 }
