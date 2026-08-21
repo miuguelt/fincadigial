@@ -128,7 +128,7 @@ export default function FincasPublicasPage() {
             className="mb-4 text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
-            Volver al login
+            Volver al inicio de sesión
           </Button>
 
           <div className="flex items-center gap-4 mb-2">

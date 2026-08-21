@@ -1,10 +1,12 @@
 export { AnimalCard } from './AnimalCard';
 export { AnimalModal } from './AnimalModal';
+export { AnimalDetailModal } from './AnimalDetailModal';
 export { AnimalModalContent } from './AnimalModalContent';
 export { AnimalImageUpload } from './AnimalImageUpload';
 export { AnimalImageGallery } from './AnimalImageGallery';
 export { AnimalImageManager } from './AnimalImageManager';
 export { AnimalImageBanner } from './AnimalImageBanner';
 export { AlertsSection } from './AlertsSection';
+export { LivestockTagWidget } from './LivestockTagWidget';
 export { AnimalExitModal } from '@/widgets/animals/AnimalExitModal';
 export { WeaningModal } from '@/widgets/animals/WeaningModal';

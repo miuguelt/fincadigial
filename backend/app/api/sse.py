@@ -70,6 +70,19 @@ def _is_internal_event(payload) -> bool:
         return False
 
 
+def _extract_user_id(user_identity) -> str | None:
+    if user_identity is None:
+        return None
+    if isinstance(user_identity, dict):
+        val = (
+            user_identity.get("id")
+            or user_identity.get("user_id")
+            or user_identity.get("sub")
+        )
+        return str(val) if val is not None else str(user_identity)
+    return str(user_identity)
+
+
 def _event_visible_to_user(payload, user_identity) -> bool:
     """Keep targeted notifications private while preserving broadcast events."""
     try:
@@ -84,7 +97,10 @@ def _event_visible_to_user(payload, user_identity) -> bool:
         recipient_id = decoded.get("recipient_id")
         if recipient_id is None:
             return True
-        return str(recipient_id) == str(user_identity)
+
+        target_id = str(recipient_id)
+        current_id = _extract_user_id(user_identity)
+        return target_id == current_id
     except Exception:
         # Malformed non-targeted coordination events keep the previous behavior.
         return True
@@ -104,8 +120,9 @@ def _sse_slot_key(user_identity, ip: str) -> str:
     Contar por IP dejaba sin eventos en vivo al cuarto administrador conectado
     desde la misma red (NAT de la finca): todos compartían el mismo cupo.
     """
-    if user_identity is not None and str(user_identity) != "":
-        return f"user:{user_identity}"
+    uid = _extract_user_id(user_identity)
+    if uid is not None and uid != "":
+        return f"user:{uid}"
     return f"ip:{ip}"
 
 
@@ -176,10 +193,24 @@ def sse_events_handler():
         if flask.request.method == "HEAD":
             return APIResponse.success(message="SSE endpoint ready")
 
-        # ── Autenticación JWT obligatoria ──────────────────────────────────────
+        # ── Autenticación JWT obligatoria (cookies, headers o query string) ──────
         try:
-            verify_jwt_in_request()
-            user_identity = get_jwt_identity()
+            try:
+                verify_jwt_in_request(optional=True)
+                user_identity = get_jwt_identity()
+            except Exception:
+                user_identity = None
+
+            if not user_identity:
+                token = flask.request.args.get("token") or flask.request.args.get("access_token")
+                if token:
+                    from flask_jwt_extended import decode_token
+                    decoded = decode_token(token)
+                    user_identity = decoded.get("sub")
+
+            if not user_identity:
+                verify_jwt_in_request()
+                user_identity = get_jwt_identity()
         except Exception as jwt_err:
             logger.warning(
                 f"[SSE] Conexión rechazada: JWT inválido o ausente — {jwt_err}"

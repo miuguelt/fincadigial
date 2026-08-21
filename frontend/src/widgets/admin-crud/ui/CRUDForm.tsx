@@ -5,20 +5,20 @@
  * Implementa validación eficiente y mejor experiencia de usuario.
  */
 
-import React, { memo, useCallback, useMemo, useEffect, useState } from 'react';
-import { GenericModal } from '@/shared/ui/common/GenericModal';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Textarea } from '@/shared/ui/textarea';
-import { Combobox } from '@/shared/ui/combobox';
-import { cn } from '@/shared/ui/cn.ts';
-import { Loader2, ChevronRight } from 'lucide-react';
-import { useT } from '@/shared/i18n';
-import { getTodayColombia } from '@/shared/utils/dateUtils';
-import type { FieldErrors } from '@/shared/utils/formValidation';
+import React, { memo, useCallback, useMemo, useEffect, useState } from "react";
+import { GenericModal } from "@/shared/ui/common/GenericModal";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Textarea } from "@/shared/ui/textarea";
+import { Combobox } from "@/shared/ui/combobox";
+import { cn } from "@/shared/ui/cn";
+import { Loader2, ChevronRight } from "lucide-react";
+import { useT } from "@/shared/i18n";
+import { getTodayColombia } from "@/shared/utils/dateUtils";
+import type { FieldErrors } from "@/shared/utils/formValidation";
 
 // Interfaces
-import type { CRUDFormField, CRUDFormSection } from '../../../shared/types/crud';
+import type { CRUDFormField, CRUDFormSection } from "../../../shared/types/crud";
 
 interface CRUDFormProps<T extends { id?: number }> {
   isOpen: boolean;
@@ -44,7 +44,7 @@ const FormField = memo<{
   error?: string;
   saving: boolean;
   editingItem?: any;
-}>(({ field, value, onChange, error, saving, editingItem }) => {
+}>(({ field, value, onChange, error, saving, editingItem: _editingItem }) => {
   const t = useT();
   const [asyncOptions, setAsyncOptions] = useState(field.options);
   const [loadingOptions, setLoadingOptions] = useState(false);
@@ -72,7 +72,7 @@ const FormField = memo<{
   }, [field]);
 
   // Variables derivadas frecuentes usadas en diferentes ramas
-  const isBirthDateField = String(field.name) === 'birth_date';
+  const isBirthDateField = String(field.name) === "birth_date";
   const today = getTodayColombia();
 
   // Determinar si el campo es obligatorio y está vacío
@@ -84,14 +84,21 @@ const FormField = memo<{
     onChange(newValue);
   }, [onChange]);
 
+  const formattedOptions = useMemo(() => {
+    return (asyncOptions || []).map((o) => ({
+      label: o.label,
+      value: String(o.value),
+    }));
+  }, [asyncOptions]);
+
   // Renderizar campo según tipo
   const renderField = () => {
     switch (field.type) {
-      case 'textarea':
+      case "textarea":
         return (
           <Textarea
             id={String(field.name)}
-            value={value || ''}
+            value={value || ""}
             onChange={(e) => handleChange(e.target.value)}
             placeholder={field.placeholder}
             rows={3}
@@ -99,145 +106,121 @@ const FormField = memo<{
             aria-invalid={showWarning}
             aria-required={isRequired}
             className={cn(
-              "w-full min-h-[80px] resize-none text-sm",
+              "w-full text-sm",
               showWarning
                 ? "border-destructive focus:border-destructive ring-1 ring-destructive/30 bg-destructive/[0.03]"
                 : "border-border/50 focus:border-primary/50",
               isRequired && "border-l-4 border-l-destructive/40",
               "bg-background/50 focus:bg-background/80",
-              "transition-all duration-300",
-              "backdrop-blur-sm"
+              "transition-all duration-300 backdrop-blur-sm"
             )}
           />
         );
 
-      case 'select':
-        if (loadingOptions) {
-          return <div className="text-sm text-muted-foreground">Cargando opciones...</div>;
-        }
-        if (!asyncOptions || asyncOptions.length === 0) {
-          return (
-            <div className="text-sm text-muted-foreground">
-              No hay opciones disponibles
-            </div>
-          );
-        }
-
-        {
-          const opts = asyncOptions || [];
-          const isNumeric = opts.length > 0 && opts.every((o: any) => typeof o.value === 'number');
-
-          return (
+      case "select":
+        return (
+          <div className="relative">
             <select
               id={String(field.name)}
-              value={String(value ?? '')}
+              value={value !== undefined && value !== null ? String(value) : ""}
               onChange={(e) => {
                 const val = e.target.value;
-                handleChange(
-                  isNumeric ? (val === '' ? undefined : Number(val)) : val
-                );
+                const original = (asyncOptions || []).find((o) => String(o.value) === val);
+                handleChange(original ? original.value : (val === "" ? null : val));
               }}
-              disabled={saving}
+              disabled={saving || loadingOptions}
+              aria-invalid={showWarning}
               aria-required={isRequired}
               className={cn(
-                "w-full px-3 py-2.5 border rounded-lg min-h-[44px] text-sm",
-                "bg-background/50 focus:bg-background/80",
-                "transition-all duration-200",
-                "backdrop-blur-sm",
-                "cursor-pointer",
+                "w-full min-h-[44px] text-sm rounded-lg border px-3 py-2",
                 showWarning
-                  ? "border-destructive focus:border-destructive ring-1 ring-destructive/30 text-foreground bg-destructive/[0.03]"
-                  : "border-border/50 focus:border-primary/50 text-foreground hover:border-primary/30",
-                isRequired && "border-l-4 border-l-destructive/40"
+                  ? "border-destructive focus:border-destructive ring-1 ring-destructive/30 bg-destructive/[0.03]"
+                  : "border-border/50 focus:border-primary/50",
+                isRequired && "border-l-4 border-l-destructive/40",
+                "bg-background/50 focus:bg-background/80",
+                "transition-all duration-300 backdrop-blur-sm"
               )}
             >
-              <option value="" className="text-muted-foreground">
-                {field.placeholder || 'Seleccionar...'}
-              </option>
-              {opts.map((option: any) => (
-                <option key={String(option.value)} value={String(option.value)} className="text-foreground">
-                  {option.label}
+              <option value="">{field.placeholder || t("common.selectOption", "Seleccionar opción")}</option>
+              {(asyncOptions || []).map((opt) => (
+                <option key={opt.value} value={String(opt.value)}>
+                  {opt.label}
                 </option>
               ))}
             </select>
-          );
-        }
+            {loadingOptions && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
+            )}
+          </div>
+        );
 
-      case 'searchable-select':
-        if (loadingOptions) {
-          return <div className="text-sm text-muted-foreground">Cargando opciones...</div>;
-        }
-        if (!asyncOptions || asyncOptions.length === 0) {
-          return (
-            <div className="text-sm text-muted-foreground">
-              No hay opciones disponibles
-            </div>
-          );
-        }
-
-        {
-          let opts = asyncOptions || [];
-          const isNumeric = opts.length > 0 && opts.every((o: any) => typeof o.value === 'number');
-
-          // Excluir el propio registro si se solicita
-          if (field.excludeSelf && editingItem?.id != null) {
-            opts = opts.filter((o: any) => o.value !== editingItem.id);
-          }
-
-          return (
-            <div className={cn(
-              isRequired && "border-l-4 border-l-destructive/40 rounded-l-sm",
-              showWarning && "ring-1 ring-destructive/30 rounded-lg border border-destructive bg-destructive/[0.03]"
-            )}>
-              <Combobox
-                options={opts.map((o: any) => ({ value: String(o.value), label: o.label }))}
-                value={value == null ? '' : String(value)}
-                onValueChange={(val) =>
-                  handleChange(
-                    isNumeric ? (val === '' ? undefined : Number(val)) : val
-                  )
-                }
-                placeholder={field.placeholder || t('common.search', 'Buscar...')}
-                searchPlaceholder={t('common.search', 'Buscar...')}
-                emptyMessage={field.emptyMessage || t('state.empty.title', 'Sin resultados')}
-                disabled={saving}
-                loading={field.loading}
-                searchDebounceMs={field.searchDebounceMs || 300}
-                onSearchChange={field.onSearchChange}
-                className={cn(
-                  "transition-all duration-200",
-                  field.loading && "opacity-80",
-                  !opts.length && !field.loading && "opacity-60"
-                )}
-              />
-            </div>
-          );
-        }
-
-      case 'checkbox':
+      case "searchable-select":
         return (
-          <div className="flex items-start space-x-2 mt-1">
+          <div className="relative">
+            <Combobox
+              options={formattedOptions}
+              value={value !== undefined && value !== null ? String(value) : ""}
+              onValueChange={(val: string) => {
+                const original = (asyncOptions || []).find((o) => String(o.value) === val);
+                handleChange(original ? original.value : val);
+              }}
+              placeholder={field.placeholder || t("common.selectOption", "Seleccionar opción")}
+              emptyMessage={t("common.noOptions", "No hay opciones disponibles")}
+              disabled={saving || loadingOptions}
+              className={cn(
+                "w-full min-h-[44px] text-sm",
+                showWarning
+                  ? "border-destructive focus:border-destructive ring-1 ring-destructive/30 bg-destructive/[0.03]"
+                  : "border-border/50 focus:border-primary/50",
+                isRequired && "border-l-4 border-l-destructive/40",
+                "bg-background/50 focus:bg-background/80",
+                "transition-all duration-300 backdrop-blur-sm"
+              )}
+            />
+            {loadingOptions && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
+            )}
+          </div>
+        );
+
+      case "checkbox":
+        return (
+          <div className="flex items-center space-x-3 py-1.5 px-3 rounded-lg border border-border/40 bg-muted/20 hover:bg-muted/30 transition-colors">
             <input
               id={String(field.name)}
               type="checkbox"
               checked={Boolean(value)}
               onChange={(e) => handleChange(e.target.checked)}
               disabled={saving}
-              className="h-4 w-4 text-primary focus:ring-primary border-input rounded mt-0.5 flex-shrink-0"
+              className={cn(
+                "h-4 w-4 rounded border-border text-primary",
+                "focus:ring-2 focus:ring-primary/20 transition-all",
+                "cursor-pointer disabled:cursor-not-allowed"
+              )}
             />
-            <label htmlFor={String(field.name)} className="text-sm font-medium text-foreground leading-relaxed">
-              {field.label}
+            <label
+              htmlFor={String(field.name)}
+              className="text-xs sm:text-sm font-medium text-foreground cursor-pointer select-none"
+            >
+              {field.placeholder || field.label}
             </label>
           </div>
         );
 
-      case 'number':
+      case "number":
         return (
           <Input
             id={String(field.name)}
             type="number"
-            value={value || ''}
-            onChange={(e) => handleChange(e.target.value ? Number(e.target.value) : undefined)}
+            value={value !== undefined && value !== null ? value : ""}
+            onChange={(e) => {
+              const val = e.target.value;
+              handleChange(val === "" ? null : Number(val));
+            }}
             placeholder={field.placeholder}
             min={field.validation?.min}
             max={field.validation?.max}
@@ -257,7 +240,7 @@ const FormField = memo<{
           />
         );
 
-      case 'date':
+      case "date":
         {
           const maxDate = isBirthDateField ? today : undefined;
 
@@ -266,7 +249,7 @@ const FormField = memo<{
               id={String(field.name)}
               type="date"
               max={maxDate}
-              value={value || ''}
+              value={value || ""}
               onChange={(e) => handleChange(e.target.value)}
               disabled={saving}
               aria-invalid={showWarning}
@@ -284,13 +267,13 @@ const FormField = memo<{
           );
         }
 
-      case 'text':
-      case 'multiselect':
+      case "text":
+      case "multiselect":
       default:
         return (
           <Input
             id={String(field.name)}
-            value={value || ''}
+            value={value || ""}
             onChange={(e) => handleChange(e.target.value)}
             placeholder={field.placeholder}
             disabled={saving}
@@ -312,8 +295,8 @@ const FormField = memo<{
 
   return (
     <div className={cn(
-      'w-full space-y-2 group/field relative',
-      field.colSpan && field.colSpan > 1 && 'sm:col-span-2'
+      "w-full space-y-2 group/field relative",
+      field.colSpan && field.colSpan > 1 && "sm:col-span-2"
     )}>
       <label htmlFor={String(field.name)} className={cn(
         "block text-xs sm:text-sm font-bold tracking-tight",
@@ -334,10 +317,10 @@ const FormField = memo<{
       </div>
 
       <div className="min-h-[16px] flex flex-col gap-1 overflow-hidden">
-        {showWarning && field.type !== 'checkbox' && (
+        {showWarning && field.type !== "checkbox" && (
           <p className="text-[11px] font-semibold text-destructive flex items-center gap-1.5 mt-1 animate-in slide-in-from-top-1 duration-200">
             <span className="h-1.5 w-1.5 rounded-full bg-destructive flex-shrink-0 animate-pulse" />
-            <span>{error || 'Este campo es obligatorio.'}</span>
+            <span>{error || "Este campo es obligatorio."}</span>
           </p>
         )}
 
@@ -347,7 +330,7 @@ const FormField = memo<{
           </p>
         )}
 
-        {field.type === 'date' && isBirthDateField && value && value > today && (
+        {field.type === "date" && isBirthDateField && value && value > today && (
           <p className="text-[11px] font-bold text-destructive animate-in slide-in-from-top-1 duration-300">
             La fecha de nacimiento no puede ser futura.
           </p>
@@ -376,10 +359,10 @@ export function CRUDForm<T extends { id?: number }>({
   useEffect(() => {
     if (!isOpen || !fieldErrors) return;
     const firstKey = Object.keys(fieldErrors)[0];
-    if (!firstKey || typeof window === 'undefined') return;
+    if (!firstKey || typeof window === "undefined") return;
     const el = document.getElementById(firstKey);
-    if (el && 'focus' in el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (el && "focus" in el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
       (el as HTMLElement).focus();
     }
   }, [fieldErrors, isOpen]);
@@ -403,7 +386,7 @@ export function CRUDForm<T extends { id?: number }>({
   const renderFormSections = useMemo(() => {
     return formSections.filter((section) => section.showIf?.(formData) !== false).map((section, sectionIndex) => {
       const gridCols = section.gridCols ?? 3;
-      const gridClass = `grid grid-cols-1 ${gridCols >= 2 ? 'sm:grid-cols-2' : ''} ${gridCols >= 3 ? 'lg:grid-cols-3' : ''} gap-3 sm:gap-4 lg:gap-5`;
+      const gridClass = `grid grid-cols-1 ${gridCols >= 2 ? "sm:grid-cols-2" : ""} ${gridCols >= 3 ? "lg:grid-cols-3" : ""} gap-3 sm:gap-4 lg:gap-5`;
 
       return (
         <div key={section.title || sectionIndex} className={cn(
@@ -451,6 +434,7 @@ export function CRUDForm<T extends { id?: number }>({
       variant="compact"
       allowFullScreenToggle
       enableBackdropBlur
+      preventCloseOnOutsideClick={true}
       className="bg-card text-card-foreground border-border shadow-lg transition-all duration-200 ease-out"
     >
       <form onSubmit={onSubmit} className="space-y-4 h-full flex flex-col text-[13px] sm:text-sm">
@@ -468,14 +452,15 @@ export function CRUDForm<T extends { id?: number }>({
             <div className="flex flex-wrap gap-x-4 gap-y-1">
               <span><strong className="text-foreground/80">ID:</strong> {editingItem.id}</span>
               {(editingItem as any).created_at && (
-                <span><strong className="text-foreground/80">Creado:</strong> {new Date((editingItem as any).created_at).toLocaleDateString('es-CO')}</span>
+                <span><strong className="text-foreground/80">Creado:</strong> {new Date((editingItem as any).created_at).toLocaleDateString("es-CO")}</span>
               )}
               {(editingItem as any).updated_at && (
-                <span><strong className="text-foreground/80">Actualizado:</strong> {new Date((editingItem as any).updated_at).toLocaleDateString('es-CO')}</span>
+                <span><strong className="text-foreground/80">Actualizado:</strong> {new Date((editingItem as any).updated_at).toLocaleDateString("es-CO")}</span>
               )}
             </div>
           </div>
         )}
+
         <div className={cn(
           "flex flex-col sm:flex-row gap-2 sm:justify-end pt-4 mt-6",
           "sticky bottom-0 -mx-3 sm:-mx-4 -mb-2 py-3 px-4 sm:px-5",
@@ -490,7 +475,7 @@ export function CRUDForm<T extends { id?: number }>({
             disabled={saving}
             className="flex-1 sm:flex-initial transition-all duration-150 hover:shadow-sm active:scale-[0.98]"
           >
-            {t('common.cancel', 'Cancelar')}
+            {t("common.cancel", "Cancelar")}
           </Button>
           <Button
             type="submit"
@@ -501,11 +486,11 @@ export function CRUDForm<T extends { id?: number }>({
             {saving ? (
               <span className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                {t('common.saving', 'Procesando...')}
+                {t("common.saving", "Procesando...")}
               </span>
             ) : (
               <span className="flex items-center gap-2">
-                {editingItem ? t('common.update', 'Guardar Cambios') : t('common.create', 'Crear Registro')}
+                {editingItem ? t("common.update", "Guardar Cambios") : t("common.create", "Crear Registro")}
                 <ChevronRight className="h-4 w-4" />
               </span>
             )}

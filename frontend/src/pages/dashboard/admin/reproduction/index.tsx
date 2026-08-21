@@ -1,4 +1,7 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Target } from 'lucide-react';
+import { Button } from '@/shared/ui/button';
 import { AdminCRUDPage } from '@/widgets/admin-crud';
 import { reproductionService } from '@/entities/reproduction/api/reproduction.service';
 import { animalService } from '@/entities/animal/api/animal.service';
@@ -8,7 +11,12 @@ import { Badge } from '@/shared/ui/badge';
 import { formatDateColombia } from '@/shared/utils/dateUtils';
 import { getAutoStatusClass } from '@/shared/utils/badgeStyles';
 
+/** Etiqueta del selector: el registro manda, la raza desambigua. */
+const animalLabel = (animal: { record: string; breed?: { name?: string } | null }) =>
+  animal.breed?.name ? `${animal.record} · ${animal.breed.name}` : animal.record;
+
 const ReproductionPage: React.FC = () => {
+  const navigate = useNavigate();
   const initialFormData: ReproductiveEventInput = {
     animal_id: 0,
     event_type: 'Celo',
@@ -35,6 +43,7 @@ const ReproductionPage: React.FC = () => {
             case 'Inseminacion': variant = 'outline'; break;
             case 'Diagnostico': variant = 'default'; break;
             case 'Parto': variant = 'destructive'; break;
+            case 'Secado': variant = 'outline'; break;
           }
           return <Badge variant={variant}>{val}</Badge>;
         }
@@ -61,11 +70,14 @@ const ReproductionPage: React.FC = () => {
         key: 'expected_birth_date',
         label: 'Fecha Prob. Parto',
         render: (val: any, item: ReproductiveEventResponse) => {
-          if (item.event_type !== 'Inseminacion') return null;
+          // El diagnóstico positivo hereda la fecha probable de su servicio,
+          // así que también anuncia parto y debe mostrarla.
+          if (item.event_type !== 'Inseminacion' && item.event_type !== 'Diagnostico') return null;
+          if (!val) return null;
           return (
             <div className="flex flex-col">
               <span className={item.is_overdue ? 'text-destructive font-bold' : ''}>
-                {val ? formatDateColombia(val) : '---'}
+                {formatDateColombia(val)}
               </span>
               {item.days_to_birth !== undefined && (
                 <span className="text-[11px] text-muted-foreground">
@@ -142,7 +154,7 @@ const ReproductionPage: React.FC = () => {
             required: true,
             loadOptions: async () => {
               const animals = await animalService.getAll({ sex: 'Hembra' });
-              return animals.map(a => ({ label: `${a.record} - ${a.name || ''}`, value: a.id }));
+              return animals.map(a => ({ label: animalLabel(a), value: a.id }));
             }
           },
           {
@@ -155,6 +167,7 @@ const ReproductionPage: React.FC = () => {
               { label: 'Inseminación', value: 'Inseminacion' },
               { label: 'Diagnóstico de Preñez', value: 'Diagnostico' },
               { label: 'Parto', value: 'Parto' },
+              { label: 'Secado', value: 'Secado' },
             ],
           },
           {
@@ -185,7 +198,7 @@ const ReproductionPage: React.FC = () => {
             type: 'select',
             loadOptions: async () => {
               const animals = await animalService.getAll({ sex: 'Macho' });
-              return animals.map(a => ({ label: `${a.record} - ${a.name || ''}`, value: a.id }));
+              return animals.map(a => ({ label: animalLabel(a), value: a.id }));
             }
           },
         ]
@@ -240,6 +253,16 @@ const ReproductionPage: React.FC = () => {
         ]
       }
     ],
+    customToolbar: (
+      <Button
+        variant="outline"
+        className="h-9 gap-2 rounded-lg font-semibold"
+        onClick={() => navigate('/admin/reproduction/kpis')}
+      >
+        <Target className="h-4 w-4" />
+        Indicadores del hato
+      </Button>
+    ),
     enableEditModal: true,
     enableDelete: true,
     enableDetailModal: true,

@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { controlService } from "@/entities/control/api/control.service";
 import { treatmentsService } from "@/entities/treatment/api/treatments.service";
@@ -9,6 +9,7 @@ import {
   ModalBody,
 } from "@/shared/ui/common/UnifiedModal";
 import { CheckCircle } from "lucide-react";
+import { getTodayColombia } from "@/shared/utils/dateUtils";
 
 /**
  * Modal de acción rápida: detecta el tipo de alerta y muestra el formulario mínimo
@@ -131,7 +132,7 @@ function QuickControlForm({
     mutationFn: () =>
       controlService.createControl({
         animal_id: animalId,
-        checkup_date: new Date().toISOString().split("T")[0],
+        checkup_date: getTodayColombia(),
         health_status: healthStatus,
         weight: weight ? Number(weight) : undefined,
         description: description || `Control veterinario rutinario`,
@@ -262,7 +263,7 @@ function QuickTreatmentForm({
     mutationFn: () =>
       treatmentsService.createTreatment({
         animal_id: animalId,
-        treatment_date: new Date().toISOString().split("T")[0],
+        treatment_date: getTodayColombia(),
         description,
         dosis: dosis || "Ver indicaciones del producto",
         frequency,

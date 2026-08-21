@@ -103,9 +103,18 @@ class Control(BaseModel):
         """
         Sobrescribe para añadir validaciones y normalizaciones específicas de Control.
         """
-        # Validar fecha de control (la normalización str -> date ya la hizo BaseModel)
+        # Llamar primero a la validación y normalización base (convierte fechas a datetime.date, etc.)
+        data = super()._validate_and_normalize(data, is_update, instance_id)
+
+        # Validar fecha de control
         if "checkup_date" in data and data["checkup_date"]:
-            if data["checkup_date"] > date.today():
+            check_date = data["checkup_date"]
+            if isinstance(check_date, str):
+                try:
+                    check_date = date.fromisoformat(check_date)
+                except (ValueError, TypeError):
+                    pass
+            if isinstance(check_date, date) and check_date > date.today():
                 raise ValidationError("La fecha de control no puede ser futura")
 
         # Validar medidas físicas (permitir int o float)
@@ -124,8 +133,7 @@ class Control(BaseModel):
                     "El 'animal_id' debe ser un número entero positivo"
                 )
 
-        # Llamar a la validación base
-        return super()._validate_and_normalize(data, is_update, instance_id)
+        return data
 
     def __repr__(self):
         return f"<Control {self.id}: {self.health_status.value if self.health_status else 'N/A'} on {self.checkup_date}>"

@@ -44,7 +44,7 @@ describe('ExecutiveIntelligence', () => {
     getCompleteDashboardStats.mockResolvedValue({
       alertas_sistema: { valor: 4 },
     });
-    getPredictiveInsights.mockResolvedValue({ insight: 'Hato estable' });
+    getPredictiveInsights.mockResolvedValue({ insight: 'Ganado estable' });
   });
 
   it('loads real dashboard data and handles an empty herd without NaN', async () => {
@@ -53,7 +53,7 @@ describe('ExecutiveIntelligence', () => {
     await waitFor(() => expect(getDashboard).toHaveBeenCalled());
     expect(screen.getByText('—')).toBeInTheDocument();
     expect(screen.getByText('Sin sincronizaciones registradas')).toBeInTheDocument();
-    expect(await screen.findByText('Hato estable')).toBeInTheDocument();
+    expect(await screen.findByText('Ganado estable')).toBeInTheDocument();
   });
 
   it('opens the detailed executive report', async () => {

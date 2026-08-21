@@ -87,7 +87,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
 			setProfileStatus({
 				type: "success",
 				message: queued
-					? "Actualizacion en cola (offline)."
+					? "Actualización en cola para sincronizar."
 					: "Perfil actualizado correctamente.",
 			});
 			profileForm.reset(normalized);

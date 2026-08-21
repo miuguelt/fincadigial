@@ -1,20 +1,24 @@
-import React, { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { useAuth } from '@/features/auth/model/useAuth';
-import { useToast } from '@/app/providers/ToastContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Label } from '@/shared/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
-import { MapPin, ArrowLeft, Save, WifiOff } from 'lucide-react';
-import { useOnlineStatus } from '@/shared/hooks/useOnlineStatus';
-import { offlineQueue } from '@/shared/api/offline/offlineQueue';
-import { animalsService } from '@/entities/animal/api/animal.service';
-import { fieldService } from '@/entities/field/api/field.service';
-import { animalFieldsService } from '@/entities/animal-field/api/animalFields.service';
-import { getTodayColombia } from '@/shared/utils/dateUtils';
-import { emitDataRefresh } from '@/shared/utils/dataRefresh';
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useAuth } from "@/features/auth/model/useAuth";
+import { useToast } from "@/app/providers/ToastContext";
+import { MapPin } from "lucide-react";
+import { useOnlineStatus } from "@/shared/hooks/useOnlineStatus";
+import { offlineQueue } from "@/shared/api/offline/offlineQueue";
+import { animalsService } from "@/entities/animal/api/animal.service";
+import { fieldService } from "@/entities/field/api/field.service";
+import { animalFieldsService } from "@/entities/animal-field/api/animalFields.service";
+import { getTodayColombia } from "@/shared/utils/dateUtils";
+import { emitDataRefresh } from "@/shared/utils/dataRefresh";
+import {
+  QuickFormShell,
+  QCard,
+  QField,
+  QLabel,
+  QInput,
+  QSelect,
+  QSubmitButton,
+} from "./QuickFormShell";
 
 export default function QuickTransfer() {
   useAuth();
@@ -24,170 +28,147 @@ export default function QuickTransfer() {
 
   const handleClose = () => {
     const newParams = new URLSearchParams(searchParams);
-    newParams.delete('quick');
+    newParams.delete("quick");
     setSearchParams(newParams, { replace: true });
   };
 
-  const [animalId, setAnimalId] = useState<number | null>(null);
-  const [fieldId, setFieldId] = useState<number | null>(null);
+  const [animalId, setAnimalId] = useState<string>("");
+  const [fieldId, setFieldId] = useState<string>("");
   const [date, setDate] = useState(getTodayColombia());
+  const [notes, setNotes] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [animalOptions, setAnimalOptions] = useState<{ value: number; label: string }[]>([]);
-  const [fieldOptions, setFieldOptions] = useState<{ value: number; label: string }[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [animalOptions, setAnimalOptions] = useState<{ value: string; label: string }[]>([]);
+  const [potreroOptions, setPotreroOptions] = useState<{ value: string; label: string }[]>([]);
 
-  // Cargar animales activos
-  React.useEffect(() => {
-    async function loadAnimals() {
+  // Cargar animales activos y potreros
+  useEffect(() => {
+    async function loadData() {
       try {
-        const response = await animalsService.getAnimals({ limit: 100, status: 'Vivo' });
-        const animals = Array.isArray(response) ? response : (response as any).data || [];
-        const options = animals.map((a: any) => ({
-          value: a.id,
-          label: `${a.record} - ${a.breed?.name || 'Sin raza'}`
-        }));
-        setAnimalOptions(options);
+        const [animalsResp, fieldsResp] = await Promise.all([
+          animalsService.getAnimals({ limit: 200, status: "Vivo" }),
+          fieldService.getFields({ limit: 100 }),
+        ]);
+
+        const animals = Array.isArray(animalsResp) ? animalsResp : (animalsResp as any).data || [];
+        setAnimalOptions(animals.map((a: any) => ({
+          value: String(a.id),
+          label: `${a.record}${a.breed?.name ? ` — ${a.breed.name}` : ""}`,
+        })));
+
+        const fields = Array.isArray(fieldsResp) ? fieldsResp : (fieldsResp as any).data || [];
+        setPotreroOptions(fields.map((f: any) => ({
+          value: String(f.id),
+          label: f.name || `Potrero ${f.id}`,
+        })));
       } catch (error) {
-        console.error('Error loading animals:', error);
-        showToast('Error al cargar animales', 'error');
+        console.error("Error loading potreros or animals:", error);
+        showToast("Error al cargar lista de potreros o animales", "error");
+      } finally {
+        setCargando(false);
       }
     }
-    loadAnimals();
-  }, [showToast]);
-
-  // Cargar campos
-  React.useEffect(() => {
-    async function loadFields() {
-      try {
-        const response = await fieldService.getFields({ limit: 100 });
-        const fields = Array.isArray(response) ? response : (response as any).data || [];
-        const options = fields.map((f: any) => ({
-          value: f.id,
-          label: f.name || `Campo ${f.id}`
-        }));
-        setFieldOptions(options);
-      } catch (error) {
-        console.error('Error loading fields:', error);
-        showToast('Error al cargar campos', 'error');
-      }
-    }
-    loadFields();
+    loadData();
   }, [showToast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!animalId || !fieldId) {
-      showToast('Por favor seleccione animal y campo', 'error');
+      showToast("Por favor selecciona el animal y el potrero de destino", "error");
       return;
     }
 
     setLoading(true);
     const payload = {
-      animal_id: animalId,
-      field_id: fieldId,
-      assignment_date: date
+      animal_id: Number(animalId),
+      field_id: Number(fieldId),
+      assignment_date: date,
+      notes: notes || undefined,
     };
 
     try {
       if (!isOnline) {
         // Offline: encolar operación
-        await offlineQueue.enqueue('POST', 'animal-fields', payload);
-        showToast('Traslado guardado localmente. Se sincronizará cuando haya conexión.', 'success');
+        await offlineQueue.enqueue("POST", "animal-fields", payload);
+        showToast("Traslado guardado sin señal. Se sincronizará al volver la conexión.", "success");
       } else {
         // Online: enviar directamente
         await animalFieldsService.createAnimalField(payload);
-        showToast('Traslado registrado exitosamente', 'success');
+        showToast("Traslado a potrero registrado exitosamente", "success");
       }
-      if (isOnline) emitDataRefresh('animal-fields');
+      if (isOnline) emitDataRefresh("animal-fields");
       handleClose();
     } catch (error) {
-      console.error('Error creating transfer:', error);
-      showToast('Error al registrar traslado', 'error');
+      console.error("Error creating transfer:", error);
+      showToast("Error al registrar traslado", "error");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container mx-auto p-4 max-w-md">
-      <Button
-        variant="ghost"
-        onClick={handleClose}
-        className="mb-4 text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Volver
-      </Button>
+    <QuickFormShell titulo="Trasladar a Potrero" icon={MapPin} colorHeader="bg-amber-600">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <QCard>
+          <QField>
+            <QLabel htmlFor="animal">¿Qué animal deseas trasladar?</QLabel>
+            <QSelect
+              id="animal"
+              value={animalId}
+              onChange={setAnimalId}
+              placeholder={cargando ? "Cargando animales..." : "— Selecciona el animal —"}
+              options={animalOptions}
+              disabled={cargando || loading}
+            />
+          </QField>
+        </QCard>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-foreground">
-            <MapPin className="h-5 w-5 text-success" />
-            Trasladar Animal
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isOnline && (
-              <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-lg text-sm text-warning-foreground font-bold">
-                <WifiOff className="h-4 w-4 text-warning" />
-                Modo sin conexión - El registro se guardará localmente
-              </div>
-            )}
+        <QCard>
+          <QField>
+            <QLabel htmlFor="field">Potrero de Destino</QLabel>
+            <QSelect
+              id="field"
+              value={fieldId}
+              onChange={setFieldId}
+              placeholder={cargando ? "Cargando potreros..." : "— Selecciona el potrero —"}
+              options={potreroOptions}
+              disabled={cargando || loading}
+            />
+          </QField>
+        </QCard>
 
-            <div className="space-y-2">
-              <Label htmlFor="animal">Animal *</Label>
-              <Select value={animalId?.toString()} onValueChange={(v) => setAnimalId(parseInt(v))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar animal" />
-                </SelectTrigger>
-                <SelectContent>
-                  {animalOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value.toString()}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="field">Campo de destino *</Label>
-              <Select value={fieldId?.toString()} onValueChange={(v) => setFieldId(parseInt(v))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar campo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {fieldOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value.toString()}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="date">Fecha de traslado *</Label>
-              <Input
-                id="date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
-              />
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full"
+        <QCard>
+          <QField>
+            <QLabel htmlFor="date">Fecha del Traslado</QLabel>
+            <QInput
+              id="date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
               disabled={loading}
-            >
-              <Save className="h-4 w-4 mr-2" />
-              {loading ? 'Guardando...' : 'Guardar Traslado'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+            />
+          </QField>
+        </QCard>
+
+        <QCard>
+          <QField>
+            <QLabel htmlFor="notes">Motivo / Observaciones (opcional)</QLabel>
+            <QInput
+              id="notes"
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Ej: Rotación de pasturas, descanso de lote..."
+              disabled={loading}
+            />
+          </QField>
+        </QCard>
+
+        <QSubmitButton loading={loading} color="bg-amber-600">
+          Registrar Traslado
+        </QSubmitButton>
+      </form>
+    </QuickFormShell>
   );
 }

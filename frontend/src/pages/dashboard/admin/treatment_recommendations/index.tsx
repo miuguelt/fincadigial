@@ -49,11 +49,7 @@ const AdminTreatmentRecommendationsPage: React.FC = () => {
 			showEditTimestamps: false,
 			showIdInDetailTitle: false,
 			themeColor: "emerald",
-			customHeader: (
-				<div className="w-full mt-4">
-					<SanidadTabs />
-				</div>
-			),
+			customHeader: <SanidadTabs />,
 		}),
 		[animalMap, animalOptions],
 	);

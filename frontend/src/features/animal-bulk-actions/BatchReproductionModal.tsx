@@ -29,6 +29,7 @@ import { useToast } from "@/app/providers/ToastContext";
 import { ScrollArea } from "@/shared/ui/scroll-area";
 import { Badge } from "@/shared/ui/badge";
 import { cn } from "@/shared/ui/cn";
+import { getTodayColombia } from "@/shared/utils/dateUtils";
 
 interface Sire {
   id: number;
@@ -53,9 +54,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
 }) => {
   const { showToast } = useToast();
   const [eventType, setEventType] = useState<EventType>("Celo");
-  const [date, setDate] = useState<string>(
-    new Date().toISOString().split("T")[0],
-  );
+  const [date, setDate] = useState<string>(getTodayColombia());
   const [notes, setNotes] = useState("");
   const [sires, setSires] = useState<Sire[]>([]);
   const [selectedSireId, setSelectedSireId] = useState<number | null>(null);
@@ -90,7 +89,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setEventType("Celo");
-      setDate(new Date().toISOString().split("T")[0]);
+      setDate(getTodayColombia());
       setNotes("");
       setSelectedSireId(null);
       setTechnique("Natural");

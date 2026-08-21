@@ -152,11 +152,15 @@ pages → widgets → features → entities → shared
 - Capa superior puede importar capas inferiores, nunca al revés
 - `eslint-plugin-boundaries` v6 enforza esto (0 violaciones activas)
 
-> **Deuda técnica activa (actualizado 2026-04-29):**
-> - `shared/api/client.ts` (1205L) — Axios client central. **ALTO RIESGO.** Solo dividir con tests de integración.
+> **Deuda técnica activa (actualizado 2026-08-17):**
 > - `shared/hooks/useResource.ts` (966L) — Hook central monolítico. **ALTO RIESGO.** No dividir sin tests.
-> - `widgets/dashboard/components/AnimalActionModalInstance.tsx` (831L) — CRUD modal. Aceptable por complejidad de dominio.
 > - `namespaces/finanzas/analytics_namespace.py` frontend-side legacy (monolito en deprecación progresiva).
+>
+> **Resuelto en el saneamiento del cliente HTTP (2026-08-17):**
+> - ✅ `shared/api/client.ts` (1231L) — dividido en `shared/api/client/*`; el archivo queda como punto de composición.
+> - ✅ `shared/api/offline/offlineQueue.ts` (621L) — dividido en `shared/api/offline/queue/*`.
+> - ✅ `widgets/dashboard/components/` (4634L) — **ELIMINADO** (duplicado muerto del árbol vivo `widgets/dashboard/`).
+> - ✅ `features/animal-movements/ui/SaleAndTransferModal.tsx` (567L) — **ELIMINADO** (nunca se cableó a ninguna pantalla).
 >
 > **Resuelto en refactor/architecture-cleanup (2026-04-29):**
 > - ✅ `shared/ui/common/AdminCRUDPage.tsx` (2844L) — **ELIMINADO** (dead code, ya migrado a widgets/admin-crud)

@@ -84,7 +84,7 @@ export default function OfflineLearningView() {
 
     toast({
       title: "Material descargado",
-      description: "El archivo se ha guardado en la caché para uso offline.",
+      description: "El archivo se ha guardado en la caché para usarlo sin conexión.",
     });
   };
 
@@ -108,7 +108,7 @@ export default function OfflineLearningView() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-3">
             <IconBook className="w-8 h-8" />
-            Biblioteca Rural Offline
+            Biblioteca rural sin conexión
           </h1>
           <p className="text-emerald-100 mt-2 max-w-2xl text-lg">
             Materiales educativos, guías ICA y manuales técnicos. Descárgalos con WiFi para leerlos luego en el potrero sin conexión.
@@ -217,7 +217,7 @@ export default function OfflineLearningView() {
                     onClick={() => handleDownload(mat)}
                   >
                     <IconDownload size="sm" className="mr-2" />
-                    Guardar para Offline
+                    Guardar para usar sin conexión
                   </Button>
                 )}
               </CardFooter>

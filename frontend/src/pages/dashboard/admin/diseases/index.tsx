@@ -3,6 +3,7 @@ import { CRUDColumn, CRUDFormSection, CRUDConfig } from '@/shared/types/crud';
 import { diseaseService } from '@/entities/disease/api/disease.service';
 import { animalDiseasesService } from '@/entities/animal-disease/api/animalDiseases.service';
 import type { DiseaseResponse } from '@/shared/api/generated/swaggerTypes';
+import { normalizeColombianLivestockText } from '@/shared/utils/colombiaLanguage';
 import { SanidadTabs } from '@/widgets/dashboard/treatments/SanidadTabs';
 import { DiseaseDetailModalContent } from './components/DiseaseDetailModalContent';
 
@@ -21,8 +22,11 @@ const columns: CRUDColumn<DiseaseResponse & { [k: string]: any }>[] = [
       );
     }
   },
-  { key: 'symptoms', label: 'Síntomas', render: (v) => v || '-' },
-  { key: 'details', label: 'Detalles', render: (_v, item) => (item as any).details ?? (item as any).description ?? '-' },
+  { key: 'symptoms', label: 'Síntomas', render: (v) => (v ? normalizeColombianLivestockText(String(v)) : '-') },
+  { key: 'details', label: 'Detalles', render: (_v, item) => {
+    const details = (item as any).details ?? (item as any).description;
+    return details ? normalizeColombianLivestockText(String(details)) : '-';
+  } },
   { key: 'created_at', label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
 ];
 
@@ -59,7 +63,7 @@ const crudConfig: CRUDConfig<DiseaseResponse & { [k: string]: any }, DiseaseForm
   enableCreateModal: true,
   enableEditModal: true,
   enableDelete: true,
-  customHeader: <div className="mt-4"><SanidadTabs /></div>,
+  customHeader: <SanidadTabs />,
   themeColor: 'red',
   preDeleteCheck: async (id: number) => {
     try {
@@ -84,8 +88,12 @@ const crudConfig: CRUDConfig<DiseaseResponse & { [k: string]: any }, DiseaseForm
 // Mapear respuesta a formulario
 const mapResponseToForm = (item: DiseaseResponse & { [k: string]: any }): DiseaseForm => ({
   name: (item as any).name ?? (item as any).disease ?? '',
-  symptoms: item.symptoms ?? '',
-  details: (item as any).details ?? (item as any).description ?? '',
+  symptoms: item.symptoms ? normalizeColombianLivestockText(item.symptoms) : '',
+  details: (item as any).details
+    ? normalizeColombianLivestockText(String((item as any).details))
+    : (item as any).description
+      ? normalizeColombianLivestockText(String((item as any).description))
+      : '',
 });
 
 // Validación simple

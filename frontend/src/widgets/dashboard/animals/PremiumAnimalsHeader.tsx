@@ -58,7 +58,7 @@ export const PremiumAnimalsHeader: React.FC<PremiumAnimalsHeaderProps> = ({ item
       icon={<PawPrint className="h-5 w-5 text-white" />}
       iconClassName="from-indigo-500 to-indigo-600 shadow-indigo-500/20"
       title={<>Gestión de <span className="text-indigo-500">Animales</span></>}
-      description="Control de inventario, genética y métricas en tiempo real (Offline-Ready)"
+      description="Control de inventario, genética y métricas en tiempo real (listo para usar sin conexión)"
       metrics={
         <>
           <KPICard compact title="Total Animales" value={metrics.totalAnimals} icon="🐄" />

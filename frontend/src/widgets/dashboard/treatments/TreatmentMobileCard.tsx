@@ -1,8 +1,9 @@
-import { Calendar, Syringe } from "lucide-react";
+import { Calendar, Syringe, AlertTriangle, DollarSign, Eye, Edit3 } from "lucide-react";
 import type React from "react";
 import { useCallback, useMemo } from "react";
 import type { TreatmentResponse } from "@/shared/api/generated/swaggerTypes";
 import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
 
 interface TreatmentMobileCardProps {
 	item: TreatmentResponse & { [k: string]: any };
@@ -16,7 +17,6 @@ interface TreatmentMobileCardProps {
 
 /**
  * Converts a date string to a human-readable relative time in Spanish.
- * Example: "hace 2 días", "hoy", "hace 1 semana"
  */
 function timeAgo(dateStr: string | undefined | null): string {
 	if (!dateStr) return "—";
@@ -43,6 +43,20 @@ function timeAgo(dateStr: string | undefined | null): string {
 }
 
 /**
+ * Formatea moneda en Pesos Colombianos (COP) compactos
+ */
+function formatCOP(amount?: number | string | null): string {
+	if (amount === undefined || amount === null || amount === '') return '';
+	const num = Number(amount);
+	if (isNaN(num) || num <= 0) return '';
+	return new Intl.NumberFormat('es-CO', {
+		style: 'currency',
+		currency: 'COP',
+		maximumFractionDigits: 0,
+	}).format(num);
+}
+
+/**
  * Premium mobile-first card for livestock treatments.
  * Designed for farmers in the field: large touch targets, dense info, readable at a glance.
  */
@@ -55,10 +69,39 @@ export const TreatmentMobileCard: React.FC<TreatmentMobileCardProps> = ({
 	onOpenSupplies,
 	onEdit,
 }) => {
-	const diagnosis = (item as any).diagnosis || (item as any).description || "—";
-	const dosis = (item as any).dosis || "—";
-	const frequency = (item as any).frequency || "";
+	const diagnosis = (item as any).diagnosis || (item as any).description || "Tratamiento General";
+	const dosis = (item as any).dosis || (item as any).dose || "—";
+	const frequency = (item as any).frequency || (item as any).frecuencia || "";
 	const dateLabel = timeAgo(item.treatment_date);
+	const costFormatted = formatCOP(item.cost);
+
+	// Verificación de período de retiro
+	const withdrawalInfo = useMemo(() => {
+		const withdrawalDays = Number(item.withdrawal_days) || 0;
+		if (withdrawalDays <= 0 && !item.withdrawal_end_date) return null;
+
+		let endDate: Date;
+		if (item.withdrawal_end_date) {
+			endDate = new Date(String(item.withdrawal_end_date));
+		} else if (item.treatment_date) {
+			endDate = new Date(String(item.treatment_date));
+			endDate.setDate(endDate.getDate() + withdrawalDays);
+		} else {
+			return null;
+		}
+
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+		endDate.setHours(0, 0, 0, 0);
+		const diff = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+		const isActive = diff >= 0;
+
+		return {
+			isActive,
+			daysRemaining: Math.max(0, diff),
+			totalDays: withdrawalDays,
+		};
+	}, [item]);
 
 	const dosisDisplay = useMemo(() => {
 		if (dosis === "—" && !frequency) return "—";
@@ -119,7 +162,7 @@ export const TreatmentMobileCard: React.FC<TreatmentMobileCardProps> = ({
 				}
 			`}
 		>
-			{/* Selection checkbox (only if selection is enabled) */}
+			{/* Selection checkbox */}
 			{onSelect && (
 				<button
 					type="button"
@@ -148,6 +191,9 @@ export const TreatmentMobileCard: React.FC<TreatmentMobileCardProps> = ({
 						<span className="font-bold text-sm sm:text-base text-foreground fit-clamp">
 							{animalLabel}
 						</span>
+						<Badge variant="outline" className="text-[11px] h-4 px-1 rounded bg-purple-50/50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-400 border-purple-200/50 shrink-0">
+							#{item.id}
+						</Badge>
 					</div>
 					<div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
 						<Calendar className="w-3.5 h-3.5" />
@@ -156,44 +202,83 @@ export const TreatmentMobileCard: React.FC<TreatmentMobileCardProps> = ({
 				</div>
 
 				{/* Row 2: Diagnosis */}
-				<div className="flex items-start gap-2 mb-1.5">
+				<div className="flex items-start gap-2 mb-2">
 					<span className="text-base mt-0.5" role="img" aria-label="diagnosis">🩺</span>
-					<p className="text-sm font-semibold text-foreground/90 line-clamp-2 leading-snug">
+					<p className="text-sm font-bold text-foreground line-clamp-2 leading-snug">
 						{diagnosis}
 					</p>
 				</div>
 
-				{/* Row 3: Dosage + Frequency — solo si hay datos */}
-				{dosisDisplay !== "—" && (
-					<div className="flex items-center gap-2 mb-3">
-						<span className="text-base" role="img" aria-label="dosage">💊</span>
-						<p className="text-xs sm:text-sm text-muted-foreground font-medium fit-clamp">
-							{dosisDisplay}
-						</p>
-					</div>
-				)}
+				{/* Row 3: Posología + Retiro / Costo */}
+				<div className="flex flex-wrap items-center gap-2 mb-3 text-xs">
+					{dosisDisplay !== "—" && (
+						<div className="flex items-center gap-1.5 bg-muted/40 px-2.5 py-1 rounded-lg text-muted-foreground font-medium">
+							<span>💊</span>
+							<span>{dosisDisplay}</span>
+						</div>
+					)}
+
+					{costFormatted && (
+						<div className="flex items-center gap-1 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-lg font-bold">
+							<DollarSign className="w-3.5 h-3.5" />
+							<span>{costFormatted}</span>
+						</div>
+					)}
+
+					{withdrawalInfo && (
+						<Badge
+							className={`text-[11px] font-bold px-2 py-0.5 rounded-lg flex items-center gap-1 ${
+								withdrawalInfo.isActive
+									? 'bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 animate-pulse'
+									: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20'
+							}`}
+						>
+							{withdrawalInfo.isActive ? (
+								<>
+									<AlertTriangle className="w-3 h-3 text-amber-600" />
+									<span>Retiro: {withdrawalInfo.daysRemaining}d</span>
+								</>
+							) : (
+								<span>Retiro OK</span>
+							)}
+						</Badge>
+					)}
+				</div>
 
 				{/* Row 4: Actions — botones sólidos de alto contraste, targets 44px */}
-				<div className="flex items-center gap-2 pt-2 border-t border-border/30">
+				<div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/30">
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={handleCardClick}
+						className="h-11 text-xs font-bold text-foreground border-border hover:bg-muted rounded-xl flex items-center justify-center gap-1"
+					>
+						<Eye className="w-4 h-4" />
+						<span>Detalle</span>
+					</Button>
+
 					<Button
 						size="sm"
 						onClick={handleSuppliesClick}
-						className="flex-1 h-11 text-xs sm:text-sm font-bold bg-purple-600 text-white hover:bg-purple-700 rounded-xl transition-all"
+						className="h-11 text-xs font-bold bg-purple-600 text-white hover:bg-purple-700 rounded-xl transition-all flex items-center justify-center gap-1"
 					>
-						<Syringe className="w-4 h-4 mr-1.5" />
-						Insumos
+						<Syringe className="w-4 h-4" />
+						<span>Insumos</span>
 					</Button>
 
 					<Button
 						variant="outline"
 						size="sm"
 						onClick={handleEditClick}
-						className="flex-1 h-11 text-xs sm:text-sm font-bold text-foreground border-border hover:bg-muted rounded-xl"
+						className="h-11 text-xs font-bold text-foreground border-border hover:bg-muted rounded-xl flex items-center justify-center gap-1"
 					>
-						Editar
+						<Edit3 className="w-4 h-4" />
+						<span>Editar</span>
 					</Button>
 				</div>
 			</div>
 		</div>
 	);
 };
+
+export default TreatmentMobileCard;

@@ -108,7 +108,7 @@ export const SyncProgressIndicator: React.FC = () => {
           </span>
           <span className="text-xs font-bold leading-none">
             {!isOnline
-              ? "Modo Offline (En espera)"
+              ? "Modo sin conexión (en espera)"
               : pendingCount > 0
                 ? `Subiendo ${pendingCount} registros...`
                 : lastSyncStatus === "success"

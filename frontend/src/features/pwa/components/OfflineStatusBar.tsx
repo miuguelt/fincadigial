@@ -348,7 +348,7 @@ export const OfflineStatusBar = React.memo(function OfflineStatusBar() {
 										) : (
 											<Download className="w-3.5 h-3.5 text-zinc-400" />
 										)}
-										{isPrefetching ? "Cargando..." : "Descargar Offline"}
+										{isPrefetching ? "Cargando..." : "Descargar para usar sin conexión"}
 									</button>
 								)}
 

@@ -82,15 +82,22 @@ class AnimalHealthHistory(BaseModel):
 
     @classmethod
     def _validate_and_normalize(cls, data, is_update=False, instance_id=None):
+        data = super()._validate_and_normalize(data, is_update, instance_id)
         if "event_date" in data and data["event_date"]:
-            if data["event_date"] > date.today():
+            ev_date = data["event_date"]
+            if isinstance(ev_date, str):
+                try:
+                    ev_date = date.fromisoformat(ev_date)
+                except (ValueError, TypeError):
+                    pass
+            if isinstance(ev_date, date) and ev_date > date.today():
                 raise ValidationError("La fecha del evento no puede ser futura")
         for field in ["weight", "height", "temperature"]:
             if field in data and data.get(field) is not None:
                 val = data[field]
                 if not isinstance(val, (int, float)) or val <= 0:
                     raise ValidationError(f"'{field}' debe ser un número positivo")
-        return super()._validate_and_normalize(data, is_update, instance_id)
+        return data
 
     @classmethod
     def get_timeline(cls, animal_id, limit=50):

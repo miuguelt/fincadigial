@@ -163,7 +163,7 @@ const SanitaryActivityForm: React.FC = () => {
       </div>{" "}
       <div className="mt-12 text-[11px] text-muted-foreground text-center uppercase font-bold tracking-[0.2em] opacity-40">
         {" "}
-        Villa Luz Smart Farming Intelligence • Registro Sanitario Legal ICA
+        Inteligencia para la agricultura Villa Luz • Registro sanitario legal ICA
         3-138{" "}
       </div>{" "}
     </div>

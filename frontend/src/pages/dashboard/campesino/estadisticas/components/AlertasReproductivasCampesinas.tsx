@@ -77,7 +77,7 @@ export const AlertasReproductivasCampesinas: React.FC = () => {
                 🥛 Alerta de Secado Pre-Parto (Suspender Ordeño 60 Días Antes)
               </h3>
             </div>
-            <span className="text-[10px] font-extrabold bg-cyan-200 dark:bg-cyan-900 text-cyan-900 dark:text-cyan-200 px-2 py-0.5 rounded-md">
+            <span className="text-[11px] font-extrabold bg-cyan-200 dark:bg-cyan-900 text-cyan-900 dark:text-cyan-200 px-2 py-0.5 rounded-md">
               {dryOffCows.length} {dryOffCows.length === 1 ? 'vaca' : 'vacas'}
             </span>
           </div>
@@ -94,7 +94,7 @@ export const AlertasReproductivasCampesinas: React.FC = () => {
                     <span className="text-xs font-black text-foreground">
                       Vaca {cow.animal?.record || cow.animal_record || `#${cow.animal_id}`}
                     </span>
-                    <span className="text-[10px] font-bold bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 px-2 py-0.5 rounded">
+                    <span className="text-[11px] font-bold bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 px-2 py-0.5 rounded">
                       Parto en {daysToBirth}d
                     </span>
                   </div>
@@ -111,7 +111,7 @@ export const AlertasReproductivasCampesinas: React.FC = () => {
       {totalAlerts === 0 ? (
         <div className="p-4 rounded-2xl bg-card border border-border/60 flex items-center gap-3 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-          <span>No hay vacas próximas a parto, en secado ni en ventana de celo para los próximos días. ¡Hato al día!</span>
+          <span>No hay vacas próximas a parto, en secado ni en ventana de celo para los próximos días. ¡Todo al día!</span>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -129,7 +129,7 @@ export const AlertasReproductivasCampesinas: React.FC = () => {
                   <span className="text-xs font-black text-amber-800 dark:text-amber-300 uppercase">
                     Posible Celo ({heat.days_since_service || 21} días)
                   </span>
-                  <span className="text-[10px] font-bold bg-amber-200/80 dark:bg-amber-900 text-amber-900 dark:text-amber-200 px-2 py-0.5 rounded-md">
+                  <span className="text-[11px] font-bold bg-amber-200/80 dark:bg-amber-900 text-amber-900 dark:text-amber-200 px-2 py-0.5 rounded-md">
                     Observar
                   </span>
                 </div>
@@ -170,7 +170,7 @@ export const AlertasReproductivasCampesinas: React.FC = () => {
                     }`}>
                       {daysToBirth <= 0 ? '¡Parto en Fecha!' : `Parto en ~${daysToBirth} días`}
                     </span>
-                    <span className="text-[10px] font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">
+                    <span className="text-[11px] font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">
                       {birth.expected_birth_date || 'Fecha estimada'}
                     </span>
                   </div>

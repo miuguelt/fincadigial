@@ -63,7 +63,7 @@ def evaluate_production_rules(animal, finca_id, trig, today, age_months) -> int:
             AlertPriority.MEDIUM,
         )
 
-    # ── 5. BCS PROMEDIO DEL HATO BAJO (silenciosa, solo monitoreo) ────
+    # ── 5. BCS PROMEDIO DEL GANADO BAJO (silenciosa, solo monitoreo) ────
     if finca_id:
         herd_bcs_avg = BodyConditionScore.get_herd_average(finca_id, days=30)
         if herd_bcs_avg and herd_bcs_avg < 4.0:

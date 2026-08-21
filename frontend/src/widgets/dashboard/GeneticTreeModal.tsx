@@ -8,11 +8,11 @@ import type {
   AnimalTreeEdgeExamples,
 } from "@/entities/animal/model/tree.types";
 import { animalsService } from "@/entities/animal/api/animal.service";
+import type { AnimalGenealogy } from "@/entities/animal/model/treeGenealogy";
 import { useAuth } from "@/features/auth/model/useAuth";
 import { TreeHelpTooltip } from "./TreeHelpTooltip";
 import { AnimalMiniCard } from "./AnimalMiniCard";
-import { AnimalModalContent } from "./animals/AnimalModalContent";
-import { AnimalHistoryModal } from "./AnimalHistoryModal";
+import { AnimalDetailModal } from "./animals/AnimalDetailModal";
 
 interface AnimalNode {
   animal_id?: number;
@@ -37,11 +37,7 @@ interface GeneticTreeModalProps {
   loadingMore?: boolean;
   summary?: AnimalTreeSummary;
   edgeExamples?: AnimalTreeEdgeExamples;
-  dependencyInfo?: {
-    has_parents: boolean;
-    father_id: number;
-    mother_id: number;
-  };
+  dependencyInfo?: Pick<AnimalGenealogy, 'has_parents' | 'father_id' | 'mother_id'> | null;
   treeError?: string | null;
   onNavigateToAnimal?: (animal: any) => void;
   onOpenDescendantsTreeForAnimal?: (animal: any) => void;
@@ -76,8 +72,6 @@ const GeneticTreeModal = ({
   // Estado para modal de detalle
   const [detailAnimal, setDetailAnimal] = React.useState<any | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = React.useState(false);
-  const [isHistoryOpen, setIsHistoryOpen] = React.useState(false);
-  const [historyAnimal, setHistoryAnimal] = React.useState<any | null>(null);
 
   // Sincronizar el slider con los niveles cuando llegan datos asíncronos
   React.useEffect(() => {
@@ -103,21 +97,6 @@ const GeneticTreeModal = ({
     void openAnimalDetail({ id });
   };
 
-  const openHistory = (record: any) => {
-    const payload = {
-      idAnimal: Number(
-        record?.id ?? record?.idAnimal ?? record?.animal_id ?? 0,
-      ),
-      record: record?.record || "",
-      breed: record?.breed,
-      birth_date: record?.birth_date,
-      sex: record?.sex || record?.gender,
-      status: record?.status,
-    };
-    setHistoryAnimal(payload);
-    setIsHistoryOpen(true);
-  };
-
   const getId = (n: any): number | undefined => {
     const id = n?.id ?? n?.idAnimal ?? n?.animal_id;
     return id && Number.isInteger(Number(id)) && Number(id) > 0
@@ -140,35 +119,6 @@ const GeneticTreeModal = ({
       ? Number(mId)
       : undefined;
   };
-
-  const getBreedLabel = (record: any) => {
-    if (!record) return "-";
-    return (
-      record?.breed?.name ||
-      record?.breed_name ||
-      (record?.breeds_id || record?.breed_id
-        ? `ID ${record.breeds_id ?? record.breed_id}`
-        : "-")
-    );
-  };
-
-  const getParentLabel = (parent: any, parentId?: number) => {
-    if (parent?.record) return parent.record;
-    if (parent?.name) return parent.name;
-    return parentId ? `ID ${parentId}` : "-";
-  };
-
-  const detailFatherId = detailAnimal ? getFatherId(detailAnimal) : undefined;
-  const detailMotherId = detailAnimal ? getMotherId(detailAnimal) : undefined;
-  const detailBreedLabel = getBreedLabel(detailAnimal);
-  const detailFatherLabel = getParentLabel(
-    detailAnimal?.father,
-    detailFatherId,
-  );
-  const detailMotherLabel = getParentLabel(
-    detailAnimal?.mother,
-    detailMotherId,
-  );
 
   const displayLevels: any[][] = React.useMemo(() => {
     if (!animal || !levels) return [];
@@ -645,51 +595,21 @@ const GeneticTreeModal = ({
 
       {/* Modal de detalle del animal seleccionado */}
       {detailAnimal && (
-        <GenericModal
+        <AnimalDetailModal
           isOpen={isDetailModalOpen}
           onOpenChange={setIsDetailModalOpen}
-          title={`Detalle - ${getAnimalLabel(detailAnimal)}`}
-          size="5xl"
-          enableBackdropBlur
-          enableNavigation={false}
-        >
-          <AnimalModalContent
-            animal={detailAnimal as any}
-            breedLabel={detailBreedLabel}
-            fatherLabel={detailFatherLabel}
-            motherLabel={detailMotherLabel}
-            onFatherClick={
-              detailFatherId
-                ? () => openAnimalDetailById(detailFatherId)
-                : undefined
-            }
-            onMotherClick={
-              detailMotherId
-                ? () => openAnimalDetailById(detailMotherId)
-                : undefined
-            }
-            currentUserId={user?.id}
-            onOpenHistory={() => openHistory(detailAnimal)}
-            onOpenAncestorsTree={() => {
-              if (!detailAnimal) return;
-              onNavigateToAnimal?.(detailAnimal);
-              setIsDetailModalOpen(false);
-            }}
-            onOpenDescendantsTree={() => {
-              if (!detailAnimal) return;
-              onOpenDescendantsTreeForAnimal?.(detailAnimal);
-              setIsDetailModalOpen(false);
-            }}
-          />
-        </GenericModal>
-      )}
-
-      {isHistoryOpen && historyAnimal && (
-        <AnimalHistoryModal
-          animal={historyAnimal}
-          onClose={() => {
-            setIsHistoryOpen(false);
-            setHistoryAnimal(null);
+          animal={detailAnimal}
+          currentUserId={user?.id}
+          onOpenAnimal={(id) => openAnimalDetailById(id)}
+          onOpenAncestors={(a) => {
+            if (!a) return;
+            onNavigateToAnimal?.(a);
+            setIsDetailModalOpen(false);
+          }}
+          onOpenDescendants={(a) => {
+            if (!a) return;
+            onOpenDescendantsTreeForAnimal?.(a);
+            setIsDetailModalOpen(false);
           }}
         />
       )}

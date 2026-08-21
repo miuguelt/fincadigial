@@ -94,6 +94,116 @@ describe("controlSummary.utils", () => {
 		expect(summary.healthyPercentage).toBeCloseTo(100 / 3);
 	});
 
+	it("lista qué animales necesitan atención, no solo cuántos", () => {
+		const summary = summarizeControls(
+			[
+				{
+					animal_id: 1,
+					checkup_date: "2026-07-20",
+					health_status: "Regular",
+					description: "Cojea de la pata derecha",
+				},
+				{
+					animal_id: 2,
+					checkup_date: "2026-07-08",
+					health_status: "Malo",
+					description: "No come",
+				},
+				{ animal_id: 3, checkup_date: "2026-07-22", health_status: "Bueno" },
+			],
+			"2026-07-23",
+		);
+
+		expect(summary.attentionAnimals).toEqual([
+			{
+				animalId: 2,
+				status: "Malo",
+				severity: "alta",
+				lastCheckDate: "2026-07-08",
+				daysSinceCheck: 15,
+				description: "No come",
+			},
+			{
+				animalId: 1,
+				status: "Regular",
+				severity: "media",
+				lastCheckDate: "2026-07-20",
+				daysSinceCheck: 3,
+				description: "Cojea de la pata derecha",
+			},
+		]);
+	});
+
+	it("dentro de la misma gravedad prioriza el control más viejo sin seguimiento", () => {
+		const summary = summarizeControls(
+			[
+				{ animal_id: 1, checkup_date: "2026-07-22", health_status: "Malo" },
+				{ animal_id: 2, checkup_date: "2026-07-02", health_status: "Enfermo" },
+				{ animal_id: 3, checkup_date: "2026-07-15", health_status: "Crítico" },
+			],
+			"2026-07-23",
+		);
+
+		expect(summary.attentionAnimals.map((animal) => animal.animalId)).toEqual([
+			2, 3, 1,
+		]);
+	});
+
+	it("solo considera el último control de cada animal en la lista de atención", () => {
+		const summary = summarizeControls(
+			[
+				{ animal_id: 1, checkup_date: "2026-07-01", health_status: "Malo" },
+				{ animal_id: 1, checkup_date: "2026-07-20", health_status: "Bueno" },
+				{ animal_id: 2, checkup_date: "2026-07-01", health_status: "Bueno" },
+				{ animal_id: 2, checkup_date: "2026-07-21", health_status: "Malo" },
+			],
+			"2026-07-23",
+		);
+
+		expect(summary.attentionAnimals.map((animal) => animal.animalId)).toEqual([
+			2,
+		]);
+		expect(summary.attentionAnimals[0].daysSinceCheck).toBe(2);
+	});
+
+	it("no inventa días transcurridos cuando la fecha no es legible", () => {
+		const [animal] = summarizeControls(
+			[{ animal_id: 1, checkup_date: "sin fecha", health_status: "Malo" }],
+			"2026-07-23",
+		).attentionAnimals;
+
+		expect(animal.daysSinceCheck).toBeNull();
+		expect(animal.lastCheckDate).toBe("");
+	});
+
+	it("cuando hay múltiples controles en la misma fecha, selecciona el más reciente por created_at o id", () => {
+		const summary = summarizeControls(
+			[
+				{
+					id: 10,
+					animal_id: 1,
+					checkup_date: "2026-07-23",
+					health_status: "Regular",
+					description: "Observación anterior",
+					created_at: "2026-07-23T08:00:00Z",
+				},
+				{
+					id: 11,
+					animal_id: 1,
+					checkup_date: "2026-07-23",
+					health_status: "Bueno",
+					description: "Revisado hoy, recuperado",
+					created_at: "2026-07-23T14:00:00Z",
+				},
+			],
+			"2026-07-23",
+		);
+
+		expect(summary.animalsNeedingAttention).toBe(0);
+		expect(summary.attentionAnimals).toEqual([]);
+		expect(summary.healthyPercentage).toBe(100);
+	});
+
 	it("retorna porcentaje null cuando no hay estados conocidos", () => {
 		expect(summarizeControls([], "2026-07-23").healthyPercentage).toBeNull();
 		expect(

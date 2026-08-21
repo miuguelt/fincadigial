@@ -11,13 +11,13 @@ import { Button } from '@/shared/ui/button';
 import { FieldActionsMenu } from '@/widgets/dashboard/FieldActionsMenu';
 import { FieldDetailsModal } from '@/widgets/analytics/FieldDetailsModal';
 import { FoodTypeLink } from '@/entities/food-type/ui';
-import { MapPin, PawPrint, Map as MapIcon, Activity, LayoutDashboard, Info } from 'lucide-react';
+import { MapPin, PawPrint, Map as MapIcon, Activity, LayoutDashboard, Info, Scale, Sprout, Clock } from 'lucide-react';
 import KPICard from '@/widgets/analytics/KPICard';
 import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
 import { cn } from '@/shared/ui/cn';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { Card, CardContent, CardFooter } from '@/shared/ui/card';
-import { PotrerosBoardPage } from '@/features/potreros';
+import { PotrerosBoardPage, AforoCalculatorModal, PastureRestModal, getStandardRestDays } from '@/features/potreros';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Badge } from '@/shared/ui/badge';
 
@@ -31,6 +31,8 @@ type FieldFormInput = {
   handlings: string;
   gauges: string;
   food_type_id?: number;
+  rest_days?: string;
+  grazing_days?: string;
 };
 
 // ─── Utilidades de color/semáforo ────────────────────────────────────────────
@@ -179,9 +181,16 @@ interface PotreroCardProps {
   foodTypeLabel: string;
   onVerAnimales: (potrero: any) => void;
   onOpenDetail?: (potrero: any) => void;
+  onOpenAforo?: (potrero: any) => void;
 }
 
-const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVerAnimales, onOpenDetail }) => {
+const PotreroCard: React.FC<PotreroCardProps> = ({ 
+  potrero, 
+  foodTypeLabel, 
+  onVerAnimales, 
+  onOpenDetail,
+  onOpenAforo,
+}) => {
   const actual = potrero.animal_count ?? 0;
   const area = parseArea(potrero.area);
   const manualCapacity = parseInt(potrero.capacity || '0') || 0;
@@ -195,6 +204,34 @@ const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVer
   const pct = capacidad ? Math.min(Math.round((actual / capacidad) * 100), 100) : 0;
   const palette = getOccupancyPalette(pct, capacidad !== null && capacidad > 0, actual);
   const barWidth = capacidad ? pct : (actual > 0 ? 100 : 0);
+
+  // Estado zootécnico de descanso y rebrote
+  const restDaysReq = potrero.rest_days || getStandardRestDays(foodTypeLabel || potrero.handlings);
+  let restStatus = {
+    label: 'Listo para pastoreo',
+    badge: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20',
+    icon: Sprout,
+  };
+
+  if (actual > 0) {
+    restStatus = {
+      label: `En pastoreo (${actual} cab)`,
+      badge: 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20',
+      icon: PawPrint,
+    };
+  } else if (potrero.last_grazing_date) {
+    const lastDate = new Date(potrero.last_grazing_date).getTime();
+    const today = new Date().getTime();
+    const elapsedDays = Math.max(0, Math.round((today - lastDate) / (1000 * 60 * 60 * 24)));
+    const remaining = Math.max(0, restDaysReq - elapsedDays);
+    if (remaining > 0) {
+      restStatus = {
+        label: `En descanso (${remaining}d restantes)`,
+        badge: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20',
+        icon: Clock,
+      };
+    }
+  }
 
   let remainingText = 'Sin animales';
   if (capacidad === null || capacidad === 0) {
@@ -246,9 +283,14 @@ const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVer
               <span className="fit-clamp">{potrero.ubication || potrero.location || 'Sin ubicación'}</span>
             </div>
           </div>
-          <Badge variant="secondary" className="font-mono font-black text-[11px] px-2 bg-white/5 border-white/10 text-muted-foreground/60 shrink-0 whitespace-nowrap">
-            #{potrero.id}
-          </Badge>
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <Badge variant="secondary" className="font-mono font-black text-[11px] px-2 bg-white/5 border-white/10 text-muted-foreground/60 whitespace-nowrap">
+              #{potrero.id}
+            </Badge>
+            <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded border whitespace-nowrap", restStatus.badge)}>
+              {restStatus.label}
+            </span>
+          </div>
         </div>
 
         <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/5 group-hover/potrero:border-white/10 group-hover/potrero:bg-white/10 transition-all duration-500 relative z-10">
@@ -306,7 +348,8 @@ const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVer
       <CardFooter className="!p-0 border-t border-white/5 bg-white/5 overflow-hidden relative z-10">
         <button
           onClick={(e) => { e.stopPropagation(); onOpenDetail?.(potrero); }}
-          className="flex-1 flex items-center justify-center gap-2.5 h-12 text-[11px] font-black uppercase tracking-[0.15em] text-muted-foreground hover:text-primary hover:bg-white/5 transition-all active:scale-95"
+          className="flex-1 flex items-center justify-center gap-1.5 h-12 text-[11px] font-black uppercase tracking-wider text-muted-foreground hover:text-primary hover:bg-white/5 transition-all active:scale-95"
+          title="Ver ficha completa del potrero"
         >
           <Activity className="w-4 h-4 opacity-50" /> Detalle
         </button>
@@ -315,11 +358,20 @@ const PotreroCard: React.FC<PotreroCardProps> = ({ potrero, foodTypeLabel, onVer
           onClick={(e) => { e.stopPropagation(); if (actual > 0) onVerAnimales(potrero); }}
           disabled={actual === 0}
           className={cn(
-            "flex-1 flex items-center justify-center gap-2.5 h-12 text-[11px] font-black uppercase tracking-[0.15em] transition-all active:scale-95",
+            "flex-1 flex items-center justify-center gap-1.5 h-12 text-[11px] font-black uppercase tracking-wider transition-all active:scale-95",
             actual === 0 ? "opacity-20 grayscale cursor-not-allowed" : "text-muted-foreground hover:text-emerald-400 hover:bg-white/5"
           )}
+          title={actual > 0 ? `Ver los ${actual} animales en este potrero` : 'Potrero sin animales'}
         >
-          <PawPrint className="w-4 h-4 opacity-50" /> {actual > 0 ? `Ganado` : 'Vacío'}
+          <PawPrint className="w-4 h-4 opacity-50" /> {actual > 0 ? `Ganado (${actual})` : 'Vacío'}
+        </button>
+        <div className="w-px h-8 my-auto bg-white/10" />
+        <button
+          onClick={(e) => { e.stopPropagation(); onOpenAforo?.(potrero); }}
+          className="flex-1 flex items-center justify-center gap-1.5 h-12 text-[11px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition-all active:scale-95"
+          title="Calcular aforo y capacidad de pastoreo"
+        >
+          <Scale className="w-4 h-4 text-emerald-500" /> Aforar
         </button>
       </CardFooter>
     </Card>
@@ -430,11 +482,20 @@ const PremiumFieldsHeader: React.FC<{
 };
 
 // ─── Página principal ─────────────────────────────────────────────────────────
+interface FieldsViewSwitcherProps {
+  onOpenAforo?: () => void;
+  onOpenRestModal?: () => void;
+}
+
 /**
  * Selector de vista compartido: la rotación se monta como página propia y
- * necesita los mismos botones para volver a la tabla o a las tarjetas.
+ * necesita los mismos botones para volver a la tabla o a las tarjetas, además
+ * de las herramientas zootécnicas de campo para el campesino.
  */
-const FieldsViewSwitcher: React.FC = () => {
+const FieldsViewSwitcher: React.FC<FieldsViewSwitcherProps> = ({
+  onOpenAforo,
+  onOpenRestModal,
+}) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [viewMode, setViewMode] = useGlobalViewMode();
@@ -449,44 +510,81 @@ const FieldsViewSwitcher: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center gap-1">
-      <Button
-        variant={!isRotationView && viewMode === 'table' ? 'primary' : 'outline'}
-        size="sm"
-        className="h-9 px-3 text-sm"
-        onClick={() => goToCrudView('table')}
-        aria-label="Vista en tabla"
-      >
-        Tabla
-      </Button>
-      <Button
-        variant={!isRotationView && viewMode === 'cards' ? 'primary' : 'outline'}
-        size="sm"
-        className="h-9 px-3 text-sm"
-        onClick={() => goToCrudView('cards')}
-        aria-label="Vista en tarjetas"
-      >
-        Tarjetas
-      </Button>
-      <Button
-        variant={isRotationView ? 'primary' : 'outline'}
-        size="sm"
-        className="h-9 gap-2 px-3 text-sm"
-        onClick={() => {
-          const params = new URLSearchParams(searchParams);
-          params.set('view', 'rotation');
-          navigate(`?${params.toString()}`);
-        }}
-        aria-label="Vista Rotación"
-      >
-        <LayoutDashboard size={16} />
-        Rotación
-      </Button>
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-1 bg-muted/40 p-0.5 rounded-xl border border-border/50">
+        <Button
+          variant={!isRotationView && viewMode === 'table' ? 'primary' : 'ghost'}
+          size="sm"
+          className="h-8 px-3 text-xs font-bold"
+          onClick={() => goToCrudView('table')}
+          aria-label="Vista en tabla"
+        >
+          Tabla
+        </Button>
+        <Button
+          variant={!isRotationView && viewMode === 'cards' ? 'primary' : 'ghost'}
+          size="sm"
+          className="h-8 px-3 text-xs font-bold"
+          onClick={() => goToCrudView('cards')}
+          aria-label="Vista en tarjetas"
+        >
+          Tarjetas
+        </Button>
+        <Button
+          variant={isRotationView ? 'primary' : 'ghost'}
+          size="sm"
+          className="h-8 gap-1.5 px-3 text-xs font-bold"
+          onClick={() => {
+            const params = new URLSearchParams(searchParams);
+            params.set('view', 'rotation');
+            navigate(`?${params.toString()}`);
+          }}
+          aria-label="Vista Rotación"
+        >
+          <LayoutDashboard size={14} />
+          Rotación
+        </Button>
+      </div>
+
+      <div className="h-5 w-px bg-border/60 mx-0.5 hidden sm:block" />
+
+      {/* Herramientas zootécnicas para el campesino */}
+      {onOpenAforo && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1.5 px-3 text-xs font-bold border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 shadow-sm"
+          onClick={onOpenAforo}
+          title="Calculadora de aforo de pasturas y capacidad de carga"
+        >
+          <Scale size={14} className="text-emerald-500" />
+          Aforo de Pastos
+        </Button>
+      )}
+
+      {onOpenRestModal && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1.5 px-3 text-xs font-bold border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 shadow-sm"
+          onClick={onOpenRestModal}
+          title="Semáforo de recuperación y descanso de potreros"
+        >
+          <Sprout size={14} className="text-amber-500" />
+          Semáforo de Reposo
+        </Button>
+      )}
     </div>
   );
 };
 
-function FieldsCrudPage() {
+interface FieldsCrudPageProps {
+  viewSwitcher: React.ReactNode;
+  onOpenAforo?: (field?: FieldResponse | null) => void;
+  onOpenRestModal?: () => void;
+}
+
+function FieldsCrudPage({ viewSwitcher, onOpenAforo }: FieldsCrudPageProps) {
   const { userRole, user: _user } = useAuth() as any;
   const isCampesino = userRole === 'Operario' || userRole === 'Aprendiz';
 
@@ -514,8 +612,6 @@ function FieldsCrudPage() {
     return map;
   }, [foodTypeOptions]);
 
-  // ... (keep columns definition) ...
-
   // ─── Columnas de tabla ────────────────────────────────────────────────────
   const columns: CRUDColumn<FieldResponse & { [k: string]: any }>[] = useMemo(
     () => [
@@ -539,6 +635,45 @@ function FieldsCrudPage() {
               <span className={`w-2 h-2 rounded-full flex-shrink-0 ${sem.dot}`} />
               <span className={`text-xs font-medium ${sem.text}`}>{v as string || '-'}</span>
             </div>
+          );
+        },
+      },
+      {
+        key: 'rest_status' as any,
+        label: 'Reposo / Forraje',
+        render: (_v, item) => {
+          const actual = item.animal_count ?? 0;
+          const foodTypeName = item.food_type_id ? foodTypeMap.get(item.food_type_id) : undefined;
+          const restDaysReq = item.rest_days || getStandardRestDays(foodTypeName || item.handlings);
+          if (actual > 0) {
+            return (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20 whitespace-nowrap">
+                🐮 En pastoreo
+              </span>
+            );
+          }
+          if (item.last_grazing_date) {
+            const lastDate = new Date(item.last_grazing_date).getTime();
+            const today = new Date().getTime();
+            const elapsed = Math.max(0, Math.round((today - lastDate) / (1000 * 60 * 60 * 24)));
+            const remaining = Math.max(0, restDaysReq - elapsed);
+            if (remaining === 0) {
+              return (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 whitespace-nowrap">
+                  🌿 Listo ({elapsed}d)
+                </span>
+              );
+            }
+            return (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 whitespace-nowrap">
+                ⏳ Descanso ({remaining}d)
+              </span>
+            );
+          }
+          return (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 whitespace-nowrap">
+              🌿 Listo
+            </span>
           );
         },
       },
@@ -631,7 +766,7 @@ function FieldsCrudPage() {
     defaultLimit: 24,
     pageSizeOptions: [12, 24, 48, 96],
     additionalFilters: {
-      sort_by: 'animal_count', // Backend sorts by count, which correlates with occupancy rate
+      sort_by: 'animal_count',
       sort_order: 'desc',
     },
     customHeader: (
@@ -652,6 +787,8 @@ function FieldsCrudPage() {
     handlings: item.handlings || item.management || '',
     gauges: item.gauges || item.measurements || '',
     food_type_id: item.food_type_id,
+    rest_days: item.rest_days != null ? String(item.rest_days) : '30',
+    grazing_days: item.grazing_days != null ? String(item.grazing_days) : '3',
   });
 
   const validateForm = (formData: FieldFormInput): string | null => {
@@ -677,6 +814,8 @@ function FieldsCrudPage() {
     handlings: '',
     gauges: '',
     food_type_id: undefined,
+    rest_days: '30',
+    grazing_days: '3',
   };
 
   useEffect(() => {
@@ -717,6 +856,7 @@ function FieldsCrudPage() {
         foodTypeLabel={foodTypeLabel}
         onVerAnimales={openAnimalsForField}
         onOpenDetail={openFieldDetail}
+        onOpenAforo={onOpenAforo}
       />
     );
   };
@@ -727,23 +867,43 @@ function FieldsCrudPage() {
       title: 'Información Básica',
       gridCols: 2,
       fields: [
-        { name: 'name', label: 'Nombre', type: 'text', required: true, placeholder: 'Ej: Sector 34' },
-        { name: 'area', label: 'Área', type: 'text', required: true, placeholder: 'Ej: 3 ha' },
+        { name: 'name', label: 'Nombre del Potrero', type: 'text', required: true, placeholder: 'Ej: Sector 34 / El Mango' },
+        { name: 'area', label: 'Área (ha)', type: 'text', required: true, placeholder: 'Ej: 3.5' },
         { name: 'state', label: 'Estado', type: 'select', required: true, options: FIELD_STATES as any },
         {
           name: 'food_type_id',
-          label: 'Tipo de Alimento',
+          label: 'Tipo de Pasto / Forraje',
           type: 'select',
           options: foodTypeOptions,
-          placeholder: 'Seleccionar tipo de alimento',
+          placeholder: 'Seleccionar tipo de pasto (Kikuyo, Brachiaria, Mombaza...)',
         },
       ],
     },
     {
-      title: 'Detalles',
+      title: 'Planificación de Rotación',
       gridCols: 2,
       fields: [
-        { name: 'ubication', label: 'Ubicación', type: 'text', placeholder: 'Ej: Zona 34' },
+        {
+          name: 'rest_days',
+          label: 'Días de Descanso (Rebrote)',
+          type: 'text',
+          placeholder: 'Ej: 30',
+          helperText: 'Días requeridos de descanso antes del próximo pastoreo',
+        },
+        {
+          name: 'grazing_days',
+          label: 'Días Máx. de Ocupación',
+          type: 'text',
+          placeholder: 'Ej: 3',
+          helperText: 'Días continuos máximos recomendados para el lote',
+        },
+      ],
+    },
+    {
+      title: 'Capacidad y Manejo',
+      gridCols: 2,
+      fields: [
+        { name: 'ubication', label: 'Ubicación / Sector', type: 'text', placeholder: 'Ej: Zona Alta / Lote 3' },
         {
           name: 'capacity',
           label: 'Capacidad (animales)',
@@ -751,23 +911,20 @@ function FieldsCrudPage() {
           placeholder: 'Solo números. Ej: 50',
           helperText: 'Ingrese solo números enteros. Ejemplo: 50',
         },
-        { name: 'handlings', label: 'Manejo', type: 'textarea', placeholder: 'Prácticas de manejo', colSpan: 2 },
-        { name: 'gauges', label: 'Mediciones', type: 'textarea', placeholder: 'Mediciones relevantes', colSpan: 2 },
+        { name: 'handlings', label: 'Manejo / Fuente de Agua', type: 'textarea', placeholder: 'Bebederos, sombrío, división de cerca, etc.', colSpan: 2 },
+        { name: 'gauges', label: 'Mediciones / Aforo', type: 'textarea', placeholder: 'Historial de aforos y observaciones del suelo', colSpan: 2 },
       ],
     },
   ];
 
-  // ─── Detalle expandido (modal) ────────────────────────────────────────────
   // ─── Config final con extensiones ─────────────────────────────────────────
   const crudConfigLocal = {
     ...crudConfig,
     formSections: formSectionsLocal,
     viewMode,
     renderCard: renderFieldCard,
-    // Tres tarjetas por fila en escritorio: por debajo de ~320px de ancho la tarjeta
-    // parte el nombre y las métricas; por encima de 3 columnas se queda en ese umbral.
     cardGridClassName: 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 lg:gap-6 !auto-rows-max',
-    customToolbar: <FieldsViewSwitcher />,
+    customToolbar: viewSwitcher,
     customActions: isCampesino ? undefined : (record: any) => (
       <div className="flex items-center gap-1">
         <FieldActionsMenu field={record as FieldResponse} />
@@ -814,12 +971,51 @@ function FieldsCrudPage() {
  */
 function AdminFieldsPage() {
   const [searchParams] = useSearchParams();
+  const [isAforoOpen, setIsAforoOpen] = useState(false);
+  const [aforoField, setAforoField] = useState<FieldResponse | null>(null);
+  const [isRestModalOpen, setIsRestModalOpen] = useState(false);
 
-  if (searchParams.get('view') === 'rotation') {
-    return <PotrerosBoardPage viewSwitcher={<FieldsViewSwitcher />} />;
-  }
+  const openAforo = useCallback((field?: FieldResponse | null) => {
+    setAforoField(field || null);
+    setIsAforoOpen(true);
+  }, []);
 
-  return <FieldsCrudPage />;
+  const openRestModal = useCallback(() => {
+    setIsRestModalOpen(true);
+  }, []);
+
+  const viewSwitcher = (
+    <FieldsViewSwitcher
+      onOpenAforo={() => openAforo(null)}
+      onOpenRestModal={openRestModal}
+    />
+  );
+
+  return (
+    <>
+      {searchParams.get('view') === 'rotation' ? (
+        <PotrerosBoardPage viewSwitcher={viewSwitcher} />
+      ) : (
+        <FieldsCrudPage
+          viewSwitcher={viewSwitcher}
+          onOpenAforo={openAforo}
+          onOpenRestModal={openRestModal}
+        />
+      )}
+
+      <AforoCalculatorModal
+        isOpen={isAforoOpen}
+        onClose={() => setIsAforoOpen(false)}
+        initialField={aforoField}
+      />
+
+      <PastureRestModal
+        isOpen={isRestModalOpen}
+        onClose={() => setIsRestModalOpen(false)}
+      />
+    </>
+  );
 }
 
 export default AdminFieldsPage;
+

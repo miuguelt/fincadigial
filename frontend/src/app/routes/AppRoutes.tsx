@@ -57,12 +57,11 @@ const AdminBreedsPage = lazy(() => import('@/pages/dashboard/admin/breeds/index.
 const AdminTreatmentsPage = lazy(() => import('@/pages/dashboard/admin/treatments/index.tsx'));
 const AdminTreatmentFormPage = lazy(() => import('@/pages/dashboard/admin/treatments/form.tsx'));
 const AdminTreatmentDetailPage = lazy(() => import('@/pages/dashboard/admin/treatments/detail.tsx'));
+import { reproductionRoutes } from './reproductionRoutes';
+
 const AdminTreatmentAnalyticsPage = lazy(() => import('@/pages/dashboard/admin/treatments/analytics.tsx'));
 const AdminAnimalsPage = lazy(() => import('@/pages/dashboard/admin/animals/index.tsx'));
 const AdminInventoryPage = lazy(() => import('@/pages/dashboard/admin/inventory/index.tsx'));
-const AdminReproductionPage = lazy(() => import('@/pages/dashboard/admin/reproduction/index.tsx'));
-const FertilityDashboard = lazy(() => import('@/pages/dashboard/admin/reproduction/FertilityDashboard.tsx'));
-const SirePerformance = lazy(() => import('@/pages/dashboard/admin/reproduction/SirePerformance.tsx'));
 const AdminGrowthPage = lazy(() => import('@/pages/dashboard/admin/growth/index.tsx'));
 const RegulatoryReportsPage = lazy(() => import('@/pages/dashboard/admin/regulatory-reports/index.tsx'));
 
@@ -139,9 +138,7 @@ const renderRoleRoutes = (prefix: string) => (
       <Route path={`${prefix}/animals`} element={<AdminAnimalsPage />} />
       <Route path={`${prefix}/animals/:id`} element={<AdminAnimalsPage />} />
       <Route path={`${prefix}/growth`} element={<AdminGrowthPage />} />
-      <Route path={`${prefix}/reproduction`} element={<AdminReproductionPage />} />
-      <Route path={`${prefix}/reproduction/fertility`} element={<FertilityDashboard />} />
-      <Route path={`${prefix}/reproduction/sire-performance`} element={<SirePerformance />} />
+      {reproductionRoutes(prefix)}
       <Route path={`${prefix}/regulatory-reports`} element={<RegulatoryReportsPage />} />
       <Route path={`${prefix}/reports`} element={<ReportsPage />} />
     </Route>
@@ -340,9 +337,7 @@ const AppRoutes = () => {
             <Route path="/admin/treatments/form/:id" element={<AdminTreatmentFormPage />} />
             <Route path="/admin/treatments/detail/:id" element={<AdminTreatmentDetailPage />} />
             <Route path="/admin/inventory" element={<AdminInventoryPage />} />
-            <Route path="/admin/reproduction" element={<AdminReproductionPage />} />
-            <Route path="/admin/reproduction/fertility" element={<FertilityDashboard />} />
-            <Route path="/admin/reproduction/sire-performance" element={<SirePerformance />} />
+            {reproductionRoutes('/admin')}
             <Route path="/admin/growth" element={<AdminGrowthPage />} />
             <Route path="/admin/regulatory-reports" element={<RegulatoryReportsPage />} />
             <Route path="/admin/reports" element={<ReportsPage />} />

@@ -1,6 +1,17 @@
 /* Tailwind v4 import syntax */
 @import "tailwindcss";
 
+/* El interruptor de tema y las utilidades `dark:` estaban desconectados.
+   tailwind.config.js declara `darkMode: "class"`, pero con @tailwindcss/vite
+   ese archivo no se carga salvo que el CSS lo pida con @config, asi que v4
+   caia en su default: prefers-color-scheme. El resultado era un tema partido
+   en dos — ThemeContext.tsx anade la clase .dark en <html> y el bloque .dark
+   de este archivo si redefinia los tokens, mientras las utilidades `dark:` de
+   225 archivos seguian obedeciendo al sistema operativo. Con el SO en claro y
+   el interruptor en oscuro, medio interfaz quedaba en cada tema.
+   Esta linea es la que ata `dark:` a la clase. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-background: hsl(210 20% 97%);
   --color-foreground: hsl(223 47% 11%);
@@ -474,9 +485,9 @@
     width: 2.25rem;
     height: 2.25rem;
     border-radius: var(--radius);
-    border: 1px solid hsl(var(--border));
+    border: 1px solid var(--border);
     background: hsl(var(--surface-primary));
-    color: hsl(var(--text-primary));
+    color: var(--text-primary);
     box-shadow: var(--shadow-sm);
     transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, transform 180ms ease;
   }
@@ -494,8 +505,8 @@
 
   .icon-btn:disabled {
     background: hsl(var(--surface-disabled));
-    color: hsl(var(--text-secondary));
-    border-color: hsl(var(--border));
+    color: var(--text-secondary);
+    border-color: var(--border);
     cursor: not-allowed;
     transform: none;
   }
@@ -540,7 +551,7 @@
   .vl-label {
     font-size: 0.8125rem;
     font-weight: 500;
-    color: hsl(var(--text-secondary));
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -549,7 +560,7 @@
   .vl-caption {
     font-size: 0.75rem;
     font-weight: 400;
-    color: hsl(var(--text-secondary));
+    color: var(--text-secondary);
     opacity: 0.7;
   }
 

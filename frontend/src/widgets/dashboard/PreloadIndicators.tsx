@@ -122,7 +122,7 @@ export const PreloadIndicators: React.FC<PreloadIndicatorsProps> = ({
           color: "text-muted-foreground",
           bgColor: "bg-muted/50",
           message: "Sin conexión",
-          description: "Modo offline activado",
+          description: "Modo sin conexión activado",
         };
       default:
         return {

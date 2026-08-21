@@ -1,14 +1,30 @@
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { X } from "lucide-react"
 
 import { cn } from "@/shared/ui/cn.ts"
 
+let activeDialogCount = 0
+
+function incrementActiveDialogs() {
+  activeDialogCount++
+  if (typeof document !== 'undefined') {
+    const body = document.body
+    if (body) body.style.overflow = 'hidden'
+  }
+}
+
+function decrementActiveDialogs() {
+  activeDialogCount = Math.max(0, activeDialogCount - 1)
+  if (activeDialogCount === 0) {
+    recoverDocumentInteractivityIfNoDialogsOpen()
+  }
+}
+
 function recoverStuckDocumentLocks() {
   if (typeof document === 'undefined') return
   const hasOpenDialog = Boolean(document.querySelector('[role="dialog"][data-state="open"]'))
-  if (hasOpenDialog) return
+  if (hasOpenDialog || activeDialogCount > 0) return
 
   const body = document.body
   const html = document.documentElement
@@ -35,7 +51,7 @@ function ensureDialogLockGuard() {
   if (!body) return
 
   const observer = new MutationObserver(() => {
-    if (document.body?.style?.pointerEvents === 'none') {
+    if (document.body?.style?.pointerEvents === 'none' && activeDialogCount === 0) {
       recoverStuckDocumentLocks()
     }
   })
@@ -49,15 +65,12 @@ function recoverDocumentInteractivityIfNoDialogsOpen(attempt = 0) {
   if (typeof document === "undefined") return
 
   // Cuando un Dialog se cierra, Radix puede dejar el DOM montado unos ms para animaciones.
-  // Reintentar un poco antes de forzar cleanup.
   const hasOpenDialog = Boolean(document.querySelector('[role="dialog"][data-state="open"]'))
-  if (hasOpenDialog) {
+  if (hasOpenDialog || activeDialogCount > 0) {
     if (attempt < 10) {
       setTimeout(() => recoverDocumentInteractivityIfNoDialogsOpen(attempt + 1), 50)
       return
     }
-    // Tras varios intentos: si el DOM sigue reportando "open" pero el lock quedó pegado,
-    // preferimos recuperar interacción para evitar una UI congelada.
   }
 
   const body = document.body
@@ -80,7 +93,6 @@ function recoverDocumentInteractivityIfNoDialogsOpen(attempt = 0) {
   if (body?.style?.overflow === "hidden") body.style.overflow = ""
   if (html?.style?.overflow === "hidden") html.style.overflow = ""
 
-  // Estos estilos pueden quedar pegados si un modal se desmonta sin liberar el lock.
   if (body?.style?.paddingRight) body.style.paddingRight = ""
   if (body?.style?.touchAction) body.style.touchAction = ""
 }
@@ -104,18 +116,6 @@ const Dialog: React.FC<DialogProps> = ({ open, defaultOpen, onOpenChange, modal,
 
   React.useEffect(() => {
     ensureDialogLockGuard()
-    // Previously, this effect closed other open dialogs when a new one opened.
-    // We removed this behavior to allow stacked/nested modals.
-    //
-    // const handler = (evt: Event) => {
-    //   const e = evt as CustomEvent<{ id?: string }>
-    //   if (!isOpen) return
-    //   if (!e?.detail?.id) return
-    //   if (e.detail.id === instanceId) return
-    //   onOpenChange?.(false)
-    // }
-    // window.addEventListener('vl:dialog-open', handler as any)
-    // return () => window.removeEventListener('vl:dialog-open', handler as any)
   }, [instanceId, isOpen, onOpenChange])
 
   React.useEffect(() => {
@@ -131,26 +131,25 @@ const Dialog: React.FC<DialogProps> = ({ open, defaultOpen, onOpenChange, modal,
   React.useEffect(() => {
     ensureDialogLockGuard()
     if (isOpen) {
-      wasOpenRef.current = true
-      const body = document?.body
-      if (body) body.style.overflow = 'hidden'
+      if (!wasOpenRef.current) {
+        wasOpenRef.current = true
+        incrementActiveDialogs()
+      }
       return
     }
 
     if (!isOpen && wasOpenRef.current) {
       wasOpenRef.current = false
-      const body = document?.body
-      if (body?.style?.overflow === 'hidden') body.style.overflow = ''
-      setTimeout(recoverDocumentInteractivityIfNoDialogsOpen, 0)
-      setTimeout(recoverDocumentInteractivityIfNoDialogsOpen, 60)
-      setTimeout(recoverStuckDocumentLocks, 120)
+      decrementActiveDialogs()
     }
   }, [isOpen])
 
   React.useEffect(() => {
     return () => {
-      setTimeout(recoverDocumentInteractivityIfNoDialogsOpen, 0)
-      setTimeout(recoverStuckDocumentLocks, 120)
+      if (wasOpenRef.current) {
+        wasOpenRef.current = false
+        decrementActiveDialogs()
+      }
     }
   }, [])
 
@@ -158,8 +157,6 @@ const Dialog: React.FC<DialogProps> = ({ open, defaultOpen, onOpenChange, modal,
     <DialogPrimitive.Root
       open={isOpen}
       onOpenChange={handleOpenChange}
-      // modal=false evita que Radix aplique disableOutsidePointerEvents al body.
-      // El overlay cubre y bloquea clicks al fondo.
       modal={typeof modal === "boolean" ? modal : true}
       {...props}
     />
@@ -176,7 +173,6 @@ const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 >(({ className, style, ...props }, ref) => {
-  // Si hay un zIndex en style, no aplicar la clase z-[900]
   const hasCustomZIndex = style && typeof (style as any).zIndex !== 'undefined';
 
   return (
@@ -184,11 +180,8 @@ const DialogOverlay = React.forwardRef<
       ref={ref}
       className={cn(
         "fixed inset-0 vl-modal-overlay",
-        // Solo aplicar z-[1100] si NO hay zIndex personalizado
         !hasCustomZIndex && "z-[1100]",
         "pointer-events-auto",
-        // Importante: si por alguna razón el overlay queda montado en estado "closed",
-        // no debe bloquear la interacción con la página.
         "data-[state=closed]:pointer-events-none",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
@@ -196,14 +189,6 @@ const DialogOverlay = React.forwardRef<
         className
       )}
       style={style}
-      onPointerDown={(e) => {
-        e.preventDefault()
-        e.stopPropagation()
-      }}
-      onClick={(e) => {
-        e.preventDefault()
-        e.stopPropagation()
-      }}
       {...props}
     />
   )
@@ -217,8 +202,9 @@ const DialogContent = React.forwardRef<
     zIndex?: number
     fullWidth?: boolean
     closeButtonClassName?: string
+    preventCloseOnOutsideClick?: boolean
   }
->(({ className, children, overlayClassName, zIndex, fullWidth, closeButtonClassName, style: propsStyle, ...props }, ref) => (
+>(({ className, children, overlayClassName, zIndex, fullWidth, closeButtonClassName, preventCloseOnOutsideClick, onPointerDownOutside, onInteractOutside, style: propsStyle, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay
       className={overlayClassName}
@@ -226,12 +212,21 @@ const DialogContent = React.forwardRef<
     />
     <DialogPrimitive.Content
       ref={ref}
+      onPointerDownOutside={(e) => {
+        if (preventCloseOnOutsideClick) {
+          e.preventDefault()
+        }
+        onPointerDownOutside?.(e)
+      }}
+      onInteractOutside={(e) => {
+        if (preventCloseOnOutsideClick) {
+          e.preventDefault()
+        }
+        onInteractOutside?.(e)
+      }}
       className={cn(
-        // Posicionamiento centrado
         "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
         !zIndex && "z-[1200]",
-
-        // Modo fullWidth: ocupa casi todo el ancho disponible
         fullWidth
           ? "w-[98vw] sm:w-[96vw] max-w-[98vw] sm:max-w-[96vw]"
           : cn(
@@ -239,19 +234,13 @@ const DialogContent = React.forwardRef<
               "min-w-0 sm:min-w-[400px]",
               "max-w-[95vw] sm:max-w-lg md:max-w-xl lg:max-w-2xl",
             ),
-
-        // Altura adaptativa con límites
         "h-auto",
-        "max-h-[90vh] sm:max-h-[92vh]",
-
-        // Estética premium
+        "max-h-[92dvh] sm:max-h-[90dvh]",
         "vl-modal-surface text-card-foreground",
         "ring-1 ring-black/5 dark:ring-white/10",
         "rounded-2xl",
         "shadow-2xl shadow-black/20 dark:shadow-black/40",
         "p-0 sm:p-0 gap-0 overflow-hidden",
-
-        // Estados y animaciones
         "data-[state=closed]:pointer-events-none",
         "overflow-hidden",
         "motion-safe:duration-300 motion-safe:ease-out motion-reduce:duration-0",
@@ -260,17 +249,12 @@ const DialogContent = React.forwardRef<
         "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-100",
         "data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-1/2",
         "data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-1/2",
-
         className
       )}
       onClick={(e) => e.stopPropagation()}
       style={zIndex ? { ...propsStyle, zIndex } : propsStyle}
       {...props}
     >
-      <VisuallyHidden>
-        <DialogPrimitive.Title>Diálogo de Villa Luz</DialogPrimitive.Title>
-        <DialogPrimitive.Description>Contenido del diálogo</DialogPrimitive.Description>
-      </VisuallyHidden>
       {children}
       <DialogPrimitive.Close className={cn(
         "absolute right-3 top-3 sm:right-4 sm:top-4",

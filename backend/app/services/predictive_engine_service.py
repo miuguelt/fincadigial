@@ -414,7 +414,7 @@ class PredictiveEngineService:
 
     @staticmethod
     def get_finca_insights_summary(finca_id):
-        """Resumen ejecutivo del hato desde BD."""
+        """Resumen ejecutivo del ganado desde la base de datos."""
         from app.models.livestock_summary import LivestockSummary
 
         summary = LivestockSummary.get_for_finca(finca_id)

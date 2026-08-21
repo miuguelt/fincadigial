@@ -12,6 +12,7 @@ import { AnimalLink } from '@/entities/animal/ui';
 import { VaccineLink } from '@/entities/vaccine/ui';
 import { UserLink } from '@/entities/user/ui';
 import VaccinationInsights from './VaccinationInsights';
+import { SanidadTabs } from '@/widgets/dashboard/treatments/SanidadTabs';
 
 // Mapear respuesta a formulario
 const mapResponseToForm = (item: VaccinationResponse & { [k: string]: any }): VaccinationInput & { [k: string]: any } => ({
@@ -220,7 +221,12 @@ function AdminVaccinationsPage() {
     enableCreateModal: true,
     enableEditModal: true,
     enableDelete: true,
-    customHeader: <VaccinationInsights />,
+    customHeader: (
+      <div className="space-y-3 sm:space-y-4">
+        <SanidadTabs />
+        <VaccinationInsights />
+      </div>
+    ),
   };
 
   // Crear initialFormData con usuario preseleccionado si existe

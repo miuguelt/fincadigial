@@ -97,7 +97,7 @@ class KBTest(Resource):
 class CalendarioHato(Resource):
     @kb_ns.doc("get_hato_calendar")
     def get(self):
-        """Resumen del calendario sanitario para todo el hato (próximos 30 días)."""
+        """Resumen del calendario sanitario para todo el ganado (próximos 30 días)."""
         try:
             from app.models.animals import Animals
             from app.models.knowledge_base import KBCalendario
@@ -127,7 +127,7 @@ class CalendarioHato(Resource):
                         }
                     )
             return APIResponse.success(
-                proximos, f"{len(proximos)} eventos pendientes en el hato"
+                proximos, f"{len(proximos)} eventos pendientes en el ganado"
             )
         except Exception as e:
             return APIResponse.error(str(e), status_code=500)

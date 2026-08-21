@@ -82,7 +82,7 @@ export const useCampesinoEstadisticas = () => {
     ]);
   };
 
-  // 1. Termómetro Integral del Hato (Health & Operational Index)
+  // 1. Termómetro integral del ganado (Health & Operational Index)
   const healthGauge = useMemo<CampesinoKpiGauge>(() => {
     const rawIndex = dashboard?.kpi_resumen?.cards?.find((c: any) => c.id === 'health_index')?.valor;
     const active = dashboard?.animales_activos?.valor ?? 0;
@@ -94,7 +94,7 @@ export const useCampesinoEstadisticas = () => {
     if (active === 0) index = 100;
 
     let status: 'optimal' | 'warning' | 'critical' = 'optimal';
-    let statusLabel = 'Hato al Pelo (Óptimo)';
+    let statusLabel = 'Ganado en buen estado (óptimo)';
     let statusColor = 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800';
     let advice = 'El ganado está en excelentes condiciones sanitarias y con controles al día.';
 
@@ -112,7 +112,7 @@ export const useCampesinoEstadisticas = () => {
 
     return {
       id: 'health_gauge',
-      title: 'Termómetro General del Hato',
+      title: 'Termómetro general del ganado',
       value: Math.round(index),
       unit: '%',
       status,

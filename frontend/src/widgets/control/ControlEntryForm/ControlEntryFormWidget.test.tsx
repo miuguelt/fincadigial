@@ -113,6 +113,24 @@ describe("ControlEntryFormWidget", () => {
 		});
 	});
 
+	it("preselecciona el animal cuando la revisión se abre desde una alerta", async () => {
+		const user = userEvent.setup();
+		const create = vi.mocked(controlService.create);
+
+		render(<ControlEntryFormWidget mode="health" defaultAnimalId={7} />);
+
+		expect(screen.getByLabelText("Animal")).toHaveTextContent("VL-007 - Luna");
+
+		await user.click(screen.getByRole("radio", { name: "Normal" }));
+		await user.click(screen.getByRole("button", { name: "Guardar novedad" }));
+
+		await waitFor(() => {
+			expect(create).toHaveBeenCalledWith(
+				expect.objectContaining({ animal_id: 7 }),
+			);
+		});
+	});
+
 	it("envía una novedad de salud y confirma el guardado", async () => {
 		const user = userEvent.setup();
 		const onSuccess = vi.fn();

@@ -241,6 +241,9 @@ class AnimalsService extends BaseService<AnimalResponse> {
       sale_date: this.parseDate(item?.sale_date),
       exit_date: this.parseDate(item?.exit_date),
       exit_reason: item?.exit_reason,
+      // Ubicación en potrero
+      current_field_id: item?.current_field_id ?? item?.field_id ?? item?.current_field?.id ?? null,
+      current_field_name: item?.current_field_name ?? item?.field_name ?? item?.current_field?.name ?? null,
       // Extras que la UI puede mostrar
       age_in_days,
       age_in_months,

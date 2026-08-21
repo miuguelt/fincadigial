@@ -69,23 +69,39 @@ export class AnimalFieldsService extends BaseService<AnimalFieldResponse> {
   }
 
   async createAnimalField(data: AnimalFieldInput): Promise<AnimalFieldResponse> {
-    return this.create(data);
+    const res = await this.create(data);
+    await clearServiceCaches('fields', 'animals');
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('animal-fields:updated'));
+    return res;
   }
 
   async updateAnimalField(id: number | string, data: Partial<AnimalFieldInput>): Promise<AnimalFieldResponse> {
-    return this.update(id, data);
+    const res = await this.update(id, data);
+    await clearServiceCaches('fields', 'animals');
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('animal-fields:updated'));
+    return res;
   }
 
   async patchAnimalField(id: string, data: Partial<AnimalFieldInput>): Promise<AnimalFieldResponse> {
-    return this.patch(id, data);
+    const res = await this.patch(id, data);
+    await clearServiceCaches('fields', 'animals');
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('animal-fields:updated'));
+    return res;
   }
 
   async deleteAnimalField(id: number | string): Promise<boolean> {
-    return this.delete(id);
+    const res = await this.delete(id);
+    await clearServiceCaches('fields', 'animals');
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('animal-fields:updated'));
+    return res;
   }
 
   async createBulk(data: AnimalFieldInput[]): Promise<any> {
-    return this.customRequest('bulk', 'POST', data);
+    const res = await this.customRequest('bulk', 'POST', data);
+    await this.clearCache();
+    await clearServiceCaches('fields', 'animals');
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('animal-fields:updated'));
+    return res;
   }
 
   async bulkTransfer(data: BulkTransferRequest): Promise<BulkOperationResponse> {
@@ -101,6 +117,7 @@ export class AnimalFieldsService extends BaseService<AnimalFieldResponse> {
       // El traslado cambia la ocupación del potrero y la ubicación del animal:
       // sin esto las tarjetas seguían mostrando el conteo anterior.
       await clearServiceCaches('fields', 'animals');
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('animal-fields:updated'));
       return result;
     } catch (e: any) {
       return {
@@ -120,6 +137,7 @@ export class AnimalFieldsService extends BaseService<AnimalFieldResponse> {
       );
       await this.clearCache();
       await clearServiceCaches('fields', 'animals');
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('animal-fields:updated'));
       return result;
     } catch (e: any) {
       return {
@@ -143,12 +161,15 @@ export class AnimalFieldsService extends BaseService<AnimalFieldResponse> {
   }
 
   async removeFromField(animalId: number): Promise<boolean> {
-    const assignments = await this.getAll({ animal_id: animalId, limit: 100 });
+    const assignments = await this.getAll({ animal_id: animalId, limit: 100, cache_bust: Date.now() });
     if (!Array.isArray(assignments)) return true;
     const active = assignments.find(a => a.removal_date === null || a.removal_date === undefined);
     if (!active) return true;
     const today = new Date().toISOString().split('T')[0];
     await this.update(String(active.id), { removal_date: today });
+    await this.clearCache();
+    await clearServiceCaches('fields', 'animals');
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('animal-fields:updated'));
     return true;
   }
 }

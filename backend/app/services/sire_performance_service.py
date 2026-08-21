@@ -16,6 +16,18 @@ def _rate(numerator: int, denominator: int) -> float:
     return round(numerator * 100 / denominator, 1) if denominator else 0.0
 
 
+#: Calificación del reproductor: exige tasa de preñez y volumen mínimo de
+#: servicios, para que un toro con un solo acierto no aparezca como élite.
+_GRADES = ((70.0, 5, "A"), (60.0, 3, "B"), (50.0, 2, "C"))
+
+
+def _grade(conception_rate: float, inseminations: int) -> str:
+    for min_rate, min_services, label in _GRADES:
+        if conception_rate >= min_rate and inseminations >= min_services:
+            return label
+    return "D"
+
+
 class SirePerformanceService:
     """Agrupa eventos en memoria después de dos consultas acotadas por finca."""
 
@@ -84,20 +96,22 @@ class SirePerformanceService:
         for sire_id, values in stats.items():
             sire = sire_by_id[sire_id]
             sire_weights = weights.get(sire_id, [])
+            conception_rate = _rate(
+                values["positive_diagnoses"], values["inseminations"]
+            )
             performance.append(
                 {
                     "sire_id": sire_id,
                     "record": sire.record,
-                    "breed": sire.breed.name if sire.breed else None,
+                    "breed": sire.breed.name if sire.breed else "---",
                     **values,
-                    "conception_rate_pct": _rate(
-                        values["positive_diagnoses"], values["inseminations"]
-                    ),
+                    "conception_rate_pct": conception_rate,
                     "avg_birth_weight_kg": (
                         round(sum(sire_weights) / len(sire_weights), 1)
                         if sire_weights
-                        else None
+                        else 0
                     ),
+                    "grade": _grade(conception_rate, values["inseminations"]),
                 }
             )
 

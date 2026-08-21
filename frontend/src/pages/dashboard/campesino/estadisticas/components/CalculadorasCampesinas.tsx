@@ -165,7 +165,7 @@ export const CalculadorasCampesinas: React.FC = () => {
                 <p className="text-2xl font-black text-emerald-700 dark:text-emerald-300 mt-1">
                   {calculatedDaysInField} días
                 </p>
-                <p className="text-[10px] text-muted-foreground">en este potrero</p>
+                <p className="text-[11px] text-muted-foreground">en este potrero</p>
               </div>
 
               <div className="p-3 bg-white/80 dark:bg-black/30 rounded-xl border border-emerald-200/50">
@@ -173,7 +173,7 @@ export const CalculadorasCampesinas: React.FC = () => {
                 <p className="text-2xl font-black text-foreground mt-1">
                   {recommendedRestDays} días
                 </p>
-                <p className="text-[10px] text-muted-foreground">para rebrote del pasto</p>
+                <p className="text-[11px] text-muted-foreground">para rebrote del pasto</p>
               </div>
             </div>
 
@@ -249,7 +249,7 @@ export const CalculadorasCampesinas: React.FC = () => {
                 <p className="text-2xl font-black text-lime-700 dark:text-lime-300 mt-1">
                   {finalProjectedWeight} kg
                 </p>
-                <p className="text-[10px] text-muted-foreground">+{projectedGainKg} kg ganados</p>
+                <p className="text-[11px] text-muted-foreground">+{projectedGainKg} kg ganados</p>
               </div>
 
               <div className="p-3 bg-white/80 dark:bg-black/30 rounded-xl border border-lime-200/50">
@@ -257,7 +257,7 @@ export const CalculadorasCampesinas: React.FC = () => {
                 <p className="text-xl sm:text-2xl font-black text-foreground mt-1">
                   ${(estimatedTotalValue / 1000000).toFixed(2)}M
                 </p>
-                <p className="text-[10px] text-emerald-600 font-bold">
+                <p className="text-[11px] text-emerald-600 font-bold">
                   +${(estimatedGrossGainValue / 1000).toLocaleString('es-CO')} k ganancia
                 </p>
               </div>

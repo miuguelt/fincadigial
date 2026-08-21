@@ -103,7 +103,7 @@ export function InventoryStockProgressBar({
 		return (
 			<div className={cn("flex flex-col gap-1 w-full max-w-[200px]", className)}>
 				<div className="flex items-center justify-between gap-1.5 text-xs">
-					<span className={cn("font-bold truncate", config.textClass)}>
+					<span className={cn("font-bold fit-clamp", config.textClass)}>
 						{current} {unit}
 					</span>
 					<span className="text-[11px] text-muted-foreground font-medium shrink-0">
@@ -135,7 +135,7 @@ export function InventoryStockProgressBar({
 				<Badge
 					variant="outline"
 					className={cn(
-						"px-1.5 py-0 text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1 border shrink-0",
+						"px-1.5 py-0 text-[11px] font-black uppercase tracking-wider inline-flex items-center gap-1 border shrink-0",
 						config.badgeClass
 					)}
 				>

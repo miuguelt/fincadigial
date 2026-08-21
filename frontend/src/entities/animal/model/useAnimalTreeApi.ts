@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
 import { animalsService } from '@/entities/animal/api/animal.service';
-import { animalDependenciesService } from '@/entities/animal/api/animalDependencies.service';
 import type { AnimalTreeGraph, TreeLoadMoreOptions } from '@/entities/animal/model/tree.types';
 import { getIndexedDBCache, setIndexedDBCache } from '@/shared/api/cache/indexedDBCache';
+import { EMPTY_GENEALOGY, genealogyFromGraph, type AnimalGenealogy } from '@/entities/animal/model/treeGenealogy';
 
 const DEFAULT_TTL_MS = 8 * 60 * 1000; // 8 minutos (recomendado 5–10 min)
 
@@ -168,31 +168,29 @@ export function useAnimalTreeApi() {
   const [graph, setGraph] = useState<AnimalTreeGraph | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [dependencyInfo, setDependencyInfo] = useState<any>(null);
+  // El parentesco se lee del propio árbol: una consulta aparte podía
+  // contradecir lo que el usuario está viendo.
+  const [dependencyInfo, setDependencyInfo] = useState<AnimalGenealogy | null>(null);
+
+  const rememberGenealogy = useCallback((tree: AnimalTreeGraph | null) => {
+    setDependencyInfo((previous) => genealogyFromGraph(tree, previous ?? EMPTY_GENEALOGY));
+  }, []);
 
   const fetchAncestors = useCallback(async (rootId: number, maxDepth: number = 3, fields: string = 'id,record,sex') => {
     setLoading(true); setError(null);
     const key = cacheKey('ancestors', rootId, maxDepth, fields);
 
     try {
-      // Primero verificar dependencias para dar mejor retroalimentación
-      const dependencies = await animalDependenciesService.getAnimalDependencies(rootId);
-      setDependencyInfo(dependencies);
-
-      // Si no hay padres, podemos anticipar que el árbol estará vacío
-      if (!dependencies.has_parents) {
-        console.warn(`[useAnimalTreeApi] Este animal no tiene padres registrados. El árbol de ancestros mostrará solo la raíz.`);
-        // No retornamos error, solo registramos la advertencia
-      }
-
       const cached = await getIndexedDBCache<AnimalTreeGraph>(key);
       if (cached) {
         setGraph(cached);
+        rememberGenealogy(cached);
         setLoading(false);
         // Refresh en background por si el backend tiene generated_at más reciente
         void animalsService.getAncestorTree({ animal_id: rootId, max_depth: maxDepth, fields }).then(fresh => {
           if (!graph || (fresh.generated_at > (cached.generated_at || 0))) {
             setGraph(fresh);
+            rememberGenealogy(fresh);
             void setIndexedDBCache(key, fresh, DEFAULT_TTL_MS);
           }
         }).catch(() => {/* noop */});
@@ -200,13 +198,8 @@ export function useAnimalTreeApi() {
       }
 
       const resp = await animalsService.getAncestorTree({ animal_id: rootId, max_depth: maxDepth, fields });
-
-      // Verificar si el árbol solo contiene la raíz
-      if (resp && resp.counts && resp.counts.edges === 0 && dependencies.has_parents) {
-        console.warn(`[useAnimalTreeApi] El backend indicó padres en BD pero el árbol no tiene aristas. Posible inconsistencia de datos o max_depth demasiado bajo.`);
-      }
-
       setGraph(resp);
+      rememberGenealogy(resp);
       await setIndexedDBCache(key, resp, DEFAULT_TTL_MS);
       return resp;
     } catch (e: any) {
@@ -226,30 +219,22 @@ export function useAnimalTreeApi() {
     } finally {
       setLoading(false);
     }
-  }, [graph]);
+  }, [graph, rememberGenealogy]);
 
   const fetchDescendants = useCallback(async (rootId: number, maxDepth: number = 3, fields: string = 'id,record,sex') => {
     setLoading(true); setError(null);
     const key = cacheKey('descendants', rootId, maxDepth, fields);
 
     try {
-      // Primero verificar dependencias para dar mejor retroalimentación
-      const dependencies = await animalDependenciesService.getAnimalDependencies(rootId);
-      setDependencyInfo(dependencies);
-
-      // Si no hay hijos, podemos anticipar que el árbol estará vacío
-      if (!dependencies.has_children) {
-        console.warn(`[useAnimalTreeApi] Este animal no tiene hijos registrados. El árbol de descendientes mostrará solo la raíz.`);
-        // No retornamos error, solo registramos la advertencia
-      }
-
       const cached = await getIndexedDBCache<AnimalTreeGraph>(key);
       if (cached) {
         setGraph(cached);
+        rememberGenealogy(cached);
         setLoading(false);
         void animalsService.getDescendantTree({ animal_id: rootId, max_depth: maxDepth, fields }).then(fresh => {
           if (!graph || (fresh.generated_at > (cached.generated_at || 0))) {
             setGraph(fresh);
+            rememberGenealogy(fresh);
             void setIndexedDBCache(key, fresh, DEFAULT_TTL_MS);
           }
         }).catch(() => {/* noop */});
@@ -257,13 +242,8 @@ export function useAnimalTreeApi() {
       }
 
       const resp = await animalsService.getDescendantTree({ animal_id: rootId, max_depth: maxDepth, fields });
-
-      // Verificar si el árbol solo contiene la raíz
-      if (resp && resp.counts && resp.counts.edges === 0 && dependencies.has_children) {
-        console.warn(`[useAnimalTreeApi] El backend indicó hijos en BD pero el árbol no tiene aristas. Posible inconsistencia de datos o max_depth demasiado bajo.`);
-      }
-
       setGraph(resp);
+      rememberGenealogy(resp);
       await setIndexedDBCache(key, resp, DEFAULT_TTL_MS);
       return resp;
     } catch (e: any) {
@@ -283,7 +263,7 @@ export function useAnimalTreeApi() {
     } finally {
       setLoading(false);
     }
-  }, [graph]);
+  }, [graph, rememberGenealogy]);
 
   const loadMore = useCallback(async (
     type: 'ancestors' | 'descendants',
@@ -300,13 +280,14 @@ export function useAnimalTreeApi() {
         : await animalsService.getDescendantTree({ animal_id: rootId, max_depth: nextDepth, fields });
       const merged = mergeGraphs(current, fresh);
       setGraph(merged);
+      rememberGenealogy(merged);
       await setIndexedDBCache(key, merged, DEFAULT_TTL_MS);
       return merged;
     } catch (e: any) {
       setError(e?.message || 'Error expandiendo profundidad del árbol');
       return current;
     }
-  }, []);
+  }, [rememberGenealogy]);
 
   const clearError = useCallback(() => {
     setError(null);

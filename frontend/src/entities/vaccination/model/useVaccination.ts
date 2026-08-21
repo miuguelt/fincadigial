@@ -38,7 +38,7 @@ export const useVaccinations = () => {
       setReload(!reload);
       return mapped;
     } catch (err) {
-      setError('Error al agregar la vacunacion');
+      setError('Error al agregar la vacunación');
       return null;
     } finally {
       setLoading(false);
@@ -61,7 +61,7 @@ export const useVaccinations = () => {
       setReload(!reload);
       return mapped;
     } catch (err) {
-      setError('Error al actualizar la vacunacion');
+      setError('Error al actualizar la vacunación');
       return null;
     } finally {
       setLoading(false);
@@ -76,7 +76,7 @@ export const useVaccinations = () => {
       setReload(!reload);
       return true;
     } catch (err) {
-      setError('Error al eliminar la vacunacion');
+      setError('Error al eliminar la vacunación');
       return false;
     } finally {
       setLoading(false);

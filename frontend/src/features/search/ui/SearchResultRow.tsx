@@ -6,6 +6,7 @@ import { Clock } from 'lucide-react';
 import { Badge } from '@/shared/ui/badge';
 import { cn } from '@/shared/ui/cn';
 import type { SearchResult } from '@/features/search/api/semanticSearch.service';
+import { normalizeColombianLivestockText } from '@/shared/utils/colombiaLanguage';
 import { FALLBACK_TYPE_STYLE, TYPE_CONFIG } from '../model/searchCatalog';
 import { HighlightMatch } from './HighlightMatch';
 
@@ -20,7 +21,8 @@ interface Props {
 export function SearchResultRow({ result, query, index, isSelected, onSelect }: Props) {
   const config = TYPE_CONFIG[result.type] ?? { ...FALLBACK_TYPE_STYLE, label: result.type };
   const Icon = config.icon;
-  const title = result.name || result.title || `Elemento #${result.id}`;
+  const title = normalizeColombianLivestockText(result.name || result.title || `Elemento #${result.id}`);
+  const description = result.description ? normalizeColombianLivestockText(result.description) : undefined;
 
   return (
     <button
@@ -62,9 +64,9 @@ export function SearchResultRow({ result, query, index, isSelected, onSelect }: 
           </Badge>
         </span>
 
-        {result.description && (
+        {description && (
           <HighlightMatch
-            text={result.description}
+            text={description}
             query={query}
             className="mt-0.5 line-clamp-1 block text-xs text-muted-foreground"
           />
@@ -74,8 +76,8 @@ export function SearchResultRow({ result, query, index, isSelected, onSelect }: 
           {result.internal_id && (
             <span className="rounded bg-muted/60 px-1 font-mono">ID: {result.internal_id}</span>
           )}
-          {result.breed && <span className="fit-clamp min-w-0">{result.breed}</span>}
-          {result.species && <span className="fit-clamp min-w-0 capitalize">{result.species}</span>}
+          {result.breed && <span className="fit-clamp min-w-0">{normalizeColombianLivestockText(result.breed)}</span>}
+          {result.species && <span className="fit-clamp min-w-0 capitalize">{normalizeColombianLivestockText(result.species)}</span>}
           {result.date && (
             <span className="ml-auto inline-flex items-center gap-1 font-mono">
               <Clock className="h-3 w-3 opacity-60" />

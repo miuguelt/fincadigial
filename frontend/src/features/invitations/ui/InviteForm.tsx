@@ -152,7 +152,7 @@ export const InviteForm = ({ fincaId, onSuccess }: InviteFormProps) => {
   };
 
   const shareOnWhatsApp = (url: string) => {
-    const text = `¡Hola! Te invito a unirse a nuestro equipo en la finca utilizando la aplicación VillaLuz. Registrate o inicia sesión con este enlace: ${url}`;
+    const text = `¡Hola! Te invito a unirte a nuestro equipo en la finca utilizando la aplicación VillaLuz. Regístrate o inicia sesión con este enlace: ${url}`;
     const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
     window.open(whatsappUrl, '_blank');
   };

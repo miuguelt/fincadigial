@@ -114,7 +114,7 @@ export function RelatedDataSection<T>({
               {title}
             </h3>
             <span className="text-[11px] text-muted-foreground font-medium">
-              {data.length} registros
+              {data.length === 1 ? '1 registro' : `${data.length} registros`}
             </span>
           </div>
         </div>

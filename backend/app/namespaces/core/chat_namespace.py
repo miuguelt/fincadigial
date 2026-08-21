@@ -147,11 +147,15 @@ class ChatHistoryResource(Resource):
         user_id = _identity_as_int()
         finca_id = get_current_finca_id()
 
-        # Parámetros de paginación
-        page = flask.request.args.get("page", 1, type=int)
-        per_page = min(
-            flask.request.args.get("per_page", 50, type=int), 100
-        )  # Máx 100 mensajes
+        # Parámetros de paginación optimizada (cursor before_id o paginación clásica)
+        before_id = flask.request.args.get("before_id", type=int)
+        page = flask.request.args.get("page", type=int)
+        limit = min(
+            flask.request.args.get(
+                "limit", flask.request.args.get("per_page", 30, type=int), type=int
+            ),
+            100,
+        )  # Máx 100 mensajes por lote
 
         if not finca_id:
             return APIResponse.error(
@@ -167,8 +171,6 @@ class ChatHistoryResource(Resource):
                 "El usuario no pertenece activamente a esta finca"
             )
 
-        # El historial es dinámico y también marca lectura; no debe servirse de
-        # caché HTTP/servidor porque una respuesta vacía puede ocultar mensajes.
         history_query = ChatMessage.query.filter(
             ChatMessage.finca_id == finca_id,
             db.or_(
@@ -181,25 +183,44 @@ class ChatHistoryResource(Resource):
                     ChatMessage.recipient_id == user_id,
                 ),
             ),
-        ).order_by(ChatMessage.created_at.desc())
-
-        # Paginar
-        history_paginated = history_query.paginate(
-            page=page, per_page=per_page, error_out=False
         )
 
-        # Marcar como leídos
+        has_more = False
+        if before_id:
+            # Consulta ultra-rápida por cursor inverso
+            history_query = history_query.filter(ChatMessage.id < before_id)
+            items_with_probe = history_query.order_by(ChatMessage.id.desc()).limit(limit + 1).all()
+            if len(items_with_probe) > limit:
+                has_more = True
+                history_items = items_with_probe[:limit]
+            else:
+                history_items = items_with_probe
+        elif page:
+            # Compatibilidad con paginación tradicional
+            history_paginated = history_query.order_by(ChatMessage.id.desc()).paginate(
+                page=page, per_page=limit, error_out=False
+            )
+            history_items = history_paginated.items
+            has_more = history_paginated.has_next
+        else:
+            # Carga inicial por defecto (últimos N mensajes)
+            items_with_probe = history_query.order_by(ChatMessage.id.desc()).limit(limit + 1).all()
+            if len(items_with_probe) > limit:
+                has_more = True
+                history_items = items_with_probe[:limit]
+            else:
+                history_items = items_with_probe
+
+        # Marcar como leídos los mensajes que recibe el usuario
         unread = [
             m
-            for m in history_paginated.items
+            for m in history_items
             if m.recipient_id == user_id and not m.is_read
         ]
         if unread:
             read_at = datetime.now(UTC).replace(tzinfo=None)
             for m in unread:
                 m.is_read = True
-                # El instante viaja en la respuesta/recibo; `is_read` es la
-                # marca persistida compatible con el esquema ya desplegado.
                 m.read_at = read_at
             db.session.commit()
             cache.delete(f"chat_unread_{finca_id}_{user_id}")
@@ -210,11 +231,18 @@ class ChatHistoryResource(Resource):
                 finca_id=finca_id,
             )
 
-        # La consulta pagina descendente para obtener los últimos N, pero el
-        # contrato de UI entrega la conversación en orden cronológico.
-        messages_data = [msg.to_dict() for msg in reversed(history_paginated.items)]
+        # Entregar la conversación en orden cronológico ascendente para renderizar
+        messages_data = [msg.to_dict() for msg in reversed(history_items)]
+        oldest_id = messages_data[0]["id"] if messages_data else None
 
-        return APIResponse.success(data=messages_data)
+        return APIResponse.success(
+            data=messages_data,
+            meta={
+                "has_more": has_more,
+                "oldest_id": oldest_id,
+                "limit": limit,
+            },
+        )
 
 
 @chat_ns.route("/upload")
@@ -246,6 +274,9 @@ class ChatUploadResource(Resource):
                     "url": file_info["url"],
                     "type": file_info["type"],
                     "name": file_info["name"],
+                    "file_size": file_info.get("file_size"),
+                    "extension": file_info.get("extension"),
+                    "mime_type": file_info.get("mime_type"),
                 },
                 message="Archivo subido exitosamente",
             )
@@ -282,10 +313,16 @@ class ChatSendResource(Resource):
         attachment_type = data.get("attachment_type")
         attachment_name = data.get("attachment_name")
 
-        if not recipient_id or not message:
+        if not recipient_id:
             return APIResponse.error(
-                "recipient_id y message son requeridos", status_code=400
+                "recipient_id es requerido", status_code=400
             )
+        if not message and not attachment_url:
+            return APIResponse.error(
+                "Debe enviar un mensaje de texto o un archivo adjunto", status_code=400
+            )
+        if not message and attachment_url:
+            message = attachment_name or "Archivo adjunto"
         if recipient_id == user_id:
             return APIResponse.error(
                 "No puede enviarse mensajes a sí mismo", status_code=400

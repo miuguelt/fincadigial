@@ -3,6 +3,18 @@ import { animalsService } from '@/entities/animal/api/animal.service';
 import { fieldService } from '@/entities/field/api/field.service';
 import { animalFieldsService } from '@/entities/animal-field/api/animalFields.service';
 import { applyFieldUpdates, describeMoveOutcome, type MoveMeta, type MoveTone } from './moveOutcome';
+import {
+  applyBoardAnimalAssignments,
+  groupAnimalsByField,
+  mapAnimalForBoard,
+  mapFieldForBoard,
+  resolveBoardAnimalFieldId,
+  type BoardAnimal,
+  type BoardField,
+} from './boardData';
+
+export type { BoardAnimal, BoardField } from './boardData';
+export { groupAnimalsByField, mapAnimalForBoard, resolveBoardAnimalFieldId } from './boardData';
 
 /** El backend limita cada página a API_MAX_PAGE_SIZE (500). */
 const ANIMALS_PAGE_SIZE = 500;
@@ -22,29 +34,6 @@ const BOARD_ANIMAL_FIELDS = [
   'pending_alerts_count',
 ].join(',');
 
-export interface BoardField {
-  id: number;
-  name: string;
-  capacity: number | null;
-  area: string | null;
-  state: string | null;
-  /** Conteo de animales vivos que reporta el backend (referencia, no agrupa). */
-  reportedCount: number;
-  isGrazingReady: boolean | null;
-  restDaysRemaining: number | null;
-  lastGrazingDate: string | null;
-}
-
-export interface BoardAnimal {
-  id: number;
-  record: string;
-  sex: string | null;
-  ageMonths: number | null;
-  weight: number | null;
-  alerts: number;
-  fieldId: number | null;
-}
-
 /** Resultado de mover ganado, con el tono con que debe mostrarse el aviso. */
 export interface MoveResult {
   ok: boolean;
@@ -57,41 +46,6 @@ export interface PendingUndo {
   previousFieldByAnimal: Map<number, number | null>;
   destinationLabel: string;
 }
-
-const toId = (value: unknown): number | null => {
-  const id = Number(value);
-  return Number.isFinite(id) && id > 0 ? id : null;
-};
-
-const toCapacity = (value: unknown): number | null => {
-  const capacity = Number(value);
-  return Number.isFinite(capacity) && capacity > 0 ? capacity : null;
-};
-
-const mapField = (raw: any): BoardField => ({
-  id: Number(raw.id),
-  name: String(raw.name ?? `Potrero ${raw.id}`),
-  capacity: toCapacity(raw.capacity_num ?? raw.capacity),
-  area: raw.area ?? null,
-  state: raw.state ?? null,
-  reportedCount: Number(raw.animal_count ?? 0) || 0,
-  isGrazingReady: typeof raw.is_grazing_ready === 'boolean' ? raw.is_grazing_ready : null,
-  restDaysRemaining: Number.isFinite(Number(raw.rest_days_remaining)) ? Number(raw.rest_days_remaining) : null,
-  lastGrazingDate: raw.last_grazing_date ?? null,
-});
-
-const mapAnimal = (raw: any): BoardAnimal => ({
-  id: Number(raw.id),
-  record: String(raw.record || `Animal ${raw.id}`),
-  sex: raw.sex ?? raw.gender ?? null,
-  ageMonths: Number.isFinite(Number(raw.age_in_months)) ? Number(raw.age_in_months) : null,
-  weight: Number.isFinite(Number(raw.weight)) ? Number(raw.weight) : null,
-  alerts: Number(raw.pending_alerts_count ?? 0) || 0,
-  fieldId: toId(raw.current_field_id ?? raw.field_id ?? raw.current_field?.id),
-});
-
-const compareByRecord = (a: BoardAnimal, b: BoardAnimal) =>
-  a.record.localeCompare(b.record, 'es', { numeric: true, sensitivity: 'base' });
 
 /**
  * Carga completa del tablero de potreros.
@@ -146,9 +100,10 @@ export function usePotrerosBoard() {
           order: 'asc',
           page,
           limit: ANIMALS_PAGE_SIZE,
+          cache_bust: Date.now(),
         });
         const rows = Array.isArray(response?.data) ? response.data : [];
-        collected.push(...rows.map(mapAnimal));
+        collected.push(...rows.map(mapAnimalForBoard));
         totalPages = Number(response?.total_pages) || 1;
         page += 1;
         if (collected.length >= MAX_BOARD_ANIMALS) {
@@ -161,7 +116,7 @@ export function usePotrerosBoard() {
       const fieldRows = Array.isArray(fieldsResponse?.data) ? fieldsResponse.data : [];
 
       if (!mountedRef.current) return;
-      setFields(fieldRows.map(mapField));
+      setFields(fieldRows.map(mapFieldForBoard));
       setAnimals(collected);
       setTruncated(wasTruncated);
     } catch (e: any) {
@@ -188,44 +143,31 @@ export function usePotrerosBoard() {
     return map;
   }, [fields]);
 
-  const grouped = useMemo(() => {
-    const groups = new Map<number, BoardAnimal[]>();
-    const unassigned: BoardAnimal[] = [];
-    fields.forEach((field) => groups.set(field.id, []));
+  const resolvedAnimals = useMemo(
+    () => animals.map((animal) => ({ ...animal, fieldId: resolveBoardAnimalFieldId(animal, fields) })),
+    [animals, fields],
+  );
 
-    animals.forEach((animal) => {
-      const bucket = animal.fieldId != null ? groups.get(animal.fieldId) : undefined;
-      if (bucket) bucket.push(animal);
-      else unassigned.push(animal);
-    });
-
-    groups.forEach((items) => items.sort(compareByRecord));
-    unassigned.sort(compareByRecord);
-    return { groups, unassigned };
-  }, [animals, fields]);
+  const grouped = useMemo(() => groupAnimalsByField(resolvedAnimals, fields), [resolvedAnimals, fields]);
 
   const totals = useMemo(() => {
     const capacity = fields.reduce((sum, field) => sum + (field.capacity || 0), 0);
     const unassigned = grouped.unassigned.length;
-    const assigned = animals.length - unassigned;
+    const assigned = resolvedAnimals.length - unassigned;
     return {
       fields: fields.length,
-      animals: animals.length,
+      animals: resolvedAnimals.length,
       assigned,
       unassigned,
       capacity,
       available: Math.max(0, capacity - assigned),
       occupation: capacity > 0 ? Math.round((assigned / capacity) * 100) : null,
     };
-  }, [animals.length, fields, grouped.unassigned.length]);
+  }, [resolvedAnimals.length, fields, grouped.unassigned.length]);
 
   const applyAssignments = useCallback((assignments: Map<number, number | null>) => {
-    setAnimals((previous) =>
-      previous.map((animal) =>
-        assignments.has(animal.id) ? { ...animal, fieldId: assignments.get(animal.id)! } : animal,
-      ),
-    );
-  }, []);
+    setAnimals((previous) => applyBoardAnimalAssignments(previous, assignments, fields));
+  }, [fields]);
 
   /**
    * Traslada (o retira, con `targetFieldId === null`) un lote de animales.
@@ -237,7 +179,7 @@ export function usePotrerosBoard() {
       if (ids.length === 0) return { ok: false, tone: 'error', message: 'No hay animales seleccionados.' };
 
       const previousFieldByAnimal = new Map<number, number | null>();
-      animals.forEach((animal) => {
+      resolvedAnimals.forEach((animal) => {
         if (ids.includes(animal.id)) previousFieldByAnimal.set(animal.id, animal.fieldId);
       });
 
@@ -297,7 +239,7 @@ export function usePotrerosBoard() {
         setSaving(false);
       }
     },
-    [animals, applyAssignments, fieldById],
+    [resolvedAnimals, applyAssignments, fieldById],
   );
 
   /** Devuelve cada animal del último traslado a donde estaba. */
@@ -340,7 +282,7 @@ export function usePotrerosBoard() {
 
   return {
     fields,
-    animals,
+    animals: resolvedAnimals,
     fieldById,
     grouped,
     totals,

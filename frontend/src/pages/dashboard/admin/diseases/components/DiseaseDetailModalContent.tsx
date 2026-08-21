@@ -30,6 +30,7 @@ import {
 import { animalDiseasesService } from '@/entities/animal-disease/api/animalDiseases.service';
 import { vaccinesService } from '@/entities/vaccine/api/vaccines.service';
 import type { DiseaseResponse, AnimalDiseaseResponse, VaccineResponse } from '@/shared/api/generated/swaggerTypes';
+import { normalizeColombianLivestockText } from '@/shared/utils/colombiaLanguage';
 import { AnimalLink } from '@/entities/animal/ui';
 import { UserLink } from '@/entities/user/ui';
 import { Badge } from '@/shared/ui/badge';
@@ -63,8 +64,12 @@ export function DiseaseDetailModalContent({ disease }: DiseaseDetailModalContent
 
   const diseaseId = disease.id;
   const diseaseName = (disease as any).name || (disease as any).disease || 'Enfermedad';
-  const diseaseSymptoms = disease.symptoms || (disease as any).description || 'No especificados';
-  const diseaseDetails = (disease as any).details || (disease as any).description || '';
+  const diseaseSymptoms = normalizeColombianLivestockText(
+    disease.symptoms || (disease as any).description || 'No especificados',
+  );
+  const diseaseDetails = normalizeColombianLivestockText(
+    (disease as any).details || (disease as any).description || '',
+  );
 
   // Cargar registros de animales y vacunas asociadas
   const loadData = useCallback(async () => {
@@ -309,7 +314,7 @@ export function DiseaseDetailModalContent({ disease }: DiseaseDetailModalContent
           >
             <Users className="h-4 w-4" />
             <span>Reses Diagnosticadas</span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+            <span className={`px-2 py-0.5 rounded-full text-[11px] font-black ${
               activeTab === 'animals' ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted/60 text-muted-foreground'
             }`}>
               {analytics.total}
@@ -328,7 +333,7 @@ export function DiseaseDetailModalContent({ disease }: DiseaseDetailModalContent
             <Syringe className="h-4 w-4" />
             <span>Manejo & Vacunación</span>
             {vaccines.length > 0 && (
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+              <span className={`px-2 py-0.5 rounded-full text-[11px] font-black ${
                 activeTab === 'prevention' ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted/60 text-muted-foreground'
               }`}>
                 {vaccines.length}
@@ -557,7 +562,7 @@ export function DiseaseDetailModalContent({ disease }: DiseaseDetailModalContent
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                       <span className="text-xl font-extrabold">{analytics.total}</span>
-                      <span className="text-[10px] text-muted-foreground uppercase font-bold">Total</span>
+                      <span className="text-[11px] text-muted-foreground uppercase font-bold">Total</span>
                     </div>
                   </div>
                 ) : (
@@ -598,7 +603,7 @@ export function DiseaseDetailModalContent({ disease }: DiseaseDetailModalContent
                 </h5>
                 <p className="text-xs text-foreground/90 leading-relaxed">
                   {analytics.activeTotal === 0
-                    ? `El hato se encuentra actualmente libre de casos activos de ${diseaseName}. Se recomienda continuar con los protocolos periódicos de desinfección en comederos y mantener la vigilancia en potreros de rotación.`
+                    ? `El ganado se encuentra actualmente libre de casos activos de ${diseaseName}. Se recomienda continuar con los protocolos periódicos de desinfección en comederos y mantener la vigilancia en potreros de rotación.`
                     : `Hay ${analytics.activeTotal} ${analytics.activeTotal === 1 ? 'res en estado activo u observación' : 'reses en estado activo u observación'}. Es indispensable mantener los animales en el potrero de enfermería / cuarentena, verificar la adherencia al plan de tratamientos y registrar su evolución médica periódicamente.`}
                 </p>
               </div>
@@ -659,7 +664,7 @@ export function DiseaseDetailModalContent({ disease }: DiseaseDetailModalContent
             <div className="border border-border/40 rounded-xl overflow-hidden shadow-sm">
               <div className="overflow-x-auto max-h-[380px]">
                 <table className="w-full text-left text-xs border-collapse">
-                  <thead className="bg-muted/40 text-muted-foreground uppercase text-[10px] font-black tracking-wider sticky top-0 backdrop-blur-md border-b border-border/40">
+                  <thead className="bg-muted/40 text-muted-foreground uppercase text-[11px] font-black tracking-wider sticky top-0 backdrop-blur-md border-b border-border/40">
                     <tr>
                       <th className="px-4 py-3">Res (Código)</th>
                       <th className="px-4 py-3">Fecha Detección</th>
@@ -717,7 +722,7 @@ export function DiseaseDetailModalContent({ disease }: DiseaseDetailModalContent
                               '-'
                             )}
                           </td>
-                          <td className="px-4 py-3 text-muted-foreground max-w-xs truncate" title={rec.notes || ''}>
+                          <td className="px-4 py-3 text-muted-foreground max-w-xs fit-clamp" title={rec.notes || ''}>
                             {rec.notes || <span className="italic opacity-60">Sin notas adicionales</span>}
                           </td>
                         </tr>
@@ -760,7 +765,7 @@ export function DiseaseDetailModalContent({ disease }: DiseaseDetailModalContent
 
               <div className="space-y-2 text-xs">
                 <div className="p-3 rounded-xl bg-muted/20 border border-border/30">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block mb-1">
+                  <span className="text-[11px] uppercase font-bold text-muted-foreground block mb-1">
                     Signos Clínicos Notificados:
                   </span>
                   <p className="text-foreground font-medium leading-relaxed">
@@ -770,7 +775,7 @@ export function DiseaseDetailModalContent({ disease }: DiseaseDetailModalContent
 
                 {diseaseDetails && (
                   <div className="p-3 rounded-xl bg-muted/20 border border-border/30">
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block mb-1">
+                    <span className="text-[11px] uppercase font-bold text-muted-foreground block mb-1">
                       Descripción y Manejo:
                     </span>
                     <p className="text-foreground leading-relaxed whitespace-pre-wrap">
@@ -792,7 +797,7 @@ export function DiseaseDetailModalContent({ disease }: DiseaseDetailModalContent
                     Vacunas Preventivas Registradas
                   </h4>
                 </div>
-                <Badge variant="outline" className="text-[10px] font-bold">
+                <Badge variant="outline" className="text-[11px] font-bold">
                   {vaccines.length} asociadas
                 </Badge>
               </div>
@@ -809,7 +814,7 @@ export function DiseaseDetailModalContent({ disease }: DiseaseDetailModalContent
                           <Syringe className="h-3.5 w-3.5 text-cyan-600" />
                           {v.name}
                         </span>
-                        <Badge className="bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 text-[10px]">
+                        <Badge className="bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 text-[11px]">
                           {v.type || 'Vacuna'}
                         </Badge>
                       </div>

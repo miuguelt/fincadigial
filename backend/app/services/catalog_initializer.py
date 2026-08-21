@@ -96,7 +96,7 @@ def seed_catalogs_for_finca(finca_id: int):
         {
             "name": "Brucelosis Bovina",
             "symptoms": "Aborto en el último tercio de gestación, retención placentaria, metritis, nacimientos débiles y orquitis en machos.",
-            "details": "Bacteriana (Brucella abortus). Zoonosis crítica. Sujeta a Plan Oficial de Control y Certificación de Hatos Libres por el ICA.",
+            "details": "Bacteriana (Brucella abortus). Zoonosis crítica. Sujeta al Plan Oficial de Control y a la certificación sanitaria de predios libres ante el ICA.",
         },
         {
             "name": "Tuberculosis Bovina",
@@ -166,7 +166,7 @@ def seed_catalogs_for_finca(finca_id: int):
         {
             "name": "Diarrea Viral Bovina (DVB)",
             "symptoms": "Diarrea profusa, erosiones en boca y hocico, problemas reproductivos (reabsorción, aborto, malformaciones) y terneros inmunotolerantes (PI).",
-            "details": "Viral (Pestivirus). Inmunosupresor severo que facilita la entrada de otras enfermedades en el hato.",
+            "details": "Viral (Pestivirus). Inmunosupresor severo que facilita la entrada de otras enfermedades en el ganado.",
         },
         {
             "name": "Complejo Respiratorio Bovino (Neumonía)",

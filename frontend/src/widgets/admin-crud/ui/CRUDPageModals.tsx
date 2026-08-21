@@ -1,6 +1,8 @@
 import React from 'react';
 import { CRUDForm } from './CRUDForm';
 import { DetailModal, ConfirmDeleteDialog } from './CRUDModals';
+import { DeletionBlockedDialog } from './DeletionBlockedDialog';
+import type { DeletionErrorInfo } from '@/shared/api/deletion-error';
 import type { DependencyInfo } from './hooks/useCrudDelete';
 import type { CRUDFormField } from '@/shared/types/crud';
 
@@ -41,6 +43,8 @@ interface CRUDPageModalsProps<T extends { id: number }, TInput extends Record<st
   onConfirmDelete: () => void;
   isCheckingDependencies: boolean;
   dependencyInfo: DependencyInfo | null;
+  blockedInfo: DeletionErrorInfo | null;
+  dismissBlocked: () => void;
 }
 
 /**
@@ -56,7 +60,7 @@ export function CRUDPageModals<T extends { id: number }, TInput extends Record<s
   isDetailOpen, setIsDetailOpen, detailItem, setDetailItem, detailIndex, setDetailIndex,
   items, openEdit, customDetailContent,
   confirmOpen, setConfirmOpen, resetConfirmState, onConfirmDelete,
-  isCheckingDependencies, dependencyInfo,
+  isCheckingDependencies, dependencyInfo, blockedInfo, dismissBlocked,
 }: CRUDPageModalsProps<T, TInput>) {
   const entityLabel = config.entityName;
 
@@ -119,6 +123,8 @@ export function CRUDPageModals<T extends { id: number }, TInput extends Record<s
           dependencyInfo={dependencyInfo}
         />
       )}
+
+      <DeletionBlockedDialog info={blockedInfo} entityName={entityLabel} onClose={dismissBlocked} />
     </>
   );
 }

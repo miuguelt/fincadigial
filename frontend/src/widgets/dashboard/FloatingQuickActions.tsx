@@ -34,7 +34,7 @@ import { normalizeRole } from "@/features/auth/api/auth.service";
 import { canAccessRoutePath, toRolePath } from "@/shared/lib/routeAccess";
 
 // ─── Tipos ────────────────────────────────────────────────────
-interface QuickAction {
+export interface QuickAction {
   id: string;
   icon: React.ReactNode;
   label: string;
@@ -314,6 +314,37 @@ const CATEGORY_LABELS: Record<string, string> = {
   navegacion: '🏠 Navegación',
 };
 
+export const DEFAULT_FIELD_MESSAGES = [
+  {
+    id: 'signal',
+    icon: '📶',
+    title: 'Si estás sin señal',
+    text: 'Guarda el registro en el celular; se sincroniza cuando vuelva internet.',
+    path: '/quick/milk',
+  },
+  {
+    id: 'daily-record',
+    icon: '📝',
+    title: 'Antes de cerrar la jornada',
+    text: 'Registra el ordeño y cualquier novedad de salud del ganado.',
+    path: '/quick/milk',
+  },
+  {
+    id: 'water-and-field',
+    icon: '💧',
+    title: 'Antes de mover el ganado',
+    text: 'Confirma agua disponible y revisa el potrero de destino.',
+    path: '/quick/transfer',
+  },
+] as const;
+
+const formatQuickCount = (count: number): string => (count > 99 ? '99+' : String(count));
+
+const notificationLabel = (actionId: string, count: number): string => {
+  if (actionId === 'chat') return count === 1 ? 'nuevo' : 'nuevos';
+  return count === 1 ? 'pendiente' : 'pendientes';
+};
+
 // ─── Componente principal ─────────────────────────────────────
 export const FloatingQuickActions: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -523,13 +554,13 @@ export const FloatingQuickActions: React.FC = () => {
               // Mobile: Bottom Sheet (full width, desliza desde abajo)
               "fixed bottom-0 left-0 right-0 z-[9999]",
               // Desktop: Floating Popover (anclado a esquina inferior derecha)
-              "md:bottom-24 md:left-auto md:right-5 md:w-[360px] md:rounded-lg md:bottom-[88px]",
+              "md:left-auto md:right-5 md:w-[420px] md:max-w-[calc(100vw-1rem)] md:rounded-lg md:bottom-[88px]",
               // Styles
               "bg-card/85 dark:bg-card/65 backdrop-blur-2xl",
               "border-t md:border border-border/20",
               "rounded-t-3xl",
               "shadow-[0_-20px_60px_rgba(0,0,0,0.25)] md:shadow-[0_20px_60px_rgba(0,0,0,0.25)]",
-              "max-h-[80dvh] overflow-hidden flex flex-col"
+              "max-h-[80dvh] max-w-[100vw] overflow-hidden flex flex-col"
             )}
           >
             {/* Drag handle - Mobile only */}
@@ -538,7 +569,7 @@ export const FloatingQuickActions: React.FC = () => {
             </div>
 
             {/* Scrollable content area */}
-            <div className="flex-1 overflow-y-auto overscroll-contain">
+            <div className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
               {editMode ? (
                 <EditPanel
                   catalog={allowedCatalog}
@@ -572,12 +603,12 @@ export const FloatingQuickActions: React.FC = () => {
         className={cn(
           "fixed bottom-3 right-3 sm:bottom-4 sm:right-4",
           isOpen ? "z-[9999]" : "z-40 sm:z-[9999]",
-          "h-10 w-10 sm:h-11 sm:w-11 rounded-full",
+          "h-11 w-11 sm:h-12 sm:w-12 rounded-full",
           "flex items-center justify-center backdrop-blur-md",
           "transition-all duration-300 shadow-lg cursor-pointer",
           isOpen
             ? "bg-card/90 text-foreground border border-border/50 opacity-100 scale-105"
-            : "bg-emerald-600/70 hover:bg-emerald-500/90 text-white border border-emerald-400/30 opacity-75 hover:opacity-100 shadow-[0_4px_15px_rgba(16,185,129,0.3)]"
+            : "bg-emerald-600/80 hover:bg-emerald-500 text-white border border-emerald-400/30 opacity-90 hover:opacity-100 shadow-[0_4px_15px_rgba(16,185,129,0.35)]"
         )}
         aria-label={isOpen ? "Cerrar menú rápido" : "Abrir menú rápido"}
         aria-expanded={isOpen}
@@ -610,7 +641,7 @@ interface ActionGridProps {
   onEdit: () => void;
 }
 
-const ActionGrid: React.FC<ActionGridProps> = ({
+export const ActionGrid: React.FC<ActionGridProps> = ({
   items,
   badgesMap,
   totalBadgeCount,
@@ -629,17 +660,20 @@ const ActionGrid: React.FC<ActionGridProps> = ({
   const hasMultipleCategories = Object.keys(grouped).length > 1;
 
   return (
-    <div className="px-4 pt-3 pb-6 sm:pb-8">
+    <div className="min-w-0 px-4 pt-3 pb-6 sm:pb-8">
       {/* Header row */}
-      <div className="flex items-center justify-between mb-4 px-0.5">
-        <div>
-          <div className="flex items-center gap-2">
-            <p className="text-[13px] font-bold text-foreground">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3 px-0.5">
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <p className="min-w-0 text-[13px] font-bold text-foreground">
               Acceso Rápido
             </p>
             {totalBadgeCount > 0 && (
-              <span className="bg-rose-500 text-white text-[11px] font-black px-2 py-0.5 rounded-full shadow-sm animate-pulse">
-                {totalBadgeCount} {totalBadgeCount === 1 ? 'pendiente' : 'pendientes'}
+              <span
+                title={`${totalBadgeCount.toLocaleString('es-CO')} ${totalBadgeCount === 1 ? 'pendiente' : 'pendientes'}`}
+                className="max-w-full shrink-0 whitespace-nowrap rounded-full bg-rose-500 px-2 py-0.5 text-[11px] font-black text-white shadow-sm animate-pulse"
+              >
+                {formatQuickCount(totalBadgeCount)} {totalBadgeCount === 1 ? 'pendiente' : 'pendientes'}
               </span>
             )}
           </div>
@@ -650,7 +684,7 @@ const ActionGrid: React.FC<ActionGridProps> = ({
         <button
           onClick={onEdit}
           className={cn(
-            "flex items-center gap-1.5 px-3 py-1.5 rounded-full",
+            "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5",
             "bg-muted/60 border border-border/50",
             "text-[11px] font-semibold text-muted-foreground",
             "hover:bg-muted active:scale-95 transition-all"
@@ -661,6 +695,32 @@ const ActionGrid: React.FC<ActionGridProps> = ({
         </button>
       </div>
 
+      <div className="mb-4 min-w-0 rounded-xl border border-emerald-200/70 bg-emerald-50/70 p-3 dark:border-emerald-800/40 dark:bg-emerald-950/20">
+        <div className="mb-2 flex items-center gap-2">
+          <MessageCircle className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300" aria-hidden="true" />
+          <p className="min-w-0 text-[11px] font-extrabold uppercase tracking-[0.12em] text-emerald-800 dark:text-emerald-200">
+            Mensajes para el campo
+          </p>
+        </div>
+        <div className="grid min-w-0 gap-1.5">
+          {DEFAULT_FIELD_MESSAGES.map((message) => (
+            <button
+              key={message.id}
+              type="button"
+              onClick={() => onAction(message.path)}
+              className="group flex min-w-0 items-start gap-2 rounded-lg border border-emerald-200/60 bg-white/60 px-2.5 py-2 text-left transition-colors hover:bg-white dark:border-emerald-800/40 dark:bg-black/10 dark:hover:bg-black/20"
+            >
+              <span className="shrink-0 text-base leading-none" aria-hidden="true">{message.icon}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-xs font-bold leading-tight text-foreground">{message.title}</span>
+                <span className="mt-0.5 block text-[11px] leading-snug text-muted-foreground">{message.text}</span>
+              </span>
+              <ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-700/60 transition-transform group-hover:translate-x-0.5 dark:text-emerald-300/60" aria-hidden="true" />
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Grid — show categories if multiple */}
       {hasMultipleCategories ? (
         <div className="space-y-4">
@@ -669,24 +729,21 @@ const ActionGrid: React.FC<ActionGridProps> = ({
 
             return (
               <div key={cat}>
-                <div className="flex items-center justify-between mb-2 px-0.5">
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2 px-0.5">
+                  <p className="min-w-0 flex-1 text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">
                     {CATEGORY_LABELS[cat] || cat}
                   </p>
                   {catBadgeTotal > 0 && (
-                    <span className="bg-rose-500/15 text-rose-600 dark:text-rose-400 text-[11px] font-extrabold px-2 py-0.5 rounded-full border border-rose-500/30 flex items-center gap-1">
+                    <span
+                      title={`${catBadgeTotal.toLocaleString('es-CO')} ${catBadgeTotal === 1 ? 'notificación' : 'notificaciones'}`}
+                      className="flex max-w-full shrink-0 items-center gap-1 rounded-full border border-rose-500/30 bg-rose-500/15 px-2 py-0.5 text-[11px] font-extrabold text-rose-600 dark:text-rose-400"
+                    >
                       <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
-                      {catBadgeTotal} {catBadgeTotal === 1 ? 'notificación' : 'notificaciones'}
+                      {formatQuickCount(catBadgeTotal)} {catBadgeTotal === 1 ? 'notificación' : 'notificaciones'}
                     </span>
                   )}
                 </div>
-                <div className={cn(
-                  "grid gap-2",
-                  catItems.length === 1 ? "grid-cols-1" :
-                  catItems.length === 2 ? "grid-cols-2" :
-                  catItems.length === 3 ? "grid-cols-3" :
-                  "grid-cols-2"
-                )}>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,180px),1fr))] gap-2">
                   {catItems.map((action, idx) => (
                     <Tile
                       key={action.id}
@@ -703,7 +760,7 @@ const ActionGrid: React.FC<ActionGridProps> = ({
           })}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,180px),1fr))] gap-3">
           {items.map((action, idx) => (
             <Tile
               key={action.id}
@@ -743,9 +800,9 @@ const Tile: React.FC<TileProps> = ({ action, badgeCount = 0, isExtraNotif = fals
     whileHover={{ scale: 1.02, y: -2 }}
     onClick={onPress}
     className={cn(
-      "flex items-center gap-3 relative overflow-hidden",
-      "py-3.5 px-4 rounded-lg text-left backdrop-blur-md",
-      "transition-all duration-200 min-h-[64px] shadow-sm hover:shadow-md",
+      "relative flex min-w-0 w-full items-center gap-2.5 overflow-hidden",
+      "rounded-lg px-3 py-3 text-left backdrop-blur-md",
+      "min-h-[64px] shadow-sm transition-all duration-200 hover:shadow-md",
       badgeCount > 0
         ? "bg-rose-500/10 dark:bg-rose-950/30 border-2 border-rose-500/60 ring-2 ring-rose-500/20 hover:bg-rose-500/15"
         : isExtraNotif
@@ -754,34 +811,30 @@ const Tile: React.FC<TileProps> = ({ action, badgeCount = 0, isExtraNotif = fals
     )}
     aria-label={`${action.label}${badgeCount > 0 ? ` (${badgeCount} notificaciones)` : ''}`}
   >
-    {/* Icon container + badge */}
+    {/* Badge único sobre el icono: evita competir por el ancho del texto. */}
     <div
       className={cn(
-        "h-11 w-11 shrink-0 rounded-xl flex items-center justify-center text-white shadow-md transition-transform duration-300 group-hover:scale-110 relative",
+        "relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white shadow-md transition-transform duration-300 group-hover:scale-110",
         action.bg
       )}
     >
       {action.icon}
       {badgeCount > 0 && (
-        <span className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[11px] font-black h-5 min-w-[20px] px-1 rounded-full flex items-center justify-center border-2 border-card shadow-md animate-pulse z-10">
-          {badgeCount > 99 ? '99+' : badgeCount}
+        <span
+          title={`${badgeCount.toLocaleString('es-CO')} ${notificationLabel(action.id, badgeCount)}`}
+          className="absolute -right-1.5 -top-1.5 z-10 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-card bg-rose-600 px-1 text-[11px] font-black text-white shadow-md animate-pulse"
+        >
+          {formatQuickCount(badgeCount)}
         </span>
       )}
     </div>
 
     {/* Labels */}
     <div className="min-w-0 flex-1">
-      <div className="flex items-center justify-between gap-1.5">
-        <p className="text-[13px] font-bold text-foreground leading-tight fit-clamp">
-          {action.label}
-        </p>
-        {badgeCount > 0 && (
-          <span className="bg-rose-500 text-white text-[11px] font-black px-1.5 py-0.5 rounded-full shrink-0 shadow-sm animate-pulse">
-            {badgeCount} {action.id === 'chat' ? (badgeCount === 1 ? 'nuevo' : 'nuevos') : (badgeCount === 1 ? 'pendiente' : 'pendientes')}
-          </span>
-        )}
-      </div>
-      <p className="text-[11px] text-muted-foreground/70 leading-tight mt-0.5 fit-clamp">
+      <p className="min-w-0 text-[13px] font-bold leading-tight text-foreground fit-clamp">
+        {action.label}
+      </p>
+      <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground/70 fit-clamp">
         {action.sub}
       </p>
     </div>
@@ -819,8 +872,8 @@ const EditPanel: React.FC<EditPanelProps> = ({
   return (
     <div className="px-4 pt-3 pb-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <div>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
           <p className="text-[14px] font-bold text-foreground">
             Personalizar
           </p>
@@ -831,7 +884,7 @@ const EditPanel: React.FC<EditPanelProps> = ({
         <button
           onClick={onDone}
           className={cn(
-            "flex items-center gap-1.5 px-4 py-2 rounded-full",
+            "flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2",
             "bg-primary text-white text-[12px] font-bold",
             "shadow-md hover:bg-primary/90 active:scale-95 transition-all"
           )}
@@ -870,7 +923,7 @@ const EditPanel: React.FC<EditPanelProps> = ({
                     onClick={() => !disabled && onToggle(action.id)}
                     disabled={disabled}
                     className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all text-left relative",
+                      "relative flex w-full min-w-0 items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all",
                       isFav
                         ? "border-primary/40 bg-primary/8 shadow-sm"
                         : disabled
@@ -887,8 +940,11 @@ const EditPanel: React.FC<EditPanelProps> = ({
                     >
                       {action.icon}
                       {badgeCount > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[11px] font-extrabold h-4 min-w-[16px] px-0.5 rounded-full flex items-center justify-center border border-card shadow-sm animate-pulse z-10">
-                          {badgeCount > 99 ? '99+' : badgeCount}
+                        <span
+                          title={`${badgeCount.toLocaleString('es-CO')} ${notificationLabel(action.id, badgeCount)}`}
+                          className="absolute -right-1 -top-1 z-10 flex h-4 min-w-[16px] items-center justify-center rounded-full border border-card bg-rose-500 px-0.5 text-[11px] font-extrabold text-white shadow-sm animate-pulse"
+                        >
+                          {formatQuickCount(badgeCount)}
                         </span>
                       )}
                       {isFav && badgeCount === 0 && (
@@ -904,11 +960,6 @@ const EditPanel: React.FC<EditPanelProps> = ({
                         <p className="text-[13px] font-bold leading-tight text-foreground fit-clamp">
                           {action.label}
                         </p>
-                        {badgeCount > 0 && (
-                          <span className="bg-rose-500/20 text-rose-600 dark:text-rose-400 text-[11px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
-                            {badgeCount}
-                          </span>
-                        )}
                       </div>
                       <p className="text-[11px] text-muted-foreground/70 mt-0.5 leading-tight fit-clamp">
                         {action.sub}

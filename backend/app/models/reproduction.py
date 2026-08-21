@@ -18,6 +18,9 @@ class EventType(_enum.Enum):
     Inseminacion = "Inseminacion"
     Diagnostico = "Diagnostico"
     Parto = "Parto"
+    #: Fin de la lactancia, 60 días antes del parto esperado. Cierra el ciclo
+    #: con fecha real en vez de dejarlo vencer por antigüedad.
+    Secado = "Secado"
 
 
 class InseminationTechnique(_enum.Enum):
@@ -127,9 +130,13 @@ class ReproductiveEvent(BaseModel):
         data["is_overdue"] = self.is_overdue
         return data
 
+    #: Eventos que pueden anunciar un parto: el servicio y el diagnóstico que
+    #: lo confirma, al que el módulo le hereda la fecha probable.
+    _BIRTH_FORECAST_TYPES = (EventType.Inseminacion, EventType.Diagnostico)
+
     @property
     def days_to_birth(self):
-        if self.expected_birth_date and self.event_type == EventType.Inseminacion:
+        if self.expected_birth_date and self.event_type in self._BIRTH_FORECAST_TYPES:
             return (self.expected_birth_date - date.today()).days
         return None
 

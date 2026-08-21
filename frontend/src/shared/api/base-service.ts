@@ -285,9 +285,10 @@ export class BaseService<T> {
     }
   }
 
-  async delete(id: number | string): Promise<boolean> {
+  async delete(id: number | string, config?: Record<string, any>): Promise<boolean> {
     try {
-      await api.delete(`${this.endpoint}/${id}`);
+      const url = `${this.endpoint}/${id}`;
+      await (config ? api.delete(url, config) : api.delete(url));
       await this.clearCache();
       return true;
     } catch (e: any) {

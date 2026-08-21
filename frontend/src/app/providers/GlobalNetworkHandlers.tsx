@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import { useToast } from '@/app/providers/ToastContext';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { parseChatRealtimeEvent } from '@/features/chat/model/chatEvents';
-import { hasSessionCookies } from '@/shared/utils/cookieUtils';
 import { refetchAllResources } from '@/shared/hooks/useResource';
 import { queryClient } from '@/app/bootstrap/queryClient';
 import { OfflineChatService } from '@/shared/api/offline/OfflineChatService';
@@ -64,11 +63,11 @@ function useNetworkToasts(showToast: ReturnType<typeof useToast>['showToast']): 
         showToast('Reconectado, pero ocurrió un error al refrescar datos.', 'warning');
       }
     };
-    const onOffline = () => showToast('Sin conexión. Navegación offline habilitada con datos cacheados.', 'warning');
+    const onOffline = () => showToast('Sin conexión. Navegación sin conexión habilitada con datos guardados.', 'warning');
     const onQueueFlushed = (event: Event) => {
       const remaining = (event as CustomEvent<{ remaining?: number }>).detail?.remaining ?? 0;
       const message = remaining === 0
-        ? 'Sincronización offline completada. Todo al día.'
+        ? 'Sincronización sin conexión completada. Todo al día.'
         : `Sincronización completada con ${remaining} pendientes.`;
       showToast(message, 'success');
     };
@@ -186,25 +185,73 @@ function processServerPayload(payload: unknown, currentUserId: number, showToast
 }
 
 function startServerEvents(handlePayload: (payload: unknown) => void): () => void {
-  const leadership = claimLeadership();
-  let unsubscribe: (() => void) | null = null;
-  if (leadership.isLeader) {
+  let leadership = claimLeadership();
+  let unsubscribeSSE: (() => void) | null = null;
+  let unsubscribeBridge: (() => void) | null = null;
+  let leaderCheckTimer: ReturnType<typeof setInterval> | null = null;
+  let isCleanedUp = false;
+
+  const promoteToLeader = () => {
+    if (isCleanedUp) return;
+    if (unsubscribeBridge) {
+      unsubscribeBridge();
+      unsubscribeBridge = null;
+    }
     connectSSE();
-    unsubscribe = sse.subscribe((payload) => {
+    unsubscribeSSE = sse.subscribe((payload) => {
       publishEvent(payload);
       handlePayload(payload);
     });
-  } else unsubscribe = subscribeBridge(handlePayload);
+  };
+
+  const setupFollower = () => {
+    if (isCleanedUp) return;
+    unsubscribeBridge = subscribeBridge(handlePayload);
+
+    // Watch for leader health: if leader beat becomes stale, attempt promotion
+    leaderCheckTimer = setInterval(() => {
+      if (isCleanedUp) return;
+      const attempt = claimLeadership();
+      if (attempt.isLeader) {
+        if (leaderCheckTimer) clearInterval(leaderCheckTimer);
+        leadership = attempt;
+        promoteToLeader();
+      }
+    }, 3000);
+  };
+
+  const onLeaderChanged = () => {
+    if (isCleanedUp || leadership.isLeader) return;
+    const attempt = claimLeadership();
+    if (attempt.isLeader) {
+      if (leaderCheckTimer) clearInterval(leaderCheckTimer);
+      leadership = attempt;
+      promoteToLeader();
+    }
+  };
+
+  window.addEventListener('sse-leader-changed', onLeaderChanged);
+
+  if (leadership.isLeader) {
+    promoteToLeader();
+  } else {
+    setupFollower();
+  }
 
   return () => {
-    if (leadership.isLeader) closeSSE();
-    unsubscribe?.();
+    isCleanedUp = true;
+    window.removeEventListener('sse-leader-changed', onLeaderChanged);
+    if (leaderCheckTimer) clearInterval(leaderCheckTimer);
+    if (leadership.isLeader) {
+      closeSSE();
+    }
+    unsubscribeSSE?.();
+    unsubscribeBridge?.();
     leadership.release();
   };
 }
 
 function useServerEvents(isAuthenticated: boolean, currentUserId: number | null, showToast: ShowToast): void {
-  const cookiesReadyRef = useRef(false);
   useEffect(() => {
     if (!isAuthenticated || currentUserId === null) {
       OfflineChatService.setCurrentUser(null);
@@ -212,17 +259,7 @@ function useServerEvents(isAuthenticated: boolean, currentUserId: number | null,
     }
     OfflineChatService.setCurrentUser(currentUserId);
     const handle = (payload: unknown) => processServerPayload(payload, currentUserId, showToast);
-    let stop: () => void = () => {};
-    const start = () => { stop = startServerEvents(handle); };
-
-    if (!cookiesReadyRef.current && !hasSessionCookies()) {
-      const timer = setTimeout(() => {
-        cookiesReadyRef.current = hasSessionCookies();
-        if (cookiesReadyRef.current) start();
-      }, 1000);
-      return () => { clearTimeout(timer); stop(); };
-    }
-    start();
+    const stop = startServerEvents(handle);
     return stop;
   }, [currentUserId, isAuthenticated, showToast]);
 }

@@ -35,7 +35,7 @@ const ForgotPassword = () => {
         e.preventDefault();
 
         if (!identifier.trim()) {
-            setError("El correo o numero de identificacion es obligatorio.");
+      setError("El correo o número de identificación es obligatorio.");
             return;
         }
 
@@ -65,7 +65,7 @@ const ForgotPassword = () => {
                 <div className="w-full max-w-md p-8 space-y-8 bg-card rounded-xl shadow-2xl">
                     <div className="flex items-center justify-between">
                         <Link to="/login" className="text-success hover:text-success flex items-center gap-2 text-sm font-medium">
-                            <FaArrowLeft /> Volver al login
+                            <FaArrowLeft /> Volver al inicio de sesión
                         </Link>
                     </div>
 

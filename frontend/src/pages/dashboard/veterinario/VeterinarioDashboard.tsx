@@ -120,7 +120,7 @@ export default function VeterinarioDashboard() {
 
   const handleAction = (action: QuickAction) => {
     if (!isOnline) {
-      showToast('Las operaciones de escritura requieren conexión. Se guardará en cola offline.', 'warning');
+      showToast('Las operaciones de escritura requieren conexión. Se guardará en cola para sincronizar.', 'warning');
     }
     navigate(action.path);
   };

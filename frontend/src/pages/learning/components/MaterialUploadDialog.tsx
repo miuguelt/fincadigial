@@ -90,7 +90,7 @@ export function MaterialUploadDialog({ isOpen, onOpenChange, onSuccess }: Materi
             Subir Nuevo Material
           </DialogTitle>
           <DialogDescription>
-            Agrega guías, manuales o videos para que los campesinos puedan consultarlos offline.
+            Agrega guías, manuales o videos para que los campesinos puedan consultarlos sin conexión.
           </DialogDescription>
         </DialogHeader>
 

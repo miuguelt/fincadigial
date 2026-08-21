@@ -97,7 +97,7 @@ export const DistribucionHatoCampesina: React.FC<DistribucionHatoCampesinaProps>
             <div>
               <span className="text-2xl">{cat.emoji}</span>
               <p className="text-xs font-bold mt-2 leading-tight">{cat.title}</p>
-              <p className="text-[10px] opacity-70">{cat.subtitle}</p>
+              <p className="text-[11px] opacity-70">{cat.subtitle}</p>
             </div>
             <p className="text-2xl font-black mt-3">
               {cat.count}{' '}

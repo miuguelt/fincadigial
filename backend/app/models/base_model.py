@@ -728,21 +728,19 @@ class BaseModel(db.Model):
         return self
 
     def delete(self, commit=True, hard_delete=False):
-        """Elimina la instancia (soft delete por defecto)."""
-        if hard_delete:
-            db.session.delete(self)
-        else:
-            self.is_deleted = True
-            self.deleted_at = datetime.now(UTC)
-            db.session.add(self)
+        """Elimina la instancia (soft delete por defecto, con su cascada)."""
+        from app.utils.deletion.cascade import apply_delete
+
+        apply_delete(self, hard_delete=hard_delete)
         if commit:
             db.session.commit()
         return True
 
     def restore(self, commit=True):
-        """Restaura una instancia eliminada."""
-        self.is_deleted = False
-        self.deleted_at = None
+        """Restaura una instancia eliminada junto con su cascada."""
+        from app.utils.deletion.cascade import apply_restore
+
+        apply_restore(self)
         if commit:
             db.session.commit()
         return self

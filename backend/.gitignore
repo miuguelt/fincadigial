@@ -56,6 +56,9 @@ run.py
 /migrations/versions/*
 !/migrations/versions/perf001_runtime_query_indexes.py
 !/migrations/versions/perf002_calendar_alert_indexes.py
+# repro001 es manual (ALTER TYPE sobre el enum eventtype): autogenerate no la
+# reproduce, así que sin versionar se pierde para los demás entornos.
+!/migrations/versions/repro001_dry_off_event.py
 /migrations/__pycache__/
 
 # --- Local IDE state ---

@@ -248,6 +248,7 @@ export function FincaImagesManager({
 	};
 
 	return (
+		<>
 		<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
 			<DialogTrigger asChild>
 				<Button variant="outline" size="sm" className="flex items-center gap-2">
@@ -302,24 +303,25 @@ export function FincaImagesManager({
 						loading={loading}
 					/>
 				</div>
-				{previewUrl && (
-					<Dialog open={!!previewUrl} onOpenChange={() => setPreviewUrl(null)}>
-						<DialogContent className="max-w-4xl p-1 bg-black/90">
-							<DialogTitle className="sr-only">
-								Vista previa de foto
-							</DialogTitle>
-							<DialogDescription className="sr-only">
-								Vista previa ampliada de la foto seleccionada.
-							</DialogDescription>
-							<img
-								src={previewUrl}
-								alt="Preview"
-								className="w-full h-auto max-h-[80vh] object-contain"
-							/>
-						</DialogContent>
-					</Dialog>
-				)}
 			</DialogContent>
 		</Dialog>
+		{previewUrl && (
+			<Dialog open={Boolean(previewUrl)} onOpenChange={(open) => !open && setPreviewUrl(null)}>
+				<DialogContent className="max-w-4xl p-1 bg-black/90">
+					<DialogTitle className="sr-only">
+						Vista previa de foto
+					</DialogTitle>
+					<DialogDescription className="sr-only">
+						Vista previa ampliada de la foto seleccionada.
+					</DialogDescription>
+					<img
+						src={previewUrl}
+						alt="Preview"
+						className="w-full h-auto max-h-[80vh] object-contain"
+					/>
+				</DialogContent>
+			</Dialog>
+		)}
+		</>
 	);
 }

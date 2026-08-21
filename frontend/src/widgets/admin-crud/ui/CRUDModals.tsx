@@ -316,6 +316,7 @@ export const ConfirmDeleteDialog = memo<{
     message: string;
     dependencies: Array<{
       table: string;
+      label?: string;
       count: number;
       field: string;
       cascade_delete: boolean;
@@ -343,7 +344,7 @@ export const ConfirmDeleteDialog = memo<{
       let msg = "**Atención: Registros asociados encontrados**\n\n";
       dependencyInfo.dependencies.forEach((dep) => {
         const typeStr = dep.cascade_delete ? "🔄 Se eliminará en cascada" : "❌ Bloquea la eliminación";
-        msg += `• **${dep.message || dep.table}** (${typeStr})\n`;
+        msg += `• **${dep.message || dep.label || dep.table}** (${typeStr})\n`;
 
         // Listar las muestras si existen
         if (dep.samples && dep.samples.length > 0) {
@@ -357,7 +358,7 @@ export const ConfirmDeleteDialog = memo<{
       });
 
       if (!dependencyInfo.canDelete) {
-        msg += "\n**Acción Requerida:**\nNo se puede eliminar esta entidad porque tiene dependencias activas. Debes reasignar o eliminar estos registros asociados primero.";
+        msg += "\n**Por qué no se puede eliminar:**\nEsos registros dependen de este dato y la base de datos debe conservar la relación. Elimínelos o reasígnelos y vuelva a intentarlo.";
       } else {
         msg += "\n**Nota:**\nAl confirmar la eliminación, todos los registros relacionados se eliminarán de forma automática (cascada).";
       }
@@ -367,6 +368,8 @@ export const ConfirmDeleteDialog = memo<{
   }, [loadingDependencies, dependencyInfo]);
 
   const showWarningIcon = !!(dependencyInfo && dependencyInfo.hasDependencies);
+  // Si ya se sabe que está bloqueado, confirmar solo devolvería un 409.
+  const blocked = dependencyInfo?.canDelete === false;
 
   return (
     <ConfirmDialog
@@ -381,6 +384,7 @@ export const ConfirmDeleteDialog = memo<{
       size="sm"
       detailedMessage={detailedMessage}
       showWarningIcon={showWarningIcon}
+      confirmDisabled={blocked}
     />
   );
 });

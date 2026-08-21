@@ -96,7 +96,7 @@ class BodyConditionScore(BaseModel):
 
     @classmethod
     def get_herd_average(cls, finca_id, days=30):
-        """Calcula el BCS promedio del hato en los últimos N días."""
+        """Calcula el BCS promedio del ganado en los últimos N días."""
         from datetime import timedelta
         from sqlalchemy import func
 
@@ -110,14 +110,21 @@ class BodyConditionScore(BaseModel):
 
     @classmethod
     def _validate_and_normalize(cls, data, is_update=False, instance_id=None):
+        data = super()._validate_and_normalize(data, is_update, instance_id)
         if "score" in data:
             score = data["score"]
             if not isinstance(score, (int, float)) or score < 1 or score > 9:
                 raise ValidationError("El BCS debe estar entre 1.0 y 9.0")
         if "score_date" in data and data["score_date"]:
-            if data["score_date"] > date.today():
+            sc_date = data["score_date"]
+            if isinstance(sc_date, str):
+                try:
+                    sc_date = date.fromisoformat(sc_date)
+                except (ValueError, TypeError):
+                    pass
+            if isinstance(sc_date, date) and sc_date > date.today():
                 raise ValidationError("La fecha de evaluación no puede ser futura")
-        return super()._validate_and_normalize(data, is_update, instance_id)
+        return data
 
     def __repr__(self):
         return f"<BCS animal={self.animal_id} score={self.score} ({self.category}) on {self.score_date}>"

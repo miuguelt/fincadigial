@@ -39,7 +39,6 @@ import HerdHealthSection from './overview/HerdHealthSection';
 import AdminLinksRow from './overview/AdminLinksRow';
 
 // Code splitting: nada de esto es necesario para el primer pintado.
-const FieldHealthMap = React.lazy(() => import('@/widgets/analytics/FieldHealthMap'));
 const HeatAlertsWidget = React.lazy(() => import('@/widgets/reproduction/HeatAlertsWidget'));
 const RegulatoryReportsWidget = React.lazy(() => import('@/widgets/dashboard/RegulatoryReportsWidget'));
 const AIInsightsWidget = React.lazy(() =>
@@ -252,19 +251,6 @@ const AdminDashboard: React.FC = () => {
         onOpenAnalytics={() => navigate('/admin/analytics/executive')}
       />
 
-      {/* Potreros: ocupación y carga por campo. */}
-      <section className="vl-deferred-section">
-        <SectionHeading
-          icon={MapPinned}
-          title="Potreros"
-          subtitle="Ocupación, carga animal y estado de cada campo"
-          actionLabel="Ver potreros"
-          onAction={() => navigate('/admin/fields')}
-        />
-        <Suspense fallback={<SkeletonCard className="h-[420px]" />}>
-          <FieldHealthMap />
-        </Suspense>
-      </section>
 
       {/* Reproducción: celos y servicios, el motor productivo del ganado. */}
       <section className="vl-deferred-section">

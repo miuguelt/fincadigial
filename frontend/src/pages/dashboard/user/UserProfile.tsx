@@ -262,7 +262,7 @@ const UserProfile = () => {
             const queued = (updated as any)?.__offlineQueued;
             setProfileStatus({
                 type: 'success',
-                message: queued ? 'Actualizacion en cola (offline).' : 'Perfil actualizado correctamente.',
+                message: queued ? 'Actualización en cola para sincronizar.' : 'Perfil actualizado correctamente.',
             });
             profileForm.reset(normalized);
             if (refreshUserData) {
@@ -780,7 +780,7 @@ const UserProfile = () => {
                 entity: 'improvement',
                 entityId: row.id,
                 ts,
-                title: `Mejora genetica: ${row.type}`,
+                title: `Mejora genética: ${row.type}`,
                 summary: row.description ? `${row.animal} · ${row.description}` : `${row.animal}`,
                 severity: 'low',
                 crudPath: 'genetic-improvements',
@@ -850,7 +850,7 @@ const UserProfile = () => {
                 entity: 'vaccination',
                 entityId: row.id,
                 ts,
-                title: 'Vacunacion aplicada',
+                title: 'Vacunación aplicada',
                 summary: `${row.animal} · ${row.vaccine} · ${row.date}`,
                 severity: 'low',
                 crudPath: 'vaccinations',
@@ -899,7 +899,7 @@ const UserProfile = () => {
                     entity: 'control',
                     entityId: row.id,
                     ts: nextTs ?? ts,
-                    title: isOverdue ? 'Control atrasado' : 'Control proximo',
+                    title: isOverdue ? 'Control atrasado' : 'Control próximo',
                     summary: `${row.animal}`,
                     severity: isOverdue ? 'high' : 'medium',
                     crudPath: 'controls',

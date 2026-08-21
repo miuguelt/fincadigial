@@ -158,3 +158,16 @@ def test_animal_field_transfer_meta(client, auth_headers, app):
             removal_date=None,
         ).one()
         assert active_assignment.field_id == field_b_id
+
+    # Verificar que el endpoint de animals entrega current_field_id y current_field_name
+    animals_resp = client.get(
+        "/api/v1/animals?fields=id,record,current_field_id,current_field_name",
+        headers=auth_headers,
+    )
+    assert animals_resp.status_code == 200
+    animals_data = animals_resp.get_json()
+    items = animals_data.get("items") or animals_data.get("data") or []
+    target_animal = next((a for a in items if a["id"] == animal_2_id), None)
+    assert target_animal is not None
+    assert target_animal.get("current_field_id") == field_b_id
+    assert target_animal.get("current_field_name") == "Potrero B"

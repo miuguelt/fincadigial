@@ -1,5 +1,5 @@
 import { BaseService } from '@/shared/api/base-service';
-import { api } from '@/shared/api/base-client';
+import api from '@/shared/api/client';
 
 export interface KBRecomendacion {
   id: number;

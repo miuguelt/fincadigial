@@ -34,7 +34,7 @@ import {
   SelectItem,
 } from "@/shared/ui/select";
 import { GenericModal } from "@/shared/ui/common/GenericModal";
-import { DialogFooter } from "@/shared/ui/dialog";
+import { ConfirmDialog } from "@/shared/ui/common/ConfirmDialog";
 
 import { useUsers } from "@/entities/user/model/useUser";
 import type { UserInput, UserResponse } from "@/shared/api/generated/swaggerTypes";
@@ -471,7 +471,6 @@ const EnhancedUserManagement: React.FC = () => {
         )}
       </div>
 
-      {/* Modal: Crear */}
       <GenericModal
         isOpen={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
@@ -479,6 +478,16 @@ const EnhancedUserManagement: React.FC = () => {
         size="lg"
         description="Completa la información para crear un nuevo usuario."
         enableBackdropBlur={false}
+        footer={
+          <div className="flex justify-end gap-2 px-6 py-4 border-t border-border bg-card">
+            <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={() => handleCreateUser(formData)} type="submit" aria-label="Crear Usuario">
+              Crear Usuario
+            </Button>
+          </div>
+        }
       >
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
@@ -611,11 +620,6 @@ const EnhancedUserManagement: React.FC = () => {
             </Select>
           </div>
         </div>
-        <DialogFooter>
-          <Button onClick={() => handleCreateUser(formData)} type="submit" aria-label="Crear Usuario">
-            Crear Usuario
-          </Button>
-        </DialogFooter>
       </GenericModal>
 
       {/* Modal: Editar */}
@@ -626,6 +630,16 @@ const EnhancedUserManagement: React.FC = () => {
         size="lg"
         description="Modifica la información del usuario."
         enableBackdropBlur={false}
+        footer={
+          <div className="flex justify-end gap-2 px-6 py-4 border-t border-border bg-card">
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={() => handleUpdateUser(formData)} type="submit" aria-label="Guardar Cambios">
+              Guardar Cambios
+            </Button>
+          </div>
+        }
       >
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
@@ -738,11 +752,6 @@ const EnhancedUserManagement: React.FC = () => {
             </Select>
           </div>
         </div>
-        <DialogFooter>
-          <Button onClick={() => handleUpdateUser(formData)} type="submit" aria-label="Guardar Cambios">
-            Guardar Cambios
-          </Button>
-        </DialogFooter>
       </GenericModal>
 
       {/* Modal: Ver */}
@@ -753,6 +762,13 @@ const EnhancedUserManagement: React.FC = () => {
         size="xl"
         description="Información detallada del usuario seleccionado."
         enableBackdropBlur={false}
+        footer={
+          <div className="flex justify-end px-6 py-4 border-t border-border bg-card">
+            <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
+              Cerrar
+            </Button>
+          </div>
+        }
       >
         {selectedUser && (
           <div className="space-y-4">
@@ -793,31 +809,21 @@ const EnhancedUserManagement: React.FC = () => {
       </GenericModal>
 
       {/* Modal: Eliminar */}
-      <GenericModal
-        isOpen={isDeleteDialogOpen}
+      <ConfirmDialog
+        open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         title="¿Estás seguro?"
-        size="sm"
         description="Esta acción no se puede deshacer. Se eliminará permanentemente el usuario."
-      >
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} aria-label="Cancelar eliminación">
-            Cancelar
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={() => {
-              if (selectedUser) {
-                handleDeleteUser(selectedUser.id);
-                setIsDeleteDialogOpen(false);
-              }
-            }}
-            aria-label="Confirmar eliminación"
-          >
-            Eliminar
-          </Button>
-        </DialogFooter>
-      </GenericModal>
+        confirmLabel="Eliminar"
+        cancelLabel="Cancelar"
+        confirmVariant="destructive"
+        onConfirm={() => {
+          if (selectedUser) {
+            handleDeleteUser(selectedUser.id);
+            setIsDeleteDialogOpen(false);
+          }
+        }}
+      />
     </AppLayout>
   );
 };

@@ -61,4 +61,25 @@ export class HealthAnalyzer {
 
     return { status, message, trend, score };
   }
+
+  static analyzeWeightChange(currentWeight: number, previousWeight: number, _animalId?: number, _record?: string): HealthInsight {
+    const diff = currentWeight - previousWeight;
+    let trend: 'up' | 'down' | 'stable' = 'stable';
+    let score = 70;
+    let status: HealthInsight['status'] = 'optimal';
+    let message = 'Peso estable.';
+
+    if (diff > 0) {
+      trend = 'up';
+      score = 85;
+      message = `Ganancia de peso: +${diff.toFixed(1)} kg.`;
+    } else if (diff < 0) {
+      trend = 'down';
+      score = 45;
+      status = 'warning';
+      message = `Pérdida de peso: ${diff.toFixed(1)} kg. Revisar nutrición y sanidad.`;
+    }
+
+    return { status, message, trend, score };
+  }
 }

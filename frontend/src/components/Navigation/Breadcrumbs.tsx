@@ -15,6 +15,7 @@ const routeMap: Record<string, string> = {
   '/admin/reproduction': 'Cría y Reproducción',
   '/admin/reproduction/fertility': 'Fertilidad',
   '/admin/reproduction/sire-performance': 'Toros y Reproductores',
+  '/admin/reproduction/kpis': 'Indicadores del Hato',
   '/admin/treatments': 'Tratamientos e Insumos',
   '/admin/vaccinations': 'Vacunaciones',
   '/admin/inventory': 'Inventario',

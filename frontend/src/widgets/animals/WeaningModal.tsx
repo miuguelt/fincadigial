@@ -249,7 +249,7 @@ export const WeaningModal: React.FC<WeaningModalProps> = ({
 
           {/* Botones de pesos rápidos */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-            <span className="text-[10px] font-bold text-muted-foreground whitespace-nowrap">Rango Común:</span>
+            <span className="text-[11px] font-bold text-muted-foreground whitespace-nowrap">Rango Común:</span>
             {WEANING_WEIGHT_PRESETS.map((w) => (
               <button
                 key={w}
@@ -277,21 +277,21 @@ export const WeaningModal: React.FC<WeaningModalProps> = ({
 
           <div className="grid grid-cols-3 gap-2 text-center pt-1">
             <div className="p-2 rounded-xl bg-white/80 dark:bg-black/40 border border-emerald-200/50">
-              <span className="text-[10px] font-bold text-muted-foreground block">Ganancia Total</span>
+              <span className="text-[11px] font-bold text-muted-foreground block">Ganancia Total</span>
               <p className="text-base font-black text-foreground">
                 +{zootecnia.totalGainKg} <small className="text-xs font-normal">kg</small>
               </p>
             </div>
 
             <div className="p-2 rounded-xl bg-white/80 dark:bg-black/40 border border-emerald-200/50">
-              <span className="text-[10px] font-bold text-muted-foreground block">GMD Predestete</span>
+              <span className="text-[11px] font-bold text-muted-foreground block">GMD Predestete</span>
               <p className="text-base font-black text-emerald-700 dark:text-emerald-400">
                 +{zootecnia.adgGrams} <small className="text-xs font-normal">g/d</small>
               </p>
             </div>
 
             <div className="p-2 rounded-xl bg-white/80 dark:bg-black/40 border border-emerald-200/50">
-              <span className="text-[10px] font-bold text-muted-foreground block">Ajustado 205d</span>
+              <span className="text-[11px] font-bold text-muted-foreground block">Ajustado 205d</span>
               <p className="text-base font-black text-foreground">
                 {zootecnia.adjustedWeight205} <small className="text-xs font-normal">kg</small>
               </p>

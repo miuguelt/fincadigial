@@ -5,7 +5,7 @@ import { AnimalActionsMenu } from '@/widgets/dashboard/AnimalActionsMenu';
 import { BatchActionToolbar } from '@/features/animal-bulk-actions';
 import { checkAnimalDependencies, clearAnimalDependencyCache } from '@/features/diagnostics/api/dependencyCheck.service';
 
-export type BulkModal = 'transfer' | 'weight' | 'vaccinate' | 'print' | null;
+export type BulkModal = 'transfer' | 'weight' | 'vaccinate' | 'print' | 'delete' | null;
 type AnimalRecord = AnimalResponse & { [key: string]: any };
 
 interface BatchActionOptions {
@@ -13,13 +13,12 @@ interface BatchActionOptions {
   selectedIdsRef: MutableRefObject<number[]>;
   setBulkModal: (modal: Exclude<BulkModal, null>) => void;
   setSelectedAnimals: (animals: any[]) => void;
-  showToast: (message: string, type?: any) => void;
 }
 
-export const createBatchActions = ({ clearSelectionRef, selectedIdsRef, setBulkModal, setSelectedAnimals, showToast }: BatchActionOptions) => (selectedIds: number[], items: any[], clearSelection: () => void) => {
+export const createBatchActions = ({ clearSelectionRef, selectedIdsRef, setBulkModal, setSelectedAnimals }: BatchActionOptions) => (selectedIds: number[], items: any[], clearSelection: () => void) => {
   clearSelectionRef.current = clearSelection;
   selectedIdsRef.current = selectedIds;
-  return <BatchActionToolbar selectedCount={selectedIds.length} onClear={clearSelection} onTransfer={() => setBulkModal('transfer')} onWeight={() => setBulkModal('weight')} onVaccinate={() => setBulkModal('vaccinate')} onPrintTags={() => { setSelectedAnimals(items.filter((item) => selectedIds.includes(item.id))); setBulkModal('print'); }} onDelete={() => showToast(`Seleccionados ${selectedIds.length} animales para eliminar. Use el botón de la barra flotante.`, 'warning')} />;
+  return <BatchActionToolbar selectedCount={selectedIds.length} onClear={clearSelection} onTransfer={() => setBulkModal('transfer')} onWeight={() => setBulkModal('weight')} onVaccinate={() => setBulkModal('vaccinate')} onPrintTags={() => { setSelectedAnimals(items.filter((item) => selectedIds.includes(item.id))); setBulkModal('print'); }} onDelete={() => setBulkModal('delete')} />;
 };
 
 export const createAnimalActions = (userId: number | undefined, openHistory: (animal: AnimalRecord) => void, openAncestors: (animal: AnimalRecord) => void, openDescendants: (animal: AnimalRecord) => void) => (record: AnimalRecord) => (

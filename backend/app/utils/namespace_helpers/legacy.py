@@ -1737,36 +1737,26 @@ def create_optimized_namespace(
                     body, status = APIResponse.not_found(name.capitalize())
                     return flask_make_response(jsonify(body), status)
 
-                # Verificación de integridad referencial optimizada
-                from app.utils.integrity_checker import OptimizedIntegrityChecker
-
-                can_delete, warnings = OptimizedIntegrityChecker.can_delete_safely(
-                    model_class, record_id
+                # Integridad referencial: qué arrastra el borrado y qué lo impide
+                from app.utils.deletion import (
+                    blocked_delete_response,
+                    build_deletion_report,
+                    integrity_error_response,
                 )
 
-                if not can_delete:
-                    # No se puede eliminar - hay dependencias que lo bloquean
-                    warning_messages = [
-                        w.warning_message for w in warnings if not w.cascade_delete
-                    ]
-                    body, status = APIResponse.error(
-                        "No se puede eliminar el registro por dependencias existentes",
-                        details={
-                            "warnings": [w.to_dict() for w in warnings],
-                            "blocking_dependencies": len(warning_messages),
-                            "messages": warning_messages,
-                        },
-                        status_code=409,  # Conflict
-                    )
+                report = build_deletion_report(
+                    model_class, record_id, instance=instance
+                )
+
+                if not report.can_delete:
+                    body, status = blocked_delete_response(report)
                     return flask_make_response(jsonify(body), status)
 
-                # Si hay dependencias con cascade, informar antes de eliminar
-                cascade_warnings = [
-                    w for w in warnings if w.cascade_delete and w.dependent_count > 0
-                ]
-                if cascade_warnings:
+                cascading = report.cascading
+                if cascading:
                     logger.info(
-                        f"Eliminando {model_class.__name__} id={record_id} con {len(cascade_warnings)} dependencias en cascade"
+                        f"Eliminando {model_class.__name__} id={record_id} con "
+                        f"{report.cascade_total} registro(s) en cascada"
                     )
 
                 # Eliminar de BD (commit incluido en instance.delete())
@@ -1777,27 +1767,33 @@ def create_optimized_namespace(
                         "No se pudo preparar relations para delete", exc_info=True
                     )
 
-                instance.delete()
+                try:
+                    instance.delete()
+                except IntegrityError as ie:
+                    db.session.rollback()
+                    logger.warning(
+                        f"La BD rechazó eliminar {model_class.__name__} id={record_id}: {ie}"
+                    )
+                    body, status = integrity_error_response(ie, report.record_label)
+                    return flask_make_response(jsonify(body), status)
 
                 # Invalidar cache INMEDIATAMENTE después de commit exitoso
                 _cache_clear(model_class.__name__)
 
                 # Respuesta con información de eliminación cascade si aplica
                 response_data: dict[str, Any] = {"deleted_id": record_id}
-                if cascade_warnings:
+                if cascading:
                     response_data["cascade_deletions"] = {
-                        "total_records": sum(
-                            w.dependent_count for w in cascade_warnings
-                        ),
-                        "details": [w.to_dict() for w in cascade_warnings],
+                        "total_records": report.cascade_total,
+                        "details": [dep.to_dict() for dep in cascading],
                     }
 
                 body, status = APIResponse.success(
                     data=response_data,
                     message=f"{name.capitalize()} eliminado exitosamente"
                     + (
-                        f" con {sum(w.dependent_count for w in cascade_warnings)} registro(s) relacionados"
-                        if cascade_warnings
+                        f" con {report.cascade_total} registro(s) relacionados"
+                        if cascading
                         else ""
                     ),
                 )
@@ -1857,177 +1853,24 @@ def create_optimized_namespace(
         )
         @_maybe_rate_limit
         def get(self, record_id: int):
-            """Verificación de dependencias de un registro usando OptimizedIntegrityChecker."""
+            """Dependencias de un registro y motivo de un posible bloqueo."""
             try:
-                # Verificar si el registro existe
                 instance = model_class.get_by_id(record_id)
                 if not instance:
                     body, status = APIResponse.not_found(name.capitalize())
                     return flask_make_response(jsonify(body), status)
 
-                # Usar el integrity checker ultra-optimizado
-                from app.utils.integrity_checker import OptimizedIntegrityChecker
-
-                warnings = OptimizedIntegrityChecker.check_integrity_fast(
-                    model_class, record_id
+                from app.utils.deletion import (
+                    build_deletion_report,
+                    dependencies_payload,
                 )
 
-                # Mapeo de campos técnicos a descriptivos si el modelo lo provee
-                field_mapping = getattr(model_class, "_field_mapping", {}) or {}
-
-                dependencies = []
-                total_count = 0
-
-                for warning in warnings:
-                    field_name = warning.dependent_field
-                    # Aplicar mapeo de campos si existe
-                    display_field = field_mapping.get(field_name, field_name)
-
-                    table_name = warning.dependent_table
-                    count = 0
-                    samples = []
-
-                    if warning.dependent_count > 0:
-                        # 1. Obtener metadatos de la tabla
-                        table = db.metadata.tables.get(table_name)
-                        pk_col = "id"
-                        desc_col = None
-
-                        if table is not None:
-                            pk_cols = [c.name for c in table.primary_key.columns]
-                            if pk_cols:
-                                pk_col = pk_cols[0]
-
-                            columns = [c.name for c in table.columns]
-                            desc_candidates = [
-                                "name",
-                                "nombre",
-                                "record",
-                                "code",
-                                "codigo",
-                                "title",
-                                "titulo",
-                                "tag",
-                                "alias",
-                            ]
-                            for cand in desc_candidates:
-                                if cand in columns:
-                                    desc_col = cand
-                                    break
-                            if not desc_col:
-                                non_fk_cols = [
-                                    c
-                                    for c in columns
-                                    if c != pk_col and not c.endswith("_id")
-                                ]
-                                if non_fk_cols:
-                                    desc_col = non_fk_cols[0]
-                                else:
-                                    desc_col = pk_col
-                        else:
-                            desc_col = "name"
-
-                        # 2. Consultar el conteo real (con validación de identifiers)
-                        _validate_sql_identifier(table_name)
-                        _validate_sql_identifier(field_name)
-                        try:
-                            count_query = text(
-                                f"SELECT COUNT(*) FROM {table_name} WHERE {field_name} = :record_id"
-                            )
-                            count = (
-                                db.session.execute(
-                                    count_query, {"record_id": record_id}
-                                ).scalar()
-                                or 0
-                            )
-                        except Exception as e:
-                            logger.error(
-                                f"Error al consultar conteo real para tabla {table_name}: {e}"
-                            )
-                            count = warning.dependent_count
-
-                        # 3. Consultar muestras (máximo 5)
-                        try:
-                            _validate_sql_identifier(pk_col)
-                            _validate_sql_identifier(desc_col)
-                            cols_to_select = f"{pk_col}"
-                            if desc_col != pk_col:
-                                cols_to_select += f", {desc_col}"
-
-                            samples_query = text(
-                                f"SELECT {cols_to_select} FROM {table_name} WHERE {field_name} = :record_id LIMIT 5"
-                            )
-                            rows = db.session.execute(
-                                samples_query, {"record_id": record_id}
-                            ).fetchall()
-
-                            for row in rows:
-                                try:
-                                    s_id = row[pk_col]
-                                    s_name = (
-                                        str(row[desc_col])
-                                        if desc_col != pk_col
-                                        else f"ID: {s_id}"
-                                    )
-                                except Exception:
-                                    try:
-                                        s_id = getattr(row, pk_col)
-                                        s_name = (
-                                            str(getattr(row, desc_col))
-                                            if desc_col != pk_col
-                                            else f"ID: {s_id}"
-                                        )
-                                    except Exception:
-                                        s_id = row[0]
-                                        s_name = (
-                                            str(row[1])
-                                            if len(row) > 1
-                                            else f"ID: {s_id}"
-                                        )
-                                samples.append({"id": s_id, "name": s_name})
-                        except Exception as e:
-                            logger.error(
-                                f"Error al consultar muestras para tabla {table_name}: {e}"
-                            )
-                    else:
-                        count = 0
-
-                    # Regenerar mensaje descriptivo con el conteo real
-                    real_message = OptimizedIntegrityChecker._generate_warning_message(
-                        warning.dependent_table, count, warning.cascade_delete
-                    )
-
-                    dependencies.append(
-                        {
-                            "table": warning.dependent_table,
-                            "count": count,
-                            "field": display_field,
-                            "cascade_delete": warning.cascade_delete,
-                            "message": real_message,
-                            "samples": samples,
-                        }
-                    )
-                    total_count += count
-
-                can_delete = all(warning.cascade_delete for warning in warnings)
-
-                # Construir mensaje apropiado
-                if can_delete and total_count > 0:
-                    message = f"Se eliminarán automáticamente {total_count} registro(s) relacionado(s)."
-                elif can_delete:
-                    message = f"Este {name} puede ser eliminado con seguridad."
-                else:
-                    message = f"No se puede eliminar este {name} porque tiene {total_count} registro(s) relacionado(s) que lo bloquean."
+                report = build_deletion_report(
+                    model_class, record_id, with_samples=True, instance=instance
+                )
 
                 body, status = APIResponse.success(
-                    data={
-                        "id": record_id,
-                        "hasDependencies": total_count > 0,
-                        "canDelete": can_delete,
-                        "totalDependencies": total_count,
-                        "message": message,
-                        "dependencies": dependencies,
-                    },
+                    data=dependencies_payload(report),
                     message="Dependencias verificadas exitosamente",
                 )
                 return flask_make_response(jsonify(body), status)
@@ -2075,7 +1918,7 @@ def create_optimized_namespace(
                         message="Máximo 100 registros por consulta", status_code=400
                     )
 
-                from app.utils.integrity_checker import OptimizedIntegrityChecker
+                from app.utils.deletion import build_deletion_report
 
                 results: dict[int, dict[str, Any]] = {}
 
@@ -2083,36 +1926,36 @@ def create_optimized_namespace(
                 existing_records = model_class.query.filter(
                     model_class.id.in_(record_ids)
                 ).all()
-                existing_ids = {r.id for r in existing_records}
+                existing_by_id = {record.id: record for record in existing_records}
 
                 for record_id in record_ids:
-                    if record_id not in existing_ids:
+                    instance = existing_by_id.get(record_id)
+                    if instance is None:
                         results[record_id] = {
                             "exists": False,
                             "hasDependencies": False,
                             "canDelete": False,
                             "message": "Registro no encontrado",
                         }
-                    else:
-                        warnings = OptimizedIntegrityChecker.check_integrity_fast(
-                            model_class, record_id
-                        )
-                        total_count = sum(w.dependent_count for w in warnings)
-                        can_delete = all(w.cascade_delete for w in warnings)
+                        continue
 
-                        results[record_id] = {
-                            "exists": True,
-                            "hasDependencies": total_count > 0,
-                            "canDelete": can_delete,
-                            "totalDependencies": total_count,
-                            "message": f"{'Puede eliminarse' if can_delete else 'No puede eliminarse'} ({total_count} dependencias)",
-                        }
+                    report = build_deletion_report(
+                        model_class, record_id, instance=instance
+                    )
+                    results[record_id] = {
+                        "exists": True,
+                        "hasDependencies": report.total_dependents > 0,
+                        "canDelete": report.can_delete,
+                        "totalDependencies": report.total_dependents,
+                        "message": report.message,
+                        "blocking": [dep.to_dict() for dep in report.blocking],
+                    }
 
                 return APIResponse.success(
                     data={
                         "results": results,
                         "processed": len(record_ids),
-                        "found": len(existing_ids),
+                        "found": len(existing_by_id),
                     },
                     message="Verificación batch completada",
                 )

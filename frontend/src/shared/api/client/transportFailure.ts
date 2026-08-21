@@ -81,8 +81,8 @@ function enqueueOffline(originalRequest: any, path: string, method: string): Axi
 
   // Notify user
   showToastOnce('offline-queued', {
-    title: "Modo Offline",
-    description: "Sin conexión. Tu cambio se ha guardado localmente y se sincronizará automáticamente al volver el internet.",
+    title: "Modo sin conexión",
+    description: "Tu cambio se guardó localmente y se sincronizará automáticamente cuando vuelva la conexión.",
     variant: "default",
   });
 
@@ -146,7 +146,11 @@ export function handleTerminalFailure(
     return enqueueOffline(originalRequest, path, method);
   }
 
-  notifyFailure(status, isOfflineLike, detailMsg);
+  // Quien pide `skipErrorToast` muestra el motivo por su cuenta (por ejemplo el
+  // diálogo que explica un bloqueo por integridad referencial).
+  if (originalRequest?.skipErrorToast !== true) {
+    notifyFailure(status, isOfflineLike, detailMsg);
+  }
 
   // Re-throw as ApiFetchError
   const validationErrors = parsed.validationErrors ||

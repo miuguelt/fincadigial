@@ -98,48 +98,48 @@ export const ExecutiveIntelligence: React.FC = () => {
   const healthScore = calculateHealthScore(stats);
 
   return (
-    <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-8 text-white shadow-2xl relative overflow-hidden">
+    <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 sm:p-8 text-white shadow-2xl relative overflow-hidden border border-slate-700/50">
       {/* Efectos de fondo */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-success/10 rounded-full blur-3xl -mr-20 -mt-20" />
-      <div className="absolute bottom-0 left-0 w-48 h-48 bg-info/10 rounded-full blur-3xl -ml-20 -mb-20" />
+      <div className="absolute top-0 right-0 w-64 h-64 bg-success/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-48 h-48 bg-info/10 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
 
       <div className="relative z-10">
-        <div className="flex items-center justify-between mb-10">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-card/10 backdrop-blur-md rounded-lg border border-white/10">
-              <BrainCircuit className="text-success" size={28} />
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="p-3 bg-white/10 backdrop-blur-md rounded-xl border border-white/10">
+              <BrainCircuit className="text-success w-6 h-6 sm:w-7 sm:h-7" />
             </div>
             <div>
-              <h3 className="text-2xl font-black tracking-tight">
+              <h3 className="text-xl sm:text-2xl font-black tracking-tight text-white">
                 Cerebro Villa Luz
               </h3>
-              <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
+              <p className="text-xs text-slate-300 font-bold uppercase tracking-wider mt-0.5">
                 Inteligencia de Finca Activa
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-success/20 text-success rounded-full text-xs font-black border border-success/30">
+          <div className="flex items-center gap-2 px-3.5 py-1.5 bg-success/20 text-success rounded-full text-xs font-black border border-success/30">
             <Zap size={14} className="animate-pulse" />
-            VIGILANCIA REAL-TIME
+            VIGILANCIA EN VIVO
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           {/* Salud General */}
-          <div className="bg-card/5 backdrop-blur-sm p-6 rounded-xl border border-white/5">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white/5 backdrop-blur-sm p-5 sm:p-6 rounded-xl border border-white/10">
+            <div className="flex items-center justify-between mb-3">
               <Activity className="text-info/80" size={20} />
-              <span className="text-[11px] font-black text-muted-foreground uppercase">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                 Índice Vital
               </span>
             </div>
-            <div className="text-4xl font-black mb-1">
+            <div className="text-3xl sm:text-4xl font-black mb-1 text-white">
               {healthScore === null ? '—' : `${healthScore}%`}
             </div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs text-slate-300">
               Salud proyectada del ganado
             </div>
-            <div className="mt-4 h-1.5 bg-muted rounded-full overflow-hidden">
+            <div className="mt-4 h-1.5 bg-slate-700/60 rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${healthScore ?? 0}%` }}
@@ -149,48 +149,48 @@ export const ExecutiveIntelligence: React.FC = () => {
           </div>
 
           {/* Red Mesh */}
-          <div className="bg-card/5 backdrop-blur-sm p-6 rounded-xl border border-white/5">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white/5 backdrop-blur-sm p-5 sm:p-6 rounded-xl border border-white/10">
+            <div className="flex items-center justify-between mb-3">
               <Network className="text-success" size={20} />
-              <span className="text-[11px] font-black text-muted-foreground uppercase">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                 Red de Campo
               </span>
             </div>
-            <div className="text-4xl font-black mb-1">{meshSyncs}</div>
-            <div className="text-xs text-muted-foreground">
-              Intercambios Mesh registrados hoy
+            <div className="text-3xl sm:text-4xl font-black mb-1 text-white">{meshSyncs}</div>
+            <div className="text-xs text-slate-300">
+              Intercambios Mesh hoy
             </div>
             <div className="mt-4 flex gap-1">
               {[...Array(5)].map((_, i) => (
                 <div
                   key={i}
-                  className={`h-1 flex-1 rounded-full ${i < 4 ? "bg-success" : "bg-muted"}`}
+                  className={`h-1 flex-1 rounded-full ${i < 4 ? "bg-success" : "bg-slate-700"}`}
                 />
               ))}
             </div>
           </div>
 
           {/* Seguridad / Alertas Críticas */}
-          <div className="bg-card/5 backdrop-blur-sm p-6 rounded-xl border border-white/5">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white/5 backdrop-blur-sm p-5 sm:p-6 rounded-xl border border-white/10">
+            <div className="flex items-center justify-between mb-3">
               <ShieldAlert className="text-warning/80" size={20} />
-              <span className="text-[11px] font-black text-muted-foreground uppercase">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                 Alertas Activas
               </span>
             </div>
-            <div className="text-4xl font-black mb-1">{criticalAlerts}</div>
-            <div className="text-xs text-muted-foreground">
-              Alertas no leídas del sistema
+            <div className="text-3xl sm:text-4xl font-black mb-1 text-white">{criticalAlerts}</div>
+            <div className="text-xs text-slate-300">
+              Alertas del sistema
             </div>
-            <div className="mt-4 flex items-center gap-2 text-[11px] font-bold">
+            <div className="mt-4 flex items-center gap-2 text-xs font-bold">
               {criticalAlerts === 0 ? (
                 <>
-                  <CheckCircle size={12} className="text-success" />
+                  <CheckCircle size={14} className="text-success" />
                   <span className="text-success">SISTEMA SIN ALERTAS CRÍTICAS</span>
                 </>
               ) : (
                 <>
-                  <ShieldAlert size={12} className="text-warning" />
+                  <ShieldAlert size={14} className="text-warning" />
                   <span className="text-warning">{criticalAlerts} ALERTAS REQUIEREN ATENCIÓN</span>
                 </>
               )}
@@ -198,18 +198,18 @@ export const ExecutiveIntelligence: React.FC = () => {
           </div>
         </div>
 
-        {/* Sección de IA Predictive (F7) */}
-        <div className="mt-8 p-6 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-[2.5rem] border border-info/20 backdrop-blur-md">
-          <div className="flex items-center justify-between mb-4">
+        {/* Sección de Análisis Predictivo */}
+        <div className="mt-6 p-5 sm:p-6 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-2xl border border-info/20 backdrop-blur-md">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div className="flex items-center gap-3">
-              <Cpu className="text-info/80" size={24} />
-              <h4 className="text-lg font-bold">Análisis Predictivo de IA</h4>
+              <Cpu className="text-info/80" size={22} />
+              <h4 className="text-base sm:text-lg font-bold text-white">Análisis Predictivo de IA</h4>
             </div>
             <Button
               onClick={handleRunAnalysis}
               disabled={isAnalyzing}
               variant={isAnalyzing ? "secondary" : "primary"}
-              className={`px-6 py-2 rounded-full text-xs font-black uppercase tracking-tighter transition-all ${
+              className={`px-5 py-2 rounded-full text-xs font-black uppercase tracking-wider transition-all ${
                 isAnalyzing
                   ? "cursor-not-allowed"
                   : "shadow-[0_0_20px_rgba(255,255,255,0.2)]"
@@ -219,13 +219,13 @@ export const ExecutiveIntelligence: React.FC = () => {
             </Button>
           </div>
 
-          <div className="bg-slate-950/40 p-5 rounded-lg border border-white/5 min-h-[80px] flex items-center justify-center text-center">
+          <div className="bg-slate-950/60 p-4 rounded-xl border border-white/5 min-h-[70px] flex items-center justify-center text-center">
             {aiInsight ? (
-              <p className="text-sm text-foreground/80 leading-relaxed italic">
+              <p className="text-sm text-slate-100 leading-relaxed italic">
                 {aiInsight}
               </p>
             ) : (
-              <p className="text-xs text-muted-foreground font-medium">
+              <p className="text-xs text-slate-300 font-medium">
                 Inicia un escaneo para obtener recomendaciones predictivas
                 basadas en datos reales.
               </p>
@@ -233,12 +233,12 @@ export const ExecutiveIntelligence: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-8 flex items-center justify-between p-4 bg-card/5 rounded-lg border border-white/5">
-          <div className="flex items-center gap-3">
-            <Cpu className="text-muted-foreground" size={18} />
-            <p className="text-[11px] font-bold text-muted-foreground/70">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-2 p-3.5 sm:p-4 bg-white/5 rounded-xl border border-white/10">
+          <div className="flex items-center gap-2.5">
+            <Cpu className="text-slate-400" size={16} />
+            <p className="text-xs font-medium text-slate-300">
               Última sincronización del Gateway:{" "}
-              <span className="text-white">
+              <span className="text-white font-bold">
                 {lastSyncAt
                   ? new Date(lastSyncAt).toLocaleTimeString('es-CO')
                   : 'Sin sincronizaciones registradas'}
@@ -249,9 +249,9 @@ export const ExecutiveIntelligence: React.FC = () => {
             type="button"
             variant="link"
             onClick={() => navigate('/admin/analytics/executive')}
-            className="text-[11px] font-black text-info/80 hover:text-info transition-colors uppercase tracking-widest px-0 h-auto"
+            className="text-xs font-bold text-info hover:text-info/80 transition-colors uppercase tracking-wider px-0 h-auto"
           >
-            Ver Reporte Detallado
+            Ver Reporte Detallado →
           </Button>
         </div>
       </div>

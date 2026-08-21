@@ -1,25 +1,22 @@
-
-import React from 'react';
+import React from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '@/shared/ui/dialog';
-import { cn } from '@/shared/ui/cn.ts';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+} from "@/shared/ui/dialog";
+import { cn } from "@/shared/ui/cn";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 // Interfaces y tipos
-export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | 'full';
+export type ModalSize = "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "full";
 
 interface GenericModalProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   title: React.ReactNode;
-  /** Línea secundaria bajo el título (ubicación, periodo, contexto). */
   subtitle?: React.ReactNode;
-  /** Contenido extra en la cabecera, a la derecha del título. */
   headerExtra?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
@@ -28,39 +25,38 @@ interface GenericModalProps {
   description?: string;
   disableAnimations?: boolean;
   draggable?: boolean;
-  variant?: 'default' | 'compact';
+  variant?: "default" | "compact";
   fullScreen?: boolean;
   allowFullScreenToggle?: boolean;
   onFullScreenChange?: (next: boolean) => void;
-  /** Usa casi todo el ancho de la pantalla. Ideal para modales con tablas, formularios complejos o datos densos. */
   fullWidth?: boolean;
   footer?: React.ReactNode;
-  // Navegación entre items
   enableNavigation?: boolean;
   onNavigatePrevious?: () => void;
   onNavigateNext?: () => void;
   hasPrevious?: boolean;
   hasNext?: boolean;
   zIndex?: number;
-  themeColor?: 'blue' | 'cyan' | 'teal' | 'emerald' | 'purple' | 'indigo' | 'red' | 'amber' | 'slate';
+  themeColor?: "blue" | "cyan" | "teal" | "emerald" | "purple" | "indigo" | "red" | "amber" | "slate";
   tabs?: React.ReactNode;
   bodyClassName?: string;
   icon?: React.ReactNode;
+  preventCloseOnOutsideClick?: boolean;
 }
 
 // Mapeo de tamaños a clases Tailwind
 const sizeClasses: Record<ModalSize, string> = {
-  sm: 'sm:max-w-sm',
-  md: 'sm:max-w-md',
-  lg: 'sm:max-w-lg',
-  xl: 'sm:max-w-xl',
-  '2xl': 'sm:max-w-3xl',
-  '3xl': 'sm:max-w-4xl',
-  '4xl': 'sm:max-w-5xl',
-  '5xl': 'sm:max-w-6xl',
-  '6xl': 'sm:max-w-7xl',
-  '7xl': 'sm:max-w-[90vw]',
-  full: 'sm:max-w-[95vw]',
+  sm: "sm:max-w-sm",
+  md: "sm:max-w-md",
+  lg: "sm:max-w-lg",
+  xl: "sm:max-w-xl",
+  "2xl": "sm:max-w-3xl",
+  "3xl": "sm:max-w-4xl",
+  "4xl": "sm:max-w-5xl",
+  "5xl": "sm:max-w-6xl",
+  "6xl": "sm:max-w-7xl",
+  "7xl": "sm:max-w-[90vw]",
+  full: "sm:max-w-[95vw]",
 };
 
 const headerGradients: Record<string, string> = {
@@ -86,11 +82,11 @@ export const GenericModal: React.FC<GenericModalProps> = ({
   headerExtra,
   children,
   className,
-  size = 'full',
+  size = "full",
   description,
   disableAnimations = false,
   draggable = false,
-  variant = 'default',
+  variant = "default",
   fullScreen = false,
   allowFullScreenToggle = false,
   onFullScreenChange,
@@ -106,13 +102,14 @@ export const GenericModal: React.FC<GenericModalProps> = ({
   tabs,
   bodyClassName,
   icon,
+  preventCloseOnOutsideClick,
 }) => {
-  const useFullWidth = fullWidth || size === 'full' || size === '7xl';
+  const useFullWidth = fullWidth || size === "full" || size === "7xl";
   const overlayClasses = cn(
-    'fixed inset-0 flex items-start justify-center px-1.5 py-2',
-    'sm:px-2 sm:py-3 lg:px-3',
-    'bg-black/70 dark:bg-black/80',
-    'backdrop-blur-[18px] motion-safe:transition-opacity motion-safe:duration-300 motion-safe:ease-out motion-reduce:transition-none'
+    "fixed inset-0 flex items-start justify-center px-1.5 py-2",
+    "sm:px-2 sm:py-3 lg:px-3",
+    "bg-black/70 dark:bg-black/80",
+    "backdrop-blur-[18px] motion-safe:transition-opacity motion-safe:duration-300 motion-safe:ease-out motion-reduce:transition-none"
   );
 
   // IDs estables para accesibilidad
@@ -160,12 +157,12 @@ export const GenericModal: React.FC<GenericModalProps> = ({
       setIsDragging(false);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isDragging, dragOffset, draggable]);
 
@@ -174,25 +171,24 @@ export const GenericModal: React.FC<GenericModalProps> = ({
     if (!isOpen || !enableNavigation) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Solo manejar si el foco está dentro del modal o no hay input activo
       if (
-        document.activeElement?.tagName === 'INPUT' ||
-        document.activeElement?.tagName === 'TEXTAREA' ||
-        document.activeElement?.tagName === 'SELECT' ||
-        document.activeElement?.getAttribute('contenteditable') === 'true'
+        document.activeElement?.tagName === "INPUT" ||
+        document.activeElement?.tagName === "TEXTAREA" ||
+        document.activeElement?.tagName === "SELECT" ||
+        document.activeElement?.getAttribute("contenteditable") === "true"
       ) return;
 
-      if (e.key === 'ArrowLeft' && hasPrevious && onNavigatePrevious) {
+      if (e.key === "ArrowLeft" && hasPrevious && onNavigatePrevious) {
         e.preventDefault();
         onNavigatePrevious();
-      } else if (e.key === 'ArrowRight' && hasNext && onNavigateNext) {
+      } else if (e.key === "ArrowRight" && hasNext && onNavigateNext) {
         e.preventDefault();
         onNavigateNext();
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, enableNavigation, hasPrevious, hasNext, onNavigatePrevious, onNavigateNext]);
 
   const [fsInternal, setFsInternal] = React.useState<boolean>(fullScreen);
@@ -204,40 +200,40 @@ export const GenericModal: React.FC<GenericModalProps> = ({
 
   const modalClasses = cn(
     // Base: móvil fullscreen sheet, escritorio centrado
-    'max-sm:fixed max-sm:inset-0 max-sm:top-0 max-sm:left-0 max-sm:translate-x-0 max-sm:translate-y-0 max-sm:w-full max-sm:w-screen max-sm:max-w-none max-sm:h-dvh max-sm:rounded-none max-sm:border-0',
-    '!flex !flex-col !p-0 !gap-0',
-    'bg-card',
-    'shadow-2xl shadow-black/20 dark:shadow-black/40',
-    'rounded-t-2xl sm:rounded-lg',
-    'border border-border/50 dark:border-white/10',
-    'backdrop-blur-sm',
-    'vl-modal-surface text-foreground',
-    'h-auto',
-    'max-h-[96vh] sm:max-h-[92vh] max-sm:max-h-dvh',
-    'min-h-[200px]',
+    "max-sm:fixed max-sm:inset-0 max-sm:top-0 max-sm:left-0 max-sm:translate-x-0 max-sm:translate-y-0 max-sm:w-full max-sm:w-screen max-sm:max-w-none max-sm:h-dvh max-sm:rounded-none max-sm:border-0",
+    "!flex !flex-col !p-0 !gap-0",
+    "bg-card",
+    "shadow-2xl shadow-black/20 dark:shadow-black/40",
+    "rounded-t-2xl sm:rounded-lg",
+    "border border-border/50 dark:border-white/10",
+    "backdrop-blur-sm",
+    "vl-modal-surface text-foreground",
+    "h-auto",
+    "max-h-[96vh] sm:max-h-[92vh] max-sm:max-h-dvh",
+    "min-h-[200px]",
 
     // Pantalla completa: anula todo
-    computedFullScreen && '!w-screen !max-w-none !h-dvh !max-h-none !min-h-0 !rounded-none !border-0',
+    computedFullScreen && "!w-screen !max-w-none !h-dvh !max-h-none !min-h-0 !rounded-none !border-0",
 
     // Modo fullWidth: usa casi todo el ancho disponible, útil para tablas y formularios densos
     !computedFullScreen && useFullWidth && cn(
-      'w-[99vw] sm:w-[98vw] md:w-[97vw]',
-      'max-w-[99vw] sm:max-w-[98vw] md:max-w-[97vw]',
-      'min-w-[300px] sm:min-w-[400px]',
+      "w-[99vw] sm:w-[98vw] md:w-[97vw]",
+      "max-w-[99vw] sm:max-w-[98vw] md:max-w-[97vw]",
+      "min-w-[300px] sm:min-w-[400px]",
     ),
 
     // Modo normal: prioriza ancho útil sin llegar a pantalla completa.
     !computedFullScreen && !useFullWidth && cn(
-      'w-[97vw] sm:w-[94vw] lg:w-[88vw]',
-      'min-w-[300px] sm:min-w-[400px]',
-      'max-w-[97vw] sm:max-w-[94vw] lg:max-w-[88vw]',
+      "w-[97vw] sm:w-[94vw] lg:w-[88vw]",
+      "min-w-[300px] sm:min-w-[400px]",
+      "max-w-[97vw] sm:max-w-[94vw] lg:max-w-[88vw]",
     ),
 
-    // Tamaño específico: solo se aplica si no es fullWidth (el default 'full' no aplica sizeClasses)
+    // Tamaño específico: solo se aplica si no es fullWidth (el default full no aplica sizeClasses)
     !computedFullScreen && !useFullWidth && sizeClasses[size],
 
-    !disableAnimations && 'transition-all duration-300 ease-out',
-    variant === 'compact' && 'max-sm:text-sm',
+    !disableAnimations && "transition-all duration-300 ease-out",
+    variant === "compact" && "max-sm:text-sm",
     className
   );
 
@@ -246,6 +242,7 @@ export const GenericModal: React.FC<GenericModalProps> = ({
       <DialogContent
         zIndex={zIndex}
         fullWidth={useFullWidth}
+        preventCloseOnOutsideClick={preventCloseOnOutsideClick}
         ref={dialogRef}
         className={cn(modalClasses)}
         overlayClassName={overlayClasses}
@@ -253,7 +250,7 @@ export const GenericModal: React.FC<GenericModalProps> = ({
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
         style={{
-          cursor: isDragging ? 'grabbing' : 'default',
+          cursor: isDragging ? "grabbing" : "default",
           ...(draggable && { transform: `translate(${position.x}px, ${position.y}px)` }),
         }}
       >
@@ -261,7 +258,7 @@ export const GenericModal: React.FC<GenericModalProps> = ({
           className={cn(
             "relative shadow-md",
             themeColor ? headerGradients[themeColor] : "bg-gradient-to-r from-blue-700 via-indigo-700 to-indigo-800 dark:from-blue-900 dark:via-indigo-950 dark:to-slate-900",
-            variant === 'compact'
+            variant === "compact"
               ? allowFullScreenToggle ? "px-3 sm:px-4 py-2 pr-14 sm:pr-16" : "px-3 sm:px-4 py-2 pr-11 sm:pr-12"
               : allowFullScreenToggle ? "px-3 sm:px-4 py-2.5 pr-14 sm:pr-16" : "px-3 sm:px-4 py-2.5 pr-11 sm:pr-12",
             draggable && "cursor-grab active:cursor-grabbing select-none"
@@ -301,7 +298,7 @@ export const GenericModal: React.FC<GenericModalProps> = ({
               {allowFullScreenToggle && (
                 <button
                   type="button"
-                  aria-label={computedFullScreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
+                  aria-label={computedFullScreen ? "Salir de pantalla completa" : "Pantalla completa"}
                   className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-white/10 text-white hover:bg-white/20 shadow-sm motion-safe:transition-all duration-200 hover:scale-105 active:scale-95"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -321,7 +318,7 @@ export const GenericModal: React.FC<GenericModalProps> = ({
           </div>
 
           <DialogDescription id={descriptionId} className="sr-only">
-            {description || 'Contenido del diálogo'}
+            {description || "Contenido del diálogo"}
           </DialogDescription>
         </DialogHeader>
 
@@ -335,8 +332,8 @@ export const GenericModal: React.FC<GenericModalProps> = ({
           tabIndex={0}
           className={bodyClassName !== undefined ? bodyClassName : cn(
             "overflow-x-hidden overflow-y-auto overscroll-contain focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 flex-1 min-h-0",
-            variant === 'compact' ? "px-2 sm:px-3 py-2" : "px-3 sm:px-4 py-2.5",
-            variant === 'compact' && 'max-[360px]:text-xs'
+            variant === "compact" ? "px-2 sm:px-3 py-2" : "px-3 sm:px-4 py-2.5",
+            variant === "compact" && "max-[360px]:text-xs"
           )}>
           {children}
         </div>

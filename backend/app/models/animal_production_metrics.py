@@ -69,14 +69,21 @@ class AnimalProductionMetrics(BaseModel):
 
     @classmethod
     def _validate_and_normalize(cls, data, is_update=False, instance_id=None):
+        data = super()._validate_and_normalize(data, is_update, instance_id)
         if "recorded_date" in data and data["recorded_date"]:
-            if data["recorded_date"] > date.today():
+            rec_date = data["recorded_date"]
+            if isinstance(rec_date, str):
+                try:
+                    rec_date = date.fromisoformat(rec_date)
+                except (ValueError, TypeError):
+                    pass
+            if isinstance(rec_date, date) and rec_date > date.today():
                 raise ValidationError("La fecha de registro no puede ser futura")
         if "value" in data:
             val = data["value"]
             if not isinstance(val, (int, float)) or val < 0:
                 raise ValidationError("'value' debe ser un número no negativo")
-        return super()._validate_and_normalize(data, is_update, instance_id)
+        return data
 
     @classmethod
     def get_trend(cls, animal_id, metric_type, days=90):

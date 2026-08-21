@@ -1,21 +1,33 @@
-import React, { useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { useAuth } from '@/features/auth/model/useAuth';
-import { useToast } from '@/app/providers/ToastContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Label } from '@/shared/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
-import { AlertTriangle, ArrowLeft, Save, WifiOff } from 'lucide-react';
-import { useOnlineStatus } from '@/shared/hooks/useOnlineStatus';
-import { offlineQueue } from '@/shared/api/offline/offlineQueue';
-import { animalsService } from '@/entities/animal/api/animal.service';
-import { diseaseService } from '@/entities/disease/api/disease.service';
-import { animalDiseasesService } from '@/entities/animal-disease/api/animalDiseases.service';
-import { getTodayColombia } from '@/shared/utils/dateUtils';
-import { emitDataRefresh } from '@/shared/utils/dataRefresh';
-import { formatMessageFromCode, readStandardErrorPayload } from '@/shared/api/error-parser';
+import React, { useRef, useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useAuth } from "@/features/auth/model/useAuth";
+import { useToast } from "@/app/providers/ToastContext";
+import { AlertTriangle } from "lucide-react";
+import { useOnlineStatus } from "@/shared/hooks/useOnlineStatus";
+import { offlineQueue } from "@/shared/api/offline/offlineQueue";
+import { animalsService } from "@/entities/animal/api/animal.service";
+import { diseaseService } from "@/entities/disease/api/disease.service";
+import { animalDiseasesService } from "@/entities/animal-disease/api/animalDiseases.service";
+import { getTodayColombia } from "@/shared/utils/dateUtils";
+import { emitDataRefresh } from "@/shared/utils/dataRefresh";
+import { formatMessageFromCode, readStandardErrorPayload } from "@/shared/api/error-parser";
+import {
+  QuickFormShell,
+  QCard,
+  QField,
+  QLabel,
+  QInput,
+  QSelect,
+  QChipGroup,
+  QSubmitButton,
+} from "./QuickFormShell";
+
+const ESTADOS_ENFERMEDAD: { label: string; value: string }[] = [
+  { label: "Activo", value: "Activo" },
+  { label: "En Tratamiento", value: "En Tratamiento" },
+  { label: "Sospecha", value: "Sospecha" },
+  { label: "Recuperado", value: "Recuperado" },
+];
 
 export default function QuickDisease() {
   const { user } = useAuth();
@@ -25,94 +37,89 @@ export default function QuickDisease() {
 
   const handleClose = () => {
     const newParams = new URLSearchParams(searchParams);
-    newParams.delete('quick');
+    newParams.delete("quick");
     setSearchParams(newParams, { replace: true });
   };
 
-  const [animalId, setAnimalId] = useState<number | null>(null);
-  const [diseaseId, setDiseaseId] = useState<number | null>(null);
-  const [status, setStatus] = useState('Activo');
+  const [animalId, setAnimalId] = useState<string>("");
+  const [diseaseId, setDiseaseId] = useState<string>("");
+  const [status, setStatus] = useState("Activo");
   const [date, setDate] = useState(getTodayColombia());
+  const [notes, setNotes] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [animalOptions, setAnimalOptions] = useState<{ value: number; label: string }[]>([]);
-  const [diseaseOptions, setDiseaseOptions] = useState<{ value: number; label: string }[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [animalOptions, setAnimalOptions] = useState<{ value: string; label: string }[]>([]);
+  const [diseaseOptions, setDiseaseOptions] = useState<{ value: string; label: string }[]>([]);
   const submitInFlightRef = useRef(false);
 
-  // Cargar animales activos
-  React.useEffect(() => {
-    async function loadAnimals() {
+  // Cargar animales activos y catálogo de enfermedades
+  useEffect(() => {
+    async function loadData() {
       try {
-        const response = await animalsService.getAnimals({ limit: 100, status: 'Vivo' });
-        const animals = Array.isArray(response) ? response : (response as any).data || [];
-        const options = animals.map((a: any) => ({
-          value: a.id,
-          label: `${a.record} - ${a.breed?.name || 'Sin raza'}`
-        }));
-        setAnimalOptions(options);
-      } catch (error) {
-        console.error('Error loading animals:', error);
-        showToast('Error al cargar animales', 'error');
-      }
-    }
-    loadAnimals();
-  }, [showToast]);
+        const [animalsResp, diseasesResp] = await Promise.all([
+          animalsService.getAnimals({ limit: 200, status: "Vivo" }),
+          diseaseService.getDiseases({ limit: 100 }),
+        ]);
 
-  // Cargar enfermedades
-  React.useEffect(() => {
-    async function loadDiseases() {
-      try {
-        const response = await diseaseService.getDiseases({ limit: 100 });
-        const diseases = Array.isArray(response) ? response : (response as any).data || [];
-        const options = diseases.map((d: any) => ({
-          value: d.id,
-          label: d.name || `Enfermedad ${d.id}`
-        }));
-        setDiseaseOptions(options);
+        const animals = Array.isArray(animalsResp) ? animalsResp : (animalsResp as any).data || [];
+        setAnimalOptions(animals.map((a: any) => ({
+          value: String(a.id),
+          label: `${a.record}${a.breed?.name ? ` — ${a.breed.name}` : ""}`,
+        })));
+
+        const diseases = Array.isArray(diseasesResp) ? diseasesResp : (diseasesResp as any).data || [];
+        setDiseaseOptions(diseases.map((d: any) => ({
+          value: String(d.id),
+          label: d.name || `Enfermedad ${d.id}`,
+        })));
       } catch (error) {
-        console.error('Error loading diseases:', error);
-        showToast('Error al cargar enfermedades', 'error');
+        console.error("Error loading diseases or animals:", error);
+        showToast("Error al cargar lista de animales o enfermedades", "error");
+      } finally {
+        setCargando(false);
       }
     }
-    loadDiseases();
+    loadData();
   }, [showToast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitInFlightRef.current) return;
     if (!animalId || !diseaseId) {
-      showToast('Por favor seleccione animal y enfermedad', 'error');
+      showToast("Por favor selecciona el animal y la enfermedad", "error");
       return;
     }
 
     submitInFlightRef.current = true;
     setLoading(true);
     const payload = {
-      animal_id: animalId,
-      disease_id: diseaseId,
+      animal_id: Number(animalId),
+      disease_id: Number(diseaseId),
       diagnosis_date: date,
       status,
-      instructor_id: user?.id || 0 // instructor_id requerido por el backend
+      notes: notes || undefined,
+      instructor_id: user?.id || 0,
     };
 
     try {
       if (!isOnline) {
         // Offline: encolar operación
-        await offlineQueue.enqueue('POST', 'animal-diseases', payload);
-        showToast('Enfermedad guardada localmente. Se sincronizará cuando haya conexión.', 'success');
+        await offlineQueue.enqueue("POST", "animal-diseases", payload);
+        showToast("Diagnóstico guardado sin señal. Se sincronizará al volver la conexión.", "success");
       } else {
         // Online: enviar directamente
         await animalDiseasesService.createAnimalDisease(payload);
-        showToast('Enfermedad registrada exitosamente', 'success');
+        showToast("Diagnóstico de enfermedad registrado exitosamente", "success");
       }
-      if (isOnline) emitDataRefresh('animal-diseases');
+      if (isOnline) emitDataRefresh("animal-diseases");
       handleClose();
     } catch (error) {
-      console.error('Error creating disease:', error);
+      console.error("Error creating disease:", error);
       const parsedError = readStandardErrorPayload(error);
       const message = parsedError.status === 409
-        ? 'Esta enfermedad ya está registrada para el animal en esa fecha.'
+        ? "Esta enfermedad ya está registrada para el animal en esa fecha."
         : formatMessageFromCode(parsedError);
-      showToast(message, 'error');
+      showToast(message, "error");
     } finally {
       submitInFlightRef.current = false;
       setLoading(false);
@@ -120,100 +127,79 @@ export default function QuickDisease() {
   };
 
   return (
-    <div className="container mx-auto p-4 max-w-md">
-      <Button
-        variant="ghost"
-        onClick={handleClose}
-        className="mb-4 text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Volver
-      </Button>
+    <QuickFormShell titulo="Diagnosticar Enfermedad" icon={AlertTriangle} colorHeader="bg-rose-600">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <QCard>
+          <QField>
+            <QLabel htmlFor="animal">¿A qué animal se le detectó la afección?</QLabel>
+            <QSelect
+              id="animal"
+              value={animalId}
+              onChange={setAnimalId}
+              placeholder={cargando ? "Cargando animales..." : "— Selecciona el animal —"}
+              options={animalOptions}
+              disabled={cargando || loading}
+            />
+          </QField>
+        </QCard>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-foreground">
-            <AlertTriangle className="h-5 w-5 text-danger" />
-            Registrar Enfermedad
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isOnline && (
-              <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-lg text-sm text-warning-foreground font-bold">
-                <WifiOff className="h-4 w-4 text-warning" />
-                Modo sin conexión - El registro se guardará localmente
-              </div>
-            )}
+        <QCard>
+          <QField>
+            <QLabel htmlFor="disease">Enfermedad o Síntoma Diagnosticado</QLabel>
+            <QSelect
+              id="disease"
+              value={diseaseId}
+              onChange={setDiseaseId}
+              placeholder={cargando ? "Cargando catálogo..." : "— Selecciona la enfermedad —"}
+              options={diseaseOptions}
+              disabled={cargando || loading}
+            />
+          </QField>
+        </QCard>
 
-            <div className="space-y-2">
-              <Label htmlFor="animal">Animal *</Label>
-              <Select value={animalId?.toString()} onValueChange={(v) => setAnimalId(parseInt(v))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar animal" />
-                </SelectTrigger>
-                <SelectContent>
-                  {animalOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value.toString()}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+        <QCard>
+          <QField>
+            <QLabel>Estado de la Enfermedad</QLabel>
+            <QChipGroup
+              value={status}
+              options={ESTADOS_ENFERMEDAD}
+              onChange={setStatus}
+            />
+          </QField>
+        </QCard>
 
-            <div className="space-y-2">
-              <Label htmlFor="disease">Enfermedad *</Label>
-              <Select value={diseaseId?.toString()} onValueChange={(v) => setDiseaseId(parseInt(v))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar enfermedad" />
-                </SelectTrigger>
-                <SelectContent>
-                  {diseaseOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value.toString()}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="date">Fecha de diagnóstico *</Label>
-              <Input
-                id="date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="status">Estado</Label>
-              <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Activo">Activo</SelectItem>
-                  <SelectItem value="Recuperado">Recuperado</SelectItem>
-                  <SelectItem value="Crónico">Crónico</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full"
+        <QCard>
+          <QField>
+            <QLabel htmlFor="date">Fecha de Diagnóstico</QLabel>
+            <QInput
+              id="date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
               disabled={loading}
-            >
-              <Save className="h-4 w-4 mr-2" />
-              {loading ? 'Guardando...' : 'Guardar Enfermedad'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+            />
+          </QField>
+        </QCard>
+
+        <QCard>
+          <QField>
+            <QLabel htmlFor="notes">Observaciones clínicas (opcional)</QLabel>
+            <QInput
+              id="notes"
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Ej: Aislamiento preventivo, cojera en pata izquierda..."
+              disabled={loading}
+            />
+          </QField>
+        </QCard>
+
+        <QSubmitButton loading={loading} color="bg-rose-600">
+          Registrar Diagnóstico
+        </QSubmitButton>
+      </form>
+    </QuickFormShell>
   );
 }

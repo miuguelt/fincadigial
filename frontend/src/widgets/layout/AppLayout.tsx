@@ -59,7 +59,7 @@ export function AppLayout({
     )}>
       <main
         className={cn(
-          "w-full max-w-full mx-auto px-4 sm:px-6 lg:px-6 pt-5",
+          "w-full max-w-full mx-auto px-3.5 sm:px-6 lg:px-7 xl:px-8 pt-3.5 sm:pt-5",
           // El canalón inferior solo aplica a páginas de alto natural. En una
           // pantalla a pantalla completa `sm:pb-10` sobrevivía al `pb-0` que
           // pasa la página (twMerge no fusiona variantes distintas) y dejaba

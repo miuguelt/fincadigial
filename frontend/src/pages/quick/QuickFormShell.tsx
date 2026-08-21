@@ -3,11 +3,11 @@
  * Diseñado para máxima usabilidad con manos sucias, pantallas pequeñas
  * y condiciones de baja luz o sol directo.
  */
-import React from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { IconArrowLeft, IconWifiOff, IconRefresh } from '@/shared/ui/icons';
-import { useOnlineStatus } from '@/shared/hooks/useOnlineStatus';
+import React from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { motion } from "framer-motion";
+import { IconArrowLeft, IconWifiOff, IconRefresh } from "@/shared/ui/icons";
+import { useOnlineStatus } from "@/shared/hooks/useOnlineStatus";
 
 interface QuickFormShellProps {
   titulo: string;
@@ -22,14 +22,14 @@ export function QuickFormShell({
   icon: Icon,
   colorHeader,
   children,
-  volver = '/operario/dashboard',
+  volver = "/operario/dashboard",
 }: QuickFormShellProps) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const isModal = searchParams.has('quick');
+  const isModal = searchParams.has("quick");
   const { isOnline, totalOperations } = useOnlineStatus();
   return (
-    <div className={`font-sans ${isModal ? 'bg-transparent' : 'min-h-screen bg-background'}`}>
+    <div className={`font-sans ${isModal ? "bg-transparent" : "min-h-screen bg-background"}`}>
       {/* ── CABECERA COLOREADA ───────────────────────────────────── */}
       {!isModal && (
         <header className={`${colorHeader} px-4 pb-10 pt-6 text-white rounded-b-[var(--radius-xl)] shadow-md relative overflow-hidden`}>
@@ -55,12 +55,12 @@ export function QuickFormShell({
               <span
                 className={`mt-2 inline-flex items-center gap-1.5 rounded-[var(--radius-full)] px-4 py-1 text-[11px] font-semibold text-sm ${
                   isOnline
-                    ? 'bg-card/20 text-white border border-white/10'
-                    : 'bg-amber-400 text-amber-900 shadow-sm'
+                    ? "bg-card/20 text-white border border-white/10"
+                    : "bg-amber-400 text-amber-900 shadow-sm"
                 }`}
               >
                 {!isOnline && <IconWifiOff size="sm" />}
-                {isOnline ? 'Sincronizado' : 'Modo Offline'}
+                {isOnline ? "Sincronizado" : "Modo sin conexión"}
               </span>
             </div>
           </div>
@@ -76,7 +76,7 @@ export function QuickFormShell({
       )}
 
       {/* ── CUERPO ──────────────────────────────────────────────── */}
-      <main className={`mx-auto max-w-lg px-4 ${isModal ? 'pt-6 pb-6' : '-mt-6'}`}>
+      <main className={`mx-auto max-w-lg px-4 ${isModal ? "pt-6 pb-6" : "-mt-6"}`}>
         {isModal && (
           <div className="flex items-center gap-3 mb-6">
             {Icon && (
@@ -117,7 +117,7 @@ export function QInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
       {...props}
       className={`w-full rounded-lg border-2 border-border bg-card px-6 py-5 text-xl font-black text-foreground outline-none transition
         focus:border-primary focus:ring-4 focus:ring-primary/10
-        disabled:opacity-50 ${props.className ?? ''}`}
+        disabled:opacity-50 ${props.className ?? ""}`}
     />
   );
 }
@@ -133,17 +133,17 @@ export function QChipGroup<T extends string>({
   onChange: (v: T) => void;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
       {options.map((opt) => (
         <button
           key={opt.value}
           type="button"
           onClick={() => onChange(opt.value)}
-          className={`rounded-lg border-2 py-4 px-4 text-xs font-black uppercase tracking-tight transition-all active:scale-95 ${
+          className={`rounded-xl border-2 py-3 sm:py-4 px-3 text-xs sm:text-sm font-black uppercase tracking-tight transition-all active:scale-95 ${
             value === opt.value
-              ? `border-primary bg-primary text-primary-foreground shadow-sm shadow-primary/20`
-              : 'border-border bg-card text-muted-foreground hover:border-accent'
-          } ${opt.color ?? ''}`}
+              ? "border-primary bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+              : "border-border bg-card text-muted-foreground hover:border-accent"
+          } ${opt.color ?? ""}`}
         >
           {opt.label}
         </button>
@@ -175,7 +175,7 @@ export function QSelect({
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border-2 border-border bg-card px-6 py-5 text-lg font-black text-foreground outline-none transition focus:border-primary disabled:opacity-50 appearance-none shadow-[var(--shadow-token-sm)]"
+        className="w-full rounded-xl border-2 border-border bg-card px-5 py-4 text-base sm:text-lg font-black text-foreground outline-none transition focus:border-primary disabled:opacity-50 appearance-none shadow-sm"
       >
         {placeholder && (
           <option value="" disabled>
@@ -188,7 +188,7 @@ export function QSelect({
           </option>
         ))}
       </select>
-      <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+      <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
         <IconRefresh className="w-5 h-5 opacity-50 rotate-90" />
       </div>
     </div>
@@ -199,7 +199,7 @@ export function QSelect({
 export function QSubmitButton({
   loading,
   children,
-  color = 'bg-primary',
+  color = "bg-primary",
 }: {
   loading?: boolean;
   children: React.ReactNode;
@@ -209,8 +209,8 @@ export function QSubmitButton({
     <button
       type="submit"
       disabled={loading}
-      className={`w-full rounded-[var(--radius-xl)] ${color} py-6 text-base font-black uppercase tracking-[0.2em] text-white shadow-md transition-all
-        hover:brightness-110 active:scale-95 disabled:opacity-60 shadow-primary/10`}
+      className={`w-full rounded-2xl ${color} py-5 sm:py-6 text-base sm:text-lg font-black uppercase tracking-[0.2em] text-white shadow-lg transition-all
+        hover:brightness-110 active:scale-95 disabled:opacity-60 shadow-primary/20`}
     >
       {loading ? (
         <span className="flex items-center justify-center gap-3">
@@ -226,14 +226,124 @@ export function QSubmitButton({
 
 /** Sección de campo con espaciado */
 export function QField({ children }: { children: React.ReactNode }) {
-  return <div className="space-y-3">{children}</div>;
+  return <div className="space-y-2 sm:space-y-3">{children}</div>;
 }
 
 /** Tarjeta contenedora */
 export function QCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-[var(--radius-xl)] bg-card p-6 shadow-sm border border-border">
+    <div className="rounded-2xl bg-card p-5 sm:p-6 shadow-md border border-border">
       {children}
+    </div>
+  );
+}
+
+/** Stepper numérico táctil con presets rápidos para registro en campo */
+export function QNumberStepper({
+  id,
+  value,
+  onChange,
+  unit = "",
+  min = 0,
+  max = 9999,
+  step = 1,
+  presets = [],
+  placeholder = "0",
+  disabled = false,
+}: {
+  id?: string;
+  value: string;
+  onChange: (v: string) => void;
+  unit?: string;
+  min?: number;
+  max?: number;
+  step?: number;
+  presets?: number[];
+  placeholder?: string;
+  disabled?: boolean;
+}) {
+  const numValue = value === "" ? 0 : Number(value);
+
+  const adjust = (delta: number) => {
+    const next = Math.max(min, Math.min(max, Math.round((numValue + delta) * 10) / 10));
+    onChange(String(next));
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Contenedor de input con botones de +/- */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          disabled={disabled || numValue <= min}
+          onClick={() => adjust(-step)}
+          className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl border-2 border-border bg-card text-2xl font-black text-foreground flex items-center justify-center transition-all active:scale-90 hover:bg-muted disabled:opacity-40 select-none shadow-sm shrink-0"
+          aria-label="Disminuir valor"
+        >
+          −
+        </button>
+
+        <div className="relative flex-1 min-w-0">
+          <input
+            id={id}
+            type="number"
+            inputMode="decimal"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            min={min}
+            max={max}
+            step={step}
+            placeholder={placeholder}
+            disabled={disabled}
+            className="w-full rounded-xl border-2 border-border bg-card px-4 py-4 text-2xl sm:text-3xl font-black text-foreground text-center outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10 disabled:opacity-50"
+          />
+          {unit && (
+            <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold uppercase tracking-wider text-muted-foreground pointer-events-none">
+              {unit}
+            </span>
+          )}
+        </div>
+
+        <button
+          type="button"
+          disabled={disabled || numValue >= max}
+          onClick={() => adjust(step)}
+          className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl border-2 border-border bg-card text-2xl font-black text-foreground flex items-center justify-center transition-all active:scale-90 hover:bg-muted disabled:opacity-40 select-none shadow-sm shrink-0"
+          aria-label="Aumentar valor"
+        >
+          +
+        </button>
+      </div>
+
+      {/* Chips de ajuste rápido (presets) */}
+      {presets.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mr-1">
+            Rápido:
+          </span>
+          {presets.map((preset) => (
+            <button
+              key={preset}
+              type="button"
+              disabled={disabled}
+              onClick={() => adjust(preset)}
+              className="h-9 px-3 rounded-lg border border-border/80 bg-muted/40 hover:bg-primary/15 hover:text-primary hover:border-primary/40 text-xs font-black transition-all active:scale-95 shadow-sm"
+            >
+              +{preset}{unit}
+            </button>
+          ))}
+          {value !== "" && Number(value) > 0 && (
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => onChange("")}
+              className="h-9 px-2.5 rounded-lg border border-border/60 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all ml-auto"
+            >
+              Borrar
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

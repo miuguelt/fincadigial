@@ -105,7 +105,7 @@ export const MilkQualityParameters: React.FC<MilkQualityParametersProps> = ({
       <label className="flex items-center justify-between p-2 rounded-xl bg-muted/40 border border-border cursor-pointer">
         <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
           <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          Hato Libre Brucelosis / Tuberculosis (+ $30/L)
+          Ganado libre de brucelosis y tuberculosis (+ $30/L)
         </span>
         <input
           type="checkbox"

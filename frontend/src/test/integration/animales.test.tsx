@@ -7,7 +7,7 @@ import { AppProviders } from './testHelpers'
 import AdminAnimalsPage from '@/pages/dashboard/admin/animals'
 import { animalsService } from '@/entities/animal/api/animal.service'
 import { breedsService } from '@/entities/breed/api/breeds.service'
-import { clearMemoryCache } from '@/shared/api/cache-manager'
+import { invalidateHttpCache } from '@/shared/api/client'
 import {
   __resourceLastFetchAt,
   __endpointBackoffUntil,
@@ -79,8 +79,8 @@ describe('Módulo Animales — Integración', () => {
     localStorage.clear()
     sessionStorage.clear()
 
-    // Limpiar caché HTTP en memoria a nivel de Axios
-    clearMemoryCache()
+    // Limpiar caché HTTP (memoria, IndexedDB y servicios) a nivel de Axios
+    await invalidateHttpCache()
 
     // Resetear completamente las caches en memoria de BaseService singleton
     await animalsService.clearCache();

@@ -15,21 +15,21 @@ const selectClass = "w-full px-3 py-2 text-sm rounded-lg border border-input bg-
 export const VaccinationForm: React.FC<Props> = ({ formData, setFormData, idPrefix, vaccineOptions, userOptions }) => (
   <div className="space-y-4">
     <div>
-      <label htmlFor={`${idPrefix}-vaccine`} className={labelClass}>Vacuna *</label>
+      <label htmlFor={`${idPrefix}-vaccine`} className={labelClass}>Biológico / Vacuna *</label>
       <select id={`${idPrefix}-vaccine`} value={formData.vaccine_id || ""} onChange={(e) => setFormData({ ...formData, vaccine_id: parseInt(e.target.value) })} className={selectClass}>
-        <option value="">Seleccionar</option>
+        <option value="">Seleccionar vacuna</option>
         {vaccineOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
     </div>
     <div>
-      <label htmlFor={`${idPrefix}-instructor`} className={labelClass}>Instructor</label>
+      <label htmlFor={`${idPrefix}-instructor`} className={labelClass}>Aplicado por (Instructor / Operario)</label>
       <select id={`${idPrefix}-instructor`} value={formData.instructor_id || ""} onChange={(e) => setFormData({ ...formData, instructor_id: parseInt(e.target.value) })} className={selectClass}>
-        <option value="">Seleccionar</option>
+        <option value="">Seleccionar aplicador</option>
         {userOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
     </div>
     <div>
-      <label htmlFor={`${idPrefix}-date`} className={labelClass}>Fecha *</label>
+      <label htmlFor={`${idPrefix}-date`} className={labelClass}>Fecha de Aplicación *</label>
       <input id={`${idPrefix}-date`} type="date" value={formData.vaccination_date || ""} onChange={(e) => setFormData({ ...formData, vaccination_date: e.target.value })} className={inputClass} />
     </div>
   </div>

@@ -66,7 +66,7 @@ export const TermometroHatoSection: React.FC = () => {
           className="p-3.5 rounded-2xl bg-card border border-border/60 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all cursor-pointer shadow-xs flex flex-col justify-between"
         >
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase">Salud Hato</span>
+            <span className="text-[11px] font-bold text-muted-foreground uppercase">Salud del ganado</span>
             <span className="text-base font-black text-emerald-700 dark:text-emerald-400">
               {healthGauge.value}%
             </span>
@@ -77,7 +77,7 @@ export const TermometroHatoSection: React.FC = () => {
               className="h-full bg-emerald-500 rounded-full"
             />
           </div>
-          <p className="text-[11px] font-bold text-foreground mt-2 truncate">
+          <p className="text-[11px] font-bold text-foreground mt-2 fit-clamp">
             {healthGauge.statusLabel}
           </p>
         </div>
@@ -95,7 +95,7 @@ export const TermometroHatoSection: React.FC = () => {
             {weightStats.adgGrams > 0 ? `+${weightStats.adgGrams}` : weightStats.adgGrams}{' '}
             <span className="text-xs font-normal text-muted-foreground">g/día</span>
           </p>
-          <p className={`text-[11px] font-bold mt-1 truncate ${weightStats.adgStatusColor}`}>
+          <p className={`text-[11px] font-bold mt-1 fit-clamp ${weightStats.adgStatusColor}`}>
             {weightStats.adgStatus === 'fast'
               ? '🟢 Rápido (+600g)'
               : weightStats.adgStatus === 'moderate'
@@ -117,7 +117,7 @@ export const TermometroHatoSection: React.FC = () => {
             {Math.round(fieldStats.utilizationPercent)}%{' '}
             <span className="text-xs font-normal text-muted-foreground">carga</span>
           </p>
-          <p className="text-[11px] font-bold text-muted-foreground mt-1 truncate">
+          <p className="text-[11px] font-bold text-muted-foreground mt-1 fit-clamp">
             {fieldStats.restingFields} potreros descansando
           </p>
         </div>
@@ -135,7 +135,7 @@ export const TermometroHatoSection: React.FC = () => {
             {milkStats.avgLitersPerCow}{' '}
             <span className="text-xs font-normal text-muted-foreground">L / vaca</span>
           </p>
-          <p className="text-[11px] font-bold text-amber-700 dark:text-amber-300 mt-1 truncate">
+          <p className="text-[11px] font-bold text-amber-700 dark:text-amber-300 mt-1 fit-clamp">
             {milkStats.trendLabel}
           </p>
         </div>

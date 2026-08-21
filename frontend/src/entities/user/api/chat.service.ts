@@ -2,7 +2,7 @@ import api from '@/shared/api/client';
 import { ApiResponse } from '@/shared/api/generated/swaggerTypes';
 
 export interface ChatMessage {
-  id: number;
+  id: number | string;
   finca_id: number;
   sender_id: number;
   sender_name: string;
@@ -13,6 +13,9 @@ export interface ChatMessage {
   client_message_id?: string | null;
   read_at?: string | null;
   status?: 'pending' | 'delivered' | 'synced';
+  attachment_url?: string | null;
+  attachment_type?: 'image' | 'video' | 'file' | 'document' | 'audio' | string | null;
+  attachment_name?: string | null;
   created_at: string;
 }
 
@@ -22,6 +25,15 @@ export interface ChatContact {
   role: string;
   email: string;
   unread_count?: number;
+}
+
+export interface ChatUploadResponse {
+  url: string;
+  type: string;
+  name: string;
+  file_size?: number;
+  extension?: string;
+  mime_type?: string;
 }
 
 export const chatService = {
@@ -34,21 +46,51 @@ export const chatService = {
   },
 
   /**
-   * Obtener historial con un usuario
+   * Obtener historial con un usuario (soporta paginación por cursor beforeId)
    */
-  async getHistory(recipientId: number) {
-    const response = await api.get<ApiResponse<ChatMessage[]>>(`/chat/history/${recipientId}`, { skipCache: true } as never);
+  async getHistory(recipientId: number, beforeId?: number, limit = 30) {
+    const params = new URLSearchParams();
+    if (beforeId) params.append('before_id', String(beforeId));
+    if (limit) params.append('limit', String(limit));
+
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    const response = await api.get<ApiResponse<ChatMessage[]> & { meta?: { has_more?: boolean; oldest_id?: number } }>(
+      `/chat/history/${recipientId}${qs}`,
+      { skipCache: true } as never,
+    );
     return response.data;
   },
 
   /**
-   * Enviar mensaje
+   * Subir archivo multimedia o documento para chat
    */
-  async sendMessage(recipientId: number, message: string, clientMessageId?: string) {
+  async uploadFile(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.post<ApiResponse<ChatUploadResponse>>('/chat/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  /**
+   * Enviar mensaje con texto o adjunto
+   */
+  async sendMessage(
+    recipientId: number,
+    message: string,
+    clientMessageId?: string,
+    attachment?: { url?: string; type?: string; name?: string },
+  ) {
     const response = await api.post<ApiResponse<ChatMessage>>('/chat/send', {
       recipient_id: recipientId,
       message,
       client_message_id: clientMessageId,
+      attachment_url: attachment?.url,
+      attachment_type: attachment?.type,
+      attachment_name: attachment?.name,
     });
     return response.data;
   },
@@ -59,5 +101,5 @@ export const chatService = {
   async getUnreadCount() {
     const response = await api.get<ApiResponse<{ unread_count: number }>>('/chat/unread-count', { skipCache: true } as never);
     return response.data;
-  }
+  },
 };

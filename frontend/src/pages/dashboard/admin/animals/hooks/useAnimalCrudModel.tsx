@@ -25,7 +25,7 @@ export function useAnimalCrudModel() {
     formSections,
     viewMode: runtime.viewMode,
     defaultFields: animalFields,
-    batchActions: createBatchActions({ clearSelectionRef: runtime.clearSelectionRef, selectedIdsRef: runtime.selectedIdsRef, setBulkModal: runtime.setBulkModal, setSelectedAnimals: runtime.setSelectedAnimalsForPrint, showToast }),
+    batchActions: createBatchActions({ clearSelectionRef: runtime.clearSelectionRef, selectedIdsRef: runtime.selectedIdsRef, setBulkModal: runtime.setBulkModal, setSelectedAnimals: runtime.setSelectedAnimalsForPrint }),
     renderCard,
     // Las columnas se calculan sobre el ancho real de la rejilla, no del
     // viewport: con el menú de la finca abierto los breakpoints seguían
@@ -33,6 +33,7 @@ export function useAnimalCrudModel() {
     cardGridClassName: '[grid-template-columns:repeat(auto-fill,minmax(min(100%,17rem),1fr))]',
     defaultLimit: 25,
     customToolbar: <AnimalsViewSwitcher />,
+    toolbarPlacement: 'row',
     customActions: createAnimalActions(user?.id, details.openHistory, openAncestors, openDescendants),
     preDeleteCheck,
     ...createAnimalLifecycle(runtime.pendingImages, runtime.setPendingImages, runtime.refreshFathers, runtime.refreshMothers),

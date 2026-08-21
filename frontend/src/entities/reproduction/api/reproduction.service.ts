@@ -1,5 +1,6 @@
 import { BaseService } from '@/shared/api/base-service';
 import { ReproductiveEventResponse, PaginatedResponse, OffspringResponse, OffspringInput } from '@/shared/api/generated/swaggerTypes';
+import type { HerdKpis } from '@/entities/reproduction/model/herdKpis.types';
 
 export interface ReproductionSummary {
   total_females: number;
@@ -72,6 +73,15 @@ class ReproductionService extends BaseService<ReproductiveEventResponse> {
   async getPendingBirths(days: number = 60): Promise<ReproductiveEventResponse[]> {
     return this.customRequest<ReproductiveEventResponse[]>('../pending-births', 'GET', undefined, {
       params: { days }
+    });
+  }
+
+  /** Panel de indicadores del hato: eficiencia, riesgo y proyección. */
+  async getHerdKpis(months: number = 12): Promise<HerdKpis> {
+    return this.customRequest<HerdKpis>('../kpis', 'GET', undefined, {
+      params: { months },
+      timeout: 120000,
+      skipTimeoutRetry: true
     });
   }
 

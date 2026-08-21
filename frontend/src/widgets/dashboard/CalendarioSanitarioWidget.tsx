@@ -11,7 +11,8 @@ import {
   IconPackage,
 } from "@/shared/ui/icons";
 import { cn } from "@/shared/ui/cn";
-import { api } from "@/shared/api/base-client";
+import { normalizeColombianLivestockText } from "@/shared/utils/colombiaLanguage";
+import api from "@/shared/api/client";
 interface CalendarioEvento {
   codigo: string;
   nombre: string;
@@ -182,7 +183,7 @@ export const CalendarioSanitarioWidget: React.FC<Props> = ({
                 {" "}
                 <h4 className="text-sm font-black text-foreground uppercase tracking-tight leading-snug group-hover/item:text-primary transition-colors">
                   {" "}
-                  {ev.nombre}{" "}
+                  {normalizeColombianLivestockText(ev.nombre)}{" "}
                 </h4>{" "}
                 {ev.obligatorio_ica && (
                   <span className="text-[11px] bg-destructive text-white px-2 py-0.5 rounded-lg font-semibold text-sm shadow-[0_0_10px_rgba(244,63,94,0.4)]">
@@ -193,7 +194,7 @@ export const CalendarioSanitarioWidget: React.FC<Props> = ({
               </div>{" "}
               <p className="text-[11px] text-muted-foreground font-medium leading-relaxed mb-3 line-clamp-2">
                 {" "}
-                {ev.descripcion}{" "}
+                {normalizeColombianLivestockText(ev.descripcion)}{" "}
               </p>{" "}
               <div className="flex flex-wrap gap-3 items-center">
                 {" "}
@@ -206,7 +207,7 @@ export const CalendarioSanitarioWidget: React.FC<Props> = ({
                     />{" "}
                     <span className="text-[11px] font-black text-foreground uppercase tracking-widest">
                       {" "}
-                      {ev.producto_sugerido}{" "}
+                      {normalizeColombianLivestockText(ev.producto_sugerido)}{" "}
                       {ev.dosis_referencia
                         ? `· ${ev.dosis_referencia}`
                         : ""}{" "}

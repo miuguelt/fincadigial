@@ -27,7 +27,7 @@ export function PWAUpdateHandler() {
 
     const handleOffline = () => {
       setIsOnline(false);
-      showToast('Modo offline activado', 'warning');
+      showToast('Modo sin conexión activado', 'warning');
     };
 
     const handleSyncSuccess = () => {
@@ -82,7 +82,7 @@ export function PWAUpdateHandler() {
             <CardContent className="p-3 flex items-center space-x-2">
               <WifiOff className="h-4 w-4 text-orange-600" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-orange-800">Modo Offline</p>
+                <p className="text-sm font-medium text-orange-800">Modo sin conexión</p>
                 <p className="text-xs text-orange-600">Trabajando con datos cacheados</p>
               </div>
             </CardContent>

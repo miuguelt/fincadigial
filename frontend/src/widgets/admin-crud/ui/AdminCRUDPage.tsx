@@ -253,10 +253,9 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       setEditingItem(null);
     }
   }, [isDetailOpen, detailItem, isModalOpen, editingItem]);
-
   const {
     confirmOpen, setConfirmOpen, isCheckingDependencies, dependencyInfo,
-    openDeleteConfirm, handleConfirmDelete, resetConfirmState,
+    blockedInfo, dismissBlocked, openDeleteConfirm, handleConfirmDelete, resetConfirmState,
   } = useCrudDelete<T>({
     config, service, entityKey, canDelete, deleteItem,
     items: filteredItems, currentPage, setPage, refetch, onDeleted,
@@ -352,7 +351,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     <AppLayout
       header={header}
       className={cn(
-        'px-3 sm:px-4 lg:px-6 pt-3 sm:pt-4 max-w-full min-h-0 flex flex-col',
+        'px-3.5 sm:px-5 lg:px-7 xl:px-8 pt-3 sm:pt-4 max-w-full min-h-0 flex flex-col',
         autoHeight ? 'h-auto pb-6' : 'h-full pb-0'
       )}
       contentClassName={cn(
@@ -424,6 +423,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
         onConfirmDelete={handleConfirmDelete}
         isCheckingDependencies={isCheckingDependencies}
         dependencyInfo={dependencyInfo}
+        blockedInfo={blockedInfo} dismissBlocked={dismissBlocked}
       />
     </AppLayout>
   );

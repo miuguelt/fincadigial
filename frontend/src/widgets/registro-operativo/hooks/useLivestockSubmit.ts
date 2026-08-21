@@ -1,7 +1,8 @@
 import { useToast } from '@/app/providers/ToastContext';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { useOnlineStatus } from '@/shared/hooks/useOnlineStatus';
-import { api } from '@/shared/api/base-client';
+import api from '@/shared/api/client';
+import { wasQueuedOffline } from '@/shared/api/offlineResult';
 import { offlineQueue } from '@/shared/api/offline/offlineQueue';
 import { animalFieldsService } from '@/entities/animal-field/api/animalFields.service';
 import { animalDiseasesService } from '@/entities/animal-disease/api/animalDiseases.service';
@@ -12,6 +13,13 @@ import type { MilkFormData, TransferFormData, DiseaseFormData, TreatmentFormData
 
 /** Un registro con fecha futura entra al historial y desordena los resúmenes. */
 const isFutureDate = (date?: string) => Boolean(date) && String(date) > getTodayColombia();
+
+/**
+ * Sin red, el cliente encola la escritura y responde 202. Encolar no es
+ * registrar, así que el aviso debe distinguir ambos desenlaces.
+ */
+const mensajeSegunDesenlace = (pendiente: boolean, registrado: string) =>
+  pendiente ? 'Guardado sin señal. Se enviará al volver la conexión.' : registrado;
 
 export function useLivestockSubmit(
   milkForm: MilkFormData,
@@ -39,8 +47,10 @@ export function useLivestockSubmit(
     const sessionMapped = milkForm.session === 'Mañana' ? 'AM' : milkForm.session === 'Tarde' ? 'PM' : 'Extra';
     const payload = { animal_id: Number(milkForm.animalId), date: milkForm.date, liters: Number(milkForm.liters), milking_session: sessionMapped, notes: milkForm.notes || undefined };
     try {
-      if (!isOnline) { await offlineQueue.enqueue('POST', 'milk-production', payload); showToast('Guardado sin señal', 'success'); }
-      else { await api.post('/milk-production', payload); showToast('Ordeño registrado', 'success'); }
+      let pendiente = !isOnline;
+      if (!isOnline) await offlineQueue.enqueue('POST', 'milk-production', payload);
+      else pendiente = wasQueuedOffline(await api.post('/milk-production', payload));
+      showToast(mensajeSegunDesenlace(pendiente, 'Ordeño registrado'), 'success');
       closeModal(); loadHistoryRecords(); return true;
     } catch { showToast('Error al registrar ordeño', 'error'); return false; }
     finally { setSavingForm(false); }
@@ -157,8 +167,10 @@ export function useLivestockSubmit(
     }
 
     try {
-      if (!isOnline) { await offlineQueue.enqueue('POST', 'financial/transactions', payload); showToast('Guardado sin señal', 'success'); }
-      else { await api.post('/financial/transactions', payload); showToast('Transacción registrada', 'success'); }
+      let pendiente = !isOnline;
+      if (!isOnline) await offlineQueue.enqueue('POST', 'financial/transactions', payload);
+      else pendiente = wasQueuedOffline(await api.post('/financial/transactions', payload));
+      showToast(mensajeSegunDesenlace(pendiente, 'Transacción registrada'), 'success');
       closeModal(); loadHistoryRecords(); return true;
     } catch { showToast('Error al registrar transacción', 'error'); return false; }
     finally { setSavingForm(false); }
@@ -185,8 +197,10 @@ export function useLivestockSubmit(
     if (controlForm.height) payload.height = Number(controlForm.height);
 
     try {
-      if (!isOnline) { await offlineQueue.enqueue('POST', 'control', payload); showToast('Guardado sin señal', 'success'); }
-      else { await api.post('/control', payload); showToast('Control registrado', 'success'); }
+      let pendiente = !isOnline;
+      if (!isOnline) await offlineQueue.enqueue('POST', 'control', payload);
+      else pendiente = wasQueuedOffline(await api.post('/control', payload));
+      showToast(mensajeSegunDesenlace(pendiente, 'Control registrado'), 'success');
       closeModal(); loadHistoryRecords(); return true;
     } catch { showToast('Error al registrar control', 'error'); return false; }
     finally { setSavingForm(false); }

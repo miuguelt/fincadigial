@@ -7,7 +7,8 @@ import { useAuth } from '@/features/auth/model/useAuth';
 import { useToast } from '@/app/providers/ToastContext';
 import { useOnlineStatus } from '@/shared/hooks/useOnlineStatus';
 import { offlineQueue } from '@/shared/api/offline/offlineQueue';
-import { api } from '@/shared/api/base-client';
+import api from '@/shared/api/client';
+import { wasQueuedOffline } from '@/shared/api/offlineResult';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
 
 import { Card, CardContent } from '@/shared/ui/card';
@@ -37,9 +38,9 @@ import { AnimalLink } from '@/entities/animal/ui/AnimalLink';
 import { FieldLink } from '@/entities/field/ui/FieldLink';
 import { DiseaseLink } from '@/entities/disease/ui/DiseaseLink';
 import { MedicationLink } from '@/entities/medication/ui/MedicationLink';
-import { AnimalImageBanner } from '@/widgets/dashboard/animals/AnimalImageBanner';
 import { apiClient } from '@/shared/api/client';
 import { FinanceModal } from '@/widgets/registro-operativo/modals/FinanceModal';
+import { GanaderiaTodayPanel, summarizeGanaderiaToday } from './components/GanaderiaTodayPanel';
 
 // Icons
 import {
@@ -365,6 +366,20 @@ export default function GanaderiaOperativaPage() {
     };
   }, [records]);
 
+  const todaySummary = useMemo(
+    () => summarizeGanaderiaToday(records, getTodayColombia()),
+    [records],
+  );
+
+  const todayLabel = useMemo(
+    () => new Date().toLocaleDateString('es-CO', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    }),
+    [],
+  );
+
   // ----------------------------------------------------
   // REPORT EXPORT UTILITIES (PDF / CSV)
   // ----------------------------------------------------
@@ -595,13 +610,11 @@ export default function GanaderiaOperativaPage() {
     };
 
     try {
-      if (!isOnline) {
-        await offlineQueue.enqueue('POST', 'milk-production', payload);
-        showToast('Registro guardado sin señal. Se sincronizará pronto.', 'success');
-      } else {
-        await api.post('/milk-production', payload);
-        showToast('Producción de leche registrada correctamente.', 'success');
-      }
+      // Sin red, el cliente encola la escritura y responde 202: sigue pendiente.
+      let pendiente = !isOnline;
+      if (!isOnline) await offlineQueue.enqueue('POST', 'milk-production', payload);
+      else pendiente = wasQueuedOffline(await api.post('/milk-production', payload));
+      showToast(pendiente ? 'Registro guardado sin señal. Se sincronizará pronto.' : 'Producción de leche registrada correctamente.', 'success');
       closeModal();
       loadHistoryRecords();
       setMilkForm({ animalId: '', liters: '', session: 'Mañana', date: getTodayColombia(), notes: '' });
@@ -764,13 +777,11 @@ export default function GanaderiaOperativaPage() {
     }
 
     try {
-      if (!isOnline) {
-        await offlineQueue.enqueue('POST', 'financial/transactions', payload);
-        showToast('Transacción guardada sin señal. Se sincronizará pronto.', 'success');
-      } else {
-        await api.post('/financial/transactions', payload);
-        showToast('Transacción registrada exitosamente', 'success');
-      }
+      // Sin red, el cliente encola la escritura y responde 202: sigue pendiente.
+      let pendiente = !isOnline;
+      if (!isOnline) await offlineQueue.enqueue('POST', 'financial/transactions', payload);
+      else pendiente = wasQueuedOffline(await api.post('/financial/transactions', payload));
+      showToast(pendiente ? 'Transacción guardada sin señal. Se sincronizará pronto.' : 'Transacción registrada exitosamente', 'success');
       closeModal();
       loadHistoryRecords();
       return true;
@@ -797,15 +808,15 @@ export default function GanaderiaOperativaPage() {
               onClick={() => navigate('/campesino')}
               className="flex items-center gap-1 bg-white/10 hover:bg-white/20 text-white border border-white/10 px-3 py-1.5 rounded-xl text-xs font-semibold backdrop-blur-md transition-all active:scale-95"
             >
-              <ArrowLeft className="w-3.5 h-3.5" /> Volver al Inicio
+              <ArrowLeft className="w-3.5 h-3.5" /> Volver a mi panel
             </button>
             <div className="flex items-center gap-3 mt-2">
               <div className="p-2.5 rounded-lg bg-white/15 border border-white/25 shadow-sm">
                 <IconCow className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-black tracking-tight uppercase">Ganadería Operativa</h1>
-                <p className="text-emerald-100 text-xs md:text-sm opacity-90 mt-0.5">Control unificado del ganado, registros rápidos y reportes</p>
+                <h1 className="text-2xl md:text-3xl font-black tracking-tight">Ganadería de mi finca</h1>
+                <p className="text-emerald-100 text-xs md:text-sm opacity-90 mt-0.5">Ordeño, salud y movimiento del ganado en un solo lugar</p>
               </div>
             </div>
           </div>
@@ -836,21 +847,33 @@ export default function GanaderiaOperativaPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-8">
 
+        <GanaderiaTodayPanel
+          summary={todaySummary}
+          activeDiseases={stats.activeDiseases}
+          totalAnimals={animals.length}
+          totalFields={fields.length}
+          pendingOperations={totalOperations}
+          isOnline={isOnline}
+          dateLabel={todayLabel}
+          onAction={openModal}
+          onOpenHealth={() => navigate('/campesino/health')}
+        />
+
         {/* ─── TARJETAS DE ACCIONES RÁPIDAS (MODALES) ─── */}
         <section className="space-y-3">
-          <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1">Registros y Acciones</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <h2 className="text-sm font-extrabold text-slate-700 dark:text-slate-300 px-1">¿Qué vas a registrar?</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {/* Milk Register */}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => openModal('milk')}
-              className="p-5 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-md hover:shadow-lg transition-all text-left flex flex-col justify-between h-32 border-0 cursor-pointer relative overflow-hidden"
+              className="min-h-32 p-4 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-md hover:shadow-lg transition-all text-left flex flex-col justify-between border-0 cursor-pointer relative overflow-hidden"
             >
               <div className="bg-white/20 p-2.5 rounded-xl w-fit"><IconMilk className="w-6 h-6" /></div>
               <div>
-                <span className="block font-black text-sm uppercase tracking-wider">Registrar Ordeño</span>
-                <span className="block text-[11px] text-white/80 mt-0.5">Producción diaria de vacas</span>
+                <span className="block font-extrabold text-[15px] leading-tight">Registrar ordeño</span>
+                <span className="block text-xs text-white/80 mt-1">Anota litros por vaca</span>
               </div>
               <div className="absolute right-3 top-3 text-white/10 font-bold text-6xl select-none leading-none pointer-events-none">🥛</div>
             </motion.button>
@@ -860,12 +883,12 @@ export default function GanaderiaOperativaPage() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => openModal('transfer')}
-              className="p-5 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md hover:shadow-lg transition-all text-left flex flex-col justify-between h-32 border-0 cursor-pointer relative overflow-hidden"
+              className="min-h-32 p-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md hover:shadow-lg transition-all text-left flex flex-col justify-between border-0 cursor-pointer relative overflow-hidden"
             >
               <div className="bg-white/20 p-2.5 rounded-xl w-fit"><IconRouteCattle className="w-6 h-6" /></div>
               <div>
-                <span className="block font-black text-sm uppercase tracking-wider">Trasladar Ganado</span>
-                <span className="block text-[11px] text-white/80 mt-0.5">Rotación de potreros</span>
+                <span className="block font-extrabold text-[15px] leading-tight">Mover ganado</span>
+                <span className="block text-xs text-white/80 mt-1">Cambia de potrero</span>
               </div>
               <div className="absolute right-3 top-3 text-white/10 font-bold text-6xl select-none leading-none pointer-events-none">🛣️</div>
             </motion.button>
@@ -875,12 +898,12 @@ export default function GanaderiaOperativaPage() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => openModal('disease')}
-              className="p-5 rounded-lg bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-md hover:shadow-lg transition-all text-left flex flex-col justify-between h-32 border-0 cursor-pointer relative overflow-hidden"
+              className="min-h-32 p-4 rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-md hover:shadow-lg transition-all text-left flex flex-col justify-between border-0 cursor-pointer relative overflow-hidden"
             >
               <div className="bg-white/20 p-2.5 rounded-xl w-fit"><IconHealthAlert className="w-6 h-6" /></div>
               <div>
-                <span className="block font-black text-sm uppercase tracking-wider">Reportar Alerta</span>
-                <span className="block text-[11px] text-white/80 mt-0.5">Diagnosticar síntomas</span>
+                <span className="block font-extrabold text-[15px] leading-tight">Avisar un animal enfermo</span>
+                <span className="block text-xs text-white/80 mt-1">Registra síntomas</span>
               </div>
               <div className="absolute right-3 top-3 text-white/10 font-bold text-6xl select-none leading-none pointer-events-none">🤒</div>
             </motion.button>
@@ -890,12 +913,12 @@ export default function GanaderiaOperativaPage() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => openModal('treatment')}
-              className="p-5 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-md hover:shadow-lg transition-all text-left flex flex-col justify-between h-32 border-0 cursor-pointer relative overflow-hidden"
+              className="min-h-32 p-4 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-md hover:shadow-lg transition-all text-left flex flex-col justify-between border-0 cursor-pointer relative overflow-hidden"
             >
               <div className="bg-white/20 p-2.5 rounded-xl w-fit"><IconHealthCheck className="w-6 h-6" /></div>
               <div>
-                <span className="block font-black text-sm uppercase tracking-wider">Aplicar Medicina</span>
-                <span className="block text-[11px] text-white/80 mt-0.5">Vacunas y tratamientos</span>
+                <span className="block font-extrabold text-[15px] leading-tight">Registrar tratamiento</span>
+                <span className="block text-xs text-white/80 mt-1">Anota dosis y motivo</span>
               </div>
               <div className="absolute right-3 top-3 text-white/10 font-bold text-6xl select-none leading-none pointer-events-none">💉</div>
             </motion.button>
@@ -905,12 +928,12 @@ export default function GanaderiaOperativaPage() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => openModal('finance')}
-              className="p-5 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-md hover:shadow-lg transition-all text-left flex flex-col justify-between h-32 border-0 cursor-pointer relative overflow-hidden md:col-span-4 lg:col-span-1"
+              className="min-h-32 p-4 rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-md hover:shadow-lg transition-all text-left flex flex-col justify-between border-0 cursor-pointer relative overflow-hidden"
             >
               <div className="bg-white/20 p-2.5 rounded-xl w-fit"><DollarSign className="w-6 h-6" /></div>
               <div>
-                <span className="block font-black text-sm uppercase tracking-wider">Ingreso / Gasto</span>
-                <span className="block text-[11px] text-white/80 mt-0.5">Ventas, insumos, compras</span>
+                <span className="block font-extrabold text-[15px] leading-tight">Registrar ingreso o gasto</span>
+                <span className="block text-xs text-white/80 mt-1">Ventas e insumos</span>
               </div>
               <div className="absolute right-3 top-3 text-white/10 font-bold text-6xl select-none leading-none pointer-events-none">💰</div>
             </motion.button>
@@ -923,7 +946,7 @@ export default function GanaderiaOperativaPage() {
             <CardContent className="p-4 flex items-center gap-3">
               <div className="p-3 bg-amber-500/10 text-amber-600 rounded-lg"><IconMilk className="w-6 h-6" /></div>
               <div>
-                <span className="text-[11px] uppercase font-bold text-slate-400 tracking-wider">Leche del Lote</span>
+                <span className="text-[11px] uppercase font-bold text-slate-400 tracking-wider">Leche registrada</span>
                 <span className="block text-lg font-black text-slate-800 dark:text-slate-100 mt-0.5">{stats.milkTotal} L</span>
               </div>
             </CardContent>
@@ -932,8 +955,8 @@ export default function GanaderiaOperativaPage() {
             <CardContent className="p-4 flex items-center gap-3">
               <div className="p-3 bg-rose-500/10 text-rose-600 rounded-lg"><IconHealthAlert className="w-6 h-6" /></div>
               <div>
-                <span className="text-[11px] uppercase font-bold text-slate-400 tracking-wider">Enfermos Activos</span>
-                <span className="block text-lg font-black text-slate-800 dark:text-slate-100 mt-0.5">{stats.activeDiseases} Casos</span>
+                <span className="text-[11px] uppercase font-bold text-slate-400 tracking-wider">Casos activos</span>
+                <span className="block text-lg font-black text-slate-800 dark:text-slate-100 mt-0.5">{stats.activeDiseases}</span>
               </div>
             </CardContent>
           </Card>
@@ -941,8 +964,8 @@ export default function GanaderiaOperativaPage() {
             <CardContent className="p-4 flex items-center gap-3">
               <div className="p-3 bg-emerald-500/10 text-emerald-600 rounded-lg"><IconRouteCattle className="w-6 h-6" /></div>
               <div>
-                <span className="text-[11px] uppercase font-bold text-slate-400 tracking-wider">Traslados Registrados</span>
-                <span className="block text-lg font-black text-slate-800 dark:text-slate-100 mt-0.5">{stats.transfersCount} Movs</span>
+                <span className="text-[11px] uppercase font-bold text-slate-400 tracking-wider">Movimientos</span>
+                <span className="block text-lg font-black text-slate-800 dark:text-slate-100 mt-0.5">{stats.transfersCount}</span>
               </div>
             </CardContent>
           </Card>
@@ -950,8 +973,8 @@ export default function GanaderiaOperativaPage() {
             <CardContent className="p-4 flex items-center gap-3">
               <div className="p-3 bg-indigo-500/10 text-indigo-600 rounded-lg"><IconCow className="w-6 h-6" /></div>
               <div>
-                <span className="text-[11px] uppercase font-bold text-slate-400 tracking-wider">Ganado Controlado</span>
-                <span className="block text-lg font-black text-slate-800 dark:text-slate-100 mt-0.5">{animals.length} Vacas</span>
+                <span className="text-[11px] uppercase font-bold text-slate-400 tracking-wider">Animales activos</span>
+                <span className="block text-lg font-black text-slate-800 dark:text-slate-100 mt-0.5">{animals.length}</span>
               </div>
             </CardContent>
           </Card>
@@ -968,8 +991,8 @@ export default function GanaderiaOperativaPage() {
                 <FileText className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-extrabold text-lg text-slate-800 dark:text-slate-100">Historial y Reportes</h3>
-                <p className="text-xs text-slate-400 mt-0.5">Consulta la bitácora operativa y exporta reportes de firmas</p>
+                <h3 className="font-extrabold text-lg text-slate-800 dark:text-slate-100">Historial de labores</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Busca por animal, actividad o fecha cuando necesites consultar</p>
               </div>
             </div>
 
@@ -998,7 +1021,7 @@ export default function GanaderiaOperativaPage() {
                 onClick={exportToCSV}
                 className="rounded-xl border shadow-sm font-bold text-slate-700 bg-white"
               >
-                <Download className="w-4 h-4 mr-2 text-slate-500" /> Exportar CSV
+                <Download className="w-4 h-4 mr-2 text-slate-500" /> CSV
               </Button>
               <Button
                 variant="primary"
@@ -1006,7 +1029,7 @@ export default function GanaderiaOperativaPage() {
                 onClick={exportToPDF}
                 className="rounded-xl bg-emerald-600 hover:bg-emerald-700 border-0 text-white font-bold shadow-md shadow-emerald-500/15"
               >
-                <Printer className="w-4 h-4 mr-2" /> Descargar Reporte (PDF)
+                <Printer className="w-4 h-4 mr-2" /> PDF
               </Button>
             </div>
           </div>
@@ -1099,7 +1122,6 @@ export default function GanaderiaOperativaPage() {
                   <thead className="bg-slate-50 dark:bg-slate-800/40">
                     <tr>
                       <th className="px-5 py-3.5 text-left text-[11px] font-black uppercase text-slate-400 tracking-wider">Fecha</th>
-                      <th className="px-5 py-3.5 text-left text-[11px] font-black uppercase text-slate-400 tracking-wider">Foto</th>
                       <th className="px-5 py-3.5 text-left text-[11px] font-black uppercase text-slate-400 tracking-wider">Animal / Ganado</th>
                       <th className="px-5 py-3.5 text-left text-[11px] font-black uppercase text-slate-400 tracking-wider">Actividad</th>
                       <th className="px-5 py-3.5 text-left text-[11px] font-black uppercase text-slate-400 tracking-wider">Detalle</th>
@@ -1126,19 +1148,6 @@ export default function GanaderiaOperativaPage() {
                             <div className="flex flex-col">
                               <span>{new Date(r.date).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                               <span className="text-[11px] opacity-60 font-medium">{new Date(r.date).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}</span>
-                            </div>
-                          </td>
-                          <td className="px-5 py-4">
-                            <div className="w-10 h-10 rounded-lg overflow-hidden border border-border/40 shadow-sm bg-muted/30 group-hover:scale-105 transition-transform">
-                              <AnimalImageBanner
-                                animalId={r.animalId}
-                                height="100%"
-                                showControls={false}
-                                autoPlayInterval={0}
-                                hideWhenEmpty={false}
-                                objectFit="cover"
-                                deferLoad
-                              />
                             </div>
                           </td>
                           <td className="whitespace-nowrap px-5 py-4">

@@ -56,7 +56,7 @@ export const OsciladorProduccionLechera: React.FC<OsciladorProduccionLecheraProp
               {totalLiters.toLocaleString('es-CO')} <span className="text-sm font-bold text-muted-foreground">L</span>
             </p>
           </div>
-          <p className="text-[11px] text-muted-foreground mt-2">Producción registrada en el hato</p>
+              <p className="text-[11px] text-muted-foreground mt-2">Producción registrada en el ganado</p>
         </div>
 
         {/* Promedio por Vaca */}

@@ -100,8 +100,8 @@ export const AnimalActionsMenu: React.FC<AnimalActionsMenuProps> = ({ animal, cu
             <ModuleHeader icon={<IconHeart className="h-4 w-4 text-pink-500" />} label="Reproducción" />
             <ModuleActions type="reproduction_event" onOpen={(t, mode) => handleOpenModal(t, mode)} />
           </MenuSection>
-          <MenuSection title="Ubicación y movimientos" defaultOpen={false}>
-            <ModuleHeader icon={<IconMapPin className="h-4 w-4 text-amber-500" />} label="Asignación de Campo" />
+          <MenuSection title="Ubicación y rotación" defaultOpen={false}>
+            <ModuleHeader icon={<IconMapPin className="h-4 w-4 text-amber-500" />} label="Asignación de Potrero" />
             <ModuleActions type="animal_field" onOpen={(t, mode) => handleOpenModal(t, mode)} />
           </MenuSection>
           <MenuSection title="Genética y linaje" defaultOpen={false}>

@@ -1,16 +1,15 @@
-
 import React, { useMemo, useState, useRef, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { cn } from "@/shared/ui/cn";
-import { useAuth } from "@/features/auth/model/useAuth";
 import {
   sidebarItems,
   filterSidebarItemsByRole,
   type Role as SidebarRole,
 } from "@/widgets/dashboard/sidebarConfig";
-import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "@/features/auth/model/useAuth";
 import { Loader } from "@/shared/ui/Loader";
 import { normalizeRole } from "@/features/auth/api/auth.service";
-import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { subscribeSSE } from "@/lib/events";
 import { useNotifications } from "@/shared/hooks/useNotifications";
 
@@ -62,9 +61,9 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
   // Simular carga de indicadores contextuales (Core UX)
   useEffect(() => {
     if (isAuthenticated && currentRole) {
-       // Estos valores vendrían de un endpoint de agregación en el futuro
-       setSickAnimalsCount(0);
-       setUpcomingBirthsCount(0);
+      // Estos valores vendrían de un endpoint de agregación en el futuro
+      setSickAnimalsCount(0);
+      setUpcomingBirthsCount(0);
     }
   }, [isAuthenticated, currentRole]);
 
@@ -266,8 +265,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
         aria-hidden={!isSidebarOpen ? "true" : "false"}
         role="navigation"
       >
-        {/* Cabecera mínima: el menú es solo la lista de secciones. Cuenta, tema,
-            cambio de finca y salida viven en el menú de la foto de perfil. */}
+        {/* Cabecera mínima: el menú es solo la lista de secciones. */}
         {!isCollapsed && (
           <div className="flex items-center justify-between gap-2 border-b border-border/20 px-4 py-3">
             <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
@@ -310,7 +308,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                     to={fullPath}
                     onClick={handleItemClick}
                     className={cn(
-                      "flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors border group",
+                      "flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors border group min-h-[44px]",
                       isActive
                         ? "bg-primary/10 text-primary border-primary/20"
                         : "text-foreground/80 border-transparent hover:bg-muted hover:text-primary"
@@ -351,7 +349,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                     type="button"
                     onClick={() => toggleGroup(category.title)}
                     className={cn(
-                      "w-full flex items-center justify-between py-2.5 px-3.5 rounded-xl transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 group",
+                      "w-full flex items-center justify-between py-2.5 px-3.5 rounded-xl transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 group min-h-[44px]",
                       isOpen
                         ? "bg-primary/10 text-primary font-bold"
                         : "bg-transparent text-foreground/90 font-medium"
@@ -401,7 +399,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                                 type="button"
                                 onClick={() => toggleSubmenu(submenuKey)}
                                 className={cn(
-                                  "w-full flex items-center justify-between py-2 px-3 rounded-lg transition-colors duration-200 group focus:outline-none focus:ring-1 focus:ring-primary/20",
+                                  "w-full flex items-center justify-between py-2 px-3 rounded-lg transition-colors duration-200 group focus:outline-none focus:ring-1 focus:ring-primary/20 min-h-[44px]",
                                   isSubmenuOpen
                                     ? "bg-primary/15 text-primary font-bold border-l-2 border-primary/50 rounded-l-none pl-2"
                                     : "text-foreground/80 hover:bg-primary/10 hover:text-primary"
@@ -440,7 +438,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                                         to={subPath}
                                         onClick={handleItemClick}
                                         className={cn(
-                                          "flex items-center py-2 px-3 rounded-lg transition-colors duration-200 group relative",
+                                          "flex items-center py-2 px-3 rounded-lg transition-colors duration-200 group relative min-h-[44px]",
                                           isSubActive
                                             ? "bg-primary/20 font-bold text-primary border border-primary/20 pl-2.5"
                                             : "text-muted-foreground/80 hover:bg-primary/8 hover:text-primary"
@@ -473,7 +471,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                             to={fullPath}
                             onClick={handleItemClick}
                             className={cn(
-                              "flex items-center py-2 px-3 rounded-lg transition-colors duration-200 group relative",
+                              "flex items-center py-2 px-3 rounded-lg transition-colors duration-200 group relative min-h-[44px]",
                               isActive
                                 ? "bg-primary/20 font-bold text-primary border border-primary/20 pl-2.5"
                                 : "text-muted-foreground hover:bg-primary/8 hover:text-primary",
@@ -516,7 +514,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                     type="button"
                     onClick={() => toggleGroup(category.title)}
                     className={cn(
-                      "w-full flex items-center justify-between py-2 px-3.5 rounded-xl transition-colors duration-200 group",
+                      "w-full flex items-center justify-between py-2 px-3.5 rounded-xl transition-colors duration-200 group min-h-[44px]",
                       isOpen ? "text-primary font-bold" : "text-foreground/70"
                     )}
                   >
@@ -537,7 +535,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                             to={fullPath}
                             onClick={handleItemClick}
                             className={cn(
-                              "flex items-center py-2 px-3 rounded-lg text-sm transition-colors",
+                              "flex items-center py-2 px-3 rounded-lg text-sm transition-colors min-h-[44px]",
                               isActive ? "bg-primary/10 text-primary font-bold" : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
                             )}
                           >

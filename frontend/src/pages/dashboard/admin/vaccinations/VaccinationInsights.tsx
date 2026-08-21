@@ -1,22 +1,20 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Syringe } from 'lucide-react';
+import { BarChart3, Syringe } from 'lucide-react';
 
 import { useAnalytics } from '@/features/reporting/model/useAnalytics';
 import { vaccinationsService } from '@/entities/vaccination/api/vaccinations.service';
 import KPICard from '@/widgets/analytics/KPICard';
-import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
-import { SanidadTabs } from '@/widgets/dashboard/treatments/SanidadTabs';
 import { Button } from '@/shared/ui/button';
 import {
   buildVaccinationSeries,
   shouldRefreshVaccinationAnalytics,
   summarizeVaccinationSeries,
 } from './vaccinationAnalytics';
-import VaccinationCharts from './VaccinationCharts';
+import VaccinationAnalyticsModal from './VaccinationAnalyticsModal';
 
 export const VaccinationInsights: React.FC = () => {
-  const [showCharts, setShowCharts] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const queryClient = useQueryClient();
   const { useHealthStatistics } = useAnalytics();
   const healthQuery = useHealthStatistics();
@@ -60,70 +58,76 @@ export const VaccinationInsights: React.FC = () => {
   const statsLoading = statsQuery.isLoading;
 
   return (
-    <DataScreenHeader
-      title="Vacunaciones"
-      description="Seguimiento de dosis aplicadas y actividad sanitaria de la finca"
-      icon={<Syringe className="h-5 w-5 text-white" />}
-      iconClassName="from-emerald-500 to-emerald-600 shadow-emerald-500/20"
-      actions={
+    <div className="space-y-2.5 sm:space-y-3">
+      {/* Barra de título de sección y botón de analíticas */}
+      <div className="flex items-center justify-between gap-2 px-1">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="h-6 w-6 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+            <Syringe className="h-3.5 w-3.5" />
+          </div>
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider truncate">
+            Resumen Sanitario de Vacunación
+          </span>
+        </div>
+
         <Button
+          type="button"
           variant="outline"
           size="sm"
-          aria-expanded={showCharts}
-          onClick={() => setShowCharts((visible) => !visible)}
+          onClick={() => setShowModal(true)}
+          className="h-7 px-2.5 text-xs font-semibold flex items-center gap-1.5 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 active:scale-[0.98] transition-all"
         >
-          {showCharts ? 'Ocultar gráficos' : 'Ver gráficos'}
+          <BarChart3 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+          <span>Ver Gráficos y Tendencias</span>
         </Button>
-      }
-      metricsColumns={4}
-      metrics={
-        <>
-          <KPICard
-            compact
-            title="Total registradas"
-            value={summary.total}
-            icon="💉"
-            subtitle="Histórico"
-            loading={statsLoading}
-          />
-          <KPICard
-            compact
-            title="Últimos 12 meses"
-            value={summary.periodTotal}
-            icon="📅"
-            subtitle="Dosis aplicadas"
-            loading={chartLoading}
-          />
-          <KPICard
-            compact
-            title="Promedio mensual"
-            value={summary.averagePerMonth}
-            icon="📈"
-            subtitle={`${summary.activeMonths} meses con actividad`}
-            loading={chartLoading}
-          />
-          <KPICard
-            compact
-            title="Registradas hoy"
-            value={summary.recentToday}
-            icon="✓"
-            subtitle="Nuevas dosis"
-            loading={statsLoading}
-          />
-        </>
-      }
-    >
-      <SanidadTabs />
+      </div>
 
-      {showCharts && (
-        <VaccinationCharts
-          series={series}
-          loading={chartLoading}
-          error={chartError}
-          peakMonth={summary.peakMonth}
+      {/* Rejilla de 4 KPIs compactos */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+        <KPICard
+          compact
+          title="Total Registradas"
+          value={summary.total}
+          icon="💉"
+          subtitle="Histórico general"
+          loading={statsLoading}
         />
-      )}
-    </DataScreenHeader>
+        <KPICard
+          compact
+          title="Últimos 12 Meses"
+          value={summary.periodTotal}
+          icon="📅"
+          subtitle="Dosis aplicadas"
+          loading={chartLoading}
+        />
+        <KPICard
+          compact
+          title="Promedio Mensual"
+          value={summary.averagePerMonth}
+          icon="📈"
+          subtitle={`${summary.activeMonths} meses activos`}
+          loading={chartLoading}
+        />
+        <KPICard
+          compact
+          title="Registradas Hoy"
+          value={summary.recentToday}
+          icon="✓"
+          subtitle="Nuevas dosis hoy"
+          loading={statsLoading}
+        />
+      </div>
+
+      {/* Modal flotante con los gráficos */}
+      <VaccinationAnalyticsModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        series={series}
+        summary={summary}
+        loading={chartLoading}
+        error={chartError}
+      />
+    </div>
   );
 };
 

@@ -143,4 +143,104 @@ describe("OfflineChatService", () => {
 		mockApi.get.mockRejectedValue(new Error("Network Error"));
 		await expect(OfflineChatService.getUnreadCount(1)).resolves.toBe(0);
 	});
+
+	it("deduplica mensajes entre el buffer local con clientMessageId y el historial del servidor", async () => {
+		// 1. Enviar mensaje confirmado con clientMessageId
+		mockApi.post.mockResolvedValue({
+			data: {
+				data: {
+					id: 50,
+					sender_id: 1,
+					sender_name: "Campesino A",
+					recipient_id: 2,
+					message: "Deduplicar prueba",
+					created_at: "2026-08-17T12:00:00Z",
+					is_read: false,
+					client_message_id: "client-uuid-50",
+				},
+			},
+		});
+
+		await OfflineChatService.send(1, "Campesino A", 2, "Deduplicar prueba");
+
+		// 2. Cargar historial del servidor donde client_message_id es null (formato estándar de BD)
+		mockApi.get.mockResolvedValue({
+			data: {
+				data: [
+					{
+						id: 50,
+						sender_id: 1,
+						sender_name: "Campesino A",
+						recipient_id: 2,
+						message: "Deduplicar prueba",
+						created_at: "2026-08-17T12:00:00Z",
+						is_read: true,
+						client_message_id: null,
+					},
+				],
+			},
+		});
+
+		const history = await OfflineChatService.loadHistory(2, 1);
+		expect(history).toHaveLength(1);
+		expect(history[0].id).toBe(50);
+		expect(history[0].status).toBe("synced");
+	});
+
+	it("agrega mensajes recibidos en tiempo real sin borrar el historial existente", async () => {
+		mockApi.get.mockResolvedValue({
+			data: {
+				data: [
+					{
+						id: 10,
+						sender_id: 2,
+						sender_name: "Capataz",
+						recipient_id: 1,
+						message: "Primer mensaje",
+						created_at: "2026-08-17T10:00:00Z",
+						is_read: true,
+					},
+				],
+			},
+		});
+
+		await OfflineChatService.loadHistory(2, 1);
+
+		// Llega nuevo mensaje por SSE en tiempo real
+		OfflineChatService.receiveFromServer({
+			id: 11,
+			sender_id: 2,
+			sender_name: "Capataz",
+			recipient_id: 1,
+			message: "Segundo mensaje en vivo",
+			created_at: "2026-08-17T10:05:00Z",
+			is_read: false,
+		});
+
+		const conversation = OfflineChatService.getConversation(2, 1);
+		expect(conversation).toHaveLength(2);
+		expect(conversation[0].content).toBe("Primer mensaje");
+		expect(conversation[1].content).toBe("Segundo mensaje en vivo");
+	});
+
+	it("actualiza recibos de lectura con markMessagesRead", () => {
+		OfflineChatService.receiveFromServer({
+			id: 20,
+			sender_id: 1,
+			sender_name: "Yo",
+			recipient_id: 2,
+			message: "Mensaje por leer",
+			created_at: "2026-08-17T11:00:00Z",
+			is_read: false,
+		});
+
+		const before = OfflineChatService.getConversation(2, 1);
+		expect(before[0].status).toBe("delivered");
+
+		OfflineChatService.markMessagesRead([20]);
+
+		const after = OfflineChatService.getConversation(2, 1);
+		expect(after[0].status).toBe("synced");
+	});
 });
+

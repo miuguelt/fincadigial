@@ -2,6 +2,7 @@ import React from 'react';
 import { ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import HeaderQuickActions from './HeaderQuickActions';
+import HeaderMessengerDropdown from './HeaderMessengerDropdown';
 
 const ICON_BUTTON =
   'relative flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-primary/10 hover:text-primary';
@@ -11,7 +12,10 @@ const HeaderActions: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="flex items-center gap-1 sm:gap-1.5">
+      {/* Icono de Mensajes y Notificaciones estilo Facebook Messenger */}
+      <HeaderMessengerDropdown />
+
       <HeaderQuickActions />
 
       <button

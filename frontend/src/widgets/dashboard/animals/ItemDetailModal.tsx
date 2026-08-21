@@ -98,7 +98,7 @@ export function ItemDetailModal({
         const entityNames: Record<string, string> = {
             genetic_improvement: 'Mejora Genética',
             animal_disease: 'Enfermedad Diagnosticada',
-            animal_field: 'Asignación de Campo',
+            animal_field: 'Asignación de Potrero',
             vaccination: 'Aplicación de Vacuna',
             treatment: 'Tratamiento Médico',
             control: 'Control de Crecimiento',
@@ -170,19 +170,19 @@ export function ItemDetailModal({
                     {type === 'animal_field' && (
                         <>
                             <DetailSection
-                                title="Ubicación"
+                                title="Ubicación y Potrero"
                                 accent="emerald"
                                 icon={<MapPin className="w-4 h-4" />}
                             >
-                                <InfoField label="Potrero / Campo" value={safeOption(options.fields, item.field_id)} fullWidth />
-                                <InfoField label="Fecha Asignación" value={formatDate(item.assignment_date)} />
-                                <InfoField label="Estado" value={item.removal_date ? 'Histórico' : 'Activo'} badge badgeVariant={item.removal_date ? 'secondary' : 'success'} />
+                                <InfoField label="Potrero" value={safeOption(options.fields, item.field_id)} fullWidth />
+                                <InfoField label="Fecha de Asignación" value={formatDate(item.assignment_date)} />
+                                <InfoField label="Estado" value={item.removal_date ? 'Histórico / Retirado' : 'Activo'} badge badgeVariant={item.removal_date ? 'secondary' : 'success'} />
                             </DetailSection>
                             <DetailSection
                                 title="Tiempos"
                                 accent="slate"
                             >
-                                <InfoField label="Fecha Retiro" value={item.removal_date ? formatDate(item.removal_date) : '-'} />
+                                <InfoField label="Fecha de Retiro" value={item.removal_date ? formatDate(item.removal_date) : '-'} />
                                 <InfoField label="Notas" value={item.notes || 'Ninguna'} fullWidth />
                             </DetailSection>
                         </>

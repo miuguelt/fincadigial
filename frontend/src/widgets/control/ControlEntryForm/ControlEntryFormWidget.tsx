@@ -29,6 +29,7 @@ import type {
 export function ControlEntryFormWidget({
   onSuccess,
   defaultDate,
+  defaultAnimalId,
   onCancel,
   mode = 'full',
 }: ControlEntryFormWidgetProps) {
@@ -47,7 +48,7 @@ export function ControlEntryFormWidget({
 
   const form = useForm<ControlEntryFormValues>({
     resolver: zodResolver(getControlEntrySchema(mode)),
-    defaultValues: getControlEntryDefaults(mode, checkupDate),
+    defaultValues: getControlEntryDefaults(mode, checkupDate, defaultAnimalId),
   });
 
   const onSubmit = async (data: ControlEntryFormValues) => {
@@ -55,7 +56,7 @@ export function ControlEntryFormWidget({
     try {
       await controlService.create(buildControlEntryPayload(data, mode));
       showToast(copy.successMessage, 'success');
-      form.reset(getControlEntryDefaults(mode, data.checkup_date));
+      form.reset(getControlEntryDefaults(mode, data.checkup_date, defaultAnimalId));
       onSuccess?.();
     } catch (error: any) {
       showToast(error?.message || copy.errorMessage, 'error');

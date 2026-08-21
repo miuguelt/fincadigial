@@ -61,13 +61,13 @@ export const OsciladorCargaPotreros: React.FC<OsciladorCargaPotrerosProps> = ({ 
 
         {/* 3-Zone Pasture Bar */}
         <div className="relative h-6 w-full rounded-full bg-muted/40 overflow-hidden flex">
-          <div className="w-[50%] h-full bg-sky-300/60 dark:bg-sky-950/60 flex items-center justify-center text-[10px] font-bold text-sky-800 dark:text-sky-300">
+          <div className="w-[50%] h-full bg-sky-300/60 dark:bg-sky-950/60 flex items-center justify-center text-[11px] font-bold text-sky-800 dark:text-sky-300">
             Pasto Libre (&lt;50%)
           </div>
-          <div className="w-[35%] h-full bg-emerald-300/60 dark:bg-emerald-950/60 flex items-center justify-center text-[10px] font-bold text-emerald-800 dark:text-emerald-300">
+          <div className="w-[35%] h-full bg-emerald-300/60 dark:bg-emerald-950/60 flex items-center justify-center text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
             Carga Ideal (50-85%)
           </div>
-          <div className="w-[15%] h-full bg-rose-300/60 dark:bg-rose-950/60 flex items-center justify-center text-[10px] font-bold text-rose-800 dark:text-rose-300">
+          <div className="w-[15%] h-full bg-rose-300/60 dark:bg-rose-950/60 flex items-center justify-center text-[11px] font-bold text-rose-800 dark:text-rose-300">
             Límite
           </div>
         </div>
@@ -81,7 +81,7 @@ export const OsciladorCargaPotreros: React.FC<OsciladorCargaPotrerosProps> = ({ 
             className="absolute -top-1 -translate-x-1/2 flex flex-col items-center"
           >
             <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[8px] border-b-foreground" />
-            <span className="text-[10px] font-extrabold text-foreground px-1.5 py-0.5 rounded bg-background border border-border shadow-xs mt-0.5 whitespace-nowrap">
+            <span className="text-[11px] font-extrabold text-foreground px-1.5 py-0.5 rounded bg-background border border-border shadow-xs mt-0.5 whitespace-nowrap">
               Carga: {Math.round(utilizationPercent)}%
             </span>
           </motion.div>
@@ -94,25 +94,25 @@ export const OsciladorCargaPotreros: React.FC<OsciladorCargaPotrerosProps> = ({ 
           <div className="p-3.5 rounded-2xl bg-card border border-border/60 text-center">
             <p className="text-[11px] font-bold text-muted-foreground uppercase">Potreros Totales</p>
             <p className="text-xl font-black text-foreground mt-0.5">{totalFields}</p>
-            <p className="text-[10px] text-muted-foreground">de la finca</p>
+            <p className="text-[11px] text-muted-foreground">de la finca</p>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40 text-center">
             <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 uppercase">En Descanso</p>
             <p className="text-xl font-black text-emerald-700 dark:text-emerald-300 mt-0.5">{restingFields}</p>
-            <p className="text-[10px] text-emerald-600/80 dark:text-emerald-400/80">rebrotando pasto</p>
+            <p className="text-[11px] text-emerald-600/80 dark:text-emerald-400/80">rebrotando pasto</p>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/40 text-center">
             <p className="text-[11px] font-bold text-amber-800 dark:text-amber-300 uppercase">Ocupados</p>
             <p className="text-xl font-black text-amber-700 dark:text-amber-300 mt-0.5">{occupiedFields}</p>
-            <p className="text-[10px] text-amber-600/80 dark:text-amber-400/80">con ganado</p>
+            <p className="text-[11px] text-amber-600/80 dark:text-amber-400/80">con ganado</p>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-card border border-border/60 text-center">
             <p className="text-[11px] font-bold text-muted-foreground uppercase">Carga Promedio</p>
             <p className="text-xl font-black text-foreground mt-0.5">{animalsPerField}</p>
-            <p className="text-[10px] text-muted-foreground">animales / potrero</p>
+            <p className="text-[11px] text-muted-foreground">animales / potrero</p>
           </div>
         </div>
 

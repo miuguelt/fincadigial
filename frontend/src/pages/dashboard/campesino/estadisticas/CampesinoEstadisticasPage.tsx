@@ -65,7 +65,7 @@ export const CampesinoEstadisticasPage: React.FC = () => {
                 Mi Finca · Herramientas Numéricas
               </p>
               <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight flex items-center gap-2">
-                <span>📊</span> Termómetro y Estadísticas del Hato
+                <span>📊</span> Termómetro y estadísticas del ganado
               </h1>
             </div>
           </div>
@@ -94,7 +94,7 @@ export const CampesinoEstadisticasPage: React.FC = () => {
             }`}
           >
             <HeartPulse className="w-4 h-4" />
-            🌡️ Termómetro del Hato
+            🌡️ Termómetro del ganado
           </button>
 
           <button

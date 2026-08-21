@@ -69,10 +69,12 @@ export function getControlEntrySchema(
 export function getControlEntryDefaults(
 	_mode: ControlEntryMode,
 	checkupDate: string,
+	animalId?: number,
 ): Partial<ControlEntryFormValues> {
 	return {
 		checkup_date: checkupDate,
 		health_status: "",
+		...(animalId ? { animal_id: animalId } : {}),
 	};
 }
 

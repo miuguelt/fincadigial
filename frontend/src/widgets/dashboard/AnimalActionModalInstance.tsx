@@ -18,6 +18,11 @@ import { reproductionService } from "@/entities/reproduction/api/reproduction.se
 import { alertService } from "@/entities/alert/api/alert.service";
 import { taskService } from "@/entities/task/api/task.service";
 import { clearAnimalDependencyCache, checkTreatmentDependencies } from "@/features/diagnostics/api/dependencyCheck.service";
+import { diseaseService } from "@/entities/disease/api/disease.service";
+import { fieldService } from "@/entities/field/api/field.service";
+import { vaccinesService } from "@/entities/vaccine/api/vaccines.service";
+import { usersService } from "@/entities/user/api/user.service";
+import { clearServiceCaches } from "@/shared/api/service-registry";
 import { TreatmentSuppliesModal } from "@/widgets/dashboard/treatments/TreatmentSuppliesModal";
 import { ItemDetailModal } from "./animals/ItemDetailModal";
 import { ApiFetchError } from "@/shared/api/apiFetch";
@@ -56,12 +61,28 @@ const serviceCalls = {
 };
 
 const typeLabels: Record<string, string> = {
-  genetic_improvement: "Mejora Genética", animal_disease: "Enfermedad", animal_field: "Asignación de Campo",
-  vaccination: "Vacunación", treatment: "Tratamiento", control: "Control",
-  milk_production: "Producción Lechera", reproduction_event: "Evento Reproductivo", alert: "Alerta", task: "Tarea",
+  genetic_improvement: "Mejora Genética",
+  animal_disease: "Enfermedad",
+  animal_field: "Asignación de Potrero",
+  vaccination: "Vacunación",
+  treatment: "Tratamiento",
+  control: "Control de Crecimiento",
+  milk_production: "Producción Lechera",
+  reproduction_event: "Evento Reproductivo",
+  alert: "Alerta",
+  task: "Tarea",
 };
 
-export const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps> = ({ type, mode, animal, currentUserId, editingItem: initialEditingItem, onClose, onRefreshParent, zIndex }) => {
+export const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps> = ({
+  type,
+  mode,
+  animal,
+  currentUserId,
+  editingItem: initialEditingItem,
+  onClose,
+  onRefreshParent,
+  zIndex
+}) => {
   const { showToast } = useToast();
   const [modalMode, setModalMode] = useState<ModalMode>(mode === "edit" ? "create" : mode);
   const [editingItem, setEditingItem] = useState<any | null>(initialEditingItem);
@@ -78,6 +99,81 @@ export const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps>
   const [selectedTreatmentForSupplies, setSelectedTreatmentForSupplies] = useState<any>(null);
   const submitInFlightRef = useRef(false);
   const modalStateId = useMemo(() => Math.random().toString(36).substring(2, 9), []);
+
+  // Catálogos dinámicos para desplegables y vistas de detalle
+  const [fieldOptions, setFieldOptions] = useState<Array<{ value: number; label: string }>>([]);
+  const [diseaseOptions, setDiseaseOptions] = useState<Array<{ value: number; label: string }>>([]);
+  const [vaccineOptions, setVaccineOptions] = useState<Array<{ value: number; label: string }>>([]);
+  const [userOptions, setUserOptions] = useState<Array<{ value: number; label: string }>>([]);
+
+  const [fieldMap, setFieldMap] = useState<Record<number, string>>({});
+  const [diseaseMap, setDiseaseMap] = useState<Record<number, string>>({});
+  const [vaccineMap, setVaccineMap] = useState<Record<number, string>>({});
+  const [userMap, setUserMap] = useState<Record<number, string>>({});
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadCatalogs = async () => {
+      try {
+        const [fieldsRes, diseasesRes, vaccinesRes, usersRes] = await Promise.all([
+          fieldService.getFields({ page: 1, limit: 1000 }).catch(() => ({ data: [] })),
+          diseaseService.getDiseases({ page: 1, limit: 1000 }).catch(() => ({ data: [] })),
+          vaccinesService.getVaccines({ page: 1, limit: 1000 }).catch(() => ({ data: [] })),
+          usersService.getUsers({ page: 1, limit: 1000 }).catch(() => ({ data: [] })),
+        ]);
+
+        if (!isMounted) return;
+
+        const fList = (fieldsRes as any)?.data || fieldsRes || [];
+        const dList = (diseasesRes as any)?.data || diseasesRes || [];
+        const vList = (vaccinesRes as any)?.data || vaccinesRes || [];
+        const uList = (usersRes as any)?.data || usersRes || [];
+
+        const fArr = (Array.isArray(fList) ? fList : []).map((f: any) => ({
+          value: f.id,
+          label: f.name || `Potrero #${f.id}`,
+        }));
+        const dArr = (Array.isArray(dList) ? dList : []).map((d: any) => ({
+          value: d.id,
+          label: d.disease || d.name || `Enfermedad #${d.id}`,
+        }));
+        const vArr = (Array.isArray(vList) ? vList : []).map((v: any) => ({
+          value: v.id,
+          label: v.name || `Vacuna #${v.id}`,
+        }));
+        const uArr = (Array.isArray(uList) ? uList : []).map((u: any) => ({
+          value: u.id,
+          label: u.fullname || u.name || `Usuario #${u.id}`,
+        }));
+
+        setFieldOptions(fArr);
+        setDiseaseOptions(dArr);
+        setVaccineOptions(vArr);
+        setUserOptions(uArr);
+
+        const fM: Record<number, string> = {};
+        fArr.forEach((item) => { fM[item.value] = item.label; });
+        setFieldMap(fM);
+
+        const dM: Record<number, string> = {};
+        dArr.forEach((item) => { dM[item.value] = item.label; });
+        setDiseaseMap(dM);
+
+        const vM: Record<number, string> = {};
+        vArr.forEach((item) => { vM[item.value] = item.label; });
+        setVaccineMap(vM);
+
+        const uM: Record<number, string> = {};
+        uArr.forEach((item) => { uM[item.value] = item.label; });
+        setUserMap(uM);
+      } catch (err) {
+        console.error("[AnimalActionModalInstance] Error loading catalogs:", err);
+      }
+    };
+
+    loadCatalogs();
+    return () => { isMounted = false; };
+  }, []);
 
   const loadListData = useCallback(async (forceRefresh = false) => {
     setLoadingList(true);
@@ -101,8 +197,12 @@ export const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps>
         case "task": data = filterById(await taskService.getAll(params)); break;
       }
       setListData(data);
-    } catch (err: any) { console.error("[AnimalActionModalInstance] Error loading list data:", err); setError("Error al cargar los registros"); }
-    finally { setLoadingList(false); }
+    } catch (err: any) {
+      console.error("[AnimalActionModalInstance] Error loading list data:", err);
+      setError("Error al cargar los registros");
+    } finally {
+      setLoadingList(false);
+    }
   }, [animal.id, type]);
 
   useEffect(() => {
@@ -132,42 +232,111 @@ export const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps>
   const handleSubmit = async (stayInCreateMode: boolean = false) => {
     if (submitInFlightRef.current) return;
     submitInFlightRef.current = true;
-    setLoading(true); setError(null);
+    setLoading(true);
+    setError(null);
     try {
       const isEditing = !!editingItem;
       const targetId = isEditing ? resolveRecordId(editingItem) : null;
       if (isEditing && !targetId) throw new Error("Error interno: No se pudo identificar el registro a actualizar (ID desconocido).");
+
       const dataToSend = { ...formData, animal_id: animal.id };
       const required: Record<string, string[]> = {
-        genetic_improvement: ["date", "genetic_event_technique"], animal_disease: ["disease_id", "diagnosis_date"],
-        animal_field: ["field_id", "assignment_date"], vaccination: ["vaccine_id", "vaccination_date"],
-        treatment: ["treatment_date", "description"], control: ["checkup_date", "health_status"],
-        milk_production: ["date", "liters"], reproduction_event: ["event_date", "event_type"],
-        alert: ["alert_type", "message"], task: ["due_date", "description"],
+        genetic_improvement: ["date", "genetic_event_technique"],
+        animal_disease: ["disease_id", "diagnosis_date"],
+        animal_field: ["field_id", "assignment_date"],
+        vaccination: ["vaccine_id", "vaccination_date"],
+        treatment: ["treatment_date", "description"],
+        control: ["checkup_date", "health_status"],
+        milk_production: ["date", "liters"],
+        reproduction_event: ["event_date", "event_type"],
+        alert: ["alert_type", "message"],
+        task: ["due_date", "description"],
       };
+
       if (type) {
         const fields = required[type] || [];
-        for (const f of fields) { if (!dataToSend[f]?.toString().trim()) throw new Error("Complete los campos obligatorios."); }
+        for (const f of fields) {
+          if (!dataToSend[f]?.toString().trim()) {
+            throw new Error("Complete los campos obligatorios.");
+          }
+        }
       }
+
       const svc = type ? (serviceCalls as any)[type] : null;
       if (svc) {
         if (type === "control" && !isEditing && pendingBulkItems.length > 0) {
           const allItems = [...pendingBulkItems.map((item) => ({ ...item, animal_id: animal.id })), dataToSend];
           await controlService.createBulk(allItems);
+        } else if (type === "animal_field" && !isEditing) {
+          // Asignación / Traslado de potrero seguro con cierre del potrero anterior
+          const res = await animalFieldsService.bulkTransfer({
+            animal_ids: [animal.id],
+            field_id: Number(dataToSend.field_id),
+            date: dataToSend.assignment_date,
+            notes: dataToSend.notes,
+          });
+          if (!res.success) {
+            throw new Error(res.message || "Error al asignar o trasladar el animal de potrero");
+          }
         } else if (isEditing) {
-          await svc[`update${svc === milkService || svc === reproductionService || svc === alertService || svc === taskService ? "" : type === "genetic_improvement" ? "GeneticImprovement" : type === "animal_disease" ? "AnimalDisease" : type === "animal_field" ? "AnimalField" : type === "vaccination" ? "Vaccination" : type === "treatment" ? "Treatment" : type === "control" ? "Control" : ""}`]?.(targetId as any, dataToSend);
+          await svc[
+            `update${
+              svc === milkService || svc === reproductionService || svc === alertService || svc === taskService
+                ? ""
+                : type === "genetic_improvement"
+                ? "GeneticImprovement"
+                : type === "animal_disease"
+                ? "AnimalDisease"
+                : type === "animal_field"
+                ? "AnimalField"
+                : type === "vaccination"
+                ? "Vaccination"
+                : type === "treatment"
+                ? "Treatment"
+                : type === "control"
+                ? "Control"
+                : ""
+            }`
+          ]?.(targetId as any, dataToSend);
         } else {
-          await svc[`create${svc === milkService || svc === reproductionService || svc === alertService || svc === taskService ? "" : type === "genetic_improvement" ? "GeneticImprovement" : type === "animal_disease" ? "AnimalDisease" : type === "animal_field" ? "AnimalField" : type === "vaccination" ? "Vaccination" : type === "treatment" ? "Treatment" : type === "control" ? "Control" : ""}`]?.(dataToSend);
+          await svc[
+            `create${
+              svc === milkService || svc === reproductionService || svc === alertService || svc === taskService
+                ? ""
+                : type === "genetic_improvement"
+                ? "GeneticImprovement"
+                : type === "animal_disease"
+                ? "AnimalDisease"
+                : type === "animal_field"
+                ? "AnimalField"
+                : type === "vaccination"
+                ? "Vaccination"
+                : type === "treatment"
+                ? "Treatment"
+                : type === "control"
+                ? "Control"
+                : ""
+            }`
+          ]?.(dataToSend);
         }
       }
+
       setPendingBulkItems([]);
+      if (animal?.id) clearAnimalDependencyCache(animal.id);
+      if (type === "animal_field") {
+        await clearServiceCaches("animal-fields", "fields", "animals");
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("animal-fields:updated"));
+        }
+      }
+
       if (stayInCreateMode && !isEditing) {
         const prevDate = dataToSend.checkup_date || dataToSend.date || dataToSend.vaccination_date || dataToSend.treatment_date || dataToSend.diagnosis_date || dataToSend.assignment_date;
         setFormData({ animal_id: animal.id, checkup_date: prevDate, health_status: "Sano", weight: "", height: "", description: "" });
         showToast("Registro guardado exitosamente. Puede continuar agregando.", "success");
       } else {
         onClose();
-        showToast(isEditing ? "Registro actualizado correctamente" : "Registro creado correctamente", "success");
+        showToast(isEditing ? "Registro actualizado correctamente" : type === "animal_field" ? "Potrero asignado correctamente" : "Registro creado correctamente", "success");
       }
       setTimeout(() => onRefreshParent?.(type || undefined), 600);
     } catch (err: any) {
@@ -178,31 +347,55 @@ export const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps>
         msg = "Esta enfermedad ya está registrada para el animal en esa fecha.";
       }
       setValidationErrors(null);
-      if (err instanceof ApiFetchError && err.validationErrors) { setValidationErrors(err.validationErrors); msg = "Por favor, corrige los siguientes errores:"; }
-      setError(msg);
+      if (err instanceof ApiFetchError && err.validationErrors) {
+        setValidationErrors(err.validationErrors);
+        msg = "Por favor, corrige los siguientes errores:";
+      }
+      setError(msg || err.message);
     } finally {
       submitInFlightRef.current = false;
       setLoading(false);
     }
   };
 
-  const handleEdit = (item: any) => { setEditingItem(item); setFormData(item); setModalMode("create"); };
+  const handleEdit = (item: any) => {
+    setEditingItem(item);
+    setFormData(item);
+    setModalMode("create");
+  };
+
   const handleDeleteClick = (item: any) => {
     const itemId = resolveRecordId(item);
-    if (!itemId) { showToast("No se pudo determinar el ID del registro", "error"); return; }
-    if (confirmingDeleteId === itemId) handleDeleteConfirm(item);
-    else { setConfirmingDeleteId(itemId); showToast("Haz clic de nuevo para confirmar la eliminación", "warning"); setTimeout(() => setConfirmingDeleteId((c) => c === itemId ? null : c), 3000); }
+    if (!itemId) {
+      showToast("No se pudo determinar el ID del registro", "error");
+      return;
+    }
+    if (confirmingDeleteId === itemId) {
+      handleDeleteConfirm(item);
+    } else {
+      setConfirmingDeleteId(itemId);
+      showToast("Haz clic de nuevo para confirmar la eliminación", "warning");
+      setTimeout(() => setConfirmingDeleteId((c) => c === itemId ? null : c), 3000);
+    }
   };
 
   const handleDeleteConfirm = async (item: any) => {
     const itemId = resolveRecordId(item);
-    if (!itemId) { showToast("No se pudo determinar el ID del registro para eliminar", "error"); return; }
+    if (!itemId) {
+      showToast("No se pudo determinar el ID del registro para eliminar", "error");
+      return;
+    }
     if (deletingItemId === itemId) return;
-    setConfirmingDeleteId(null); setDeletingItemId(itemId);
+    setConfirmingDeleteId(null);
+    setDeletingItemId(itemId);
     try {
       if (type === "treatment") {
         const depCheck = await checkTreatmentDependencies(itemId as number);
-        if (depCheck.hasDependencies) { showToast(`No se puede eliminar: ${depCheck.dependencies?.map((d: any) => `${d.count} ${d.entity}`).join(", ")}. Elimínalas primero.`, "error"); setDeletingItemId(null); return; }
+        if (depCheck.hasDependencies) {
+          showToast(`No se puede eliminar: ${depCheck.dependencies?.map((d: any) => `${d.count} ${d.entity}`).join(", ")}. Elimínalas primero.`, "error");
+          setDeletingItemId(null);
+          return;
+        }
       }
       const svc = type ? (serviceCalls as any)[type] : null;
       if (svc) {
@@ -229,19 +422,34 @@ export const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps>
       const errorStatus = err.status ?? err.response?.status;
       const errorMessage = err.message || err.response?.data?.message || "Error desconocido";
       const isNotFound = errorStatus === 404 || String(errorMessage).toLowerCase().includes("no encontrado") || String(errorMessage).toLowerCase().includes("not found");
-      if (isNotFound) { showToast("El registro ya fue eliminado", "info"); setListData((prev) => prev.filter((i) => String(resolveRecordId(i)) !== String(itemId))); if (animal?.id) clearAnimalDependencyCache(animal.id); }
-      else showToast("Error al eliminar: " + errorMessage, "error");
-    } finally { setDeletingItemId(null); }
+      if (isNotFound) {
+        showToast("El registro ya fue eliminado", "info");
+        setListData((prev) => prev.filter((i) => String(resolveRecordId(i)) !== String(itemId)));
+        if (animal?.id) clearAnimalDependencyCache(animal.id);
+      } else {
+        showToast("Error al eliminar: " + errorMessage, "error");
+      }
+    } finally {
+      setDeletingItemId(null);
+    }
   };
+
   const handleDelete = handleDeleteClick;
+
   const handleReplicate = () => {
     if (!editingItem) return;
     const replicatedData = { ...editingItem };
-    delete replicatedData.id; delete replicatedData.created_at; delete replicatedData.updated_at;
+    delete replicatedData.id;
+    delete replicatedData.created_at;
+    delete replicatedData.updated_at;
     const today = getTodayColombia();
-    ["checkup_date", "date", "vaccination_date", "treatment_date", "diagnosis_date", "assignment_date", "event_date", "due_date", "created_at"].forEach((f) => { if (replicatedData[f]) replicatedData[f] = today; });
+    ["checkup_date", "date", "vaccination_date", "treatment_date", "diagnosis_date", "assignment_date", "event_date", "due_date", "created_at"].forEach((f) => {
+      if (replicatedData[f]) replicatedData[f] = today;
+    });
     replicatedData.animal_id = animal.id;
-    setFormData(replicatedData); setEditingItem(null); setModalMode("create");
+    setFormData(replicatedData);
+    setEditingItem(null);
+    setModalMode("create");
     showToast("Modo replicación: Datos copiados. Ajuste la fecha si es necesario.", "info");
   };
 
@@ -251,65 +459,234 @@ export const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps>
   };
 
   const renderListContent = () => {
-    if (loadingList) return <div className="py-10 text-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div><p>Cargando registros...</p></div>;
-    if (listData.length === 0) return <div className="py-10 text-center bg-muted/5 rounded-lg border-2 border-dashed border-border/40"><ClipboardList className="w-12 h-12 mx-auto text-muted-foreground/20 mb-3" /><p className="text-sm font-medium text-muted-foreground">No se encontraron registros</p><button onClick={() => setModalMode("create")} className="mt-4 px-4 py-2 text-sm font-semibold rounded-lg bg-primary text-white">Crear el primero</button></div>;
-    const borderMap: Record<string, string> = { control: "border-l-orange-500", vaccination: "border-l-blue-500", treatment: "border-l-purple-500", animal_disease: "border-l-rose-500", animal_field: "border-l-amber-500", genetic_improvement: "border-l-emerald-500", milk_production: "border-l-cyan-500", reproduction_event: "border-l-pink-500", alert: "border-l-yellow-500", task: "border-l-teal-500" };
-    return (<div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">{listData.map((item, index) => {
-      const borderColor = (type && borderMap[type]) || "border-l-primary";
-      return (<div key={item.id || index} onClick={() => { setEditingItem(item); setModalMode("view"); }} className={`relative bg-card border border-border/60 rounded-xl p-4 group hover:shadow-md hover:border-border transition-all duration-200 border-l-4 ${borderColor} cursor-pointer hover:bg-muted/50`}>
-        <div className="absolute -top-2 -right-2 bg-muted text-muted-foreground text-[11px] font-bold px-2 py-0.5 rounded-full border border-border/50 shadow-sm">#{listData.length - index}</div>
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">{renderListItemInternal(item, type)}</div>
-          <div className="flex flex-col gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
-            <button type="button" onClick={(e) => { e.stopPropagation(); handleEdit(item); }} className="p-2 rounded-lg bg-blue-500/10 text-blue-600 hover:bg-blue-500/20"><IconEdit className="w-4 h-4" /></button>
-            <button type="button" onClick={(e) => { e.stopPropagation(); handleDelete(item); }} disabled={deletingItemId !== null && deletingItemId === resolveRecordId(item)} className={`p-2 rounded-lg transition-all duration-200 ${confirmingDeleteId === resolveRecordId(item) ? "bg-red-600 text-white animate-pulse scale-110" : "bg-destructive/10 text-destructive hover:bg-destructive/20"} disabled:opacity-50`}>
-              {deletingItemId === resolveRecordId(item) ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : confirmingDeleteId === resolveRecordId(item) ? <span className="text-xs font-bold">✓</span> : <IconTrash className="w-4 h-4" />}
-            </button>
-          </div>
+    if (loadingList) {
+      return (
+        <div className="py-10 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Cargando registros...</p>
         </div>
-      </div>);
-    })}</div>);
+      );
+    }
+    if (listData.length === 0) {
+      return (
+        <div className="py-10 text-center bg-muted/5 rounded-lg border-2 border-dashed border-border/40">
+          <ClipboardList className="w-12 h-12 mx-auto text-muted-foreground/20 mb-3" />
+          <p className="text-sm font-medium text-muted-foreground">No se encontraron registros</p>
+          <button onClick={() => setModalMode("create")} className="mt-4 px-4 py-2 text-sm font-semibold rounded-lg bg-primary text-white">
+            Crear el primero
+          </button>
+        </div>
+      );
+    }
+
+    const borderMap: Record<string, string> = {
+      control: "border-l-orange-500",
+      vaccination: "border-l-blue-500",
+      treatment: "border-l-purple-500",
+      animal_disease: "border-l-rose-500",
+      animal_field: "border-l-amber-500",
+      genetic_improvement: "border-l-emerald-500",
+      milk_production: "border-l-cyan-500",
+      reproduction_event: "border-l-pink-500",
+      alert: "border-l-yellow-500",
+      task: "border-l-teal-500"
+    };
+
+    return (
+      <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+        {listData.map((item, index) => {
+          const borderColor = (type && borderMap[type]) || "border-l-primary";
+          return (
+            <div
+              key={item.id || index}
+              onClick={() => { setEditingItem(item); setModalMode("view"); }}
+              className={`relative bg-card border border-border/60 rounded-xl p-4 group hover:shadow-md hover:border-border transition-all duration-200 border-l-4 ${borderColor} cursor-pointer hover:bg-muted/50`}
+            >
+              <div className="absolute -top-2 -right-2 bg-muted text-muted-foreground text-[11px] font-bold px-2 py-0.5 rounded-full border border-border/50 shadow-sm">
+                #{listData.length - index}
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  {renderListItemInternal(item, type, fieldMap, diseaseMap, vaccineMap)}
+                </div>
+                <div className="flex flex-col gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); handleEdit(item); }}
+                    className="p-2 rounded-lg bg-blue-500/10 text-blue-600 hover:bg-blue-500/20"
+                    title="Editar"
+                  >
+                    <IconEdit className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
+                    disabled={deletingItemId !== null && deletingItemId === resolveRecordId(item)}
+                    className={`p-2 rounded-lg transition-all duration-200 ${
+                      confirmingDeleteId === resolveRecordId(item)
+                        ? "bg-red-600 text-white animate-pulse scale-110"
+                        : "bg-destructive/10 text-destructive hover:bg-destructive/20"
+                    } disabled:opacity-50`}
+                    title="Eliminar"
+                  >
+                    {deletingItemId === resolveRecordId(item) ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : confirmingDeleteId === resolveRecordId(item) ? (
+                      <span className="text-xs font-bold">✓</span>
+                    ) : (
+                      <IconTrash className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   if (modalMode === "view" && editingItem) {
-    return (<ItemDetailModal type={type as string} item={editingItem} options={{}} onClose={onClose} onEdit={() => { setFormData(editingItem); setModalMode("create"); }} onReplicate={handleReplicate} zIndex={zIndex} />);
+    return (
+      <ItemDetailModal
+        type={type as string}
+        item={editingItem}
+        options={{
+          fields: fieldMap,
+          diseases: diseaseMap,
+          vaccines: vaccineMap,
+          users: userMap,
+        }}
+        onClose={onClose}
+        onEdit={() => { setFormData(editingItem); setModalMode("create"); }}
+        onReplicate={handleReplicate}
+        zIndex={zIndex}
+      />
+    );
   }
 
-  return (<>
-    <GenericModal isOpen onOpenChange={(open) => !open && onClose()} title={getModalTitle()} description={`Gestión de ${(type && typeLabels[type]) || type} para el animal ${animal.record || animal.id}`} size="2xl" enableBackdropBlur className="bg-card/95 backdrop-blur-md text-card-foreground border-border/10" zIndex={zIndex}>
-      <div className="space-y-4">
-        {modalMode === "list" ? (<>
-          {renderListContent()}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-border/10">
-            <Button variant="ghost" onClick={onClose} className="rounded-xl px-6">Cerrar</Button>
-            <Button onClick={() => { setEditingItem(null); setModalMode("create"); }} className="rounded-xl px-6 bg-primary text-white"><Plus className="h-4 w-4 mr-2" />Nueva Entrada</Button>
-          </div>
-        </>) : (<>
-          {listData.length > 0 && <div className="flex justify-start mb-2"><button onClick={() => { setModalMode("list"); setEditingItem(null); setError(null); }} className="text-xs font-bold text-primary hover:underline">← Volver a la lista</button></div>}
-          <div className="py-2">
-            <FormRenderer type={type} formData={formData} setFormData={setFormData} idPrefix={`form-${type}-${modalStateId}`} editingItem={editingItem} pendingBulkItems={pendingBulkItems} setPendingBulkItems={setPendingBulkItems} animal={animal} setError={setError} />
-          </div>
-          {(error || validationErrors) && (<div className="rounded-xl overflow-hidden"><div className={`p-4 border-l-4 ${validationErrors ? "bg-orange-50 border-orange-500" : "bg-red-50 border-red-500"}`}>
-            <div className="flex items-start gap-3">
-              <div className="shrink-0 mt-0.5">{validationErrors ? <AlertCircle className="h-5 w-5 text-orange-500" /> : <XCircle className="h-5 w-5 text-red-500" />}</div>
-              <div><p className="text-sm font-bold">{error || "Ha ocurrido un error"}</p>
-                {validationErrors && <ul className="space-y-1.5 mt-2">{Array.isArray(validationErrors) ? validationErrors.map((e: string, i: number) => <li key={i} className="text-xs">• {e}</li>) : Object.entries(validationErrors).map(([field, _], i) => <li key={i} className="text-xs">• {field}</li>)}</ul>}
+  return (
+    <>
+      <GenericModal
+        isOpen
+        onOpenChange={(open) => !open && onClose()}
+        title={getModalTitle()}
+        description={`Gestión de ${(type && typeLabels[type]) || type} para el animal ${animal.record || animal.id}`}
+        size="2xl"
+        enableBackdropBlur
+        className="bg-card/95 backdrop-blur-md text-card-foreground border-border/10"
+        zIndex={zIndex}
+      >
+        <div className="space-y-4">
+          {modalMode === "list" ? (
+            <>
+              {renderListContent()}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-border/10">
+                <Button variant="ghost" onClick={onClose} className="rounded-xl px-6">
+                  Cerrar
+                </Button>
+                <Button onClick={() => { setEditingItem(null); setModalMode("create"); }} className="rounded-xl px-6 bg-primary text-white">
+                  <Plus className="h-4 w-4 mr-2" />Nueva Entrada
+                </Button>
               </div>
-            </div>
-          </div></div>)}
-          <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-6 mt-2 border-t border-border/10">
-            <Button variant="ghost" onClick={() => { if (listData.length > 0) setModalMode("list"); else onClose(); }} disabled={loading} className="w-full sm:w-auto rounded-xl px-6">{listData.length > 0 ? "Cancelar" : "Cerrar"}</Button>
-            {!editingItem && <Button onClick={() => handleSubmit(true)} disabled={loading} variant="outline" className="w-full sm:w-auto rounded-xl px-6 border-emerald-500/30 text-emerald-600"><PlusCircle className="h-4 w-4 mr-2" />Guardar y añadir otro</Button>}
-            <Button onClick={() => handleSubmit(false)} disabled={loading} className="w-full sm:w-auto rounded-xl px-8 bg-emerald-600 text-white"><Save className="h-4 w-4 mr-2 sm:hidden" />{loading ? "Procesando..." : editingItem ? "Actualizar Registro" : "Guardar y Cerrar"}</Button>
-          </div>
-        </>)}
-      </div>
-    </GenericModal>
-    <TreatmentSuppliesModal isOpen={suppliesModalOpen} onClose={() => { setSuppliesModalOpen(false); setSelectedTreatmentForSupplies(null); }} treatment={selectedTreatmentForSupplies} className="z-[2000]" zIndex={zIndex ? zIndex + 20 : 2000} />
-  </>);
+            </>
+          ) : (
+            <>
+              {listData.length > 0 && (
+                <div className="flex justify-start mb-2">
+                  <button onClick={() => { setModalMode("list"); setEditingItem(null); setError(null); }} className="text-xs font-bold text-primary hover:underline">
+                    ← Volver a la lista
+                  </button>
+                </div>
+              )}
+              <div className="py-2">
+                <FormRenderer
+                  type={type}
+                  formData={formData}
+                  setFormData={setFormData}
+                  idPrefix={`form-${type}-${modalStateId}`}
+                  editingItem={editingItem}
+                  pendingBulkItems={pendingBulkItems}
+                  setPendingBulkItems={setPendingBulkItems}
+                  animal={animal}
+                  setError={setError}
+                  fieldOptions={fieldOptions}
+                  diseaseOptions={diseaseOptions}
+                  vaccineOptions={vaccineOptions}
+                  userOptions={userOptions}
+                />
+              </div>
+              {(error || validationErrors) && (
+                <div className="rounded-xl overflow-hidden">
+                  <div className={`p-4 border-l-4 ${validationErrors ? "bg-orange-50 border-orange-500" : "bg-red-50 border-red-500"}`}>
+                    <div className="flex items-start gap-3">
+                      <div className="shrink-0 mt-0.5">
+                        {validationErrors ? <AlertCircle className="h-5 w-5 text-orange-500" /> : <XCircle className="h-5 w-5 text-red-500" />}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold">{error || "Ha ocurrido un error"}</p>
+                        {validationErrors && (
+                          <ul className="space-y-1.5 mt-2">
+                            {Array.isArray(validationErrors)
+                              ? validationErrors.map((e: string, i: number) => <li key={i} className="text-xs">• {e}</li>)
+                              : Object.entries(validationErrors).map(([field, _], i) => <li key={i} className="text-xs">• {field}</li>)}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-6 mt-2 border-t border-border/10">
+                <Button
+                  variant="ghost"
+                  onClick={() => { if (listData.length > 0) setModalMode("list"); else onClose(); }}
+                  disabled={loading}
+                  className="w-full sm:w-auto rounded-xl px-6"
+                >
+                  {listData.length > 0 ? "Cancelar" : "Cerrar"}
+                </Button>
+                {!editingItem && (
+                  <Button
+                    onClick={() => handleSubmit(true)}
+                    disabled={loading}
+                    variant="outline"
+                    className="w-full sm:w-auto rounded-xl px-6 border-emerald-500/30 text-emerald-600"
+                  >
+                    <PlusCircle className="h-4 w-4 mr-2" />Guardar y añadir otro
+                  </Button>
+                )}
+                <Button
+                  onClick={() => handleSubmit(false)}
+                  disabled={loading}
+                  className="w-full sm:w-auto rounded-xl px-8 bg-emerald-600 text-white"
+                >
+                  <Save className="h-4 w-4 mr-2 sm:hidden" />
+                  {loading ? "Procesando..." : editingItem ? "Actualizar Registro" : "Guardar y Cerrar"}
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      </GenericModal>
+      <TreatmentSuppliesModal
+        isOpen={suppliesModalOpen}
+        onClose={() => { setSuppliesModalOpen(false); setSelectedTreatmentForSupplies(null); }}
+        treatment={selectedTreatmentForSupplies}
+        className="z-[2000]"
+        zIndex={zIndex ? zIndex + 20 : 2000}
+      />
+    </>
+  );
 };
 
-function renderListItemInternal(item: any, type: ModalType) {
+function renderListItemInternal(
+  item: any,
+  type: ModalType,
+  fieldMap: Record<number, string> = {},
+  diseaseMap: Record<number, string> = {},
+  vaccineMap: Record<number, string> = {}
+) {
   const getIcon = () => {
     switch (type) {
       case "genetic_improvement": return <Dna className="w-4 h-4 text-emerald-500" />;
@@ -325,21 +702,102 @@ function renderListItemInternal(item: any, type: ModalType) {
       default: return null;
     }
   };
-  return <div className="flex gap-3"><div className="mt-0.5 shrink-0 bg-background shadow-sm border border-border/40 p-1.5 rounded-lg">{getIcon()}</div><div className="flex-1 min-w-0">{renderContent(item, type)}</div></div>;
+  return (
+    <div className="flex gap-3">
+      <div className="mt-0.5 shrink-0 bg-background shadow-sm border border-border/40 p-1.5 rounded-lg">
+        {getIcon()}
+      </div>
+      <div className="flex-1 min-w-0">
+        {renderContent(item, type, fieldMap, diseaseMap, vaccineMap)}
+      </div>
+    </div>
+  );
 }
 
-function renderContent(item: any, type: ModalType) {
+function renderContent(
+  item: any,
+  type: ModalType,
+  fieldMap: Record<number, string> = {},
+  diseaseMap: Record<number, string> = {},
+  vaccineMap: Record<number, string> = {}
+) {
   switch (type) {
-    case "genetic_improvement": return <div><span className="text-sm font-bold">{item.genetic_event_technique || "Mejora Genética"}</span><Badge variant="outline" className="ml-2">{formatDate(item.date)}</Badge>{item.details && <p className="text-xs text-muted-foreground mt-1">{item.details}</p>}</div>;
-    case "animal_disease": return <div><span className="text-sm font-bold">{item.disease_name || `Enfermedad #${item.disease_id}`}</span><Badge variant={item.status === "Activo" ? "destructive" : "default"} className="ml-2">{item.status}</Badge><p className="text-xs text-muted-foreground">{formatDate(item.diagnosis_date)}</p></div>;
-    case "animal_field": return <div><span className="text-sm font-bold">{item.field_name || `Campo #${item.field_id}`}</span><Badge variant={item.removal_date ? "secondary" : "default"} className="ml-2">{item.removal_date ? "Retirado" : "Activo"}</Badge><p className="text-xs text-muted-foreground">{formatDate(item.assignment_date)}</p></div>;
-    case "vaccination": return <div><span className="text-sm font-bold">{item.vaccine_name || `Vacuna #${item.vaccine_id}`}</span><Badge variant="outline" className="ml-2">{formatDate(item.vaccination_date)}</Badge></div>;
-    case "treatment": return <div><span className="text-sm font-bold">{item.description || "Tratamiento"}</span><Badge variant="outline" className="ml-2">{formatDate(item.treatment_date)}</Badge>{item.dosis && <p className="text-xs text-muted-foreground">{item.dosis}</p>}</div>;
-    case "control": return <div><span className="text-sm font-bold">{item.health_status || "Control"}</span><Badge variant="outline" className="ml-2">{formatDate(item.checkup_date)}</Badge>{item.weight && <p className="text-xs text-muted-foreground">{item.weight} kg</p>}</div>;
-    case "milk_production": return <div><span className="text-sm font-bold">{item.liters ? `${item.liters}L` : "Producción"}</span><Badge variant="outline" className="ml-2">{formatDate(item.date)}</Badge></div>;
-    case "reproduction_event": return <div><span className="text-sm font-bold">{item.event_type || "Evento"}</span><Badge variant="outline" className="ml-2">{formatDate(item.event_date)}</Badge></div>;
-    case "alert": return <div><span className="text-sm font-bold">{item.alert_type || "Alerta"}</span><Badge variant={item.severity === "critica" ? "destructive" : "secondary"} className="ml-2">{item.severity}</Badge></div>;
-    case "task": return <div><span className="text-sm font-bold">{item.task_type || "Tarea"}</span><Badge variant={item.status === "completed" ? "default" : item.status === "overdue" ? "destructive" : "secondary"} className="ml-2">{item.status}</Badge></div>;
-    default: return null;
+    case "genetic_improvement":
+      return (
+        <div>
+          <span className="text-sm font-bold">{item.genetic_event_technique || "Mejora Genética"}</span>
+          <Badge variant="outline" className="ml-2">{formatDate(item.date)}</Badge>
+          {item.details && <p className="text-xs text-muted-foreground mt-1">{item.details}</p>}
+        </div>
+      );
+    case "animal_disease":
+      return (
+        <div>
+          <span className="text-sm font-bold">{diseaseMap[item.disease_id] || item.disease_name || `Enfermedad #${item.disease_id}`}</span>
+          <Badge variant={item.status === "Activo" ? "destructive" : "default"} className="ml-2">{item.status}</Badge>
+          <p className="text-xs text-muted-foreground">{formatDate(item.diagnosis_date)}</p>
+        </div>
+      );
+    case "animal_field":
+      return (
+        <div>
+          <span className="text-sm font-bold">{fieldMap[item.field_id] || item.field_name || `Potrero #${item.field_id}`}</span>
+          <Badge variant={item.removal_date ? "secondary" : "default"} className="ml-2">{item.removal_date ? "Retirado" : "Activo"}</Badge>
+          <p className="text-xs text-muted-foreground">{formatDate(item.assignment_date)}</p>
+        </div>
+      );
+    case "vaccination":
+      return (
+        <div>
+          <span className="text-sm font-bold">{vaccineMap[item.vaccine_id] || item.vaccine_name || `Vacuna #${item.vaccine_id}`}</span>
+          <Badge variant="outline" className="ml-2">{formatDate(item.vaccination_date)}</Badge>
+        </div>
+      );
+    case "treatment":
+      return (
+        <div>
+          <span className="text-sm font-bold">{item.description || "Tratamiento"}</span>
+          <Badge variant="outline" className="ml-2">{formatDate(item.treatment_date)}</Badge>
+          {item.dosis && <p className="text-xs text-muted-foreground">{item.dosis}</p>}
+        </div>
+      );
+    case "control":
+      return (
+        <div>
+          <span className="text-sm font-bold">{item.health_status || "Control"}</span>
+          <Badge variant="outline" className="ml-2">{formatDate(item.checkup_date)}</Badge>
+          {item.weight && <p className="text-xs text-muted-foreground">{item.weight} kg</p>}
+        </div>
+      );
+    case "milk_production":
+      return (
+        <div>
+          <span className="text-sm font-bold">{item.liters ? `${item.liters}L` : "Producción"}</span>
+          <Badge variant="outline" className="ml-2">{formatDate(item.date)}</Badge>
+        </div>
+      );
+    case "reproduction_event":
+      return (
+        <div>
+          <span className="text-sm font-bold">{item.event_type || "Evento"}</span>
+          <Badge variant="outline" className="ml-2">{formatDate(item.event_date)}</Badge>
+        </div>
+      );
+    case "alert":
+      return (
+        <div>
+          <span className="text-sm font-bold">{item.alert_type || "Alerta"}</span>
+          <Badge variant={item.severity === "critica" ? "destructive" : "secondary"} className="ml-2">{item.severity}</Badge>
+        </div>
+      );
+    case "task":
+      return (
+        <div>
+          <span className="text-sm font-bold">{item.task_type || "Tarea"}</span>
+          <Badge variant={item.status === "completed" ? "default" : item.status === "overdue" ? "destructive" : "secondary"} className="ml-2">{item.status}</Badge>
+        </div>
+      );
+    default:
+      return null;
   }
 }

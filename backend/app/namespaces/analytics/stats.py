@@ -1,4 +1,4 @@
-# stats.py - Análisis estadístico del hato
+# stats.py - Análisis estadístico del ganado
 from flask_restx import Resource, fields
 from flask_jwt_extended import jwt_required
 from sqlalchemy import func, desc

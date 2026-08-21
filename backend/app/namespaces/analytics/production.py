@@ -54,7 +54,7 @@ class ProductionStatistics(Resource):
     )
     @jwt_required()
     def get(self):
-        """Estadísticas de producción y rendimiento del hato"""
+        """Estadísticas de producción y rendimiento del ganado"""
         try:
             period = flask.request.args.get("period", "1y")
             group_by = flask.request.args.get("group_by")

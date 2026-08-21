@@ -29,6 +29,8 @@ import { useToast } from "@/app/providers/ToastContext";
 import { ScrollArea } from "@/shared/ui/scroll-area";
 import { Badge } from "@/shared/ui/badge";
 import { cn } from "@/shared/ui/cn";
+import { getTodayColombia } from "@/shared/utils/dateUtils";
+
 interface Vaccine {
   id: number;
   name: string;
@@ -52,9 +54,7 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
   const [selectedVaccineId, setSelectedVaccineId] = useState<number | null>(
     null,
   );
-  const [date, setDate] = useState<string>(
-    new Date().toISOString().split("T")[0],
-  );
+  const [date, setDate] = useState<string>(getTodayColombia());
   const [dosis, setDosis] = useState("");
   const [batchNumber, setBatchNumber] = useState("");
   const [nextDueDate, setNextDueDate] = useState("");

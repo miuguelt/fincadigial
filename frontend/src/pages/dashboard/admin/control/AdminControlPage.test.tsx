@@ -1,7 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import type { ReactNode } from 'react';
 import AdminControlPage from './index';
 
 const { refreshSummary } = vi.hoisted(() => ({ refreshSummary: vi.fn() }));
@@ -65,6 +64,25 @@ vi.mock('./hooks/useControlsSummary', () => ({
     recentTreatments: 0,
     totalControls: 4,
     healthyPercentage: 75,
+    attentionAnimals: [
+      {
+        animalId: 7,
+        status: 'Malo',
+        severity: 'alta',
+        lastCheckDate: '2026-08-02',
+        daysSinceCheck: 15,
+        description: 'No come desde el martes',
+      },
+      {
+        animalId: 99,
+        status: 'Regular',
+        severity: 'media',
+        lastCheckDate: '2026-08-16',
+        daysSinceCheck: 1,
+        description: '',
+      },
+    ],
+    controlRows: [],
     milkUnavailable: false,
     controlsUnavailable: false,
     loading: false,
@@ -80,7 +98,6 @@ vi.mock('@/widgets/control', async () => {
   const { ControlEntryFormWidget } = await import('@/widgets/control/ControlEntryForm/ControlEntryFormWidget');
   return {
     ControlEntryFormWidget,
-    ControlDashboard: ({ tableComponent }: { tableComponent: ReactNode }) => <>{tableComponent}</>,
     ControlStats: () => <div>Resumen de salud</div>,
   };
 });
@@ -124,5 +141,49 @@ describe('AdminControlPage mobile-first modals', () => {
     expect(within(dialog).getByLabelText('Litros ordeñados')).toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: 'Guardar ordeño' })).toBeInTheDocument();
     expect(within(dialog).getByText('Agregar datos de calidad (opcional)').closest('details')).not.toHaveAttribute('open');
+  });
+});
+
+describe('AdminControlPage animales que necesitan atención', () => {
+  const getPanel = () =>
+    screen.getByRole('region', { name: 'Animales que necesitan atención' });
+
+  it('muestra cuáles son los animales, no solo cuántos', async () => {
+    render(<AdminControlPage />);
+    await screen.findAllByText('VL-007');
+
+    const items = within(getPanel()).getAllByRole('listitem');
+    expect(items).toHaveLength(2);
+    expect(within(items[0]).getByText('Grave')).toBeInTheDocument();
+    expect(within(items[0]).getByText(/hace 15 días/)).toBeInTheDocument();
+    expect(within(items[0]).getByText('No come desde el martes')).toBeInTheDocument();
+    expect(within(items[1]).getByText('En observación')).toBeInTheDocument();
+  });
+
+  it('identifica al animal aunque el catálogo no traiga su registro', async () => {
+    render(<AdminControlPage />);
+    await screen.findAllByText('VL-007');
+
+    const items = within(getPanel()).getAllByRole('listitem');
+    expect(within(items[1]).getAllByText('Animal 99').length).toBeGreaterThan(0);
+  });
+
+  it('abre la revisión con el animal de la alerta ya seleccionado', async () => {
+    const user = userEvent.setup();
+    render(<AdminControlPage />);
+    await screen.findAllByText('VL-007');
+
+    const items = within(getPanel()).getAllByRole('listitem');
+    await user.click(within(items[0]).getByRole('button', { name: /Registrar revisión/ }));
+
+    const dialog = screen.getByRole('dialog', { name: 'Reportar novedad de salud' });
+    expect(within(dialog).getByLabelText('Animal')).toHaveTextContent('VL-007 - Luna');
+  });
+
+  it('ofrece la pestaña de estadísticas y reportes', () => {
+    render(<AdminControlPage />);
+    expect(
+      screen.getByRole('tab', { name: 'Estadísticas y reportes' }),
+    ).toBeInTheDocument();
   });
 });

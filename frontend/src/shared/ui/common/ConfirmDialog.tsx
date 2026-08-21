@@ -24,6 +24,8 @@ interface ConfirmDialogProps {
   detailedMessage?: string;
   showWarningIcon?: boolean;
   icon?: ReactNode;
+  /** Impide confirmar cuando ya se sabe que la acción no es posible. */
+  confirmDisabled?: boolean;
 }
 
 const sizeClasses = {
@@ -65,12 +67,14 @@ function ConfirmDialogActions({
   confirmLabel,
   cancelLabel,
   confirmVariant,
+  confirmDisabled,
   onCancel,
   onConfirm,
 }: {
   confirmLabel: string;
   cancelLabel: string;
   confirmVariant: ConfirmVariant;
+  confirmDisabled?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
@@ -79,7 +83,14 @@ function ConfirmDialogActions({
       <Button type="button" variant="outline" size="lg" className="w-full sm:w-auto" onClick={onCancel}>
         {cancelLabel}
       </Button>
-      <Button type="button" variant={confirmVariant} size="lg" className="w-full sm:w-auto" onClick={onConfirm}>
+      <Button
+        type="button"
+        variant={confirmVariant}
+        size="lg"
+        className="w-full sm:w-auto"
+        onClick={onConfirm}
+        disabled={confirmDisabled}
+      >
         {confirmVariant === 'destructive' && <Trash2 className="h-4 w-4" aria-hidden="true" />}
         {confirmLabel}
       </Button>
@@ -100,6 +111,7 @@ export function ConfirmDialog({
   detailedMessage,
   showWarningIcon = confirmVariant === 'destructive',
   icon,
+  confirmDisabled = false,
 }: ConfirmDialogProps) {
   const intentIcon = icon ?? (showWarningIcon ? <AlertTriangle className="h-6 w-6" aria-hidden="true" /> : null);
 
@@ -122,6 +134,7 @@ export function ConfirmDialog({
           confirmLabel={confirmLabel}
           cancelLabel={cancelLabel}
           confirmVariant={confirmVariant}
+          confirmDisabled={confirmDisabled}
           onCancel={() => onOpenChange(false)}
           onConfirm={onConfirm}
         />

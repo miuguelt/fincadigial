@@ -198,7 +198,7 @@ export const BatchFieldTransferModal: React.FC<BatchFieldTransferModalProps> = (
               <span className="animate-ping absolute inline-flex h-full w-full rounded-[var(--radius-full)] bg-white opacity-75" />
               <span className="relative inline-flex rounded-[var(--radius-full)] h-2 w-2 bg-white" />
             </div>
-            <p className="text-[11px] font-bold text-white uppercase tracking-tight">Sistema Online</p>
+            <p className="text-[11px] font-bold text-white uppercase tracking-tight">Sistema en línea</p>
           </div>
         </DialogHeader>
 

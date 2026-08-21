@@ -604,7 +604,7 @@ class AnimalBCS(Resource):
 class HerdBCS(Resource):
     @jwt_required()
     def get(self):
-        """BCS promedio del hato y animales con BCS crítico."""
+        """BCS promedio del ganado y animales con BCS crítico."""
         from app import db
         from sqlalchemy import func
 
@@ -641,7 +641,7 @@ class HerdBCS(Resource):
                 "critical_count": len(critical_list),
                 "critical_animals": critical_list,
             },
-            message="BCS del hato",
+            message="BCS del ganado",
         )
 
 

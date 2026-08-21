@@ -33,9 +33,9 @@ export const TaskForm: React.FC<Props> = ({ formData, setFormData, idPrefix, use
       <textarea id={`${idPrefix}-desc`} placeholder="Descripción de la tarea..." value={formData.description || ""} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} className={inputClass} />
     </div>
     <div>
-      <label htmlFor={`${idPrefix}-assigned`} className={labelClass}>Asignado a</label>
+      <label htmlFor={`${idPrefix}-assigned`} className={labelClass}>Asignado a (Responsable)</label>
       <select id={`${idPrefix}-assigned`} value={formData.assigned_to || ""} onChange={(e) => setFormData({ ...formData, assigned_to: parseInt(e.target.value) })} className={selectClass}>
-        <option value="">Seleccionar</option>
+        <option value="">Seleccionar responsable</option>
         {userOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
     </div>

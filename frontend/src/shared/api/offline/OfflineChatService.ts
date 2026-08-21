@@ -16,7 +16,7 @@ export interface ChatMessage {
   content: string;
   createdAt: string;
   attachmentUrl?: string;
-  attachmentType?: 'image' | 'file';
+  attachmentType?: 'image' | 'file' | 'video' | 'audio' | string;
   attachmentName?: string;
   clientMessageId?: string;
   readAt?: string;
@@ -36,7 +36,7 @@ export interface ApiChatMessage {
   client_message_id?: string | null;
   read_at?: string | null;
   attachment_url?: string;
-  attachment_type?: 'image' | 'file';
+  attachment_type?: 'image' | 'file' | 'video' | 'audio' | string;
   attachment_name?: string;
 }
 
@@ -92,17 +92,56 @@ function readCache(userId: number | null): ChatMessage[] {
 }
 
 function mergeMessages(...groups: ChatMessage[][]): ChatMessage[] {
-  const merged = new Map<string, ChatMessage>();
+  const byServerId = new Map<number, ChatMessage>();
+  const byClientKey = new Map<string, ChatMessage>();
+  const otherMessages: ChatMessage[] = [];
+
   for (const message of groups.flat()) {
-    const key = message.clientMessageId
-      ? `client:${message.senderId}:${message.clientMessageId}`
-      : `server:${message.id}`;
-    const previous = merged.get(key);
-    if (!previous || (previous.status === 'pending' && message.status !== 'pending')) {
-      merged.set(key, message);
+    const isServer = typeof message.id === 'number' && Number.isFinite(message.id) && message.id > 0;
+    const clientKey = message.clientMessageId ? `${message.senderId}:${message.clientMessageId}` : null;
+
+    if (isServer) {
+      const serverId = message.id as number;
+      const existing = byServerId.get(serverId);
+      if (!existing) {
+        byServerId.set(serverId, message);
+      } else {
+        const preferNew = (message.status === 'synced' && existing.status !== 'synced') ||
+                          (!existing.clientMessageId && message.clientMessageId) ||
+                          (!existing.readAt && message.readAt);
+        byServerId.set(serverId, preferNew ? { ...existing, ...message } : { ...message, ...existing });
+      }
+      if (clientKey) {
+        byClientKey.set(clientKey, byServerId.get(serverId)!);
+      }
+    } else if (clientKey) {
+      const existingServer = byClientKey.get(clientKey);
+      if (!existingServer) {
+        const existing = byClientKey.get(clientKey);
+        if (!existing || (existing.status === 'pending' && message.status !== 'pending')) {
+          byClientKey.set(clientKey, message);
+        }
+      }
+    } else {
+      otherMessages.push(message);
     }
   }
-  return [...merged.values()].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+
+  const result = new Map<string | number, ChatMessage>();
+  for (const msg of byServerId.values()) {
+    result.set(`server:${msg.id}`, msg);
+  }
+  for (const [key, msg] of byClientKey.entries()) {
+    const isServer = typeof msg.id === 'number' && Number.isFinite(msg.id) && msg.id > 0;
+    if (!isServer) {
+      result.set(`client:${key}`, msg);
+    }
+  }
+  for (const msg of otherMessages) {
+    result.set(`other:${msg.id}`, msg);
+  }
+
+  return [...result.values()].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 }
 
 function writeCache(messages: ChatMessage[], userId: number | null): void {
@@ -179,14 +218,16 @@ class OfflineChatServiceImpl {
     );
   }
 
-  /** Carga el historial con un usuario desde el servidor. */
-  async loadHistory(recipientId: number, senderId?: number): Promise<ChatMessage[]> {
+  /** Carga los últimos mensajes recientes (por defecto 30) con un usuario desde el servidor. */
+  async loadHistory(recipientId: number, senderId?: number, limit = 30): Promise<ChatMessage[]> {
     if (senderId !== undefined) this.setCurrentUser(senderId);
     try {
-      // Chat history must not use the generic GET cache: a cached empty result
-      // can hide a message that was just confirmed by the server or field node.
-      const response = await api.get<{ data: ApiChatMessage[] }>(
-        `/chat/history/${recipientId}`,
+      // El historial dinámico no usa caché genérico GET
+      const response = await api.get<{
+        data: ApiChatMessage[];
+        meta?: { has_more?: boolean; oldest_id?: number };
+      }>(
+        `/chat/history/${recipientId}?limit=${limit}`,
         { skipCache: true } as never,
       );
       const history = (response.data?.data ?? []).map(fromApi);
@@ -195,21 +236,53 @@ class OfflineChatServiceImpl {
       );
       this.messages = mergeMessages(this.messages, history, pending);
       this.emit();
-      // The endpoint already scopes the result to this conversation. Returning
-      // it directly avoids a transient auth-shape mismatch hiding valid rows.
       return mergeMessages(history, pending);
     } catch (primaryError) {
       try {
-        const response = await FieldNodeService.get<{ data?: ApiChatMessage[] }>(`/chat/history/${recipientId}`);
+        const response = await FieldNodeService.get<{ data?: ApiChatMessage[] }>(
+          `/chat/history/${recipientId}?limit=${limit}`,
+        );
         const history = (response.data ?? []).map(fromApi);
         this.messages = mergeMessages(this.messages, history);
         this.emit();
       } catch {
-        // Local cache is the final fallback. The primary error is intentionally
-        // swallowed so opening a conversation never crashes in the field.
         void primaryError;
       }
       return this.getConversation(recipientId, senderId);
+    }
+  }
+
+  /**
+   * Carga mensajes anteriores (retroceder en la conversación usando cursor before_id).
+   */
+  async loadOlderMessages(
+    recipientId: number,
+    beforeId: number,
+    senderId?: number,
+    limit = 30,
+  ): Promise<{ messages: ChatMessage[]; hasMore: boolean }> {
+    if (senderId !== undefined) this.setCurrentUser(senderId);
+    try {
+      const response = await api.get<{
+        data: ApiChatMessage[];
+        meta?: { has_more?: boolean; oldest_id?: number };
+      }>(
+        `/chat/history/${recipientId}?before_id=${beforeId}&limit=${limit}`,
+        { skipCache: true } as never,
+      );
+      const olderHistory = (response.data?.data ?? []).map(fromApi);
+      const hasMore = Boolean(response.data?.meta?.has_more);
+      this.messages = mergeMessages(olderHistory, this.messages);
+      this.emit();
+      return {
+        messages: olderHistory,
+        hasMore,
+      };
+    } catch {
+      return {
+        messages: [],
+        hasMore: false,
+      };
     }
   }
 
@@ -222,32 +295,42 @@ class OfflineChatServiceImpl {
     senderName: string,
     recipientId: number,
     text: string,
+    attachment?: { url?: string; type?: string; name?: string },
   ): Promise<ChatMessage> {
     this.setCurrentUser(senderId);
     const clientMessageId = globalThis.crypto?.randomUUID?.()
       ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const effectiveContent = text.trim() || (attachment?.name ?? 'Archivo adjunto');
     const optimistic: ChatMessage = {
       id: `local-${clientMessageId}`,
       senderId,
       senderName,
       recipientId,
-      content: text,
+      content: effectiveContent,
       createdAt: new Date().toISOString(),
       clientMessageId,
       status: 'pending',
+      attachmentUrl: attachment?.url,
+      attachmentType: attachment?.type,
+      attachmentName: attachment?.name,
     };
     this.messages = [...this.messages, optimistic];
     this.emit();
+
+    const payload = {
+      recipient_id: recipientId,
+      message: effectiveContent,
+      client_message_id: clientMessageId,
+      attachment_url: attachment?.url,
+      attachment_type: attachment?.type,
+      attachment_name: attachment?.name,
+    };
 
     try {
       if (typeof navigator !== 'undefined' && navigator.onLine === false) {
         throw new Error('OFFLINE_MESSAGE_QUEUED');
       }
-      const response = await api.post<{ data?: ApiChatMessage; __offlineQueued?: boolean }>('/chat/send', {
-        recipient_id: recipientId,
-        message: text,
-        client_message_id: clientMessageId,
-      }, { skipOffline: true } as never);
+      const response = await api.post<{ data?: ApiChatMessage; __offlineQueued?: boolean }>('/chat/send', payload, { skipOffline: true } as never);
       if (response.status === 202 || response.data?.__offlineQueued) throw new Error('PRIMARY_MESSAGE_QUEUED');
       const raw = response.data?.data;
       const saved: ChatMessage = raw ? fromApi(raw) : { ...optimistic, status: 'delivered' };
@@ -256,11 +339,7 @@ class OfflineChatServiceImpl {
       return saved;
     } catch (primaryError) {
       try {
-        const response = await FieldNodeService.post<{ data?: ApiChatMessage }>('/chat/send', {
-          recipient_id: recipientId,
-          message: text,
-          client_message_id: clientMessageId,
-        });
+        const response = await FieldNodeService.post<{ data?: ApiChatMessage }>('/chat/send', payload);
         const saved = response.data ? fromApi(response.data) : { ...optimistic, status: 'delivered' as const };
         this.messages = this.messages.map((m) => (m.id === optimistic.id ? saved : m));
         this.emit();
@@ -278,20 +357,20 @@ class OfflineChatServiceImpl {
     for (const message of pending) {
       try {
         let raw: ApiChatMessage | undefined;
+        const payload = {
+          recipient_id: message.recipientId,
+          message: message.content,
+          client_message_id: message.clientMessageId,
+          attachment_url: message.attachmentUrl,
+          attachment_type: message.attachmentType,
+          attachment_name: message.attachmentName,
+        };
         try {
-          const response = await api.post<{ data?: ApiChatMessage; __offlineQueued?: boolean }>('/chat/send', {
-            recipient_id: message.recipientId,
-            message: message.content,
-            client_message_id: message.clientMessageId,
-          }, { skipOffline: true } as never);
+          const response = await api.post<{ data?: ApiChatMessage; __offlineQueued?: boolean }>('/chat/send', payload, { skipOffline: true } as never);
           if (response.status === 202 || response.data?.__offlineQueued) throw new Error('PRIMARY_MESSAGE_QUEUED');
           raw = response.data?.data;
         } catch {
-          const response = await FieldNodeService.post<{ data?: ApiChatMessage }>('/chat/send', {
-            recipient_id: message.recipientId,
-            message: message.content,
-            client_message_id: message.clientMessageId,
-          });
+          const response = await FieldNodeService.post<{ data?: ApiChatMessage }>('/chat/send', payload);
           raw = response.data;
         }
         this.messages = this.messages.map((m) =>

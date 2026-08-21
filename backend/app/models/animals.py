@@ -3,6 +3,7 @@ import enum
 import logging
 from datetime import date
 from app.models.base_model import BaseModel, ValidationError
+from app.models.electronic_id_mixin import ElectronicIdMixin
 from app.services.analytics.cattle_metrics_service import calculate_frame_score
 
 logger = logging.getLogger(__name__)
@@ -52,7 +53,7 @@ import string
 import random
 
 
-class Animals(BaseModel):
+class Animals(BaseModel, ElectronicIdMixin):
     """Modelo para animales optimizado para namespaces - Multi-tenant"""
 
     __tablename__ = "animals"
@@ -107,6 +108,7 @@ class Animals(BaseModel):
         "id",
         "record",
         "qr_code",
+        *ElectronicIdMixin.ELECTRONIC_ID_FIELDS,
         "sex",
         "birth_date",
         "weight",
@@ -128,6 +130,8 @@ class Animals(BaseModel):
         "exit_date",
         "exit_reason",
         "pending_alerts_count",
+        "current_field_id",
+        "current_field_name",
         "created_at",
         "updated_at",
     ]
@@ -340,12 +344,12 @@ class Animals(BaseModel):
             except Exception as e:
                 logger.error(f"Error actualizando resumen incremental tras delete: {e}")
 
-        # Limpieza de archivos físicos (fuera de la transacción de BD)
+        # Archivos físicos: solo en borrado definitivo (el lógico es reversible).
+        if not hard_delete:
+            return result
         try:
-            # Intentar eliminar el directorio completo primero
             directory_deleted = delete_animal_directory(animal_id)
-            if not directory_deleted:
-                # Fallback: eliminar archivo por archivo
+            if not directory_deleted:  # fallback: archivo por archivo
                 for filepath in image_filepaths:
                     delete_animal_image(filepath)
         except Exception as e:
@@ -418,15 +422,30 @@ class Animals(BaseModel):
         """
         Sobrescribe para añadir validaciones y normalizaciones específicas de Animales.
         """
-        # Validar fecha de nacimiento (la normalización str -> date ya la hizo BaseModel)
+        # Llamar primero a la validación y normalización base
+        data = super()._validate_and_normalize(data, is_update, instance_id)
+
+        # Validar fecha de nacimiento
         if "birth_date" in data and data["birth_date"]:
-            if data["birth_date"] > date.today():
+            b_date = data["birth_date"]
+            if isinstance(b_date, str):
+                try:
+                    b_date = date.fromisoformat(b_date)
+                except (ValueError, TypeError):
+                    pass
+            if isinstance(b_date, date) and b_date > date.today():
                 raise ValidationError("La fecha de nacimiento no puede ser futura")
 
         # Validar fechas ICA
         for date_field in ["entry_date", "purchase_date", "sale_date", "exit_date"]:
             if date_field in data and data[date_field]:
-                if data[date_field] > date.today():
+                d_val = data[date_field]
+                if isinstance(d_val, str):
+                    try:
+                        d_val = date.fromisoformat(d_val)
+                    except (ValueError, TypeError):
+                        pass
+                if isinstance(d_val, date) and d_val > date.today():
                     raise ValidationError(
                         f"La fecha de {date_field.replace('_', ' ')} no puede ser futura"
                     )
@@ -445,8 +464,7 @@ class Animals(BaseModel):
         ):
             raise ValidationError("El padre y la madre no pueden ser el mismo animal")
 
-        # Llamar a la validación base para requeridos, únicos y enums
-        return super()._validate_and_normalize(data, is_update, instance_id)
+        return data
 
     @property
     def age_in_days(self):
@@ -541,11 +559,28 @@ class Animals(BaseModel):
 
     # Dependencias de propiedades calculadas para optimización automática de queries
     _property_dependencies = {
+        "current_field_id": "animal_fields",
         "current_field_name": "animal_fields",
         "health_indicator": "controls",
         "age_in_days": None,  # No tiene dependencias de relación
         "age_in_months": None,
     }
+
+    @property
+    def current_field_id(self):
+        """Obtiene el ID del potrero actual donde se encuentra el animal."""
+        try:
+            if hasattr(self, "_prefetched_active_field"):
+                active_assignment = self._prefetched_active_field
+            else:
+                active_assignment = self.animal_fields.filter_by(
+                    removal_date=None, is_deleted=False
+                ).first()
+            if active_assignment and active_assignment.field_id:
+                return active_assignment.field_id
+        except Exception:
+            pass
+        return None
 
     @property
     def current_field_name(self):
@@ -665,8 +700,10 @@ class Animals(BaseModel):
                 data["is_adult"] = None
         if is_full or (fields and "frame_score" in fields):
             data["frame_score"] = _safe_get("frame_score")
+        if is_full or (fields and "current_field_id" in fields):
+            data["current_field_id"] = _safe_get("current_field_id")
         if is_full or (fields and "current_field_name" in fields):
-            data["current_field_name"] = _safe_get("current_field_name", "Error")
+            data["current_field_name"] = _safe_get("current_field_name", "Sin potrero")
         if is_full or (fields and "health_indicator" in fields):
             data["health_indicator"] = _safe_get("health_indicator", "stable")
 
@@ -764,7 +801,9 @@ class Animals(BaseModel):
             {"frame_score", "health_indicator", "last_height"} & requested_fields
         )
         needs_vaccinations = needs_all or "health_indicator" in requested_fields
-        needs_active_field = needs_all or "current_field_name" in requested_fields
+        needs_active_field = needs_all or bool(
+            {"current_field_id", "current_field_name", "current_field"} & requested_fields
+        )
         needs_alert_count = needs_all or "pending_alerts_count" in requested_fields
         needs_alert_priority = needs_all or "max_pending_priority" in requested_fields
 
@@ -1004,19 +1043,21 @@ class Animals(BaseModel):
             owned = cls.query.filter(
                 cls.id.in_(animal_ids), cls.finca_id == finca_id
             ).all()
-            animal_ids = [a.id for a in owned]
-            if not animal_ids:
-                return []
+        else:
+            owned = cls.query.filter(cls.id.in_(animal_ids)).all()
+
+        if not owned:
+            return []
 
         results = []
-        for aid in animal_ids:
+        for animal in owned:
             control = Control.create(
-                animal_id=aid,
+                animal_id=animal.id,
                 weight=weight,
                 checkup_date=checkup_date,
                 health_status=health_status,
                 description=notes,
-                finca_id=finca_id,
+                finca_id=animal.finca_id or finca_id,
             )
             results.append(control)
         return results
@@ -1046,21 +1087,23 @@ class Animals(BaseModel):
             owned = cls.query.filter(
                 cls.id.in_(animal_ids), cls.finca_id == finca_id
             ).all()
-            animal_ids = [a.id for a in owned]
-            if not animal_ids:
-                return []
+        else:
+            owned = cls.query.filter(cls.id.in_(animal_ids)).all()
+
+        if not owned:
+            return []
 
         results = []
-        for aid in animal_ids:
+        for animal in owned:
             vacc = Vaccinations.create(
-                animal_id=aid,
+                animal_id=animal.id,
                 vaccine_id=vaccine_id,
                 vaccination_date=vaccination_date,
                 dosis=dosis,
                 batch_number=batch_number,
                 next_due_date=next_due_date,
                 notes=notes,
-                finca_id=finca_id,
+                finca_id=animal.finca_id or finca_id,
                 performed_by=performed_by,
             )
             results.append(vacc)

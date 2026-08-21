@@ -113,9 +113,9 @@ def _event_text(event) -> str:
 
 
 def _load_herd_events(finca_id: int, animal_ids: list[int]) -> dict[int, list]:
-    """Trae de una vez todos los eventos ICA del hato, agrupados por animal.
+    """Trae de una vez todos los eventos ICA del ganado, agrupados por animal.
 
-    Una consulta por animal convertía el semáforo del hato en cientos de
+    Una consulta por animal convertía el semáforo del ganado en cientos de
     consultas; aquí son dos, y el ordenamiento se hace en memoria.
     """
     from app.models.treatments import Treatments
@@ -154,7 +154,7 @@ def _load_herd_events(finca_id: int, animal_ids: list[int]) -> dict[int, list]:
 
 
 def herd_ica_compliance(finca_id: int) -> dict:
-    """Semáforo ICA de todo el hato, con el detalle por animal."""
+    """Semáforo ICA de todo el ganado, con el detalle por animal."""
     from app.models.animals import AnimalStatus, Animals
 
     animals = Animals.query.filter_by(finca_id=finca_id, status=AnimalStatus.Vivo).all()

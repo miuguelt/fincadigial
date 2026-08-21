@@ -28,13 +28,13 @@ export const TreatmentQuickActions: React.FC<TreatmentQuickActionsProps> = ({
 				type="button"
 				onClick={() => setWizardOpen(true)}
 				className="
-					fixed bottom-6 right-6 z-50
+					fixed bottom-20 right-4 sm:bottom-6 sm:right-20 z-40
 					flex items-center justify-center gap-2
-					h-14 w-14 sm:h-14 sm:w-auto sm:px-6
+					h-12 w-12 sm:h-12 sm:w-auto sm:px-5
 					rounded-full
 					bg-gradient-to-br from-purple-600 to-purple-700
-					text-white font-bold text-sm
-					shadow-2xl shadow-purple-500/30
+					text-white font-bold text-xs sm:text-sm
+					shadow-xl shadow-purple-500/30
 					hover:shadow-purple-500/50 hover:scale-105
 					active:scale-95
 					transition-all duration-300

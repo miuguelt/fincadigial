@@ -38,11 +38,11 @@ class MilkService extends BaseService<MilkProduction> {
   }
 
   async getByAnimal(animalId: number, params: Record<string, any> = {}): Promise<any> {
-    return this.customRequest(`animal/${animalId}`, 'GET', undefined, params);
+    return this.customRequest(`animal/${animalId}`, 'GET', undefined, { params });
   }
 
   async getDailySummary(fincaId: number, date?: string): Promise<any> {
-    return this.customRequest('summary/daily', 'GET', undefined, { finca_id: fincaId, date });
+    return this.customRequest('summary/daily', 'GET', undefined, { params: { finca_id: fincaId, date } });
   }
 
   async createBatch(input: MilkBatchInput): Promise<any> {
@@ -50,19 +50,21 @@ class MilkService extends BaseService<MilkProduction> {
   }
 
   async getWeeklySummary(fincaId: number, startDate?: string): Promise<any> {
-    return this.customRequest('summary/weekly', 'GET', undefined, { finca_id: fincaId, start_date: startDate });
+    return this.customRequest('summary/weekly', 'GET', undefined, { params: { finca_id: fincaId, start_date: startDate } });
   }
 
   async getMonthlySummary(fincaId: number, year?: number, month?: number): Promise<any> {
-    return this.customRequest('summary/monthly', 'GET', undefined, { finca_id: fincaId, year, month });
+    return this.customRequest('summary/monthly', 'GET', undefined, { params: { finca_id: fincaId, year, month } });
   }
 
   async estimateRevenue(fincaId: number, pricePerLiter?: number, year?: number, month?: number): Promise<any> {
     return this.customRequest('revenue/estimate', 'GET', undefined, {
-      finca_id: fincaId,
-      price_per_liter: pricePerLiter,
-      year,
-      month
+      params: {
+        finca_id: fincaId,
+        price_per_liter: pricePerLiter,
+        year,
+        month,
+      },
     });
   }
 }

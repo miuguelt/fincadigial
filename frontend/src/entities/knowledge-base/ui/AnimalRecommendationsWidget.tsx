@@ -63,7 +63,7 @@ export function AnimalRecommendationsWidget({ animalId }: { animalId: number }) 
     <div className="space-y-4">
       <h3 className="text-lg font-bold flex items-center gap-2">
         <IconFileText size="md" className="text-muted-foreground" />
-        Recomendaciones del Motor (Offline)
+        Recomendaciones del motor (sin conexión)
       </h3>
       {recommendations.map((rec) => (
         <Card key={rec.id} className="overflow-hidden border-2 border-border/50 shadow-sm transition-all hover:shadow-md">

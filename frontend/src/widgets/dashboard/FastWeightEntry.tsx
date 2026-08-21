@@ -9,6 +9,7 @@ import {
 } from "@/entities/animal/api/HealthAnalyzer";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { getTodayColombia } from "@/shared/utils/dateUtils";
 
 export const FastWeightEntry: React.FC = () => {
   const [search, setSearch] = useState("");
@@ -38,15 +39,17 @@ export const FastWeightEntry: React.FC = () => {
         );
         setInsight(analysis);
       } catch (err) {
-        console.warn("No se pudo cargar el historial para IA local");
+        console.warn("No se pudo cargar el historial para análisis de salud");
       }
     };
     loadInsight();
   }, [selectedAnimal]);
+
+  // Cargar animales activos
   useEffect(() => {
     const fetchAnimals = async () => {
       try {
-        const res = await animalService.getAnimals({ limit: 5 });
+        const res = await animalService.getAnimals();
         setAnimals(res || []);
       } catch (err) {
         console.error("Error al cargar animales:", err);
@@ -62,7 +65,7 @@ export const FastWeightEntry: React.FC = () => {
     try {
       await controlService.createControl({
         animal_id: selectedAnimal.id,
-        checkup_date: new Date().toISOString().split("T")[0],
+        checkup_date: getTodayColombia(),
         health_status: "Bueno" as any,
         weight: parseInt(weight),
         description: "Pesaje rápido en campo",

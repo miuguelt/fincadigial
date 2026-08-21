@@ -230,7 +230,7 @@ const RegisterUserPage: React.FC = () => {
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">¡Registro Exitoso!</h3>
                 <p className="text-muted-foreground text-sm">{successMessage}</p>
-                <p className="text-muted-foreground text-xs mt-4">Redirigiendo al login...</p>
+                <p className="text-muted-foreground text-xs mt-4">Redirigiendo al inicio de sesión...</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">

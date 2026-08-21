@@ -11,7 +11,8 @@ interface TaskIndicatorProps {
   hasSickAnimals: boolean;
   sickAnimals: number;
   onRegisterMilk: () => void;
-  onScrollToHealth: () => void;
+  /** Lleva la vista al listado con nombre y estado de cada animal en alerta. */
+  onShowSickAnimals: () => void;
 }
 
 export function TaskIndicator({
@@ -22,7 +23,7 @@ export function TaskIndicator({
   hasSickAnimals: hasSickAnimalsRaw,
   sickAnimals,
   onRegisterMilk,
-  onScrollToHealth,
+  onShowSickAnimals,
 }: TaskIndicatorProps) {
   // Sin datos de la fuente no se afirma nada: se evita el falso "todo al día".
   const noMilkToday = milkKnown && noMilkTodayRaw;
@@ -65,8 +66,8 @@ export function TaskIndicator({
                 <span className="font-black">{sickAnimals}</span> animal{sickAnimals !== 1 ? 'es' : ''} necesita{sickAnimals !== 1 ? 'n' : ''} atención.
               </p>
             </div>
-            <button onClick={onScrollToHealth} className="min-h-10 rounded-lg bg-red-700 px-4 text-sm font-bold text-white hover:bg-red-800">
-              Ver animales
+            <button onClick={onShowSickAnimals} className="min-h-11 shrink-0 rounded-lg bg-red-700 px-4 text-sm font-bold text-white hover:bg-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2">
+              Ver cuáles
             </button>
           </div>
         )}

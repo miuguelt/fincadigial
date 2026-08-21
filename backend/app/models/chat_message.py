@@ -48,18 +48,18 @@ class ChatMessage(db.Model):
         }
 
     @classmethod
-    def get_history(cls, user_a_id, user_b_id, finca_id, limit=50):
-        """Obtener historial de chat entre dos usuarios."""
-        return (
-            cls.query.filter(
-                cls.finca_id == finca_id,
-                ((cls.sender_id == user_a_id) & (cls.recipient_id == user_b_id))
-                | ((cls.sender_id == user_b_id) & (cls.recipient_id == user_a_id)),
-            )
-            .order_by(cls.created_at.asc())
-            .limit(limit)
-            .all()
+    def get_history(cls, user_a_id, user_b_id, finca_id, limit=30, before_id=None):
+        """Obtener historial de chat entre dos usuarios con paginación por cursor before_id."""
+        query = cls.query.filter(
+            cls.finca_id == finca_id,
+            ((cls.sender_id == user_a_id) & (cls.recipient_id == user_b_id))
+            | ((cls.sender_id == user_b_id) & (cls.recipient_id == user_a_id)),
         )
+        if before_id:
+            query = query.filter(cls.id < before_id)
+
+        items = query.order_by(cls.id.desc()).limit(limit).all()
+        return list(reversed(items))
 
     @classmethod
     def get_unread_count(cls, user_id, finca_id):

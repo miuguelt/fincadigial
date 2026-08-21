@@ -12,6 +12,7 @@ nuevas a los archivos indicados ni elevar sus límites.
 | Backend | `backend/app/services/alert_engine.py` | 914 líneas, motor legado | Separar reglas, evaluación y persistencia mediante seams probados. |
 | Frontend | `frontend/src/widgets/admin-crud/ui/AdminCRUDPage.tsx` | 969 líneas, componente legado | Extraer coordinación de datos y secciones visuales antes de añadir UI. |
 | Frontend | `frontend/src/pages/auth/login/index.tsx` | 548 líneas, flujo legado | Extraer validación, estado de sesión y presentación en cambios futuros. |
+| Backend | `backend/app/models/animals.py` | 1113 líneas, modelo legado sobre el baseline | La identificación electrónica se extrajo a `electronic_id_mixin.py`; el archivo solo conserva el cableado. Siguientes seams: genealogía, métricas derivadas y operaciones por lote. |
 
 Propietario: equipo VillaLuz/DevBrain. Revisión: cada cambio que toque uno de
 estos archivos debe incluir una extracción o demostrar que no aumenta su

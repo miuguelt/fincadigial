@@ -211,7 +211,7 @@ def _check_vaccine_ibr_dvb(animal, today, age_months, trig):
     elif age_months >= 4:
         trig(
             AlertType.HEALTH,
-            " Sin vacuna IBR/DVB registrada. Recomendado para hatos mayores de 4 meses.",
+            " Sin vacuna IBR/DVB registrada. Recomendado para ganado mayor de 4 meses.",
             AlertPriority.MEDIUM,
         )
 

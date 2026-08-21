@@ -763,7 +763,7 @@ export interface InventoryMovementResponse extends InventoryMovementInput {
 
 export interface ReproductiveEventInput {
   animal_id: number;
-  event_type: 'Celo' | 'Inseminacion' | 'Diagnostico' | 'Parto';
+  event_type: 'Celo' | 'Inseminacion' | 'Diagnostico' | 'Parto' | 'Secado';
   event_date: string;
   sire_id?: number;
   technique?: 'Natural' | 'Artificial' | 'Transferencia_Embrionaria';

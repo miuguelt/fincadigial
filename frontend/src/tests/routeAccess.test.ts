@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { getRoutePermission } from '@/app/routes/RoutePermissionBoundary';
 import { resolveEntity, roleCan } from '@/shared/lib/rbac';
 import { canAccessRoutePath, getRolePrefix, getRouteSection, toRolePath } from '@/shared/lib/routeAccess';
-import { SANIDAD_TAB_GROUPS } from '@/widgets/dashboard/treatments/SanidadTabs';
+import { SANIDAD_TAB_GROUPS, findActiveSanidadTab } from '@/widgets/dashboard/treatments/SanidadTabs';
 import {
   filterSidebarItemsByRole,
   sidebarItems,
@@ -160,6 +160,15 @@ describe('canAccessRoutePath', () => {
 });
 
 describe('enlaces de navegación por rol', () => {
+  it('marca la vista más específica cuando una ruta tiene una sección padre', () => {
+    const groups = Object.entries(SANIDAD_TAB_GROUPS);
+
+    expect(findActiveSanidadTab(groups, '/admin/treatments/analytics')).toEqual({
+      groupId: 'treatments',
+      tabId: 'analytics',
+    });
+  });
+
   it.each(ROLES)('el menú de %s sólo ofrece destinos que puede abrir', (role) => {
     for (const path of sidebarPaths(role)) {
       expect(canAccessRoutePath(role, path), `${role} -> ${path}`).toBe(true);

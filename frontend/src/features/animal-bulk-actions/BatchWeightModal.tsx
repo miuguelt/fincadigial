@@ -24,12 +24,15 @@ import { useToast } from "@/app/providers/ToastContext";
 import { Badge } from "@/shared/ui/badge";
 import { cn } from "@/shared/ui/cn";
 import { ScrollArea } from "@/shared/ui/scroll-area";
+import { getTodayColombia } from "@/shared/utils/dateUtils";
+
 interface BatchWeightModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedAnimalIds: number[];
   onSuccess: () => void;
 }
+
 export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
   isOpen,
   onClose,
@@ -38,9 +41,7 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
 }) => {
   const { showToast } = useToast();
   const [weight, setWeight] = useState<string>("");
-  const [date, setDate] = useState<string>(
-    new Date().toISOString().split("T")[0],
-  );
+  const [date, setDate] = useState<string>(getTodayColombia());
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const handleSave = async () => {

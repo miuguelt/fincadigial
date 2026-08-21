@@ -97,7 +97,7 @@ export const OnlineStatusIndicator: React.FC = () => {
 
   const getStatus = (): StatusType => {
     const base = { icon: Wifi, color: 'text-success dark:text-success', bgColor: 'bg-success/10/90 dark:bg-green-900/45', borderColor: 'border-success/40/40 dark:border-green-700/40', label: 'En línea', description: 'Conectado y sincronizado' };
-    if (!isOnline) return { ...base, icon: WifiOff, color: 'text-orange-600 dark:text-orange-400', bgColor: 'bg-orange-100/90 dark:bg-orange-900/45', borderColor: 'border-orange-300/40 dark:border-orange-700/40', label: 'Sin conexión', description: pendingCount > 0 ? `${pendingCount} operación(es) pendientes` : 'Trabajando offline' };
+    if (!isOnline) return { ...base, icon: WifiOff, color: 'text-orange-600 dark:text-orange-400', bgColor: 'bg-orange-100/90 dark:bg-orange-900/45', borderColor: 'border-orange-300/40 dark:border-orange-700/40', label: 'Sin conexión', description: pendingCount > 0 ? `${pendingCount} operación(es) pendientes` : 'Trabajando sin conexión' };
     if (syncStatus.syncing || isSyncing) return { ...base, icon: RefreshCw, color: 'text-info dark:text-info/80', bgColor: 'bg-info/10/90 dark:bg-blue-900/45', borderColor: 'border-info/40/40 dark:border-blue-700/40', label: 'Sincronizando...', description: `Enviando ${pendingCount + syncStatus.failed} operación(es)` };
     if (syncStatus.failed > 0) return { ...base, icon: AlertTriangle, color: 'text-destructive dark:text-destructive/80', bgColor: 'bg-destructive/10/90 dark:bg-red-900/45', borderColor: 'border-red-300/40 dark:border-red-700/40', label: 'Error de sync', description: `${syncStatus.failed} operación(es) fallida(s)` };
     if (wasOffline.current && pendingCount === 0 && syncStatus.failed === 0) return { ...base, icon: CheckCircle2, label: 'Sincronizado', description: 'Todo sincronizado correctamente' };
@@ -114,12 +114,12 @@ export const OnlineStatusIndicator: React.FC = () => {
   return (
     <div
       className={cn(
-        "fixed bottom-6 z-40 transition-all duration-500 ease-out",
-        "left-2 right-2 md:right-auto md:w-auto md:max-w-sm",
-        hasSidebarOffset ? "md:left-[312px]" : "md:left-6"
+        "fixed bottom-4 z-40 transition-all duration-500 ease-out",
+        "left-3 w-auto max-w-[calc(100vw-6rem)] sm:max-w-sm",
+        hasSidebarOffset ? "lg:left-[316px]" : "left-3 sm:left-6"
       )}
     >
-      <div className={cn("rounded-lg border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-2xl transition-all duration-300", status.bgColor, status.borderColor, isExpanded ? "p-3" : "p-2")}>
+      <div className={cn("rounded-xl border border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.3)] backdrop-blur-2xl transition-all duration-300", status.bgColor, status.borderColor, isExpanded ? "p-3" : "p-2 sm:p-2.5")}>
         <button onClick={() => setIsExpanded(!isExpanded)} className="flex items-center gap-2 w-full text-left">
           <StatusIcon className={cn("h-4 w-4 md:h-5 md:w-5 flex-shrink-0", status.color, (syncStatus.syncing || isSyncing) && "animate-spin")} />
           <div className="flex-1 min-w-0">

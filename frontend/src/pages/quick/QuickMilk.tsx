@@ -9,8 +9,10 @@ import { IconMilk } from '@/shared/ui/icons';
 import {
   QuickFormShell, QCard, QField, QLabel,
   QInput, QSelect, QChipGroup, QSubmitButton,
+  QNumberStepper,
 } from './QuickFormShell';
-import { api } from '@/shared/api/base-client';
+import api from '@/shared/api/client';
+import { wasQueuedOffline } from '@/shared/api/offlineResult';
 import { emitDataRefresh } from '@/shared/utils/dataRefresh';
 
 type Turno = 'Mañana' | 'Tarde' | 'Total';
@@ -82,14 +84,18 @@ export default function QuickMilk() {
     };
 
     try {
+      let pendiente = !isOnline;
       if (!isOnline) {
         await offlineQueue.enqueue('POST', 'milk-production', payload);
-        showToast('Producción guardada sin señal. Se enviará pronto.', 'success');
       } else {
-        await api.post('/milk-production', payload);
-        showToast('Producción de leche registrada correctamente.', 'success');
+        // Sin red, el cliente encola la escritura y responde 202: no está
+        // registrada todavía, así que no se anuncia como tal.
+        pendiente = wasQueuedOffline(await api.post('/milk-production', payload));
       }
-      if (isOnline) emitDataRefresh('milk-production');
+      showToast(pendiente
+        ? 'Producción guardada sin señal. Se enviará al volver la conexión.'
+        : 'Producción de leche registrada correctamente.', 'success');
+      if (!pendiente) emitDataRefresh('milk-production');
       handleClose();
     } catch {
       showToast('No se pudo guardar. Intenta de nuevo.', 'error');
@@ -119,17 +125,17 @@ export default function QuickMilk() {
         <QCard>
           <QField>
             <QLabel htmlFor="litros">¿Cuántos litros dio?</QLabel>
-            <QInput
+            <QNumberStepper
               id="litros"
-              type="number"
-              inputMode="decimal"
               value={litros}
-              onChange={(e) => setLitros(e.target.value)}
-              placeholder="Ej: 8.5"
-              min="0"
-              max="80"
-              step="0.1"
-              required
+              onChange={setLitros}
+              unit="L"
+              min={0}
+              max={80}
+              step={0.5}
+              presets={[0.5, 1, 2, 5]}
+              placeholder="0.0"
+              disabled={guardando}
             />
           </QField>
         </QCard>

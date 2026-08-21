@@ -67,7 +67,7 @@ class CortexService:
         if hasattr(target_object, "to_ai_context"):
             context = target_object.to_ai_context()
         elif isinstance(target_object, list):
-            context = "Contexto del hato:\n" + "\n".join(
+            context = "Contexto del ganado:\n" + "\n".join(
                 [
                     obj.to_ai_context()
                     for obj in target_object

@@ -36,7 +36,7 @@ interface UseCrudPageSizeArgs {
 /**
  * Cuántos registros por página quiere ver ESTE usuario en ESTA pantalla.
  *
- * Se recuerda entre visitas: quien trabaja con el hato completo no debería
+ * Se recuerda entre visitas: quien trabaja con el ganado completo no debería
  * volver a subir el tamaño de página cada vez que entra.
  */
 export function useCrudPageSize({ entityKey, config, pageSize, setLimit, setPage }: UseCrudPageSizeArgs) {

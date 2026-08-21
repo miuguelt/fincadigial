@@ -115,7 +115,7 @@ export function GlobalUserCard({ user, onOpenDetail }: GlobalUserCardProps) {
 
           <div
             className={cn(
-              'flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase shrink-0',
+              'flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-bold uppercase shrink-0',
               isActive
                 ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                 : 'border-border bg-muted/60 text-muted-foreground'
@@ -141,7 +141,7 @@ export function GlobalUserCard({ user, onOpenDetail }: GlobalUserCardProps) {
           {isMultiFinca && (
             <Badge
               variant="outline"
-              className="w-fit max-w-full whitespace-normal [overflow-wrap:normal] hyphens-none text-left leading-tight border-indigo-500/30 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold px-1.5 py-0.5 rounded-md"
+              className="w-fit max-w-full whitespace-normal [overflow-wrap:normal] hyphens-none text-left leading-tight border-indigo-500/30 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-[11px] font-bold px-1.5 py-0.5 rounded-md"
             >
               <Layers className="h-2.5 w-2.5 mr-0.5 shrink-0" />
               Multi-Finca ({fincas.length})
@@ -155,14 +155,14 @@ export function GlobalUserCard({ user, onOpenDetail }: GlobalUserCardProps) {
             <div className="flex items-center gap-2 min-w-0">
               <IdCard className="h-3.5 w-3.5 text-primary shrink-0 opacity-80" />
               <span className="text-muted-foreground font-semibold text-[11px]">Cédula:</span>
-              <span className="font-bold text-foreground font-mono truncate">{user.identification ?? '-'}</span>
+              <span className="font-bold text-foreground font-mono fit-clamp">{user.identification ?? '-'}</span>
             </div>
           </div>
 
           <div className="flex items-center justify-between rounded-xl bg-muted/30 px-3 py-2 border border-border/40">
             <div className="flex items-center gap-2 min-w-0 flex-1">
               <Mail className="h-3.5 w-3.5 text-primary shrink-0 opacity-80" />
-              <span className="font-semibold text-foreground truncate text-[11px]" title={user.email || ''}>
+              <span className="font-semibold text-foreground fit-clamp text-[11px]" title={user.email || ''}>
                 {user.email || 'Sin correo'}
               </span>
             </div>
@@ -208,7 +208,7 @@ export function GlobalUserCard({ user, onOpenDetail }: GlobalUserCardProps) {
             <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1">
               <Building2 className="h-3 w-3 text-primary" /> Fincas Asociadas
             </span>
-            <span className="text-[10px] font-bold text-muted-foreground">
+            <span className="text-[11px] font-bold text-muted-foreground">
               {fincas.length} {fincas.length === 1 ? 'predio' : 'predios'}
             </span>
           </div>
@@ -222,10 +222,10 @@ export function GlobalUserCard({ user, onOpenDetail }: GlobalUserCardProps) {
                   title={`${finca.name || finca.finca_name || 'Finca'} (${finca.type || finca.finca_type || 'Finca'}) - Rol: ${finca.role || 'Miembro'}`}
                 >
                   <Building2 className="h-3 w-3 text-primary shrink-0 opacity-70" />
-                  <span className="min-w-0 max-w-[120px] truncate font-bold text-foreground/90">
+                  <span className="min-w-0 max-w-[120px] fit-clamp font-bold text-foreground/90">
                     {finca.name || finca.finca_name || 'Finca'}
                   </span>
-                  <span className="min-w-0 truncate whitespace-nowrap text-[10px] uppercase font-semibold text-muted-foreground">
+                  <span className="min-w-0 fit-clamp whitespace-nowrap text-[11px] uppercase font-semibold text-muted-foreground">
                     • {typeof finca.role === 'string' ? finca.role : 'Miembro'}
                   </span>
                   {finca.is_primary && (
@@ -247,7 +247,7 @@ export function GlobalUserCard({ user, onOpenDetail }: GlobalUserCardProps) {
 
       {/* Footer: Vinculado date & CTA button */}
       <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between gap-2">
-        <div className="flex flex-col text-[10px] text-muted-foreground font-semibold">
+        <div className="flex flex-col text-[11px] text-muted-foreground font-semibold">
           <span className="opacity-60 uppercase tracking-tighter">Registrado</span>
           <span className="text-foreground/80 font-medium">
             {formatDate(user.created_at)}

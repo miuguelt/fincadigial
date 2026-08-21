@@ -172,7 +172,7 @@ export const AnimalExitModal: React.FC<AnimalExitModalProps> = ({
             animals={animals}
             value={selectedAnimalId}
             onChange={(v) => setSelectedAnimalId(v)}
-            label="¿Qué animal sale del hato?"
+            label="¿Qué animal va a salir?"
             required
             ringClass="focus:ring-rose-500/30"
           />
@@ -303,7 +303,7 @@ export const AnimalExitModal: React.FC<AnimalExitModalProps> = ({
 
                 {/* Precios rápidos por kilo comunes en Colombia */}
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-                  <span className="text-[10px] font-bold text-muted-foreground whitespace-nowrap">Sugerido:</span>
+                  <span className="text-[11px] font-bold text-muted-foreground whitespace-nowrap">Sugerido:</span>
                   {SALE_PRESETS.map((p) => (
                     <button
                       key={p}

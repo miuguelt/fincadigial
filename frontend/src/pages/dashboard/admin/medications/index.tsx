@@ -116,7 +116,7 @@ function AdminMedicationsPage() {
     showDetailTimestamps: false,
     showEditTimestamps: false,
     showIdInDetailTitle: false,
-    customHeader: <div className="mt-4"><SanidadTabs /></div>,
+    customHeader: <SanidadTabs />,
     themeColor: 'purple',
   };
 

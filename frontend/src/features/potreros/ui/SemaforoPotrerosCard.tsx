@@ -180,7 +180,7 @@ export const SemaforoPotrerosCard: React.FC<SemaforoPotrerosCardProps> = ({
             <CheckCircle2 className="w-4 h-4 opacity-80" />
           </div>
           <p className="text-2xl font-black mt-1">{counts.ready}</p>
-          <span className="text-[10px] opacity-80 font-bold block">Descanso cumplido</span>
+          <span className="text-[11px] opacity-80 font-bold block">Descanso cumplido</span>
         </button>
 
         <button
@@ -197,7 +197,7 @@ export const SemaforoPotrerosCard: React.FC<SemaforoPotrerosCardProps> = ({
             <Clock className="w-4 h-4 opacity-80" />
           </div>
           <p className="text-2xl font-black mt-1">{counts.growing + counts.critical}</p>
-          <span className="text-[10px] opacity-80 font-bold block">En descanso</span>
+          <span className="text-[11px] opacity-80 font-bold block">En descanso</span>
         </button>
 
         <button
@@ -214,7 +214,7 @@ export const SemaforoPotrerosCard: React.FC<SemaforoPotrerosCardProps> = ({
             <Beef className="w-4 h-4 opacity-80" />
           </div>
           <p className="text-2xl font-black mt-1">{counts.occupied}</p>
-          <span className="text-[10px] opacity-80 font-bold block">Con ganado</span>
+          <span className="text-[11px] opacity-80 font-bold block">Con ganado</span>
         </button>
 
         <button
@@ -231,7 +231,7 @@ export const SemaforoPotrerosCard: React.FC<SemaforoPotrerosCardProps> = ({
             <Layers className="w-4 h-4 opacity-80" />
           </div>
           <p className="text-2xl font-black mt-1">{processedFields.length}</p>
-          <span className="text-[10px] opacity-80 font-bold block">Todos los potreros</span>
+          <span className="text-[11px] opacity-80 font-bold block">Todos los potreros</span>
         </button>
       </div>
 
@@ -263,7 +263,7 @@ export const SemaforoPotrerosCard: React.FC<SemaforoPotrerosCardProps> = ({
                     {field.food_type?.name || field.handlings || 'Forraje mixto'} · {field.area || '0'} ha
                   </p>
                 </div>
-                <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-xl border ${field.badgeColor}`}>
+                <span className={`text-[11px] font-extrabold px-2.5 py-1 rounded-xl border ${field.badgeColor}`}>
                   {field.statusLabel}
                 </span>
               </div>

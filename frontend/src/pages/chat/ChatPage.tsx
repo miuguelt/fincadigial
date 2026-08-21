@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Send, MessageCircle, Wifi, WifiOff, Search, X, Smile, Paperclip, FileImage, Download, Server, CheckCircle2, RefreshCw, Clock3, Check, CheckCheck } from 'lucide-react';
 import api from '@/shared/api/client';
@@ -21,7 +21,7 @@ interface ChatMessage {
   recipient_id: number;
   message: string;
   attachment_url?: string;
-  attachment_type?: 'image' | 'file';
+  attachment_type?: 'image' | 'file' | 'video' | 'audio' | string;
   attachment_name?: string;
   created_at: string;
   status?: OfflineChatMessage['status'];
@@ -95,8 +95,16 @@ const chatService = {
   },
 
   async getHistory(recipientId: number, senderId?: number): Promise<ChatMessage[]> {
-    const history = await OfflineChatService.loadHistory(recipientId, senderId);
+    const history = await OfflineChatService.loadHistory(recipientId, senderId, 30);
     return history.map(toPageMessage);
+  },
+
+  async getOlderHistory(recipientId: number, beforeId: number, senderId?: number): Promise<{ messages: ChatMessage[]; hasMore: boolean }> {
+    const res = await OfflineChatService.loadOlderMessages(recipientId, beforeId, senderId, 30);
+    return {
+      messages: res.messages.map(toPageMessage),
+      hasMore: res.hasMore,
+    };
   },
 
   async sendMessage(recipientId: number, message: string, attachment?: Record<string, unknown>): Promise<ChatMessage> {
@@ -110,10 +118,10 @@ const chatService = {
     return data.data;
   },
 
-  async uploadFile(file: File): Promise<{ url: string; name: string; type: 'image' | 'file' }> {
+  async uploadFile(file: File): Promise<{ url: string; name: string; type: 'image' | 'file' | 'video' | 'audio' }> {
     const formData = new FormData();
     formData.append('file', file);
-    const { data } = await api.post<{ success: boolean; data: { url: string; name: string; type: 'image' | 'file' } }>(
+    const { data } = await api.post<{ success: boolean; data: { url: string; name: string; type: 'image' | 'file' | 'video' | 'audio' } }>(
       '/chat/upload',
       formData,
       { headers: { 'Content-Type': 'multipart/form-data' } },
@@ -133,11 +141,14 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [sending, setSending] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const messageContainerRef = useRef<HTMLDivElement>(null);
   const [, setUploading] = useState(false);
   const [showNodeSettings, setShowNodeSettings] = useState(false);
   const [nodeUrl, setNodeUrl] = useState(() => FieldNodeService.getUrl());
@@ -213,17 +224,60 @@ export default function ChatPage() {
   useEffect(() => {
     if (!selectedContact) return;
 
+    let isMounted = true;
+    setHasMore(true);
+
     const loadMessages = async () => {
       try {
         const messagesData = await chatService.getHistory(selectedContact.id, Number(user?.id));
-        setMessages(messagesData);
+        if (isMounted) setMessages(messagesData);
       } catch (error) {
         console.error('Error loading messages:', error);
       }
     };
 
-    loadMessages();
+    void loadMessages();
+    return () => { isMounted = false; };
   }, [selectedContact, user?.id]);
+
+  // Manejador de scroll para cargar mensajes antiguos
+  const handleScroll = async () => {
+    const el = messageContainerRef.current;
+    if (!el || !selectedContact || !hasMore || loadingOlder || loading) return;
+
+    if (el.scrollTop <= 40) {
+      const oldestMsg = messages[0];
+      const oldestId = Number(oldestMsg?.id);
+      if (!Number.isFinite(oldestId) || oldestId <= 0) return;
+
+      const currentUserId = Number(user?.id);
+      if (!Number.isFinite(currentUserId)) return;
+
+      setLoadingOlder(true);
+      const prevScrollHeight = el.scrollHeight;
+      const prevScrollTop = el.scrollTop;
+
+      try {
+        const res = await chatService.getOlderHistory(
+          selectedContact.id,
+          oldestId,
+          currentUserId,
+        );
+        setHasMore(res.hasMore);
+
+        requestAnimationFrame(() => {
+          if (messageContainerRef.current) {
+            const newScrollHeight = messageContainerRef.current.scrollHeight;
+            messageContainerRef.current.scrollTop = prevScrollTop + (newScrollHeight - prevScrollHeight);
+          }
+        });
+      } catch (err) {
+        console.error('Error al cargar mensajes anteriores:', err);
+      } finally {
+        setLoadingOlder(false);
+      }
+    }
+  };
 
   // Si llega un mensaje de la conversación abierta, el historial se consulta
   // inmediatamente para marcarlo como leído y emitir el recibo al remitente.
@@ -536,7 +590,17 @@ export default function ChatPage() {
           </div>
 
           {/* Mensajes */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+          <div
+            ref={messageContainerRef}
+            onScroll={handleScroll}
+            style={{ flex: 1, overflowY: 'auto', padding: '16px' }}
+          >
+            {loadingOlder && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px', gap: '8px', fontSize: '12px', color: '#6b7280' }}>
+                <Clock3 size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                <span>Cargando mensajes anteriores...</span>
+              </div>
+            )}
             {messages.length === 0 ? (
               <div style={{ textAlign: 'center', color: '#666', marginTop: '32px' }}>
                 <MessageCircle style={{ height: '48px', width: '48px', margin: '0 auto 12px', opacity: 0.4 }} />
@@ -561,6 +625,14 @@ export default function ChatPage() {
                             alt={message.attachment_name}
                             style={{ borderRadius: '4px', maxWidth: '100%', height: 'auto' }}
                             loading="lazy"
+                            decoding="async"
+                          />
+                        ) : message.attachment_type === 'video' ? (
+                          <video
+                            src={message.attachment_url}
+                            preload="none"
+                            controls
+                            style={{ borderRadius: '4px', maxWidth: '100%', height: 'auto' }}
                           />
                         ) : (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>

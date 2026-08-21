@@ -58,15 +58,15 @@ export const OsciladorGananciaPeso: React.FC<OsciladorGananciaPesoProps> = ({ st
         {/* 3-Zone Momentum Track */}
         <div className="relative h-6 w-full rounded-full bg-muted/40 overflow-hidden flex">
           {/* Slow Zone: 0 - 35% */}
-          <div className="w-[35%] h-full bg-rose-300/60 dark:bg-rose-950/60 flex items-center justify-center text-[10px] font-bold text-rose-800 dark:text-rose-300">
+          <div className="w-[35%] h-full bg-rose-300/60 dark:bg-rose-950/60 flex items-center justify-center text-[11px] font-bold text-rose-800 dark:text-rose-300">
             Lento
           </div>
           {/* Moderate Zone: 35 - 60% */}
-          <div className="w-[25%] h-full bg-amber-300/60 dark:bg-amber-950/60 flex items-center justify-center text-[10px] font-bold text-amber-800 dark:text-amber-300">
+          <div className="w-[25%] h-full bg-amber-300/60 dark:bg-amber-950/60 flex items-center justify-center text-[11px] font-bold text-amber-800 dark:text-amber-300">
             Normal
           </div>
           {/* Fast Zone: 60 - 100% */}
-          <div className="w-[40%] h-full bg-emerald-300/60 dark:bg-emerald-950/60 flex items-center justify-center text-[10px] font-bold text-emerald-800 dark:text-emerald-300">
+          <div className="w-[40%] h-full bg-emerald-300/60 dark:bg-emerald-950/60 flex items-center justify-center text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
             Óptimo (+600g)
           </div>
         </div>
@@ -80,8 +80,8 @@ export const OsciladorGananciaPeso: React.FC<OsciladorGananciaPesoProps> = ({ st
             className="absolute -top-1 -translate-x-1/2 flex flex-col items-center"
           >
             <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[8px] border-b-foreground" />
-            <span className="text-[10px] font-extrabold text-foreground px-1.5 py-0.5 rounded bg-background border border-border shadow-xs mt-0.5 whitespace-nowrap">
-              Tu hato: {adgGrams}g
+            <span className="text-[11px] font-extrabold text-foreground px-1.5 py-0.5 rounded bg-background border border-border shadow-xs mt-0.5 whitespace-nowrap">
+              Tu ganado: {adgGrams}g
             </span>
           </motion.div>
         </div>
@@ -134,7 +134,7 @@ export const OsciladorGananciaPeso: React.FC<OsciladorGananciaPesoProps> = ({ st
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-center p-4 text-xs text-muted-foreground">
                 <Scale className="w-6 h-6 mb-1 opacity-40" />
-                <p>Registre al menos 2 pesajes para trazar la curva de crecimiento del hato.</p>
+                <p>Registre al menos 2 pesajes para trazar la curva de crecimiento del ganado.</p>
               </div>
             )}
           </div>

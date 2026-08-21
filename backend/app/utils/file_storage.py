@@ -9,25 +9,56 @@ import logging
 logger = logging.getLogger(__name__)
 
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "gif"}
-CHAT_ALLOWED_EXTENSIONS = {
-    "jpg",
-    "jpeg",
-    "png",
-    "webp",
-    "gif",
+
+CHAT_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "gif", "svg"}
+CHAT_DOCUMENT_EXTENSIONS = {
     "pdf",
     "doc",
     "docx",
-    "txt",
     "xls",
     "xlsx",
+    "txt",
+    "csv",
+    "ppt",
+    "pptx",
+    "rtf",
 }
+CHAT_VIDEO_EXTENSIONS = {"mp4", "mov", "webm", "avi", "mkv", "3gp"}
+CHAT_AUDIO_EXTENSIONS = {"mp3", "ogg", "wav", "m4a", "aac", "opus"}
+
+CHAT_ALLOWED_EXTENSIONS = (
+    CHAT_IMAGE_EXTENSIONS
+    | CHAT_DOCUMENT_EXTENSIONS
+    | CHAT_VIDEO_EXTENSIONS
+    | CHAT_AUDIO_EXTENSIONS
+)
+
 MIME_TYPES = {
     "jpg": "image/jpeg",
     "jpeg": "image/jpeg",
     "png": "image/png",
     "webp": "image/webp",
     "gif": "image/gif",
+    "svg": "image/svg+xml",
+    "pdf": "application/pdf",
+    "doc": "application/msword",
+    "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "xls": "application/vnd.ms-excel",
+    "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "txt": "text/plain",
+    "csv": "text/csv",
+    "ppt": "application/vnd.ms-powerpoint",
+    "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "mp4": "video/mp4",
+    "mov": "video/quicktime",
+    "webm": "video/webm",
+    "avi": "video/x-msvideo",
+    "mkv": "video/x-matroska",
+    "mp3": "audio/mpeg",
+    "ogg": "audio/ogg",
+    "wav": "audio/wav",
+    "m4a": "audio/mp4",
+    "aac": "audio/aac",
 }
 
 
@@ -433,25 +464,50 @@ def chat_allowed_file(filename):
     )
 
 
-def get_chat_upload_path(finca_id):
+def get_chat_attachment_category(file_ext: str) -> tuple[str, str]:
     """
-    Genera la ruta de almacenamiento para los archivos del chat.
-    Formato: static/uploads/chat/{finca_id}/
+    Retorna la categoría de almacenamiento en volumen y el tipo de adjunto.
+    Returns:
+        (category_folder, attachment_type)
+        ej: ('images', 'image'), ('videos', 'video'), ('documents', 'file'), ('audio', 'audio')
+    """
+    ext = file_ext.lower().lstrip(".")
+    if ext in CHAT_IMAGE_EXTENSIONS:
+        return ("images", "image")
+    if ext in CHAT_VIDEO_EXTENSIONS:
+        return ("videos", "video")
+    if ext in CHAT_AUDIO_EXTENSIONS:
+        return ("audio", "audio")
+    return ("documents", "file")
+
+
+def get_chat_upload_path(finca_id, category: str = "documents", now: datetime | None = None) -> tuple[str, str]:
+    """
+    Genera la ruta absoluta de almacenamiento y la ruta relativa para URLs.
+    Estructura jerárquica en volumen:
+    static/uploads/chat/finca_{finca_id}/{YYYY}/{MM}/{category}/
     """
     upload_folder = flask.current_app.config.get("UPLOAD_FOLDER", "static/uploads")
-    return os.path.join(upload_folder, "chat", str(finca_id))
+    date_now = now or datetime.utcnow()
+    year = str(date_now.year)
+    month = f"{date_now.month:02d}"
+
+    relative_dir = os.path.join("static", "uploads", "chat", f"finca_{finca_id}", year, month, category)
+    relative_web_dir = relative_dir.replace("\\", "/")
+    absolute_dir = os.path.join(upload_folder, "chat", f"finca_{finca_id}", year, month, category)
+    return (absolute_dir, relative_web_dir)
 
 
 def save_chat_file(file, finca_id):
     """
-    Guarda un archivo para el chat.
+    Guarda un archivo para el chat con organización jerárquica en el volumen.
 
     Args:
         file: FileStorage object de werkzeug
         finca_id: ID de la finca para organizar por tenant
 
     Returns:
-        dict con url, type, name, file_size
+        dict con url, type, name, file_size, extension, mime_type
     """
     try:
         # Validar archivo
@@ -460,51 +516,53 @@ def save_chat_file(file, finca_id):
 
         if not chat_allowed_file(file.filename):
             raise ValueError(
-                f"Tipo de archivo no permitido. Extensiones permitidas: {', '.join(CHAT_ALLOWED_EXTENSIONS)}"
+                f"Tipo de archivo no permitido. Extensiones permitidas: {', '.join(sorted(CHAT_ALLOWED_EXTENSIONS))}"
             )
 
-        # Validar tamaño
+        # Validar tamaño (50MB por defecto)
         file.seek(0, os.SEEK_END)
         file_size = file.tell()
         file.seek(0)
 
         max_size = flask.current_app.config.get(
-            "MAX_CHAT_FILE_SIZE", 10 * 1024 * 1024
-        )  # 10MB
+            "MAX_CHAT_FILE_SIZE", 50 * 1024 * 1024
+        )  # 50MB
         if file_size > max_size:
             raise ValueError(
                 f"El archivo excede el tamaño máximo permitido de {max_size // (1024 * 1024)}MB"
             )
 
-        # Generar nombre único
-        timestamp = str(int(datetime.utcnow().timestamp()))
-        safe_filename = secure_filename(file.filename)
-        unique_filename = f"{timestamp}_{safe_filename}"
+        # Sanitizar nombre y clasificar categoría
+        safe_name = secure_filename(file.filename) or "archivo"
+        file_ext = safe_name.rsplit(".", 1)[1].lower() if "." in safe_name else "bin"
+        category, attachment_type = get_chat_attachment_category(file_ext)
 
-        # Crear directorio
-        upload_dir = get_chat_upload_path(finca_id)
-        if not ensure_upload_directory(upload_dir):
-            raise OSError("No se pudo crear el directorio de uploads")
+        # Generar nombre único anti-colisiones (timestamp + uuid8 + safe_name)
+        now = datetime.utcnow()
+        timestamp = str(int(now.timestamp()))
+        unique_token = uuid.uuid4().hex[:8]
+        unique_filename = f"{timestamp}_{unique_token}_{safe_name}"
+
+        # Crear directorio jerárquico en volumen
+        absolute_dir, relative_web_dir = get_chat_upload_path(finca_id, category, now)
+        if not ensure_upload_directory(absolute_dir):
+            raise OSError("No se pudo crear el directorio de uploads en el volumen")
 
         # Guardar archivo
-        file_path = os.path.join(upload_dir, unique_filename)
+        file_path = os.path.join(absolute_dir, unique_filename)
         file.save(file_path)
 
-        # Determinar tipo
-        file_ext = safe_filename.rsplit(".", 1)[1].lower()
-        attachment_type = (
-            "image" if file_ext in {"jpg", "jpeg", "png", "webp", "gif"} else "file"
-        )
-
-        # Generar URL pública
-        relative_path = f"static/uploads/chat/{finca_id}/{unique_filename}"
-        public_url = get_public_url(relative_path)
+        # Generar URL pública consistente
+        relative_file_path = f"{relative_web_dir}/{unique_filename}"
+        public_url = get_public_url(relative_file_path)
 
         return {
             "url": public_url,
             "type": attachment_type,
-            "name": safe_filename,
+            "name": safe_name,
             "file_size": file_size,
+            "extension": file_ext,
+            "mime_type": get_mime_type(safe_name),
         }
 
     except Exception as e:
@@ -515,13 +573,7 @@ def save_chat_file(file, finca_id):
 def get_chat_file_url(finca_id, filename):
     """
     Genera la URL pública para un archivo del chat.
-
-    Args:
-        finca_id: ID de la finca
-        filename: Nombre del archivo
-
-    Returns:
-        str: URL pública del archivo
     """
-    relative_path = f"static/uploads/chat/{finca_id}/{filename}"
+    relative_path = f"static/uploads/chat/finca_{finca_id}/{filename}"
     return get_public_url(relative_path)
+

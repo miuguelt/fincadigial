@@ -33,7 +33,7 @@ export const TermometroHatoGauge: React.FC<TermometroHatoGaugeProps> = ({
           </div>
           <div>
             <h3 className="text-lg sm:text-xl font-black text-foreground tracking-tight">
-              Termómetro General del Hato
+              Termómetro general del ganado
             </h3>
             <p className="text-xs sm:text-sm text-muted-foreground">
               Semáforo de salud, vacunación y controles de la finca
@@ -129,7 +129,7 @@ export const TermometroHatoGauge: React.FC<TermometroHatoGaugeProps> = ({
               <p className="text-base sm:text-lg font-black text-emerald-700 dark:text-emerald-300">
                 {Math.round(vacCoverage)}%
               </p>
-              <p className="text-[10px] text-muted-foreground">al día</p>
+              <p className="text-[11px] text-muted-foreground">al día</p>
             </div>
 
             {/* Controles de Peso */}
@@ -139,7 +139,7 @@ export const TermometroHatoGauge: React.FC<TermometroHatoGaugeProps> = ({
               <p className="text-base sm:text-lg font-black text-sky-700 dark:text-sky-300">
                 {Math.round(controlComp)}%
               </p>
-              <p className="text-[10px] text-muted-foreground">pesajes al día</p>
+              <p className="text-[11px] text-muted-foreground">pesajes al día</p>
             </div>
 
             {/* Sanos vs Enfermos */}
@@ -149,7 +149,7 @@ export const TermometroHatoGauge: React.FC<TermometroHatoGaugeProps> = ({
               <p className="text-base sm:text-lg font-black text-foreground">
                 {healthyAnimals} <span className="text-xs text-muted-foreground">/ {activeAnimals}</span>
               </p>
-              <p className="text-[10px] text-muted-foreground">{sickAnimals} en cura</p>
+              <p className="text-[11px] text-muted-foreground">{sickAnimals} en cura</p>
             </div>
           </div>
         </div>

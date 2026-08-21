@@ -42,7 +42,7 @@ export const FastInventoryAction: React.FC = () => {
         lot_id: selectedLot.id,
         quantity: quantity,
         movement_type: "Salida",
-        notes: "Registro rápido desde campo (PWA Offline)",
+        notes: "Registro rápido desde campo (PWA sin conexión)",
       });
       recordMovement(selectedLot.id, quantity, "Salida");
 

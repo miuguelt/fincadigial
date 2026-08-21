@@ -140,22 +140,29 @@ class AnimalBulkDelete(Resource):
     @animals_ns.doc("bulk_delete_animals")
     @jwt_required()
     def post(self):
-        """Eliminar múltiples animales."""
+        """Eliminar múltiples animales informando los que quedan bloqueados."""
+        from app.utils.deletion.bulk import bulk_delete_message, bulk_delete_records
+
         try:
             data = flask.request.get_json() or {}
             ids = data.get("ids", [])
             if not ids:
                 return APIResponse.validation_error("Se requieren IDs de animales")
 
-            count = Animals.bulk_delete(ids)
+            result = bulk_delete_records(Animals, [int(item) for item in ids])
             _cache_clear("Animals")
 
             return APIResponse.success(
-                message=f"{count} animales eliminados correctamente"
+                data=result,
+                message=bulk_delete_message(result, "animales"),
             )
         except Exception as e:
             db.session.rollback()
-            return APIResponse.error(f"Error al eliminar animales: {str(e)}")
+            return APIResponse.error(
+                message="No se pudo completar la eliminación masiva de animales.",
+                details={"error": str(e)},
+                status_code=500,
+            )
 
 
 @animals_ns.route("/batch-weight")

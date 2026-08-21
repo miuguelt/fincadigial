@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { chatService, ChatMessage, ChatContact } from '@/entities/user/api/chat.service';
 import { useAuth } from '@/features/auth/model/useAuth';
@@ -20,6 +20,12 @@ import {
   Clock3,
   Check,
   CheckCheck,
+  Paperclip,
+  Image as ImageIcon,
+  FileText,
+  Video,
+  Download,
+  Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/app/providers/ToastContext';
@@ -29,7 +35,7 @@ export interface ChatWidgetProps {
 }
 
 const toWidgetMessage = (message: OfflineMessage): ChatMessage => ({
-  id: Number(message.id) || 0,
+  id: message.id,
   finca_id: 0,
   sender_id: message.senderId,
   sender_name: message.senderName || 'Usuario',
@@ -40,6 +46,9 @@ const toWidgetMessage = (message: OfflineMessage): ChatMessage => ({
   client_message_id: message.clientMessageId,
   read_at: message.readAt,
   status: message.status,
+  attachment_url: message.attachmentUrl,
+  attachment_type: message.attachmentType,
+  attachment_name: message.attachmentName,
   created_at: message.createdAt,
 });
 
@@ -52,9 +61,15 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [pendingFile, setPendingFile] = useState<{ file: File; type: string; name: string } | null>(null);
   const { user } = useAuth();
   const { showToast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSyncing, setIsSyncing] = useState(false);
 
   // Escuchar evento global para abrir el chat desde acciones rápidas
@@ -74,39 +89,36 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
   }, [unreadCount]);
 
   // Cargar contactos y conteo inicial con soporte de fallback
-  useEffect(() => {
+  const fetchContactsAndUnread = useCallback(async () => {
     if (!user) return;
+    try {
+      const [contactsRes, unreadRes] = await Promise.allSettled([
+        chatService.getContacts(),
+        chatService.getUnreadCount(),
+      ]);
 
-    const initChat = async () => {
-      try {
-        setLoading(true);
-        const [contactsRes, unreadRes] = await Promise.allSettled([
-          chatService.getContacts(),
-          chatService.getUnreadCount()
-        ]);
-
-        let loadedContacts: ChatContact[] = [];
-        if (contactsRes.status === 'fulfilled' && Array.isArray(contactsRes.value?.data)) {
-          loadedContacts = contactsRes.value.data;
-        }
-
-        setContacts(loadedContacts);
-
-        if (unreadRes.status === 'fulfilled' && unreadRes.value?.data?.unread_count) {
-          setUnreadCount(unreadRes.value.data.unread_count);
-        }
-      } catch (error) {
-        console.error('Error al inicializar chat:', error);
-      } finally {
-        setLoading(false);
+      let loadedContacts: ChatContact[] = [];
+      if (contactsRes.status === 'fulfilled' && Array.isArray(contactsRes.value?.data)) {
+        loadedContacts = contactsRes.value.data;
       }
-    };
 
-    initChat();
+      setContacts(loadedContacts);
+
+      if (unreadRes.status === 'fulfilled' && unreadRes.value?.data?.unread_count !== undefined) {
+        setUnreadCount(Number(unreadRes.value.data.unread_count));
+      }
+    } catch (error) {
+      console.error('Error al actualizar contactos y no leídos:', error);
+    }
   }, [user]);
 
-  // GlobalNetworkHandlers recibe SSE una sola vez por pestaña y actualiza esta
-  // fuente local. El widget sólo se suscribe a ella para evitar duplicados.
+  useEffect(() => {
+    if (!user) return;
+    setLoading(true);
+    void fetchContactsAndUnread().finally(() => setLoading(false));
+  }, [user, fetchContactsAndUnread]);
+
+  // Suscribirse a OfflineChatService para actualizar la conversación activa en tiempo real
   useEffect(() => {
     const currentUserId = Number(user?.id);
     if (!Number.isFinite(currentUserId)) return;
@@ -120,57 +132,98 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
     });
   }, [user?.id, selectedContact]);
 
+  // Escuchar eventos en tiempo real para refrescar contactos y no leídos
   useEffect(() => {
-    const refresh = async () => {
-      const [contactsResult, unreadResult] = await Promise.allSettled([
-        chatService.getContacts(),
-        chatService.getUnreadCount(),
-      ]);
-      if (contactsResult.status === 'fulfilled' && Array.isArray(contactsResult.value.data)) {
-        setContacts(contactsResult.value.data);
-      }
-      if (unreadResult.status === 'fulfilled') {
-        setUnreadCount(Number(unreadResult.value.data?.unread_count ?? 0));
-      }
-      if (selectedContact) {
-        const history = await chatService.getHistory(selectedContact.id);
-        setMessages(history.data ?? []);
-      }
+    const onRealtime = () => {
+      void fetchContactsAndUnread();
     };
-    const onRealtime = () => { void refresh(); };
+
     window.addEventListener('chat-realtime-updated', onRealtime);
-    return () => window.removeEventListener('chat-realtime-updated', onRealtime);
-  }, [selectedContact]);
+    window.addEventListener('chat-unread-refresh', onRealtime);
+    return () => {
+      window.removeEventListener('chat-realtime-updated', onRealtime);
+      window.removeEventListener('chat-unread-refresh', onRealtime);
+    };
+  }, [fetchContactsAndUnread]);
 
-  // Cargar historial al seleccionar contacto
+  // Cargar historial con OfflineChatService al seleccionar contacto y marcar como leído
   useEffect(() => {
-    if (selectedContact) {
-      const fetchHistory = async () => {
-        setLoading(true);
-        try {
-          const res = await chatService.getHistory(selectedContact.id);
-          setMessages(res.data || []);
+    if (!selectedContact || !user) return;
+    const currentUserId = Number(user.id);
+    if (!Number.isFinite(currentUserId)) return;
 
+    let isMounted = true;
+    setHasMore(true);
+
+    const fetchHistory = async () => {
+      setLoading(true);
+      try {
+        const history = await OfflineChatService.loadHistory(selectedContact.id, currentUserId, 30);
+        if (isMounted) {
+          setMessages(history.map(toWidgetMessage));
           setUnreadCount(prev => Math.max(0, prev - (selectedContact.unread_count || 0)));
           setContacts(prev => prev.map(c =>
             c.id === selectedContact.id ? { ...c, unread_count: 0 } : c
           ));
-        } catch (error) {
-          console.error('Error al cargar historial:', error);
-        } finally {
-          setLoading(false);
         }
-      };
-      fetchHistory();
-    }
-  }, [selectedContact]);
+        await OfflineChatService.markAsRead(currentUserId, selectedContact.id);
+      } catch (error) {
+        console.error('Error al cargar historial:', error);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
 
-  // Scroll al fondo
+    void fetchHistory();
+    return () => { isMounted = false; };
+  }, [selectedContact, user]);
+
+  // Auto-scroll al fondo al enviar o recibir mensajes
   useEffect(() => {
-    if (scrollRef.current) {
+    if (scrollRef.current && !loadingOlder) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, selectedContact]);
+  }, [messages, selectedContact, loadingOlder]);
+
+  // Carga de mensajes anteriores al subir en el scroll (Cursor before_id)
+  const handleScroll = async () => {
+    const el = scrollRef.current;
+    if (!el || !selectedContact || !hasMore || loadingOlder || loading) return;
+
+    if (el.scrollTop <= 40) {
+      const oldestMsg = messages[0];
+      const oldestId = Number(oldestMsg?.id);
+      if (!Number.isFinite(oldestId) || oldestId <= 0) return;
+
+      const currentUserId = Number(user?.id);
+      if (!Number.isFinite(currentUserId)) return;
+
+      setLoadingOlder(true);
+      const prevScrollHeight = el.scrollHeight;
+      const prevScrollTop = el.scrollTop;
+
+      try {
+        const res = await OfflineChatService.loadOlderMessages(
+          selectedContact.id,
+          oldestId,
+          currentUserId,
+          30,
+        );
+        setHasMore(res.hasMore);
+
+        requestAnimationFrame(() => {
+          if (scrollRef.current) {
+            const newScrollHeight = scrollRef.current.scrollHeight;
+            scrollRef.current.scrollTop = prevScrollTop + (newScrollHeight - prevScrollHeight);
+          }
+        });
+      } catch (err) {
+        console.error('Error al cargar mensajes anteriores:', err);
+      } finally {
+        setLoadingOlder(false);
+      }
+    }
+  };
 
   const filteredContacts = useMemo(() => {
     return contacts.filter(c =>
@@ -179,25 +232,115 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
     );
   }, [contacts, searchQuery]);
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    let type = 'file';
+    if (file.type.startsWith('image/')) type = 'image';
+    else if (file.type.startsWith('video/')) type = 'video';
+    else if (file.type.startsWith('audio/')) type = 'audio';
+
+    setPendingFile({ file, type, name: file.name });
+    e.target.value = '';
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !selectedContact) return;
+    if ((!newMessage.trim() && !pendingFile) || !selectedContact) return;
 
     const text = newMessage.trim();
     setNewMessage('');
+    setSending(true);
+
+    let attachmentPayload: { url?: string; type?: string; name?: string } | undefined = undefined;
 
     try {
       const senderId = Number(user?.id);
       if (!Number.isFinite(senderId)) throw new Error('AUTH_USER_REQUIRED');
+
+      if (pendingFile) {
+        setUploading(true);
+        const uploadRes = await chatService.uploadFile(pendingFile.file);
+        if (uploadRes?.data) {
+          attachmentPayload = {
+            url: uploadRes.data.url,
+            type: uploadRes.data.type,
+            name: uploadRes.data.name,
+          };
+        }
+        setPendingFile(null);
+        setUploading(false);
+      }
+
       await OfflineChatService.send(
         senderId,
         String(user?.fullname || 'Usuario'),
         selectedContact.id,
         text,
+        attachmentPayload,
       );
     } catch (error) {
       console.error('Error al enviar mensaje:', error);
+      showToast('Error al enviar mensaje o adjunto.', 'error');
+    } finally {
+      setSending(false);
+      setUploading(false);
     }
+  };
+
+  const renderAttachment = (msg: ChatMessage) => {
+    if (!msg.attachment_url) return null;
+    const type = msg.attachment_type || 'file';
+
+    if (type === 'image') {
+      return (
+        <a
+          href={msg.attachment_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block my-1 rounded-lg overflow-hidden border border-border/40 hover:opacity-90 transition-opacity"
+        >
+          <img
+            src={msg.attachment_url}
+            alt={msg.attachment_name || 'Imagen adjunta'}
+            loading="lazy"
+            decoding="async"
+            className="max-h-48 max-w-full rounded object-cover"
+          />
+        </a>
+      );
+    }
+
+    if (type === 'video') {
+      return (
+        <div className="my-1 rounded-lg overflow-hidden border border-border/40 bg-black/40">
+          <video
+            src={msg.attachment_url}
+            preload="none"
+            controls
+            className="max-h-48 max-w-full rounded"
+          />
+        </div>
+      );
+    }
+
+    return (
+      <a
+        href={msg.attachment_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        download={msg.attachment_name || 'archivo'}
+        className="my-1.5 flex items-center gap-2 p-2.5 rounded-lg bg-background/80 hover:bg-background border border-border/60 text-foreground text-xs transition-colors"
+      >
+        <FileText className="h-5 w-5 text-primary shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="truncate font-semibold text-xs">{msg.attachment_name || 'Documento'}</p>
+          <span className="text-[10px] text-muted-foreground uppercase">Descargar archivo</span>
+        </div>
+        <Download size={14} className="text-muted-foreground shrink-0" />
+      </a>
+    );
   };
 
   const handleProximitySync = async () => {
@@ -377,8 +520,15 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                 <>
                   <div
                     ref={scrollRef}
+                    onScroll={handleScroll}
                     className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth"
                   >
+                    {loadingOlder && (
+                      <div className="flex items-center justify-center py-2 gap-2 text-xs text-muted-foreground animate-in fade-in duration-200">
+                        <Loader2 size={14} className="animate-spin text-primary" />
+                        <span>Cargando mensajes anteriores...</span>
+                      </div>
+                    )}
                     {loading ? (
                       <div className="flex justify-center py-8">
                         <div className="h-8 w-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
@@ -401,7 +551,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                                 ? "bg-primary text-white rounded-br-sm"
                                 : "bg-background/80 border border-white/5 text-foreground rounded-bl-sm"
                             )}>
-                              <p className="leading-relaxed">{msg.message}</p>
+                              {renderAttachment(msg)}
+                              {msg.message && <p className="leading-relaxed whitespace-pre-wrap break-words">{msg.message}</p>}
                               <div className={cn(
                                 "text-[11px] mt-1.5 font-medium flex items-center gap-1",
                                 isMe ? "text-white/70 justify-end" : "text-muted-foreground justify-start"
@@ -418,9 +569,51 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                     )}
                   </div>
 
+                  {/* Vista previa del archivo adjunto */}
+                  {pendingFile && (
+                    <div className="px-3 py-2 bg-muted/60 border-t border-border/40 flex items-center justify-between shrink-0 text-xs">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {pendingFile.type === 'image' ? (
+                          <ImageIcon size={16} className="text-primary shrink-0" />
+                        ) : pendingFile.type === 'video' ? (
+                          <Video size={16} className="text-primary shrink-0" />
+                        ) : (
+                          <FileText size={16} className="text-primary shrink-0" />
+                        )}
+                        <span className="truncate font-medium">{pendingFile.name}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setPendingFile(null)}
+                        className="p-1 text-muted-foreground hover:text-destructive rounded transition-colors"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  )}
+
                   {/* Footer Input */}
                   <div className="p-3 bg-background/40 backdrop-blur-xl border-t border-white/5 shrink-0">
-                    <form onSubmit={handleSendMessage} className="flex gap-2">
+                    <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileSelect}
+                        className="hidden"
+                        accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.ppt,.pptx"
+                      />
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="h-11 w-11 shrink-0 rounded-xl text-muted-foreground hover:text-primary hover:bg-white/5"
+                        title="Adjuntar documento, imagen o video"
+                      >
+                        <Paperclip size={18} />
+                      </Button>
+
                       <Input
                         placeholder="Escribe un mensaje..."
                         value={newMessage}
@@ -431,10 +624,14 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                       <Button
                         type="submit"
                         size="icon"
-                        disabled={!newMessage.trim()}
+                        disabled={(!newMessage.trim() && !pendingFile) || sending || uploading}
                         className="bg-primary hover:bg-primary/90 h-11 w-11 shrink-0 rounded-xl shadow-md transition-all active:scale-95 disabled:opacity-50"
                       >
-                        <Send size={18} className={newMessage.trim() ? "ml-1" : ""} />
+                        {sending || uploading ? (
+                          <Loader2 size={18} className="animate-spin" />
+                        ) : (
+                          <Send size={18} className={newMessage.trim() ? "ml-1" : ""} />
+                        )}
                       </Button>
                     </form>
                   </div>

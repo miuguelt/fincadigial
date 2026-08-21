@@ -117,7 +117,7 @@ def build_kpi_cards(context):
     health_previous = safe_percentage(previous_healthy, active_animals)
     create_card(
         "health_index",
-        "Índice de salud del hato",
+        "Índice de salud del ganado",
         health_value,
         health_previous,
         "%",
@@ -183,7 +183,7 @@ def build_kpi_cards(context):
         mortality_value,
         mortality_previous,
         "%",
-        "Bajas registradas en los últimos 30 días sobre el total del hato.",
+        "Bajas registradas en los últimos 30 días sobre el total del ganado.",
         "skull",
         {"muertes_30d": recent_deaths, "muertes_previas": recent_deaths_previous},
     )
@@ -237,11 +237,11 @@ def build_kpi_cards(context):
     herd_growth_previous = safe_percentage(new_animals_previous_period, total_animals)
     create_card(
         "herd_growth_rate",
-        "Crecimiento del hato 30d",
+        "Crecimiento del ganado 30 días",
         herd_growth_value,
         herd_growth_previous,
         "%",
-        "Ingreso de nuevos animales respecto al tamaño total del hato.",
+        "Ingreso de nuevos animales respecto al tamaño total del ganado.",
         "trending-up",
         {"altas_30d": recent_animals, "altas_previas": new_animals_previous_period},
     )
@@ -277,7 +277,7 @@ def build_kpi_cards(context):
         task_load_value,
         task_load_previous,
         "%" if active_animals else "tareas",
-        "Relación de tareas pendientes frente a la capacidad del hato activo.",
+        "Relación de tareas pendientes frente a la capacidad del ganado activo.",
         "list-checks",
         {"tareas_pendientes": pending_tasks, "tareas_previas": pending_tasks_previous},
     )
@@ -393,7 +393,7 @@ ai_insight_model = legacy_ns.model(
 class AnimalStatistics(Resource):
     @legacy_ns.doc(
         "get_animal_statistics",
-        description="\n        **Estadísticas detalladas de animales**\n        \n        Proporciona análisis completo del inventario ganadero:\n        - Distribución por estado (vivo, vendido, muerto)\n        - Distribución por sexo y raza\n        - Grupos de edad y distribución de pesos\n        - Tendencias de crecimiento\n        \n        **Ideal para:**\n        - Gráficos de torta y barras\n        - Análisis de composición del hato\n        - Planificación de reproducción\n        ",
+        description="\n        **Estadísticas detalladas de animales**\n        \n        Proporciona análisis completo del inventario ganadero:\n        - Distribución por estado (vivo, vendido, muerto)\n        - Distribución por sexo y raza\n        - Grupos de edad y distribución de pesos\n        - Tendencias de crecimiento\n        \n        **Ideal para:**\n        - Gráficos de torta y barras\n        - Análisis de composición del ganado\n        - Planificación de reproducción\n        ",
         security=["Bearer", "Cookie"],
         responses={
             200: ("Estadísticas de animales", animal_stats_model),
@@ -627,7 +627,7 @@ class RunPredictiveAnalysis(Resource):
 class PredictiveInsights(Resource):
     @legacy_ns.doc(
         "get_predictive_insights",
-        description="Obtiene un resumen ejecutivo generado por IA sobre la salud y productividad del hato.",
+        description="Obtiene un resumen ejecutivo generado por IA sobre la salud y productividad del ganado.",
         security=["Bearer", "Cookie"],
     )
     @jwt_required()

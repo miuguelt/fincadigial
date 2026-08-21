@@ -54,11 +54,12 @@ def register_namespaces(api):
     from ..namespaces.core.alerts_namespace import alerts_ns
     from ..namespaces.farm.inventory_namespace import inventory_ns
     from ..namespaces.farm.inventory_insights_namespace import inventory_insights_ns
-    from ..namespaces.animals.reproduction_namespace import reproduction_ns
+    from ..namespaces.animals.reproduction import reproduction_ns
     from ..namespaces.finanzas.exports_namespace import exports_ns
     from ..namespaces.animals.growth_namespace import growth_ns
     from ..namespaces.core.public_namespace import public_ns
     from ..namespaces.animals.animal_movements_namespace import animal_movements_ns
+    from ..namespaces.animals.animal_nfc_namespace import animal_nfc_ns
     from ..namespaces.farm.finca_images_namespace import finca_images_ns
     from ..namespaces.health.treatment_recommendations_namespace import (
         treatment_recommendations_ns,
@@ -115,6 +116,7 @@ def register_namespaces(api):
     api.add_namespace(auth_ns)
     api.add_namespace(users_ns)
     api.add_namespace(animals_ns)
+    api.add_namespace(animal_nfc_ns)
     api.add_namespace(milk_ns)
     api.add_namespace(lactation_ns)
     api.add_namespace(target_ns)

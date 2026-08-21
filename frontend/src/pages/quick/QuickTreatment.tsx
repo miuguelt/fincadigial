@@ -1,20 +1,32 @@
-import React, { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { useAuth } from '@/features/auth/model/useAuth';
-import { useToast } from '@/app/providers/ToastContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Label } from '@/shared/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
-import { Pill, ArrowLeft, Save, WifiOff } from 'lucide-react';
-import { useOnlineStatus } from '@/shared/hooks/useOnlineStatus';
-import { offlineQueue } from '@/shared/api/offline/offlineQueue';
-import { animalsService } from '@/entities/animal/api/animal.service';
-import { medicationsService } from '@/entities/medication/api/medications.service';
-import { treatmentsService } from '@/entities/treatment/api/treatments.service';
-import { getTodayColombia } from '@/shared/utils/dateUtils';
-import { emitDataRefresh } from '@/shared/utils/dataRefresh';
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useAuth } from "@/features/auth/model/useAuth";
+import { useToast } from "@/app/providers/ToastContext";
+import { Pill } from "lucide-react";
+import { useOnlineStatus } from "@/shared/hooks/useOnlineStatus";
+import { offlineQueue } from "@/shared/api/offline/offlineQueue";
+import { animalsService } from "@/entities/animal/api/animal.service";
+import { medicationsService } from "@/entities/medication/api/medications.service";
+import { treatmentsService } from "@/entities/treatment/api/treatments.service";
+import { getTodayColombia } from "@/shared/utils/dateUtils";
+import { emitDataRefresh } from "@/shared/utils/dataRefresh";
+import {
+  QuickFormShell,
+  QCard,
+  QField,
+  QLabel,
+  QInput,
+  QSelect,
+  QChipGroup,
+  QSubmitButton,
+} from "./QuickFormShell";
+
+const FRECUENCIAS: { label: string; value: string }[] = [
+  { label: "Dosis Única", value: "Dosis única" },
+  { label: "Cada 12 Horas", value: "Cada 12 horas" },
+  { label: "Cada 24 Horas", value: "Cada 24 horas" },
+  { label: "Cada 48 Horas", value: "Cada 48 horas" },
+];
 
 export default function QuickTreatment() {
   useAuth();
@@ -24,186 +36,177 @@ export default function QuickTreatment() {
 
   const handleClose = () => {
     const newParams = new URLSearchParams(searchParams);
-    newParams.delete('quick');
+    newParams.delete("quick");
     setSearchParams(newParams, { replace: true });
   };
 
-  const [animalId, setAnimalId] = useState<number | null>(null);
-  const [medicationId, setMedicationId] = useState<number | null>(null);
-  const [dose, setDose] = useState<string>('');
+  const [animalId, setAnimalId] = useState<string>("");
+  const [medicationId, setMedicationId] = useState<string>("");
+  const [dose, setDose] = useState<string>("");
+  const [frequency, setFrequency] = useState<string>("Dosis única");
   const [date, setDate] = useState(getTodayColombia());
+  const [notes, setNotes] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [animalOptions, setAnimalOptions] = useState<{ value: number; label: string }[]>([]);
-  const [medicationOptions, setMedicationOptions] = useState<{ value: number; label: string }[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [animalOptions, setAnimalOptions] = useState<{ value: string; label: string }[]>([]);
+  const [medicationOptions, setMedicationOptions] = useState<{ value: string; label: string }[]>([]);
 
-  // Cargar animales activos
-  React.useEffect(() => {
-    async function loadAnimals() {
+  // Cargar animales activos y medicamentos
+  useEffect(() => {
+    async function loadData() {
       try {
-        const response = await animalsService.getAnimals({ limit: 100, status: 'Vivo' });
-        const animals = Array.isArray(response) ? response : (response as any).data || [];
-        const options = animals.map((a: any) => ({
-          value: a.id,
-          label: `${a.record} - ${a.breed?.name || 'Sin raza'}`
-        }));
-        setAnimalOptions(options);
+        const [animalsResp, medsResp] = await Promise.all([
+          animalsService.getAnimals({ limit: 200, status: "Vivo" }),
+          medicationsService.getMedications({ limit: 100 }),
+        ]);
+
+        const animals = Array.isArray(animalsResp) ? animalsResp : (animalsResp as any).data || [];
+        setAnimalOptions(animals.map((a: any) => ({
+          value: String(a.id),
+          label: `${a.record}${a.breed?.name ? ` — ${a.breed.name}` : ""}`,
+        })));
+
+        const meds = Array.isArray(medsResp) ? medsResp : (medsResp as any).data || [];
+        setMedicationOptions(meds.map((m: any) => ({
+          value: String(m.id),
+          label: m.name || `Medicamento ${m.id}`,
+        })));
       } catch (error) {
-        console.error('Error loading animals:', error);
-        showToast('Error al cargar animales', 'error');
+        console.error("Error loading data:", error);
+        showToast("Error al cargar lista de animales o medicamentos", "error");
+      } finally {
+        setCargando(false);
       }
     }
-    loadAnimals();
-  }, [showToast]);
-
-  // Cargar medicamentos
-  React.useEffect(() => {
-    async function loadMedications() {
-      try {
-        const response = await medicationsService.getMedications({ limit: 100 });
-        const medications = Array.isArray(response) ? response : (response as any).data || [];
-        const options = medications.map((m: any) => ({
-          value: m.id,
-          label: m.name || `Medicamento ${m.id}`
-        }));
-        setMedicationOptions(options);
-      } catch (error) {
-        console.error('Error loading medications:', error);
-        showToast('Error al cargar medicamentos', 'error');
-      }
-    }
-    loadMedications();
+    loadData();
   }, [showToast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!animalId || !medicationId || !dose) {
-      showToast('Por favor complete todos los campos requeridos', 'error');
+      showToast("Por favor completa el animal, medicamento y dosis", "error");
       return;
     }
 
     setLoading(true);
     const payload = {
-      animal_id: animalId,
-      medication_id: medicationId,
+      animal_id: Number(animalId),
+      medication_id: Number(medicationId),
       dosis: dose,
-      frequency: 'Dosis única',
+      frequency,
       treatment_date: date,
-      description: 'Tratamiento rápido',
+      description: notes || "Tratamiento rápido de campo",
     };
 
     try {
       if (!isOnline) {
         // Offline: encolar operación
-        await offlineQueue.enqueue('POST', 'treatments', payload);
-        showToast('Tratamiento guardado localmente. Se sincronizará cuando haya conexión.', 'success');
+        await offlineQueue.enqueue("POST", "treatments", payload);
+        showToast("Tratamiento guardado sin señal. Se sincronizará al volver la conexión.", "success");
       } else {
         // Online: enviar directamente
         await treatmentsService.createTreatment(payload);
-        showToast('Tratamiento registrado exitosamente', 'success');
+        showToast("Tratamiento registrado exitosamente", "success");
       }
-      if (isOnline) emitDataRefresh('treatments');
+      if (isOnline) emitDataRefresh("treatments");
       handleClose();
     } catch (error) {
-      console.error('Error creating treatment:', error);
-      showToast('Error al registrar tratamiento', 'error');
+      console.error("Error creating treatment:", error);
+      showToast("Error al registrar tratamiento", "error");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container mx-auto p-4 max-w-md">
-      <Button
-        variant="ghost"
-        onClick={handleClose}
-        className="mb-4 text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Volver
-      </Button>
+    <QuickFormShell titulo="Registrar Tratamiento" icon={Pill} colorHeader="bg-blue-600">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <QCard>
+          <QField>
+            <QLabel htmlFor="animal">¿Qué animal recibe el tratamiento?</QLabel>
+            <QSelect
+              id="animal"
+              value={animalId}
+              onChange={setAnimalId}
+              placeholder={cargando ? "Cargando animales..." : "— Selecciona el animal —"}
+              options={animalOptions}
+              disabled={cargando || loading}
+            />
+          </QField>
+        </QCard>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-foreground">
-            <Pill className="h-5 w-5 text-success" />
-            Registrar Tratamiento
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isOnline && (
-              <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-lg text-sm text-warning-foreground font-bold">
-                <WifiOff className="h-4 w-4 text-warning" />
-                Modo sin conexión - El registro se guardará localmente
-              </div>
-            )}
+        <QCard>
+          <QField>
+            <QLabel htmlFor="medication">Medicamento / Fármaco</QLabel>
+            <QSelect
+              id="medication"
+              value={medicationId}
+              onChange={setMedicationId}
+              placeholder={cargando ? "Cargando medicamentos..." : "— Selecciona el medicamento —"}
+              options={medicationOptions}
+              disabled={cargando || loading}
+            />
+          </QField>
+        </QCard>
 
-            <div className="space-y-2">
-              <Label htmlFor="animal">Animal *</Label>
-              <Select value={animalId?.toString()} onValueChange={(v) => setAnimalId(parseInt(v))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar animal" />
-                </SelectTrigger>
-                <SelectContent>
-                  {animalOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value.toString()}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="medication">Medicamento *</Label>
-              <Select value={medicationId?.toString()} onValueChange={(v) => setMedicationId(parseInt(v))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar medicamento" />
-                </SelectTrigger>
-                <SelectContent>
-                  {medicationOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value.toString()}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="dose">Dosis *</Label>
-              <Input
-                id="dose"
-                type="text"
-                value={dose}
-                onChange={(e) => setDose(e.target.value)}
-                placeholder="Ej: 500mg cada 8 horas"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="date">Fecha de tratamiento *</Label>
-              <Input
-                id="date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
-              />
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full"
+        <QCard>
+          <QField>
+            <QLabel htmlFor="dose">Dosis administrada</QLabel>
+            <QInput
+              id="dose"
+              type="text"
+              value={dose}
+              onChange={(e) => setDose(e.target.value)}
+              placeholder="Ej: 10 ml, 2 tabletas..."
+              required
               disabled={loading}
-            >
-              <Save className="h-4 w-4 mr-2" />
-              {loading ? 'Guardando...' : 'Guardar Tratamiento'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+            />
+          </QField>
+        </QCard>
+
+        <QCard>
+          <QField>
+            <QLabel>Frecuencia de aplicación</QLabel>
+            <QChipGroup
+              value={frequency}
+              options={FRECUENCIAS}
+              onChange={setFrequency}
+            />
+          </QField>
+        </QCard>
+
+        <QCard>
+          <QField>
+            <QLabel htmlFor="date">Fecha de aplicación</QLabel>
+            <QInput
+              id="date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+              disabled={loading}
+            />
+          </QField>
+        </QCard>
+
+        <QCard>
+          <QField>
+            <QLabel htmlFor="notes">Observaciones / Motivo (opcional)</QLabel>
+            <QInput
+              id="notes"
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Ej: Fiebre, mastitis en cuarto derecho..."
+              disabled={loading}
+            />
+          </QField>
+        </QCard>
+
+        <QSubmitButton loading={loading} color="bg-blue-600">
+          Guardar Tratamiento
+        </QSubmitButton>
+      </form>
+    </QuickFormShell>
   );
 }

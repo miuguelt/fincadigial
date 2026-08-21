@@ -148,7 +148,7 @@ def get_complete_stats(finca_id=None) -> dict:
                     },
                     {
                         "id": "herd_growth_rate",
-                        "titulo": "Crecimiento Hato",
+                        "titulo": "Crecimiento del ganado",
                         "valor": kpis.herd_growth,
                         "unidad": "%",
                         "cambio": 0.0,

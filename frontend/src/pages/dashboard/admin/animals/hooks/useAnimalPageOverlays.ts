@@ -24,7 +24,14 @@ export function buildAnimalPageOverlays(runtime: AnimalPageRuntime): AnimalPageO
       motherOptions,
       currentUserId: user?.id,
       navigate,
-      onOpenChange: details.setIsOpen,
+      onOpenChange: (open: boolean) => {
+        details.setIsOpen(open);
+        if (!open && typeof window !== 'undefined') {
+          if (window.location.pathname.startsWith('/admin/animals/') && !window.location.pathname.endsWith('/admin/animals')) {
+            navigate('/admin/animals', { replace: true });
+          }
+        }
+      },
       onOpenHistory: details.openHistory,
       onOpenAncestors: openGeneticTreeModal,
       onOpenDescendants: openDescendantsTreeModal,

@@ -43,7 +43,7 @@ class HerdICACompliance(Resource):
     @jwt_required()
     @require_permission("animal-analytics", "read")
     def get(self):
-        """Reporte de cumplimiento ICA para todo el hato."""
+        """Reporte de cumplimiento ICA para todo el ganado."""
         from app.utils.tenant_context import get_current_finca_id
 
         finca_id = get_current_finca_id()

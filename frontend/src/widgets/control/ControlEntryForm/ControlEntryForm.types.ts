@@ -14,6 +14,8 @@ export interface ControlEntryFormValues {
 export interface ControlEntryFormWidgetProps {
 	onSuccess?: () => void;
 	defaultDate?: string;
+	/** Animal preseleccionado al abrir la revisión desde una alerta concreta. */
+	defaultAnimalId?: number;
 	onCancel?: () => void;
 	mode?: ControlEntryMode;
 }

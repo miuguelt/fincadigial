@@ -123,7 +123,7 @@ function AdminTreatmentMedicationsPage() {
     enableCreateModal: true,
     enableEditModal: true,
     enableDelete: true,
-    customHeader: <div className="mt-4"><SanidadTabs /></div>,
+    customHeader: <SanidadTabs />,
   };
 
   // No renderizar hasta que las opciones estén cargadas

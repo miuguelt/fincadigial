@@ -25,7 +25,22 @@ interface AnimalCrudContentProps {
 export function AnimalCrudContent({ config, initialFormData, mapResponseToForm, validateForm, renderDetail, onFormDataChange, pendingImages, setPendingImages, overlays }: AnimalCrudContentProps) {
   return (
     <>
-      <AdminCRUDPage config={config} service={animalsService} initialFormData={initialFormData} mapResponseToForm={mapResponseToForm} validateForm={validateForm} customDetailContent={renderDetail} onFormDataChange={onFormDataChange} realtime pollIntervalMs={0} refetchOnFocus={false} refetchOnReconnect enhancedHover additionalFormContent={(_formData: any, editingItem: any) => editingItem ? null : <AnimalImageField files={pendingImages} onChange={setPendingImages} />} />
+      <AdminCRUDPage
+        config={config}
+        service={animalsService}
+        initialFormData={initialFormData}
+        mapResponseToForm={mapResponseToForm}
+        validateForm={validateForm}
+        customDetailContent={renderDetail}
+        onOpenDetail={(item: any) => overlays.detail.onOpenAnimal(Number(item.id))}
+        onFormDataChange={onFormDataChange}
+        realtime
+        pollIntervalMs={0}
+        refetchOnFocus={false}
+        refetchOnReconnect
+        enhancedHover
+        additionalFormContent={(_formData: any, editingItem: any) => editingItem ? null : <AnimalImageField files={pendingImages} onChange={setPendingImages} />}
+      />
       <AnimalPageOverlays {...overlays} />
     </>
   );

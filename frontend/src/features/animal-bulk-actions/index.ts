@@ -7,6 +7,7 @@ export { BatchActionToolbar } from './BatchActionToolbar';
 export { BatchWeightModal } from './BatchWeightModal';
 export { BatchVaccinationModal } from './BatchVaccinationModal';
 export { BatchFieldTransferModal } from './BatchFieldTransferModal';
+export { BatchDeleteModal } from './BatchDeleteModal';
 export { BulkTagPrintModal } from './BulkTagPrintModal';
 export { BatchReproductionModal } from './BatchReproductionModal';
 export { QuickAnimalTransferForm } from './QuickAnimalTransferForm';

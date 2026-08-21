@@ -13,7 +13,7 @@ _ALERTS_PREVIEW = 10
 
 
 def get_basic_stats(finca_id=None) -> dict:
-    """Cifras de cabecera del hato."""
+    """Cifras de cabecera del ganado."""
     from app.models.animals import AnimalStatus, Animals
     from app.models.control import Control
     from app.models.livestock_summary import LivestockSummary

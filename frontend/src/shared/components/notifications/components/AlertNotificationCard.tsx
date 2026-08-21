@@ -5,6 +5,7 @@ import { es } from 'date-fns/locale';
 import { Button } from '@/shared/ui/button';
 import { cn } from '@/shared/lib/utils';
 import { typeIcons, priorityConfig } from './alertCard.constants';
+import { normalizeColombianLivestockText } from '@/shared/utils/colombiaLanguage';
 
 export interface AlertCardData {
   id: string | number;
@@ -41,6 +42,10 @@ export const AlertNotificationCard = memo(function AlertNotificationCard({
     : '';
 
   const isUnread = !alert.is_read;
+  const message = normalizeColombianLivestockText(alert.message);
+  const recommendation = alert.recommendation
+    ? normalizeColombianLivestockText(alert.recommendation)
+    : undefined;
 
   return (
     <div
@@ -121,7 +126,7 @@ export const AlertNotificationCard = memo(function AlertNotificationCard({
               'text-sm leading-relaxed whitespace-normal break-words',
               isUnread ? 'font-medium text-foreground' : 'text-muted-foreground'
             )}>
-              {alert.message}
+              {message}
             </p>
 
             {/* Metadata del animal / potrero */}
@@ -146,7 +151,7 @@ export const AlertNotificationCard = memo(function AlertNotificationCard({
         </div>
 
         {/* Recomendación IA */}
-        {alert.recommendation && (
+        {recommendation && (
           <div className={cn(
             'mt-3 p-3 rounded-xl border',
             'bg-gradient-to-r from-violet-50/80 to-purple-50/80 dark:from-violet-950/30 dark:to-purple-950/30',
@@ -161,7 +166,7 @@ export const AlertNotificationCard = memo(function AlertNotificationCard({
               </span>
             </div>
             <p className="text-xs text-violet-900 dark:text-violet-200 leading-relaxed pl-7">
-              {alert.recommendation}
+              {recommendation}
             </p>
           </div>
         )}

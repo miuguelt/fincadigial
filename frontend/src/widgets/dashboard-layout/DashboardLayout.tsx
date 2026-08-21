@@ -10,8 +10,8 @@ import { QuickActionsModal } from '@/widgets/dashboard-layout/QuickActionsModal'
 import { CrearFincaPage } from '@/features/multi-finca/ui/CrearFincaPage';
 import { cn } from '@/shared/lib/utils';
 
-// Ancho reservado por el menú lateral flotante: 280px de panel + 16px de gap izquierdo.
-const SIDEBAR_INSET = '296px';
+// Ancho reservado por el menú lateral flotante: 280px de panel + 16px de gap izquierdo + 12px margen de respiro.
+const SIDEBAR_INSET = '308px';
 
 const DashboardLayout: React.FC = () => {
   const { loading, isAuthenticated, user } = useAuth();
@@ -122,9 +122,9 @@ const DashboardLayout: React.FC = () => {
         <main
           className={cn(
             "flex-1 min-h-0 flex flex-col overflow-y-auto overflow-x-hidden bg-background transition-all duration-500 ease-out w-full max-w-full",
-            // Con el menú abierto reservamos exactamente el ancho del menú + su margen (296px).
+            // Con el menú abierto reservamos exactamente el ancho del menú + su margen (308px).
             // Las páginas internas (AppLayout, etc) se encargarán de sus propios paddings.
-            isSidebarOpen && "lg:pl-[296px]"
+            isSidebarOpen && "lg:pl-[308px]"
           )}
         >
           <Outlet />

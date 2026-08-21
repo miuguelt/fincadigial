@@ -24,8 +24,7 @@ import { Button } from '@/shared/ui/button';
 import { cn } from '@/shared/ui/cn';
 import { GenericModal } from '@/shared/ui/common/GenericModal';
 import { AnimalCard } from '@/widgets/dashboard/animals/AnimalCard';
-import { AnimalModal } from '@/widgets/dashboard/animals/AnimalModal';
-import { AnimalModalContent } from '@/widgets/dashboard/animals/AnimalModalContent';
+import { AnimalDetailModal } from '@/widgets/dashboard/animals/AnimalDetailModal';
 
 type FieldDetailsTab = 'overview' | 'animals' | 'stats';
 
@@ -641,24 +640,17 @@ export const FieldDetailsModal: React.FC<FieldDetailsModalProps> = ({
     {animalDetailStack.map((stacked, index) => {
       const selectedAnimal = stacked.data;
       return (
-        <AnimalModal
+        <AnimalDetailModal
           key={`stacked-${stacked.id}-${index}`}
           isOpen={true}
+          onOpenChange={(open: boolean) => {
+            if (!open) setAnimalDetailStack((prev) => prev.slice(0, -1));
+          }}
           onClose={() => setAnimalDetailStack((prev) => prev.slice(0, -1))}
           animal={selectedAnimal}
-          breedLabel={getBreedLabel(selectedAnimal)}
-          fatherLabel={getFatherLabel(selectedAnimal)}
-          motherLabel={getMotherLabel(selectedAnimal)}
-        >
-          <AnimalModalContent
-            animal={selectedAnimal}
-            breedLabel={getBreedLabel(selectedAnimal)}
-            fatherLabel={getFatherLabel(selectedAnimal)}
-            motherLabel={getMotherLabel(selectedAnimal)}
-            onFatherClick={(id) => handleOpenAnimalDetail({ id })}
-            onMotherClick={(id) => handleOpenAnimalDetail({ id })}
-          />
-        </AnimalModal>
+          animals={animals}
+          onOpenAnimal={(id) => handleOpenAnimalDetail({ id })}
+        />
       );
     })}
     </>

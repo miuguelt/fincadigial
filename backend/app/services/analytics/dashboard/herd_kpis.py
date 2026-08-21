@@ -26,7 +26,7 @@ class HerdKpis:
 def herd_kpis(
     finca_id, summary, without_control: int, without_vaccination: int
 ) -> HerdKpis:
-    """Porcentajes de salud, cobertura, cumplimiento y crecimiento del hato.
+    """Porcentajes de salud, cobertura, cumplimiento y crecimiento del ganado.
 
     Sin animales vivos todo queda en cero: un 100 % calculado sobre cero
     animales se leería como "todo perfecto" cuando no hay nada que medir.

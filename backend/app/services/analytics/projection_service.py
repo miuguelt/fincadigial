@@ -1,6 +1,6 @@
 """
 ProjectionService (V2.0)
-Motor de proyecciones y estimaciones del hato.
+Motor de proyecciones y estimaciones del ganado.
 Todas las constantes provienen de la BD (system_contents).
 No contiene datos simulados ni aleatorios.
 """

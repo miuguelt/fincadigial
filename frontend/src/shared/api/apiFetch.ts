@@ -17,6 +17,8 @@ export async function apiFetch<T = any>(
     disableAuth?: boolean;
     skipCache?: boolean;
     skipOffline?: boolean;
+    /** El llamador muestra el error por su cuenta; no lanzar el aviso genérico. */
+    skipErrorToast?: boolean;
   }
 ): Promise<AxiosResponse<T>> {
   // api.request already handles:

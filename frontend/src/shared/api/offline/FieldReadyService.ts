@@ -14,7 +14,7 @@
  */
 
 import { openDB, IDBPDatabase } from 'idb';
-import { api } from '@/shared/api/base-client';
+import api from '@/shared/api/client';
 
 const DB_NAME   = 'VillaLuzFieldReady';
 const DB_VER    = 1;

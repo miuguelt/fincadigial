@@ -39,7 +39,7 @@ const featureList = [
   },
   {
     title: 'Operación en campo sin señal',
-    description: 'Modo offline y sincronización segura para registrar datos desde el potrero o zonas sin cobertura.',
+    description: 'Modo sin conexión y sincronización segura para registrar datos desde el potrero o zonas sin cobertura.',
     icon: Leaf,
   },
   {

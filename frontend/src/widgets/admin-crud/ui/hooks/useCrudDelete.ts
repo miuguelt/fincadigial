@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import type { ToastType } from '@/app/providers/ToastContext';
 import { addTombstone } from '@/shared/api/cache/tombstones';
+import { parseDeletionError, type DeletionErrorInfo } from '@/shared/api/deletion-error';
 
 /** El backend puede seguir devolviendo lo borrado; se oculta mientras tanto. */
 const TOMBSTONE_TTL_MS = 120000;
@@ -51,6 +52,9 @@ export function useCrudDelete<T extends { id: number }>(args: UseCrudDeleteArgs<
   const [targetId, setTargetId] = useState<number | null>(null);
   const [isCheckingDependencies, setIsCheckingDependencies] = useState(false);
   const [dependencyInfo, setDependencyInfo] = useState<DependencyInfo | null>(null);
+  const [blockedInfo, setBlockedInfo] = useState<DeletionErrorInfo | null>(null);
+
+  const dismissBlocked = useCallback(() => setBlockedInfo(null), []);
 
   const resetConfirmState = useCallback(() => {
     setTargetId(null);
@@ -134,10 +138,17 @@ export function useCrudDelete<T extends { id: number }>(args: UseCrudDeleteArgs<
         }
       }, REFETCH_DELAY_MS);
     } catch (error: any) {
-      const detail = error?.response?.data?.message
-        || error?.response?.data?.detail
-        || error?.message;
-      showToast(detail || `Error al eliminar ${config.entityName.toLowerCase()}`, 'error');
+      // Un bloqueo por integridad no es un fallo pasajero: se explica en un
+      // diálogo, no en un aviso que desaparece antes de poder leerlo.
+      const parsed = parseDeletionError(
+        error,
+        `Error al eliminar ${config.entityName.toLowerCase()}`,
+      );
+      if (parsed.isIntegrityBlock) {
+        setBlockedInfo(parsed);
+        return;
+      }
+      showToast(parsed.message, 'error');
     }
   }, [
     canDelete, targetId, deleteItem, entityKey, items, currentPage, setPage,
@@ -149,6 +160,8 @@ export function useCrudDelete<T extends { id: number }>(args: UseCrudDeleteArgs<
     setConfirmOpen,
     isCheckingDependencies,
     dependencyInfo,
+    blockedInfo,
+    dismissBlocked,
     openDeleteConfirm,
     handleConfirmDelete,
     resetConfirmState,

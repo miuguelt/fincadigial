@@ -188,7 +188,7 @@ const GrazingRotation: React.FC = () => {
                 ) : state === "Descansando" ? (
                   <div className="w-full">
                     <div className="flex justify-between text-xs font-black text-muted-foreground uppercase mb-2">
-                      <span>Descanso: {rest} dias</span>
+                      <span>Descanso: {rest} días</span>
                       <span>Meta: 30</span>
                     </div>
                     <div className="w-full bg-muted h-3 rounded-full overflow-hidden">
@@ -221,8 +221,8 @@ const GrazingRotation: React.FC = () => {
           <IconInfoCircle size="lg" className="text-info" /> Fuente de datos
         </h3>
         <p className="text-muted-foreground font-medium leading-relaxed">
-          Esta vista lee los potreros desde el servicio conectado al backend. Si faltan dias de descanso o capacidad,
-          registra esos datos en Gestion de Potreros para que el calculo operativo salga de la base de datos.
+          Esta vista lee los potreros desde el servicio conectado al backend. Si faltan días de descanso o capacidad,
+          registra esos datos en Gestión de Potreros para que el cálculo operativo salga de la base de datos.
         </p>
       </div>
     </div>

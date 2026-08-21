@@ -199,7 +199,9 @@ export function useResourceCrud<T extends { id?: number | string }>(deps: CrudDe
     try {
       const result = await safeExecuteMutation(async () => {
         try {
-          const ok = await service.delete(id);
+          // El aviso genérico se omite: la capa CRUD explica el motivo real
+          // (por ejemplo, un bloqueo por integridad referencial).
+          const ok = await service.delete(id, { skipErrorToast: true });
           if (ok) dropLocally();
           return ok;
         } catch (err: any) {

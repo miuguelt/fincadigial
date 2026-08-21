@@ -128,7 +128,7 @@ const AdminTreatmentVaccinesPage: React.FC = () => {
     enableCreateModal: true,
     enableEditModal: true,
     enableDelete: true,
-    customHeader: <div className="mt-4"><SanidadTabs /></div>,
+    customHeader: <SanidadTabs />,
   };
 
   // Mapeo respuesta -> formulario

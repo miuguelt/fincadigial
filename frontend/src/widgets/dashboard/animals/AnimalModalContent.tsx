@@ -32,6 +32,8 @@ import { AlertsSection } from './AlertsSection';
 import { ItemDetailModal } from './ItemDetailModal';
 import { CollapsibleCard } from '@/shared/ui/common/CollapsibleCard';
 import { TreatmentSuppliesModal } from '../treatments/TreatmentSuppliesModal';
+import { LivestockTagWidget } from './LivestockTagWidget';
+import { AnimalBentoStats } from './components/AnimalBentoStats';
 
 function DetailField({
   label,
@@ -1112,6 +1114,45 @@ export function AnimalModalContent({
   }))) : [];
   const hasAnimalImages = !imagesLoading && animalImages.length > 0;
 
+  // Determinar potrero actual reactivamente a partir de las asignaciones activas
+  const activeFieldAssignment = useMemo(() => {
+    return fields.find((f: any) => !f.removal_date);
+  }, [fields]);
+
+  const currentPotreroName = useMemo(() => {
+    if (activeFieldAssignment) {
+      return fieldOptions[activeFieldAssignment.field_id] || activeFieldAssignment.field?.name || activeFieldAssignment.field_name || `Potrero #${activeFieldAssignment.field_id}`;
+    }
+    return animal.current_field_name || animal.current_pasture || 'Sin potrero asignado';
+  }, [activeFieldAssignment, fieldOptions, animal.current_field_name, animal.current_pasture]);
+
+  const bentoGdpStats = useMemo(() => {
+    if (controls.length < 2) return null;
+    const sorted = [...controls]
+      .filter(c => c.weight && c.checkup_date)
+      .sort((a, b) => new Date(a.checkup_date).getTime() - new Date(b.checkup_date).getTime());
+    if (sorted.length < 2) return null;
+    const first = sorted[0];
+    const last = sorted[sorted.length - 1];
+    const daysDiff = Math.round((new Date(last.checkup_date).getTime() - new Date(first.checkup_date).getTime()) / (1000 * 60 * 60 * 24));
+    if (daysDiff <= 0) return null;
+    const weightDiff = (Number(last.weight) - Number(first.weight)).toFixed(1);
+    const gdp = (Number(weightDiff) / daysDiff).toFixed(2);
+    return { gdp, weightDiff, daysDiff };
+  }, [controls]);
+
+  const bentoDaysInField = useMemo(() => {
+    if (fields.length === 0) return null;
+    const sorted = [...fields].sort((a, b) => new Date(b.assignment_date || b.created_at).getTime() - new Date(a.assignment_date || a.created_at).getTime());
+    const latest = sorted[0];
+    if (!latest?.assignment_date) return null;
+    const diff = Math.floor((Date.now() - new Date(latest.assignment_date).getTime()) / (1000 * 60 * 60 * 24));
+    return diff >= 0 ? diff : 0;
+  }, [fields]);
+
+  const activeDiseasesCount = useMemo(() => diseases.filter((d: any) => d.status === 'Activo').length, [diseases]);
+  const curedDiseasesCount = useMemo(() => diseases.filter((d: any) => d.status === 'Curado' || d.status === 'Inactivo' || d.status === 'Resuelto').length, [diseases]);
+
   return (
     <>
       <div
@@ -1245,10 +1286,10 @@ export function AnimalModalContent({
               <div className="rounded-lg border border-emerald-200/40 dark:border-emerald-800/30 bg-emerald-50/30 dark:bg-emerald-950/10 p-3 transition-all hover:shadow-sm">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                   <MapPin className="h-3.5 w-3.5" />
-                  Ubicación
+                  Ubicación (Potrero)
                 </div>
                 <p className="mt-1 text-sm font-semibold text-foreground">
-                  {animal.current_field_name || animal.current_pasture || 'Sin potrero asignado'}
+                  {currentPotreroName}
                 </p>
               </div>
 
@@ -1281,6 +1322,17 @@ export function AnimalModalContent({
         />
 
         <AlertsSection animalId={animal.id} healthAlerts={healthAlerts} />
+
+        {/* ─── Métricas y Rendimiento 360° ─── */}
+        <AnimalBentoStats
+          gdpStats={bentoGdpStats}
+          daysInCurrentField={bentoDaysInField}
+          totalRotations={fields.length}
+          totalVaccinations={vaccinations.length}
+          totalTreatments={treatments.length}
+          activeDiseasesCount={activeDiseasesCount}
+          curedDiseasesCount={curedDiseasesCount}
+        />
 
         {/* Grid wrapper for collapsible sections */}
         <div className="space-y-4">
@@ -1375,6 +1427,16 @@ export function AnimalModalContent({
                 }
               />
             </div>
+          </CollapsibleCard>
+
+          {/* Identificación Digital QR & NFC - Collapsible */}
+          <CollapsibleCard
+            title="Identificación Digital (QR y NFC)"
+            defaultCollapsed={true}
+            accent="purple"
+            data-testid="collapsible-section-digital-id"
+          >
+            <LivestockTagWidget animal={animal} />
           </CollapsibleCard>
 
           {/* Notas - Collapsible */}
@@ -1554,10 +1616,10 @@ export function AnimalModalContent({
               deletingItemId={deletingItemId}
             />
 
-            {/* Campos Asignados - Amarillo */}
+            {/* Potreros Asignados - Amarillo */}
             <RelatedDataSection
               key="animal_field"
-              title="Campos Asignados"
+              title="Potreros Asignados"
               icon={<MapPin className="h-5 w-5" />}
               data={fields}
               accent="amber"
@@ -1567,7 +1629,7 @@ export function AnimalModalContent({
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex flex-col">
                       <span className="text-[13px] font-bold text-foreground">
-                        {fieldOptions[item.field_id] || `Campo #${item.field_id}`}
+                        {fieldOptions[item.field_id] || `Potrero #${item.field_id}`}
                       </span>
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5">
                         <Badge variant="outline" className="text-[11px] h-4 bg-amber-500/10 text-amber-700 border-amber-200">
@@ -1607,7 +1669,7 @@ export function AnimalModalContent({
                     await animalFieldsService.deleteAnimalField(recordId as any);
                     await animalFieldsService.clearCache();
                     if (animal?.id) clearAnimalDependencyCache(animal.id);
-                    showToast('Asignación de campo eliminada correctamente', 'success');
+                    showToast('Asignación de potrero eliminada correctamente', 'success');
 
 
                   } catch (error: any) {

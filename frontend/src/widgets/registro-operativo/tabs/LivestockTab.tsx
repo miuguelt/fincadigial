@@ -22,7 +22,7 @@ export function LivestockTab({ onOpenModal }: LivestockTabProps) {
     { type: 'treatment', label: 'Aplicar Tratamiento', sub: 'Vacunas y medicinas', icon: IconHealthCheck, tone: 'bg-info text-info-foreground border-info' },
     { type: 'control', label: 'Control y Pesaje', sub: 'Peso, alzada y estado', icon: Scale, tone: 'bg-teal-600 text-white border-teal-600' },
     { type: 'weaning', label: 'Destetar Ternero', sub: 'Paso a levante y peso 205d', icon: Baby, tone: 'bg-indigo-600 text-white border-indigo-600' },
-    { type: 'exit', label: 'Salida / Venta / Muerte', sub: 'Dar de baja del hato', icon: LogOut, tone: 'bg-rose-700 text-white border-rose-700' },
+    { type: 'exit', label: 'Salida / Venta / Muerte', sub: 'Dar de baja del ganado', icon: LogOut, tone: 'bg-rose-700 text-white border-rose-700' },
     { type: 'finance', label: 'Ingreso o Gasto', sub: 'Ventas, insumos, compras', icon: DollarSign, tone: 'bg-sky-600 text-white border-sky-600' },
   ];
 

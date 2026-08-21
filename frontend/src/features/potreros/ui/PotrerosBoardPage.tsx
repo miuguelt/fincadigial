@@ -134,9 +134,15 @@ export function PotrerosBoardPage({ viewSwitcher }: PotrerosBoardPageProps) {
       title="Potreros"
       description="Mira dónde está cada animal y muévelo de potrero."
       actions={(
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           {viewSwitcher}
-          <Button variant="outline" size="sm" className="h-11" onClick={() => void board.reload()} disabled={loading}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-11 flex-1 sm:flex-none"
+            onClick={() => void board.reload()}
+            disabled={loading}
+          >
             <RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />
             Actualizar
           </Button>
@@ -272,7 +278,7 @@ export function PotrerosBoardPage({ viewSwitcher }: PotrerosBoardPageProps) {
       )}
 
       <div
-        className="grid grid-cols-1 items-start gap-3 lg:grid-cols-2 2xl:grid-cols-3"
+        className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
         onPointerMove={drag.onPointerMove}
         onPointerUp={drag.onPointerUp}
         onPointerCancel={drag.onPointerUp}
@@ -327,7 +333,7 @@ export function PotrerosBoardPage({ viewSwitcher }: PotrerosBoardPageProps) {
             <p className="text-base font-bold text-foreground">
               {selectedCount} {selectedCount === 1 ? 'animal elegido' : 'animales elegidos'}
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Button variant="outline" size="lg" className="h-12 flex-1 sm:flex-initial" onClick={clearSelection}>
                 Quitar selección
               </Button>

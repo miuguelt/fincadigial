@@ -153,7 +153,7 @@ const defaultEs: I18nMessages = {
 
 const I18nContext = createContext<I18nContextValue | undefined>(undefined);
 
-export function I18nProvider({ children, messages, locale = 'es' }: I18nProviderProps) {
+export function I18nProvider({ children, messages, locale = 'es-CO' }: I18nProviderProps) {
   const merged = useMemo<I18nMessages>(() => ({ ...defaultEs, ...(messages || {}) }), [messages]);
 
   const value = useMemo<I18nContextValue>(() => {
@@ -181,7 +181,7 @@ export function useT() {
 
 // Utilidad para obtener traducción fuera de React (inyectable posteriormente si se requiere)
 export const i18n = {
-  locale: 'es',
+  locale: 'es-CO',
   messages: { ...defaultEs } as I18nMessages,
   t(key: string, def?: string) {
     return (this.messages?.[key] as string | undefined) ?? def ?? key;

@@ -70,7 +70,7 @@ export function applyOperationFailure(operation: QueuedOperation, error: any): O
 
   if (esErrorAuth) {
     operation.status = 'failed';
-    operation.error = 'Sesión expirada - Requiring login';
+    operation.error = 'Sesión expirada. Debes iniciar sesión nuevamente.';
     return 'auth';
   }
 

@@ -8,9 +8,10 @@ import { getTodayColombia } from '@/shared/utils/dateUtils';
 import { IconDroplet } from '@/shared/ui/icons';
 import {
   QuickFormShell, QCard, QField, QLabel,
-  QInput, QSelect, QSubmitButton,
+  QInput, QSelect, QSubmitButton, QNumberStepper,
 } from './QuickFormShell';
-import { api } from '@/shared/api/base-client';
+import api from '@/shared/api/client';
+import { wasQueuedOffline } from '@/shared/api/offlineResult';
 import { emitDataRefresh } from '@/shared/utils/dataRefresh';
 
 export default function QuickWater() {
@@ -64,14 +65,18 @@ export default function QuickWater() {
     };
 
     try {
+      let pendiente = !isOnline;
       if (!isOnline) {
         await offlineQueue.enqueue('POST', 'water-measurements', payload);
-        showToast('Medición guardada sin señal. Se enviará al volver la conexión.', 'success');
       } else {
-        await api.post('/water-measurements', payload);
-        showToast('Medición de agua registrada correctamente.', 'success');
+        // Sin red, el cliente encola la escritura y responde 202: no está
+        // registrada todavía, así que no se anuncia como tal.
+        pendiente = wasQueuedOffline(await api.post('/water-measurements', payload));
       }
-      if (isOnline) emitDataRefresh('water-measurements');
+      showToast(pendiente
+        ? 'Medición guardada sin señal. Se enviará al volver la conexión.'
+        : 'Medición de agua registrada correctamente.', 'success');
+      if (!pendiente) emitDataRefresh('water-measurements');
       handleClose();
     } catch {
       showToast('No se pudo guardar el registro.', 'error');
@@ -81,7 +86,7 @@ export default function QuickWater() {
   };
 
   return (
-    <QuickFormShell titulo="Medición de Agua" icon={IconDroplet} colorHeader="bg-info">
+    <QuickFormShell titulo="Medición de Agua" icon={IconDroplet} colorHeader="bg-blue-600">
       <form onSubmit={handleSubmit} className="space-y-4">
         <QCard>
           <QField>
@@ -92,7 +97,7 @@ export default function QuickWater() {
               onChange={setSourceId}
               placeholder={cargando ? 'Cargando fuentes...' : '— Selecciona la fuente —'}
               options={sources}
-              disabled={cargando}
+              disabled={cargando || guardando}
             />
           </QField>
         </QCard>
@@ -100,30 +105,35 @@ export default function QuickWater() {
         <QCard>
           <QField>
             <QLabel htmlFor="level">Nivel actual (%)</QLabel>
-            <QInput
+            <QNumberStepper
               id="level"
-              type="number"
               value={level}
-              onChange={(e) => setLevel(e.target.value)}
-              placeholder="Ej: 85"
-              min="0"
-              max="100"
+              onChange={setLevel}
+              unit="%"
+              min={0}
+              max={100}
+              step={5}
+              presets={[25, 50, 75, 100]}
+              placeholder="0"
+              disabled={guardando}
             />
           </QField>
         </QCard>
 
         <QCard>
           <QField>
-            <QLabel htmlFor="ph">PH (opcional)</QLabel>
-            <QInput
+            <QLabel htmlFor="ph">pH del agua (opcional)</QLabel>
+            <QNumberStepper
               id="ph"
-              type="number"
-              step="0.1"
               value={ph}
-              onChange={(e) => setPh(e.target.value)}
-              placeholder="Ej: 7.0"
-              min="0"
-              max="14"
+              onChange={setPh}
+              unit="pH"
+              min={0}
+              max={14}
+              step={0.1}
+              presets={[6.5, 7.0, 7.5, 8.0]}
+              placeholder="7.0"
+              disabled={guardando}
             />
           </QField>
         </QCard>

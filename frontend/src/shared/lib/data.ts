@@ -17,17 +17,17 @@ export const features = [
   {
     title: "Control de Animales",
     icon: FaFileContract,
-    description: "Registro de animales enfermos, mejoras geneticas y gestion de razas y especies",
+    description: "Registro de animales enfermos, mejoras genéticas y gestión de razas y especies",
   },
   {
     title: "Administración de Usuarios",
     icon: FaUsersCog,
-    description: "Gestion de todos los usuarios del sistema con roles específicos",
+    description: "Gestión de todos los usuarios del sistema con roles específicos",
   },
   {
-    title: "Administracion de Terrenos",
+    title: "Administración de Terrenos",
     icon: GiField,
-    description: "Control y gestion de los terrenos, manejo de pastoreo de animales y modulo para siembras",
+    description: "Control y gestión de los terrenos, manejo de pastoreo de animales y módulo para siembras",
   },
   {
     title: "Módulo de Sanidad",
@@ -37,7 +37,7 @@ export const features = [
   {
     title: "Vacunación Programada",
     icon: FaCalendarAlt,
-    description: "Planificación y gestion de las vacunaciones del ganado",
+    description: "Planificación y gestión de las vacunaciones del ganado",
   },
   {
     title: "Analisis de producción",
