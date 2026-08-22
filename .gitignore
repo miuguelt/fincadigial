@@ -1,7 +1,8 @@
-# Generated baseline: DevBrain repo-hygiene catalog + VillaLuz monorepo rules.
-# Regenerate/repair with Test-DevBrainRepoHygiene.ps1; do not add secrets here.
+# ════════════════════════════════════════════════════════════════════════
+# FINCA VILLA LUZ — .gitignore
+# ════════════════════════════════════════════════════════════════════════
 
-# --- Secrets and local configuration ---
+# --- Secretos, Variables de Entorno y Configuración Local ---
 .env
 .env.*
 !.env.example
@@ -19,7 +20,7 @@ credentials.json
 *.pfx
 *.jks
 
-# --- Dependencies and language caches ---
+# --- Dependencias y Cachés de Lenguaje ---
 node_modules/
 frontend/node_modules/
 backend/.venv/
@@ -41,7 +42,7 @@ __pycache__/
 .vite/
 *.tsbuildinfo
 
-# --- Build, coverage and test output ---
+# --- Compilación, Cobertura y Resultados de Pruebas ---
 dist/
 build/
 frontend/dist/
@@ -58,7 +59,7 @@ frontend/e2e/.auth/
 *.lcov
 *.lcov-report/
 
-# --- Runtime data, databases and logs ---
+# --- Datos en Tiempo de Ejecución, Bases de Datos y Logs ---
 *.log
 logs/
 *.pid
@@ -79,7 +80,7 @@ maintenance/*.json
 backend/logs/
 frontend/logs/
 
-# --- Reports, scratch and quarantine ---
+# --- Reportes, Scratch y Cuarentena ---
 /artifacts/
 /reports/
 /restored_*/
@@ -93,7 +94,7 @@ _graveyard/
 *_OLD*
 debug_*
 
-# --- IDE and operating-system files ---
+# --- IDEs y Archivos del Sistema Operativo ---
 .vscode/
 .idea/
 .claude/
@@ -103,7 +104,7 @@ Thumbs.db
 *.swp
 *.swo
 
-# --- DevBrain generated integration files ---
+# --- DevBrain Reglas SSoT ---
 .antigravityrules
 .codexrules
 .cursorrules
@@ -111,16 +112,14 @@ Thumbs.db
 .windsurfrules
 GEMINI.md
 
-# --- Temporary frontend validation copy ---
+# --- Archivos Temporales de Validación ---
 frontend_VALIDATED_TMP/
-
-# --- Known generated frontend reports (do not hide source/config JSON globally) ---
 frontend/*_report.json
 frontend/lint_results*.json
 frontend/coverage_enhanced.json
 frontend/service_optimization_report.json
 
-# --- One-off scripts that do not belong in the product ---
+# --- Scripts de Prueba y Depuración Puntuales ---
 /refactor.py
 /fix_ux.py
 /filter_ui.py
@@ -143,6 +142,6 @@ backend/test_login_query.py
 backend/test_predictive.py
 backend/update_db_texts.py
 
-# --- Compose overrides and local certificates ---
+# --- Overrides Locales y Certificados ---
 docker-compose.override.yml
 frontend/certificates/

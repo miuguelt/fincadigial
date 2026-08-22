@@ -1,180 +1,268 @@
+# ════════════════════════════════════════════════════════════════════════
+# FINCA VILLA LUZ — Docker Compose para Coolify
+# ════════════════════════════════════════════════════════════════════════
+#
+# Arquitectura:
+#   1. villaluz-frontend  → Nginx Alpine sirviendo React SPA + Proxy (puerto 80)
+#   2. villaluz-backend   → Flask + Gunicorn / Gevent (puerto interno 8081)
+#   3. villaluz-db-init   → Inicializador: migraciones y bootstrap admin
+#   4. villaluz-worker    → Celery Worker (asíncrono)
+#   5. villaluz-beat      → Celery Beat (tareas programadas)
+#
+# Servicios Externos (vía variables de entorno):
+#   * Base de datos: PostgreSQL ya desplegada (DB_HOST, DB_USER, etc. o DATABASE_URL)
+#   * Redis: Instancia externa opcional (REDIS_URL)
+# ════════════════════════════════════════════════════════════════════════
+
 services:
+
+  # ── 1. FRONTEND (Nginx + React SPA) ───────────────────────────────────
   villaluz-frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - VITE_RUNTIME_ENV=production
-        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:3101/api/v1}
-        - VITE_FRONTEND_URL=${VITE_FRONTEND_URL:-http://localhost:3100}
-    image: villaluz-frontend:latest
+        VITE_RUNTIME_ENV: production
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-https://${DOMAIN}/api/v1}
+        VITE_FRONTEND_URL: ${VITE_FRONTEND_URL:-https://${DOMAIN}}
+        VITE_USE_BEARER_AUTH: "true"
+    image: villaluz-frontend:${APP_VERSION:-latest}
     container_name: villaluz_frontend
-    ports:
-      - "3003:80"
     restart: unless-stopped
-    environment:
-      - NODE_ENV=production
+    expose:
+      - "80"
+    ports:
+      - "80:80"
     depends_on:
-      - villaluz-backend
+      villaluz-backend:
+        condition: service_healthy
     networks:
-      - villaluz-network
+      - villaluz-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/ || curl -fsS http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    labels:
+      coolify.managed: "true"
+      coolify.port: "80"
 
+  # ── 2. BACKEND (Flask + Gunicorn + Gevent) ─────────────────────────────
   villaluz-backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: villaluz-backend:latest
+    image: villaluz-backend:${APP_VERSION:-latest}
     container_name: villaluz_backend
-    command: gunicorn --preload --worker-class gevent --workers 4 --worker-connections 1000 --timeout 120 --bind 0.0.0.0:8081 wsgi:app
-    ports:
-      - "8093:8081"
     restart: unless-stopped
+    command: >
+      gunicorn
+      --preload
+      --worker-class gevent
+      --workers ${GUNICORN_WORKERS:-2}
+      --worker-connections ${GUNICORN_CONNECTIONS:-200}
+      --timeout ${GUNICORN_TIMEOUT:-120}
+      --graceful-timeout 30
+      --max-requests 1000
+      --max-requests-jitter 100
+      --bind 0.0.0.0:8081
+      --access-logfile -
+      --error-logfile -
+      wsgi:app
+    expose:
+      - "8081"
     environment:
-      - FLASK_ENV=production
-      - DB_ENGINE=postgresql+psycopg2
-      - DB_HOST=villaluz_postgres
-      - DB_PORT=5432
-      - DB_USER=${DB_USER:-villaluz}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME:-finca_db}
-      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - JWT_COOKIE_DOMAIN=localhost
-      - JWT_COOKIE_SECURE=false
-      - JWT_COOKIE_SAMESITE=Lax
-      - CORS_ORIGINS=http://localhost:3003,http://127.0.0.1:3003,https://localhost:3003,https://127.0.0.1:3003,http://localhost:3005,http://127.0.0.1:3005,https://localhost:3005,https://127.0.0.1:3005,http://localhost:3000
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
-      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/0}
-      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
-      - API_BASE_URL_NO_VERSION=http://localhost:8093
-      - BACKEND_URL=http://localhost:8093
-    networks:
-      - villaluz-network
-    volumes:
-      - ./backend:/app
-      - ./maintenance:/app/maintenance
-      - ./docs:/app/docs
-    depends_on:
-      - redis
+      # ── Entorno y Versionado ──
+      FLASK_ENV: production
+      APP_VERSION: ${APP_VERSION:-1.0.0}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
 
-  villaluz-celery-worker:
-    image: villaluz-backend:latest
-    container_name: villaluz_celery_worker
-    command: celery -A celery_worker.celery worker --loglevel=info
-    restart: unless-stopped
-    environment:
-      - FLASK_ENV=production
-      - DB_ENGINE=postgresql+psycopg2
-      - DB_HOST=villaluz_postgres
-      - DB_PORT=5432
-      - DB_USER=${DB_USER:-villaluz}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME:-finca_db}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
-      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/0}
-      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
+      # ── Base de Datos Externa (PostgreSQL) ──
+      DB_ENGINE: ${DB_ENGINE:-postgresql+psycopg2}
+      DB_HOST: ${DB_HOST:-}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USER: ${DB_USER:-}
+      DB_PASSWORD: ${DB_PASSWORD:-}
+      DB_NAME: ${DB_NAME:-villaluz}
+      DATABASE_URL: ${DATABASE_URL:-}
+      SQLALCHEMY_DATABASE_URI: ${SQLALCHEMY_DATABASE_URI:-${DATABASE_URL:-postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT:-5432}/${DB_NAME:-villaluz}}}
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-4}
+      DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-1}
+      DB_POOL_TIMEOUT: ${DB_POOL_TIMEOUT:-20}
+
+      # ── Seguridad y Autenticación ──
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_COOKIE_DOMAIN: ${JWT_COOKIE_DOMAIN:-${DOMAIN}}
+      JWT_COOKIE_SECURE: ${JWT_COOKIE_SECURE:-true}
+      JWT_COOKIE_SAMESITE: ${JWT_COOKIE_SAMESITE:-Lax}
+      JWT_COOKIE_CSRF_PROTECT: ${JWT_COOKIE_CSRF_PROTECT:-true}
+
+      # ── CORS y URLs ──
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://${DOMAIN},https://www.${DOMAIN}}
+      API_BASE_URL: ${VITE_API_BASE_URL:-https://${DOMAIN}/api/v1}
+      FRONTEND_URL: ${VITE_FRONTEND_URL:-https://${DOMAIN}}
+      BACKEND_URL: https://${DOMAIN}/api/v1
+      API_BASE_URL_NO_VERSION: https://${DOMAIN}
+
+      # ── Redis Externo (Opcional) ──
+      REDIS_URL: ${REDIS_URL:-}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-${REDIS_URL:-}}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-${REDIS_URL:-}}
+
+      # ── Bootstrap Admin Inicial ──
+      VILLALUZ_BOOTSTRAP_ENABLED: ${VILLALUZ_BOOTSTRAP_ENABLED:-true}
+      VILLALUZ_ADMIN_IDENTIFICATION: ${VILLALUZ_ADMIN_IDENTIFICATION}
+      VILLALUZ_ADMIN_EMAIL: ${VILLALUZ_ADMIN_EMAIL}
+      VILLALUZ_ADMIN_PASSWORD: ${VILLALUZ_ADMIN_PASSWORD}
+      VILLALUZ_ADMIN_FULLNAME: ${VILLALUZ_ADMIN_FULLNAME:-Administrador Villa Luz}
+      VILLALUZ_ADMIN_PHONE: ${VILLALUZ_ADMIN_PHONE:-3000000000}
+      VILLALUZ_BOOTSTRAP_FINCAS_JSON: ${VILLALUZ_BOOTSTRAP_FINCAS_JSON:-[]}
+      VILLALUZ_SEED_DEMO_DATA: ${VILLALUZ_SEED_DEMO_DATA:-false}
+
+      # ── Notificaciones Email (SMTP - Opcional) ──
+      EMAIL_ENABLED: ${EMAIL_ENABLED:-false}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_USE_TLS: ${SMTP_USE_TLS:-true}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-}
+
+      # ── Web Push & Sentry (Opcionales) ──
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_CLAIMS_EMAIL: ${VAPID_CLAIMS_EMAIL:-}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+    volumes:
+      - uploads_data:/app/static/uploads
+      - maintenance_logs:/app/maintenance
     networks:
-      - villaluz-network
-    depends_on:
-      - redis
+      - villaluz-net
     healthcheck:
-      test: ["CMD-SHELL", "celery -A celery_worker.celery inspect ping || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8081/api/v1/health || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 30s
-
-  villaluz-celery-beat:
-    image: villaluz-backend:latest
-    container_name: villaluz_celery_beat
-    command: celery -A celery_worker.celery beat --loglevel=info
-    restart: unless-stopped
-    environment:
-      - FLASK_ENV=production
-      - DB_ENGINE=postgresql+psycopg2
-      - DB_HOST=villaluz_postgres
-      - DB_PORT=5432
-      - DB_USER=${DB_USER:-villaluz}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME:-finca_db}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
-      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/0}
-      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
-    networks:
-      - villaluz-network
-    depends_on:
-      - redis
-    healthcheck:
-      test: ["CMD-SHELL", "grep -q 'beat' /proc/1/cmdline || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
-
-#  db:
-#    image: mariadb:10.11
-#    container_name: villaluz_db
-#    restart: always
-#    command: --log-bin=binlog --expire-logs-days=7
-#    environment:
-#      - MYSQL_DATABASE=${MYSQL_DATABASE:-finca_db}
-#      - MYSQL_USER=${MYSQL_USER:-villaluz}
-#      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-#      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-#    ports:
-#      - "3307:3306"
-#    networks:
-#      - villaluz-network
-#    volumes:
-#      - mysql_data:/var/lib/mysql
-#    healthcheck:
-#      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "${MYSQL_USER:-villaluz}", "-p${MYSQL_PASSWORD}"]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
-
-  redis:
-    image: redis:7-alpine
-    container_name: villaluz_redis
-    restart: unless-stopped
-    command: redis-server --requirepass ${REDIS_PASSWORD}
-    networks:
-      - villaluz-network
-    ports:
-      - "6380:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
-      interval: 10s
-      timeout: 5s
       retries: 5
+      start_period: 45s
 
-#  db-backup:
-#    image: databack/mysql-backup
-#    container_name: villaluz_db_backup
-#    restart: on-failure
-#    command: dump
-#    environment:
-#      - DB_SERVER=db
-#      - DB_PORT=3306
-#      - DB_USER=${DB_USER}
-#      - DB_PASS=${DB_PASSWORD}
-#      - DB_NAMES=finca_db
-#      - DB_DUMP_TARGET=/backups
-#      - DB_DUMP_FREQUENCY=1440
-#      - DB_DUMP_BEGIN=+0
-#      - DB_DUMP_KEEP_FILES=7
-#    volumes:
-#      - backup_data:/backups
+  # ── 3. DB INITIALIZER (corre al desplegar y finaliza) ──────────────────
+  villaluz-db-init:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: villaluz-backend:${APP_VERSION:-latest}
+    container_name: villaluz_db_init
+    restart: "no"
+    command: >
+      sh -c "
+        echo '🔄 Verificando conexión con la base de datos externa...' &&
+        echo '🔧 Ejecutando migraciones de base de datos (Flask-Migrate / Alembic)...' &&
+        flask db upgrade &&
+        echo '🌱 Ejecutando bootstrap de catálogos y usuario administrador...' &&
+        python -m app.scripts.bootstrap_database &&
+        echo '✅ Inicialización de base de datos completada exitosamente.'
+      "
+    environment:
+      FLASK_ENV: production
+      FLASK_APP: wsgi.py
+      DB_ENGINE: ${DB_ENGINE:-postgresql+psycopg2}
+      DB_HOST: ${DB_HOST:-}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USER: ${DB_USER:-}
+      DB_PASSWORD: ${DB_PASSWORD:-}
+      DB_NAME: ${DB_NAME:-villaluz}
+      DATABASE_URL: ${DATABASE_URL:-}
+      SQLALCHEMY_DATABASE_URI: ${SQLALCHEMY_DATABASE_URI:-${DATABASE_URL:-postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT:-5432}/${DB_NAME:-villaluz}}}
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_COOKIE_DOMAIN: ${JWT_COOKIE_DOMAIN:-${DOMAIN}}
+      VILLALUZ_BOOTSTRAP_ENABLED: ${VILLALUZ_BOOTSTRAP_ENABLED:-true}
+      VILLALUZ_ADMIN_IDENTIFICATION: ${VILLALUZ_ADMIN_IDENTIFICATION}
+      VILLALUZ_ADMIN_EMAIL: ${VILLALUZ_ADMIN_EMAIL}
+      VILLALUZ_ADMIN_PASSWORD: ${VILLALUZ_ADMIN_PASSWORD}
+      VILLALUZ_ADMIN_FULLNAME: ${VILLALUZ_ADMIN_FULLNAME:-Administrador Villa Luz}
+      VILLALUZ_ADMIN_PHONE: ${VILLALUZ_ADMIN_PHONE:-3000000000}
+      VILLALUZ_BOOTSTRAP_FINCAS_JSON: ${VILLALUZ_BOOTSTRAP_FINCAS_JSON:-[]}
+      VILLALUZ_SEED_DEMO_DATA: ${VILLALUZ_SEED_DEMO_DATA:-false}
+    networks:
+      - villaluz-net
 
+  # ── 4. CELERY WORKER (Tareas asíncronas) ──────────────────────────────
+  villaluz-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: villaluz-backend:${APP_VERSION:-latest}
+    container_name: villaluz_celery_worker
+    restart: unless-stopped
+    command: >
+      celery -A celery_worker.celery worker
+      --loglevel=warning
+      --concurrency=${CELERY_CONCURRENCY:-2}
+      --max-tasks-per-child=200
+    environment:
+      FLASK_ENV: production
+      DB_ENGINE: ${DB_ENGINE:-postgresql+psycopg2}
+      DB_HOST: ${DB_HOST:-}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USER: ${DB_USER:-}
+      DB_PASSWORD: ${DB_PASSWORD:-}
+      DB_NAME: ${DB_NAME:-villaluz}
+      DATABASE_URL: ${DATABASE_URL:-}
+      SQLALCHEMY_DATABASE_URI: ${SQLALCHEMY_DATABASE_URI:-${DATABASE_URL:-postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT:-5432}/${DB_NAME:-villaluz}}}
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      REDIS_URL: ${REDIS_URL:-}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-${REDIS_URL:-}}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-${REDIS_URL:-}}
+    volumes:
+      - uploads_data:/app/static/uploads
+    networks:
+      - villaluz-net
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A celery_worker.celery inspect ping -d celery@$$HOSTNAME || exit 1"]
+      interval: 60s
+      timeout: 15s
+      retries: 3
+      start_period: 40s
+
+  # ── 5. CELERY BEAT (Planificador periódico) ───────────────────────────
+  villaluz-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: villaluz-backend:${APP_VERSION:-latest}
+    container_name: villaluz_celery_beat
+    restart: unless-stopped
+    command: celery -A celery_worker.celery beat --loglevel=warning --scheduler celery.beat:PersistentScheduler
+    environment:
+      FLASK_ENV: production
+      DB_ENGINE: ${DB_ENGINE:-postgresql+psycopg2}
+      DB_HOST: ${DB_HOST:-}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USER: ${DB_USER:-}
+      DB_PASSWORD: ${DB_PASSWORD:-}
+      DB_NAME: ${DB_NAME:-villaluz}
+      DATABASE_URL: ${DATABASE_URL:-}
+      SQLALCHEMY_DATABASE_URI: ${SQLALCHEMY_DATABASE_URI:-${DATABASE_URL:-postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT:-5432}/${DB_NAME:-villaluz}}}
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      REDIS_URL: ${REDIS_URL:-}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-${REDIS_URL:-}}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-${REDIS_URL:-}}
+    networks:
+      - villaluz-net
+
+# ── REDES ──────────────────────────────────────────────────────────────
 networks:
-  villaluz-network:
+  villaluz-net:
     driver: bridge
 
+# ── VOLÚMENES PERSISTENTES ────────────────────────────────────────────
 volumes:
-  mysql_data:
-  redis_data:
-  backup_data:
+  uploads_data:
+    driver: local
+  maintenance_logs:
+    driver: local

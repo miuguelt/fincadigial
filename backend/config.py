@@ -73,9 +73,13 @@ def _parse_cors_origins_env():
 
 def _build_sqlalchemy_database_uri():
     """Build SQLALCHEMY_DATABASE_URI from DB_* env vars when not provided."""
-    uri = os.getenv("SQLALCHEMY_DATABASE_URI")
+    uri = os.getenv("SQLALCHEMY_DATABASE_URI") or os.getenv("DATABASE_URL")
     if uri:
-        # Si la URI ya tiene el driver, la usamos tal cual
+        # Normalizar prefijos genéricos de postgres
+        if uri.startswith("postgres://"):
+            uri = uri.replace("postgres://", "postgresql+psycopg2://", 1)
+        elif uri.startswith("postgresql://") and not uri.startswith("postgresql+"):
+            uri = uri.replace("postgresql://", "postgresql+psycopg2://", 1)
         return uri
 
     # En desarrollo local permitimos una base SQLite auto-contenida para no
@@ -93,7 +97,8 @@ def _build_sqlalchemy_database_uri():
     if _WSL_IP and host in ("localhost", "127.0.0.1"):
         host = _WSL_IP
 
-    engine = os.getenv("DB_ENGINE", "mysql+pymysql")
+    default_engine = "postgresql+psycopg2" if active_env == "production" else "mysql+pymysql"
+    engine = os.getenv("DB_ENGINE", default_engine)
 
     # Puerto por defecto según motor
     default_port = "5432" if "postgresql" in engine else "3306"

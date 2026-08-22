@@ -1,7 +1,8 @@
-# Generated baseline for a hypothetical repository-root Docker context.
-# Real Compose builds use backend/.dockerignore and frontend/.dockerignore.
+# ════════════════════════════════════════════════════════════════════════
+# FINCA VILLA LUZ — .dockerignore (Contexto de Compilación Docker)
+# ════════════════════════════════════════════════════════════════════════
 
-# --- VCS and DevBrain metadata ---
+# --- Control de Versiones & Metadatos ---
 .git/
 .gitignore
 .dockerignore
@@ -13,12 +14,17 @@
 .cursorrules
 .opencoderules
 .windsurfrules
+.claude/
+.gemini/
 
-# --- Secrets and private keys: no exceptions in an image context ---
+# --- Secretos, Credenciales y Entornos Locales ---
 .env
 .env.*
+!.env.example
+!.env.production.example
 **/.env
 **/.env.*
+!**/.env.example
 *.pem
 *.key
 *.p12
@@ -27,7 +33,7 @@
 secrets.json
 credentials.json
 
-# --- Dependencies and caches ---
+# --- Dependencias & Cachés ---
 node_modules/
 **/node_modules/
 .venv/
@@ -37,13 +43,19 @@ venv/
 __pycache__/
 **/__pycache__/
 *.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
 **/.pytest_cache/
+.mypy_cache/
 **/.mypy_cache/
+.ruff_cache/
 **/.ruff_cache/
+.vite/
 **/.vite/
 *.tsbuildinfo
 
-# --- Build, tests and reports ---
+# --- Salidas de Compilación, Pruebas y Reportes ---
 dist/
 **/dist/
 build/
@@ -51,6 +63,7 @@ build/
 coverage/
 **/coverage/
 htmlcov/
+**/htmlcov/
 test-results/
 **/test-results/
 playwright-report/
@@ -66,15 +79,17 @@ logs/
 **/logs/
 *.pid
 
-# --- Documentation, maintenance and local data ---
+# --- Documentación, Scripts de Mantenimiento & Datos Locales ---
 *.md
 docs/
 maintenance/
 scripts/
 scratch/
+**/scratch/
 _archive/
 _graveyard/
 backups/
+/backups*/
 vault/
 *.bak
 *.bak-*
@@ -86,10 +101,9 @@ vault/
 _data/
 mariadb_data/
 
-# --- IDE and OS state ---
+# --- IDEs & Sistema Operativo ---
 .vscode/
 .idea/
-.claude/
 .DS_Store
 Thumbs.db
 *.swp
