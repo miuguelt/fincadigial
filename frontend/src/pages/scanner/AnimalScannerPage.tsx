@@ -306,13 +306,13 @@ export default function AnimalScannerPage() {
                   <Scan className="h-4 w-4" />
                   Escanear otro
                 </Button>
-                {scanState === 'found' && (
+                {scanState === 'found' && animalFound && (
                   <Button
-                    onClick={() => goTo('/admin/animals')}
-                    className="flex-1 gap-2"
+                    onClick={() => goTo(`/admin/animals/${animalFound.id}`)}
+                    className="flex-1 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white min-h-[44px]"
                   >
                     <Search className="h-4 w-4" />
-                    Ver animales
+                    Ver ficha del animal
                   </Button>
                 )}
               </div>

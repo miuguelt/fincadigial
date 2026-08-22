@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import { DashboardHero } from './components/DashboardHero';
 import { DashboardSearch } from './components/DashboardSearch';
 import { DashboardTip } from './components/DashboardTip';
@@ -9,7 +9,7 @@ import { ToolGroupsSection } from './components/ToolGroupsSection';
 import { useCampesinoDashboardState } from './hooks/useCampesinoDashboardState';
 
 const CampesinoDashboard = () => {
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
   const {
     user,
     isOnline,
@@ -29,8 +29,8 @@ const CampesinoDashboard = () => {
         <DashboardSearch value={searchTerm} onChange={setSearchTerm} />
         {!hasSearch && <TermometroHatoSection />}
         {!hasSearch && <MiJornadaSection />}
-        {!hasSearch && <QuickActionsSection onNavigate={navigate} />}
-        <ToolGroupsSection groups={filteredGroups} onClearSearch={() => setSearchTerm('')} onNavigate={navigate} />
+        {!hasSearch && <QuickActionsSection onNavigate={goTo} />}
+        <ToolGroupsSection groups={filteredGroups} onClearSearch={() => setSearchTerm('')} onNavigate={goTo} />
         <DashboardTip tip={tip} />
       </div>
     </div>

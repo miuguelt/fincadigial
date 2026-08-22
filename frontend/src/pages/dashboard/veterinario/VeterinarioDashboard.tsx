@@ -175,15 +175,15 @@ export default function VeterinarioDashboard() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="asistencia" className="flex items-center gap-1.5 font-bold">
+        <TabsList className="h-auto w-full justify-start gap-1.5 overflow-x-auto rounded-xl border border-border bg-card p-1.5 shadow-sm [scrollbar-width:none] [-webkit-overflow-scrolling:touch] flex">
+          <TabsTrigger value="asistencia" className="flex items-center gap-1.5 font-bold h-10 px-3 shrink-0 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <LifeBuoy className="h-4 w-4 text-emerald-600" />
             Solicitudes de Ayuda
           </TabsTrigger>
-          <TabsTrigger value="acciones">Acciones</TabsTrigger>
-          <TabsTrigger value="modulos">Módulos Salud</TabsTrigger>
-          <TabsTrigger value="alertas">Alertas</TabsTrigger>
-          <TabsTrigger value="info">Información</TabsTrigger>
+          <TabsTrigger value="acciones" className="h-10 px-3 shrink-0 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Acciones</TabsTrigger>
+          <TabsTrigger value="modulos" className="h-10 px-3 shrink-0 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Módulos Salud</TabsTrigger>
+          <TabsTrigger value="alertas" className="h-10 px-3 shrink-0 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Alertas</TabsTrigger>
+          <TabsTrigger value="info" className="h-10 px-3 shrink-0 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Información</TabsTrigger>
         </TabsList>
 
         <TabsContent value="asistencia" className="space-y-4 pt-2">

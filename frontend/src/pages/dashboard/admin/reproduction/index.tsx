@@ -1,10 +1,10 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Target } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { AdminCRUDPage } from '@/widgets/admin-crud';
 import { reproductionService } from '@/entities/reproduction/api/reproduction.service';
 import { animalService } from '@/entities/animal/api/animal.service';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import type { ReproductiveEventResponse, ReproductiveEventInput } from '@/shared/api/generated/swaggerTypes';
 import type { CRUDConfig } from '@/shared/types/crud';
 import { Badge } from '@/shared/ui/badge';
@@ -16,7 +16,7 @@ const animalLabel = (animal: { record: string; breed?: { name?: string } | null 
   animal.breed?.name ? `${animal.record} · ${animal.breed.name}` : animal.record;
 
 const ReproductionPage: React.FC = () => {
-  const navigate = useNavigate();
+  const { goTo } = useRoleNavigation();
   const initialFormData: ReproductiveEventInput = {
     animal_id: 0,
     event_type: 'Celo',
@@ -257,7 +257,7 @@ const ReproductionPage: React.FC = () => {
       <Button
         variant="outline"
         className="h-9 gap-2 rounded-lg font-semibold"
-        onClick={() => navigate('/admin/reproduction/kpis')}
+        onClick={() => goTo('/admin/reproduction/kpis')}
       >
         <Target className="h-4 w-4" />
         Indicadores del hato

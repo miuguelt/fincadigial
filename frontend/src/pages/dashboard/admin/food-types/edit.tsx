@@ -21,7 +21,7 @@ const FoodTypesEditPage: React.FC = () => {
     if (!id) return;
     try {
       await updateItem(Number(id), data);
-      navigate('/food-types');
+      navigate(-1);
     } catch (error) {
       console.error('Error al actualizar tipo de comida:', error);
     }

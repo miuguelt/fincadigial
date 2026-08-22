@@ -130,17 +130,17 @@ export const RationCalculator: React.FC = () => {
                   ¿Cuántos animales vas a alimentar?
                 </Label>{" "}
                 <div className="flex items-center justify-between gap-4">
-                  {" "}
                   <button
+                    type="button"
                     onClick={() => setAnimalCount(Math.max(1, animalCount - 1))}
-                    className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center active:scale-90 transition-all border border-border"
+                    className="h-11 w-11 min-h-[44px] min-w-[44px] rounded-xl bg-muted flex items-center justify-center active:scale-90 transition-all border border-border"
+                    aria-label="Disminuir cantidad de animales"
                   >
-                    {" "}
                     <IconMinus
                       size="lg"
                       className="text-muted-foreground"
-                    />{" "}
-                  </button>{" "}
+                    />
+                  </button>
                   <Input
                     type="number"
                     value={animalCount}
@@ -148,14 +148,15 @@ export const RationCalculator: React.FC = () => {
                       setAnimalCount(parseInt(e.target.value) || 0)
                     }
                     className="h-16 text-3xl font-black text-center border-none bg-transparent focus:ring-0"
-                  />{" "}
+                  />
                   <button
+                    type="button"
                     onClick={() => setAnimalCount(animalCount + 1)}
-                    className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center active:scale-90 transition-all border border-emerald-500/20"
+                    className="h-11 w-11 min-h-[44px] min-w-[44px] rounded-xl bg-emerald-500/10 flex items-center justify-center active:scale-90 transition-all border border-emerald-500/20"
+                    aria-label="Aumentar cantidad de animales"
                   >
-                    {" "}
-                    <IconPlus size="lg" className="text-emerald-600" />{" "}
-                  </button>{" "}
+                    <IconPlus size="lg" className="text-emerald-600" />
+                  </button>
                 </div>{" "}
               </div>{" "}
               {/* Peso Promedio */}{" "}

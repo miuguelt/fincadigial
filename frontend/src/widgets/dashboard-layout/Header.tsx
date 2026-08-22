@@ -47,7 +47,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar }) => {
               type="button"
               onClick={onToggleSidebar}
               className={cn(
-                'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-foreground shadow-sm transition-colors duration-200 hover:border-primary hover:bg-primary hover:text-primary-foreground',
+                'flex h-11 w-11 sm:h-10 sm:w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex-shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-foreground shadow-sm transition-colors duration-200 hover:border-primary hover:bg-primary hover:text-primary-foreground',
                 isSidebarOpen && 'border-primary bg-primary text-primary-foreground',
               )}
               aria-label={isSidebarOpen ? 'Ocultar menú' : 'Mostrar menú'}

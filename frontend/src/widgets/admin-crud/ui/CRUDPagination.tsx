@@ -129,9 +129,9 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
               disabled={loading || currentPage <= 1}
               aria-label={t('common.first', 'Primera')}
               title={t('common.first', 'Primera')}
-              className="hidden sm:inline-flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 p-0 text-xs font-medium text-white/80 hover:bg-white/15 hover:text-white rounded-full transition-colors disabled:opacity-30"
+              className="hidden sm:inline-flex items-center justify-center h-7 w-7 p-0 text-xs font-medium text-white/80 hover:bg-white/15 hover:text-white rounded-full transition-colors disabled:opacity-30"
             >
-              <ChevronsLeft className="h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden />
+              <ChevronsLeft className="h-3.5 w-3.5" aria-hidden />
             </Button>
 
             {/* Botón anterior */}
@@ -141,9 +141,9 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={loading || currentPage <= 1}
               aria-label={t('common.previous', 'Anterior')}
-              className="inline-flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 p-0 text-xs font-medium text-white/80 hover:bg-white/15 hover:text-white rounded-full transition-colors disabled:opacity-30"
+              className="inline-flex items-center justify-center h-8 w-8 sm:h-7 sm:w-7 p-0 text-xs font-medium text-white/80 hover:bg-white/15 hover:text-white rounded-full transition-colors disabled:opacity-30"
             >
-              <ChevronLeft className="h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden />
+              <ChevronLeft className="h-4 w-4 sm:h-3.5 sm:w-3.5" aria-hidden />
             </Button>
 
             {/* Números de página */}
@@ -159,7 +159,7 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
                       onClick={() => handlePageChange(page as number)}
                       disabled={loading}
                       className={cn(
-                        "h-6 w-6 sm:h-7 sm:w-7 p-0 text-[11px] font-bold rounded-full transition-all",
+                        "h-7 w-7 p-0 text-[11px] font-bold rounded-full transition-all",
                         currentPage === page
                           ? "bg-primary text-white shadow-sm scale-105"
                           : "text-white/80 hover:bg-white/15 hover:text-white"
@@ -174,7 +174,7 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
 
             {/* Paginación simplificada para móviles. `whitespace-nowrap`: a 320 px
                 el flex comprimía la caja y "1 / 1" se partía en tres renglones. */}
-            <div className="sm:hidden whitespace-nowrap text-[11px] text-white/80 font-bold px-1">
+            <div className="sm:hidden whitespace-nowrap text-xs text-white/90 font-bold px-2 py-1">
               {currentPage} / {totalPages}
             </div>
 
@@ -185,9 +185,9 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={loading || currentPage >= totalPages}
               aria-label={t('common.next', 'Siguiente')}
-              className="inline-flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 p-0 text-xs font-medium text-white/80 hover:bg-white/15 hover:text-white rounded-full transition-colors disabled:opacity-30"
+              className="inline-flex items-center justify-center h-8 w-8 sm:h-7 sm:w-7 p-0 text-xs font-medium text-white/80 hover:bg-white/15 hover:text-white rounded-full transition-colors disabled:opacity-30"
             >
-              <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden />
+              <ChevronRight className="h-4 w-4 sm:h-3.5 sm:w-3.5" aria-hidden />
             </Button>
 
             {/* Última página */}
@@ -198,9 +198,9 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
               disabled={loading || currentPage >= totalPages}
               aria-label={t('common.last', 'Última')}
               title={t('common.last', 'Última')}
-              className="hidden sm:inline-flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 p-0 text-xs font-medium text-white/80 hover:bg-white/15 hover:text-white rounded-full transition-colors disabled:opacity-30"
+              className="hidden sm:inline-flex items-center justify-center h-7 w-7 p-0 text-xs font-medium text-white/80 hover:bg-white/15 hover:text-white rounded-full transition-colors disabled:opacity-30"
             >
-              <ChevronsRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden />
+              <ChevronsRight className="h-3.5 w-3.5" aria-hidden />
             </Button>
 
             {/* Selector de registros por página */}

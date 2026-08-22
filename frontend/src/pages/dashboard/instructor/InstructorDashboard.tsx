@@ -364,14 +364,14 @@ const InstructorDashboard: React.FC = () => {
                 icon={TestTube}
                 stat={stats?.catalogo_especies}
                 description="Especies registradas"
-                onClick={() => navigate('/instructor/species-breeds')}
+                onClick={() => navigate('/instructor/species')}
               />
               <DashboardStatsCard
                 title="Razas"
                 icon={TrendingUp}
                 stat={stats?.catalogo_razas}
                 description="Razas disponibles"
-                onClick={() => navigate('/instructor/species-breeds')}
+                onClick={() => navigate('/instructor/breeds')}
               />
               <DashboardStatsCard
                 title="Tipos de Alimento"

@@ -115,7 +115,7 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
 
           {onOpenCreate && (
             <Button size="sm"
-              className="h-10 w-10 sm:w-auto sm:px-4 rounded-xl shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20 transition-all"
+              className="h-11 w-11 sm:h-10 sm:w-auto min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:px-4 rounded-xl shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20 transition-all"
               onClick={onOpenCreate}
               disabled={saving}
               aria-label={createLabel}

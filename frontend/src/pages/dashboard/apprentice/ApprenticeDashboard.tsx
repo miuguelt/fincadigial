@@ -300,14 +300,14 @@ const ApprenticeDashboard: React.FC = () => {
                 icon={TestTube}
                 stat={stats?.catalogo_especies}
                 description="Especies registradas"
-                onClick={() => navigate('/apprentice/species-breeds')}
+                onClick={() => navigate('/apprentice/species')}
               />
               <DashboardStatsCard
                 title="Razas"
                 icon={TrendingUp}
                 stat={stats?.catalogo_razas}
                 description="Razas disponibles"
-                onClick={() => navigate('/apprentice/species-breeds')}
+                onClick={() => navigate('/apprentice/breeds')}
               />
               <DashboardStatsCard
                 title="Tipos de Alimento"
