@@ -11,6 +11,7 @@ import { useUnreadMessages } from '@/features/chat/hooks/useUnreadMessages';
 import { useRealtimeNotifications } from '@/shared/hooks/useRealtimeNotifications';
 import { DropdownMenuItem, DropdownMenuLabel } from '@/shared/ui/dropdown-menu';
 import { getRolePrefix } from '@/shared/utils/roleRoutes';
+import { openFloatingChat } from '@/features/chat/model/floatingChat';
 
 interface MainAccess {
   label: string;
@@ -83,7 +84,7 @@ export function ProfileNavigationItems() {
         {accesses.map(({ label, description, icon: Icon, path, badge }) => (
           <DropdownMenuItem
             key={path}
-            onClick={() => navigate(path)}
+            onClick={() => (path === '/chat' ? openFloatingChat() : navigate(path))}
             className="min-h-[52px] cursor-pointer gap-3 rounded-xl px-3 py-2.5 focus:bg-primary/10"
           >
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">

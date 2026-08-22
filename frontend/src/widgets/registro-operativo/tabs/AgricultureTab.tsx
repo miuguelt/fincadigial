@@ -4,6 +4,7 @@ import { Search, X } from 'lucide-react';
 import { CropActivity } from '@/entities/campesino';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
 import { ACTIVITY_TYPES, getActivityCfg } from '../constants';
+import { RECORD_CHIP_CLASS } from '../record-kinds';
 
 function groupByDate(activities: any[]): Record<string, any[]> {
   const groups: Record<string, any[]> = {};
@@ -68,7 +69,7 @@ export function AgricultureTab({ activities, loading, errored = false, onQuickAc
                   onQuickAction(type.value);
                 }
               }}
-              className={`flex flex-col items-center justify-center gap-1.5 p-3 min-h-20 rounded-lg border-2 ${type.border} ${type.color} transition-all hover:shadow-sm`}>
+              className={`flex flex-col items-center justify-center gap-1.5 p-3 min-h-20 rounded-lg border ${type.border} ${type.color} transition-all hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2`}>
               <span className="text-2xl" aria-hidden="true">{type.emoji}</span>
               <span className="text-[11px] font-semibold leading-tight text-center" style={{ overflowWrap: 'break-word' }}>{type.label}</span>
             </motion.button>
@@ -97,7 +98,7 @@ export function AgricultureTab({ activities, loading, errored = false, onQuickAc
       </div>
 
       {loading ? (
-        <div className="space-y-3">{[1, 2, 3].map(i => <div key={i} className="h-20 rounded-lg bg-muted animate-pulse" />)}</div>
+        <div className="space-y-3">{[1, 2, 3].map(i => <div key={i} className="h-16 rounded-lg bg-muted animate-pulse" />)}</div>
       ) : errored ? (
         <div className="text-center py-16 space-y-3">
           <span className="text-5xl" aria-hidden="true">⚠️</span>
@@ -128,42 +129,36 @@ export function AgricultureTab({ activities, loading, errored = false, onQuickAc
                 <span className="text-xs font-bold text-muted-foreground capitalize whitespace-nowrap">{formatGroupDate(dateKey)}</span>
                 <div className="h-px flex-1 bg-border" />
               </div>
-              <div className="relative pl-5">
-                <div className="absolute left-2 top-0 bottom-0 w-0.5 bg-border" />
-                <div className="space-y-3">
-                  {grouped[dateKey].map((activity: any, i: number) => {
-                    const cfg = getActivityCfg(activity.activity_type);
-                    const cost = activity.cost;
-                    const inputName = activity.input_name;
-                    const plotName = activity.crop_plot?.name || activity.crop_plot?.crop_name;
-                    return (
-                      <motion.div key={activity.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }} className="relative">
-                        <div className={`absolute -left-3 top-4 w-4 h-4 rounded-full border-2 border-background flex items-center justify-center text-[11px] ${cfg.color}`} aria-hidden="true">{cfg.emoji}</div>
-                        <div className={`ml-2 rounded-lg border ${cfg.border} ${cfg.color} p-3`}>
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1 min-w-0" style={{ overflowWrap: 'break-word' }}>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-bold text-sm">{cfg.emoji} {cfg.label}</span>
-                                {plotName && <span className="text-[11px] opacity-70">· {plotName}</span>}
-                              </div>
-                              {activity.description && <p className="text-xs mt-1 opacity-90">{activity.description}</p>}
-                              {(inputName || cost) && (
-                                <div className="flex gap-3 flex-wrap mt-1.5 text-[11px] font-medium opacity-90">
-                                  {inputName && <span>📦 {inputName}{activity.quantity ? ` · ${Number(activity.quantity).toLocaleString('es-CO')} ${activity.unit || ''}` : ''}</span>}
-                                  {cost != null && cost !== '' && <span>💰 ${Number(cost).toLocaleString('es-CO')}</span>}
-                                </div>
-                              )}
-                            </div>
-                            <button type="button" onClick={() => onDelete(activity.id!)} aria-label={`Eliminar la labor de ${cfg.label}`}
-                              className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-950/30 text-current hover:text-red-700 dark:hover:text-red-300 opacity-70 hover:opacity-100 transition-all shrink-0">
-                              <X className="w-4 h-4" aria-hidden="true" />
-                            </button>
-                          </div>
+              <div className="space-y-3">
+                {grouped[dateKey].map((activity: any, i: number) => {
+                  const cfg = getActivityCfg(activity.activity_type);
+                  const cost = activity.cost;
+                  const inputName = activity.input_name;
+                  const plotName = activity.crop_plot?.name || activity.crop_plot?.crop_name;
+                  return (
+                    <motion.div key={activity.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
+                      className="flex items-start gap-3 rounded-lg border border-border bg-card p-3 shadow-sm">
+                      <span className={`${RECORD_CHIP_CLASS} ${cfg.color}`} aria-hidden="true">{cfg.emoji}</span>
+                      <div className="flex-1 min-w-0" style={{ overflowWrap: 'break-word' }}>
+                        <div className="flex items-baseline gap-2 flex-wrap">
+                          <span className="text-sm font-bold text-foreground">{cfg.label}</span>
+                          {plotName && <span className="text-xs text-muted-foreground">{plotName}</span>}
                         </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
+                        {activity.description && <p className="text-sm mt-1 text-foreground">{activity.description}</p>}
+                        {(inputName || cost) && (
+                          <div className="flex gap-3 flex-wrap mt-1 text-xs text-muted-foreground">
+                            {inputName && <span>📦 {inputName}{activity.quantity ? ` · ${Number(activity.quantity).toLocaleString('es-CO')} ${activity.unit || ''}` : ''}</span>}
+                            {cost != null && cost !== '' && <span>💰 ${Number(cost).toLocaleString('es-CO')}</span>}
+                          </div>
+                        )}
+                      </div>
+                      <button type="button" onClick={() => onDelete(activity.id!)} aria-label={`Eliminar la labor de ${cfg.label}`}
+                        className="shrink-0 rounded-lg p-2 text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                        <X className="w-4 h-4" aria-hidden="true" />
+                      </button>
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
           ))}

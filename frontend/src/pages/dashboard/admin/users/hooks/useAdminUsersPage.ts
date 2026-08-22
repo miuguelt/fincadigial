@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGlobalViewMode } from '@/shared/hooks/useGlobalViewMode';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { useChatContacts } from '@/features/chat/hooks/useChatContacts';
-import type { QuickChatContact } from '@/features/chat/components/QuickChatPanel';
+import { openFloatingChat } from '@/features/chat/model/floatingChat';
 import type { LightboxImage } from '@/shared/ui/common/ImageLightbox';
 import type { UserWithProfile } from '../types';
 import type { User } from '@/entities/user/model/types';
@@ -24,7 +24,6 @@ const getManageableFincaIds = (user: User | null) => {
 export function useAdminUsersPage() {
   const [viewMode, setViewMode] = useGlobalViewMode();
   const [items, setItems] = useState<UserWithProfile[]>([]);
-  const [chatContact, setChatContact] = useState<QuickChatContact | null>(null);
   const [previewImage, setPreviewImage] = useState<LightboxImage | null>(null);
   const [avatarOverrides, setAvatarOverrides] = useState<Record<number, string | null>>({});
   const { user: currentUser } = useAuth();
@@ -40,9 +39,10 @@ export function useAdminUsersPage() {
     setAvatarOverrides((previous) => ({ ...previous, [userId]: avatarUrl }));
   }, []);
 
+  // La conversación vive en la ventana flotante única, no en un panel propio de esta página.
   const openChatWith = useCallback((user: UserWithProfile) => {
-    setChatContact({ id: Number(user.id), fullname: user.fullname || `Usuario ${user.id}`, role: user.role, avatarUrl: resolveAvatar(user) });
-  }, [resolveAvatar]);
+    openFloatingChat({ id: Number(user.id), fullname: user.fullname || `Usuario ${user.id}`, role: user.role });
+  }, []);
 
   const columns = useMemo(() => buildColumns(resolveAvatar), [resolveAvatar]);
   const manageableFincaIds = useMemo(() => getManageableFincaIds(currentUser), [currentUser]);
@@ -54,8 +54,6 @@ export function useAdminUsersPage() {
     setItems,
     currentUser,
     chatContactIds,
-    chatContact,
-    setChatContact,
     previewImage,
     setPreviewImage,
     resolveAvatar,

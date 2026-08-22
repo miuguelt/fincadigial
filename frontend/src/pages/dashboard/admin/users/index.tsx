@@ -1,4 +1,4 @@
-import { QuickChatPanel } from '@/features/chat/components/QuickChatPanel';
+import { openFloatingChat } from '@/features/chat/model/floatingChat';
 import { usersService } from '@/entities/user/api/user.service';
 import { ImageLightbox } from '@/shared/ui/common/ImageLightbox';
 import { AdminCRUDPage } from '@/widgets/admin-crud';
@@ -19,8 +19,6 @@ function AdminUsersPageWrapper() {
     setItems,
     currentUser,
     chatContactIds,
-    chatContact,
-    setChatContact,
     previewImage,
     setPreviewImage,
     resolveAvatar,
@@ -38,7 +36,7 @@ function AdminUsersPageWrapper() {
           ...crudConfig,
           columns,
           customActions: (item) => <UserCustomActions item={item} currentUser={currentUser} contactIds={chatContactIds} onOpenChat={openChatWith} />,
-          customToolbar: <UserPageToolbar viewMode={viewMode} onViewModeChange={setViewMode} onOpenChat={() => navigate('/chat')} />,
+          customToolbar: <UserPageToolbar viewMode={viewMode} onViewModeChange={setViewMode} onOpenChat={() => openFloatingChat()} />,
           customHeader: <UsersBentoHeader items={items} />,
           viewMode,
           renderCard: (item, openDetail) => <UserCard user={item} currentUser={currentUser} chatContactIds={chatContactIds} resolveAvatar={resolveAvatar} onAvatarUpdated={handleAvatarUpdated} onOpenChat={openChatWith} onOpenDetail={openDetail} />,
@@ -54,7 +52,6 @@ function AdminUsersPageWrapper() {
         refetchOnReconnect
         enhancedHover
       />
-      <QuickChatPanel contact={chatContact} onClose={() => setChatContact(null)} />
       <ImageLightbox image={previewImage} onClose={() => setPreviewImage(null)} />
     </>
   );

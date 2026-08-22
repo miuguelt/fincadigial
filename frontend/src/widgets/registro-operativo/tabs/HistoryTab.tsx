@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
 import type { HistoryRecord } from '../types';
+import { RECORD_KINDS, RECORD_CHIP_CLASS } from '../record-kinds';
 
 interface HistoryTabProps {
   records: HistoryRecord[];
@@ -10,33 +11,18 @@ interface HistoryTabProps {
 
 type FilterKey = 'all' | HistoryRecord['type'];
 
-const FILTERS: { key: FilterKey; label: string }[] = [
-  { key: 'all', label: '📋 Todo' },
-  { key: 'milking', label: '🥛 Ordeño' },
-  { key: 'treatment', label: '💉 Tratamiento' },
-  { key: 'disease', label: '🤒 Enfermedad' },
-  { key: 'control', label: '⚖️ Control' },
-  { key: 'transfer', label: '🛣️ Traslado' },
-  { key: 'finance', label: '💰 Finanzas' },
+/* Etiqueta, emoji y tono salen del catálogo compartido: aquí no se inventa paleta. */
+const FILTER_ORDER: HistoryRecord['type'][] = [
+  'milking', 'treatment', 'disease', 'control', 'transfer', 'finance',
 ];
 
-const BADGES: Record<HistoryRecord['type'], string> = {
-  milking: 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200',
-  transfer: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-200',
-  disease: 'bg-rose-100 text-rose-900 dark:bg-rose-900/40 dark:text-rose-200',
-  finance: 'bg-blue-100 text-blue-900 dark:bg-blue-900/40 dark:text-blue-200',
-  control: 'bg-teal-100 text-teal-900 dark:bg-teal-900/40 dark:text-teal-200',
-  treatment: 'bg-purple-100 text-purple-900 dark:bg-purple-900/40 dark:text-purple-200',
-};
-
-const LABELS: Record<HistoryRecord['type'], string> = {
-  milking: '🥛 Ordeño',
-  transfer: '🛣️ Traslado',
-  disease: '🤒 Enfermedad',
-  finance: '💰 Finanzas',
-  control: '⚖️ Control',
-  treatment: '💉 Tratamiento',
-};
+const FILTERS: { key: FilterKey; label: string }[] = [
+  { key: 'all', label: '📋 Todo' },
+  ...FILTER_ORDER.map(key => ({
+    key: key as FilterKey,
+    label: `${RECORD_KINDS[key].emoji} ${RECORD_KINDS[key].label}`,
+  })),
+];
 
 const PAGE_SIZE = 50;
 
@@ -67,7 +53,7 @@ export function HistoryTab({ records, loading, errored = false }: HistoryTabProp
   if (loading) {
     return (
       <div className="space-y-3">
-        {[1, 2, 3].map(i => <div key={i} className="h-16 rounded-xl bg-muted animate-pulse" />)}
+        {[1, 2, 3].map(i => <div key={i} className="h-16 rounded-lg bg-muted animate-pulse" />)}
       </div>
     );
   }
@@ -117,21 +103,23 @@ export function HistoryTab({ records, loading, errored = false }: HistoryTabProp
             Mostrando {shown.length} de {filtered.length} registros
           </p>
           <div className="space-y-3">
-            {shown.map(r => (
-              <div key={r.id} className="rounded-xl border border-border bg-card p-3">
-                <div className="flex items-start justify-between gap-2">
+            {shown.map(r => {
+              const kind = RECORD_KINDS[r.type];
+              return (
+                <div key={r.id} className="flex items-start gap-3 rounded-lg border border-border bg-card p-3 shadow-sm">
+                  <span className={`${RECORD_CHIP_CLASS} ${kind.chip}`} aria-hidden="true">{kind.emoji}</span>
                   <div className="flex-1 min-w-0" style={{ overflowWrap: 'break-word' }}>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${BADGES[r.type]}`}>{LABELS[r.type]}</span>
-                      {r.animalLabel && <span className="text-xs text-muted-foreground">{r.animalLabel}</span>}
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="text-sm font-bold text-foreground">{kind.label}</span>
+                      <span className="text-[11px] text-muted-foreground shrink-0 whitespace-nowrap">{formatRecordDate(r.date)}</span>
                     </div>
+                    {r.animalLabel && <p className="text-xs text-muted-foreground">{r.animalLabel}</p>}
                     <p className="text-sm mt-1 text-foreground">{r.details}</p>
                     {r.notes && <p className="text-xs mt-0.5 text-muted-foreground italic">{r.notes}</p>}
                   </div>
-                  <span className="text-[11px] text-muted-foreground shrink-0 whitespace-nowrap">{formatRecordDate(r.date)}</span>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           {visible < filtered.length && (
             <button type="button" onClick={() => setVisible(v => v + PAGE_SIZE)}

@@ -4,6 +4,7 @@ import { chatService, ChatMessage, ChatContact } from '@/entities/user/api/chat.
 import { useAuth } from '@/features/auth/model/useAuth';
 import { OfflineChatService, type ChatMessage as OfflineMessage } from '@/shared/api/offline/OfflineChatService';
 import { proximitySync } from '@/shared/api/offline/ProximitySyncService';
+import { useFieldNode, FieldNodeToggle, FieldNodePanel } from './FieldNodeSettings';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { ScrollArea } from '@/shared/ui/scroll-area';
@@ -29,6 +30,12 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/app/providers/ToastContext';
+import {
+  OPEN_FLOATING_CHAT_EVENT,
+  consumePendingFloatingChat,
+  publishFloatingChatState,
+  type FloatingChatContact,
+} from '@/features/chat/model/floatingChat';
 
 export interface ChatWidgetProps {
   hideToggleButton?: boolean;
@@ -72,12 +79,57 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // Escuchar evento global para abrir el chat desde acciones rápidas
+  // Nodo local de la finca: permite chatear por el Wi-Fi del predio cuando no hay internet.
+  const [showNodeSettings, setShowNodeSettings] = useState(false);
+  const fieldNode = useFieldNode(isOpen, () => { void fetchContactsAndUnread(); });
+
+  // Espejo de `contacts` para leerlo desde manejadores de eventos sin re-suscribirlos.
+  const contactsRef = useRef<ChatContact[]>([]);
+  useEffect(() => { contactsRef.current = contacts; }, [contacts]);
+
+  /*
+    Único punto de entrada del chat: cualquier pantalla que quiera abrir una
+    conversación emite `openFloatingChat(contacto)` y esta ventana se encarga
+    del resto. Si el contacto ya venía en la lista cargada, se reutiliza esa
+    ficha (trae rol y no leídos); si no, se arma una mínima con lo recibido.
+  */
   useEffect(() => {
-    const handleOpenChat = () => setIsOpen(true);
-    window.addEventListener('open-chat-modal', handleOpenChat);
-    return () => window.removeEventListener('open-chat-modal', handleOpenChat);
+    const applyRequest = (requested?: FloatingChatContact) => {
+      setIsOpen(true);
+
+      if (!requested?.id) return;
+      const known = contactsRef.current.find(c => Number(c.id) === Number(requested.id));
+      setSelectedContact(known ?? {
+        id: Number(requested.id),
+        fullname: requested.fullname || `Usuario ${requested.id}`,
+        role: requested.role || 'Usuario',
+        email: '',
+        unread_count: requested.unread_count,
+      });
+    };
+
+    const handleOpenChat = (event: Event) => {
+      consumePendingFloatingChat();
+      applyRequest((event as CustomEvent<{ contact?: FloatingChatContact }>).detail?.contact);
+    };
+
+    window.addEventListener(OPEN_FLOATING_CHAT_EVENT, handleOpenChat);
+
+    // Petición emitida antes de que esta ventana existiera (enlace directo a /chat).
+    const pending = consumePendingFloatingChat();
+    if (pending) applyRequest(pending.contact);
+
+    return () => window.removeEventListener(OPEN_FLOATING_CHAT_EVENT, handleOpenChat);
   }, []);
+
+  // Publicar qué se está viendo para que las notificaciones no dupliquen la conversación abierta.
+  useEffect(() => {
+    publishFloatingChatState({
+      open: isOpen,
+      contactId: isOpen && selectedContact ? Number(selectedContact.id) : null,
+    });
+  }, [isOpen, selectedContact]);
+
 
   // Notificar cambios en unreadCount a la aplicación/botón flotante único
   useEffect(() => {
@@ -335,8 +387,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
       >
         <FileText className="h-5 w-5 text-primary shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="truncate font-semibold text-xs">{msg.attachment_name || 'Documento'}</p>
-          <span className="text-[10px] text-muted-foreground uppercase">Descargar archivo</span>
+          <p className="fit-clamp font-semibold text-xs">{msg.attachment_name || 'Documento'}</p>
+          <span className="text-[11px] text-muted-foreground uppercase">Descargar archivo</span>
         </div>
         <Download size={14} className="text-muted-foreground shrink-0" />
       </a>
@@ -457,6 +509,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                         variant="outline"
                         size="icon"
                         title="Sincronizar por proximidad (Bluetooth)"
+                        aria-label="Sincronizar por proximidad (Bluetooth)"
                         onClick={handleProximitySync}
                         disabled={isSyncing}
                         className={cn(
@@ -466,7 +519,14 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                       >
                         <Wifi size={18} className={cn(isSyncing && "animate-pulse")} />
                       </Button>
+                      <FieldNodeToggle
+                        status={fieldNode.probe.status}
+                        open={showNodeSettings}
+                        onToggle={() => setShowNodeSettings(value => !value)}
+                      />
                     </div>
+
+                    {showNodeSettings && <FieldNodePanel node={fieldNode} />}
                   </div>
 
                   <ScrollArea className="flex-1">
@@ -580,7 +640,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                         ) : (
                           <FileText size={16} className="text-primary shrink-0" />
                         )}
-                        <span className="truncate font-medium">{pendingFile.name}</span>
+                        <span className="fit-clamp font-medium">{pendingFile.name}</span>
                       </div>
                       <button
                         type="button"

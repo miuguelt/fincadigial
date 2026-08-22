@@ -1,53 +1,126 @@
 import { motion } from 'framer-motion';
 import { DollarSign, Scale, Zap, LogOut, Baby, Milk, FileText } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import {
   IconMilk,
   IconRoute as IconRouteCattle,
   IconHealthAlert,
   IconHealthCheck,
 } from '@/shared/icons/cattle';
+import { RECORD_KINDS, NEUTRAL_CHIP, RECORD_TILE_CLASS, RECORD_CHIP_CLASS } from '../record-kinds';
 
 interface LivestockTabProps {
   onOpenModal: (type: string) => void;
 }
 
+interface LivestockAction {
+  type: string;
+  label: string;
+  sub: string;
+  icon: LucideIcon | typeof IconMilk;
+  chip: string;
+}
+
+/**
+ * Las once acciones se agrupan por cuándo se usan, no por módulo del sistema.
+ * Un campesino entra a anotar el ordeño de esta mañana; que la Guía ICA y la
+ * liquidación de leche compitieran con el mismo peso visual en una cuadrícula
+ * plana obligaba a leerlas todas cada vez.
+ */
+const GROUPS: { id: string; title: string; hint: string; actions: LivestockAction[] }[] = [
+  {
+    id: 'rutina',
+    title: 'Todos los días',
+    hint: 'Lo que se anota en la jornada normal.',
+    actions: [
+      { type: 'milk', label: 'Registrar ordeño', sub: 'Litros de la mañana o la tarde', icon: IconMilk, chip: RECORD_KINDS.milking.chip },
+      { type: 'control', label: 'Control y pesaje', sub: 'Peso, alzada y estado', icon: Scale, chip: RECORD_KINDS.control.chip },
+      { type: 'transfer', label: 'Trasladar ganado', sub: 'Cambio de potrero', icon: IconRouteCattle, chip: RECORD_KINDS.transfer.chip },
+    ],
+  },
+  {
+    id: 'novedades',
+    title: 'Cuando pasa algo',
+    hint: 'Novedades de salud y movimientos del hato.',
+    actions: [
+      { type: 'disease', label: 'Reportar enfermedad', sub: 'Síntomas y diagnóstico', icon: IconHealthAlert, chip: RECORD_KINDS.disease.chip },
+      { type: 'treatment', label: 'Aplicar tratamiento', sub: 'Vacunas y medicinas', icon: IconHealthCheck, chip: RECORD_KINDS.treatment.chip },
+      { type: 'weaning', label: 'Destetar ternero', sub: 'Paso a levante y peso a 205 días', icon: Baby, chip: RECORD_KINDS.control.chip },
+      { type: 'exit', label: 'Salida, venta o muerte', sub: 'Dar de baja del hato', icon: LogOut, chip: RECORD_KINDS.disease.chip },
+    ],
+  },
+  {
+    id: 'cuentas',
+    title: 'Cuentas y papeles',
+    hint: 'Plata de la finca y trámites con el comprador o el ICA.',
+    actions: [
+      { type: 'finance', label: 'Ingreso o gasto', sub: 'Ventas, insumos, jornales', icon: DollarSign, chip: RECORD_KINDS.finance.chip },
+      { type: 'milk-settlement', label: 'Liquidar leche', sub: 'Calidad, sólidos y pago neto', icon: Milk, chip: RECORD_KINDS.milking.chip },
+      { type: 'gsmi', label: 'Guía ICA (GSMI)', sub: 'Borrador oficial y chapetas', icon: FileText, chip: NEUTRAL_CHIP },
+    ],
+  },
+];
+
 export function LivestockTab({ onOpenModal }: LivestockTabProps) {
-  const actions = [
-    { type: 'corral-rapido', label: '⚡ Modo Manga Rápida', sub: 'Pesaje continuo en lote', icon: Zap, tone: 'bg-emerald-700 text-white border-emerald-700 col-span-2 shadow-emerald-700/20' },
-    { type: 'milk', label: 'Registrar Ordeño', sub: 'Producción diaria', icon: IconMilk, tone: 'bg-warning text-warning-foreground border-warning' },
-    { type: 'milk-settlement', label: 'Liquidar Leche', sub: 'Calidad, sólidos y pago neto', icon: Milk, tone: 'bg-cyan-700 text-white border-cyan-700' },
-    { type: 'gsmi', label: 'Guía ICA (GSMI)', sub: 'Borrador oficial y chapetas', icon: FileText, tone: 'bg-emerald-800 text-white border-emerald-800' },
-    { type: 'transfer', label: 'Trasladar Ganado', sub: 'Rotación de potreros', icon: IconRouteCattle, tone: 'bg-primary text-primary-foreground border-primary' },
-    { type: 'disease', label: 'Reportar Enfermedad', sub: 'Diagnosticar síntomas', icon: IconHealthAlert, tone: 'bg-danger text-danger-foreground border-danger' },
-    { type: 'treatment', label: 'Aplicar Tratamiento', sub: 'Vacunas y medicinas', icon: IconHealthCheck, tone: 'bg-info text-info-foreground border-info' },
-    { type: 'control', label: 'Control y Pesaje', sub: 'Peso, alzada y estado', icon: Scale, tone: 'bg-teal-600 text-white border-teal-600' },
-    { type: 'weaning', label: 'Destetar Ternero', sub: 'Paso a levante y peso 205d', icon: Baby, tone: 'bg-indigo-600 text-white border-indigo-600' },
-    { type: 'exit', label: 'Salida / Venta / Muerte', sub: 'Dar de baja del ganado', icon: LogOut, tone: 'bg-rose-700 text-white border-rose-700' },
-    { type: 'finance', label: 'Ingreso o Gasto', sub: 'Ventas, insumos, compras', icon: DollarSign, tone: 'bg-sky-600 text-white border-sky-600' },
-  ];
+  const renderAction = (action: LivestockAction) => {
+    const Icon = action.icon;
+    return (
+      <motion.button
+        key={action.type}
+        whileTap={{ scale: 0.97 }}
+        type="button"
+        onClick={() => onOpenModal(action.type)}
+        className={`${RECORD_TILE_CLASS} min-h-[4.5rem] hover:shadow-md`}
+      >
+        <span className={`${RECORD_CHIP_CLASS} ${action.chip}`} aria-hidden="true">
+          <Icon className="h-5 w-5" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-bold text-foreground" style={{ overflowWrap: 'break-word' }}>
+            {action.label}
+          </span>
+          <span className="mt-0.5 block text-xs text-muted-foreground" style={{ overflowWrap: 'break-word' }}>
+            {action.sub}
+          </span>
+        </span>
+      </motion.button>
+    );
+  };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <p className="text-sm text-muted-foreground">Toque una opción. La fecha de hoy ya viene lista.</p>
-      <div className="grid grid-cols-2 gap-3">
-        {actions.map(action => {
-          const Icon = action.icon;
-          return (
-            <motion.button key={action.type} whileTap={{ scale: 0.96 }} type="button" onClick={() => onOpenModal(action.type)}
-              onKeyDown={event => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  onOpenModal(action.type);
-                }
-              }}
-              className={`p-4 min-h-28 rounded-lg ${action.tone} shadow-sm text-left flex flex-col gap-2 border cursor-pointer hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary`}>
-              <div className="bg-black/15 p-2 rounded-lg w-fit"><Icon className="w-5 h-5" aria-hidden="true" /></div>
-              <span className="font-bold text-sm" style={{ overflowWrap: 'break-word' }}>{action.label}</span>
-              <span className="text-[11px] opacity-90" style={{ overflowWrap: 'break-word' }}>{action.sub}</span>
-            </motion.button>
-          );
-        })}
-      </div>
+
+      {/* Única acción destacada: es un modo de trabajo en la manga, no un registro suelto. */}
+      <motion.button
+        whileTap={{ scale: 0.97 }}
+        type="button"
+        onClick={() => onOpenModal('corral-rapido')}
+        className="w-full flex items-center gap-3 rounded-lg border border-primary bg-primary/10 p-4 text-left transition-colors hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      >
+        {/* Verde oscuro, no `bg-primary`: el par primary/primary-foreground queda en 2,8:1 y el icono se pierde. */}
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-emerald-700 text-white dark:bg-emerald-600 dark:text-emerald-50" aria-hidden="true">
+          <Zap className="h-6 w-6" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-bold text-foreground">Modo manga rápida</span>
+          <span className="mt-0.5 block text-xs text-muted-foreground">
+            Pese un lote entero seguido, sin salir de la pantalla.
+          </span>
+        </span>
+      </motion.button>
+
+      {GROUPS.map(group => (
+        <section key={group.id} className="space-y-2" aria-labelledby={`grupo-${group.id}`}>
+          <div>
+            <h3 id={`grupo-${group.id}`} className="vl-section-title">{group.title}</h3>
+            <p className="mt-0.5 text-xs text-muted-foreground">{group.hint}</p>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {group.actions.map(renderAction)}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }

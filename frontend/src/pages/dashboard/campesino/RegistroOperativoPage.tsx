@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Leaf, ClipboardList, RefreshCw } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
@@ -31,6 +31,16 @@ import { IconMilk } from '@/shared/icons/cattle';
 
 type TabType = 'crop' | 'livestock' | 'history';
 
+/**
+ * Modales de ganadería. El panel del campesino y las acciones rápidas entran
+ * aquí con `?modal=milk`; sin esto la ventana se abría sobre la pestaña de
+ * cultivos y, al cerrarla, el campesino aparecía en una sección que no pidió.
+ */
+const LIVESTOCK_MODALS = new Set([
+  'milk', 'transfer', 'disease', 'treatment', 'finance', 'control',
+  'corral-rapido', 'exit', 'weaning', 'milk-settlement', 'gsmi',
+]);
+
 const RegistroOperativoPage: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -53,6 +63,10 @@ const RegistroOperativoPage: React.FC = () => {
     handleMilkingSubmit, handleTransferSubmit, handleDiseaseSubmit, handleTreatmentSubmit, handleFinanceSubmit, handleControlSubmit,
     INITIAL_CROP_FORM,
   } = useRegistroOperativo();
+
+  useEffect(() => {
+    if (activeModal && LIVESTOCK_MODALS.has(activeModal)) setActiveTab('livestock');
+  }, [activeModal]);
 
   const confirmDeleteCrop = async () => {
     if (pendingDeleteId == null) return;

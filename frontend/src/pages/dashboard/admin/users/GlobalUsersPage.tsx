@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@/shared/ui/dialog';
 import { ClimbingBoxLoader } from 'react-spinners';
-import { QuickChatPanel } from '@/features/chat/components/QuickChatPanel';
+import { openFloatingChat } from '@/features/chat/model/floatingChat';
 import { ImageLightbox } from '@/shared/ui/common/ImageLightbox';
 import { GlobalUsersBentoHeader } from './components/GlobalUsersBentoHeader';
 import { GlobalUserCard } from './components/GlobalUserCard';
@@ -39,7 +39,6 @@ const GlobalUsersPage = () => {
 
   const [viewMode, setViewMode] = useState<GlobalUsersViewMode>('cards');
   const [selectedUser, setSelectedUser] = useState<UserWithProfile | null>(null);
-  const [chatContact, setChatContact] = useState<any | null>(null);
   const [previewImage, setPreviewImage] = useState<{ url: string; title?: string } | null>(null);
 
   const applyAvatar = (userId: number, newAvatarUrl: string | null) => {
@@ -110,14 +109,13 @@ const GlobalUsersPage = () => {
               navigate={navigate}
               onClose={() => setSelectedUser(null)}
               onPreviewImage={(url, title) => setPreviewImage({ url, title })}
-              onStartChat={(u) => setChatContact(u)}
+              onStartChat={(u) => openFloatingChat({ id: Number(u.id), fullname: u.fullname, role: u.role })}
               onAvatarUpdated={applyAvatar}
             />
           )}
         </DialogContent>
       </Dialog>
 
-      <QuickChatPanel contact={chatContact} onClose={() => setChatContact(null)} />
       <ImageLightbox image={previewImage} onClose={() => setPreviewImage(null)} />
     </div>
   );

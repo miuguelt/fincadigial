@@ -43,6 +43,7 @@ import { cn } from "@/shared/ui/cn";
 import { UserAvatarUpload } from "@/widgets/dashboard/users/UserAvatarUpload";
 import type { UserWithProfile } from "../types";
 import { getChatAvailability } from "../utils/user.utils";
+import { openFloatingChat } from "@/features/chat/model/floatingChat";
 import { UserFincaGallery } from "./UserFincaGallery";
 import { UserActivityOverview } from "./UserActivityOverview";
 import { useUserDetailPanel } from "./useUserDetailPanel";
@@ -275,7 +276,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 								e.stopPropagation();
 								if (!chat.enabled) return;
 								if (onStartChat) onStartChat(item);
-								else navigate(`/chat?contactId=${item.id}`);
+								else openFloatingChat({ id: Number(item.id), fullname: item.fullname, role: item.role });
 							}}
 							className="h-10 rounded-2xl font-bold bg-primary/5 text-primary border-primary/20 hover:bg-primary/10 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-45"
 						>

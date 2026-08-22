@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '@/features/auth/model/useAuth';
 import RoleBasedSideBar from '@/widgets/dashboard/RoleBasedSideBar';
 import Header from './Header';
@@ -15,10 +15,8 @@ const SIDEBAR_INSET = '308px';
 
 const DashboardLayout: React.FC = () => {
   const { loading, isAuthenticated, user } = useAuth();
-  const { pathname } = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const showSidebar = isAuthenticated && !!user?.finca_id;
-  const isChatPage = pathname === '/chat';
 
   useEffect(() => {
     // En pantallas grandes (≥1024px), dejamos el menú principal desplegado por defecto
@@ -131,7 +129,7 @@ const DashboardLayout: React.FC = () => {
         </main>
       </div>
 
-      {showSidebar && !isChatPage && <FloatingQuickActions />}
+      {showSidebar && <FloatingQuickActions />}
       {showSidebar && <ChatWidget hideToggleButton={true} />}
       {showSidebar && <QuickActionsModal />}
       {isAuthenticated && <CrearFincaPage modal />}

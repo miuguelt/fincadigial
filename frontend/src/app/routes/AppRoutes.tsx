@@ -96,7 +96,8 @@ const FrameScoreCalculator = lazy(() => import('@/features/cattle/ui/FrameScoreC
 const RationCalculator = lazy(() => import('@/features/operational/ui/RationCalculator'));
 
 const AnimalScannerPage = lazy(() => import('@/pages/scanner/AnimalScannerPage'));
-const ChatPage = lazy(() => import('@/pages/chat/ChatPage'));
+// El chat solo vive en la ventana flotante; estas rutas quedan como puente para enlaces antiguos.
+const ChatRedirect = lazy(() => import('@/pages/chat/ChatRedirect'));
 
 // Academy / Training pages
 const CourseListPage = lazy(() => import('@/pages/dashboard/instructor/courses/CourseListPage'));
@@ -263,7 +264,7 @@ const AppRoutes = () => {
             <Route path="/select-finca" element={<JoinFincaPage />} />
             {/* Compatibilidad con enlaces antiguos: la creación real se abre en el modal global. */}
             <Route path="/fincas/crear" element={<Navigate to="/dashboard?modal=create-finca" replace />} />
-            <Route path="/chat" element={<ChatPage />} />
+            <Route path="/chat" element={<ChatRedirect />} />
             <Route path="/alerts" element={<AlertsPage />} />
             <Route path="/scanner" element={<AnimalScannerPage />} />
             <Route path="/admin/scanner" element={<Navigate to="/scanner" replace />} />
@@ -274,7 +275,7 @@ const AppRoutes = () => {
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/administrador/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="/administrador" element={<Navigate to="/admin/dashboard" replace />} />
-            <Route path="/admin/chat" element={<ChatPage />} />
+            <Route path="/admin/chat" element={<ChatRedirect />} />
             <Route path="/admin/analytics/executive" element={<DashboardExecutive />} />
             <Route path="/admin/analytics/fields" element={<FieldsPage />} />
             <Route path="/admin/analytics/reports" element={<CustomReports />} />

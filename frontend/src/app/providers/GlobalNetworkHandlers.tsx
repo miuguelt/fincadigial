@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useToast } from '@/app/providers/ToastContext';
 import { useAuth } from '@/features/auth/model/useAuth';
+import { isFloatingChatOpenWith } from '@/features/chat/model/floatingChat';
 import { parseChatRealtimeEvent } from '@/features/chat/model/chatEvents';
 import { refetchAllResources } from '@/shared/hooks/useResource';
 import { queryClient } from '@/app/bootstrap/queryClient';
@@ -171,7 +172,8 @@ function processChatPayload(payload: unknown, currentUserId: number, showToast: 
 
   if (chatEvent.kind !== 'received') return;
   const sender = chatEvent.message.sender_name || 'Un compañero';
-  if (window.location.pathname !== '/chat') {
+  // Sin aviso si el usuario ya tiene esa conversación abierta en la ventana flotante.
+  if (!isFloatingChatOpenWith(chatEvent.message.sender_id)) {
     showToast(`${sender}: ${chatEvent.message.message}`, 'info', 6000);
   }
   showSystemChatNotification(sender, chatEvent.message.message, chatEvent.message.sender_id);

@@ -1,7 +1,7 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
 import { useRealtimeNotifications, Notification } from '@/shared/hooks/useRealtimeNotifications';
 import { useToast } from '@/app/providers/ToastContext';
+import { isFloatingChatOpenWith } from '@/features/chat/model/floatingChat';
 
 /**
  * Componente invisible que escucha eventos SSE globales y dispara
@@ -15,7 +15,6 @@ import { useToast } from '@/app/providers/ToastContext';
  */
 export const GlobalRealtimeListener: React.FC = () => {
   const { showToast } = useToast();
-  const location = useLocation();
 
   useRealtimeNotifications({
     // No abrir una segunda conexión SSE — el NotificationCenter ya la gestiona
@@ -27,9 +26,9 @@ export const GlobalRealtimeListener: React.FC = () => {
         return;
       }
 
-      // Mensajes de Chat: solo fuera de /chat
+      // Mensajes de chat: no avisar de lo que ya se está leyendo en la ventana flotante.
       if (notification.data?.type === 'chat_message') {
-        if (!location.pathname.startsWith('/chat')) {
+        if (!isFloatingChatOpenWith(Number(notification.data?.sender_id))) {
           const senderName = notification.data?.sender_name || 'un usuario';
           showToast(`💬 Mensaje de ${senderName}: ${notification.message.substring(0, 60)}`, 'info');
         }

@@ -32,6 +32,7 @@ import { cn } from "@/shared/ui/cn";
 import { useAuth } from "@/features/auth/model/useAuth";
 import { normalizeRole } from "@/features/auth/api/auth.service";
 import { canAccessRoutePath, toRolePath } from "@/shared/lib/routeAccess";
+import { openFloatingChat } from "@/features/chat/model/floatingChat";
 
 // ─── Tipos ────────────────────────────────────────────────────
 export interface QuickAction {
@@ -525,7 +526,7 @@ export const FloatingQuickActions: React.FC = () => {
     (path: string) => {
       close();
       if (path === '/chat') {
-        window.dispatchEvent(new CustomEvent('open-chat-modal'));
+        openFloatingChat();
       } else if (path.startsWith('/quick/')) {
         const action = path.replace('/quick/', '');
         const newSearchParams = new URLSearchParams(searchParams);
