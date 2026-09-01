@@ -29,8 +29,9 @@ def check(condition: bool, ok_msg: str, err_msg: str, warn: bool = False):
 
 
 # ── 1. Archivos críticos existen ──────────────────────────────────────
+compose_file = "docker-compose.yaml" if (ROOT / "docker-compose.yaml").exists() else "docker-compose.yml"
 required_files = [
-    "docker-compose.yml",
+    compose_file,
     "backend/Dockerfile",
     "backend/entrypoint.sh",
     "frontend/Dockerfile",
@@ -43,8 +44,8 @@ for f in required_files:
     path = ROOT / f
     check(path.exists(), f"Archivo existe: {f}", f"Falta archivo crítico: {f}")
 
-# ── 2. Variables de entorno en Docker Compose (SSoT: docker-compose.yml) ──
-compose_path = ROOT / "docker-compose.yml"
+# ── 2. Variables de entorno en Docker Compose (SSoT: docker-compose.yaml) ──
+compose_path = ROOT / compose_file
 
 if compose_path.exists():
     compose_text = compose_path.read_text(encoding="utf-8")
