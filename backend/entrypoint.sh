@@ -13,9 +13,9 @@ from sqlalchemy import create_engine
 from config import config
 
 cfg = config.get(os.getenv("FLASK_ENV", "production"), "default")
-uri = getattr(cfg, "SQLALCHEMY_DATABASE_URI", None) or os.getenv("SQLALCHEMY_DATABASE_URI") or os.getenv("DATABASE_URL")
+uri = getattr(cfg, "SQLALCHEMY_DATABASE_URI", None) or os.getenv("DATABASE_URL")
 if not uri:
-    print("❌ Error: Ni DATABASE_URL ni variables DB_* fueron configuradas.")
+    print("❌ Error: DATABASE_URL no fue configurada.")
     sys.exit(1)
 
 # Normalizar prefijo de postgres si es necesario

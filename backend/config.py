@@ -72,8 +72,8 @@ def _parse_cors_origins_env():
 
 
 def _build_sqlalchemy_database_uri():
-    """Build SQLALCHEMY_DATABASE_URI from DB_* env vars when not provided."""
-    uri = os.getenv("SQLALCHEMY_DATABASE_URI") or os.getenv("DATABASE_URL")
+    """Build SQLALCHEMY_DATABASE_URI primarily from DATABASE_URL."""
+    uri = os.getenv("DATABASE_URL") or os.getenv("SQLALCHEMY_DATABASE_URI")
     if uri:
         # Normalizar prefijos genéricos de postgres
         if uri.startswith("postgres://"):
@@ -93,32 +93,26 @@ def _build_sqlalchemy_database_uri():
     if active_env == "development" and dev_uri:
         return dev_uri
 
+    # Fallback legacy para desarrollo local si aún existen variables separadas
     host = os.getenv("DB_HOST")
-    if _WSL_IP and host in ("localhost", "127.0.0.1"):
-        host = _WSL_IP
-
-    default_engine = "postgresql+psycopg2" if active_env == "production" else "mysql+pymysql"
-    engine = os.getenv("DB_ENGINE", default_engine)
-
-    # Puerto por defecto según motor
-    default_port = "5432" if "postgresql" in engine else "3306"
-    port = os.getenv("DB_PORT") or default_port
-
     name = os.getenv("DB_NAME")
     user = os.getenv("DB_USER")
     password = os.getenv("DB_PASSWORD")
 
-    if not all([host, name, user, password]):
-        return None
+    if all([host, name, user, password]):
+        default_engine = "postgresql+psycopg2" if active_env == "production" else "mysql+pymysql"
+        engine = os.getenv("DB_ENGINE", default_engine)
+        default_port = "5432" if "postgresql" in engine else "3306"
+        port = os.getenv("DB_PORT") or default_port
+        try:
+            safe_user = quote_plus(str(user))
+            safe_password = quote_plus(str(password))
+        except Exception:
+            safe_user = str(user)
+            safe_password = str(password)
+        return f"{engine}://{safe_user}:{safe_password}@{host}:{port}/{name}"
 
-    try:
-        safe_user = quote_plus(str(user))
-        safe_password = quote_plus(str(password))
-    except Exception:
-        safe_user = str(user)
-        safe_password = str(password)
-
-    return f"{engine}://{safe_user}:{safe_password}@{host}:{port}/{name}"
+    return None
 
 
 def _env_bool(name: str, default: bool = False) -> bool:
@@ -133,23 +127,31 @@ class Config:
     """Configuración base de la aplicación. Aplica a todos los entornos."""
 
     # -----------------------
-    # Base de Datos
+    # Base de Datos (SSoT: DATABASE_URL contiene host, puerto, user, pass y db)
     # -----------------------
-    HOST = (
-        _WSL_IP
-        if (_WSL_IP and os.getenv("DB_HOST") in ("localhost", "127.0.0.1"))
-        else os.getenv("DB_HOST")
-    )
-    PORT = os.getenv("DB_PORT") or "5432"
-    DATABASE = os.getenv("DB_NAME")
-    DB_USER = os.getenv("DB_USER")
-    DB_PASSWORD = os.getenv("DB_PASSWORD")
-    DB_DRIVER = "pymysql"  # pymysql | mysqldb | mysqlconnector
     SQLALCHEMY_DATABASE_URI = _build_sqlalchemy_database_uri()
     if not SQLALCHEMY_DATABASE_URI:
         raise ValueError(
-            "SQLALCHEMY_DATABASE_URI o DB_* (DB_HOST/DB_NAME/DB_USER/DB_PASSWORD) es requerido"
+            "DATABASE_URL es requerido para conectar a la base de datos."
         )
+
+    # Extraer atributos de conexión directamente desde la URL (sin pedir variables separadas)
+    try:
+        from urllib.parse import urlsplit as _urlsplit, unquote as _unquote
+        _parsed_db = _urlsplit(SQLALCHEMY_DATABASE_URI.replace("postgresql+psycopg2://", "postgresql://", 1))
+        HOST = _parsed_db.hostname or "localhost"
+        PORT = str(_parsed_db.port or 5432)
+        DATABASE = _parsed_db.path.lstrip("/") or "villaluz"
+        DB_USER = _unquote(_parsed_db.username or "")
+        DB_PASSWORD = _unquote(_parsed_db.password or "")
+    except Exception:
+        HOST = os.getenv("DB_HOST", "localhost")
+        PORT = os.getenv("DB_PORT", "5432")
+        DATABASE = os.getenv("DB_NAME", "villaluz")
+        DB_USER = os.getenv("DB_USER", "")
+        DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+
+    DB_DRIVER = "psycopg2"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Optimizaciones Pro para PostgreSQL 18 y alta concurrencia
@@ -491,17 +493,19 @@ class ProductionConfig(Config):
     _jwt_secure_env = os.getenv("JWT_COOKIE_SECURE", "true").strip().lower()
     JWT_COOKIE_SECURE = _jwt_secure_env not in ("false", "0", "no")
     JWT_COOKIE_SAMESITE = os.getenv("JWT_COOKIE_SAMESITE", "Lax")
-    # Importante: no forzar un dominio fijo. Debe venir del entorno
-    # para coincidir con el dominio real desplegado (p. ej. .enlinea.sbs).
-    # Si no se define, wsgi.py abortará el arranque en producción.
-    JWT_COOKIE_DOMAIN = os.getenv("JWT_COOKIE_DOMAIN")
+    # Dominio de la cookie: toma JWT_COOKIE_DOMAIN o hereda automáticamente de DOMAIN
+    JWT_COOKIE_DOMAIN = os.getenv("JWT_COOKIE_DOMAIN") or os.getenv("DOMAIN")
     JWT_TOKEN_LOCATION = ["cookies", "headers"]  # Usar cookies y headers para JWT
     JWT_COOKIE_CSRF_PROTECT = (
         True  # Proteger cookies JWT con CSRF (recomendado en producción)
     )
 
-    # CORS - Solo desde variable de entorno
-    CORS_ORIGINS = _parse_cors_origins_env() or []
+    # CORS - Desde variable o derivado automáticamente de DOMAIN
+    _raw_cors = _parse_cors_origins_env()
+    if not _raw_cors and os.getenv("DOMAIN"):
+        _dom = os.getenv("DOMAIN")
+        _raw_cors = [f"https://{_dom}", f"https://www.{_dom}"]
+    CORS_ORIGINS = _raw_cors or []
 
     # Pool de PostgreSQL: cada worker obtiene su propia copia (preload).
     # The Coolify profile uses two gevent workers and a small PostgreSQL
@@ -517,18 +521,14 @@ class ProductionConfig(Config):
     @classmethod
     def validate_production_env(cls):
         """Valida variables de entorno requeridas para producción"""
-        if not os.getenv("JWT_SECRET_KEY"):
+        if not (os.getenv("JWT_SECRET_KEY") or os.getenv("FLASK_SECRET_KEY")):
             raise ValueError(
-                "La variable JWT_SECRET_KEY DEBE estar definida en producción."
+                "La variable JWT_SECRET_KEY o FLASK_SECRET_KEY DEBE estar definida en producción."
             )
-        if not os.getenv("JWT_COOKIE_DOMAIN"):
+        if not (os.getenv("JWT_COOKIE_DOMAIN") or os.getenv("DOMAIN")):
             raise ValueError(
-                "La variable JWT_COOKIE_DOMAIN DEBE estar definida en producción."
+                "La variable JWT_COOKIE_DOMAIN o DOMAIN DEBE estar definida en producción."
             )
-
-    # El dominio de la cookie debe ser el dominio principal (con punto inicial)
-    # para que sea válido en cualquier subdominio
-    JWT_COOKIE_DOMAIN = os.getenv("JWT_COOKIE_DOMAIN")
 
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=7)

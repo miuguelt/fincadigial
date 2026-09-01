@@ -49,18 +49,18 @@ compose_path = ROOT / "docker-compose.yml"
 if compose_path.exists():
     compose_text = compose_path.read_text(encoding="utf-8")
     required_vars = [
+        "DOMAIN",
+        "DATABASE_URL",
         "FLASK_SECRET_KEY",
         "JWT_SECRET_KEY",
-        "DB_USER",
-        "DB_PASSWORD",
-        "DB_NAME",
-        "DOMAIN",
+        "JWT_COOKIE_DOMAIN",
+        "CORS_ORIGINS",
+        "VILLALUZ_ADMIN_EMAIL",
+        "VILLALUZ_ADMIN_PASSWORD",
+        "VILLALUZ_SEED_DEMO_DATA",
         "VITE_API_BASE_URL",
         "VITE_FRONTEND_URL",
         "REDIS_URL",
-        "VILLALUZ_ADMIN_IDENTIFICATION",
-        "VILLALUZ_ADMIN_EMAIL",
-        "VILLALUZ_ADMIN_PASSWORD",
     ]
     for var in required_vars:
         check(

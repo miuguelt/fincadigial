@@ -83,74 +83,31 @@ services:
     expose:
       - "8081"
     environment:
-      # ── 🔴 VARIABLES PRINCIPALES REQUERIDAS ──
+      # ── 🔴 5 VARIABLES OBLIGATORIAS (Configurar en Coolify) ──
       DOMAIN: ${DOMAIN}
-      DATABASE_URL: ${DATABASE_URL:-}
+      # Conexión PostgreSQL (formato: postgresql://user:password@host:5432/villaluz)
+      DATABASE_URL: ${DATABASE_URL}
       FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
       VILLALUZ_ADMIN_EMAIL: ${VILLALUZ_ADMIN_EMAIL}
       VILLALUZ_ADMIN_PASSWORD: ${VILLALUZ_ADMIN_PASSWORD}
 
-      # ── Base de Datos Alternativa (si no defines DATABASE_URL) ──
-      DB_HOST: ${DB_HOST:-}
-      DB_PORT: ${DB_PORT:-5432}
-      DB_USER: ${DB_USER:-}
-      DB_PASSWORD: ${DB_PASSWORD:-}
-      DB_NAME: ${DB_NAME:-villaluz}
-      DB_ENGINE: ${DB_ENGINE:-postgresql+psycopg2}
-      SQLALCHEMY_DATABASE_URI: ${SQLALCHEMY_DATABASE_URI:-}
-      DB_POOL_SIZE: ${DB_POOL_SIZE:-4}
-      DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-2}
-      DB_POOL_TIMEOUT: ${DB_POOL_TIMEOUT:-30}
-
       # ── Secretos y Tokens (Heredan de FLASK_SECRET_KEY automáticamente) ──
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-${FLASK_SECRET_KEY}}
       JWT_COOKIE_DOMAIN: ${JWT_COOKIE_DOMAIN:-${DOMAIN}}
-      JWT_COOKIE_SECURE: ${JWT_COOKIE_SECURE:-true}
-      JWT_COOKIE_SAMESITE: ${JWT_COOKIE_SAMESITE:-Lax}
-      JWT_COOKIE_CSRF_PROTECT: ${JWT_COOKIE_CSRF_PROTECT:-true}
 
       # ── CORS y URLs (Derivadas automáticamente de DOMAIN) ──
       CORS_ORIGINS: ${CORS_ORIGINS:-https://${DOMAIN},https://www.${DOMAIN}}
       API_BASE_URL: ${API_BASE_URL:-https://${DOMAIN}/api/v1}
       FRONTEND_URL: ${FRONTEND_URL:-https://${DOMAIN}}
-      BACKEND_URL: ${BACKEND_URL:-https://${DOMAIN}}
       PREFERRED_URL_SCHEME: https
       FLASK_ENV: production
       FLASK_APP: wsgi.py
 
-      # ── Bootstrap Administrador Único y Finca (Con defaults colombianos) ──
-      VILLALUZ_BOOTSTRAP_ENABLED: ${VILLALUZ_BOOTSTRAP_ENABLED:-true}
-      VILLALUZ_BOOTSTRAP_ON_PRODUCTION: ${VILLALUZ_BOOTSTRAP_ON_PRODUCTION:-true}
-      VILLALUZ_ADMIN_IDENTIFICATION: ${VILLALUZ_ADMIN_IDENTIFICATION:-1000000001}
-      VILLALUZ_ADMIN_FULLNAME: ${VILLALUZ_ADMIN_FULLNAME:-Administrador Principal}
-      VILLALUZ_ADMIN_PHONE: ${VILLALUZ_ADMIN_PHONE:-3000000000}
-      VILLALUZ_ADMIN_FARM_NAME: ${VILLALUZ_ADMIN_FARM_NAME:-Finca Villa Luz}
-      VILLALUZ_ADMIN_FARM_TYPE: ${VILLALUZ_ADMIN_FARM_TYPE:-Tradicional}
-      VILLALUZ_ADMIN_FARM_DEPARTMENT: ${VILLALUZ_ADMIN_FARM_DEPARTMENT:-Cundinamarca}
-      VILLALUZ_ADMIN_FARM_MUNICIPALITY: ${VILLALUZ_ADMIN_FARM_MUNICIPALITY:-Bogotá}
-
       # ── Estricto: Cero datos demo en producción ──
-      VILLALUZ_SEED_DEMO_DATA: "false"
+      VILLALUZ_SEED_DEMO_DATA: ${VILLALUZ_SEED_DEMO_DATA:-false}
 
-      # ── Redis / Caché / Celery (Opcional en Red Coolify) ──
+      # ── Redis / Caché / Celery (Opcional en Red Coolify - Solo URL) ──
       REDIS_URL: ${REDIS_URL:-}
-      CACHE_REDIS_URL: ${CACHE_REDIS_URL:-${REDIS_URL:-}}
-      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-${REDIS_URL:-}}
-      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-${REDIS_URL:-}}
-      RATE_LIMIT_STORAGE_URI: ${RATE_LIMIT_STORAGE_URI:-${REDIS_URL:-}}
-
-      # ── Notificaciones Email (SMTP - Opcional) ──
-      EMAIL_ENABLED: ${EMAIL_ENABLED:-false}
-      SMTP_HOST: ${SMTP_HOST:-}
-      SMTP_PORT: ${SMTP_PORT:-587}
-      SMTP_USERNAME: ${SMTP_USERNAME:-}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      SMTP_USE_TLS: ${SMTP_USE_TLS:-true}
-      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-}
-      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Finca Villa Luz}
-
-      # ── Monitoreo Sentry (Opcional) ──
-      SENTRY_DSN: ${SENTRY_DSN:-}
     volumes:
       - uploads_data:/app/static/uploads
       - maintenance_logs:/app/maintenance
