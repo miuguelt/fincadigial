@@ -43,16 +43,8 @@ for f in required_files:
     path = ROOT / f
     check(path.exists(), f"Archivo existe: {f}", f"Falta archivo crítico: {f}")
 
-# Compatibilidad Coolify: verificar presencia de docker-compose.yaml (default de Coolify)
-yaml_compat = ROOT / "docker-compose.yaml"
-check(yaml_compat.exists(), "Archivo de compatibilidad Coolify existe: docker-compose.yaml", "Falta docker-compose.yaml (requerido para default de Coolify)", warn=True)
-
-# ── 2. Variables de entorno en Docker Compose ─────────────────────────
+# ── 2. Variables de entorno en Docker Compose (SSoT: docker-compose.yml) ──
 compose_path = ROOT / "docker-compose.yml"
-if not compose_path.exists():
-    compose_path = ROOT / "docker-compose.yaml"
-if not compose_path.exists():
-    compose_path = ROOT / "docker-compose.coolify.yml"
 
 if compose_path.exists():
     compose_text = compose_path.read_text(encoding="utf-8")
