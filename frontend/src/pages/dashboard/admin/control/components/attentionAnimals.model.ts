@@ -25,17 +25,17 @@ export const ATTENTION_SEVERITY_COPY: Record<
 		badge: "Grave",
 		hint: "Revísalo hoy mismo",
 		badgeClass:
-			"bg-red-700 text-white dark:bg-red-600",
+			"border-red-500/30 bg-red-500/15 text-red-700 dark:border-red-400/30 dark:bg-red-500/20 dark:text-red-300",
 		cardClass:
-			"border-red-300 bg-red-50/70 dark:border-red-900 dark:bg-red-950/30",
+			"border-red-500/25 bg-gradient-to-br from-red-500/5 via-card to-card hover:border-red-500/40",
 	},
 	media: {
 		badge: "En observación",
 		hint: "Vuelve a mirarlo en estos días",
 		badgeClass:
-			"bg-amber-500 text-amber-950 dark:bg-amber-400 dark:text-amber-950",
+			"border-amber-500/30 bg-amber-500/15 text-amber-800 dark:border-amber-400/30 dark:bg-amber-500/20 dark:text-amber-300",
 		cardClass:
-			"border-amber-300 bg-amber-50/70 dark:border-amber-900 dark:bg-amber-950/30",
+			"border-amber-500/25 bg-gradient-to-br from-amber-500/5 via-card to-card hover:border-amber-500/40",
 	},
 };
 

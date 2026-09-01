@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { animalsService } from '@/entities/animal/api/animal.service';
 import { useToast } from '@/app/providers/ToastContext';
-import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
+import { AnimalDetailModal } from '@/widgets/dashboard/animals/AnimalDetailModal';
 
 // BarcodeDetector es nativo en Chrome/Edge 83+ y Safari 17.4+
 declare const BarcodeDetector: any;
@@ -24,7 +24,6 @@ declare const BarcodeDetector: any;
 type ScanState = 'idle' | 'scanning' | 'searching' | 'found' | 'not-found' | 'error';
 
 export default function AnimalScannerPage() {
-  const { goTo } = useRoleNavigation();
   const { showToast } = useToast();
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -36,6 +35,7 @@ export default function AnimalScannerPage() {
   const [scannedValue, setScannedValue] = useState('');
   const [manualInput, setManualInput] = useState('');
   const [animalFound, setAnimalFound] = useState<{ id: number; record: string } | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [cameraError, setCameraError] = useState('');
   const [nativeScanSupported] = useState(
     typeof window !== 'undefined' && 'BarcodeDetector' in window
@@ -206,83 +206,83 @@ export default function AnimalScannerPage() {
               style={{ display: scanState === 'scanning' ? 'block' : 'none' }}
             />
 
-          {/* Marco de escaneo */}
-          {scanState === 'scanning' && nativeScanSupported && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-52 h-52 relative">
-                <div className="absolute inset-0 border-4 border-primary/40 rounded-lg" />
-                <div className="absolute -top-0.5 -left-0.5 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-xl" />
-                <div className="absolute -top-0.5 -right-0.5 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-xl" />
-                <div className="absolute -bottom-0.5 -left-0.5 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-xl" />
-                <div className="absolute -bottom-0.5 -right-0.5 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-xl" />
-                <div className="absolute top-1/2 left-4 right-4 h-0.5 bg-primary animate-pulse" />
+            {/* Marco de escaneo */}
+            {scanState === 'scanning' && nativeScanSupported && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-52 h-52 relative">
+                  <div className="absolute inset-0 border-4 border-primary/40 rounded-lg" />
+                  <div className="absolute -top-0.5 -left-0.5 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-xl" />
+                  <div className="absolute -top-0.5 -right-0.5 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-xl" />
+                  <div className="absolute -bottom-0.5 -left-0.5 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-xl" />
+                  <div className="absolute -bottom-0.5 -right-0.5 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-xl" />
+                  <div className="absolute top-1/2 left-4 right-4 h-0.5 bg-primary animate-pulse" />
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Modo cámara sin escáner nativo */}
-          {scanState === 'scanning' && !nativeScanSupported && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 pointer-events-none">
-              <Keyboard className="h-8 w-8 text-white/60" />
-              <p className="text-white/70 text-sm text-center px-4">
-                Ingresa el código manualmente abajo
-              </p>
-            </div>
-          )}
-
-          {/* Idle */}
-          {scanState === 'idle' && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60">
-              <Camera className="h-12 w-12 text-white/40" />
-              <p className="text-white/60 text-sm">Cámara inactiva</p>
-            </div>
-          )}
-
-          {/* Buscando */}
-          {scanState === 'searching' && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/70">
-              <Search className="h-12 w-12 text-white animate-pulse" />
-              <p className="text-white text-sm">Buscando {scannedValue}…</p>
-            </div>
-          )}
-
-          {/* Encontrado */}
-          {scanState === 'found' && animalFound && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-success/80">
-              <CheckCircle2 className="h-16 w-16 text-white" />
-              <div className="text-center">
-                <p className="text-white font-bold text-xl">{animalFound.record}</p>
-                <p className="text-white/90 text-sm mt-1">Animal encontrado</p>
+            {/* Modo cámara sin escáner nativo */}
+            {scanState === 'scanning' && !nativeScanSupported && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 pointer-events-none">
+                <Keyboard className="h-8 w-8 text-white/60" />
+                <p className="text-white/70 text-sm text-center px-4">
+                  Ingresa el código manualmente abajo
+                </p>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* No encontrado */}
-          {scanState === 'not-found' && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-warning/80">
-              <AlertCircle className="h-16 w-16 text-white" />
-              <div className="text-center">
-                <p className="text-white font-bold">Sin resultado</p>
-                <p className="text-white/90 text-sm">Código: {scannedValue}</p>
+            {/* Idle */}
+            {scanState === 'idle' && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60">
+                <Camera className="h-12 w-12 text-white/40" />
+                <p className="text-white/60 text-sm">Cámara inactiva</p>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Error */}
-          {scanState === 'error' && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-danger/80 p-4">
-              <AlertCircle className="h-12 w-12 text-white" />
-              <p className="text-white text-sm text-center">Error al buscar el animal</p>
-            </div>
-          )}
+            {/* Buscando */}
+            {scanState === 'searching' && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/70">
+                <Search className="h-12 w-12 text-white animate-pulse" />
+                <p className="text-white text-sm">Buscando {scannedValue}…</p>
+              </div>
+            )}
 
-          {/* Error de cámara */}
-          {cameraError && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-danger/80 p-4" role="alert">
-              <CameraOff className="h-12 w-12 text-white" />
-              <p className="text-white text-sm text-center">{cameraError}</p>
-            </div>
-          )}
+            {/* Encontrado */}
+            {scanState === 'found' && animalFound && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-success/80">
+                <CheckCircle2 className="h-16 w-16 text-white" />
+                <div className="text-center">
+                  <p className="text-white font-bold text-xl">{animalFound.record}</p>
+                  <p className="text-white/90 text-sm mt-1">Animal encontrado</p>
+                </div>
+              </div>
+            )}
+
+            {/* No encontrado */}
+            {scanState === 'not-found' && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-warning/80">
+                <AlertCircle className="h-16 w-16 text-white" />
+                <div className="text-center">
+                  <p className="text-white font-bold">Sin resultado</p>
+                  <p className="text-white/90 text-sm">Código: {scannedValue}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Error */}
+            {scanState === 'error' && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-danger/80 p-4">
+                <AlertCircle className="h-12 w-12 text-white" />
+                <p className="text-white text-sm text-center">Error al buscar el animal</p>
+              </div>
+            )}
+
+            {/* Error de cámara */}
+            {cameraError && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-danger/80 p-4" role="alert">
+                <CameraOff className="h-12 w-12 text-white" />
+                <p className="text-white text-sm text-center">{cameraError}</p>
+              </div>
+            )}
           </div>
 
           <CardContent className="flex flex-col gap-4 p-5 sm:p-6">
@@ -308,7 +308,7 @@ export default function AnimalScannerPage() {
                 </Button>
                 {scanState === 'found' && animalFound && (
                   <Button
-                    onClick={() => goTo(`/admin/animals/${animalFound.id}`)}
+                    onClick={() => setIsDetailOpen(true)}
                     className="flex-1 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white min-h-[44px]"
                   >
                     <Search className="h-4 w-4" />
@@ -406,6 +406,15 @@ export default function AnimalScannerPage() {
           <span className="font-medium text-foreground">Último código consultado:</span>
           <Badge variant="outline">{scannedValue}</Badge>
         </div>
+      )}
+
+      {/* Modal de Detalle Canónico */}
+      {animalFound?.id && (
+        <AnimalDetailModal
+          isOpen={isDetailOpen}
+          onOpenChange={setIsDetailOpen}
+          animalId={animalFound.id}
+        />
       )}
     </div>
   );

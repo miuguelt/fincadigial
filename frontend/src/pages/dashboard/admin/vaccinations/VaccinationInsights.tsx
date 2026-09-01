@@ -65,7 +65,7 @@ export const VaccinationInsights: React.FC = () => {
           <div className="h-6 w-6 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
             <Syringe className="h-3.5 w-3.5" />
           </div>
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider truncate">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider fit-clamp">
             Resumen Sanitario de Vacunación
           </span>
         </div>

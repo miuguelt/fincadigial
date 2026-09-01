@@ -27,3 +27,18 @@ export function formatControlPageDate(value: string): string {
 
 	return `Hoy, ${formatted}`;
 }
+
+export function formatAnimalHeight(value: number | string | null | undefined): string {
+	if (value === null || value === undefined || value === '') return '-';
+	const num = Number(value);
+	if (Number.isNaN(num) || num <= 0) return '-';
+
+	// Si el valor es menor a 3, está expresado en metros (ej. 1.35m) -> convertir a cm
+	if (num < 3) {
+		const inCm = Math.round(num * 100);
+		return `${inCm} cm`;
+	}
+
+	// Si es entero o decimal
+	return Number.isInteger(num) ? `${num} cm` : `${num.toFixed(1)} cm`;
+}

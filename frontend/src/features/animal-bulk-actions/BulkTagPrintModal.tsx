@@ -48,7 +48,7 @@ export const BulkTagPrintModal: React.FC<BulkTagPrintModalProps> = ({
 
   const qrSize = qrDefinition === 'high' ? 128 : 96;
 
-  /** Los paneles electrónicos necesitan la finca para no cruzar aretes entre hatos. */
+  /** Los paneles electrónicos necesitan la finca para no cruzar chapetas entre hatos. */
   const tagAnimals = useMemo<NfcTagAnimal[]>(
     () =>
       animals.map((animal) => ({
@@ -81,7 +81,7 @@ export const BulkTagPrintModal: React.FC<BulkTagPrintModalProps> = ({
           </div>
         </div>
       }
-      description="Etiqueta impresa, arete NFC o transpondedor"
+      description="Etiqueta impresa, chapeta NFC o transpondedor"
       fullWidth
       className={cn(
         '!max-w-[1500px] !h-[94dvh] !max-h-[94dvh] flex flex-col overflow-hidden rounded-xl border border-white/10 bg-[#020617] p-0',
@@ -135,7 +135,7 @@ export const BulkTagPrintModal: React.FC<BulkTagPrintModalProps> = ({
               animals={tagAnimals}
               settings={nfcSettings}
               onFinished={(written) =>
-                onSuccess?.(`${written} arete(s) NFC grabados y vinculados`)
+                onSuccess?.(`${written} chapeta(s) NFC grabadas y vinculadas`)
               }
             />
           )}

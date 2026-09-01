@@ -13,7 +13,6 @@ import {
   RefreshCw,
   Truck,
 } from 'lucide-react';
-import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import analyticsService from '@/features/reporting/api/analytics.service';
 import { useToast } from '@/app/providers/ToastContext';
 import { CSVLink } from 'react-csv';
@@ -21,15 +20,16 @@ import { cn } from '@/shared/ui/cn.ts';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
 import { GSMIAssistantModal } from '@/widgets/regulatory';
+import { AnimalDetailModal } from '@/widgets/dashboard/animals/AnimalDetailModal';
 import { getICAStatusBadge, getICAStatusIcon } from './components/ICAStatus';
 import { exportICACompliancePdf } from './components/icaReportPdf';
 
 export default function ICADashboard() {
-  const { goTo } = useRoleNavigation();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [showGSMIModal, setShowGSMIModal] = useState(false);
+  const [selectedAnimalId, setSelectedAnimalId] = useState<number | null>(null);
   const [data, setData] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'red' | 'yellow' | 'green'>('all');
@@ -270,7 +270,7 @@ export default function ICADashboard() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.5) }}
                             className="group cursor-pointer hover:bg-primary/[0.02] border-b border-border/30 last:border-0 transition-colors"
-                            onClick={() => goTo(`/admin/animals/${animal.animal_id}`)}
+                            onClick={() => setSelectedAnimalId(Number(animal.animal_id))}
                           >
                             <TableCell className="pl-6">{getICAStatusIcon(animal.overall)}</TableCell>
                             <TableCell>
@@ -329,6 +329,17 @@ export default function ICADashboard() {
 
       {/* Modal Asistente GSMI */}
       <GSMIAssistantModal open={showGSMIModal} onClose={() => setShowGSMIModal(false)} />
+
+      {/* Modal de Detalle Animal */}
+      {selectedAnimalId && (
+        <AnimalDetailModal
+          isOpen={Boolean(selectedAnimalId)}
+          onOpenChange={(open) => {
+            if (!open) setSelectedAnimalId(null);
+          }}
+          animalId={selectedAnimalId}
+        />
+      )}
     </div>
   );
 }

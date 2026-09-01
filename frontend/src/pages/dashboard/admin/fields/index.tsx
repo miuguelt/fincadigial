@@ -287,7 +287,7 @@ const PotreroCard: React.FC<PotreroCardProps> = ({
             <Badge variant="secondary" className="font-mono font-black text-[11px] px-2 bg-white/5 border-white/10 text-muted-foreground/60 whitespace-nowrap">
               #{potrero.id}
             </Badge>
-            <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded border whitespace-nowrap", restStatus.badge)}>
+            <span className={cn("text-[11px] font-bold px-1.5 py-0.5 rounded border whitespace-nowrap", restStatus.badge)}>
               {restStatus.label}
             </span>
           </div>

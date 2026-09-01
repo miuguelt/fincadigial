@@ -5,6 +5,7 @@ import { Button } from '@/shared/ui/button';
 import { AnimalResponse } from '@/shared/api/generated/swaggerTypes';
 import { Control } from '@/entities/control/model/types';
 import { ImageManager } from '@/shared/ui/common/ImageManager';
+import { AnimalLink } from '@/entities/animal/ui/AnimalLink';
 
 interface ControlDetailModalProps {
   showDetailModal: boolean;
@@ -52,7 +53,9 @@ export const ControlDetailModal: React.FC<ControlDetailModalProps> = ({
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground">Animal</label>
-                <p className="text-base">{getAnimalName(selectedControl.animal_id)}</p>
+                <div>
+                  <AnimalLink id={selectedControl.animal_id} label={getAnimalName(selectedControl.animal_id)} className="text-base font-semibold" />
+                </div>
               </div>
 
               <div className="space-y-2">

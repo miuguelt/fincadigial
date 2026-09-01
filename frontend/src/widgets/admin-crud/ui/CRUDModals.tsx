@@ -197,6 +197,11 @@ function DetailModalComponent<T extends { id: number }>({
       variant="compact"
       allowFullScreenToggle
       enableBackdropBlur
+      enableNavigation={Array.isArray(items) && items.length > 1}
+      hasPrevious={Array.isArray(items) && items.length > 1}
+      hasNext={Array.isArray(items) && items.length > 1}
+      onNavigatePrevious={handlePrevDetail}
+      onNavigateNext={handleNextDetail}
       className="bg-card text-card-foreground border-border shadow-lg transition-all duration-200 ease-out max-h-[90vh]"
       footer={footer}
       themeColor={theme}

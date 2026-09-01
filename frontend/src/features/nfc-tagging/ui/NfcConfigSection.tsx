@@ -59,11 +59,11 @@ interface NfcConfigSectionProps {
 }
 
 /**
- * Ajustes de grabación de los aretes NFC.
+ * Ajustes de grabación de las chapetas NFC.
  *
  * Cada opción cambia algo que se nota en el potrero, no una preferencia
- * cosmética: cuánto cabe en el chip, cuánto se demora cada animal y si el
- * arete se puede volver a usar.
+ * cosmética: cuánto cabe en el chip, cuánto se demora cada animal y si la
+ * chapeta se puede volver a usar.
  */
 export const NfcConfigSection: React.FC<NfcConfigSectionProps> = ({ settings, onChange }) => {
   const patch = (partial: Partial<NfcTagSettings>) => onChange({ ...settings, ...partial });
@@ -71,19 +71,19 @@ export const NfcConfigSection: React.FC<NfcConfigSectionProps> = ({ settings, on
   return (
     <div className="space-y-5 rounded-[2rem] border border-white/10 bg-[#020617] p-5 shadow-inner">
       <OptionToggleGroup
-        legend="Chip del arete"
+        legend="Chip de la chapeta"
         icon={Cpu}
         tone="emerald"
         options={TAG_OPTIONS}
         value={settings.tagType}
         onChange={(tagType) => patch({ tagType })}
-        hint={`Capacidad útil: ${TAG_CAPACITIES[settings.tagType]} bytes. Viene impreso en la bolsa de los aretes.`}
+        hint={`Capacidad útil: ${TAG_CAPACITIES[settings.tagType]} bytes. Viene impreso en el empaque de las chapetas.`}
       />
 
       <div className="space-y-2">
         <ToggleRow
           icon={WifiOff}
-          title="Ficha sin señal en el arete"
+          title="Ficha sin señal en la chapeta"
           description="Graba nombre, sexo, raza y nacimiento dentro del chip. Permite identificar al animal en el potrero sin datos ni cobertura."
           checked={settings.includeSnapshot}
           onChange={(includeSnapshot) => patch({ includeSnapshot })}
@@ -91,7 +91,7 @@ export const NfcConfigSection: React.FC<NfcConfigSectionProps> = ({ settings, on
         <ToggleRow
           icon={ShieldCheck}
           title="Comprobar después de grabar"
-          description="Pide retirar y volver a acercar el arete para confirmar que quedó bien. Cuesta unos segundos y evita tener que volver a encerrar al animal."
+          description="Pide retirar y volver a acercar la chapeta para confirmar que quedó bien. Cuesta unos segundos y evita tener que volver a encerrar al animal."
           checked={settings.verifyAfterWrite}
           onChange={(verifyAfterWrite) => patch({ verifyAfterWrite })}
         />
@@ -105,8 +105,8 @@ export const NfcConfigSection: React.FC<NfcConfigSectionProps> = ({ settings, on
         <ToggleRow
           icon={Lock}
           danger
-          title="Bloquear el arete para siempre"
-          description="Nadie podrá reescribirlo, tampoco tú. No tiene vuelta atrás y el arete no se puede reutilizar en otro animal. Actívalo solo para animales de venta o certificación."
+          title="Bloquear la chapeta para siempre"
+          description="Nadie podrá reescribirla. No tiene vuelta atrás y la chapeta no se puede reutilizar en otro animal. Actívelo solo para animales de venta o certificación."
           checked={settings.lockAfterWrite}
           onChange={(lockAfterWrite) => patch({ lockAfterWrite })}
         />

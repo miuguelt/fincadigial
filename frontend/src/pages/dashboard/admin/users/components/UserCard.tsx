@@ -5,6 +5,7 @@ import { IdCard, Mail, MessagesSquare, Phone } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import { UserAvatarUpload } from '@/widgets/dashboard/users/UserAvatarUpload';
 import { cn } from '@/shared/ui/cn';
+import { isDialogClosingRecently } from '@/shared/utils/modalGuard';
 import { getChatAvailability } from '../utils/user.utils';
 import type { UserWithProfile } from '../types';
 import type { User } from '@/entities/user/model/types';
@@ -103,10 +104,12 @@ export function UserCard({ user, currentUser, chatContactIds, resolveAvatar, onA
       tabIndex={0}
       aria-label={`Ver perfil de ${user.fullname}`}
       onClick={(event) => {
+        if (isDialogClosingRecently()) return;
         if ((event.target as HTMLElement).closest('button, a, input, textarea')) return;
         onOpenDetail?.(user);
       }}
       onKeyDown={(event) => {
+        if (isDialogClosingRecently()) return;
         if (event.target !== event.currentTarget) return;
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();

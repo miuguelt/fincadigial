@@ -84,10 +84,21 @@ const routeConfig: Record<string, string> = {
   'lessons': 'Lecciones',
   'basics': 'Manejo Básico',
   'records': 'Registro ICA',
+
+  // Rutas y Vistas Específicas
+  'kpis': 'Indicadores del Hato',
+  'estadisticas': 'Estadísticas',
+  'alert-configs': 'Configuración de Alertas',
+  'configs': 'Configuración',
+  'form': 'Formulario',
+  'detail': 'Detalle',
+  'create': 'Crear',
+  'edit': 'Editar',
 };
 
 function getSegmentLabel(segment: string): string {
   if (routeConfig[segment]) return routeConfig[segment];
+  if (/^\d+$/.test(segment)) return `#${segment}`;
   return segment
     .split(/[-_]/)
     .filter(Boolean)

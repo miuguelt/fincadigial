@@ -86,7 +86,7 @@ export const AforoCalculatorModal: React.FC<AforoCalculatorModalProps> = ({
   );
   const [animalWeightKg, setAnimalWeightKg] = useState<number>(450); // 1 UGM estándar = 450 kg
   const [dailyIntakePct] = useState<number>(10); // 10% del peso vivo en forraje verde
-  const [desiredGrazingDays, setDesiredGrazingDays] = useState<number>(2); // 2 días de estancia
+  const [desiredGrazingDays, setDesiredGrazingDays] = useState<number>(2); // 2 días de ocupación
 
   const [isSaving, setIsSaving] = useState(false);
 
@@ -241,13 +241,13 @@ export const AforoCalculatorModal: React.FC<AforoCalculatorModalProps> = ({
 
             <div className="flex items-center gap-3">
               <div className="bg-background/80 rounded-xl px-3.5 py-2 border border-border/60 text-right">
-                <span className="text-[10px] font-black uppercase text-muted-foreground block">Área Total</span>
+                <span className="text-[11px] font-black uppercase text-muted-foreground block">Área Total</span>
                 <span className="text-sm font-black text-foreground tabular-nums">
                   {areaHa.toLocaleString('es-CO')} ha <span className="text-xs text-muted-foreground font-normal">({(areaHa * 10000).toLocaleString('es-CO')} m²)</span>
                 </span>
               </div>
               <div className="bg-background/80 rounded-xl px-3.5 py-2 border border-border/60 text-right">
-                <span className="text-[10px] font-black uppercase text-muted-foreground block">Ganado Actual</span>
+                <span className="text-[11px] font-black uppercase text-muted-foreground block">Ganado Actual</span>
                 <span className="text-sm font-black text-foreground tabular-nums">
                   {activeField?.animal_count ?? 0} cabezas
                 </span>
@@ -340,7 +340,7 @@ export const AforoCalculatorModal: React.FC<AforoCalculatorModalProps> = ({
         {/* Sección 2: Oferta Forrajera Neta (Resultados del Aforo) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex flex-col justify-between">
-            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+            <span className="text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
               Producción Promedio
             </span>
             <div className="mt-2 flex items-baseline gap-1">
@@ -355,7 +355,7 @@ export const AforoCalculatorModal: React.FC<AforoCalculatorModalProps> = ({
           </div>
 
           <div className="p-3.5 rounded-2xl bg-card border border-border/70 flex flex-col justify-between shadow-sm">
-            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+            <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">
               Forraje Verde Total
             </span>
             <div className="mt-2 flex items-baseline gap-1">
@@ -370,7 +370,7 @@ export const AforoCalculatorModal: React.FC<AforoCalculatorModalProps> = ({
           </div>
 
           <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex flex-col justify-between">
-            <span className="text-[10px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-300">
+            <span className="text-[11px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-300">
               Forraje Aprovechable
             </span>
             <div className="mt-2 flex items-baseline gap-1">
@@ -385,7 +385,7 @@ export const AforoCalculatorModal: React.FC<AforoCalculatorModalProps> = ({
           </div>
 
           <div className="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex flex-col justify-between">
-            <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 dark:text-purple-300">
+            <span className="text-[11px] font-black uppercase tracking-wider text-purple-700 dark:text-purple-300">
               Consumo Diario Lote
             </span>
             <div className="mt-2 flex items-baseline gap-1">
@@ -437,7 +437,7 @@ export const AforoCalculatorModal: React.FC<AforoCalculatorModalProps> = ({
                 onChange={(e) => setAnimalWeightKg(Math.max(50, parseInt(e.target.value) || 450))}
                 className="h-10 font-bold"
               />
-              <span className="text-[10px] text-muted-foreground block">
+              <span className="text-[11px] text-muted-foreground block">
                 Consumo: {dailyIntakePct}% PV = {calculations.dailyIntakePerAnimalKg} kg FV/día
               </span>
             </div>
@@ -454,7 +454,7 @@ export const AforoCalculatorModal: React.FC<AforoCalculatorModalProps> = ({
                 onChange={(e) => setDesiredGrazingDays(Math.max(1, parseInt(e.target.value) || 1))}
                 className="h-10 font-bold"
               />
-              <span className="text-[10px] text-muted-foreground block">
+              <span className="text-[11px] text-muted-foreground block">
                 Recomendado en pastoreo rotacional: 1 a 3 días
               </span>
             </div>
@@ -469,14 +469,14 @@ export const AforoCalculatorModal: React.FC<AforoCalculatorModalProps> = ({
               </h4>
               <p className="text-muted-foreground leading-relaxed">
                 Con una oferta de <strong className="text-foreground">{calculations.usableForageKg.toLocaleString('es-CO')} kg de forraje aprovechable</strong>, 
-                tu lote actual de <strong className="text-foreground">{animalCount} animales</strong> puede pastorear durante{' '}
+                su lote actual de <strong className="text-foreground">{animalCount} animales</strong> puede pastorear durante{' '}
                 <strong className="text-emerald-700 dark:text-emerald-300 text-sm font-black underline decoration-emerald-500">
                   {calculations.daysSupported} días
                 </strong>{' '}
                 sin provocar sobrepastoreo.
               </p>
               <p className="text-muted-foreground leading-relaxed pt-1">
-                Si deseas una rotación estricta de <strong className="text-foreground">{desiredGrazingDays} días</strong>, 
+                Si desea una rotación estricta de <strong className="text-foreground">{desiredGrazingDays} días</strong>, 
                 el potrero soporta un lote de hasta{' '}
                 <strong className="text-primary font-black">{calculations.animalsForDesiredDays} cabezas</strong>{' '}
                 (Carga: {calculations.ugmPerHa} UGM/ha).

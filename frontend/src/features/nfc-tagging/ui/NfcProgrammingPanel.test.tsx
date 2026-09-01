@@ -30,7 +30,7 @@ describe('equipo sin Web NFC', () => {
     });
     renderPanel();
 
-    expect(screen.getByText(/El iPhone no permite grabar aretes NFC/i)).toBeTruthy();
+    expect(screen.getByText(/El iPhone no permite grabar chapetas NFC/i)).toBeTruthy();
     // Además del motivo, tiene que quedar claro qué hacer para poder trabajar.
     expect(screen.getByText(/Consigue un celular Android/i)).toBeTruthy();
     expect(screen.getByText(/Abre la aplicación en Chrome/i)).toBeTruthy();
@@ -48,7 +48,7 @@ describe('equipo sin Web NFC', () => {
     vi.stubGlobal('isSecureContext', true);
     renderPanel();
 
-    expect(screen.getByText(/Este navegador no sirve para grabar aretes/i)).toBeTruthy();
+    expect(screen.getByText(/Este navegador no sirve para grabar chapetas/i)).toBeTruthy();
     expect(screen.getByText(/Abre la aplicación en Chrome/i)).toBeTruthy();
   });
 
@@ -81,7 +81,7 @@ describe('equipo con Web NFC', () => {
     renderPanel();
 
     expect(screen.getByRole('button', { name: /iniciar marcaje/i })).toBeTruthy();
-    expect(screen.getByText(/ten los aretes a la mano/i)).toBeTruthy();
+    expect(screen.getByText(/ten las chapetas a la mano/i)).toBeTruthy();
     // El animal en turno aparece dos veces a propósito: grande en el escenario
     // y como fila de la lista, que es la que se puede tocar para adelantarlo.
     expect(screen.getAllByText('BOV-010')).toHaveLength(2);
@@ -102,8 +102,8 @@ describe('equipo con Web NFC', () => {
 
     renderPanel();
 
-    expect(screen.getByRole('button', { name: /cómo se graba un arete/i })).toBeTruthy();
-    expect(screen.getByText(/Pega el arete a la espalda del celular/i)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /cómo se graba una chapeta/i })).toBeTruthy();
+    expect(screen.getByText(/Pega la chapeta a la espalda del celular/i)).toBeTruthy();
     expect(screen.getByText(/Sostenlo quieto hasta que vibre/i)).toBeTruthy();
     // El tropiezo más común en el corral no puede quedar escondido.
     expect(screen.getByText(/No vibra ni suena nada/i)).toBeTruthy();

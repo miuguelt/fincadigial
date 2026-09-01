@@ -18,6 +18,7 @@ import { cn } from '@/shared/ui/cn.ts';
 import { useT } from '@/shared/i18n';
 import { useMediaQuery } from '@/shared/hooks/useMediaQuery';
 import { FloatingScrollArea } from '@/shared/ui/FloatingScrollArea';
+import { isDialogClosingRecently } from '@/shared/utils/modalGuard';
 import InlineEditCell from './InlineEditCell';
 import {
   DropdownMenu,
@@ -137,7 +138,10 @@ function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>
         "hover:shadow-md hover:border-primary/20 transition-all duration-200",
         "active:scale-[0.99]",
       )}
-      onClick={() => onOpenDetail?.(item)}
+      onClick={() => {
+        if (isDialogClosingRecently()) return;
+        onOpenDetail?.(item);
+      }}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -344,6 +348,7 @@ function TableRowComponent<T extends { id: number }>(props: TableRowProps<T>) {
   const isDeleting = deletingItems.has(String(item.id));
 
   const handleClick = useCallback(() => {
+    if (isDialogClosingRecently()) return;
     if (onOpenDetail) {
       onOpenDetail(item);
     }
@@ -384,10 +389,35 @@ function TableRowComponent<T extends { id: number }>(props: TableRowProps<T>) {
         if (isTypingTarget) {
           return;
         }
+
         if (e.key === 'Enter' || e.key === ' ' || (e as any).keyCode === 13) {
           e.preventDefault();
           if (onOpenDetail) {
             onOpenDetail(item);
+          }
+        } else if (e.key === 'ArrowDown' || e.keyCode === 40) {
+          e.preventDefault();
+          const currentTr = e.currentTarget as HTMLElement;
+          const nextTr = currentTr.nextElementSibling as HTMLElement | null;
+          if (nextTr && (nextTr.tagName === 'TR' || nextTr.getAttribute('role') === 'button')) {
+            nextTr.focus();
+          }
+        } else if (e.key === 'ArrowUp' || e.keyCode === 38) {
+          e.preventDefault();
+          const currentTr = e.currentTarget as HTMLElement;
+          const prevTr = currentTr.previousElementSibling as HTMLElement | null;
+          if (prevTr && (prevTr.tagName === 'TR' || prevTr.getAttribute('role') === 'button')) {
+            prevTr.focus();
+          }
+        } else if ((e.key === 'e' || e.key === 'E') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          e.preventDefault();
+          if (onOpenEdit) {
+            onOpenEdit(item);
+          }
+        } else if (e.key === 'Delete') {
+          e.preventDefault();
+          if (onOpenDelete) {
+            onOpenDelete(item.id);
           }
         }
       }}

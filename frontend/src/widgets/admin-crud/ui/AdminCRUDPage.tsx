@@ -69,6 +69,8 @@ export interface AdminCRUDPageProps<T extends { id: number }, TInput extends Rec
   onSelectionChange?: (ids: number[]) => void;
   // Filtros dinámicos desde el contenedor superior
   filters?: Record<string, any>;
+  // Filtro en memoria opcional para filtrar datos en cliente
+  filterItems?: (items: T[]) => T[];
 }
 
 export function AdminCRUDPage<T extends { id: number }, TInput extends Record<string, any>>({
@@ -88,6 +90,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   onItemsChange,
   onOpenDetail: externalOnOpenDetail,
   filters,
+  filterItems,
 }: AdminCRUDPageProps<T, TInput>) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<T | null>(null);
@@ -157,10 +160,10 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   });
 
   // Lo eliminado hace poco se oculta aunque el backend siga devolviéndolo.
-  const filteredItems = useMemo(
-    () => withoutTombstones(items || [], getTombstoneIds(entityKey)),
-    [items, entityKey]
-  );
+  const filteredItems = useMemo(() => {
+    const base = withoutTombstones(items || [], getTombstoneIds(entityKey));
+    return filterItems ? filterItems(base) : base;
+  }, [items, entityKey, filterItems]);
   const { selectedIds, toggleSelect, clearSelection, toggleSelectAll } = useCrudSelection(filteredItems);
 
   useEffect(() => {

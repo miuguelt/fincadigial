@@ -5,6 +5,7 @@ import { Button } from '@/shared/ui/button';
 import { IconEye, IconEdit, IconTrash, IconScale, IconActivity, IconHistory, IconPlus } from '@/shared/ui/icons';
 import { Control } from '@/entities/control/model/types';
 import { cn } from '@/shared/ui/cn';
+import { AnimalLink } from '@/entities/animal/ui/AnimalLink';
 
 interface ControlCardProps {
   control: Control;
@@ -73,7 +74,7 @@ export const ControlCard: React.FC<ControlCardProps> = ({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Animal:</span>
-            <span className="text-sm">{getAnimalName(control.animal_id)}</span>
+            <AnimalLink id={control.animal_id} label={getAnimalName(control.animal_id)} className="text-sm font-semibold" />
           </div>
 
           {(control.weight != null || control.height != null) && (

@@ -11,11 +11,35 @@ interface AlertsSectionProps {
   healthAlerts?: string[];
 }
 
-const priorityConfig: Record<string, { icon: React.ElementType; color: string; bg: string; border: string }> = {
-  Crítica: { icon: AlertCircle, color: 'text-destructive', bg: 'bg-destructive/5 dark:bg-red-950/30', border: 'border-destructive/30 dark:border-red-800' },
-  Alta: { icon: AlertTriangle, color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-950/30', border: 'border-orange-200 dark:border-orange-800' },
-  Media: { icon: BellRing, color: 'text-warning', bg: 'bg-warning/5 dark:bg-amber-950/30', border: 'border-amber-200 dark:border-amber-800' },
-  Baja: { icon: Info, color: 'text-info', bg: 'bg-info/5 dark:bg-blue-950/30', border: 'border-info/30 dark:border-blue-800' },
+const priorityConfig: Record<string, { icon: React.ElementType; color: string; bg: string; border: string; badge: string }> = {
+  Crítica: {
+    icon: AlertCircle,
+    color: 'text-rose-600 dark:text-rose-400',
+    bg: 'bg-rose-500/5 dark:bg-rose-950/20',
+    border: 'border-rose-500/30 dark:border-rose-800/40',
+    badge: 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30'
+  },
+  Alta: {
+    icon: AlertTriangle,
+    color: 'text-amber-600 dark:text-amber-400',
+    bg: 'bg-amber-500/5 dark:bg-amber-950/20',
+    border: 'border-amber-500/30 dark:border-amber-800/40',
+    badge: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30'
+  },
+  Media: {
+    icon: BellRing,
+    color: 'text-yellow-600 dark:text-yellow-400',
+    bg: 'bg-yellow-500/5 dark:bg-yellow-950/20',
+    border: 'border-yellow-500/30 dark:border-yellow-800/40',
+    badge: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-300 border-yellow-500/30'
+  },
+  Baja: {
+    icon: Info,
+    color: 'text-blue-600 dark:text-blue-400',
+    bg: 'bg-blue-500/5 dark:bg-blue-950/20',
+    border: 'border-blue-500/30 dark:border-blue-800/40',
+    badge: 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30'
+  },
 };
 
 function getPriorityConfig(priority: string) {
@@ -141,11 +165,11 @@ export function AlertsSection({ animalId, healthAlerts = [] }: AlertsSectionProp
     : sortedAlerts;
 
   return (
-    <section className="rounded-xl border border-border/60 bg-card shadow-sm overflow-hidden">
-      <div className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between border-b border-border/40">
+    <section className="rounded-2xl border border-border/70 dark:border-white/10 bg-card/80 dark:bg-card/40 shadow-sm overflow-hidden backdrop-blur-sm">
+      <div className="flex flex-col gap-3 p-3.5 sm:p-4 sm:flex-row sm:items-center sm:justify-between border-b border-border/50 bg-card/50">
         <div className="flex min-w-0 items-center gap-3">
           <div className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border",
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border shadow-sm",
             highestCfg.bg,
             highestCfg.border,
             highestCfg.color
@@ -155,14 +179,14 @@ export function AlertsSection({ animalId, healthAlerts = [] }: AlertsSectionProp
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                Alertas del animal
+                Alertas Sanitarias y Productivas
               </h3>
-              <Badge variant="outline" className={cn("h-5 px-2 text-[11px] font-bold", highestCfg.color, highestCfg.border)}>
+              <Badge variant="outline" className={cn("h-5 px-2 text-[11px] font-bold rounded-full", highestCfg.badge)}>
                 {sortedAlerts.length}
               </Badge>
             </div>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              Prioridad mayor: {highestPriority}
+            <p className="mt-0.5 text-[11px] text-muted-foreground font-medium">
+              Prioridad mayor detectada: <strong className={highestCfg.color}>{highestPriority}</strong>
             </p>
           </div>
         </div>
@@ -171,17 +195,17 @@ export function AlertsSection({ animalId, healthAlerts = [] }: AlertsSectionProp
             variant="ghost"
             size="sm"
             onClick={handleMarkAllAsRead}
-            className="h-8 justify-start text-xs gap-1.5 text-muted-foreground hover:text-foreground sm:justify-center"
+            className="h-8 justify-start text-xs gap-1.5 text-muted-foreground hover:text-foreground sm:justify-center rounded-lg hover:bg-muted"
           >
             <Check className="h-3.5 w-3.5" />
-            Marcar leídas
+            Marcar todas leídas
           </Button>
         )}
       </div>
       <div
         className={cn(
-          "grid gap-2 p-3 transition-all duration-200 md:grid-cols-2 xl:grid-cols-3",
-          isExpanded && "max-h-72 overflow-y-auto"
+          "grid gap-2.5 p-3.5 sm:p-4 transition-all duration-200 md:grid-cols-2 xl:grid-cols-3",
+          isExpanded && "max-h-80 overflow-y-auto"
         )}
       >
         {displayedAlerts.map((alert) => {
@@ -191,30 +215,31 @@ export function AlertsSection({ animalId, healthAlerts = [] }: AlertsSectionProp
             <div
               key={alert.id}
               className={cn(
-                "group flex min-w-0 items-start gap-2.5 rounded-lg border p-3 text-xs transition-all hover:shadow-sm",
+                "group flex min-w-0 items-start gap-2.5 rounded-xl border p-3 text-xs transition-all hover:shadow-sm hover:border-border",
                 cfg.bg,
                 cfg.border
               )}
             >
-              <Icon className={cn("h-4 w-4 mt-0.5 shrink-0", cfg.color)} />
+              <div className={cn("h-7 w-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 bg-background/80 shadow-sm border border-border/50", cfg.color)}>
+                <Icon className="h-3.5 w-3.5" />
+              </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="font-semibold text-foreground fit-clamp">{alert.alert_type}</span>
+                  <span className="font-bold text-foreground fit-clamp text-xs">{alert.alert_type}</span>
                   <Badge
                     variant="outline"
                     className={cn(
-                      "text-[11px] h-4 px-1.5 font-bold",
-                      cfg.color,
-                      cfg.border
+                      "text-[11px] h-4 px-1.5 font-bold uppercase rounded-md",
+                      cfg.badge
                     )}
-                >
-                  {alert.priority}
-                </Badge>
+                  >
+                    {alert.priority}
+                  </Badge>
                 </div>
-                <p className="text-foreground/80 mt-1 leading-relaxed line-clamp-3">{alert.message}</p>
+                <p className="text-foreground/90 mt-1 leading-relaxed line-clamp-3 text-[11px] font-medium">{alert.message}</p>
                 {alert.recommendation && (
-                  <p className="text-muted-foreground italic mt-1 text-[11px] line-clamp-2">
-                    {alert.recommendation}
+                  <p className="text-muted-foreground italic mt-1 text-[11px] line-clamp-2 bg-background/40 p-1.5 rounded-md border border-border/40">
+                    💡 {alert.recommendation}
                   </p>
                 )}
               </div>
@@ -223,7 +248,7 @@ export function AlertsSection({ animalId, healthAlerts = [] }: AlertsSectionProp
                   variant="ghost"
                   size="sm"
                   onClick={() => alert.id && handleMarkAsRead(alert.id)}
-                  className="h-6 w-6 p-0 shrink-0 opacity-40 transition-opacity hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                  className="h-6 w-6 p-0 shrink-0 opacity-40 transition-opacity hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 rounded-lg hover:bg-muted"
                   title="Marcar como leída"
                 >
                   <Check className="h-3.5 w-3.5" />
@@ -234,12 +259,12 @@ export function AlertsSection({ animalId, healthAlerts = [] }: AlertsSectionProp
         })}
       </div>
       {hasMoreThanThree && (
-        <div className="flex justify-center border-t border-border/40 px-3 py-2">
+        <div className="flex justify-center border-t border-border/50 px-3 py-2 bg-muted/10">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="h-7 text-[11px] gap-1.5 text-muted-foreground hover:text-foreground transition-all duration-200"
+            className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-foreground transition-all duration-200 rounded-lg"
           >
             {isExpanded ? (
               <>

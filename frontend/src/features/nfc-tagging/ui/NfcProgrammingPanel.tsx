@@ -18,7 +18,7 @@ interface NfcProgrammingPanelProps {
 }
 
 /**
- * Panel de marcaje de aretes NFC.
+ * Panel de marcaje de chapetas NFC.
  *
  * Está pensado para usarse de pie en el corral: una sola instrucción visible,
  * botones que se aciertan con guante y ninguna acción que dependa de leer
@@ -52,7 +52,7 @@ export const NfcProgrammingPanel: React.FC<NfcProgrammingPanelProps> = ({
 
       {session.payloadBytes > 0 && (
         <p className="text-center text-xs font-semibold uppercase tracking-widest text-indigo-300/45">
-          Contenido del arete: {session.payloadBytes} de {TAG_CAPACITIES[settings.tagType]} bytes
+          Contenido de la chapeta: {session.payloadBytes} de {TAG_CAPACITIES[settings.tagType]} bytes
         </p>
       )}
 
@@ -87,7 +87,7 @@ export const NfcProgrammingPanel: React.FC<NfcProgrammingPanelProps> = ({
       {session.pendingSync > 0 && (
         <p className="flex items-start gap-3 rounded-2xl border border-indigo-400/30 bg-indigo-500/10 px-4 py-3 text-sm leading-6 text-indigo-50">
           <CloudOff className="mt-0.5 h-5 w-5 shrink-0 text-indigo-300" aria-hidden="true" />
-          {session.pendingSync} vinculación(es) esperando señal. Los aretes ya quedaron grabados;
+          {session.pendingSync} vinculación(es) esperando señal. Las chapetas ya quedaron grabadas;
           el registro se envía solo al recuperar conexión.
         </p>
       )}

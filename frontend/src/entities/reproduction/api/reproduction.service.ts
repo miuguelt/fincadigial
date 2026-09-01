@@ -98,7 +98,7 @@ class ReproductionService extends BaseService<ReproductiveEventResponse> {
   }
 
   async getCalendar(startDate?: string, endDate?: string): Promise<any[]> {
-    return this.customRequest<any[]>('calendar', 'GET', undefined, {
+    return this.customRequest<any[]>('../calendar', 'GET', undefined, {
       params: { start_date: startDate, end_date: endDate }
     });
   }
@@ -112,11 +112,37 @@ class ReproductionService extends BaseService<ReproductiveEventResponse> {
   }
 
   async getGenealogy(animalId: number, depth: number = 3, direction: string = 'both'): Promise<any> {
-    return this.customRequest<any>(`genealogy/${animalId}`, 'GET', undefined, {
+    return this.customRequest<any>(`../genealogy/${animalId}`, 'GET', undefined, {
       params: { depth, direction },
       timeout: 60000,
       skipTimeoutRetry: true
     });
+  }
+
+  /** Registro reproductivo masivo por lote (jornada de palpación, sincronización o monta). */
+  async createBatch(payload: {
+    animal_ids: number[];
+    event_type: string;
+    event_date: string;
+    sire_id?: number;
+    technique?: string;
+    diagnosis_result?: string;
+    alive_count?: number;
+    dead_count?: number;
+    complications?: boolean;
+    notes?: string;
+  }): Promise<{ created: ReproductiveEventResponse[]; rejected: Array<{ animal_id: number; reason: string }> }> {
+    return this.customRequest<any>('../batch', 'POST', payload);
+  }
+
+  /** Da de alta una cría como animal oficial en el inventario del hato. */
+  async registerCalfAnimal(offspringId: number, data: {
+    record: string;
+    sex?: 'Hembra' | 'Macho';
+    weight?: number;
+    breeds_id?: number;
+  }): Promise<any> {
+    return this.customRequest<any>(`../offspring/${offspringId}/register-animal`, 'POST', data);
   }
 }
 

@@ -3,6 +3,7 @@ import { ExternalLink } from 'lucide-react';
 import { GenericModal } from './GenericModal';
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
+import { isDialogClosingRecently } from '@/shared/utils/modalGuard';
 
 export interface ForeignKeyLinkHelpers {
   closeModal: () => void;
@@ -122,6 +123,7 @@ export const ForeignKeyLink: React.FC<ForeignKeyLinkProps> = ({
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
+    if (isDialogClosingRecently()) return;
     setShowModal(true);
     if (!data) {
       loadData();

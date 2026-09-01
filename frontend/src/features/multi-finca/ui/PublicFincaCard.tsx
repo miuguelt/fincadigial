@@ -6,6 +6,7 @@ import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { cn } from "@/shared/ui/cn";
+import { isDialogClosingRecently } from "@/shared/utils/modalGuard";
 import {
 	IconCalendar,
 	IconChevronRight,
@@ -69,6 +70,12 @@ export const PublicFincaCard: React.FC<PublicFincaCardProps> = ({
 		: finca.already_requested
 			? "Solicitud enviada"
 			: "Acceso disponible";
+
+	const handleCardClick = () => {
+		if (isDialogClosingRecently()) return;
+		onOpenDetail();
+	};
+
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 12 }}
@@ -79,11 +86,11 @@ export const PublicFincaCard: React.FC<PublicFincaCardProps> = ({
 			<Card
 				role="button"
 				tabIndex={0}
-				onClick={onOpenDetail}
+				onClick={handleCardClick}
 				onKeyDown={(event) => {
 					if (event.key === "Enter" || event.key === " ") {
 						event.preventDefault();
-						onOpenDetail();
+						handleCardClick();
 					}
 				}}
 				className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border-slate-300 bg-white shadow-md shadow-slate-200/70 transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-900/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"

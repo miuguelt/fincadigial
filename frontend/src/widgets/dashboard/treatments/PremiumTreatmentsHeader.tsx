@@ -140,7 +140,7 @@ export const PremiumTreatmentsHeader: React.FC<PremiumTreatmentsHeaderProps> = (
               <Stethoscope className="w-3.5 h-3.5 text-purple-500 shrink-0" />
               Diagnósticos Frecuentes
             </h2>
-            <span className="text-[10px] font-bold text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full">
+            <span className="text-[11px] font-bold text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full">
               Finca Villaluz
             </span>
           </div>
@@ -157,16 +157,16 @@ export const PremiumTreatmentsHeader: React.FC<PremiumTreatmentsHeaderProps> = (
               return (
                 <div key={index} className="p-2 sm:p-2.5 bg-background/50 rounded-xl border border-border/40 shadow-sm hover:shadow-md transition-all group">
                   <div className="flex items-start justify-between gap-1 mb-1">
-                    <h3 className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors truncate max-w-[80%]" title={diag.name}>
+                    <h3 className="text-[11px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors fit-clamp max-w-[80%]" title={diag.name}>
                       {diag.name}
                     </h3>
-                    <span className="text-[9px] font-mono bg-purple-500/10 text-purple-600 dark:text-purple-400 px-1 rounded font-bold">
+                    <span className="text-[11px] font-mono bg-purple-500/10 text-purple-600 dark:text-purple-400 px-1 rounded font-bold">
                       #{index + 1}
                     </span>
                   </div>
                   <div className="flex items-baseline justify-between mb-1">
                     <span className="text-base sm:text-lg font-black text-foreground">{diag.count}</span>
-                    <span className="text-[10px] font-bold text-muted-foreground bg-muted/40 px-1.5 py-0.2 rounded">
+                    <span className="text-[11px] font-bold text-muted-foreground bg-muted/40 px-1.5 py-0.2 rounded">
                       {diag.percentage}%
                     </span>
                   </div>

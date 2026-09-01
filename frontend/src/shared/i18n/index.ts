@@ -39,10 +39,9 @@ const defaultEs: I18nMessages = {
   'state.empty.title': 'Todavía no hay datos',
   'state.empty.description': 'Cree el primer registro para comenzar a organizar su finca.',
   'modal.close': 'Cerrar',
-  // nuevas claves
   'crud.save_error': 'Error al guardar',
   'crud.delete_error': 'Error al eliminar',
-  'crud.confirm_delete': '¿Seguro que deseas eliminar este registro?',
+  'crud.confirm_delete': '¿Está seguro de que desea eliminar este registro?',
   'common.actions': 'Acciones',
   'table.sort_hint': 'Ordenar',
 
@@ -72,8 +71,8 @@ const defaultEs: I18nMessages = {
   'dashboard.cards.totalVaccinationsDesc': 'Vacunaciones registradas en el sistema.',
   'dashboard.cards.totalControls': 'Controles realizados',
   'dashboard.cards.totalControlsDesc': 'Controles de producción/seguimiento ejecutados.',
-  'dashboard.cards.totalFields': 'Campos registrados',
-  'dashboard.cards.totalFieldsDesc': 'Número de lotes/campos administrados.',
+  'dashboard.cards.totalFields': 'Potreros registrados',
+  'dashboard.cards.totalFieldsDesc': 'Número de potreros administrados.',
 
   // Dashboard: catálogo y relaciones
   'dashboard.cards.vaccines': 'Vacunas',
@@ -88,8 +87,8 @@ const defaultEs: I18nMessages = {
   'dashboard.cards.speciesDesc': 'Catálogo de especies registradas.',
   'dashboard.cards.breeds': 'Razas',
   'dashboard.cards.breedsDesc': 'Catálogo de razas disponibles.',
-  'dashboard.cards.animalFields': 'Animales por campo',
-  'dashboard.cards.animalFieldsDesc': 'Relaciones Animal-Campo registradas.',
+  'dashboard.cards.animalFields': 'Animales por potrero',
+  'dashboard.cards.animalFieldsDesc': 'Distribución de animales en potreros.',
   'dashboard.cards.diseaseAnimals': 'Animales por enfermedad',
   'dashboard.cards.diseaseAnimalsDesc': 'Relaciones Animal-Enfermedad registradas.',
   'dashboard.cards.geneticImprovements': 'Mejoras genéticas',
@@ -138,7 +137,7 @@ const defaultEs: I18nMessages = {
   'dashboard.settings.title': 'Ajustes',
   'dashboard.settings.description': 'Preferencias y opciones del sistema.',
   'dashboard.settings.notifications': 'Notificaciones',
-  'dashboard.settings.notificationsDesc': 'Configura alertas y avisos.',
+  'dashboard.settings.notificationsDesc': 'Configuración de alertas y avisos.',
   'dashboard.settings.security': 'Seguridad',
   'dashboard.settings.securityDesc': 'Opciones de autenticación y acceso.',
   'dashboard.settings.appearance': 'Apariencia',

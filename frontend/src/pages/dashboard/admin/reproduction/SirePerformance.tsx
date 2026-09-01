@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
-import { useCallback } from 'react';
 import { Button } from '@/shared/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { Badge } from '@/shared/ui/badge';
@@ -12,6 +11,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, Le
 import { getStatusBadgeClass } from '@/shared/utils/badgeStyles';
 import { motion } from 'framer-motion';
 import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
+import { AnimalDetailModal } from '@/widgets/dashboard/animals/AnimalDetailModal';
 
 interface SireData {
   sire_id: number;
@@ -30,12 +30,17 @@ interface SirePerformanceData {
   sires: SireData[];
 }
 
-export default function SirePerformance() {
+interface SirePerformanceProps {
+  isEmbedded?: boolean;
+}
+
+export default function SirePerformance({ isEmbedded = false }: SirePerformanceProps) {
   const { goTo } = useRoleNavigation();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [months, setMonths] = useState(12);
   const [data, setData] = useState<SirePerformanceData | null>(null);
+  const [selectedAnimalId, setSelectedAnimalId] = useState<number | null>(null);
 
   const loadSirePerformance = useCallback(async () => {
     setLoading(true);
@@ -87,36 +92,61 @@ export default function SirePerformance() {
   }
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 lg:p-8 space-y-8 overflow-x-hidden">
-      <DataScreenHeader
-        leading={
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => goTo('/admin/reproduction')}
-            className="h-9 w-9 rounded-full border border-border/60 hover:bg-muted/50 transition-colors shrink-0"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        }
-        icon={<Award className="h-5 w-5 text-white" />}
-        iconClassName="from-indigo-500 to-violet-600 shadow-indigo-500/20"
-        title={<>Análisis de <span className="text-indigo-600">Toros (Sires)</span></>}
-        description="Desempeño reproductivo y calidad genética de reproductores"
-        actions={
+    <div className={isEmbedded ? "space-y-6" : "min-h-full bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 lg:p-8 space-y-8 overflow-x-hidden"}>
+      {!isEmbedded ? (
+        <DataScreenHeader
+          leading={
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => goTo('/admin/reproduction')}
+              className="h-9 w-9 rounded-full border border-border/60 hover:bg-muted/50 transition-colors shrink-0"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          }
+          icon={<Award className="h-5 w-5 text-white" />}
+          iconClassName="from-indigo-500 to-violet-600 shadow-indigo-500/20"
+          title={<>Análisis de <span className="text-indigo-600">Toros (Sires)</span></>}
+          description="Desempeño reproductivo y calidad genética de reproductores"
+          actions={
+            <Select value={months.toString()} onValueChange={(v) => setMonths(parseInt(v))}>
+              <SelectTrigger className="w-full sm:w-[180px] h-9 rounded-lg bg-background/50 border-border/50 font-semibold focus:ring-indigo-500/20">
+                <SelectValue placeholder="Período" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border border-border">
+                <SelectItem value="3">Últimos 3 meses</SelectItem>
+                <SelectItem value="6">Últimos 6 meses</SelectItem>
+                <SelectItem value="12">Últimos 12 meses</SelectItem>
+                <SelectItem value="24">Últimos 24 meses</SelectItem>
+              </SelectContent>
+            </Select>
+          }
+        />
+      ) : (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-card border border-border">
+          <div>
+            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+              <Award className="h-4 w-4 text-indigo-600" />
+              Evaluación Reproductiva de Toros y Reproductores
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Tasa de preñez por servicio, crías nacidas y pesos promedio al nacer
+            </p>
+          </div>
           <Select value={months.toString()} onValueChange={(v) => setMonths(parseInt(v))}>
-            <SelectTrigger className="w-full sm:w-[180px] h-9 rounded-lg bg-background/50 border-border/50 font-semibold focus:ring-indigo-500/20">
+            <SelectTrigger className="w-full sm:w-[180px] h-9 rounded-lg font-semibold">
               <SelectValue placeholder="Período" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border border-border">
+            <SelectContent className="rounded-xl">
               <SelectItem value="3">Últimos 3 meses</SelectItem>
               <SelectItem value="6">Últimos 6 meses</SelectItem>
               <SelectItem value="12">Últimos 12 meses</SelectItem>
               <SelectItem value="24">Últimos 24 meses</SelectItem>
             </SelectContent>
           </Select>
-        }
-      />
+        </div>
+      )}
 
       {/* Gráfico de barras */}
       <motion.div
@@ -183,7 +213,12 @@ export default function SirePerformance() {
                           <Badge variant="outline" className="w-7 h-7 flex items-center justify-center rounded-lg border-indigo-500/20 font-bold bg-indigo-500/5 text-indigo-600">
                             #{index + 1}
                           </Badge>
-                          <span className="font-bold text-foreground">{sire.record}</span>
+                          <span
+                            onClick={() => setSelectedAnimalId(sire.sire_id)}
+                            className="font-bold text-foreground hover:text-indigo-600 hover:underline cursor-pointer"
+                          >
+                            {sire.record}
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">{sire.breed}</td>
@@ -253,6 +288,17 @@ export default function SirePerformance() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Modal de Detalle Animal */}
+      {selectedAnimalId && (
+        <AnimalDetailModal
+          isOpen={Boolean(selectedAnimalId)}
+          onOpenChange={(open) => {
+            if (!open) setSelectedAnimalId(null);
+          }}
+          animalId={selectedAnimalId}
+        />
+      )}
     </div>
   );
 }

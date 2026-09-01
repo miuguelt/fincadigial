@@ -78,9 +78,17 @@ class SirePerformanceService:
                 ):
                     confirmed.add(source.id)
                     stats[source.sire_id]["positive_diagnoses"] += 1
-            elif event.event_type == EventType.Parto and event.sire_id in sire_by_id:
-                stats[event.sire_id]["total_offspring"] += event.alive_count or 0
-                birth_sires[event.id] = event.sire_id
+            elif event.event_type == EventType.Parto:
+                # El toro del parto puede venir explícito o del servicio que lo engendró
+                effective_sire_id = event.sire_id
+                if not effective_sire_id and event.animal_id in last_insemination:
+                    source_insem = last_insemination[event.animal_id]
+                    if source_insem and source_insem.sire_id:
+                        effective_sire_id = source_insem.sire_id
+
+                if effective_sire_id and effective_sire_id in sire_by_id:
+                    stats[effective_sire_id]["total_offspring"] += event.alive_count or 0
+                    birth_sires[event.id] = effective_sire_id
 
         weights: dict[int, list[float]] = defaultdict(list)
         if birth_sires:

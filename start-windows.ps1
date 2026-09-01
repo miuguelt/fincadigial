@@ -84,7 +84,14 @@ function Load-EnvFile {
 Load-EnvFile -Path "$BackendDir\.env"
 # Inyectar credenciales desde WCM (sobrescribe .env si existe)
 $wcmInjector = "$PSScriptRoot\..\..\_infrastructure\devbraind\scripts\Import-ProjectCredentials.ps1"
-if (Test-Path $wcmInjector) { . $wcmInjector -Project villaluz }
+if (Test-Path $wcmInjector) {
+    try {
+        if ($PSVersionTable.PSVersion.Major -ge 7) {
+            . $wcmInjector
+            Import-ProjectCredentials -Project villaluz
+        }
+    } catch {}
+}
 # No heredar alias localhost ni endpoints históricos: este launcher es
 # exclusivamente Windows-native y Memurai escucha en IPv4:6380.
 $env:REDIS_URL = "redis://127.0.0.1:6380/0"

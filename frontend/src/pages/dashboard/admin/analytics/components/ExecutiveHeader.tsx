@@ -24,7 +24,7 @@ export const ExecutiveHeader: React.FC<ExecutiveHeaderProps> = ({ fechaActualiza
           Panel Integral de Analítica
         </h1>
         <p className="text-sm md:text-base text-muted-foreground mt-1">
-          Monitorea inventario, salud, producción y alertas en tiempo real
+          Monitoree inventario, salud, producción y alertas en tiempo real
         </p>
       </div>
 
@@ -43,7 +43,7 @@ export const ExecutiveHeader: React.FC<ExecutiveHeaderProps> = ({ fechaActualiza
 
         <Link to={rolePath('/admin/analytics/reports')} className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-white transition-all duration-200 bg-gradient-to-r from-blue-600 to-indigo-600 border border-transparent rounded-full shadow-md hover:shadow-lg hover:from-blue-500 hover:to-indigo-500 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600">
           <FileText className="w-4 h-4 transition-transform group-hover:scale-110" />
-          Visión Finca 360° (Offline)
+          Visión Finca 360° (Sin conexión)
         </Link>
       </div>
     </motion.div>

@@ -1,41 +1,30 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
-import { treatmentMedicationService as treatmentMedicationsService } from '@/entities/treatment-medication/api/treatmentMedication.service';
 
-export default function TreatmentMedicationDetail() {
-  const { id } = useParams<{ id: string }>();
+/**
+ * Redirecciona al flujo modal de AdminTreatmentMedicationsPage conforme al estándar de UI y Protocolo GEMINI.md.
+ */
+export default function TreatmentMedicationDetailPage() {
+  const { id } = useParams<{ id?: string }>();
+  const navigate = useNavigate();
   const { rolePath } = useRoleNavigation();
-  const [item, setItem] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const basePath = rolePath('/admin/treatment_medications');
     if (id) {
-      treatmentMedicationsService.getTreatmentMedicationById(id).then(setItem).finally(() => setLoading(false));
+      navigate(`${basePath}?detail=${id}`, { replace: true });
+    } else {
+      navigate(basePath, { replace: true });
     }
-  }, [id]);
-
-  if (loading) return <div>Cargando medicamento de tratamiento...</div>;
-  if (!item) return <div>No encontrado</div>;
+  }, [id, navigate, rolePath]);
 
   return (
-    <div>
-      <h2>Detalle de Medicamento de Tratamiento</h2>
-      <div><b>ID:</b> {item.id}</div>
-      <div>
-        <b>Tratamiento:</b>{' '}
-        {item.treatment_diagnosis ? item.treatment_diagnosis : `ID ${item.treatment_id}`}
-        {item.animal_record ? ` · Animal ${item.animal_record}` : ''}
+    <div className="flex items-center justify-center min-h-[50vh]">
+      <div className="text-center space-y-2 animate-pulse">
+        <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+        <p className="text-muted-foreground text-xs font-semibold">Cargando detalle de medicamento...</p>
       </div>
-      <div><b>Medicamento:</b> {item.medication_name ?? item.medication_id}</div>
-      <div><b>Dosis:</b> {item.dosage}</div>
-      <div><b>Cantidad:</b> {item.dosage_amount}</div>
-      <div><b>Unidad:</b> {item.dosage_unit}</div>
-      <div><b>Frecuencia:</b> {item.frequency}</div>
-      <div><b>Días duración:</b> {item.duration_days}</div>
-      <div><b>Vía administración:</b> {item.administration_route}</div>
-      <div><b>Notas:</b> {item.notes}</div>
-      <Link to={rolePath('/admin/treatment_medications')}>Volver</Link>
     </div>
   );
 }

@@ -15,6 +15,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/shared/ui/select";
+import { AnimalDetailModal } from "@/widgets/dashboard/animals/AnimalDetailModal";
 import { getRolePrefix } from "../utils/profile.helpers";
 
 type ActivityEntityFilter =
@@ -50,6 +51,7 @@ export const UserActivityTimeline: React.FC<UserActivityTimelineProps> = ({
 }) => {
 	const rolePrefix = getRolePrefix(userRole);
 
+	const [selectedAnimalId, setSelectedAnimalId] = useState<number | null>(null);
 	const [activityPage, setActivityPage] = useState(1);
 	const [activityLimit, setActivityLimit] = useState(20);
 	const [activityEntity, setActivityEntity] =
@@ -196,9 +198,12 @@ export const UserActivityTimeline: React.FC<UserActivityTimelineProps> = ({
 	};
 
 	const openActivityAnimal = (item: ActivityItem) => {
-		if (item.links?.animal) return openActivityLink(item.links.animal);
 		const animalId = item.animal_id;
-		if (animalId) navigate(`${rolePrefix}/animals?detail=${animalId}`);
+		if (animalId) {
+			setSelectedAnimalId(animalId);
+			return;
+		}
+		if (item.links?.animal) return openActivityLink(item.links.animal);
 	};
 
 	const handleExportCSV = () => {
@@ -630,6 +635,16 @@ export const UserActivityTimeline: React.FC<UserActivityTimelineProps> = ({
 					</div>
 				)}
 			</div>
+
+			{selectedAnimalId && (
+				<AnimalDetailModal
+					isOpen={Boolean(selectedAnimalId)}
+					onOpenChange={(open) => {
+						if (!open) setSelectedAnimalId(null);
+					}}
+					animalId={selectedAnimalId}
+				/>
+			)}
 		</CollapsibleCard>
 	);
 };

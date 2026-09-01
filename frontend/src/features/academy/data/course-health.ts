@@ -280,7 +280,7 @@ Un plan sanitario bien estructurado es la herramienta más costo-efectiva para m
 
 #### 3. Control de ectoparásitos
 - **Garrapatas**: Baño cada 21 días en épocas de alta infestación
-- **Moscas**: Aretes insecticidas, baños, control biológico
+- **Moscas**: Chapetas insecticidas, baños, control biológico
 - **Nuche**: Revisión y extracción manual en épocas de riesgo
 
 #### 4. Suplementación estratégica

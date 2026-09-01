@@ -27,7 +27,27 @@ export function CRUDTableCardView<T extends { id: number }>(props: CRUDTableCard
 
 function CRUDTableCard<T extends { id: number }>({ item, columns, config, labels, selectedIds, onToggleSelect, onOpenDetail, onOpenEdit, onOpenDelete }: CRUDTableCardViewProps<T> & { item: T }) {
   return (
-    <div className="bg-card border border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer relative" onClick={() => onOpenDetail?.(item)}>
+    <div
+      className="bg-card border border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer relative focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      onClick={() => onOpenDetail?.(item)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        const target = e.target as HTMLElement | null;
+        if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
+
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onOpenDetail?.(item);
+        } else if ((e.key === 'e' || e.key === 'E') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          e.preventDefault();
+          onOpenEdit?.(item);
+        } else if (e.key === 'Delete') {
+          e.preventDefault();
+          onOpenDelete?.(item.id);
+        }
+      }}
+    >
       {config.enableSelection && onToggleSelect && <CardSelection config={config} item={item} selected={selectedIds?.includes(item.id) || false} onToggle={onToggleSelect} />}
       <h3 className="font-medium text-sm mb-2 fit-clamp">{getCrudItemTitle(item, config, labels)}</h3>
       <CardFields item={item} columns={columns} labels={labels} />

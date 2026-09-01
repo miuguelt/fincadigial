@@ -1,45 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useFoodTypes } from '@/entities/food-type/model/useFoodTypes';
-import FoodTypeForm from '@/widgets/food-types/FoodTypeForm';
-import { FoodTypes } from '@/entities/food-type/model/types';
+import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 
-const FoodTypesEditPage: React.FC = () => {
+/**
+ * Redirecciona al flujo modal de AdminFoodTypesPage conforme al estándar de UI y Protocolo GEMINI.md:
+ * "TODOS los formularios que existan o se creen en la aplicación DEBEN presentarse como modales (Dialogs) flotantes".
+ */
+export default function FoodTypesEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: foodTypes, updateItem, loading, error } = useFoodTypes();
-  const [initialData, setInitialData] = useState<Partial<FoodTypes> | undefined>(undefined);
+  const { rolePath } = useRoleNavigation();
 
   useEffect(() => {
-    if (id && foodTypes.length > 0) {
-      const found = foodTypes.find((ft: FoodTypes) => String(ft.id) === id);
-      if (found) setInitialData(found);
+    const basePath = rolePath('/admin/food-types');
+    if (id) {
+      navigate(`${basePath}?edit=${id}`, { replace: true });
+    } else {
+      navigate(basePath, { replace: true });
     }
-  }, [id, foodTypes]);
-
-  const handleSubmit = async (data: FoodTypes) => {
-    if (!id) return;
-    try {
-      await updateItem(Number(id), data);
-      navigate(-1);
-    } catch (error) {
-      console.error('Error al actualizar tipo de comida:', error);
-    }
-  };
-
-  if (!id) return <div>ID inválido</div>;
+  }, [id, navigate, rolePath]);
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Editar tipo de comida</h2>
-      {error && <div className="alert alert-error mb-4">{error}</div>}
-      {initialData ? (
-        <FoodTypeForm initialData={initialData} onSubmit={handleSubmit} loading={loading} />
-      ) : (
-        <div>Cargando datos...</div>
-      )}
+    <div className="flex items-center justify-center min-h-[50vh]">
+      <div className="text-center space-y-2 animate-pulse">
+        <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+        <p className="text-muted-foreground text-xs font-semibold">Abriendo edición de tipo de alimento...</p>
+      </div>
     </div>
   );
-};
+}
 
-export default FoodTypesEditPage;

@@ -1,43 +1,30 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
-import { treatmentVaccinesService } from '@/entities/treatment-vaccine/api/treatmentVaccines.service';
 
-export default function TreatmentVaccineDetail() {
-  const { id } = useParams<{ id: string }>();
+/**
+ * Redirecciona al flujo modal de AdminTreatmentVaccinesPage conforme al estándar de UI y Protocolo GEMINI.md.
+ */
+export default function TreatmentVaccineDetailPage() {
+  const { id } = useParams<{ id?: string }>();
+  const navigate = useNavigate();
   const { rolePath } = useRoleNavigation();
-  const [item, setItem] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const basePath = rolePath('/admin/treatment_vaccines');
     if (id) {
-      treatmentVaccinesService.getTreatmentVaccineById(id).then(setItem).finally(() => setLoading(false));
+      navigate(`${basePath}?detail=${id}`, { replace: true });
+    } else {
+      navigate(basePath, { replace: true });
     }
-  }, [id]);
-
-  if (loading) return <div>Cargando vacuna de tratamiento...</div>;
-  if (!item) return <div>No encontrado</div>;
+  }, [id, navigate, rolePath]);
 
   return (
-    <div>
-      <h2>Detalle de Vacuna de Tratamiento</h2>
-      <div><b>ID:</b> {item.id}</div>
-      <div>
-        <b>Tratamiento:</b>{' '}
-        {item.treatment_diagnosis ? item.treatment_diagnosis : `ID ${item.treatment_id}`}
-        {item.animal_record ? ` · Animal ${item.animal_record}` : ''}
+    <div className="flex items-center justify-center min-h-[50vh]">
+      <div className="text-center space-y-2 animate-pulse">
+        <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+        <p className="text-muted-foreground text-xs font-semibold">Cargando detalle de vacuna...</p>
       </div>
-      <div><b>Vacuna:</b> {item.vaccine_name ?? item.vaccine_id}</div>
-      <div><b>Dosis:</b> {item.dose}</div>
-      <div><b>Sitio aplicación:</b> {item.application_site}</div>
-      <div><b>Lote:</b> {item.batch_number}</div>
-      <div><b>Expiración:</b> {item.expiry_date}</div>
-      <div><b>Fecha programada:</b> {item.scheduled_date}</div>
-      <div><b>Fecha administración:</b> {item.administered_date}</div>
-      <div><b>Estado vacunación:</b> {item.vaccination_status}</div>
-      <div><b>Tipo vacuna:</b> {item.vaccine_type}</div>
-      <div><b>Notas:</b> {item.notes}</div>
-      <Link to={rolePath('/admin/treatment_vaccines')}>Volver</Link>
     </div>
   );
 }

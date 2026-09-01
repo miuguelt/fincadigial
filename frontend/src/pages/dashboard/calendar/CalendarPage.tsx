@@ -1,8 +1,6 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/features/auth/model/useAuth";
 import { EmptyStateSimple } from "@/shared/ui/common";
-import { getRolePrefix } from "@/shared/utils/roleRoutes";
+import { AnimalDetailModal } from "@/widgets/dashboard/animals/AnimalDetailModal";
 import {
 	AgendaView,
 	CalendarMonthGrid,
@@ -21,12 +19,11 @@ import {
  * Mobile-first: agenda cronológica en pantallas pequeñas, grilla + panel en escritorio.
  */
 export default function CalendarPage() {
-	const { user } = useAuth() as any;
-	const navigate = useNavigate();
 	const [month, setMonth] = useState<Date>(new Date());
 	const [selected, setSelected] = useState<Date>(new Date());
 	const [typeFilter, setTypeFilter] = useState<string>("all");
 	const [view, setView] = useState<CalendarViewMode>("mes");
+	const [selectedAnimalId, setSelectedAnimalId] = useState<number | null>(null);
 
 	const {
 		events,
@@ -83,7 +80,7 @@ export default function CalendarPage() {
 	};
 
 	const openAnimal = (animalId: number) => {
-		navigate(`${getRolePrefix(user?.role)}/animals/${animalId}`);
+		setSelectedAnimalId(animalId);
 	};
 
 	return (
@@ -168,6 +165,16 @@ export default function CalendarPage() {
 						/>
 					</div>
 				</div>
+			)}
+
+			{selectedAnimalId && (
+				<AnimalDetailModal
+					isOpen={Boolean(selectedAnimalId)}
+					onOpenChange={(open) => {
+						if (!open) setSelectedAnimalId(null);
+					}}
+					animalId={selectedAnimalId}
+				/>
 			)}
 		</div>
 	);

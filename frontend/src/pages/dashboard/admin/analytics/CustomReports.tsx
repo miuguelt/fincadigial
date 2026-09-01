@@ -151,7 +151,7 @@ const CustomReports: React.FC = () => {
     if (Object.keys(summary).length > 0) {
       doc.setFontSize(12);
       doc.setTextColor(15, 23, 42);
-      doc.text("1. Resumen Ejecutivo (KPIs)", 20, currentY);
+      doc.text("1. Resumen Ejecutivo (Indicadores)", 20, currentY);
       currentY += 8;
 
       const summaryRows = Object.entries(summary).map(([key, val]: [string, any]) => [
@@ -199,7 +199,6 @@ const CustomReports: React.FC = () => {
         formatSexLabel(sex).toUpperCase(),
         String(qty)
       ]);
-
       runAutoTable(doc, {
         startY: currentY,
         head: [["Distribución por Sexo", "Cabezas Activas"]],
@@ -470,7 +469,7 @@ const CustomReports: React.FC = () => {
     { value: 'animals', label: 'Animales', description: 'Estadísticas de inventario de animales' },
     { value: 'health', label: 'Salud', description: 'Tratamientos, vacunaciones y enfermedades' },
     { value: 'production', label: 'Producción', description: 'Peso, GMD y productividad' },
-    { value: 'fields', label: 'Campos', description: 'Ocupación y gestión de potreros' },
+    { value: 'fields', label: 'Potreros', description: 'Ocupación y aforo de potreros' },
     { value: 'inventory', label: 'Inventario', description: 'Lotes, existencias, vencimientos y valor' },
     { value: 'finance', label: 'Finanzas', description: 'Ingresos, Egresos y Balances' },
     { value: 'milk', label: 'Lechería', description: 'Control de ordeños y producción de leche' },
@@ -479,7 +478,7 @@ const CustomReports: React.FC = () => {
 
   const groupByOptions = [
     { value: 'breed', label: 'Raza' },
-    { value: 'field', label: 'Campo/Potrero' },
+    { value: 'field', label: 'Potrero' },
     { value: 'species', label: 'Especie' },
     { value: 'month', label: 'Mes' },
     { value: 'health_status', label: 'Estado de Salud' },
@@ -503,7 +502,7 @@ const CustomReports: React.FC = () => {
           <h1 className="text-3xl font-bold text-foreground">Reportes Personalizados</h1>
         </div>
         <p className="text-muted-foreground">
-          Genera reportes personalizados con las métricas y filtros que necesites
+          Genere reportes personalizados con las métricas y filtros que necesite
         </p>
       </div>
 

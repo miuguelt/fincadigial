@@ -5,8 +5,8 @@ import { Nfc, Printer, Radio } from 'lucide-react';
  *
  * - `qr`: etiqueta impresa. Funciona en cualquier celular con cámara, pero se
  *   borra con el barro y el sol.
- * - `nfc`: arete de 13,56 MHz. Se graba con el celular y se lee acercándolo,
- *   incluso sucio y de noche. Solo Android puede grabarlo.
+ * - `nfc`: chapeta de 13,56 MHz. Se graba con el celular y se lee acercándolo,
+ *   incluso sucia y de noche. Solo Android puede grabarla.
  * - `lf`: bolo ruminal o inyectable de 134,2 kHz. Viene grabado de fábrica y
  *   necesita bastón lector: ningún celular alcanza esa frecuencia.
  */
@@ -28,7 +28,7 @@ export const TAG_MODES: readonly TagModeSpec[] = [
   },
   {
     value: 'nfc',
-    label: 'Arete NFC',
+    label: 'Chapeta NFC',
     icon: Nfc,
     description: 'Graba los chips de oreja con el celular.',
   },

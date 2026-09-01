@@ -1,5 +1,5 @@
 /**
- * Instrucciones para quien nunca ha grabado un arete.
+ * Instrucciones para quien nunca ha grabado una chapeta.
  *
  * Están escritas para leerse de pie en el corral, por alguien que puede no
  * saber qué es un navegador ni dónde queda la antena del celular. Por eso cada
@@ -17,7 +17,7 @@ export const SETUP_STEPS: HelpStep[] = [
   {
     title: 'Consigue un celular Android',
     detail:
-      'Los iPhone (los de Apple, con la manzanita) no dejan grabar aretes: es un candado del propio iPhone y no se puede quitar. Si el tuyo es iPhone, pídele prestado un Android a alguien de la finca. Para imprimir las etiquetas de papel sí sirve cualquier celular.',
+      'Los iPhone (los de Apple, con la manzanita) no dejan grabar chapetas: es un candado del propio iPhone y no se puede quitar. Si el tuyo es iPhone, pídele prestado un Android a alguien de la finca. Para imprimir las etiquetas de papel sí sirve cualquier celular.',
   },
   {
     title: 'Abre la aplicación en Chrome',
@@ -36,15 +36,15 @@ export const SETUP_STEPS: HelpStep[] = [
   },
 ];
 
-/** Cómo grabar los aretes. Se muestra cuando el equipo ya está listo. */
+/** Cómo grabar las chapetas. Se muestra cuando el equipo ya está listo. */
 export const USAGE_STEPS: HelpStep[] = [
   {
     title: 'Toca el botón verde «Iniciar marcaje»',
     detail:
-      'El celular queda esperando. En la pantalla, con letra grande, aparece el nombre del animal al que le toca el arete.',
+      'El celular queda esperando. En la pantalla, con letra grande, aparece el nombre del animal al que le toca la chapeta.',
   },
   {
-    title: 'Pega el arete a la espalda del celular',
+    title: 'Pega la chapeta a la espalda del celular',
     detail:
       'No a la pantalla: por detrás, en la parte de arriba y hacia el centro. Ahí está la antena. Mira el dibujo de al lado.',
   },
@@ -56,7 +56,7 @@ export const USAGE_STEPS: HelpStep[] = [
   {
     title: 'Retira y vuelve a acercarlo',
     detail:
-      'Solo si dejaste puesta la comprobación. Es para estar seguros de que el arete quedó bien y no toca volver a encerrar el animal. Vuelve a sonar y ahí sí quedó listo.',
+      'Solo si dejaste puesta la comprobación. Es para estar seguros de que la chapeta quedó bien y no toca volver a encerrar el animal. Vuelve a sonar y ahí sí quedó listo.',
   },
   {
     title: 'Sigue con el siguiente animal',
@@ -70,16 +70,16 @@ export const TROUBLESHOOT_STEPS: HelpStep[] = [
   {
     title: 'No vibra ni suena nada',
     detail:
-      'Mueve el arete despacito por toda la espalda del celular, de arriba abajo. La antena no queda en el mismo sitio en todos los celulares; una vez que encuentres el punto, ya sabes dónde poner los demás.',
+      'Mueve la chapeta despacito por toda la espalda del celular, de arriba abajo. La antena no queda en el mismo sitio en todos los celulares; una vez que encuentres el punto, ya sabes dónde poner los demás.',
   },
   {
-    title: 'Dice que el arete ya tiene dueño',
+    title: 'Dice que la chapeta ya tiene dueño',
     detail:
-      'Ese arete ya es de otro animal. Lo más seguro es coger un arete nuevo. Solo pásalo al animal de la pantalla si estás seguro de que al otro ya se lo quitaron, porque ese otro animal queda sin arete.',
+      'Esa chapeta ya es de otro animal. Lo más seguro es coger una chapeta nueva. Solo pásala al animal de la pantalla si estás seguro de que al otro ya se la quitaron, porque ese otro animal queda sin chapeta.',
   },
   {
-    title: 'Un arete no quiere grabar',
+    title: 'Una chapeta no quiere grabar',
     detail:
-      'No detengas el trabajo por uno. Toca «Saltar este animal» y sigue con los demás; al final aparece un botón amarillo para volver a intentar con los que quedaron pendientes.',
+      'No detengas el trabajo por una. Toca «Saltar este animal» y sigue con los demás; al final aparece un botón amarillo para volver a intentar con los que quedaron pendientes.',
   },
 ];

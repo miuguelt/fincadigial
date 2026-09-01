@@ -31,8 +31,8 @@ export const metricsOptions = [
 	},
 	{
 		value: "fields",
-		label: "Campos",
-		description: "Ocupación y gestión de potreros",
+		label: "Potreros",
+		description: "Ocupación y aforo de potreros",
 	},
 	{
 		value: "finance",
@@ -53,7 +53,7 @@ export const metricsOptions = [
 
 export const groupByOptions = [
 	{ value: "breed", label: "Raza" },
-	{ value: "field", label: "Campo/Potrero" },
+	{ value: "field", label: "Potrero" },
 	{ value: "species", label: "Especie" },
 	{ value: "month", label: "Mes" },
 	{ value: "health_status", label: "Estado de Salud" },
@@ -195,7 +195,7 @@ export const useCustomReports = () => {
 		if (Object.keys(summary).length > 0) {
 			doc.setFontSize(12);
 			doc.setTextColor(15, 23, 42);
-			doc.text("1. Resumen Ejecutivo (KPIs)", 20, currentY);
+			doc.text("1. Resumen Ejecutivo (Indicadores)", 20, currentY);
 			currentY += 8;
 
 			const summaryRows = Object.entries(summary).map(

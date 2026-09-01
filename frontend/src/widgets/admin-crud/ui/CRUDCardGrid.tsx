@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Checkbox } from '@/shared/ui/checkbox';
 import { cn } from '@/shared/ui/cn';
+import { isDialogClosingRecently } from '@/shared/utils/modalGuard';
 
 const DEFAULT_GRID = 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
 
@@ -44,6 +45,7 @@ export function CRUDCardGrid<T extends { id: number }>({
 }: CRUDCardGridProps<T>) {
   const detailEnabled = config.enableDetailModal !== false;
   const openDetail = (item: T) => {
+    if (isDialogClosingRecently()) return;
     if (detailEnabled) onOpenDetail(item);
   };
 
@@ -59,8 +61,8 @@ export function CRUDCardGrid<T extends { id: number }>({
           <Card
             key={item.id}
             className={cn(
-              'relative flex flex-col overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm transition-all duration-200 hover:shadow-md',
-              isSelected && 'ring-2 ring-primary/70 shadow-primary/10'
+              'group/crud-card relative flex flex-col overflow-hidden rounded-2xl border-2 border-slate-200/90 dark:border-slate-800/90 bg-card shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:border-emerald-500/60 dark:hover:border-emerald-400/60 hover:-translate-y-1',
+              isSelected && 'ring-2 ring-primary shadow-lg shadow-primary/20 border-primary'
             )}
             onClick={config.renderCard ? undefined : () => openDetail(item)}
             role={config.renderCard ? undefined : 'button'}

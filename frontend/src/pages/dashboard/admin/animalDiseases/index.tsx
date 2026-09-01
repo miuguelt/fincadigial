@@ -97,9 +97,9 @@ function AdminAnimalDiseasesPage() {
         {/* KPI 1: Enfermos */}
         <div className="backdrop-blur-xl rounded-2xl border p-3 sm:p-4 flex items-center justify-between bg-gradient-to-br from-red-500/10 to-red-600/5 dark:from-red-950/40 dark:to-red-900/10 border-red-500/20 hover:border-red-500/40 shadow-sm transition-all duration-300 group">
           <div className="space-y-0.5 sm:space-y-1 min-w-0">
-            <span className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider block truncate">Enfermos</span>
+            <span className="text-[11px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider block fit-clamp">Enfermos</span>
             <div className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">{stats.active}</div>
-            <p className="text-[10px] sm:text-[11px] text-muted-foreground/80 font-medium truncate">Enfermas / Cuidado</p>
+            <p className="text-[11px] sm:text-[11px] text-muted-foreground/80 font-medium fit-clamp">Enfermas / Cuidado</p>
           </div>
           <div className="p-2 sm:p-3 rounded-xl bg-red-500/10 text-red-500 dark:bg-red-500/20 shrink-0 ml-1">
             <Activity className="h-4 w-4 sm:h-5 sm:w-5 animate-pulse" />
@@ -109,9 +109,9 @@ function AdminAnimalDiseasesPage() {
         {/* KPI 2: Sanados */}
         <div className="backdrop-blur-xl rounded-2xl border p-3 sm:p-4 flex items-center justify-between bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 dark:from-emerald-950/40 dark:to-emerald-900/10 border-emerald-500/20 hover:border-emerald-500/40 shadow-sm transition-all duration-300 group">
           <div className="space-y-0.5 sm:space-y-1 min-w-0">
-            <span className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider block truncate">Sanados</span>
+            <span className="text-[11px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider block fit-clamp">Sanados</span>
             <div className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">{stats.recovered}</div>
-            <p className="text-[10px] sm:text-[11px] text-muted-foreground/80 font-medium truncate">Ya recuperadas</p>
+            <p className="text-[11px] sm:text-[11px] text-muted-foreground/80 font-medium fit-clamp">Ya recuperadas</p>
           </div>
           <div className="p-2 sm:p-3 rounded-xl bg-emerald-500/10 text-emerald-500 dark:bg-emerald-500/20 shrink-0 ml-1">
             <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -121,9 +121,9 @@ function AdminAnimalDiseasesPage() {
         {/* KPI 3: Casos Graves */}
         <div className="backdrop-blur-xl rounded-2xl border p-3 sm:p-4 flex items-center justify-between bg-gradient-to-br from-amber-500/10 to-amber-600/5 dark:from-amber-950/40 dark:to-amber-900/10 border-amber-500/20 hover:border-amber-500/40 shadow-sm transition-all duration-300 group">
           <div className="space-y-0.5 sm:space-y-1 min-w-0">
-            <span className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider block truncate">Casos Graves</span>
+            <span className="text-[11px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider block fit-clamp">Casos Graves</span>
             <div className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">{stats.critical}</div>
-            <p className="text-[10px] sm:text-[11px] text-muted-foreground/80 font-medium truncate">Crónicos / Alerta</p>
+            <p className="text-[11px] sm:text-[11px] text-muted-foreground/80 font-medium fit-clamp">Crónicos / Alerta</p>
           </div>
           <div className="p-2 sm:p-3 rounded-xl bg-amber-500/10 text-amber-500 dark:bg-amber-500/20 shrink-0 ml-1">
             <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 animate-bounce" />
@@ -133,9 +133,9 @@ function AdminAnimalDiseasesPage() {
         {/* KPI 4: % Recuperación */}
         <div className="backdrop-blur-xl rounded-2xl border p-3 sm:p-4 flex items-center justify-between bg-gradient-to-br from-blue-500/10 to-blue-600/5 dark:from-blue-950/40 dark:to-blue-900/10 border-blue-500/20 hover:border-blue-500/40 shadow-sm transition-all duration-300 group">
           <div className="space-y-0.5 sm:space-y-1 min-w-0">
-            <span className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider block truncate">% Sanados</span>
+            <span className="text-[11px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider block fit-clamp">% Sanados</span>
             <div className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">{stats.recoveryRate}%</div>
-            <p className="text-[10px] sm:text-[11px] text-muted-foreground/80 font-medium truncate">Tasa de salvamento</p>
+            <p className="text-[11px] sm:text-[11px] text-muted-foreground/80 font-medium fit-clamp">Tasa de salvamento</p>
           </div>
           <div className="p-2 sm:p-3 rounded-xl bg-blue-500/10 text-blue-500 dark:bg-blue-500/20 shrink-0 ml-1">
             <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -165,12 +165,12 @@ function AdminAnimalDiseasesPage() {
                     : 'text-muted-foreground hover:bg-card/45 hover:text-foreground'
                 }`}
               >
-                <div className="flex items-center gap-1.5 truncate">
+                <div className="flex items-center gap-1.5 fit-clamp">
                   <span className={`w-2 h-2 rounded-full shrink-0 ${tab.dotColor} ${isActive ? 'scale-125 shadow-sm' : 'opacity-70'}`} />
-                  <span className="truncate sm:hidden">{tab.label}</span>
+                  <span className="fit-clamp sm:hidden">{tab.label}</span>
                   <span className="hidden sm:inline">{tab.longLabel}</span>
                 </div>
-                <span className={`px-1.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black transition-all ${
+                <span className={`px-1.5 py-0.5 rounded-full text-[11px] sm:text-[11px] font-black transition-all ${
                   isActive
                     ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
                     : 'bg-muted/40 text-muted-foreground/70'

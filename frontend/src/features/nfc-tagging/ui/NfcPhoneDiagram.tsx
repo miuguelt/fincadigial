@@ -1,7 +1,7 @@
 import React from 'react';
 
 /**
- * Dónde poner el arete en el celular.
+ * Dónde poner la chapeta en el celular.
  *
  * Un dibujo dice esto mejor que un párrafo: la antena no está en la pantalla
  * sino en la espalda del equipo, y casi nadie lo sabe la primera vez. Quien
@@ -13,7 +13,7 @@ export const NfcPhoneDiagram: React.FC<{ className?: string }> = ({ className })
     viewBox="0 0 220 210"
     className={className}
     role="img"
-    aria-label="Dibujo del celular visto por detrás: el arete se acerca a la parte de arriba de la espalda del celular"
+    aria-label="Dibujo del celular visto por detrás: la chapeta se acerca a la parte de arriba de la espalda del celular"
   >
     {/* Cuerpo del celular, visto por detrás */}
     <rect
@@ -70,7 +70,7 @@ export const NfcPhoneDiagram: React.FC<{ className?: string }> = ({ className })
       fillOpacity="0.25"
     />
 
-    {/* El arete acercándose */}
+    {/* La chapeta acercándose */}
     <g transform="translate(160 42)">
       <ellipse cx="18" cy="16" rx="17" ry="15" fill="#fbbf24" fillOpacity="0.9" />
       <circle cx="18" cy="16" r="5" fill="currentColor" fillOpacity="0.35" />
@@ -95,7 +95,7 @@ export const NfcPhoneDiagram: React.FC<{ className?: string }> = ({ className })
       fontSize="12"
       fontWeight="700"
     >
-      Aquí se pone el arete
+      Aquí se pone la chapeta
     </text>
   </svg>
 );

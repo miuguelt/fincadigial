@@ -335,12 +335,12 @@ class AlertEngine:
             for finca_id in fincas_to_analyze:
                 try:
                     logger.info(
-                        f"Iniciando análisis predictivo IA para finca {finca_id}"
+                        f"Iniciando análisis predictivo determinista para finca {finca_id}"
                     )
-                    ai_result = PredictiveEngineService.run_finca_analysis(finca_id)
-                    results["triggered"] += ai_result.get("alerts_created", 0)
+                    predictive_result = PredictiveEngineService.run_finca_analysis(finca_id)
+                    results["triggered"] += predictive_result.get("alerts_created", 0)
                 except Exception as e:
-                    logger.error(f"Error en análisis IA para finca {finca_id}: {e}")
+                    logger.error(f"Error en análisis predictivo para finca {finca_id}: {e}")
                     db.session.rollback()
                     results["errors"] += 1
 
@@ -378,10 +378,10 @@ class AlertEngine:
                 db.session.rollback()
 
             try:
-                logger.info("Generando recomendaciones IA para alertas nuevas...")
+                logger.info("Generando recomendaciones deterministas para alertas nuevas...")
                 AlertEngine.populate_ai_recommendations()
             except Exception as e:
-                logger.error(f"Error generando recomendaciones IA: {e}")
+                logger.error(f"Error generando recomendaciones deterministas: {e}")
                 db.session.rollback()
 
             db.session.commit()

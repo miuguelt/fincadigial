@@ -90,32 +90,33 @@ export function MilkDashboard({ fincaId, tableComponent }: MilkDashboardProps) {
   const animalsMilked = dailyData?.count || 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Header with actions */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-bold text-gray-800">Producción de Leche</h2>
+          <h2 className="text-xl font-black tracking-tight text-foreground">Producción de Leche</h2>
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-1.5 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Más opciones"
             >
               <MoreVertical className="h-4 w-4" />
             </button>
             {menuOpen && (
-              <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-100 py-1 min-w-[140px] max-w-[90vw] z-50">
+              <div className="absolute left-0 top-full mt-1.5 bg-card rounded-2xl shadow-xl border border-border/80 py-1.5 min-w-[160px] max-w-[90vw] z-50 backdrop-blur-md">
                 <button
                   onClick={() => { loadData(); setMenuOpen(false); }}
-                  className="w-full px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 flex items-center gap-2"
+                  className="w-full px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-muted flex items-center gap-2 transition-colors"
                 >
-                  <RefreshCw className="h-3.5 w-3.5" />
-                  Actualizar
+                  <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
+                  Actualizar datos
                 </button>
                 <button
                   onClick={() => { setIsImportModalOpen(true); setMenuOpen(false); }}
-                  className="w-full px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 flex items-center gap-2"
+                  className="w-full px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-muted flex items-center gap-2 transition-colors"
                 >
-                  <Upload className="h-3.5 w-3.5" />
+                  <Upload className="h-3.5 w-3.5 text-muted-foreground" />
                   Importar Excel
                 </button>
               </div>
@@ -125,7 +126,7 @@ export function MilkDashboard({ fincaId, tableComponent }: MilkDashboardProps) {
         <Button
           size="sm"
           onClick={() => setIsEntryModalOpen(true)}
-          className="shadow-md bg-emerald-600 hover:bg-emerald-700 text-white h-11 px-5 active:scale-95 transition-transform font-semibold w-full sm:w-auto"
+          className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white min-h-11 px-5 shadow-sm shadow-blue-600/25 active:scale-95 font-bold transition-all w-full sm:w-auto"
         >
           <Plus className="h-4 w-4 mr-1.5" />
           Registrar Ordeño
@@ -143,10 +144,10 @@ export function MilkDashboard({ fincaId, tableComponent }: MilkDashboardProps) {
 
       {/* Tabs: overview chart / table / alerts */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-4">
-        <TabsList className="flex w-full sm:w-auto overflow-x-auto justify-start border-b border-gray-200 bg-transparent h-auto p-0 rounded-none pb-px mb-6 scrollbar-none">
+        <TabsList className="flex w-full sm:w-auto overflow-x-auto justify-start border-b border-border bg-transparent h-auto p-0 rounded-none pb-px mb-6 scrollbar-none">
           <TabsTrigger
             value="overview"
-            className="data-[state=active]:border-b-2 data-[state=active]:border-emerald-600 data-[state=active]:text-emerald-700 data-[state=active]:shadow-none bg-transparent rounded-none px-4 py-3 font-semibold text-gray-500 transition-colors"
+            className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-none bg-transparent rounded-none px-4 py-3 font-bold text-muted-foreground transition-colors"
           >
             <TrendingUp className="w-4 h-4 mr-2" />
             Resumen Gráfico
@@ -154,7 +155,7 @@ export function MilkDashboard({ fincaId, tableComponent }: MilkDashboardProps) {
           {tableComponent && (
             <TabsTrigger
               value="table"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-emerald-600 data-[state=active]:text-emerald-700 data-[state=active]:shadow-none bg-transparent rounded-none px-4 py-3 font-semibold text-gray-500 transition-colors"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-none bg-transparent rounded-none px-4 py-3 font-bold text-muted-foreground transition-colors"
             >
               <Table2 className="w-4 h-4 mr-2" />
               Ver Registros
@@ -162,17 +163,17 @@ export function MilkDashboard({ fincaId, tableComponent }: MilkDashboardProps) {
           )}
           <TabsTrigger
             value="alerts"
-            className="data-[state=active]:border-b-2 data-[state=active]:border-emerald-600 data-[state=active]:text-emerald-700 data-[state=active]:shadow-none bg-transparent rounded-none px-4 py-3 font-semibold text-gray-500 relative transition-colors"
+            className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-none bg-transparent rounded-none px-4 py-3 font-bold text-muted-foreground relative transition-colors"
           >
             <Bell className="w-4 h-4 mr-2" />
             Alertas
             {alerts.length > 0 && (
-              <span className="absolute top-2 right-2 flex h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
+              <span className="absolute top-2.5 right-1.5 flex h-2 w-2 rounded-full bg-red-500 animate-pulse" />
             )}
           </TabsTrigger>
         </TabsList>
 
-        <div className="bg-gray-50/50 p-1 rounded-xl">
+        <div className="p-0">
           <TabsContent value="overview" className="mt-0">
             <MilkTrendChart data={trendData} isLoading={isLoading} period="week" />
           </TabsContent>
@@ -184,7 +185,7 @@ export function MilkDashboard({ fincaId, tableComponent }: MilkDashboardProps) {
           )}
 
           <TabsContent value="alerts" className="mt-0">
-            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+            <div className="bg-card p-6 rounded-2xl border border-border/80 shadow-sm">
               <MilkQualityAlerts alerts={alerts} isLoading={isLoading} />
             </div>
           </TabsContent>
@@ -195,10 +196,10 @@ export function MilkDashboard({ fincaId, tableComponent }: MilkDashboardProps) {
         isOpen={isEntryModalOpen}
         onOpenChange={setIsEntryModalOpen}
         title="Registrar ordeño"
-        themeColor="emerald"
+        themeColor="blue"
         size="2xl"
       >
-        <div className="p-4 sm:p-6 bg-white rounded-b-2xl">
+        <div className="p-4 sm:p-6 bg-card rounded-b-2xl">
           <MilkEntryFormWidget
             onSuccess={() => { setIsEntryModalOpen(false); loadData(); }}
             onCancel={() => setIsEntryModalOpen(false)}
@@ -213,7 +214,7 @@ export function MilkDashboard({ fincaId, tableComponent }: MilkDashboardProps) {
         themeColor="blue"
         size="3xl"
       >
-        <div className="p-4 sm:p-6 bg-white rounded-b-2xl">
+        <div className="p-4 sm:p-6 bg-card rounded-b-2xl">
           <MilkBulkImport fincaId={fincaId} onSuccess={() => { setIsImportModalOpen(false); loadData(); }} />
         </div>
       </GenericModal>

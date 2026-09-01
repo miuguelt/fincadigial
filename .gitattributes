@@ -1,2 +1,10 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Prevenir diffs de texto desbordantes en artefactos y archivos pesados
+*.min.js -diff
+*.min.css -diff
+*.map -diff
+package-lock.json -diff
+*.routes.json -diff
+

@@ -69,7 +69,7 @@ export const VaccinationAnalyticsModal: React.FC<VaccinationAnalyticsModalProps>
               <span className="text-xl sm:text-2xl font-black text-foreground mt-0.5 block">
                 {summary.periodTotal}
               </span>
-              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+              <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
                 Dosis administradas
               </span>
             </div>
@@ -81,7 +81,7 @@ export const VaccinationAnalyticsModal: React.FC<VaccinationAnalyticsModalProps>
               <span className="text-xl sm:text-2xl font-black text-foreground mt-0.5 block">
                 {summary.averagePerMonth}
               </span>
-              <span className="text-[10px] text-sky-600 dark:text-sky-400 font-semibold">
+              <span className="text-[11px] text-sky-600 dark:text-sky-400 font-semibold">
                 Dosis / mes
               </span>
             </div>
@@ -90,10 +90,10 @@ export const VaccinationAnalyticsModal: React.FC<VaccinationAnalyticsModalProps>
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
                 Mes con Mayor Actividad
               </span>
-              <span className="text-lg sm:text-xl font-black text-foreground mt-0.5 block truncate">
+              <span className="text-lg sm:text-xl font-black text-foreground mt-0.5 block fit-clamp">
                 {summary.peakMonth ? `${summary.peakMonth.label} (${summary.peakMonth.count})` : '—'}
               </span>
-              <span className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold">
+              <span className="text-[11px] text-purple-600 dark:text-purple-400 font-semibold">
                 Pico de vacunación
               </span>
             </div>
@@ -105,7 +105,7 @@ export const VaccinationAnalyticsModal: React.FC<VaccinationAnalyticsModalProps>
               <span className="text-xl sm:text-2xl font-black text-foreground mt-0.5 block">
                 {summary.activeMonths} / 12
               </span>
-              <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
+              <span className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold">
                 Con registros
               </span>
             </div>

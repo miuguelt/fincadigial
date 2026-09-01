@@ -26,7 +26,7 @@ describe('createSession', () => {
 });
 
 describe('avance de la fila', () => {
-  it('al arrancar activa el primer animal y pide acercar el arete', () => {
+  it('al arrancar activa el primer animal y pide acercar la chapeta', () => {
     const state = started();
     expect(state.phase).toBe('waiting');
     expect(state.activeIndex).toBe(0);
@@ -34,7 +34,7 @@ describe('avance de la fila', () => {
     expect(state.instruction).toContain('BOV-010');
   });
 
-  it('pasa solo al siguiente animal cuando el arete queda grabado', () => {
+  it('pasa solo al siguiente animal cuando la chapeta queda grabada', () => {
     const state = writeCurrent(started());
     expect(state.targets[0].status).toBe('written');
     expect(state.targets[0].uid).toBe('04A2241AB35C80');
@@ -56,7 +56,7 @@ describe('avance de la fila', () => {
 });
 
 describe('verificación', () => {
-  it('espera la relectura del arete antes de dar por bueno el marcaje', () => {
+  it('espera la relectura de la chapeta antes de dar por bueno el marcaje', () => {
     const detected = nfcSessionReducer(started(), {
       type: 'tag-detected',
       uid: '04A2241AB35C80',
@@ -75,7 +75,7 @@ describe('verificación', () => {
   });
 });
 
-describe('arete ya usado', () => {
+describe('chapeta ya usada', () => {
   it('se detiene y muestra a qué animal pertenece', () => {
     const state = nfcSessionReducer(started(), {
       type: 'tag-detected',
@@ -90,7 +90,7 @@ describe('arete ya usado', () => {
     });
   });
 
-  it('no bloquea cuando el arete ya pertenece al animal que se está marcando', () => {
+  it('no bloquea cuando la chapeta ya pertenece al animal que se está marcando', () => {
     const state = nfcSessionReducer(started(), {
       type: 'tag-detected',
       uid: '04A2241AB35C80',

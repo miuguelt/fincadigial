@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, type NavigateFunction } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Edit } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit, ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { GenericModal } from '@/shared/ui/common/GenericModal';
 import { AnimalModalContent } from './AnimalModalContent';
@@ -49,6 +49,9 @@ function AnimalDetailFooter({
   onClose,
   onOpenAnimal,
   onEdit,
+  canGoBack,
+  onGoBack,
+  previousAnimal,
 }: {
   animal: any;
   animals?: any[];
@@ -56,6 +59,9 @@ function AnimalDetailFooter({
   onClose: () => void;
   onOpenAnimal: (id: number) => void;
   onEdit?: () => void;
+  canGoBack?: boolean;
+  onGoBack?: () => void;
+  previousAnimal?: any;
 }) {
   const index = Array.isArray(animals)
     ? animals.findIndex((item) => Number(item.id) === Number(animal.id))
@@ -63,7 +69,8 @@ function AnimalDetailFooter({
   const hasPrevious = index > 0;
   const hasNext = Array.isArray(animals) && index >= 0 && index < animals.length - 1;
 
-  const handleEdit = () => {
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (onEdit) {
       onEdit();
       return;
@@ -75,41 +82,77 @@ function AnimalDetailFooter({
   };
 
   return (
-    <div className="border-t border-border/40 bg-gradient-to-r from-muted/30 via-muted/20 to-muted/30 px-4 sm:px-6 py-3">
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+    <div className="border-t border-border/60 bg-muted/20 dark:bg-card/90 backdrop-blur-md px-4 sm:px-6 py-3 rounded-b-2xl">
+      <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 items-stretch sm:items-center">
+        {canGoBack && (
+          <Button
+            variant="secondary"
+            size="sm"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onGoBack?.();
+            }}
+            className="h-9 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 font-semibold transition-all duration-150 shadow-sm text-xs"
+            title={`Volver a ${previousAnimal?.record || `#${previousAnimal?.id}`}`}
+          >
+            <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
+            <span>Volver a {previousAnimal?.record || `#${previousAnimal?.id}`}</span>
+          </Button>
+        )}
         {Array.isArray(animals) && animals.length > 1 && (
-          <div className="flex gap-2 sm:flex-1">
+          <div className="flex gap-2 sm:flex-initial">
             <Button
               variant="outline"
               size="sm"
               type="button"
               disabled={!hasPrevious}
-              onClick={() => hasPrevious && onOpenAnimal(Number(animals[index - 1].id))}
-              className="flex-1 sm:flex-initial transition-all duration-150 hover:bg-muted/50 shadow-sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (hasPrevious) onOpenAnimal(Number(animals[index - 1].id));
+              }}
+              className="h-9 px-3 rounded-lg text-xs font-semibold transition-all duration-150 hover:bg-muted/60 shadow-sm disabled:opacity-40"
             >
-              <ChevronLeft className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline">Anterior</span>
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              <span>Anterior</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
               type="button"
               disabled={!hasNext}
-              onClick={() => hasNext && onOpenAnimal(Number(animals[index + 1].id))}
-              className="flex-1 sm:flex-initial transition-all duration-150 hover:bg-muted/50 shadow-sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (hasNext) onOpenAnimal(Number(animals[index + 1].id));
+              }}
+              className="h-9 px-3 rounded-lg text-xs font-semibold transition-all duration-150 hover:bg-muted/60 shadow-sm disabled:opacity-40"
             >
-              <span className="hidden sm:inline">Siguiente</span>
-              <ChevronRight className="h-4 w-4 sm:ml-1" />
+              <span>Siguiente</span>
+              <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
         )}
         <div className="flex gap-2 sm:justify-end sm:ml-auto">
-          <Button variant="outline" size="sm" type="button" onClick={onClose} className="flex-1 sm:flex-initial">
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            className="h-9 px-4 rounded-lg text-xs font-medium hover:bg-muted/80"
+          >
             Cerrar
           </Button>
-          <Button size="sm" type="button" onClick={handleEdit} className="flex-1 sm:flex-initial">
-            <Edit className="h-4 w-4 sm:mr-1" />
-            <span className="hidden sm:inline">Editar</span>
+          <Button
+            size="sm"
+            type="button"
+            onClick={handleEdit}
+            className="h-9 px-4 rounded-lg text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-all duration-150"
+          >
+            <Edit className="h-3.5 w-3.5 mr-1.5" />
+            <span>Editar Animal</span>
           </Button>
         </div>
       </div>
@@ -142,6 +185,8 @@ export function AnimalDetailModal({
   const currentUserId = propUserId ?? user?.id;
 
   const [loadedAnimal, setLoadedAnimal] = useState<any>(initialAnimal || null);
+  const [isLoadingAnimal, setIsLoadingAnimal] = useState(false);
+  const [navigationHistory, setNavigationHistory] = useState<any[]>([]);
   const [internalBreedOptions, setInternalBreedOptions] = useState<Array<{ value: unknown; label: string }>>([]);
   const [internalFatherOptions, setInternalFatherOptions] = useState<Array<{ value: unknown; label: string }>>([]);
   const [internalMotherOptions, setInternalMotherOptions] = useState<Array<{ value: unknown; label: string }>>([]);
@@ -169,6 +214,8 @@ export function AnimalDetailModal({
   const [descendantsEdgeExamples, setDescendantsEdgeExamples] = useState<any>();
   const [descendantsRootId, setDescendantsRootId] = useState<number | null>(null);
 
+  const targetId = animalId ?? initialAnimal?.id ?? initialAnimal?.idAnimal ?? initialAnimal?.animal_id;
+
   // Sincronizar animal inicial
   useEffect(() => {
     if (initialAnimal) {
@@ -176,16 +223,24 @@ export function AnimalDetailModal({
     }
   }, [initialAnimal]);
 
-  // Cargar animal por ID si es necesario
+  // Cargar animal completo por ID si es necesario
   useEffect(() => {
-    if (isOpen && animalId && (!loadedAnimal || String(loadedAnimal.id) !== String(animalId))) {
-      void animalsService.getById(Number(animalId)).then((res) => {
-        setLoadedAnimal(res);
+    if (!isOpen || !targetId) return;
+
+    const currentLoadedId = loadedAnimal?.id ?? loadedAnimal?.idAnimal ?? loadedAnimal?.animal_id;
+    const isLoadedComplete = Boolean(loadedAnimal && (loadedAnimal.birth_date || loadedAnimal.sex || loadedAnimal.weight !== undefined));
+
+    if (!loadedAnimal || String(currentLoadedId) !== String(targetId) || !isLoadedComplete) {
+      setIsLoadingAnimal(true);
+      void animalsService.getById(Number(targetId)).then((res) => {
+        if (res) setLoadedAnimal(res);
       }).catch((err) => {
         console.error('[AnimalDetailModal] Error loading animal by ID:', err);
+      }).finally(() => {
+        setIsLoadingAnimal(false);
       });
     }
-  }, [isOpen, animalId, loadedAnimal]);
+  }, [isOpen, targetId, loadedAnimal]);
 
   // Cargar opciones de razas y padres si no fueron provistas
   useEffect(() => {
@@ -219,12 +274,25 @@ export function AnimalDetailModal({
       return;
     }
     try {
+      if (loadedAnimal) {
+        setNavigationHistory((prev) => [...prev, loadedAnimal]);
+      }
+      setIsLoadingAnimal(true);
       const nextAnimal = await animalsService.getById(id);
       setLoadedAnimal(nextAnimal);
     } catch (err) {
       console.error('[AnimalDetailModal] Error switching animal:', err);
+    } finally {
+      setIsLoadingAnimal(false);
     }
-  }, [customOpenAnimal]);
+  }, [customOpenAnimal, loadedAnimal]);
+
+  const handleGoBack = useCallback(() => {
+    if (navigationHistory.length === 0) return;
+    const previous = navigationHistory[navigationHistory.length - 1];
+    setNavigationHistory((prev) => prev.slice(0, -1));
+    setLoadedAnimal(previous);
+  }, [navigationHistory]);
 
   const handleOpenHistory = useCallback((record: any) => {
     if (customOpenHistory) {
@@ -295,6 +363,7 @@ export function AnimalDetailModal({
   const effectiveMotherOptions = initialMotherOptions || internalMotherOptions;
 
   const currentAnimal = loadedAnimal || initialAnimal;
+  const previousAnimal = navigationHistory.length > 0 ? navigationHistory[navigationHistory.length - 1] : null;
 
   const labels = useMemo(() => {
     if (!currentAnimal) return { breedLabel: '-', fatherLabel: '-', motherLabel: '-' };
@@ -309,11 +378,30 @@ export function AnimalDetailModal({
   }, [currentAnimal, effectiveBreedOptions, effectiveFatherOptions, effectiveMotherOptions]);
 
   const handleModalClose = useCallback(() => {
+    setNavigationHistory([]);
     if (onClose) onClose();
     onOpenChange(false);
   }, [onClose, onOpenChange]);
 
-  if (!isOpen || !currentAnimal) return null;
+  const animalIndex = Array.isArray(animals) && currentAnimal
+    ? animals.findIndex((item) => Number(item.id) === Number(currentAnimal.id))
+    : -1;
+  const hasPreviousAnimal = animalIndex > 0;
+  const hasNextAnimal = Array.isArray(animals) && animalIndex >= 0 && animalIndex < animals.length - 1;
+
+  const handleNavigatePrevious = useCallback(() => {
+    if (Array.isArray(animals) && animalIndex > 0) {
+      handleOpenAnimal(Number(animals[animalIndex - 1].id));
+    }
+  }, [animals, animalIndex, handleOpenAnimal]);
+
+  const handleNavigateNext = useCallback(() => {
+    if (Array.isArray(animals) && animalIndex >= 0 && animalIndex < animals.length - 1) {
+      handleOpenAnimal(Number(animals[animalIndex + 1].id));
+    }
+  }, [animals, animalIndex, handleOpenAnimal]);
+
+  if (!isOpen) return null;
 
   return (
     <>
@@ -323,37 +411,54 @@ export function AnimalDetailModal({
           if (!open) handleModalClose();
           else onOpenChange(true);
         }}
-        title={`Detalle del Animal: ${currentAnimal.record || currentAnimal.id}`}
+        title={currentAnimal ? `Detalle del Animal: ${currentAnimal.record || currentAnimal.id}` : 'Cargando información del animal...'}
         description="Ficha integral y trazabilidad médica y productiva"
         size="full"
         variant="compact"
         enableBackdropBlur
+        enableNavigation={Array.isArray(animals) && animals.length > 1}
+        hasPrevious={hasPreviousAnimal}
+        hasNext={hasNextAnimal}
+        onNavigatePrevious={handleNavigatePrevious}
+        onNavigateNext={handleNavigateNext}
         className="bg-card text-card-foreground border-border shadow-2xl transition-all duration-200 ease-out"
         footer={
-          <AnimalDetailFooter
-            animal={currentAnimal}
-            animals={animals}
-            navigate={navigate}
-            onClose={handleModalClose}
-            onOpenAnimal={handleOpenAnimal}
-            onEdit={onEdit}
-          />
+          currentAnimal ? (
+            <AnimalDetailFooter
+              animal={currentAnimal}
+              animals={animals}
+              navigate={navigate}
+              onClose={handleModalClose}
+              onOpenAnimal={handleOpenAnimal}
+              onEdit={onEdit}
+              canGoBack={navigationHistory.length > 0}
+              onGoBack={handleGoBack}
+              previousAnimal={previousAnimal}
+            />
+          ) : undefined
         }
       >
-        <AnimalModalContent
-          animal={currentAnimal}
-          breedLabel={labels.breedLabel}
-          fatherLabel={labels.fatherLabel}
-          motherLabel={labels.motherLabel}
-          onFatherClick={handleOpenAnimal}
-          onMotherClick={handleOpenAnimal}
-          currentUserId={currentUserId}
-          onOpenHistory={() => handleOpenHistory(currentAnimal)}
-          onOpenAncestorsTree={() => handleOpenAncestors(currentAnimal)}
-          onOpenDescendantsTree={() => handleOpenDescendants(currentAnimal)}
-          onEdit={onEdit}
-          onReplicate={onReplicate}
-        />
+        {isLoadingAnimal && !currentAnimal ? (
+          <div className="flex flex-col items-center justify-center p-12 min-h-[300px] space-y-4">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <p className="text-sm font-semibold text-muted-foreground">Cargando expediente completo del animal...</p>
+          </div>
+        ) : currentAnimal ? (
+          <AnimalModalContent
+            animal={currentAnimal}
+            breedLabel={labels.breedLabel}
+            fatherLabel={labels.fatherLabel}
+            motherLabel={labels.motherLabel}
+            onFatherClick={handleOpenAnimal}
+            onMotherClick={handleOpenAnimal}
+            currentUserId={currentUserId}
+            onOpenHistory={() => handleOpenHistory(currentAnimal)}
+            onOpenAncestorsTree={() => handleOpenAncestors(currentAnimal)}
+            onOpenDescendantsTree={() => handleOpenDescendants(currentAnimal)}
+            onEdit={onEdit}
+            onReplicate={onReplicate}
+          />
+        ) : null}
       </GenericModal>
 
       {/* Modal de Historial Integrado */}

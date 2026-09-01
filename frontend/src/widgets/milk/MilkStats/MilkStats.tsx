@@ -26,25 +26,25 @@ export function MilkStats({
 
   const stats = [
     {
-      title: simple ? 'Leche de hoy' : 'Leche de hoy',
+      title: 'Leche de hoy',
       value: dailyLiters.toFixed(1),
       unit: 'L',
       icon: Droplets,
       color: 'text-blue-600 dark:text-blue-400',
-      accentColor: 'border-l-blue-500',
-      gradient: 'from-blue-50/70 to-indigo-50/30 dark:from-blue-950/20 dark:to-indigo-950/10',
-      iconBg: 'bg-blue-100/80 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300',
+      borderGlow: 'border-blue-500/20 hover:border-blue-500/40',
+      gradient: 'from-blue-500/10 via-blue-500/5 to-card',
+      iconBg: 'bg-blue-600 text-white shadow-md shadow-blue-600/25',
       emptyHint: dailyLiters === 0 && !isLoading ? 'Aún no hay registros hoy. ¿Ya ordeñaste?' : undefined,
     },
     {
-      title: simple ? 'Promedio 7 días' : 'Promedio 7 días',
+      title: 'Promedio 7 días',
       value: weeklyAverage.toFixed(1),
       unit: 'L/día',
       icon: Calendar,
       color: 'text-emerald-600 dark:text-emerald-400',
-      accentColor: 'border-l-emerald-500',
-      gradient: 'from-emerald-50/70 to-teal-50/30 dark:from-emerald-950/20 dark:to-teal-950/10',
-      iconBg: 'bg-emerald-100/80 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300',
+      borderGlow: 'border-emerald-500/20 hover:border-emerald-500/40',
+      gradient: 'from-emerald-500/10 via-emerald-500/5 to-card',
+      iconBg: 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25',
     },
     ...(!simple ? [{
       title: '¿Subiendo o bajando?',
@@ -52,34 +52,34 @@ export function MilkStats({
       unit: '',
       icon: trendPercentage >= 0 ? TrendingUp : TrendingDown,
       color: trendPercentage >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400',
-      accentColor: trendPercentage >= 0 ? 'border-l-emerald-500' : 'border-l-rose-500',
+      borderGlow: trendPercentage >= 0 ? 'border-emerald-500/20 hover:border-emerald-500/40' : 'border-rose-500/20 hover:border-rose-500/40',
       gradient: trendPercentage >= 0
-        ? 'from-emerald-50/70 to-green-50/30 dark:from-emerald-950/20 dark:to-green-950/10'
-        : 'from-rose-50/70 to-red-50/30 dark:from-rose-950/20 dark:to-red-950/10',
+        ? 'from-emerald-500/10 via-emerald-500/5 to-card'
+        : 'from-rose-500/10 via-rose-500/5 to-card',
       iconBg: trendPercentage >= 0
-        ? 'bg-emerald-100/80 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300'
-        : 'bg-rose-100/80 text-rose-600 dark:bg-rose-900/40 dark:text-rose-300',
+        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25'
+        : 'bg-rose-600 text-white shadow-md shadow-rose-600/25',
     }] : []),
     {
-      title: simple ? 'Vacas ordeñadas hoy' : 'Vacas ordeñadas hoy',
+      title: 'Vacas ordeñadas hoy',
       value: animalsMilked.toString(),
       unit: animalsMilked === 1 ? 'vaca' : 'vacas',
       icon: Droplets,
       color: 'text-purple-600 dark:text-purple-400',
-      accentColor: 'border-l-purple-500',
-      gradient: 'from-purple-50/70 to-fuchsia-50/30 dark:from-purple-950/20 dark:to-fuchsia-950/10',
-      iconBg: 'bg-purple-100/80 text-purple-600 dark:bg-purple-900/40 dark:text-purple-300',
+      borderGlow: 'border-purple-500/20 hover:border-purple-500/40',
+      gradient: 'from-purple-500/10 via-purple-500/5 to-card',
+      iconBg: 'bg-purple-600 text-white shadow-md shadow-purple-600/25',
     },
   ];
 
   if (isLoading) {
     return (
-      <div className={cn('grid gap-3 md:gap-4', gridClass)}>
+      <div className={cn('grid gap-3.5 sm:gap-4', gridClass)}>
         {stats.map((_, i) => (
-          <Card key={i} className={cn('animate-pulse border-l-4 border-l-gray-200', simple && 'last:min-[360px]:col-span-2 last:sm:col-span-1')}>
-            <CardContent className="p-3 md:p-4">
-              <div className="h-3 bg-gray-200 rounded w-2/3 mb-2" />
-              <div className="h-6 bg-gray-200 rounded w-1/2" />
+          <Card key={i} className={cn('animate-pulse rounded-2xl border border-border/60 bg-muted/40', simple && 'last:min-[360px]:col-span-2 last:sm:col-span-1')}>
+            <CardContent className="p-4 sm:p-5">
+              <div className="h-3.5 bg-muted rounded-lg w-2/3 mb-3" />
+              <div className="h-7 bg-muted rounded-lg w-1/2" />
             </CardContent>
           </Card>
         ))}
@@ -88,41 +88,41 @@ export function MilkStats({
   }
 
   return (
-    <div className={cn('grid gap-3 md:gap-4', gridClass)}>
+    <div className={cn('grid gap-3.5 sm:gap-4', gridClass)}>
       {stats.map((stat, index) => (
         <Card
           key={index}
           className={cn(
-            'relative overflow-hidden border-0 border-l-4 shadow-sm hover:shadow-md transition-all duration-300 bg-gradient-to-br',
+            'relative overflow-hidden rounded-2xl border bg-gradient-to-br p-0 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md',
             simple && 'last:min-[360px]:col-span-2 last:sm:col-span-1',
-            stat.accentColor,
+            stat.borderGlow,
             stat.gradient
           )}
         >
-          <CardContent className="flex h-full min-h-[104px] flex-col justify-between p-3 md:p-4">
+          <CardContent className="flex h-full min-h-[110px] flex-col justify-between p-4 sm:p-5">
             <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <p className="break-words text-xs font-bold leading-snug text-muted-foreground">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   {stat.title}
                 </p>
-                <div className="mt-2 flex flex-wrap items-baseline gap-x-1 gap-y-0.5">
-                  <span className={cn('text-2xl md:text-[28px] font-black tracking-tight', stat.color)}>
+                <div className="mt-2 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                  <span className={cn('text-2xl sm:text-3xl font-black tracking-tight', stat.color)}>
                     {stat.value}
                   </span>
                   {stat.unit && (
-                    <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">
+                    <span className="whitespace-nowrap text-xs font-semibold text-muted-foreground">
                       {stat.unit}
                     </span>
                   )}
                 </div>
                 {noData && (stat as any).emptyHint && (
-                  <p className="mt-1 break-words text-xs leading-snug text-muted-foreground">
+                  <p className="mt-1 text-xs font-medium leading-tight text-muted-foreground">
                     {(stat as any).emptyHint}
                   </p>
                 )}
               </div>
-              <div className={cn('p-1.5 md:p-2.5 rounded-xl backdrop-blur-sm shadow-inner shrink-0', stat.iconBg)}>
-                <stat.icon className="h-4 w-4 md:h-5 md:w-5" />
+              <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform hover:scale-105', stat.iconBg)}>
+                <stat.icon className="h-5 w-5" />
               </div>
             </div>
           </CardContent>

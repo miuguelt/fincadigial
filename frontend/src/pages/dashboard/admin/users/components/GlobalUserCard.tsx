@@ -16,6 +16,7 @@ import {
   User as UserIcon,
 } from 'lucide-react';
 import { cn } from '@/shared/ui/cn';
+import { isDialogClosingRecently } from '@/shared/utils/modalGuard';
 import type { UserWithProfile } from '../types';
 import { formatDate } from '../utils/user.utils';
 
@@ -72,10 +73,12 @@ export function GlobalUserCard({ user, onOpenDetail }: GlobalUserCardProps) {
       tabIndex={0}
       aria-label={`Ver perfil de ${user.fullname || 'Usuario'}`}
       onClick={(e) => {
+        if (isDialogClosingRecently()) return;
         if ((e.target as HTMLElement).closest('button, a, input, textarea')) return;
         onOpenDetail(user);
       }}
       onKeyDown={(e) => {
+        if (isDialogClosingRecently()) return;
         if (e.target !== e.currentTarget) return;
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();

@@ -114,9 +114,9 @@ def post_animal():
     if not data.get("nombre"):
         errors["nombre"] = "Nombre es requerido"
     if not data.get("arete"):
-        errors["arete"] = "Arete es requerido"
+        errors["arete"] = "Chapeta o registro es requerido"
     elif not re.match(r"^COL-\d{3}-\d{4}$", data.get("arete")):
-        errors["arete"] = "Formato de arete inválido (ej. COL-001-2024)"
+        errors["arete"] = "Formato de chapeta o registro inválido (ej. COL-001-2024)"
     if not data.get("especie"):
         errors["especie"] = "Especie es requerida"
     elif data.get("especie") not in ["bovino", "porcino", "equino", "caprino"]:
@@ -182,7 +182,7 @@ def put_animal(id):
         animal.record = data["nombre"]
     if "arete" in data:
         if not re.match(r"^COL-\d{3}-\d{4}$", data["arete"]):
-            return jsonify({"errors": {"arete": "Formato de arete inválido"}}), 422
+            return jsonify({"errors": {"arete": "Formato de chapeta o registro inválido"}}), 422
         animal.record = data["arete"]
     if "fecha_nacimiento" in data:
         try:

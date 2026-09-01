@@ -33,21 +33,21 @@ export function ReportActions({ snapshot }: ReportActionsProps) {
   };
 
   return (
-    <div className="grid gap-2 min-[420px]:grid-cols-2">
+    <div className="grid gap-3 min-[420px]:grid-cols-2">
       <button
         type="button"
         onClick={copySummary}
-        className="flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-border bg-card px-3 text-sm font-bold transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-[0.99]"
+        className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-border/80 bg-card px-4 text-sm font-bold text-foreground shadow-sm transition-all hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
-        <ClipboardCheck className="h-4 w-4" aria-hidden="true" />
+        <ClipboardCheck className="h-4 w-4 text-primary" aria-hidden="true" />
         Copiar resumen
       </button>
       <button
         type="button"
         onClick={downloadCsv}
-        className="flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-border bg-card px-3 text-sm font-bold transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-[0.99]"
+        className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-border/80 bg-card px-4 text-sm font-bold text-foreground shadow-sm transition-all hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
-        <Download className="h-4 w-4" aria-hidden="true" />
+        <Download className="h-4 w-4 text-primary" aria-hidden="true" />
         Descargar ordeño (CSV)
       </button>
     </div>

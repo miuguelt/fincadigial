@@ -1,20 +1,20 @@
 /**
- * Contenido que se graba en el arete NFC.
+ * Contenido que se graba en la chapeta NFC.
  *
  * El chip lleva dos registros y cada uno resuelve un problema distinto:
  *
  * 1. Una URL, para que cualquier celular con NFC —incluso el del comprador o
  *    el del funcionario del ICA, sin la aplicación instalada— abra la ficha
- *    del animal al acercarlo al arete.
+ *    del animal al acercarlo a la chapeta.
  * 2. Una ficha compacta propia, para que la aplicación identifique al animal
  *    en el potrero sin señal y sin haber descargado antes ese animal.
  *
- * El arete más barato del mercado (NTAG213) solo tiene 144 bytes útiles, así
+ * La chapeta más económica del mercado (NTAG213) solo tiene 144 bytes útiles, así
  * que la ficha va en texto delimitado y no en JSON: el mismo dato en JSON no
  * cabe junto con la URL.
  */
 
-/** Capacidad útil de usuario, en bytes, de los chips que se usan en aretes. */
+/** Capacidad útil de usuario, en bytes, de los chips que se usan en chapetas. */
 export const TAG_CAPACITIES = {
   NTAG213: 144,
   NTAG215: 504,
@@ -72,7 +72,7 @@ const unescapeField = (value: string) => value.split(ESCAPED_SEPARATOR).join(FIE
  * Comprime la fecha a `AAAAMMDD`.
  *
  * Solo acepta ISO. Una fecha ya formateada para mostrar (`2/1/2023`) entraría
- * al chip como basura ilegible, y el error no se vería hasta leer el arete en
+ * al chip como basura ilegible, y el error no se vería hasta leer la chapeta en
  * el potrero.
  */
 const toCompactDate = (isoDate?: string) => {
@@ -124,7 +124,7 @@ export const parseAnimalSnapshot = (raw: string): NfcTagAnimal | null => {
   };
 };
 
-/** Arma los registros NDEF que se escriben en el arete. */
+/** Arma los registros NDEF que se escriben en la chapeta. */
 export const buildTagRecords = (
   animal: NfcTagAnimal,
   { origin, includeSnapshot }: BuildTagRecordsOptions
@@ -141,7 +141,7 @@ export const buildTagRecords = (
 /**
  * Tamaño que ocupará el mensaje en el chip.
  *
- * Se estima antes de escribir porque un arete lleno falla a mitad de la
+ * Se estima antes de escribir porque una chapeta llena falla a mitad de la
  * grabación, y en el corral eso significa volver a encerrar al animal.
  */
 export const estimateNdefBytes = (records: NdefRecordSpec[]): number => {

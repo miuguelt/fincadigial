@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { SectionCard, InfoField, modalStyles } from '@/shared/ui/common/ModalStyles';
 import { getStatusBadgeClass } from '@/shared/utils/badgeStyles';
 import { AnimalLink } from '@/entities/animal/ui';
-import { parseDateOnlyLocal } from '../controlPage.utils';
+import { parseDateOnlyLocal, formatAnimalHeight } from '../controlPage.utils';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar
@@ -81,13 +81,15 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
     }
   }, [item.animal_id]);
 
-  // Formatear datos para el gráfico de control (peso y altura)
+  // Formatear datos para el gráfico de control (peso y altura en cm)
   const chartControlData = controlHistory.map(c => {
     const d = (c as any).checkup_date || (c as any).control_date;
+    const rawH = c.height != null ? Number(c.height) : null;
+    const alturaCm = rawH != null ? (rawH < 3 ? Math.round(rawH * 100) : Math.round(rawH)) : null;
     return {
       fecha: d ? parseDateOnlyLocal(String(d))?.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit' }) ?? '' : '',
       peso: c.weight ? Number(c.weight) : null,
-      altura: c.height ? Number(c.height) : null,
+      altura: alturaCm,
     };
   });
 
@@ -147,7 +149,7 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
               <SectionCard title="Medidas">
                 <div className="grid grid-cols-2 gap-4">
                   <InfoField label="Peso Actual" value={item.weight != null ? `${Number(item.weight).toFixed(1)} kg` : '-'} valueSize="xlarge" />
-                  <InfoField label="Altura Actual" value={item.height != null ? `${Number(item.height).toFixed(1)} m` : '-'} valueSize="xlarge" />
+                  <InfoField label="Alzada Actual" value={formatAnimalHeight(item.height)} valueSize="xlarge" />
                 </div>
               </SectionCard>
 
@@ -168,7 +170,7 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
 
             {/* Gráfico de Evolución */}
             <div className="lg:col-span-2 bg-background border rounded-lg p-4 shadow-sm min-h-[300px] flex flex-col">
-              <h3 className="text-base font-bold text-foreground mb-4">📈 Evolución Física (Peso y Altura)</h3>
+              <h3 className="text-base font-bold text-foreground mb-4">📈 Evolución Física (Peso y Alzada)</h3>
               {loadingHistory ? (
                 <div className="flex-1 flex items-center justify-center">
                   <span className="animate-pulse text-muted-foreground">Cargando gráfico...</span>
@@ -179,12 +181,12 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
                     <LineChart data={chartControlData}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} />
                       <XAxis dataKey="fecha" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                      <YAxis yAxisId="left" stroke="#10b981" fontSize={12} tickLine={false} axisLine={false} unit="kg" />
-                      <YAxis yAxisId="right" orientation="right" stroke="#3b82f6" fontSize={12} tickLine={false} axisLine={false} unit="m" />
+                      <YAxis yAxisId="left" stroke="#10b981" fontSize={12} tickLine={false} axisLine={false} unit=" kg" />
+                      <YAxis yAxisId="right" orientation="right" stroke="#3b82f6" fontSize={12} tickLine={false} axisLine={false} unit=" cm" />
                       <Tooltip />
                       <Legend />
                       <Line yAxisId="left" type="monotone" dataKey="peso" name="Peso (kg)" stroke="#10b981" strokeWidth={3} activeDot={{ r: 8 }} />
-                      <Line yAxisId="right" type="monotone" dataKey="altura" name="Altura (m)" stroke="#3b82f6" strokeWidth={2} />
+                      <Line yAxisId="right" type="monotone" dataKey="altura" name="Alzada (cm)" stroke="#3b82f6" strokeWidth={2} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -197,7 +199,7 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
 
             {/* Listado Histórico */}
             <div className="bg-background border rounded-lg p-4 shadow-sm flex flex-col max-h-[300px] overflow-hidden">
-              <h3 className="text-base font-bold text-foreground mb-4">📋 Registro de Peso</h3>
+              <h3 className="text-base font-bold text-foreground mb-4">📋 Registro de Peso y Alzada</h3>
               <div className="flex-1 overflow-y-auto space-y-2 pr-1">
                 {loadingHistory ? (
                   <div className="text-center py-4 text-muted-foreground">Cargando...</div>
@@ -209,7 +211,7 @@ export const ControlDetailExpanded: React.FC<ControlDetailExpandedProps> = ({ it
                       </div>
                       <div className="flex gap-3 text-right">
                         <span className="font-bold text-emerald-600">{c.weight ? `${Number(c.weight).toFixed(1)} kg` : '-'}</span>
-                        <span className="text-blue-600">{c.height ? `${Number(c.height).toFixed(1)} m` : '-'}</span>
+                        <span className="text-blue-600 font-medium">{formatAnimalHeight(c.height)}</span>
                       </div>
                     </div>
                   ))

@@ -11,7 +11,7 @@ import { AlertTriangle, Loader2, Search, Send, UserCog } from 'lucide-react';
 interface JoinFincaFormProps {
   /** Se ejecuta cuando la solicitud se envía correctamente (p. ej. para cerrar el modal). */
   onSuccess?: () => void;
-  /** Se ejecuta al pulsar "Cancelar". Si no se pasa, el botón no se muestra. */
+  /** Se ejecuta al hacer clic en "Cancelar". Si no se pasa, el botón no se muestra. */
   onCancel?: () => void;
 }
 
@@ -83,7 +83,7 @@ export const JoinFincaForm = ({ onSuccess, onCancel }: JoinFincaFormProps = {}) 
           disabled={!form.selectedFinca}
         >
           <SelectTrigger id="role-select" className="bg-card">
-            <SelectValue placeholder="¿Qué rol tendrás en esta finca?" />
+            <SelectValue placeholder="¿Qué rol tendrá en esta finca?" />
           </SelectTrigger>
           <SelectContent>
             {REQUESTABLE_ROLES.map((role) => (

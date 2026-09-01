@@ -20,7 +20,7 @@ import { DailyWorkSection } from './components/DailyWorkSection';
 import { ControlEntryModals, type ControlEntryModal } from './components/ControlEntryModals';
 import { ReportsTab } from './reports/ReportsTab';
 import { useControlsSummary } from './hooks/useControlsSummary';
-import { formatControlPageDate, parseDateOnlyLocal } from './controlPage.utils';
+import { formatAnimalHeight, formatControlPageDate, parseDateOnlyLocal } from './controlPage.utils';
 import { emitDataRefresh } from '@/shared/utils/dataRefresh';
 import {
   buildCrudConfig, serviceAdapter, initialFormData,
@@ -28,7 +28,7 @@ import {
 } from './crudConfig.tsx';
 
 const TAB_TRIGGER_CLASS =
-  'min-h-12 min-w-0 gap-1 rounded-lg px-1.5 py-2 text-xs font-bold text-muted-foreground data-[state=active]:bg-background data-[state=active]:shadow-sm sm:text-sm';
+  'min-h-11 min-w-0 gap-2 rounded-xl px-3 py-2 text-xs font-bold transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground hover:text-foreground sm:text-sm';
 
 const AdminControlPage = () => {
   const { role: userRole, user } = useAuth() as any;
@@ -90,7 +90,7 @@ const AdminControlPage = () => {
       return parsed ? parsed.toLocaleDateString('es-CO') : '-';
     }},
     { key: 'weight', label: 'Peso', render: (v: any) => (v != null ? `${Number(v).toFixed(1)} kg` : '-') },
-    { key: 'height', label: 'Altura', render: (v: any) => (v != null ? `${Number(v).toFixed(1)} m` : '-') },
+    { key: 'height', label: 'Alzada', render: (v: any) => formatAnimalHeight(v) },
     { key: 'health_status', label: 'Estado de Salud', render: (_v: any, item: any) => item?.health_status ?? item?.healt_status ?? '-' },
     { key: 'description', label: 'Descripción', render: (_v: any, item: any) => item?.description ?? item?.observations ?? '-' },
     { key: 'created_at', label: 'Creado', render: (v: any) => (v ? new Date(v as string).toLocaleDateString('es-CO', { timeZone: 'America/Bogota' }) : '-') },
@@ -131,15 +131,12 @@ const AdminControlPage = () => {
     setActiveModal(null);
     summary.refresh();
     if (typeof window !== 'undefined') {
-      // Los modales rápidos usan el mismo servicio que el listado CRUD, pero el
-      // listado tiene su propia caché de recurso. Se invalidan ambos canales para
-      // que un guardado exitoso se vea sin recargar la página.
       emitDataRefresh('control');
     }
   };
 
   return (
-    <div className="space-y-4 pb-24 sm:space-y-6 sm:pb-8">
+    <div className="space-y-5 pb-24 sm:space-y-6 sm:pb-8">
       <DailyWorkSection
         todayFormatted={todayFormatted}
         onRegisterMilk={() => setActiveModal('milk')}
@@ -148,27 +145,32 @@ const AdminControlPage = () => {
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="mb-4 grid h-auto w-full grid-cols-2 gap-1 rounded-xl border border-border bg-muted/70 p-1 min-[480px]:grid-cols-4">
+        <TabsList className="mb-5 grid h-auto w-full grid-cols-2 gap-1.5 rounded-2xl border border-border/70 bg-muted/60 p-1.5 backdrop-blur-md min-[480px]:grid-cols-4">
           <TabsTrigger value="resumen" aria-label="Resumen de hoy" className={`${TAB_TRIGGER_CLASS} data-[state=active]:text-foreground`}>
             <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
-            Hoy
+            <span>Hoy</span>
+            {hasSickAnimals && (
+              <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-black text-white shadow-sm shadow-red-600/30">
+                {summary.sickAnimals}
+              </span>
+            )}
           </TabsTrigger>
-          <TabsTrigger value="leche" aria-label="Historial de ordeños" className={`${TAB_TRIGGER_CLASS} data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300`}>
+          <TabsTrigger value="leche" aria-label="Historial de ordeños" className={`${TAB_TRIGGER_CLASS} data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400`}>
             <Milk className="h-4 w-4" aria-hidden="true" />
-            Ordeños
+            <span>Ordeños</span>
           </TabsTrigger>
-          <TabsTrigger value="salud" aria-label="Revisiones de salud" className={`${TAB_TRIGGER_CLASS} data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-300`}>
+          <TabsTrigger value="salud" aria-label="Revisiones de salud" className={`${TAB_TRIGGER_CLASS} data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400`}>
             <Heart className="h-4 w-4" aria-hidden="true" />
-            Salud
+            <span>Salud</span>
           </TabsTrigger>
-          <TabsTrigger value="reportes" aria-label="Estadísticas y reportes" className={`${TAB_TRIGGER_CLASS} data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300`}>
+          <TabsTrigger value="reportes" aria-label="Estadísticas y reportes" className={`${TAB_TRIGGER_CLASS} data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400`}>
             <BarChart3 className="h-4 w-4" aria-hidden="true" />
-            Reportes
+            <span>Reportes</span>
           </TabsTrigger>
         </TabsList>
 
         {/* PESTAÑA 1: ¿Cómo vamos hoy? */}
-        <TabsContent value="resumen" className="mt-0 space-y-4">
+        <TabsContent value="resumen" className="mt-0 space-y-5">
           <TaskIndicator
             noMilkToday={noMilkToday} hasSickAnimals={hasSickAnimals}
             sickAnimals={summary.sickAnimals}
@@ -187,20 +189,28 @@ const AdminControlPage = () => {
             onReview={openHealthModal}
           />
 
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-            <section className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5">
-              <h2 className="mb-4 flex items-center gap-2 text-lg font-bold">
-                <Milk className="h-5 w-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
-                Ordeño de hoy
-              </h2>
+          <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+            <section className="rounded-2xl border border-border/80 bg-card/90 p-4 text-card-foreground shadow-sm backdrop-blur-xl transition-all sm:p-6">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="flex items-center gap-2.5 text-lg font-black tracking-tight text-foreground">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400">
+                    <Milk className="h-5 w-5" aria-hidden="true" />
+                  </div>
+                  Ordeño de hoy
+                </h2>
+              </div>
               <MilkStats dailyLiters={summary.dailyLiters} weeklyAverage={summary.weeklyAverage} trendPercentage={summary.trendPercentage} animalsMilked={summary.animalsMilked} isLoading={summary.loading} simple />
             </section>
 
-            <section className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5">
-              <h2 className="mb-4 flex items-center gap-2 text-lg font-bold">
-                <Heart className="h-5 w-5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-                Salud del ganado
-              </h2>
+            <section className="rounded-2xl border border-border/80 bg-card/90 p-4 text-card-foreground shadow-sm backdrop-blur-xl transition-all sm:p-6">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="flex items-center gap-2.5 text-lg font-black tracking-tight text-foreground">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+                    <Heart className="h-5 w-5" aria-hidden="true" />
+                  </div>
+                  Salud del ganado
+                </h2>
+              </div>
               <ControlStats totalControls={summary.totalControls} sickAnimals={summary.sickAnimals} recentTreatments={summary.recentTreatments} healthyPercentage={summary.healthyPercentage} isLoading={summary.loading} simple />
             </section>
           </div>
@@ -208,29 +218,20 @@ const AdminControlPage = () => {
 
         {/* PESTAÑA 2: Ordeño */}
         <TabsContent value="leche" className="mt-0">
-          <div className="overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
-            <div className="flex flex-col gap-3 border-b border-border px-4 py-4 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between sm:px-5">
-              <div>
-                <h2 className="text-base font-bold">Historial de ordeños</h2>
-                <p className="mt-0.5 text-xs text-muted-foreground">Consulta litros, vaca y turno registrados.</p>
-              </div>
-              <Button onClick={() => setActiveModal('milk')} size="sm" className="min-h-11 w-full bg-blue-700 px-4 text-sm font-bold text-white hover:bg-blue-800 min-[420px]:w-auto">
-                <Milk className="mr-2 h-4 w-4" aria-hidden="true" /> Registrar ordeño
-              </Button>
-            </div>
-            <div className="p-0"><MilkProductionPage /></div>
+          <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/90 p-4 text-card-foreground shadow-sm backdrop-blur-xl sm:p-6">
+            <MilkProductionPage />
           </div>
         </TabsContent>
 
         {/* PESTAÑA 3: Revisiones */}
         <TabsContent value="salud" className="mt-0">
-          <div className="overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
-            <div className="flex flex-col gap-3 border-b border-border px-4 py-4 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between sm:px-5">
+          <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/90 p-4 text-card-foreground shadow-sm backdrop-blur-xl sm:p-6">
+            <div className="mb-4 flex flex-col gap-3 min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between">
               <div>
-                <h2 className="text-base font-bold">Revisiones de salud</h2>
-                <p className="mt-0.5 text-xs text-muted-foreground">Historial completo de chequeos y pesajes.</p>
+                <h2 className="text-lg font-black tracking-tight text-foreground">Revisiones de salud</h2>
+                <p className="mt-0.5 text-xs font-medium text-muted-foreground">Historial completo de chequeos y novedades.</p>
               </div>
-              <Button onClick={() => openHealthModal(undefined)} size="sm" className="min-h-11 w-full bg-emerald-700 px-4 text-sm font-bold text-white hover:bg-emerald-800 min-[420px]:w-auto">
+              <Button onClick={() => openHealthModal(undefined)} size="sm" className="min-h-11 w-full rounded-xl bg-emerald-600 px-5 text-sm font-bold text-white shadow-sm shadow-emerald-600/25 transition-all hover:bg-emerald-700 active:scale-95 min-[480px]:w-auto">
                 <Stethoscope className="mr-2 h-4 w-4" aria-hidden="true" /> Reportar salud
               </Button>
             </div>

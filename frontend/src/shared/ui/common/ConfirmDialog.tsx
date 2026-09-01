@@ -80,7 +80,16 @@ function ConfirmDialogActions({
 }) {
   return (
     <DialogFooter className="mt-5 gap-2 border-t border-border/70 px-5 py-4 sm:mt-6 sm:flex-row sm:px-6 sm:py-5">
-      <Button type="button" variant="outline" size="lg" className="w-full sm:w-auto" onClick={onCancel}>
+      <Button
+        type="button"
+        variant="outline"
+        size="lg"
+        className="w-full sm:w-auto"
+        onClick={(e) => {
+          e.stopPropagation();
+          onCancel();
+        }}
+      >
         {cancelLabel}
       </Button>
       <Button
@@ -88,7 +97,10 @@ function ConfirmDialogActions({
         variant={confirmVariant}
         size="lg"
         className="w-full sm:w-auto"
-        onClick={onConfirm}
+        onClick={(e) => {
+          e.stopPropagation();
+          onConfirm();
+        }}
         disabled={confirmDisabled}
       >
         {confirmVariant === 'destructive' && <Trash2 className="h-4 w-4" aria-hidden="true" />}

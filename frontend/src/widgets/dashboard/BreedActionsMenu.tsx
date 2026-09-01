@@ -9,6 +9,7 @@ import {
 import { GenericModal } from "@/shared/ui/common/GenericModal";
 import { BreedResponse } from "@/shared/api/generated/swaggerTypes";
 import { Badge } from "@/shared/ui/badge";
+import { AnimalDetailModal } from "@/widgets/dashboard/animals/AnimalDetailModal";
 
 // Importar servicios
 import { animalsService } from "@/entities/animal/api/animal.service";
@@ -21,6 +22,7 @@ export const BreedActionsMenu: React.FC<BreedActionsMenuProps> = ({
   breed,
 }) => {
   const [showAnimalsModal, setShowAnimalsModal] = useState(false);
+  const [selectedAnimalId, setSelectedAnimalId] = useState<number | null>(null);
   const [animals, setAnimals] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -88,12 +90,13 @@ export const BreedActionsMenu: React.FC<BreedActionsMenuProps> = ({
         {animals.map((animal, index) => (
           <div
             key={animal.id || index}
-            className="border border-border rounded-lg p-4 bg-card hover:bg-accent/50 transition-colors"
+            onClick={() => animal.id && setSelectedAnimalId(animal.id)}
+            className="border border-border rounded-lg p-4 bg-card hover:bg-accent/50 hover:border-primary/40 cursor-pointer transition-all shadow-sm group"
           >
             <div className="space-y-2 text-sm">
               <div className="flex justify-between items-center">
                 <span className="font-medium text-foreground">Registro:</span>
-                <span className="text-muted-foreground font-semibold">
+                <span className="text-primary font-bold group-hover:underline">
                   {animal.record || "-"}
                 </span>
               </div>
@@ -199,6 +202,16 @@ export const BreedActionsMenu: React.FC<BreedActionsMenuProps> = ({
       >
         <div className="space-y-4">{renderAnimalsList()}</div>
       </GenericModal>
+
+      {selectedAnimalId && (
+        <AnimalDetailModal
+          isOpen={Boolean(selectedAnimalId)}
+          onOpenChange={(open) => {
+            if (!open) setSelectedAnimalId(null);
+          }}
+          animalId={selectedAnimalId}
+        />
+      )}
     </>
   );
 };

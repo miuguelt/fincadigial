@@ -1,4 +1,4 @@
-// Identificación electrónica del animal: grabar aretes NFC desde el celular y
+// Identificación electrónica del animal: grabar chapetas NFC desde el celular y
 // registrar transpondedores de bolo o inyectable leídos con bastón externo.
 
 export { NfcProgrammingPanel } from './ui/NfcProgrammingPanel';

@@ -13,7 +13,7 @@ export interface AnimalTagData {
   gender?: string;
   /** Fecha ya formateada para la etiqueta impresa. */
   birthDate?: string;
-  /** Fecha ISO cruda, la que se graba en el arete electrónico. */
+  /** Fecha ISO cruda, la que se graba en la chapeta electrónica. */
   birthDateIso?: string;
 }
 

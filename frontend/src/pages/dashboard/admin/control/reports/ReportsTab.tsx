@@ -60,35 +60,37 @@ export function ReportsTab({
   const snapshot: ReportSnapshot = { range, milk, health, weighing, staleCount: stale.length };
 
   return (
-    <div className="space-y-4">
-      <section className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5">
-        <h2 className="text-lg font-bold leading-tight">Resumen del periodo</h2>
-        <p className="mt-0.5 text-sm text-muted-foreground">
+    <div className="space-y-5">
+      <section className="rounded-2xl border border-border/80 bg-card/90 p-4 text-card-foreground shadow-sm backdrop-blur-xl sm:p-6">
+        <h2 className="text-lg font-black tracking-tight text-foreground sm:text-xl">Resumen del periodo</h2>
+        <p className="mt-1 text-xs font-medium text-muted-foreground sm:text-sm">
           Del {formatDayShort(range.start)} al {formatDayShort(range.end)}.
         </p>
-        <div className="mt-3">
+        <div className="mt-4">
           <PeriodSelector value={period} onChange={setPeriod} />
         </div>
       </section>
 
       <section
         aria-labelledby="reporte-leche-title"
-        className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5"
+        className="rounded-2xl border border-border/80 bg-card/90 p-4 text-card-foreground shadow-sm backdrop-blur-xl sm:p-6"
       >
-        <h2 id="reporte-leche-title" className="flex items-center gap-2 text-lg font-bold">
-          <Milk className="h-5 w-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+        <h2 id="reporte-leche-title" className="flex items-center gap-2.5 text-lg font-black tracking-tight text-foreground sm:text-xl">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400">
+            <Milk className="h-5 w-5" aria-hidden="true" />
+          </div>
           Ordeño del periodo
         </h2>
 
         {milkLoading ? (
-          <div className="mt-4 h-40 animate-pulse rounded-xl bg-muted" aria-hidden="true" />
+          <div className="mt-5 h-40 animate-pulse rounded-2xl bg-muted/60" aria-hidden="true" />
         ) : milk.unavailable ? (
-          <p className="mt-4 rounded-lg border border-border bg-muted p-3 text-sm font-semibold">
+          <p className="mt-5 rounded-2xl border border-border/70 bg-muted/40 p-4 text-sm font-medium text-muted-foreground">
             No pudimos consultar la producción de leche. Vuelve a intentar cuando haya señal.
           </p>
         ) : (
           <>
-            <div className="mt-4 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+            <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
               <ReportStatTile
                 label="Litros del periodo"
                 value={formatNumber(milk.totalLiters)}
@@ -117,7 +119,7 @@ export function ReportsTab({
                 icon={Milk}
               />
             </div>
-            <div className="mt-4">
+            <div className="mt-5">
               <MilkTrendChart points={milk.points} bestDate={milk.bestDay?.date} />
             </div>
           </>
@@ -126,24 +128,26 @@ export function ReportsTab({
 
       <section
         aria-labelledby="reporte-salud-title"
-        className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5"
+        className="rounded-2xl border border-border/80 bg-card/90 p-4 text-card-foreground shadow-sm backdrop-blur-xl sm:p-6"
       >
-        <h2 id="reporte-salud-title" className="flex items-center gap-2 text-lg font-bold">
-          <HeartPulse className="h-5 w-5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+        <h2 id="reporte-salud-title" className="flex items-center gap-2.5 text-lg font-black tracking-tight text-foreground sm:text-xl">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+            <HeartPulse className="h-5 w-5" aria-hidden="true" />
+          </div>
           Estado del ganado
         </h2>
-        <p className="mt-0.5 text-sm text-muted-foreground">
+        <p className="mt-1 text-xs font-medium text-muted-foreground sm:text-sm">
           Según la última revisión registrada de cada animal.
         </p>
 
         {controlsLoading ? (
-          <div className="mt-4 h-32 animate-pulse rounded-xl bg-muted" aria-hidden="true" />
+          <div className="mt-5 h-32 animate-pulse rounded-2xl bg-muted/60" aria-hidden="true" />
         ) : controlsUnavailable ? (
-          <p className="mt-4 rounded-lg border border-border bg-muted p-3 text-sm font-semibold">
+          <p className="mt-5 rounded-2xl border border-border/70 bg-muted/40 p-4 text-sm font-medium text-muted-foreground">
             No pudimos consultar las revisiones. Vuelve a intentar cuando haya señal.
           </p>
         ) : (
-          <div className="mt-4">
+          <div className="mt-5">
             <HealthBreakdownBars breakdown={health} />
           </div>
         )}
@@ -151,16 +155,16 @@ export function ReportsTab({
 
       <section
         aria-labelledby="reporte-pendientes-title"
-        className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5"
+        className="rounded-2xl border border-border/80 bg-card/90 p-4 text-card-foreground shadow-sm backdrop-blur-xl sm:p-6"
       >
-        <h2 id="reporte-pendientes-title" className="text-lg font-bold leading-tight">
+        <h2 id="reporte-pendientes-title" className="text-lg font-black tracking-tight text-foreground sm:text-xl">
           Animales sin revisión reciente
         </h2>
-        <p className="mt-0.5 text-sm text-muted-foreground">
+        <p className="mt-1 text-xs font-medium text-muted-foreground sm:text-sm">
           Llevan más de {STALE_CHECK_DAYS} días sin que se registre una revisión.
         </p>
         {!controlsLoading && !controlsUnavailable && (
-          <div className="mt-3">
+          <div className="mt-4">
             <PendingChecksList
               animals={stale}
               labelOf={labelOf}
@@ -173,13 +177,15 @@ export function ReportsTab({
 
       <section
         aria-labelledby="reporte-peso-title"
-        className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5"
+        className="rounded-2xl border border-border/80 bg-card/90 p-4 text-card-foreground shadow-sm backdrop-blur-xl sm:p-6"
       >
-        <h2 id="reporte-peso-title" className="flex items-center gap-2 text-lg font-bold">
-          <Scale className="h-5 w-5 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+        <h2 id="reporte-peso-title" className="flex items-center gap-2.5 text-lg font-black tracking-tight text-foreground sm:text-xl">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
+            <Scale className="h-5 w-5" aria-hidden="true" />
+          </div>
           Pesajes del periodo
         </h2>
-        <div className="mt-4 grid grid-cols-2 gap-2.5 lg:grid-cols-3">
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
           <ReportStatTile label="Pesajes" value={String(weighing.count)} icon={Scale} />
           <ReportStatTile label="Animales pesados" value={String(weighing.animals)} icon={Scale} />
           <ReportStatTile

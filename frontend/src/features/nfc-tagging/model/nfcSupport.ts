@@ -2,7 +2,7 @@
  * Qué puede hacer este celular con NFC.
  *
  * Web NFC solo existe en Chrome/Edge sobre Android. Un iPhone nunca podrá
- * grabar un arete desde el navegador, y decírselo de una vez al operario evita
+ * grabar una chapeta desde el navegador, y decírselo de una vez al operario evita
  * que baje al potrero con un equipo que no le sirve.
  */
 
@@ -10,7 +10,7 @@ export type NfcCapability = 'ready' | 'insecure-context' | 'ios' | 'unsupported-
 
 export interface NfcSupport {
   capability: NfcCapability;
-  /** Puede grabar aretes. */
+  /** Puede grabar chapetas. */
   canWrite: boolean;
   /** Explicación en el idioma del operario, no un código de error. */
   reason: string;
@@ -21,7 +21,7 @@ export interface NfcSupport {
 const READY: NfcSupport = {
   capability: 'ready',
   canWrite: true,
-  reason: 'Este celular puede grabar aretes NFC.',
+  reason: 'Este celular puede grabar chapetas NFC.',
 };
 
 const isIos = (userAgent: string) =>
@@ -48,8 +48,8 @@ export const detectNfcSupport = (): NfcSupport => {
     return {
       capability: 'ios',
       canWrite: false,
-      reason: 'El iPhone no permite grabar aretes NFC.',
-      hint: 'No es una falla de la aplicación ni del arete: es un candado del propio iPhone y no hay forma de quitarlo.',
+      reason: 'El iPhone no permite grabar chapetas NFC.',
+      hint: 'No es una falla de la aplicación ni de la chapeta: es un candado del propio iPhone y no hay forma de quitarlo.',
     };
   }
 
@@ -65,7 +65,7 @@ export const detectNfcSupport = (): NfcSupport => {
   return {
     capability: 'unsupported-browser',
     canWrite: false,
-    reason: 'Este navegador no sirve para grabar aretes.',
+    reason: 'Este navegador no sirve para grabar chapetas.',
     hint: 'Casi siempre pasa porque la aplicación se abrió desde un computador o desde otro navegador distinto de Chrome.',
   };
 };

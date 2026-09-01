@@ -193,7 +193,7 @@ const AdminTreatmentsPage: React.FC = () => {
                 <span>🐄</span> <AnimalLink id={id} label={label} />
               </span>
               {subinfo && (
-                <span className="text-[10px] text-muted-foreground mt-0.5 truncate max-w-[140px]">
+                <span className="text-[11px] text-muted-foreground mt-0.5 fit-clamp max-w-[140px]">
                   {subinfo}
                 </span>
               )}
@@ -215,7 +215,7 @@ const AdminTreatmentsPage: React.FC = () => {
           return (
             <div className="flex flex-col min-w-0">
               <span className="font-semibold text-foreground text-xs">{formatted}</span>
-              <span className="text-[10px] text-muted-foreground">{timeAgo(dateStr)}</span>
+              <span className="text-[11px] text-muted-foreground">{timeAgo(dateStr)}</span>
             </div>
           );
         },
@@ -229,7 +229,7 @@ const AdminTreatmentsPage: React.FC = () => {
           return (
             <div className="flex items-center gap-2 min-w-0">
               <span className="p-1 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs shrink-0">🩺</span>
-              <span className="font-bold text-foreground text-xs sm:text-sm truncate max-w-[220px]" title={diag}>
+              <span className="font-bold text-foreground text-xs sm:text-sm fit-clamp max-w-[220px]" title={diag}>
                 {diag}
               </span>
             </div>
@@ -245,8 +245,8 @@ const AdminTreatmentsPage: React.FC = () => {
           if (!dose && !freq) return <span className="text-muted-foreground text-xs">-</span>;
           return (
             <div className="flex flex-col text-xs min-w-0">
-              {dose && <span className="font-semibold text-foreground truncate max-w-[130px]">{dose}</span>}
-              {freq && <span className="text-[10px] text-muted-foreground truncate max-w-[130px]">{freq}</span>}
+              {dose && <span className="font-semibold text-foreground fit-clamp max-w-[130px]">{dose}</span>}
+              {freq && <span className="text-[11px] text-muted-foreground fit-clamp max-w-[130px]">{freq}</span>}
             </div>
           );
         },
@@ -280,7 +280,7 @@ const AdminTreatmentsPage: React.FC = () => {
 
           if (isActive) {
             return (
-              <Badge className="bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-[10px] font-bold px-2 py-0.5 flex items-center gap-1 w-fit animate-pulse">
+              <Badge className="bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-[11px] font-bold px-2 py-0.5 flex items-center gap-1 w-fit animate-pulse">
                 <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                 <span>{diff}d restantes</span>
               </Badge>
@@ -288,7 +288,7 @@ const AdminTreatmentsPage: React.FC = () => {
           }
 
           return (
-            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 text-[10px] font-semibold px-2 py-0.5 flex items-center gap-1 w-fit">
+            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 text-[11px] font-semibold px-2 py-0.5 flex items-center gap-1 w-fit">
               <span>✅</span>
               <span>Cumplido</span>
             </Badge>
@@ -491,7 +491,7 @@ const AdminTreatmentsPage: React.FC = () => {
       >
         <Activity className="w-3.5 h-3.5" />
         <span>Todos</span>
-        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-background/40">
+        <span className="text-[11px] font-bold px-1.5 py-0.2 rounded-full bg-background/40">
           {filterCounts.todos}
         </span>
       </Button>
@@ -507,7 +507,7 @@ const AdminTreatmentsPage: React.FC = () => {
       >
         <AlertTriangle className={cn("w-3.5 h-3.5", activeFilterTab === 'retiro' ? 'text-white' : 'text-amber-500')} />
         <span>En Retiro Activo</span>
-        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-background/40">
+        <span className="text-[11px] font-bold px-1.5 py-0.2 rounded-full bg-background/40">
           {filterCounts.retiro}
         </span>
       </Button>
@@ -520,7 +520,7 @@ const AdminTreatmentsPage: React.FC = () => {
       >
         <Calendar className="w-3.5 h-3.5" />
         <span>Últimos 30 días</span>
-        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-background/40">
+        <span className="text-[11px] font-bold px-1.5 py-0.2 rounded-full bg-background/40">
           {filterCounts.recientes}
         </span>
       </Button>
@@ -533,7 +533,7 @@ const AdminTreatmentsPage: React.FC = () => {
       >
         <Filter className="w-3.5 h-3.5" />
         <span>Con Inversión</span>
-        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-background/40">
+        <span className="text-[11px] font-bold px-1.5 py-0.2 rounded-full bg-background/40">
           {filterCounts.con_costo}
         </span>
       </Button>

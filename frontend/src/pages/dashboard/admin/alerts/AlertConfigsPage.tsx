@@ -137,13 +137,13 @@ const AlertConfigsPage: React.FC = () => {
   };
 
   // Adaptar el servicio para que use los métodos específicos de configs
-  const configService = {
-    ...alertService,
+  const configService = Object.assign(Object.create(alertService), {
     getAll: (params: any) => alertService.getConfigs(params),
+    getPaginated: (params: any) => alertService.getConfigs(params),
     create: (data: any) => alertService.saveConfig(data),
     update: (id: any, data: any) => alertService.saveConfig({ ...data, id }),
-    delete: (id: any) => alertService.deleteConfig(id)
-  };
+    delete: (id: any) => alertService.deleteConfig(id),
+  });
 
   const handleInitializeDefaults = async () => {
     const defaults: Partial<AlertConfig>[] = [

@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCircle, Milk, Stethoscope } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Milk, Stethoscope, Sparkles } from 'lucide-react';
 
 interface TaskIndicatorProps {
   /** false cuando el usuario no puede registrar (sin permisos): no se sugiere la acción. */
@@ -32,9 +32,11 @@ export function TaskIndicator({
 
   if (unknown) {
     return (
-      <div className="rounded-xl border border-border bg-muted p-4 text-foreground">
+      <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-muted/50 p-4 text-foreground backdrop-blur-sm sm:p-5">
         <div className="flex items-start gap-3">
-          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground shadow-sm">
+            <AlertCircle className="h-5 w-5" />
+          </div>
           <p className="text-sm font-semibold leading-relaxed">
             No pudimos confirmar todas las tareas. Puedes seguir registrando y volver a revisar cuando haya señal.
           </p>
@@ -45,41 +47,64 @@ export function TaskIndicator({
 
   if (!noMilkToday && !hasSickAnimals) {
     return (
-      <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-100">
-        <div className="flex items-center gap-3">
-          <CheckCircle className="h-5 w-5 shrink-0 text-emerald-600" />
-          <p className="text-sm font-bold">Las tareas registradas están al día.</p>
+      <div className="relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-card p-4 text-emerald-950 shadow-sm backdrop-blur-sm dark:border-emerald-500/20 dark:text-emerald-100 sm:p-5">
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-600/25">
+            <CheckCircle2 className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+              <Sparkles className="h-3 w-3" />
+              <span>Jornada al día</span>
+            </div>
+            <p className="mt-0.5 text-sm font-bold sm:text-base">Las tareas registradas están al día.</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`rounded-xl border p-3 sm:p-4 ${hasSickAnimals ? 'border-red-200 bg-red-50 text-red-950 dark:border-red-900 dark:bg-red-950/30 dark:text-red-100' : 'border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100'}`}>
-      <h2 className="px-1 text-sm font-black">Revisa estas tareas</h2>
-      <div className="mt-2 space-y-2">
+    <div className={`relative overflow-hidden rounded-2xl border p-4 sm:p-5 shadow-sm backdrop-blur-sm transition-all ${hasSickAnimals ? 'border-red-500/30 bg-gradient-to-br from-red-500/10 via-amber-500/5 to-card text-foreground dark:border-red-500/20' : 'border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-card text-foreground dark:border-amber-500/20'}`}>
+      <div className="flex items-center justify-between pb-3">
+        <h2 className="text-sm font-black uppercase tracking-wider text-foreground">Revisa estas tareas</h2>
+      </div>
+
+      <div className="space-y-2.5">
         {hasSickAnimals && (
-          <div className="flex flex-col gap-2 rounded-lg bg-background/70 p-3 min-[420px]:flex-row min-[420px]:items-center">
-            <div className="flex min-w-0 flex-1 items-start gap-2.5">
-              <Stethoscope className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
-              <p className="text-sm font-semibold leading-relaxed">
-                <span className="font-black">{sickAnimals}</span> animal{sickAnimals !== 1 ? 'es' : ''} necesita{sickAnimals !== 1 ? 'n' : ''} atención.
+          <div className="flex flex-col gap-3 rounded-xl border border-red-500/20 bg-card/90 p-3.5 shadow-sm transition-all hover:border-red-500/40 min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-600/15 text-red-600 dark:bg-red-500/20 dark:text-red-400">
+                <Stethoscope className="h-5 w-5" />
+              </div>
+              <p className="text-sm font-medium leading-snug text-foreground">
+                <span className="font-black text-red-600 dark:text-red-400">{sickAnimals}</span> animal{sickAnimals !== 1 ? 'es' : ''} necesita{sickAnimals !== 1 ? 'n' : ''} atención.
               </p>
             </div>
-            <button onClick={onShowSickAnimals} className="min-h-11 shrink-0 rounded-lg bg-red-700 px-4 text-sm font-bold text-white hover:bg-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2">
+            <button
+              type="button"
+              onClick={onShowSickAnimals}
+              className="flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-red-600 px-5 text-sm font-bold text-white shadow-sm shadow-red-600/30 transition-all hover:bg-red-700 hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+            >
               Ver cuáles
             </button>
           </div>
         )}
 
         {noMilkToday && (
-          <div className="flex flex-col gap-2 rounded-lg bg-background/70 p-3 min-[420px]:flex-row min-[420px]:items-center">
-            <div className="flex min-w-0 flex-1 items-start gap-2.5">
-              <Milk className="mt-0.5 h-5 w-5 shrink-0 text-amber-700 dark:text-amber-400" />
-              <p className="text-sm font-semibold leading-relaxed">Falta registrar el ordeño de hoy.</p>
+          <div className="flex flex-col gap-3 rounded-xl border border-amber-500/20 bg-card/90 p-3.5 shadow-sm transition-all hover:border-amber-500/40 min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">
+                <Milk className="h-5 w-5" />
+              </div>
+              <p className="text-sm font-medium leading-snug text-foreground">Falta registrar el ordeño de hoy.</p>
             </div>
             {canRecord && (
-              <button onClick={onRegisterMilk} className="min-h-10 rounded-lg bg-amber-600 px-4 text-sm font-bold text-white hover:bg-amber-700">
+              <button
+                type="button"
+                onClick={onRegisterMilk}
+                className="flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-amber-600 px-5 text-sm font-bold text-white shadow-sm shadow-amber-600/30 transition-all hover:bg-amber-700 hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
+              >
                 Registrar ordeño
               </button>
             )}

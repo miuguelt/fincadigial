@@ -1,8 +1,9 @@
 import { Download, Printer } from "lucide-react";
-import type React from "react";
+import React, { useState } from "react";
 import { Button } from "@/shared/ui/button";
 import { CollapsibleCard } from "@/shared/ui/common/CollapsibleCard";
 import HistoryTable from "@/widgets/dashboard/admin/HistoryTable";
+import { AnimalDetailModal } from "@/widgets/dashboard/animals/AnimalDetailModal";
 import { getRolePrefix } from "../utils/profile.helpers";
 
 interface UserHistoryTablesProps {
@@ -29,14 +30,15 @@ export const UserHistoryTables: React.FC<UserHistoryTablesProps> = ({
 	userControls,
 }) => {
 	const rolePrefix = getRolePrefix(userRole);
+	const [selectedAnimalId, setSelectedAnimalId] = useState<number | null>(null);
 
 	const openCrudDetail = (path: string, id: number | string) => {
 		if (!id) return;
+		if (path === "animals") {
+			setSelectedAnimalId(Number(id));
+			return;
+		}
 		navigate(`${rolePrefix}/${path}?detail=${id}`);
-	};
-
-	const openCrudList = (path: string, search: string = "") => {
-		navigate(`${rolePrefix}/${path}${search}`);
 	};
 
 	const activitySections = [
@@ -166,16 +168,28 @@ export const UserHistoryTables: React.FC<UserHistoryTablesProps> = ({
 							columns={section.columns}
 							data={section.rows}
 							onRowClick={(row) => {
-								if (row.id) {
+								if (section.crudPath === "animals" && row.id) {
+									setSelectedAnimalId(Number(row.id));
+								} else if (row.id) {
 									openCrudDetail(section.crudPath, row.id);
 								} else if (row.animalId) {
-									openCrudList("animals", `?search=${row.animalId}`);
+									setSelectedAnimalId(Number(row.animalId));
 								}
 							}}
 						/>
 					</div>
 				</CollapsibleCard>
 			))}
+
+			{selectedAnimalId && (
+				<AnimalDetailModal
+					isOpen={Boolean(selectedAnimalId)}
+					onOpenChange={(open) => {
+						if (!open) setSelectedAnimalId(null);
+					}}
+					animalId={selectedAnimalId}
+				/>
+			)}
 		</div>
 	);
 };

@@ -13,7 +13,7 @@ interface NfcUsageHelpProps {
 /**
  * «¿Cómo se hace?»: la explicación de uso, al alcance de un toque.
  *
- * Va abierta mientras no se haya grabado ningún arete y se puede cerrar
+ * Va abierta mientras no se haya grabado ninguna chapeta y se puede cerrar
  * después: quien ya marcó cien animales no necesita volver a leerla, pero
  * quien llega nuevo a la finca no debería tener que preguntarle a nadie.
  */
@@ -30,7 +30,7 @@ export const NfcUsageHelp: React.FC<NfcUsageHelpProps> = ({ defaultOpen = false 
       >
         <HelpCircle className="h-6 w-6 shrink-0 text-emerald-300" aria-hidden="true" />
         <span className="min-w-0 flex-1 text-base font-bold text-white">
-          ¿Cómo se graba un arete?
+          ¿Cómo se graba una chapeta?
         </span>
         <ChevronDown
           className={cn(
@@ -49,7 +49,7 @@ export const NfcUsageHelp: React.FC<NfcUsageHelpProps> = ({ defaultOpen = false 
           </div>
 
           <p className="rounded-2xl border border-emerald-400/25 bg-emerald-500/10 px-5 py-4 text-[15px] leading-6 text-emerald-50/90">
-            No tienes que estar mirando la pantalla: el celular vibra, suena y dice en voz alta el
+            No tiene que estar mirando la pantalla: el celular vibra, suena y dice en voz alta el
             nombre de cada animal apenas queda grabado.
           </p>
 

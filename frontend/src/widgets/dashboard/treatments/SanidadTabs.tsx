@@ -64,7 +64,7 @@ export const SanidadTabs: React.FC<SanidadTabsProps> = ({ className }) => {
         {/* Fila 1: Selector de Grupo / Módulo Sanitario con Segmented Control */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-1.5 px-1">
-            <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-muted-foreground">
+            <span className="text-[11px] sm:text-[11px] font-black uppercase tracking-wider text-muted-foreground">
               Sanidad
             </span>
             <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground/50" aria-hidden="true" />

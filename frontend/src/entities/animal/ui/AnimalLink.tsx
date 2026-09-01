@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TrendingUp } from 'lucide-react';
 import { AnimalDetailModal } from '@/widgets/dashboard/animals/AnimalDetailModal';
 import { Button } from '@/shared/ui/button';
+import { isDialogClosingRecently } from '@/shared/utils/modalGuard';
 
 export const AnimalLink: React.FC<{
   id: number | string;
@@ -14,6 +15,7 @@ export const AnimalLink: React.FC<{
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isDialogClosingRecently()) return;
     setIsOpen(true);
   };
 

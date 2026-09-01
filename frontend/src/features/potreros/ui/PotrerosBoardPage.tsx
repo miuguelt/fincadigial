@@ -17,6 +17,7 @@ import { SemaforoPotrerosCard } from './SemaforoPotrerosCard';
 import { UNASSIGNED_COLUMN, useBoardDragDrop, type ColumnKey } from '../model/useBoardDragDrop';
 import { MAX_BOARD_ANIMALS, usePotrerosBoard, type BoardAnimal } from '../model/usePotrerosBoard';
 import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
+import { AnimalDetailModal } from '@/widgets/dashboard/animals/AnimalDetailModal';
 
 interface PotrerosBoardPageProps {
   /** Botones para volver a tabla/tarjetas; se muestran en la cabecera. */
@@ -39,6 +40,7 @@ const BoardShell: React.FC<{ header: React.ReactNode; children: React.ReactNode 
 export function PotrerosBoardPage({ viewSwitcher }: PotrerosBoardPageProps) {
   const { goTo } = useRoleNavigation();
   const { showToast } = useToast();
+  const [selectedAnimalId, setSelectedAnimalId] = useState<number | null>(null);
   const { role, user } = useAuth() as any;
   const currentRole = normalizeRole(role || user?.role) || String(role || user?.role || '');
   const canMove = roleCan(currentRole, 'animal-fields', 'create');
@@ -124,9 +126,9 @@ export function PotrerosBoardPage({ viewSwitcher }: PotrerosBoardPageProps) {
   const openAnimal = useCallback(
     (animal: BoardAnimal) => {
       if (drag.consumeClickAfterDrag()) return;
-      goTo(`/admin/animals/${animal.id}`);
+      setSelectedAnimalId(animal.id);
     },
-    [drag, goTo],
+    [drag],
   );
 
   const header = (
@@ -365,6 +367,16 @@ export function PotrerosBoardPage({ viewSwitcher }: PotrerosBoardPageProps) {
           void runMove(Array.from(selectedIds), targetFieldId);
         }}
       />
+
+      {selectedAnimalId && (
+        <AnimalDetailModal
+          isOpen={Boolean(selectedAnimalId)}
+          onOpenChange={(open) => {
+            if (!open) setSelectedAnimalId(null);
+          }}
+          animalId={selectedAnimalId}
+        />
+      )}
     </BoardShell>
   );
 }

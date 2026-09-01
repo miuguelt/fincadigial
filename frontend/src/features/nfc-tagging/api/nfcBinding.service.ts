@@ -1,7 +1,7 @@
 /**
  * Registro del vínculo animal↔chip en el servidor.
  *
- * Grabar el arete y registrar el vínculo son dos cosas distintas: lo primero
+ * Grabar la chapeta y registrar el vínculo son dos cosas distintas: lo primero
  * ocurre en el celular y lo segundo en la base de datos. Cuando no hay señal
  * —que en el potrero es lo normal— el cliente encola la vinculación y esta
  * capa lo dice sin disimulo, para que la pantalla no muestre como confirmado
@@ -64,7 +64,7 @@ const readConflict = (error: unknown): TagConflictError | null => {
 };
 
 const afterWrite = async () => {
-  // El arete cambia la identidad del animal: listados, buscador y fichas
+  // La chapeta cambia la identidad del animal: listados, buscador y fichas
   // abiertas deben dejar de mostrar el estado anterior.
   await clearServiceCaches('animals');
   emitDataRefresh('animals');
@@ -85,7 +85,7 @@ export const nfcBindingService = {
       if (wasQueuedOffline(response)) {
         return {
           persisted: false,
-          message: 'Sin señal: el arete quedó grabado y la vinculación se enviará al reconectar.',
+          message: 'Sin señal: la chapeta quedó grabada y la vinculación se enviará al reconectar.',
         };
       }
 
@@ -104,7 +104,7 @@ export const nfcBindingService = {
     }
   },
 
-  /** Retira la identificación electrónica (arete perdido o chip dañado). */
+  /** Retira la identificación electrónica (chapeta perdida o chip dañado). */
   async unbind(animalId: number): Promise<BindTagResult> {
     const response = await api.post(`${BASE}/unbind`, { animal_id: animalId });
     if (wasQueuedOffline(response)) {
@@ -131,7 +131,7 @@ export const nfcBindingService = {
       if (!animal?.id) return null;
       return { id: Number(animal.id), record: String(animal.record ?? '') };
     } catch {
-      // Sin señal o sin coincidencia. El arete se graba igual: el conflicto se
+      // Sin señal o sin coincidencia. La chapeta se graba igual: el conflicto se
       // detecta también por el contenido del propio chip.
       return null;
     }

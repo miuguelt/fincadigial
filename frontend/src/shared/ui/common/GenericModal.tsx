@@ -60,15 +60,15 @@ const sizeClasses: Record<ModalSize, string> = {
 };
 
 const headerGradients: Record<string, string> = {
-  blue: "bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 dark:from-blue-800 dark:via-blue-900 dark:to-indigo-950",
-  cyan: "bg-gradient-to-r from-cyan-600 via-teal-600 to-teal-700 dark:from-cyan-800 dark:via-teal-900 dark:to-emerald-950",
-  teal: "bg-gradient-to-r from-teal-600 via-emerald-600 to-emerald-700 dark:from-teal-800 dark:via-teal-900 dark:to-green-950",
-  emerald: "bg-gradient-to-r from-emerald-600 via-teal-600 to-teal-700 dark:from-emerald-800 dark:via-teal-900 dark:to-green-950",
-  purple: "bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-700 dark:from-purple-800 dark:via-indigo-900 dark:to-slate-900",
-  indigo: "bg-gradient-to-r from-indigo-600 via-indigo-700 to-blue-700 dark:from-indigo-800 dark:via-indigo-900 dark:to-slate-900",
-  red: "bg-gradient-to-r from-red-600 via-rose-600 to-rose-700 dark:from-red-800 dark:via-rose-900 dark:to-red-950",
-  amber: "bg-gradient-to-r from-amber-500 via-orange-500 to-orange-600 dark:from-amber-600 dark:via-orange-600 dark:to-amber-900",
-  slate: "bg-gradient-to-r from-slate-600 via-slate-700 to-slate-800 dark:from-slate-700 dark:via-slate-800 dark:to-slate-900",
+  blue: "bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-950 dark:from-slate-950 dark:via-blue-950 dark:to-slate-950 border-b border-white/10",
+  cyan: "bg-gradient-to-r from-slate-900 via-teal-900 to-emerald-950 dark:from-slate-950 dark:via-teal-950 dark:to-slate-950 border-b border-white/10",
+  teal: "bg-gradient-to-r from-slate-900 via-emerald-900 to-teal-950 dark:from-slate-950 dark:via-emerald-950 dark:to-slate-950 border-b border-white/10",
+  emerald: "bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 dark:from-emerald-950 dark:via-teal-950 dark:to-slate-950 border-b border-white/10",
+  purple: "bg-gradient-to-r from-slate-900 via-purple-900 to-indigo-950 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 border-b border-white/10",
+  indigo: "bg-gradient-to-r from-slate-900 via-indigo-900 to-blue-950 dark:from-slate-950 dark:via-indigo-950 dark:to-slate-950 border-b border-white/10",
+  red: "bg-gradient-to-r from-slate-900 via-rose-900 to-red-950 dark:from-slate-950 dark:via-rose-950 dark:to-slate-950 border-b border-white/10",
+  amber: "bg-gradient-to-r from-slate-900 via-amber-900 to-orange-950 dark:from-slate-950 dark:via-amber-950 dark:to-slate-950 border-b border-white/10",
+  slate: "bg-gradient-to-r from-slate-800 via-slate-900 to-slate-950 dark:from-slate-900 dark:via-slate-950 dark:to-black border-b border-white/10",
 };
 
 /**
@@ -107,9 +107,9 @@ export const GenericModal: React.FC<GenericModalProps> = ({
   const useFullWidth = fullWidth || size === "full" || size === "7xl";
   const overlayClasses = cn(
     "fixed inset-0 flex items-start justify-center px-1.5 py-2",
-    "sm:px-2 sm:py-3 lg:px-3",
-    "bg-black/70 dark:bg-black/80",
-    "backdrop-blur-[18px] motion-safe:transition-opacity motion-safe:duration-300 motion-safe:ease-out motion-reduce:transition-none"
+    "sm:px-3 sm:py-4 lg:px-4",
+    "bg-black/60 dark:bg-black/80",
+    "backdrop-blur-[12px] motion-safe:transition-opacity motion-safe:duration-300 motion-safe:ease-out motion-reduce:transition-none"
   );
 
   // IDs estables para accesibilidad
@@ -168,22 +168,36 @@ export const GenericModal: React.FC<GenericModalProps> = ({
 
   // Manejador de navegación por teclado
   React.useEffect(() => {
-    if (!isOpen || !enableNavigation) return;
+    if (!isOpen || (!enableNavigation && !onNavigatePrevious && !onNavigateNext)) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (
+      const isInput =
         document.activeElement?.tagName === "INPUT" ||
         document.activeElement?.tagName === "TEXTAREA" ||
         document.activeElement?.tagName === "SELECT" ||
-        document.activeElement?.getAttribute("contenteditable") === "true"
-      ) return;
+        document.activeElement?.getAttribute("contenteditable") === "true";
 
-      if (e.key === "ArrowLeft" && hasPrevious && onNavigatePrevious) {
+      // Alt + Left / Alt + Right funcionan siempre, incluso dentro de inputs
+      if (e.altKey && (e.key === "ArrowLeft" || e.keyCode === 37) && hasPrevious && onNavigatePrevious) {
         e.preventDefault();
         onNavigatePrevious();
-      } else if (e.key === "ArrowRight" && hasNext && onNavigateNext) {
+        return;
+      }
+      if (e.altKey && (e.key === "ArrowRight" || e.keyCode === 39) && hasNext && onNavigateNext) {
         e.preventDefault();
         onNavigateNext();
+        return;
+      }
+
+      // Flechas solas funcionan cuando no se está editando texto
+      if (!isInput) {
+        if ((e.key === "ArrowLeft" || e.keyCode === 37) && hasPrevious && onNavigatePrevious) {
+          e.preventDefault();
+          onNavigatePrevious();
+        } else if ((e.key === "ArrowRight" || e.keyCode === 39) && hasNext && onNavigateNext) {
+          e.preventDefault();
+          onNavigateNext();
+        }
       }
     };
 
@@ -203,17 +217,17 @@ export const GenericModal: React.FC<GenericModalProps> = ({
     "max-sm:fixed max-sm:inset-0 max-sm:top-0 max-sm:left-0 max-sm:translate-x-0 max-sm:translate-y-0 max-sm:w-full max-sm:w-screen max-sm:max-w-none max-sm:h-dvh max-sm:rounded-none max-sm:border-0",
     "!flex !flex-col !p-0 !gap-0",
     "bg-card",
-    "shadow-2xl shadow-black/20 dark:shadow-black/40",
-    "rounded-t-2xl sm:rounded-lg",
-    "border border-border/50 dark:border-white/10",
-    "backdrop-blur-sm",
+    "shadow-2xl shadow-black/25 dark:shadow-black/60",
+    "rounded-t-2xl sm:rounded-2xl",
+    "border border-border/70 dark:border-white/10 ring-1 ring-black/5 dark:ring-white/5",
+    "backdrop-blur-md",
     "vl-modal-surface text-foreground",
     "h-auto",
     "max-h-[96vh] sm:max-h-[92vh] max-sm:max-h-dvh",
     "min-h-[200px]",
 
     // Pantalla completa: anula todo
-    computedFullScreen && "!w-screen !max-w-none !h-dvh !max-h-none !min-h-0 !rounded-none !border-0",
+    computedFullScreen && "!w-screen !max-w-none !h-dvh !max-h-none !min-h-0 !rounded-none !border-0 !ring-0",
 
     // Modo fullWidth: usa casi todo el ancho disponible, útil para tablas y formularios densos
     !computedFullScreen && useFullWidth && cn(
@@ -246,7 +260,7 @@ export const GenericModal: React.FC<GenericModalProps> = ({
         ref={dialogRef}
         className={cn(modalClasses)}
         overlayClassName={overlayClasses}
-        closeButtonClassName="bg-white/10 text-white hover:bg-white/20 focus:ring-white/50"
+        closeButtonClassName="bg-white/10 text-white hover:bg-white/20 focus:ring-white/50 rounded-full transition-all duration-200"
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
         style={{
@@ -256,18 +270,18 @@ export const GenericModal: React.FC<GenericModalProps> = ({
       >
         <DialogHeader
           className={cn(
-            "relative shadow-md",
-            themeColor ? headerGradients[themeColor] : "bg-gradient-to-r from-blue-700 via-indigo-700 to-indigo-800 dark:from-blue-900 dark:via-indigo-950 dark:to-slate-900",
+            "relative shadow-sm",
+            themeColor ? headerGradients[themeColor] : "bg-gradient-to-r from-slate-900 via-slate-850 to-indigo-950 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 border-b border-white/10 text-white",
             variant === "compact"
-              ? allowFullScreenToggle ? "px-3 sm:px-4 py-2 pr-14 sm:pr-16" : "px-3 sm:px-4 py-2 pr-11 sm:pr-12"
-              : allowFullScreenToggle ? "px-3 sm:px-4 py-2.5 pr-14 sm:pr-16" : "px-3 sm:px-4 py-2.5 pr-11 sm:pr-12",
+              ? allowFullScreenToggle ? "px-4 sm:px-5 py-3 pr-14 sm:pr-16" : "px-4 sm:px-5 py-3 pr-11 sm:pr-12"
+              : allowFullScreenToggle ? "px-4 sm:px-5 py-3.5 pr-14 sm:pr-16" : "px-4 sm:px-5 py-3.5 pr-11 sm:pr-12",
             draggable && "cursor-grab active:cursor-grabbing select-none"
           )}
           onMouseDown={handleMouseDown}
         >
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0">
             {icon !== null && (
-              <div className="h-7 w-7 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm flex-shrink-0">
+              <div className="h-8 w-8 bg-white/15 border border-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm flex-shrink-0 shadow-sm">
                 {icon !== undefined ? icon : (
                   <svg className="w-4 h-4 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 )}
@@ -353,7 +367,8 @@ export const GenericModal: React.FC<GenericModalProps> = ({
                   e.stopPropagation();
                   onNavigatePrevious();
                 }}
-                aria-label="Anterior"
+                aria-label="Anterior (← o Alt+←)"
+                title="Anterior (← o Alt+←)"
                 className={cn(
                   "absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 h-10 w-10 sm:h-11 sm:w-11 flex items-center justify-center rounded-full",
                   "bg-background/80 backdrop-blur-md border border-border/60 text-foreground/70",
@@ -373,7 +388,8 @@ export const GenericModal: React.FC<GenericModalProps> = ({
                   e.stopPropagation();
                   onNavigateNext();
                 }}
-                aria-label="Siguiente"
+                aria-label="Siguiente (→ o Alt+→)"
+                title="Siguiente (→ o Alt+→)"
                 className={cn(
                   "absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 h-10 w-10 sm:h-11 sm:w-11 flex items-center justify-center rounded-full",
                   "bg-background/80 backdrop-blur-md border border-border/60 text-foreground/70",
@@ -385,19 +401,10 @@ export const GenericModal: React.FC<GenericModalProps> = ({
                 <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             )}
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-};
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
+      );
+    };
 
-export const useUnifiedDisclosure = () => {
-  const [isOpen, setIsOpen] = React.useState(false);
-  return {
-    isOpen,
-    onOpen: () => setIsOpen(true),
-    onClose: () => setIsOpen(false),
-    onOpenChange: (open: boolean) => setIsOpen(open),
-  } as const;
-};

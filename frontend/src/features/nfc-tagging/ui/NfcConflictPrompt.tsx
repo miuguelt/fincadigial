@@ -11,7 +11,7 @@ interface NfcConflictPromptProps {
 }
 
 /**
- * Decisión ante un arete que ya pertenece a otro animal.
+ * Decisión ante una chapeta que ya pertenece a otro animal.
  *
  * Es la única pausa obligatoria de la jornada. Reasignar sin darse cuenta deja
  * a dos animales compartiendo identidad, y eso solo se descubre meses después,
@@ -31,12 +31,12 @@ export const NfcConflictPrompt: React.FC<NfcConflictPromptProps> = ({
       <ShieldAlert className="mt-1 h-7 w-7 shrink-0 text-amber-300" aria-hidden="true" />
       <div className="min-w-0 space-y-2">
         <h4 id="nfc-conflict-title" className="text-lg font-bold text-white">
-          Ese arete ya tiene dueño
+          Esa chapeta ya tiene dueño
         </h4>
         <p className="text-base leading-6 text-amber-50/90">
-          El arete <span className="font-mono text-sm">{conflict.uid}</span> está asignado a{' '}
-          <strong className="font-bold">{conflict.holderRecord || 'otro animal'}</strong>. Si lo
-          reasignas, ese animal queda sin identificación electrónica.
+          La chapeta <span className="font-mono text-sm">{conflict.uid}</span> está asignada a{' '}
+          <strong className="font-bold">{conflict.holderRecord || 'otro animal'}</strong>. Si la
+          reasigna, ese animal queda sin identificación electrónica.
         </p>
       </div>
     </div>
@@ -46,14 +46,14 @@ export const NfcConflictPrompt: React.FC<NfcConflictPromptProps> = ({
         onClick={() => onResolve(false)}
         className="h-14 flex-1 rounded-2xl bg-white text-base font-bold text-slate-950 hover:bg-white/90"
       >
-        Usar otro arete
+        Usar otra chapeta
       </Button>
       <Button
         variant="outline"
         onClick={() => onResolve(true)}
         className="h-14 flex-1 rounded-2xl border-amber-300/60 bg-transparent text-base font-bold text-amber-100 hover:bg-amber-500/20"
       >
-        Pasarlo a {currentRecord}
+        Pasarla a {currentRecord}
       </Button>
     </div>
   </div>

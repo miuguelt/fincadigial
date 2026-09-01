@@ -9,7 +9,7 @@ interface TagModeSwitchProps {
 }
 
 /**
- * Selector entre etiqueta impresa, arete NFC y transpondedor.
+ * Selector entre etiqueta impresa, chapeta NFC y transpondedor.
  *
  * Va arriba de todo porque cambia por completo lo que el panel hace: no es un
  * ajuste, es elegir con qué se va a identificar el animal.

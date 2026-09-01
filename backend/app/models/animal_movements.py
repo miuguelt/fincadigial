@@ -40,7 +40,11 @@ class AnimalMovement(BaseModel):
     rpp_destino_externo = db.Column(
         db.String(12), nullable=True
     )  # ICA RPP is a 12-digit code
-    tipo_movimiento = db.Column(db.Enum(MovementType), nullable=False)
+    tipo_movimiento = db.Column(
+        db.Enum(MovementType, native_enum=False, length=50),
+        nullable=False,
+        default=MovementType.Traslado_Interno,
+    )
     fecha_movimiento = db.Column(db.Date, nullable=False)
 
     # Financial sales details

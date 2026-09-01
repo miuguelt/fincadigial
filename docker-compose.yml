@@ -24,12 +24,14 @@ services:
         VITE_FRONTEND_URL: ${VITE_FRONTEND_URL:-https://${DOMAIN}}
         VITE_USE_BEARER_AUTH: "true"
     image: villaluz-frontend:${APP_VERSION:-latest}
-    container_name: villaluz_frontend
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
     expose:
-      - "80"
-    ports:
-      - "80:80"
+      - '80'
     depends_on:
       villaluz-backend:
         condition: service_healthy
@@ -51,8 +53,12 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     image: villaluz-backend:${APP_VERSION:-latest}
-    container_name: villaluz_backend
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
     command: >
       gunicorn
       --preload
@@ -83,7 +89,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-}
       DB_NAME: ${DB_NAME:-villaluz}
       DATABASE_URL: ${DATABASE_URL:-}
-      SQLALCHEMY_DATABASE_URI: ${SQLALCHEMY_DATABASE_URI:-${DATABASE_URL:-postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT:-5432}/${DB_NAME:-villaluz}}}
+      SQLALCHEMY_DATABASE_URI: ${SQLALCHEMY_DATABASE_URI:-}
       DB_POOL_SIZE: ${DB_POOL_SIZE:-4}
       DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-1}
       DB_POOL_TIMEOUT: ${DB_POOL_TIMEOUT:-20}
@@ -105,8 +111,8 @@ services:
 
       # ── Redis Externo (Opcional) ──
       REDIS_URL: ${REDIS_URL:-}
-      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-${REDIS_URL:-}}
-      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-${REDIS_URL:-}}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-}
 
       # ── Bootstrap Admin Inicial ──
       VILLALUZ_BOOTSTRAP_ENABLED: ${VILLALUZ_BOOTSTRAP_ENABLED:-true}
@@ -150,8 +156,12 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     image: villaluz-backend:${APP_VERSION:-latest}
-    container_name: villaluz_db_init
     restart: "no"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
     command: >
       sh -c "
         echo '🔄 Verificando conexión con la base de datos externa...' &&
@@ -171,7 +181,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-}
       DB_NAME: ${DB_NAME:-villaluz}
       DATABASE_URL: ${DATABASE_URL:-}
-      SQLALCHEMY_DATABASE_URI: ${SQLALCHEMY_DATABASE_URI:-${DATABASE_URL:-postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT:-5432}/${DB_NAME:-villaluz}}}
+      SQLALCHEMY_DATABASE_URI: ${SQLALCHEMY_DATABASE_URI:-}
       FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       JWT_COOKIE_DOMAIN: ${JWT_COOKIE_DOMAIN:-${DOMAIN}}

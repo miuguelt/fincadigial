@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import api from '@/shared/api/client';
 import { useAuth } from '@/features/auth/model/useAuth';
 import {
   OFFLINE_STORAGE_KEY,
@@ -29,13 +30,16 @@ const isDashboardTip = (value: TipResponse): value is DashboardTip => (
 );
 
 const readTips = async (): Promise<DashboardTip[]> => {
-  const response = await fetch('/api/v1/intelligence/tips');
-  if (!response.ok) return [];
-  const data: unknown = await response.json();
-  return Array.isArray(data)
-    ? data.filter((tip): tip is TipResponse => Boolean(tip && typeof tip === 'object'))
-      .filter(isDashboardTip)
-    : [];
+  try {
+    const response = await api.get('/intelligence/tips');
+    const data = response.data?.data ?? response.data;
+    return Array.isArray(data)
+      ? data.filter((tip): tip is TipResponse => Boolean(tip && typeof tip === 'object'))
+        .filter(isDashboardTip)
+      : [];
+  } catch {
+    return [];
+  }
 };
 
 const filterToolGroups = (groups: ToolGroup[], searchTerm: string): ToolGroup[] => {

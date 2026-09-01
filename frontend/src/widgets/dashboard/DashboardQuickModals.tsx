@@ -13,21 +13,60 @@ import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
 import { getTodayColombia } from "@/shared/utils/dateUtils";
 import { devLogger } from "@/shared/utils/devLogger";
+import { cn } from "@/shared/ui/cn";
 
 export type QuickModalType = "animal" | "user" | "field" | "heat" | null;
+
+const quickModalList: Array<{ type: NonNullable<QuickModalType>; label: string }> = [
+	{ type: "animal", label: "Nuevo Animal" },
+	{ type: "user", label: "Nuevo Usuario" },
+	{ type: "field", label: "Nuevo Potrero" },
+	{ type: "heat", label: "Registrar Celo" },
+];
 
 interface DashboardQuickModalsProps {
 	modalType: QuickModalType;
 	onClose: () => void;
+	onSelectModalType?: (type: QuickModalType) => void;
 }
 
 export function DashboardQuickModals({
 	modalType,
 	onClose,
+	onSelectModalType,
 }: DashboardQuickModalsProps) {
 	const { showToast } = useToast();
 	const [loading, setLoading] = useState(false);
 	const [successItem, setSuccessItem] = useState<any | null>(null);
+	const [internalModalType, setInternalModalType] = useState<QuickModalType>(modalType);
+
+	useEffect(() => {
+		setInternalModalType(modalType);
+	}, [modalType]);
+
+	const currentType = modalType || internalModalType;
+
+	const handleSwitchType = (newType: QuickModalType) => {
+		setSuccessItem(null);
+		setInternalModalType(newType);
+		onSelectModalType?.(newType);
+	};
+
+	const currentIdx = quickModalList.findIndex((item) => item.type === currentType);
+	const hasPrevType = currentIdx > 0;
+	const hasNextType = currentIdx >= 0 && currentIdx < quickModalList.length - 1;
+
+	const handlePrevType = () => {
+		if (hasPrevType) {
+			handleSwitchType(quickModalList[currentIdx - 1].type);
+		}
+	};
+
+	const handleNextType = () => {
+		if (hasNextType) {
+			handleSwitchType(quickModalList[currentIdx + 1].type);
+		}
+	};
 
 	// States for options
 	const [breeds, setBreeds] = useState<any[]>([]);
@@ -60,13 +99,13 @@ export function DashboardQuickModals({
 	});
 
 	useEffect(() => {
-		if (modalType === "animal" && breeds.length === 0) {
+		if (currentType === "animal" && breeds.length === 0) {
 			breedsService
 				.getBreeds({ limit: 100 })
 				.then((res: any) => setBreeds(res.data || res))
 				.catch(devLogger.error);
 		}
-		if (modalType === "heat" && femaleAnimals.length === 0) {
+		if (currentType === "heat" && femaleAnimals.length === 0) {
 			animalsService
 				.getAnimals({ limit: 200, sex: "Hembra", status: "Vivo" })
 				.then((res: any) =>
@@ -74,15 +113,15 @@ export function DashboardQuickModals({
 				)
 				.catch(devLogger.error);
 		}
-		setSuccessItem(null); // Reset success on open new modal
-	}, [breeds.length, femaleAnimals.length, modalType]);
+		setSuccessItem(null);
+	}, [breeds.length, femaleAnimals.length, currentType]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setLoading(true);
 		try {
 			let createdItem = null;
-			if (modalType === "animal") {
+			if (currentType === "animal") {
 				if (!animalForm.breeds_id) throw new Error("Debe seleccionar una raza");
 				if (
 					animalForm.birth_date &&
@@ -98,7 +137,7 @@ export function DashboardQuickModals({
 					breeds_id: Number(animalForm.breeds_id),
 					status: "Vivo",
 				} as any);
-			} else if (modalType === "user") {
+			} else if (currentType === "user") {
 				createdItem = await usersService.createUser({
 					name: userForm.name || userForm.fullname,
 					fullname: userForm.fullname,
@@ -107,14 +146,14 @@ export function DashboardQuickModals({
 					password_confirmation: userForm.password,
 					role: userForm.role,
 				} as any);
-			} else if (modalType === "field") {
+			} else if (currentType === "field") {
 				createdItem = await fieldService.createField({
 					name: fieldForm.name,
 					capacity: Number(fieldForm.capacity),
 					field_type: fieldForm.field_type,
 					status: "Activo",
 				} as any);
-			} else if (modalType === "heat") {
+			} else if (currentType === "heat") {
 				if (!heatForm.animal_id) throw new Error("Debe seleccionar un animal");
 				if (heatForm.event_date && heatForm.event_date > getTodayColombia()) {
 					throw new Error("La fecha del celo no puede ser futura");
@@ -126,11 +165,11 @@ export function DashboardQuickModals({
 					notes: heatForm.notes,
 				} as any);
 			}
-
-			showToast("Registro creado con éxito", "success");
-			setSuccessItem(createdItem);
+			showToast("Operación realizada con éxito", "success");
+			setSuccessItem(createdItem || { ok: true });
 		} catch (err: any) {
-			showToast(err.message || "Error al crear el registro", "error");
+			devLogger.error(err);
+			showToast(err.message || "Error al realizar la operación", "error");
 		} finally {
 			setLoading(false);
 		}
@@ -138,7 +177,7 @@ export function DashboardQuickModals({
 
 	const getTitle = () => {
 		if (successItem) return "Registro Creado";
-		switch (modalType) {
+		switch (currentType) {
 			case "animal":
 				return "Nuevo Animal";
 			case "user":
@@ -152,14 +191,40 @@ export function DashboardQuickModals({
 		}
 	};
 
-	if (!modalType) return null;
+	if (!currentType) return null;
+
+	const modalTabs = (
+		<div className="flex gap-1 overflow-x-auto p-1 bg-muted/40 rounded-lg mx-3 my-2">
+			{quickModalList.map((item) => (
+				<button
+					key={item.type}
+					type="button"
+					onClick={() => handleSwitchType(item.type)}
+					className={cn(
+						"flex-1 px-3 py-1.5 text-xs font-semibold rounded-md transition-all",
+						currentType === item.type
+							? "bg-background text-foreground shadow-sm"
+							: "text-muted-foreground hover:text-foreground hover:bg-background/50"
+					)}
+				>
+					{item.label}
+				</button>
+			))}
+		</div>
+	);
 
 	return (
 		<GenericModal
-			isOpen={!!modalType}
+			isOpen={!!currentType}
 			onOpenChange={(open) => !open && onClose()}
 			title={getTitle()}
 			size="md"
+			tabs={modalTabs}
+			enableNavigation
+			hasPrevious={hasPrevType}
+			hasNext={hasNextType}
+			onNavigatePrevious={handlePrevType}
+			onNavigateNext={handleNextType}
 		>
 			<div className="p-4">
 				{successItem ? (
@@ -195,7 +260,7 @@ export function DashboardQuickModals({
 					</div>
 				) : (
 					<form onSubmit={handleSubmit} className="space-y-4">
-						{modalType === "animal" && (
+						{currentType === "animal" && (
 							<>
 								<div>
 									<label className="text-xs font-semibold mb-1 block">
@@ -284,7 +349,7 @@ export function DashboardQuickModals({
 							</>
 						)}
 
-						{modalType === "user" && (
+						{currentType === "user" && (
 							<>
 								<div>
 									<label className="text-xs font-semibold mb-1 block">
@@ -350,7 +415,7 @@ export function DashboardQuickModals({
 							</>
 						)}
 
-						{modalType === "field" && (
+						{currentType === "field" && (
 							<>
 								<div>
 									<label className="text-xs font-semibold mb-1 block">
@@ -402,7 +467,7 @@ export function DashboardQuickModals({
 							</>
 						)}
 
-						{modalType === "heat" && (
+						{currentType === "heat" && (
 							<>
 								<div>
 									<label className="text-xs font-semibold mb-1 block">

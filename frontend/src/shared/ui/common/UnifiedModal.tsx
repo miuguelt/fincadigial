@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { GenericModal, useUnifiedDisclosure, ModalSize } from './GenericModal';
+import { GenericModal, ModalSize } from './GenericModal';
 
 // Contexto para pasar el título definido en <ModalHeader>
 const ModalTitleContext = React.createContext<{
@@ -92,6 +91,3 @@ export const ModalHeader: React.FC<React.PropsWithChildren<{ className?: string 
 export const ModalBody: React.FC<React.PropsWithChildren<{ className?: string }>> = ({ children }) => {
   return <>{children}</>;
 };
-
-// Reexportar un hook compatible con useDisclosure de HeroUI
-export const useDisclosure = useUnifiedDisclosure;

@@ -3,7 +3,7 @@
  *
  * Es un reductor puro y sin dependencias del navegador porque es la parte que
  * no se puede probar en el potrero: un salto de fila mal resuelto deja un
- * animal sin arete o dos animales con el mismo.
+ * animal sin chapeta o dos animales con la misma.
  */
 
 import type { NfcSessionState, NfcTagAnimal, NfcTarget, TagConflict } from './types';
@@ -23,7 +23,7 @@ export type NfcSessionAction =
 /**
  * Un animal sigue en la fila mientras no se haya grabado, omitido ni fallado.
  *
- * Un fallo lo saca de la fila automática a propósito: si un arete no graba, la
+ * Un fallo lo saca de la fila automática a propósito: si una chapeta no graba, la
  * manga no se puede detener hasta que ese animal ceda. Queda para el botón de
  * reintento al cerrar la jornada.
  */
@@ -42,17 +42,17 @@ const instructionFor = (state: NfcSessionState): string => {
   const animal = state.targets[state.activeIndex]?.animal;
   switch (state.phase) {
     case 'idle':
-      return 'Toca «Iniciar marcaje» y ten los aretes a la mano.';
+      return 'Toca «Iniciar marcaje» y ten las chapetas a la mano.';
     case 'waiting':
       return state.targets[state.activeIndex]?.status === 'failed'
-        ? `Acerca otra vez el arete a ${describe(animal)}: la grabación anterior no entró.`
-        : `Acerca el arete de ${describe(animal)} a la parte de atrás del celular.`;
+        ? `Acerca otra vez la chapeta a ${describe(animal)}: la grabación anterior no entró.`
+        : `Acerca la chapeta de ${describe(animal)} a la parte de atrás del celular.`;
     case 'writing':
-      return `Grabando ${describe(animal)}. No retires el arete.`;
+      return `Grabando ${describe(animal)}. No retires la chapeta.`;
     case 'verifying':
-      return `Retira el arete y vuelve a acercarlo para comprobar ${describe(animal)}.`;
+      return `Retira la chapeta y vuelve a acercarla para comprobar ${describe(animal)}.`;
     case 'conflict':
-      return `Ese arete ya es de ${state.conflict?.holderRecord ?? 'otro animal'}.`;
+      return `Esa chapeta ya es de ${state.conflict?.holderRecord ?? 'otro animal'}.`;
     case 'finished':
       return 'Jornada terminada. Todos los animales de la lista quedaron atendidos.';
     default:
@@ -125,7 +125,7 @@ export const nfcSessionReducer = (
 
     case 'tag-detected': {
       if (state.phase !== 'waiting') return state;
-      // Un arete que ya trae la ficha de otro animal es el error más caro de
+      // Una chapeta que ya trae la ficha de otro animal es el error más caro de
       // todos: si se sobreescribe sin avisar, dos animales pierden identidad.
       if (action.holder && action.holder.id !== active?.animal.id) {
         const conflict: TagConflict = {
@@ -138,8 +138,8 @@ export const nfcSessionReducer = (
       return withInstruction({ ...state, phase: 'writing', conflict: null });
     }
 
-    // Reasignar o descartar el arete terminan igual: el operario debe volver a
-    // acercarlo, porque para cuando decidió ya lo había retirado del celular.
+    // Reasignar o descartar la chapeta terminan igual: el operario debe volver a
+    // acercarla, porque para cuando decidió ya la había retirado del celular.
     case 'conflict-resolved':
       if (state.phase !== 'conflict') return state;
       return withInstruction({ ...state, phase: 'waiting', conflict: null });

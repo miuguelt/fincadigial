@@ -34,7 +34,7 @@ interface ConfigSidebarProps {
  * Configuración del panel de identificación.
  *
  * Solo muestra los ajustes del modo activo: el formato de papel no significa
- * nada mientras se graban aretes, y el chip del arete no significa nada
+ * nada mientras se graban chapetas, y el chip de la chapeta no significa nada
  * mientras se imprimen etiquetas.
  */
 export const ConfigSidebar: React.FC<ConfigSidebarProps> = ({
@@ -74,7 +74,7 @@ export const ConfigSidebar: React.FC<ConfigSidebarProps> = ({
               options={QR_DEFINITIONS}
               value={qrDefinition}
               onChange={onQrDefinitionChange}
-              hint="La alta definición se lee mejor con el arete sucio o el celular en movimiento."
+              hint="La alta definición se lee mejor con la chapeta sucia o el celular en movimiento."
             />
           </div>
         )}

@@ -10,7 +10,7 @@ interface NfcSupportNoticeProps {
 }
 
 /**
- * Qué hacer cuando este celular todavía no puede grabar aretes.
+ * Qué hacer cuando este celular todavía no puede grabar chapetas.
  *
  * No basta con decir «no compatible»: quien está en la finca necesita saber
  * qué equipo conseguir y qué tocar para dejarlo listo. Por eso el aviso trae
@@ -31,7 +31,7 @@ export const NfcSupportNotice: React.FC<NfcSupportNoticeProps> = ({ support }) =
 
       <div>
         <h4 className="mb-4 text-base font-black uppercase tracking-wider text-emerald-300">
-          Para poder grabar los aretes
+          Para poder grabar las chapetas
         </h4>
         <NfcHelpSteps steps={SETUP_STEPS} />
       </div>
@@ -39,8 +39,8 @@ export const NfcSupportNotice: React.FC<NfcSupportNoticeProps> = ({ support }) =
       <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 px-5 py-4">
         <Printer className="mt-0.5 h-5 w-5 shrink-0 text-indigo-300" aria-hidden="true" />
         <p className="text-[15px] leading-6 text-indigo-100/80">
-          Mientras tanto puedes seguir trabajando: en la pestaña{' '}
-          <strong className="font-bold text-white">Etiqueta QR</strong> imprimes las etiquetas de
+          Mientras tanto puede seguir trabajando: en la pestaña{' '}
+          <strong className="font-bold text-white">Etiqueta QR</strong> imprime las etiquetas de
           papel, y eso funciona desde cualquier celular o computador.
         </p>
       </div>

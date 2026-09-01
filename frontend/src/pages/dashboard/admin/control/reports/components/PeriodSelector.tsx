@@ -16,7 +16,7 @@ export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
     <div
       role="group"
       aria-label="Periodo del reporte"
-      className="grid grid-cols-2 gap-2"
+      className="grid grid-cols-2 gap-3"
     >
       {OPTIONS.map((option) => {
         const active = option.value === value;
@@ -26,14 +26,14 @@ export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
             type="button"
             aria-pressed={active}
             onClick={() => onChange(option.value)}
-            className={`min-h-14 rounded-xl border-2 px-3 py-2 text-left transition active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+            className={`min-h-[60px] rounded-2xl border p-3.5 text-left transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${
               active
-                ? 'border-emerald-600 bg-emerald-50 text-emerald-950 dark:border-emerald-500 dark:bg-emerald-950/50 dark:text-emerald-50'
-                : 'border-border bg-card text-muted-foreground hover:bg-muted'
+                ? 'border-emerald-500/40 bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-card text-emerald-950 shadow-sm dark:border-emerald-400/30 dark:text-emerald-100'
+                : 'border-border/70 bg-muted/30 text-muted-foreground hover:bg-muted hover:text-foreground'
             }`}
           >
-            <span className="block text-sm font-extrabold leading-tight">{option.label}</span>
-            <span className="mt-0.5 block text-xs font-medium leading-tight">{option.hint}</span>
+            <span className="block text-sm font-black leading-tight text-foreground">{option.label}</span>
+            <span className="mt-1 block text-xs font-medium text-muted-foreground">{option.hint}</span>
           </button>
         );
       })}

@@ -41,7 +41,16 @@ export const CRUDErrorState = ({
       }
     />
   ) : (
-    <ErrorState message={String(error)} onRetry={onRetry} />
+    <ErrorState
+      title="No se pudieron cargar los registros"
+      message={
+        typeof error === "string"
+          ? error
+          : (error as any)?.message ||
+            "Ocurrió un inconveniente al consultar los datos del servidor. Por favor verifique su conexión e intente nuevamente."
+      }
+      onRetry={onRetry}
+    />
   );
 
 /** Aviso permanente mientras se trabaja con datos locales. */

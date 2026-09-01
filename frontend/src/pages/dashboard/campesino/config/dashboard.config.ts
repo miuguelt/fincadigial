@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 import {
   CloudAlert,
+  CloudSun,
   CheckSquare,
   Headset,
   Droplet,
@@ -128,6 +129,7 @@ export const TOOL_GROUPS: ToolGroup[] = [
     tools: [
       { id: 'scanner', title: 'Escanear Chapeta', description: 'Identificar animal por orejera', icon: IconTag, path: '/scanner', bg: 'bg-gradient-to-br from-indigo-50/70 to-indigo-100/30 dark:from-indigo-950/20 dark:to-indigo-900/10 border-indigo-200/60 dark:border-indigo-800/40 hover:border-indigo-300 dark:hover:border-indigo-700', emoji: '🏷️', requiresOnline: false },
       { id: 'tasks', title: 'Agenda de Tareas', description: 'Ver qué tengo asignado hoy', icon: CheckSquare, path: '/operario/tasks', bg: 'bg-gradient-to-br from-sky-50/70 to-sky-100/30 dark:from-sky-950/20 dark:to-sky-900/10 border-sky-200/60 dark:border-sky-800/40 hover:border-sky-300 dark:hover:border-sky-700', emoji: '📅', requiresOnline: false },
+      { id: 'weather', title: 'Estación de Clima', description: 'Pronóstico y datos en vivo', icon: CloudSun, path: '/campesino/weather', bg: 'bg-gradient-to-br from-blue-50/70 to-blue-100/30 dark:from-blue-950/20 dark:to-blue-900/10 border-blue-200/60 dark:border-blue-800/40 hover:border-blue-300 dark:hover:border-blue-700', emoji: '🌤️', requiresOnline: false },
       { id: 'alerts', title: 'Alertas de Clima', description: 'Heladas, sequías y avisos', icon: CloudAlert, path: '/campesino/climate-alerts', bg: 'bg-gradient-to-br from-slate-50/70 to-slate-100/30 dark:from-slate-900/20 dark:to-slate-850/10 border-slate-200/60 dark:border-slate-800/40 hover:border-slate-300 dark:hover:border-slate-750', emoji: '⛈️', requiresOnline: true },
       { id: 'market', title: 'Mercado Campesino', description: 'Vender o comprar productos', icon: ShoppingBag, path: '/campesino/market-offers', bg: 'bg-gradient-to-br from-fuchsia-50/70 to-fuchsia-100/30 dark:from-fuchsia-950/20 to-fuchsia-900/10 border-fuchsia-200/60 dark:border-fuchsia-800/40 hover:border-fuchsia-300 dark:hover:border-fuchsia-700', emoji: '🏪', requiresOnline: true },
       { id: 'assistance', title: 'Ayuda Técnica', description: 'Solicitar asesoría', icon: Headset, path: '/campesino/technical-assistance', bg: 'bg-gradient-to-br from-indigo-50/70 to-indigo-100/30 dark:from-indigo-950/20 to-indigo-900/10 border-indigo-200/60 dark:border-indigo-800/40 hover:border-indigo-300 dark:hover:border-indigo-700', emoji: '‍🌾', requiresOnline: true },
