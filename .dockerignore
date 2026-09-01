@@ -84,6 +84,10 @@ logs/
 docs/
 maintenance/
 scripts/
+mcp_fixes/
+**/mcp_fixes/
+backend/database/
+database/
 scratch/
 **/scratch/
 _archive/
@@ -98,8 +102,11 @@ vault/
 *.sqlite
 *.sqlite3
 *.sqlite-journal
+*.sql
 _data/
 mariadb_data/
+.pm2/
+**/.pm2/
 
 # --- IDEs & Sistema Operativo ---
 .vscode/

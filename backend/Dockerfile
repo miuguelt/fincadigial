@@ -48,7 +48,8 @@ COPY . .
 
 # Usuario no-root para seguridad
 RUN useradd --no-create-home --shell /bin/false appuser \
-    && mkdir -p /app/static/uploads /app/maintenance /app/logs \
+    && mkdir -p /app/static/uploads /app/maintenance /app/logs /app/backups \
+    && chmod +x /app/entrypoint.sh \
     && chown -R appuser:appuser /app
 
 USER appuser
@@ -60,7 +61,10 @@ EXPOSE 8081
 HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=3 \
   CMD curl -fsS http://localhost:8081/api/v1/health || exit 1
 
-# Comando por defecto (sobreescrito en docker-compose por los parámetros reales)
+# Entrypoint que ejecuta migraciones y bootstrap antes de arrancar Gunicorn
+ENTRYPOINT ["/app/entrypoint.sh"]
+
+# Comando por defecto para Gunicorn
 CMD ["gunicorn", \
      "--preload", \
      "--worker-class", "gevent", \

@@ -3,6 +3,7 @@
 # --- Secrets, VCS and local tooling ---
 .git/
 .gitignore
+.gitattributes
 .dockerignore
 .github/
 .env
@@ -14,7 +15,20 @@
 certificates/
 .vscode/
 .idea/
+
+# --- AI & IDE agent directories ---
 .claude/
+.codex/
+.cursor/
+.windsurf/
+.opencode/
+.antigravity/
+.gemini/
+.trae/
+.devbrain/
+.entire/
+.pm2/
+.aider*
 
 # --- Dependencies and build caches ---
 node_modules/
@@ -29,23 +43,31 @@ dist/
 build/
 dev-dist/
 
-# --- Test-only code and output ---
+# --- Test-only code, configurations and output ---
 e2e/
 playwright-tests/
 playwright-report/
+playwright.config.*
 test-results/
 coverage/
 .nyc_output/
+jest.config.*
+jest.transform.*
+vitest.config.*
 **/*.test.*
 **/*.spec.*
 *.lcov
 *.lcov-report/
 
-# --- Documentation, logs and local state ---
+# --- Documentation, scripts, logs and local state ---
+docs/
+maintenance/
+scripts/
 *.md
 *.log
 logs/
 *.pid
+.critical-manifest.json
 opencodetmp/
 tmp/
 temp/

@@ -3,8 +3,10 @@
 # --- Secrets, VCS and local tooling ---
 .git/
 .gitignore
+.gitattributes
 .dockerignore
 .github/
+.pre-commit-config.yaml
 .env
 .env.*
 *.pem
@@ -13,7 +15,20 @@
 *.pfx
 .vscode/
 .idea/
+
+# --- AI & IDE agent directories ---
 .claude/
+.codex/
+.cursor/
+.windsurf/
+.opencode/
+.antigravity/
+.gemini/
+.trae/
+.devbrain/
+.entire/
+.pm2/
+.aider*
 
 # --- Python dependencies and caches ---
 .venv/
@@ -31,11 +46,13 @@ __pycache__/
 .hypothesis/
 .tox/
 
-# --- Development-only code and documentation ---
+# --- Development-only code, documentation and tools ---
 tests/
 scripts/
 maintenance/
 docs/
+mcp_fixes/
+database/
 *.md
 pytest.ini
 pyproject.toml
@@ -45,13 +62,16 @@ requirements.txt
 requirements-dev.txt
 Procfile
 
-# --- Local data, reports and logs ---
+# --- Local data, SQL dumps, reports and logs ---
 instance/
 static/uploads/
 *.db
 *.sqlite
 *.sqlite3
 *.sqlite-journal
+*.sql
+*.bak
+*.bak-*
 *.log
 logs/
 test-results/
@@ -62,3 +82,4 @@ scratch/
 backups/
 api_test_results.json
 security.log
+audit_output.txt

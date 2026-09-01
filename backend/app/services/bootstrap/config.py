@@ -57,13 +57,14 @@ def _farm_type(raw: object) -> FarmType:
 
 
 def _parse_farms(raw: str | None, env: Mapping[str, str]) -> tuple[FarmDefinition, ...]:
-    if not raw:
+    if not raw or raw.strip() in ("", "[]"):
         raw = json.dumps(
             [
                 {
                     "name": env.get("VILLALUZ_ADMIN_FARM_NAME", "Finca Villa Luz"),
                     "type": env.get("VILLALUZ_ADMIN_FARM_TYPE", "Tradicional"),
-                    "department": env.get("VILLALUZ_ADMIN_FARM_DEPARTMENT", "Colombia"),
+                    "department": env.get("VILLALUZ_ADMIN_FARM_DEPARTMENT", "Cundinamarca"),
+                    "municipality": env.get("VILLALUZ_ADMIN_FARM_MUNICIPALITY", "Bogotá"),
                 }
             ]
         )
@@ -115,30 +116,34 @@ def load_bootstrap_settings(
     """
 
     env = env or os.environ
-    enabled = _as_bool(env.get("VILLALUZ_BOOTSTRAP_ENABLED"), default=False)
     is_production = (env.get("FLASK_ENV") or env.get("FLASK_CONFIG", "")).lower() == "production"
+
+    email = env.get("VILLALUZ_ADMIN_EMAIL") or env.get("ADMIN_EMAIL")
+    password = env.get("VILLALUZ_ADMIN_PASSWORD") or env.get("ADMIN_PASSWORD") or (None if is_production else env.get("TEST_USER_PASSWORD"))
+
+    # Auto-activar si se definieron credenciales de administrador o VILLALUZ_BOOTSTRAP_ENABLED es true
+    has_creds = bool(str(email or "").strip() and str(password or "").strip())
+    enabled = _as_bool(env.get("VILLALUZ_BOOTSTRAP_ENABLED"), default=has_creds)
     active = enabled or is_production and _as_bool(
-        env.get("VILLALUZ_BOOTSTRAP_ON_PRODUCTION"), default=False
+        env.get("VILLALUZ_BOOTSTRAP_ON_PRODUCTION"), default=has_creds
     )
     if not active:
         return BootstrapSettings(False, None, None, None, "", "", tuple(), False, None)
 
-    identification_raw = env.get("VILLALUZ_ADMIN_IDENTIFICATION")
-    email = env.get("VILLALUZ_ADMIN_EMAIL")
-    password = env.get("VILLALUZ_ADMIN_PASSWORD")
-    if not is_production:
-        identification_raw = identification_raw or env.get("ADMIN_ID")
-        email = email or env.get("ADMIN_EMAIL")
-        password = password or env.get("ADMIN_PASSWORD") or env.get("TEST_USER_PASSWORD")
+    identification_raw = (
+        env.get("VILLALUZ_ADMIN_IDENTIFICATION")
+        or env.get("ADMIN_ID")
+        or "1000000001"
+    )
+
     required = {
-        "VILLALUZ_ADMIN_IDENTIFICATION": identification_raw,
         "VILLALUZ_ADMIN_EMAIL": email,
         "VILLALUZ_ADMIN_PASSWORD": password,
     }
     missing = [name for name, value in required.items() if not str(value or "").strip()]
     if missing:
         raise BootstrapConfigurationError(
-            "Bootstrap habilitado, faltan variables requeridas: " + ", ".join(missing)
+            "Bootstrap habilitado, faltan credenciales del administrador: " + ", ".join(missing)
         )
     try:
         identification = int(str(identification_raw).strip())

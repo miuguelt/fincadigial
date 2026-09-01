@@ -30,8 +30,9 @@ def check(condition: bool, ok_msg: str, err_msg: str, warn: bool = False):
 
 # ── 1. Archivos críticos existen ──────────────────────────────────────
 required_files = [
-    "docker-compose.coolify.yml",
+    "docker-compose.yml",
     "backend/Dockerfile",
+    "backend/entrypoint.sh",
     "frontend/Dockerfile",
     "frontend/nginx.conf",
     "backend/requirements.txt",
@@ -42,10 +43,19 @@ for f in required_files:
     path = ROOT / f
     check(path.exists(), f"Archivo existe: {f}", f"Falta archivo crítico: {f}")
 
-# ── 2. Variables de entorno en docker-compose.coolify.yml ─────────────
-compose_path = ROOT / "docker-compose.coolify.yml"
+# Compatibilidad Coolify: verificar presencia de docker-compose.yaml (default de Coolify)
+yaml_compat = ROOT / "docker-compose.yaml"
+check(yaml_compat.exists(), "Archivo de compatibilidad Coolify existe: docker-compose.yaml", "Falta docker-compose.yaml (requerido para default de Coolify)", warn=True)
+
+# ── 2. Variables de entorno en Docker Compose ─────────────────────────
+compose_path = ROOT / "docker-compose.yml"
+if not compose_path.exists():
+    compose_path = ROOT / "docker-compose.yaml"
+if not compose_path.exists():
+    compose_path = ROOT / "docker-compose.coolify.yml"
+
 if compose_path.exists():
-    compose_text = compose_path.read_text()
+    compose_text = compose_path.read_text(encoding="utf-8")
     required_vars = [
         "FLASK_SECRET_KEY",
         "JWT_SECRET_KEY",
@@ -55,6 +65,10 @@ if compose_path.exists():
         "DOMAIN",
         "VITE_API_BASE_URL",
         "VITE_FRONTEND_URL",
+        "REDIS_URL",
+        "VILLALUZ_ADMIN_IDENTIFICATION",
+        "VILLALUZ_ADMIN_EMAIL",
+        "VILLALUZ_ADMIN_PASSWORD",
     ]
     for var in required_vars:
         check(
@@ -68,20 +82,20 @@ if compose_path.exists():
 # ── 3. .env.production.example no tiene valores por defecto inseguros ─
 env_example = ROOT / ".env.production.example"
 if env_example.exists():
-    content = env_example.read_text()
+    content = env_example.read_text(encoding="utf-8")
     insecure_markers = ["GENERAR_CLAVE_SEGURA", "CONTRASEÑA_SEGURA"]
     has_insecure = any(m in content for m in insecure_markers)
     # El example DEBE tener los marcadores (es un template)
     check(
         has_insecure,
-        ".env.production.example es un template (no tiene claves reales)",
+        ".env.production.example es un template seguro con marcadores",
         ".env.production.example parece tener valores reales — ¡no commitear!",
     )
 
 # ── 4. .gitignore protege archivos sensibles ──────────────────────────
 gitignore = ROOT / ".gitignore"
 if gitignore.exists():
-    gi_text = gitignore.read_text()
+    gi_text = gitignore.read_text(encoding="utf-8")
     sensitive = [".env.production", "*.pem", "*.key", "/backups"]
     for s in sensitive:
         check(s in gi_text, f".gitignore protege: {s}", f".gitignore NO protege: {s}", warn=True)
@@ -89,7 +103,7 @@ if gitignore.exists():
 # ── 5. Multi-stage build en backend Dockerfile ────────────────────────
 back_dockerfile = ROOT / "backend" / "Dockerfile"
 if back_dockerfile.exists():
-    df_text = back_dockerfile.read_text()
+    df_text = back_dockerfile.read_text(encoding="utf-8")
     check(
         "AS builder" in df_text and "AS production" in df_text,
         "Backend Dockerfile usa Multi-Stage build",
@@ -105,7 +119,7 @@ if back_dockerfile.exists():
 # ── 6. Nginx tiene headers de seguridad ───────────────────────────────
 nginx_conf = ROOT / "frontend" / "nginx.conf"
 if nginx_conf.exists():
-    nc_text = nginx_conf.read_text()
+    nc_text = nginx_conf.read_text(encoding="utf-8")
     security_headers = ["X-Frame-Options", "X-Content-Type-Options", "Content-Security-Policy"]
     for h in security_headers:
         check(h in nc_text, f"Nginx header de seguridad: {h}", f"Nginx falta header: {h}")
@@ -117,10 +131,10 @@ if nginx_conf.exists():
     )
 
 # ── 7. PostgreSQL en vez de MySQL ────────────────────────────────────
-compose_text2 = (ROOT / "docker-compose.coolify.yml").read_text() if compose_path.exists() else ""
+compose_text2 = compose_path.read_text(encoding="utf-8") if compose_path.exists() else ""
 check(
     "postgres" in compose_text2.lower(),
-    "Compose usa PostgreSQL (óptimo para Contabo)",
+    "Compose usa PostgreSQL (óptimo para Contabo/Coolify)",
     "Compose NO usa PostgreSQL — revisar configuración de DB",
 )
 check(
@@ -130,18 +144,37 @@ check(
     warn=True,
 )
 
-# ── 8. Healthchecks definidos ─────────────────────────────────────────
+# ── 8. Healthchecks definidos y arquitectura Coolify ──────────────────
 check(
-    "healthcheck" in compose_text2.lower() and compose_text2.lower().count("healthcheck") >= 3,
-    "Healthchecks definidos para backend, DB y Redis",
+    "healthcheck" in compose_text2.lower() and compose_text2.lower().count("healthcheck") >= 2,
+    "Healthchecks definidos para frontend y backend",
     "Faltan healthchecks en el compose",
     warn=True,
 )
-
-# ── 9. Volúmenes persistentes ─────────────────────────────────────────
+if "villaluz-db-init" in compose_text2:
+    check(
+        "exclude_from_hc: true" in compose_text2,
+        "Tarea db-init excluida de healthchecks en Coolify (exclude_from_hc: true)",
+        "Falta exclude_from_hc: true en la tarea de inicialización de base de datos",
+    )
+else:
+    check(
+        (ROOT / "backend" / "entrypoint.sh").exists(),
+        "Migraciones y bootstrap automatizados en entrypoint del backend (Stack limpio de 2 contenedores)",
+        "Falta script backend/entrypoint.sh para migraciones automáticas",
+    )
+import re
+has_custom_networks = bool(re.search(r"^\s*networks\s*:", compose_text2, re.MULTILINE))
 check(
-    "pg_data" in compose_text2 and "uploads_data" in compose_text2,
-    "Volúmenes persistentes configurados (pg_data, uploads_data)",
+    not has_custom_networks,
+    "Sin redes personalizadas (red administrada automáticamente por Coolify)",
+    "Contiene redes personalizadas (puede causar 504 Gateway Timeout en Coolify)",
+)
+
+# ── 9. Volúmenes persistentes (Cero pérdida de datos) ─────────────────
+check(
+    all(v in compose_text2 for v in ["uploads_data", "maintenance_logs", "app_logs", "backups_data"]),
+    "Volúmenes persistentes configurados (uploads_data, maintenance_logs, app_logs, backups_data)",
     "Faltan volúmenes persistentes — se perderán datos en reinicios",
 )
 

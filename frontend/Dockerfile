@@ -7,13 +7,13 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 
 ARG VITE_RUNTIME_ENV=production
-ARG VITE_API_BASE_URL
+ARG VITE_API_BASE_URL=/api/v1
 ARG VITE_FRONTEND_URL
 ARG VITE_USE_BEARER_AUTH=true
 
 ENV VITE_RUNTIME_ENV=${VITE_RUNTIME_ENV:-production} \
     NODE_ENV=production \
-    VITE_API_BASE_URL=${VITE_API_BASE_URL} \
+    VITE_API_BASE_URL=${VITE_API_BASE_URL:-/api/v1} \
     VITE_FRONTEND_URL=${VITE_FRONTEND_URL} \
     VITE_USE_BEARER_AUTH=${VITE_USE_BEARER_AUTH}
 
@@ -24,7 +24,7 @@ COPY . .
 RUN npm run build
 
 # ── Stage 2: Production with Nginx ────────────────────────────────────
-FROM nginx:alpine
+FROM nginx:1.27-alpine
 
 # Instalar curl para healthcheck confiable
 RUN apk add --no-cache curl

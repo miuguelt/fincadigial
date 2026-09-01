@@ -283,9 +283,13 @@ class Config:
     COMPRESS_LEVEL = 6
     COMPRESS_MIN_SIZE = 500
 
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+    JWT_SECRET_KEY = (
+        os.getenv("JWT_SECRET_KEY")
+        or os.getenv("FLASK_SECRET_KEY")
+        or os.getenv("SECRET_KEY")
+    )
     if not JWT_SECRET_KEY:
-        raise ValueError("JWT_SECRET_KEY es requerido en todos los entornos")
+        raise ValueError("JWT_SECRET_KEY o FLASK_SECRET_KEY es requerido en todos los entornos")
 
     JWT_TOKEN_LOCATION = ["cookies", "headers"]
     JWT_HEADER_NAME = "Authorization"

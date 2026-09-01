@@ -5,6 +5,7 @@
 # --- Secretos, Variables de Entorno y Configuración Local ---
 .env
 .env.*
+.env.production
 !.env.example
 !.env.*.example
 !.env.*.template

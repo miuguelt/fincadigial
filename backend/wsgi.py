@@ -186,7 +186,7 @@ def _resolve_ssl_context():
 # Startup sanity checks
 if config_name == "production":
     # Ensure JWT_SECRET_KEY is not a placeholder and has sufficient length (32 bytes hex -> 64 chars)
-    jwt_secret = os.getenv("JWT_SECRET_KEY") or app.config.get("JWT_SECRET_KEY")
+    jwt_secret = os.getenv("JWT_SECRET_KEY") or os.getenv("FLASK_SECRET_KEY") or app.config.get("JWT_SECRET_KEY")
     if (
         not jwt_secret
         or jwt_secret.lower().startswith(
