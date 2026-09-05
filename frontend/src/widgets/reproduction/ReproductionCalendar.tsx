@@ -183,7 +183,7 @@ export default function ReproductionCalendar() {
                       {format(dateObj, 'EEEE, d MMMM yyyy', { locale: es })}
                     </span>
                     {isToday && (
-                      <Badge className="text-[10px] bg-primary text-primary-foreground font-black px-1.5 py-0">
+                      <Badge className="text-[11px] bg-primary text-primary-foreground font-black px-1.5 py-0">
                         HOY
                       </Badge>
                     )}
@@ -209,12 +209,12 @@ export default function ReproductionCalendar() {
                                 {event.extendedProps.animal_record || event.title}
                               </span>
                               {isPendingBirth && (
-                                <Badge variant="destructive" className="text-[10px] px-1.5 py-0 font-bold">
+                                <Badge variant="destructive" className="text-[11px] px-1.5 py-0 font-bold">
                                   Parto Esperado
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-xs text-muted-foreground font-medium truncate">
+                            <p className="text-xs text-muted-foreground font-medium fit-clamp">
                               {event.title}
                             </p>
                             {event.extendedProps.notes && (

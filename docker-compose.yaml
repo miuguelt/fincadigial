@@ -29,10 +29,10 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_RUNTIME_ENV: production
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1}
-        VITE_FRONTEND_URL: ${VITE_FRONTEND_URL:-https://${DOMAIN}}
+        VITE_API_BASE_URL: /api/v1
+        VITE_FRONTEND_URL: https://${DOMAIN}
         VITE_USE_BEARER_AUTH: "true"
-    image: villaluz-frontend:${APP_VERSION:-latest}
+    image: villaluz-frontend:latest
     restart: unless-stopped
     logging:
       driver: json-file
@@ -59,7 +59,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: villaluz-backend:${APP_VERSION:-latest}
+    image: villaluz-backend:latest
     restart: unless-stopped
     logging:
       driver: json-file
@@ -70,9 +70,9 @@ services:
       gunicorn
       --preload
       --worker-class gevent
-      --workers ${GUNICORN_WORKERS:-2}
-      --worker-connections ${GUNICORN_CONNECTIONS:-200}
-      --timeout ${GUNICORN_TIMEOUT:-120}
+      --workers 2
+      --worker-connections 200
+      --timeout 120
       --graceful-timeout 30
       --max-requests 1000
       --max-requests-jitter 100
@@ -83,7 +83,7 @@ services:
     expose:
       - "8081"
     environment:
-      # ── 🔴 5 VARIABLES OBLIGATORIAS (Configurar en Coolify) ──
+      # ── 🔴 LAS 5 VARIABLES OBLIGATORIAS (Configurar en Coolify) ──
       DOMAIN: ${DOMAIN}
       # Conexión PostgreSQL (formato: postgresql://user:password@host:5432/villaluz)
       DATABASE_URL: ${DATABASE_URL}
@@ -92,22 +92,19 @@ services:
       VILLALUZ_ADMIN_PASSWORD: ${VILLALUZ_ADMIN_PASSWORD}
 
       # ── Secretos y Tokens (Heredan de FLASK_SECRET_KEY automáticamente) ──
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-${FLASK_SECRET_KEY}}
-      JWT_COOKIE_DOMAIN: ${JWT_COOKIE_DOMAIN:-${DOMAIN}}
+      JWT_SECRET_KEY: ${FLASK_SECRET_KEY}
+      JWT_COOKIE_DOMAIN: ${DOMAIN}
 
       # ── CORS y URLs (Derivadas automáticamente de DOMAIN) ──
-      CORS_ORIGINS: ${CORS_ORIGINS:-https://${DOMAIN},https://www.${DOMAIN}}
-      API_BASE_URL: ${API_BASE_URL:-https://${DOMAIN}/api/v1}
-      FRONTEND_URL: ${FRONTEND_URL:-https://${DOMAIN}}
-      PREFERRED_URL_SCHEME: https
-      FLASK_ENV: production
-      FLASK_APP: wsgi.py
+      CORS_ORIGINS: "https://${DOMAIN},https://www.${DOMAIN}"
+      API_BASE_URL: "https://${DOMAIN}/api/v1"
+      FRONTEND_URL: "https://${DOMAIN}"
+      PREFERRED_URL_SCHEME: "https"
+      FLASK_ENV: "production"
+      FLASK_APP: "wsgi.py"
 
       # ── Estricto: Cero datos demo en producción ──
-      VILLALUZ_SEED_DEMO_DATA: ${VILLALUZ_SEED_DEMO_DATA:-false}
-
-      # ── Redis / Caché / Celery (Opcional en Red Coolify - Solo URL) ──
-      REDIS_URL: ${REDIS_URL:-}
+      VILLALUZ_SEED_DEMO_DATA: "false"
     volumes:
       - uploads_data:/app/static/uploads
       - maintenance_logs:/app/maintenance

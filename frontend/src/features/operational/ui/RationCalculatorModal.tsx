@@ -187,21 +187,21 @@ export const RationCalculatorModal: React.FC<RationCalculatorModalProps> = ({
 
           <div className="grid grid-cols-3 gap-3 text-center">
             <div className="p-2.5 bg-background/80 rounded-xl border border-border/50">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground">Diario Total</span>
+              <span className="text-[11px] uppercase font-bold text-muted-foreground">Diario Total</span>
               <p className="text-lg font-black text-foreground">{resultDailyKg.toFixed(1)} kg</p>
-              <span className="text-[10px] text-muted-foreground">Por día</span>
+              <span className="text-[11px] text-muted-foreground">Por día</span>
             </div>
 
             <div className="p-2.5 bg-background/80 rounded-xl border border-border/50">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground">Mensual Total</span>
+              <span className="text-[11px] uppercase font-bold text-muted-foreground">Mensual Total</span>
               <p className="text-lg font-black text-emerald-600 dark:text-emerald-400">{monthlyKg.toFixed(0)} kg</p>
-              <span className="text-[10px] text-muted-foreground">30 días</span>
+              <span className="text-[11px] text-muted-foreground">30 días</span>
             </div>
 
             <div className="p-2.5 bg-background/80 rounded-xl border border-border/50">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground">Bultos (40kg)</span>
+              <span className="text-[11px] uppercase font-bold text-muted-foreground">Bultos (40kg)</span>
               <p className="text-lg font-black text-foreground">{bagsCountMonthly} bultos</p>
-              <span className="text-[10px] text-muted-foreground">Sugeridos/mes</span>
+              <span className="text-[11px] text-muted-foreground">Sugeridos/mes</span>
             </div>
           </div>
         </div>

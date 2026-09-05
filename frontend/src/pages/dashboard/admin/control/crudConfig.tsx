@@ -79,7 +79,7 @@ function renderControlCard(animalOptions: { value: number; label: string }[]) {
                 Animal
               </div>
               <div
-                className="truncate text-base font-extrabold text-foreground"
+                className="fit-clamp text-base font-extrabold text-foreground"
                 onClick={(e) => e.stopPropagation()}
               >
                 {item.animal_id ? (
@@ -104,8 +104,8 @@ function renderControlCard(animalOptions: { value: number; label: string }[]) {
             <div className="flex items-center gap-2 rounded-lg border border-border/70 bg-muted/40 px-2.5 py-2">
               <Scale className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden="true" />
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Peso</p>
-                <p className="truncate text-xs font-bold text-foreground">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Peso</p>
+                <p className="fit-clamp text-xs font-bold text-foreground">
                   {item.weight != null ? `${Number(item.weight).toFixed(1)} kg` : '-'}
                 </p>
               </div>
@@ -114,8 +114,8 @@ function renderControlCard(animalOptions: { value: number; label: string }[]) {
             <div className="flex items-center gap-2 rounded-lg border border-border/70 bg-muted/40 px-2.5 py-2">
               <Ruler className="h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" aria-hidden="true" />
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Alzada</p>
-                <p className="truncate text-xs font-bold text-foreground">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Alzada</p>
+                <p className="fit-clamp text-xs font-bold text-foreground">
                   {formattedHeight}
                 </p>
               </div>

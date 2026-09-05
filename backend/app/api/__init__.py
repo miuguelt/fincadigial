@@ -137,6 +137,11 @@ def register_api(app, limiter=None):
         except Exception:
             return flask.jsonify({"error": "Error interno"}), 500
 
+    # Ruta puente para requests directos a /static/uploads/ reenviados por Nginx
+    @app.route("/static/uploads/<path:filename>", methods=["GET"])
+    def serve_static_uploads_alias(filename):
+        return serve_chat_file(filename)
+
     @api_bp.route("/", methods=["GET", "OPTIONS"])
     def api_root_confirm():
         return APIResponse.success(message="Bienvenido a la API Villa Luz")

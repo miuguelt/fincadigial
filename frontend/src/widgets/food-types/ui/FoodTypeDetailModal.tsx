@@ -93,7 +93,7 @@ export const FoodTypeDetailModal: React.FC<FoodTypeDetailModalProps> = ({
                   Proteína Cruda
                 </span>
                 <p className="text-base font-black text-foreground">{profile.estimatedProtein}</p>
-                <span className="text-[10px] text-muted-foreground">Base materia seca</span>
+                <span className="text-[11px] text-muted-foreground">Base materia seca</span>
               </div>
 
               <div className="p-3 bg-card rounded-xl border border-border/50 shadow-xs space-y-1">
@@ -102,7 +102,7 @@ export const FoodTypeDetailModal: React.FC<FoodTypeDetailModalProps> = ({
                   Materia Seca (MS)
                 </span>
                 <p className="text-base font-black text-foreground">{profile.dryMatter}</p>
-                <span className="text-[10px] text-muted-foreground">Contenido típico</span>
+                <span className="text-[11px] text-muted-foreground">Contenido típico</span>
               </div>
 
               <div className="p-3 bg-card rounded-xl border border-border/50 shadow-xs space-y-1">
@@ -113,7 +113,7 @@ export const FoodTypeDetailModal: React.FC<FoodTypeDetailModalProps> = ({
                 <p className="text-base font-black text-foreground">
                   {profile.restDaysSuggested > 0 ? `${profile.restDaysSuggested} días` : 'N/A (Suministro)'}
                 </p>
-                <span className="text-[10px] text-muted-foreground">Rotación óptima</span>
+                <span className="text-[11px] text-muted-foreground">Rotación óptima</span>
               </div>
 
               <div className="p-3 bg-card rounded-xl border border-border/50 shadow-xs space-y-1">
@@ -124,7 +124,7 @@ export const FoodTypeDetailModal: React.FC<FoodTypeDetailModalProps> = ({
                 <p className="text-base font-black text-foreground">
                   {area !== null && area > 0 ? `${area} ha` : 'No especificada'}
                 </p>
-                <span className="text-[10px] text-muted-foreground">Extensión total</span>
+                <span className="text-[11px] text-muted-foreground">Extensión total</span>
               </div>
             </div>
 
@@ -194,8 +194,8 @@ export const FoodTypeDetailModal: React.FC<FoodTypeDetailModalProps> = ({
                     >
                       <div className="space-y-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <h5 className="text-sm font-bold text-foreground truncate">{field.name}</h5>
-                          <span className="font-mono text-[10px] bg-secondary/50 px-1.5 py-0.5 rounded">
+                          <h5 className="text-sm font-bold text-foreground fit-clamp">{field.name}</h5>
+                          <span className="font-mono text-[11px] bg-secondary/50 px-1.5 py-0.5 rounded">
                             ID {field.id}
                           </span>
                         </div>

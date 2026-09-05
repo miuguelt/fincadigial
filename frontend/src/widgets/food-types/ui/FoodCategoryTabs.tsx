@@ -50,7 +50,7 @@ export const FoodCategoryTabs: React.FC<FoodCategoryTabsProps> = ({
             <span>{cat.label}</span>
             <span
               className={cn(
-                'text-[10px] px-1.5 py-0.2 rounded-full font-bold ml-0.5',
+                'text-[11px] px-1.5 py-0.2 rounded-full font-bold ml-0.5',
                 isActive
                   ? 'bg-primary-foreground/20 text-primary-foreground'
                   : 'bg-muted text-muted-foreground'

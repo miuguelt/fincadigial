@@ -130,7 +130,7 @@ export const FoodTypeCard: React.FC<FoodTypeCardProps> = ({
         {/* Nutritional & Zootechnical Badges */}
         <div className="grid grid-cols-2 gap-2 pt-1">
           <div className="p-2 rounded-xl bg-background/60 dark:bg-background/40 border border-border/40 space-y-0.5">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
               <Leaf className="w-3 h-3 text-emerald-500" />
               Proteína Estimada
             </span>
@@ -138,7 +138,7 @@ export const FoodTypeCard: React.FC<FoodTypeCardProps> = ({
           </div>
 
           <div className="p-2 rounded-xl bg-background/60 dark:bg-background/40 border border-border/40 space-y-0.5">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
               <Clock className="w-3 h-3 text-amber-500" />
               {category.id === 'mineral_supplement' || category.id === 'concentrate' ? 'Materia Seca' : 'Rebrote Sugerido'}
             </span>

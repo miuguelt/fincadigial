@@ -277,12 +277,12 @@ export function ReproductionBatchModal({
                       </div>
                       <div className="flex items-center gap-2">
                         {animal.is_pregnant && (
-                          <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+                          <Badge variant="outline" className="text-[11px] bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
                             Preñada
                           </Badge>
                         )}
                         {animal.is_lactating && (
-                          <Badge variant="outline" className="text-[10px] bg-blue-500/10 text-blue-600 border-blue-500/20">
+                          <Badge variant="outline" className="text-[11px] bg-blue-500/10 text-blue-600 border-blue-500/20">
                             Lactando
                           </Badge>
                         )}

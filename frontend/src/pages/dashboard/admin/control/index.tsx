@@ -150,7 +150,7 @@ const AdminControlPage = () => {
             <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
             <span>Hoy</span>
             {hasSickAnimals && (
-              <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-black text-white shadow-sm shadow-red-600/30">
+              <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[11px] font-black text-white shadow-sm shadow-red-600/30">
                 {summary.sickAnimals}
               </span>
             )}

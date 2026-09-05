@@ -217,23 +217,29 @@ class Config:
     # -----------------------
     # Cache & Rendimiento
     # -----------------------
-    # Redis — Construcción inteligente: usa REDIS_URL directa si existe,
-    # sino la construye desde REDIS_HOST/PORT/PASSWORD/DB.
+    # Redis — Construcción inteligente: usa REDIS_URL directa si existe.
+    # En desarrollo/testing se usa fallback a Memurai local (127.0.0.1:6380).
+    # En producción sin REDIS_URL explícito, se deja en None para operar en modo resiliente sin errores.
+    _active_env = (
+        os.getenv("FLASK_ENV") or os.getenv("FLASK_CONFIG") or "development"
+    ).strip().lower()
     REDIS_URL = os.getenv("REDIS_URL")
     if not REDIS_URL:
-        _r_host = os.getenv("REDIS_HOST", "127.0.0.1")
-        _r_port = os.getenv("REDIS_PORT", "6380")
-        _r_pass = os.getenv("REDIS_PASSWORD", "")
-        _r_db = os.getenv("REDIS_DB", "0")
-        _r_auth = f":{_r_pass}@" if _r_pass else ""
-        REDIS_URL = f"redis://{_r_auth}{_r_host}:{_r_port}/{_r_db}"
+        if _active_env in {"development", "testing"}:
+            _r_host = os.getenv("REDIS_HOST", "127.0.0.1")
+            _r_port = os.getenv("REDIS_PORT", "6380")
+            _r_pass = os.getenv("REDIS_PASSWORD", "")
+            _r_db = os.getenv("REDIS_DB", "0")
+            _r_auth = f":{_r_pass}@" if _r_pass else ""
+            REDIS_URL = f"redis://{_r_auth}{_r_host}:{_r_port}/{_r_db}"
+        else:
+            REDIS_URL = None
 
     # Local development is Windows-native. Normalize the loopback alias so a
     # machine resolving ``localhost`` to IPv6 cannot bypass Memurai's IPv4
     # listener on 127.0.0.1:6380.
     if (
-        os.getenv("FLASK_ENV", "development").strip().lower()
-        in {"development", "testing"}
+        _active_env in {"development", "testing"}
         and REDIS_URL
     ):
         REDIS_URL = REDIS_URL.replace("://localhost:", "://127.0.0.1:")
@@ -412,21 +418,27 @@ class Config:
     # -----------------------
     # URLs
     # -----------------------
-    API_BASE_URL = os.getenv("API_BASE_URL")
+    _domain = (os.getenv("DOMAIN") or "").strip()
+    _scheme = (os.getenv("PREFERRED_URL_SCHEME") or "https").strip()
+    _default_base_url = f"{_scheme}://{_domain}" if _domain else ""
+
+    API_BASE_URL = os.getenv("API_BASE_URL") or (f"{_default_base_url}/api/v1" if _default_base_url else None)
     API_HOST = os.getenv("API_HOST")
     API_PORT = os.getenv("API_PORT")
     API_PROTOCOL = os.getenv("API_PROTOCOL")
-    FRONTEND_URL = os.getenv("FRONTEND_URL")
+    FRONTEND_URL = os.getenv("FRONTEND_URL") or (_default_base_url if _default_base_url else None)
     FRONTEND_HOST = os.getenv("FRONTEND_HOST")
     FRONTEND_PORT = os.getenv("FRONTEND_PORT")
     FRONTEND_PROTOCOL = os.getenv("FRONTEND_PROTOCOL")
-    BACKEND_URL = os.getenv("BACKEND_URL")
+    BACKEND_URL = os.getenv("BACKEND_URL") or (_default_base_url if _default_base_url else None)
     BACKEND_HOST = os.getenv("BACKEND_HOST")
     BACKEND_PORT = os.getenv("BACKEND_PORT")
     BACKEND_PROTOCOL = os.getenv("BACKEND_PROTOCOL")
     # URL base sin /api/v1 — usada por file_storage, api_docs y otros
-    API_BASE_URL_NO_VERSION = os.getenv("API_BASE_URL_NO_VERSION") or os.getenv(
-        "BACKEND_URL", ""
+    API_BASE_URL_NO_VERSION = (
+        os.getenv("API_BASE_URL_NO_VERSION")
+        or os.getenv("BACKEND_URL")
+        or (_default_base_url if _default_base_url else "")
     )
     API_DOCS_URL = os.getenv("API_DOCS_URL")
     API_SWAGGER_URL = os.getenv("API_SWAGGER_URL")
@@ -520,14 +532,23 @@ class ProductionConfig(Config):
 
     @classmethod
     def validate_production_env(cls):
-        """Valida variables de entorno requeridas para producción"""
-        if not (os.getenv("JWT_SECRET_KEY") or os.getenv("FLASK_SECRET_KEY")):
+        """Valida las 5 variables de entorno obligatorias para producción según el protocolo SSoT."""
+        missing = []
+        if not (os.getenv("DATABASE_URL") or os.getenv("SQLALCHEMY_DATABASE_URI")):
+            missing.append("DATABASE_URL")
+        if not (os.getenv("FLASK_SECRET_KEY") or os.getenv("JWT_SECRET_KEY")):
+            missing.append("FLASK_SECRET_KEY")
+        if not (os.getenv("DOMAIN") or os.getenv("JWT_COOKIE_DOMAIN")):
+            missing.append("DOMAIN")
+        if not os.getenv("VILLALUZ_ADMIN_EMAIL"):
+            missing.append("VILLALUZ_ADMIN_EMAIL")
+        if not os.getenv("VILLALUZ_ADMIN_PASSWORD"):
+            missing.append("VILLALUZ_ADMIN_PASSWORD")
+
+        if missing:
             raise ValueError(
-                "La variable JWT_SECRET_KEY o FLASK_SECRET_KEY DEBE estar definida en producción."
-            )
-        if not (os.getenv("JWT_COOKIE_DOMAIN") or os.getenv("DOMAIN")):
-            raise ValueError(
-                "La variable JWT_COOKIE_DOMAIN o DOMAIN DEBE estar definida en producción."
+                f"Faltan variables obligatorias de producción en Coolify: {', '.join(missing)}. "
+                f"Consulte el protocolo de mínimas variables SSoT."
             )
 
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30)

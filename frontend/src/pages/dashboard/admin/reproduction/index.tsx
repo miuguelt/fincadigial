@@ -222,7 +222,7 @@ export default function ReproductionHub() {
                 <span className="text-rose-500">{item.dead_count ?? 0} Muertas</span>
               </div>
               {item.complications && (
-                <Badge variant="destructive" className="text-[10px] px-1.5 py-0 font-bold w-fit">
+                <Badge variant="destructive" className="text-[11px] px-1.5 py-0 font-bold w-fit">
                   Complicaciones
                 </Badge>
               )}
@@ -235,7 +235,7 @@ export default function ReproductionHub() {
         label: 'Observaciones',
         render: (val: any) =>
           val ? (
-            <span className="text-xs text-muted-foreground max-w-[200px] truncate block" title={val}>
+            <span className="text-xs text-muted-foreground max-w-[200px] fit-clamp block" title={val}>
               {val}
             </span>
           ) : (
@@ -446,7 +446,7 @@ export default function ReproductionHub() {
                 {loadingSummary ? '...' : summary?.births_next_30_days ?? 0}
               </CardTitle>
               {(summary?.overdue_births ?? 0) > 0 && (
-                <Badge variant="destructive" className="text-[10px] font-black px-1.5 py-0">
+                <Badge variant="destructive" className="text-[11px] font-black px-1.5 py-0">
                   {summary?.overdue_births} vencidos
                 </Badge>
               )}

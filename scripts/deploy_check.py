@@ -48,28 +48,51 @@ for f in required_files:
 compose_path = ROOT / compose_file
 
 if compose_path.exists():
+    import re
+
     compose_text = compose_path.read_text(encoding="utf-8")
-    required_vars = [
+
+    # 🔴 Las 5 variables SSoT estrictamente requeridas por Coolify
+    mandatory_vars = [
         "DOMAIN",
         "DATABASE_URL",
         "FLASK_SECRET_KEY",
-        "JWT_SECRET_KEY",
-        "JWT_COOKIE_DOMAIN",
-        "CORS_ORIGINS",
         "VILLALUZ_ADMIN_EMAIL",
         "VILLALUZ_ADMIN_PASSWORD",
-        "VILLALUZ_SEED_DEMO_DATA",
-        "VITE_API_BASE_URL",
-        "VITE_FRONTEND_URL",
-        "REDIS_URL",
     ]
-    for var in required_vars:
+    for var in mandatory_vars:
         check(
-            # Match both ${VAR} and ${VAR:-default} patterns
-            f"${{{var}}}" in compose_text or f"${{{var}:-" in compose_text,
-            f"Variable referenciada en compose: {var}",
-            f"Variable faltante en compose: {var}",
+            f"${{{var}}}" in compose_text,
+            f"Variable obligatoria en compose: {var}",
+            f"Variable obligatoria faltante en compose: {var}",
         )
+
+    # 🛡️ Principio Smart Defaults: cero variables extra con ${VAR:-...} que inflen Coolify
+    # El parser de Coolify crea casillas para cualquier token ${NOMBRE_VAR}
+    all_interpolated = set(re.findall(r"\$\{([A-Za-z0-9_]+)(?::-[^}]*)?\}", compose_text))
+    extra_coolify_vars = all_interpolated - set(mandatory_vars)
+    check(
+        len(extra_coolify_vars) == 0,
+        f"Smart Defaults activo: solo 5 variables requeridas en Coolify (cero casillas sobrantes)",
+        f"Variables extra detectadas en compose que inflarían Coolify: {extra_coolify_vars}",
+    )
+
+    # Validar que las variables derivadas y de seguridad estén correctamente ancladas
+    check(
+        "JWT_SECRET_KEY: ${FLASK_SECRET_KEY}" in compose_text,
+        "JWT_SECRET_KEY hereda de FLASK_SECRET_KEY automáticamente",
+        "JWT_SECRET_KEY debe heredar de FLASK_SECRET_KEY",
+    )
+    check(
+        'VILLALUZ_SEED_DEMO_DATA: "false"' in compose_text or "VILLALUZ_SEED_DEMO_DATA: 'false'" in compose_text,
+        "VILLALUZ_SEED_DEMO_DATA fijo en 'false' en producción",
+        "VILLALUZ_SEED_DEMO_DATA debe estar estrictamente fijado en 'false'",
+    )
+    check(
+        "VITE_API_BASE_URL: /api/v1" in compose_text,
+        "VITE_API_BASE_URL fijado en /api/v1 (proxy inverso Nginx)",
+        "VITE_API_BASE_URL debe apuntar a /api/v1 para Nginx",
+    )
 
 
 # ── 3. .env.production.example no tiene valores por defecto inseguros ─

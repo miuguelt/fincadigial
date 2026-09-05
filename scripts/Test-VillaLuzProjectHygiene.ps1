@@ -59,7 +59,7 @@ $backendRoot = Join-Path $projectRoot 'backend'
 $backendFiles = @(
     '.dockerignore', '.env', '.env.production.template', '.gitattributes', '.gitignore',
     'Dockerfile', 'LICENSE', 'Procfile', 'README.md', 'celery_worker.py', 'config.py',
-    'docker-entrypoint.sh', 'docker-compose.yaml', 'mypy.ini', 'pyproject.toml',
+    'docker-entrypoint.sh', 'docker-compose.yaml', 'entrypoint.sh', 'mypy.ini', 'pyproject.toml',
     'pytest.ini', 'requirements-dev.txt', 'requirements-prod.txt', 'requirements.txt',
     'ruff.toml', 'run.py', 'wsgi.py'
 )

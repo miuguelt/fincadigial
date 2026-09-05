@@ -75,7 +75,11 @@ const queueMutation = async ({ event }: { event: ExtendableEvent }) => {
 };
 
 for (const method of ['POST', 'PUT', 'PATCH', 'DELETE'] as const) {
-  registerRoute(({ url }) => url.pathname.startsWith('/api/v1/'), queueMutation, method);
+  registerRoute(
+    ({ url }) => url.pathname.startsWith('/api/v1/') && !url.pathname.startsWith('/api/v1/auth/'),
+    queueMutation,
+    method,
+  );
 }
 
 // ─────────────────────────────────────────────────────────────

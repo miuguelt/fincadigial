@@ -189,10 +189,10 @@ export const AdminFoodTypesPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <span className="text-base">{category.icon}</span>
               <div className="min-w-0">
-                <span className="font-bold text-foreground hover:text-emerald-600 transition-colors block truncate">
+                <span className="font-bold text-foreground hover:text-emerald-600 transition-colors block fit-clamp">
                   {name}
                 </span>
-                <span className="text-[10px] text-muted-foreground">{category.shortLabel}</span>
+                <span className="text-[11px] text-muted-foreground">{category.shortLabel}</span>
               </div>
             </div>
           );
@@ -222,11 +222,11 @@ export const AdminFoodTypesPage: React.FC = () => {
                 {profile.estimatedProtein}
               </span>
               {profile.restDaysSuggested > 0 ? (
-                <span className="block text-[10px] text-muted-foreground font-medium">
+                <span className="block text-[11px] text-muted-foreground font-medium">
                   ⏳ {profile.restDaysSuggested}d descanso
                 </span>
               ) : (
-                <span className="block text-[10px] text-muted-foreground">{profile.dryMatter}</span>
+                <span className="block text-[11px] text-muted-foreground">{profile.dryMatter}</span>
               )}
             </div>
           );
@@ -299,83 +299,93 @@ export const AdminFoodTypesPage: React.FC = () => {
   );
 
   // ─── Toolbar Personalizado con Filtros & Herramientas ──────────────────────
-  const customToolbar = (
-    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 w-full pb-2">
-      {/* Selector de Categorías Forrajeras */}
-      <FoodCategoryTabs
-        activeCategory={activeCategory}
-        onSelectCategory={setActiveCategory}
-        counts={categoryCounts}
-      />
+  const customToolbar = useMemo(
+    () => (
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 w-full pb-2">
+        {/* Selector de Categorías Forrajeras */}
+        <FoodCategoryTabs
+          activeCategory={activeCategory}
+          onSelectCategory={setActiveCategory}
+          counts={categoryCounts}
+        />
 
-      {/* Herramientas Zootécnicas & Conmutador de Vistas */}
-      <div className="flex items-center gap-2 shrink-0 self-end md:self-auto">
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1.5 px-3 text-xs font-bold border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 shadow-xs"
-          onClick={() => handleOpenAforo()}
-          title="Calculadora de Aforo de Pasturas"
-        >
-          <Scale size={14} className="text-emerald-500" />
-          <span className="hidden sm:inline">Aforo de</span> Pastos
-        </Button>
-
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1.5 px-3 text-xs font-bold border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 shadow-xs"
-          onClick={() => setIsRestModalOpen(true)}
-          title="Semáforo de Reposo y Rebrote de Potreros"
-        >
-          <Sprout size={14} className="text-amber-500" />
-          <span className="hidden sm:inline">Semáforo</span> Reposo
-        </Button>
-
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1.5 px-3 text-xs font-bold border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 shadow-xs"
-          onClick={() => setIsRationModalOpen(true)}
-          title="Calculadora de Raciones y Concentrados"
-        >
-          <Calculator size={14} className="text-blue-500" />
-          <span className="hidden sm:inline">Raciones</span>
-        </Button>
-
-        {/* View mode toggle */}
-        <div className="flex items-center bg-muted/60 p-0.5 rounded-xl border border-border/50">
+        {/* Herramientas Zootécnicas & Conmutador de Vistas */}
+        <div className="flex items-center gap-2 shrink-0 self-end md:self-auto">
           <Button
-            variant="ghost"
-            size="icon"
-            className={`h-7 w-7 rounded-lg ${viewMode === 'cards' ? 'bg-card shadow-xs text-foreground' : 'text-muted-foreground'}`}
-            onClick={() => setViewMode('cards')}
-            title="Vista Cuadrícula / Tarjetas Bento"
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 px-3 text-xs font-bold border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 shadow-xs"
+            onClick={() => handleOpenAforo()}
+            title="Calculadora de Aforo de Pasturas"
           >
-            <LayoutGrid size={14} />
+            <Scale size={14} className="text-emerald-500" />
+            <span className="hidden sm:inline">Aforo de</span> Pastos
           </Button>
+
           <Button
-            variant="ghost"
-            size="icon"
-            className={`h-7 w-7 rounded-lg ${viewMode === 'table' ? 'bg-card shadow-xs text-foreground' : 'text-muted-foreground'}`}
-            onClick={() => setViewMode('table')}
-            title="Vista Tabla Detallada"
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 px-3 text-xs font-bold border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 shadow-xs"
+            onClick={() => setIsRestModalOpen(true)}
+            title="Semáforo de Reposo y Rebrote de Potreros"
           >
-            <TableIcon size={14} />
+            <Sprout size={14} className="text-amber-500" />
+            <span className="hidden sm:inline">Semáforo</span> Reposo
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 px-3 text-xs font-bold border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 shadow-xs"
+            onClick={() => setIsRationModalOpen(true)}
+            title="Calculadora de Raciones y Concentrados"
+          >
+            <Calculator size={14} className="text-blue-500" />
+            <span className="hidden sm:inline">Raciones</span>
+          </Button>
+
+          {/* View mode toggle */}
+          <div className="flex items-center bg-muted/60 p-0.5 rounded-xl border border-border/50">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-7 w-7 rounded-lg ${viewMode === 'cards' ? 'bg-card shadow-xs text-foreground' : 'text-muted-foreground'}`}
+              onClick={() => setViewMode('cards')}
+              title="Vista Cuadrícula / Tarjetas Bento"
+            >
+              <LayoutGrid size={14} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-7 w-7 rounded-lg ${viewMode === 'table' ? 'bg-card shadow-xs text-foreground' : 'text-muted-foreground'}`}
+              onClick={() => setViewMode('table')}
+              title="Vista Tabla Detallada"
+            >
+              <TableIcon size={14} />
+            </Button>
+          </div>
+
+          {/* Botón de Crear Nuevo Forraje / Alimento */}
+          <Button
+            size="sm"
+            className="h-8 gap-1.5 px-3.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs shadow-emerald-600/25 rounded-xl"
+            onClick={handleOpenCreate}
+          >
+            <Plus size={14} />
+            <span>Nuevo</span>
           </Button>
         </div>
-
-        {/* Botón de Crear Nuevo Forraje / Alimento */}
-        <Button
-          size="sm"
-          className="h-8 gap-1.5 px-3.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs shadow-emerald-600/25 rounded-xl"
-          onClick={handleOpenCreate}
-        >
-          <Plus size={14} />
-          <span>Nuevo</span>
-        </Button>
       </div>
-    </div>
+    ),
+    [
+      activeCategory,
+      categoryCounts,
+      handleOpenAforo,
+      handleOpenCreate,
+      viewMode,
+      setViewMode,
+    ]
   );
 
   // ─── Configuración CRUD ───────────────────────────────────────────────────
