@@ -75,11 +75,13 @@ def _build_sqlalchemy_database_uri():
     """Build SQLALCHEMY_DATABASE_URI primarily from DATABASE_URL."""
     uri = os.getenv("DATABASE_URL") or os.getenv("SQLALCHEMY_DATABASE_URI")
     if uri:
-        # Normalizar prefijos genéricos de postgres
+        # Normalizar prefijos genéricos de postgres y mysql
         if uri.startswith("postgres://"):
             uri = uri.replace("postgres://", "postgresql+psycopg2://", 1)
         elif uri.startswith("postgresql://") and not uri.startswith("postgresql+"):
             uri = uri.replace("postgresql://", "postgresql+psycopg2://", 1)
+        elif uri.startswith("mysql://") and not uri.startswith("mysql+"):
+            uri = uri.replace("mysql://", "mysql+pymysql://", 1)
         return uri
 
     # En desarrollo local permitimos una base SQLite auto-contenida para no
@@ -100,10 +102,19 @@ def _build_sqlalchemy_database_uri():
     password = os.getenv("DB_PASSWORD")
 
     if all([host, name, user, password]):
-        default_engine = "postgresql+psycopg2" if active_env == "production" else "mysql+pymysql"
-        engine = os.getenv("DB_ENGINE", default_engine)
-        default_port = "5432" if "postgresql" in engine else "3306"
-        port = os.getenv("DB_PORT") or default_port
+        port = os.getenv("DB_PORT")
+        if not os.getenv("DB_ENGINE"):
+            # Detección inteligente por puerto o host
+            if str(port) == "3306" or (host and "mysql" in str(host).lower()):
+                engine = "mysql+pymysql"
+                default_port = "3306"
+            else:
+                engine = "postgresql+psycopg2" if active_env == "production" else "mysql+pymysql"
+                default_port = "5432" if "postgresql" in engine else "3306"
+        else:
+            engine = os.getenv("DB_ENGINE")
+            default_port = "5432" if "postgresql" in engine else "3306"
+        port = port or default_port
         try:
             safe_user = quote_plus(str(user))
             safe_password = quote_plus(str(password))
@@ -138,20 +149,33 @@ class Config:
     # Extraer atributos de conexión directamente desde la URL (sin pedir variables separadas)
     try:
         from urllib.parse import urlsplit as _urlsplit, unquote as _unquote
-        _parsed_db = _urlsplit(SQLALCHEMY_DATABASE_URI.replace("postgresql+psycopg2://", "postgresql://", 1))
+        _parsed_db = _urlsplit(
+            SQLALCHEMY_DATABASE_URI
+            .replace("postgresql+psycopg2://", "postgresql://", 1)
+            .replace("mysql+pymysql://", "mysql://", 1)
+        )
         HOST = _parsed_db.hostname or "localhost"
-        PORT = str(_parsed_db.port or 5432)
-        DATABASE = _parsed_db.path.lstrip("/") or "villaluz"
+        default_port_num = 3306 if "mysql" in SQLALCHEMY_DATABASE_URI else 5432
+        PORT = str(_parsed_db.port or default_port_num)
+        DATABASE = _parsed_db.path.lstrip("/").split("/")[0] or "villaluz"
         DB_USER = _unquote(_parsed_db.username or "")
         DB_PASSWORD = _unquote(_parsed_db.password or "")
     except Exception:
-        HOST = os.getenv("DB_HOST", "localhost")
-        PORT = os.getenv("DB_PORT", "5432")
-        DATABASE = os.getenv("DB_NAME", "villaluz")
-        DB_USER = os.getenv("DB_USER", "")
-        DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+        HOST = "localhost"
+        PORT = "5432"
+        DATABASE = "villaluz"
+        DB_USER = ""
+        DB_PASSWORD = ""
 
-    DB_DRIVER = "psycopg2"
+    if SQLALCHEMY_DATABASE_URI and "sqlite" in SQLALCHEMY_DATABASE_URI:
+        DB_DRIVER = "sqlite"
+        DB_ENGINE = "sqlite"
+    elif SQLALCHEMY_DATABASE_URI and "mysql" in SQLALCHEMY_DATABASE_URI:
+        DB_DRIVER = "pymysql"
+        DB_ENGINE = "mysql+pymysql"
+    else:
+        DB_DRIVER = "psycopg2"
+        DB_ENGINE = "postgresql+psycopg2"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Optimizaciones Pro para PostgreSQL 18 y alta concurrencia
@@ -534,7 +558,11 @@ class ProductionConfig(Config):
     def validate_production_env(cls):
         """Valida las 5 variables de entorno obligatorias para producción según el protocolo SSoT."""
         missing = []
-        if not (os.getenv("DATABASE_URL") or os.getenv("SQLALCHEMY_DATABASE_URI")):
+        has_db = bool(
+            os.getenv("DATABASE_URL")
+            or os.getenv("SQLALCHEMY_DATABASE_URI")
+        )
+        if not has_db:
             missing.append("DATABASE_URL")
         if not (os.getenv("FLASK_SECRET_KEY") or os.getenv("JWT_SECRET_KEY")):
             missing.append("FLASK_SECRET_KEY")

@@ -97,8 +97,22 @@ if (Test-Path $wcmInjector) {
 $env:REDIS_URL = "redis://127.0.0.1:6380/0"
 $env:CELERY_BROKER_URL = "redis://127.0.0.1:6380/1"
 $env:CELERY_RESULT_BACKEND = "redis://127.0.0.1:6380/1"
-if ([string]::IsNullOrWhiteSpace($env:DB_PASSWORD)) {
-    Write-Warning "DB_PASSWORD no está definido. Configure backend/.env antes de iniciar Villaluz."
+if (-not [string]::IsNullOrWhiteSpace($env:DATABASE_URL)) {
+    try {
+        $cleanDbUri = $env:DATABASE_URL -replace '^postgresql\+[a-zA-Z0-9_-]+://', 'postgresql://' -replace '^mysql\+[a-zA-Z0-9_-]+://', 'mysql://'
+        $parsedDbUri = [System.Uri]$cleanDbUri
+        if (-not $env:DB_HOST -and $parsedDbUri.Host) { $env:DB_HOST = $parsedDbUri.Host }
+        if (-not $env:DB_PORT -and $parsedDbUri.Port -gt 0) { $env:DB_PORT = "$($parsedDbUri.Port)" }
+        if (-not $env:DB_NAME -and $parsedDbUri.AbsolutePath) { $env:DB_NAME = $parsedDbUri.AbsolutePath.TrimStart('/').Split('/')[0] }
+        if ($parsedDbUri.UserInfo) {
+            $userParts = $parsedDbUri.UserInfo.Split(':')
+            if (-not $env:DB_USER) { $env:DB_USER = [System.Uri]::UnescapeDataString($userParts[0]) }
+            if (-not $env:DB_PASSWORD -and $userParts.Length -gt 1) { $env:DB_PASSWORD = [System.Uri]::UnescapeDataString($userParts[1]) }
+        }
+    } catch {}
+}
+if ([string]::IsNullOrWhiteSpace($env:DB_PASSWORD) -and [string]::IsNullOrWhiteSpace($env:DATABASE_URL)) {
+    Write-Warning "DATABASE_URL (o DB_PASSWORD) no está definido. Configure backend/.env antes de iniciar Villaluz."
 }
 
 $BackupRoot = & "$ProjectRoot\scripts\backup\Resolve-VillaLuzBackupRoot.ps1" -ProjectRoot $ProjectRoot
@@ -549,10 +563,11 @@ $rdUrl0 = "redis://127.0.0.1:6380/0"
 $rdUrl1 = "redis://127.0.0.1:6380/1"
 
 $env:PORT = "$bePort"
-$env:DB_HOST = "127.0.0.1"
-$env:DB_PORT = "$pgPort"
-$env:DB_NAME = "finca_db"
-$env:DB_USER = "villaluz"
+if (-not $env:DATABASE_URL -and -not [string]::IsNullOrWhiteSpace($env:DB_PASSWORD)) {
+    $escapedUser = [System.Uri]::EscapeDataString("villaluz")
+    $escapedPass = [System.Uri]::EscapeDataString($env:DB_PASSWORD)
+    $env:DATABASE_URL = "postgresql+psycopg2://${escapedUser}:${escapedPass}@127.0.0.1:${pgPort}/finca_db"
+}
 $env:REDIS_URL = "$rdUrl0"
 $env:CELERY_BROKER_URL = "$rdUrl1"
 $env:CELERY_RESULT_BACKEND = "$rdUrl1"

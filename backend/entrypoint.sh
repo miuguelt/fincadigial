@@ -6,7 +6,7 @@ echo "  FINCA VILLA LUZ — Backend Entrypoint (Producción)"
 echo "════════════════════════════════════════════════════════════"
 
 # ── 1. Esperar conexión con la base de datos ──────────────────────────
-echo "🔄 Esperando conexión con la base de datos PostgreSQL..."
+echo "🔄 Esperando conexión con la base de datos..."
 python -c '
 import time, sys, os
 from sqlalchemy import create_engine
@@ -18,26 +18,29 @@ if not uri:
     print("❌ Error: DATABASE_URL no fue configurada.")
     sys.exit(1)
 
-# Normalizar prefijo de postgres si es necesario
+# Normalizar prefijos si es necesario
 if uri.startswith("postgres://"):
     uri = uri.replace("postgres://", "postgresql+psycopg2://", 1)
 elif uri.startswith("postgresql://") and not uri.startswith("postgresql+"):
     uri = uri.replace("postgresql://", "postgresql+psycopg2://", 1)
+elif uri.startswith("mysql://") and not uri.startswith("mysql+"):
+    uri = uri.replace("mysql://", "mysql+pymysql://", 1)
 
+db_type = "MySQL" if "mysql" in uri else "PostgreSQL"
 connected = False
 for i in range(30):
     try:
         engine = create_engine(uri, pool_pre_ping=True)
         with engine.connect() as conn:
-            print("✅ Conexión establecida exitosamente con PostgreSQL")
+            print(f"✅ Conexión establecida exitosamente con {db_type}")
             connected = True
             break
     except Exception as e:
-        print(f"⏳ Esperando base de datos ({i+1}/30): {e}")
+        print(f"⏳ Esperando base de datos {db_type} ({i+1}/30): {e}")
         time.sleep(2)
 
 if not connected:
-    print("❌ Timeout: No se pudo conectar a la base de datos tras 60s")
+    print(f"❌ Timeout: No se pudo conectar a la base de datos {db_type} tras 60s")
     sys.exit(1)
 '
 

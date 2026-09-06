@@ -105,6 +105,9 @@ services:
 
       # ── Estricto: Cero datos demo en producción ──
       VILLALUZ_SEED_DEMO_DATA: "false"
+
+      # ── Variables Opcionales / Passthrough (Heredan de Coolify si están configuradas) ──
+      REDIS_URL:
     volumes:
       - uploads_data:/app/static/uploads
       - maintenance_logs:/app/maintenance
