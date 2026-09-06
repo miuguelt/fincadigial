@@ -52,13 +52,9 @@ finca (6).sql
 routes.json
 run.py
 
-# Generated migration versions are recreated by the migration tool; retain manual indexes.
-/migrations/versions/*
-!/migrations/versions/perf001_runtime_query_indexes.py
-!/migrations/versions/perf002_calendar_alert_indexes.py
-# repro001 es manual (ALTER TYPE sobre el enum eventtype): autogenerate no la
-# reproduce, así que sin versionar se pierde para los demás entornos.
-!/migrations/versions/repro001_dry_off_event.py
+# Migrations are versioned in full: the Alembic tree must be complete in git or
+# any clean build/deploy (fresh or empty DB) fails with KeyError on a missing
+# down_revision. The tree converges via merge migrations.
 /migrations/__pycache__/
 
 # --- Local IDE state ---
