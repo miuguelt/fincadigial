@@ -47,6 +47,27 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
     }
   }, [currentPage, totalPages, loading, onPageChange]);
 
+  // Atajos de teclado: Alt + Flecha Izquierda / Derecha para cambiar de página
+  React.useEffect(() => {
+    if (totalPages <= 1) return;
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Si el foco está en un campo de texto y no se pulsa Alt, no interferir
+      if (!e.altKey) return;
+
+      if (e.key === 'ArrowLeft' && currentPage > 1 && !loading) {
+        e.preventDefault();
+        handlePageChange(currentPage - 1);
+      } else if (e.key === 'ArrowRight' && currentPage < totalPages && !loading) {
+        e.preventDefault();
+        handlePageChange(currentPage + 1);
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [currentPage, totalPages, loading, handlePageChange]);
+
   // Generar array de páginas a mostrar
   const getVisiblePages = useCallback(() => {
     const delta = 1; // Mantiene la barra compacta en tablas grandes
@@ -141,6 +162,7 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={loading || currentPage <= 1}
               aria-label={t('common.previous', 'Anterior')}
+              title={`${t('common.previous', 'Anterior')} (Alt+←)`}
               className="inline-flex items-center justify-center h-8 w-8 sm:h-7 sm:w-7 p-0 text-xs font-medium text-white/80 hover:bg-white/15 hover:text-white rounded-full transition-colors disabled:opacity-30"
             >
               <ChevronLeft className="h-4 w-4 sm:h-3.5 sm:w-3.5" aria-hidden />
@@ -185,6 +207,7 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={loading || currentPage >= totalPages}
               aria-label={t('common.next', 'Siguiente')}
+              title={`${t('common.next', 'Siguiente')} (Alt+→)`}
               className="inline-flex items-center justify-center h-8 w-8 sm:h-7 sm:w-7 p-0 text-xs font-medium text-white/80 hover:bg-white/15 hover:text-white rounded-full transition-colors disabled:opacity-30"
             >
               <ChevronRight className="h-4 w-4 sm:h-3.5 sm:w-3.5" aria-hidden />

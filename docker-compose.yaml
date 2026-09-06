@@ -114,6 +114,8 @@ services:
       VILLALUZ_SEED_DEMO_DATA: "false"
 
       # ── Variables Opcionales / Passthrough (Heredan de Coolify si están configuradas) ──
+      COOLIFY_URL:
+      COOLIFY_FQDN:
       REDIS_URL:
     volumes:
       - uploads_data:/app/static/uploads
