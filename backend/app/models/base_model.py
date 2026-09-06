@@ -54,7 +54,7 @@ class BaseModel(db.Model):
 
     # Soft Delete (Audit & Resilience)
     is_deleted = db.Column(
-        db.Boolean, default=False, server_default="0", nullable=False
+        db.Boolean, default=False, server_default="false", nullable=False
     )
     deleted_at = db.Column(db.DateTime, nullable=True)
 
