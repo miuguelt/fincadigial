@@ -155,7 +155,7 @@ const RegistroOperativoPage: React.FC = () => {
             </div>
 
             <div className="vl-tabs !grid grid-cols-3 overflow-visible" role="tablist" aria-label="Secciones del registro diario">
-              {tabs.map(tab => {
+              {tabs.map((tab, tabIdx) => {
                 const Icon = tab.icon;
                 return (
                   <button key={tab.key} onClick={() => setActiveTab(tab.key)}
@@ -163,6 +163,18 @@ const RegistroOperativoPage: React.FC = () => {
                       if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault();
                         setActiveTab(tab.key);
+                      } else if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+                        event.preventDefault();
+                        const nextIdx = (tabIdx + 1) % tabs.length;
+                        setActiveTab(tabs[nextIdx].key);
+                        const nextBtn = document.getElementById(`tab-${tabs[nextIdx].key}`);
+                        nextBtn?.focus();
+                      } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+                        event.preventDefault();
+                        const prevIdx = (tabIdx - 1 + tabs.length) % tabs.length;
+                        setActiveTab(tabs[prevIdx].key);
+                        const prevBtn = document.getElementById(`tab-${tabs[prevIdx].key}`);
+                        prevBtn?.focus();
                       }
                     }}
                     type="button"

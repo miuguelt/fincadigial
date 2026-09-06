@@ -252,9 +252,31 @@ export function AnimalCard({
   };
 
   const handleCardKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
+
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       handleCardClick();
+    } else if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+      event.preventDefault();
+      const current = event.currentTarget;
+      const next = current.nextElementSibling as HTMLElement | null;
+      if (next && (next.getAttribute('role') === 'button' || next.tabIndex >= 0)) {
+        next.focus();
+      }
+    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      const current = event.currentTarget;
+      const prev = current.previousElementSibling as HTMLElement | null;
+      if (prev && (prev.getAttribute('role') === 'button' || prev.tabIndex >= 0)) {
+        prev.focus();
+      }
+    } else if ((event.key === 'x' || event.key === 'X') && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      if (selectable && onSelect) {
+        event.preventDefault();
+        onSelect(animal);
+      }
     }
   };
 

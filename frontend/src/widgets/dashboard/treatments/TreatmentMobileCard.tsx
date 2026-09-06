@@ -147,7 +147,10 @@ export const TreatmentMobileCard: React.FC<TreatmentMobileCardProps> = ({
 			tabIndex={0}
 			onClick={handleCardClick}
 			onKeyDown={(e) => {
-				if (e.key === "Enter" || e.key === " ") handleCardClick();
+				if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault();
+					handleCardClick();
+				}
 			}}
 			className={`
 				group relative w-full text-left

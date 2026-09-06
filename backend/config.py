@@ -443,6 +443,12 @@ class Config:
     # URLs
     # -----------------------
     _domain = (os.getenv("DOMAIN") or "").strip()
+    if _domain.startswith("https://"):
+        _domain = _domain[8:]
+    elif _domain.startswith("http://"):
+        _domain = _domain[7:]
+    _domain = _domain.rstrip("/")
+
     _scheme = (os.getenv("PREFERRED_URL_SCHEME") or "https").strip()
     _default_base_url = f"{_scheme}://{_domain}" if _domain else ""
 
@@ -530,7 +536,12 @@ class ProductionConfig(Config):
     JWT_COOKIE_SECURE = _jwt_secure_env not in ("false", "0", "no")
     JWT_COOKIE_SAMESITE = os.getenv("JWT_COOKIE_SAMESITE", "Lax")
     # Dominio de la cookie: toma JWT_COOKIE_DOMAIN o hereda automáticamente de DOMAIN
-    JWT_COOKIE_DOMAIN = os.getenv("JWT_COOKIE_DOMAIN") or os.getenv("DOMAIN")
+    _raw_cd = (os.getenv("JWT_COOKIE_DOMAIN") or os.getenv("DOMAIN") or "").strip()
+    if _raw_cd.startswith("https://"):
+        _raw_cd = _raw_cd[8:]
+    elif _raw_cd.startswith("http://"):
+        _raw_cd = _raw_cd[7:]
+    JWT_COOKIE_DOMAIN = _raw_cd.rstrip("/").split(":")[0] if _raw_cd else None
     JWT_TOKEN_LOCATION = ["cookies", "headers"]  # Usar cookies y headers para JWT
     JWT_COOKIE_CSRF_PROTECT = (
         True  # Proteger cookies JWT con CSRF (recomendado en producción)

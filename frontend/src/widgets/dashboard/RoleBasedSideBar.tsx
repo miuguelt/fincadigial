@@ -291,6 +291,25 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
           )}
           role="menu"
           aria-label="Categorías del menú"
+          onKeyDown={(e) => {
+            if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+              const nav = e.currentTarget;
+              const focusableItems = Array.from(
+                nav.querySelectorAll<HTMLElement>("a, button")
+              ).filter((el) => el.offsetParent !== null && !el.hasAttribute("disabled"));
+              const currentIndex = focusableItems.indexOf(document.activeElement as HTMLElement);
+              if (currentIndex === -1) return;
+
+              e.preventDefault();
+              if (e.key === "ArrowDown") {
+                const next = focusableItems[(currentIndex + 1) % focusableItems.length];
+                next?.focus();
+              } else {
+                const prev = focusableItems[(currentIndex - 1 + focusableItems.length) % focusableItems.length];
+                prev?.focus();
+              }
+            }
+          }}
         >
           {topItems.map((category) => {
               const isLeaf = Boolean(category.path) && (!category.children || category.children.length === 0);

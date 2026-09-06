@@ -145,9 +145,26 @@ function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
+        const target = e.target as HTMLElement | null;
+        if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
+
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           onOpenDetail?.(item);
+        } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+          e.preventDefault();
+          const current = e.currentTarget as HTMLElement;
+          const next = current.nextElementSibling as HTMLElement | null;
+          if (next && (next.getAttribute('role') === 'button' || next.tabIndex >= 0)) {
+            next.focus();
+          }
+        } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+          e.preventDefault();
+          const current = e.currentTarget as HTMLElement;
+          const prev = current.previousElementSibling as HTMLElement | null;
+          if (prev && (prev.getAttribute('role') === 'button' || prev.tabIndex >= 0)) {
+            prev.focus();
+          }
         }
       }}
       aria-label={`${t('common.view', 'Ver')} ${config.entityName} ${titleText}`}
@@ -408,6 +425,11 @@ function TableRowComponent<T extends { id: number }>(props: TableRowProps<T>) {
           const prevTr = currentTr.previousElementSibling as HTMLElement | null;
           if (prevTr && (prevTr.tagName === 'TR' || prevTr.getAttribute('role') === 'button')) {
             prevTr.focus();
+          }
+        } else if ((e.key === 'x' || e.key === 'X') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          e.preventDefault();
+          if (config.enableSelection && onToggleSelect) {
+            onToggleSelect(item.id);
           }
         } else if ((e.key === 'e' || e.key === 'E') && !e.ctrlKey && !e.metaKey && !e.altKey) {
           e.preventDefault();

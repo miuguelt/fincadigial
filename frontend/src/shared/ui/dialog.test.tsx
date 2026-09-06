@@ -149,4 +149,24 @@ describe('Dialog y ModalStackContext', () => {
     expect(onChildClose).toHaveBeenCalledWith(false);
     expect(onParentClose).not.toHaveBeenCalled();
   });
+
+  it('no cierra el diálogo al presionar Escape si hay un elemento flotante (Select, Popover, Menu) abierto', () => {
+    const onOpenChange = vi.fn();
+
+    render(
+      <Dialog open={true} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Diálogo con Desplegable</DialogTitle>
+          </DialogHeader>
+          <div data-radix-popper-content-wrapper="">
+            <div role="listbox" data-state="open">Opciones</div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+
+    fireEvent.keyDown(window, { key: 'Escape', code: 'Escape', keyCode: 27 });
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
 });

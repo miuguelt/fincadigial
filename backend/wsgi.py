@@ -199,10 +199,11 @@ if config_name == "production":
         )
         # Fail fast to avoid running with insecure config
         raise SystemExit(1)
-    # Ensure cookie domain set
-    if not os.getenv("JWT_COOKIE_DOMAIN") and not app.config.get("JWT_COOKIE_DOMAIN"):
+    # Ensure cookie domain or DOMAIN is set
+    cookie_domain = (os.getenv("JWT_COOKIE_DOMAIN") or os.getenv("DOMAIN") or app.config.get("JWT_COOKIE_DOMAIN") or "").strip()
+    if not cookie_domain:
         logging.error(
-            "JWT_COOKIE_DOMAIN is not set for production environment. Set JWT_COOKIE_DOMAIN to your base domain (e.g. enlinea.sbs)"
+            "La variable DOMAIN no está configurada en producción. Configure 'DOMAIN' en Coolify > Environment Variables (ej: finca.tudominio.com)."
         )
         raise SystemExit(1)
 

@@ -634,7 +634,6 @@ export function AnimalModalContent({
         role="region"
         aria-label={`Detalle del animal ${animal.record || animal.id}`}
         className="space-y-4 pb-6 h-full overflow-y-auto pr-1 sm:pr-2"
-        onKeyDown={(e) => e.stopPropagation()}
       >
         {/* Cabecera Hero de la Ficha Ganadera */}
         <section

@@ -72,8 +72,19 @@ function recoverStuckDocumentLocks() {
 const DIALOG_GUARD_KEY = '__vl_dialog_lock_guard__'
 const DIALOG_ACTIVE_KEY = '__vl_dialog_active_id__'
 
+function hasActiveFloatingElement(): boolean {
+  if (typeof document === 'undefined') return false;
+  const floating = document.querySelector(
+    '[data-radix-popper-content-wrapper], [role="listbox"][data-state="open"], [role="menu"][data-state="open"], [data-radix-select-content][data-state="open"], [data-state="open"][data-radix-menu-content], [cmdk-root], [role="dialog"][aria-label*="imagen"], [role="dialog"][aria-label*="Vista de imagen"]'
+  );
+  return Boolean(floating);
+}
+
 function handleGlobalDialogKeyDown(e: KeyboardEvent) {
   if (e.key === 'Escape' || e.keyCode === 27) {
+    if (hasActiveFloatingElement()) {
+      return;
+    }
     if (dialogStack.length > 0) {
       // Find the topmost dialog (highest depth)
       const top = dialogStack[dialogStack.length - 1];
@@ -277,7 +288,6 @@ const DialogContent = React.forwardRef<
       <DialogPrimitive.Content
         ref={ref}
         onCloseAutoFocus={(e) => {
-          e.preventDefault()
           onCloseAutoFocus?.(e)
         }}
         onPointerDownOutside={(e) => {

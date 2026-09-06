@@ -437,7 +437,21 @@ export function CRUDForm<T extends { id?: number }>({
       preventCloseOnOutsideClick={true}
       className="bg-card text-card-foreground border-border shadow-lg transition-all duration-200 ease-out"
     >
-      <form onSubmit={onSubmit} className="space-y-4 h-full flex flex-col text-[13px] sm:text-sm">
+      <form
+        onSubmit={onSubmit}
+        onKeyDown={(e) => {
+          if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !saving) {
+            e.preventDefault();
+            const submitBtn = e.currentTarget.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+            if (submitBtn) {
+              submitBtn.click();
+            } else {
+              onSubmit(e);
+            }
+          }
+        }}
+        className="space-y-4 h-full flex flex-col text-[13px] sm:text-sm"
+      >
         {/* Los errores de validación ahora se presentan exclusivamente de forma elegante e inline debajo de cada campo */}
         {renderFormSections}
         {additionalFormContent && additionalFormContent(formData, editingItem || null)}
@@ -481,6 +495,7 @@ export function CRUDForm<T extends { id?: number }>({
             type="submit"
             size="sm"
             disabled={saving}
+            title={editingItem ? `${t("common.update", "Guardar Cambios")} (Ctrl+Enter)` : `${t("common.create", "Crear Registro")} (Ctrl+Enter)`}
             className="flex-1 sm:flex-initial transition-all duration-150 hover:shadow-sm active:scale-[0.98]"
           >
             {saving ? (

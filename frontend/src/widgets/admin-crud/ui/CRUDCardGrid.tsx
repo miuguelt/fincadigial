@@ -68,9 +68,31 @@ export function CRUDCardGrid<T extends { id: number }>({
             role={config.renderCard ? undefined : 'button'}
             tabIndex={config.renderCard ? undefined : 0}
             onKeyDown={config.renderCard ? undefined : (e) => {
+              const target = e.target as HTMLElement | null;
+              if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
+
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 openDetail(item);
+              } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                const current = e.currentTarget as HTMLElement;
+                const next = current.nextElementSibling as HTMLElement | null;
+                if (next && (next.getAttribute('role') === 'button' || next.tabIndex >= 0)) {
+                  next.focus();
+                }
+              } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                const current = e.currentTarget as HTMLElement;
+                const prev = current.previousElementSibling as HTMLElement | null;
+                if (prev && (prev.getAttribute('role') === 'button' || prev.tabIndex >= 0)) {
+                  prev.focus();
+                }
+              } else if ((e.key === 'x' || e.key === 'X') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                e.preventDefault();
+                if (config.enableSelection && onToggleSelect) {
+                  onToggleSelect(item.id);
+                }
               }
             }}
           >

@@ -48,10 +48,19 @@ export function CollapsibleCard({
         )}>
             <div
                 className={cn(
-                    "flex items-center justify-between p-3.5 sm:p-4 cursor-pointer transition-colors border-b border-border/50",
+                    "flex items-center justify-between p-3.5 sm:p-4 cursor-pointer transition-colors border-b border-border/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                     isCollapsed ? "bg-card/50 hover:bg-muted/30" : "bg-card hover:bg-muted/40"
                 )}
+                role="button"
+                tabIndex={0}
+                aria-expanded={!isCollapsed}
                 onClick={() => setIsCollapsed(!isCollapsed)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setIsCollapsed(!isCollapsed);
+                    }
+                }}
             >
                 <div className="flex items-center gap-3">
                     <div className={cn("w-1.5 h-4.5 rounded-full shadow-sm", cfg.bar)} />
@@ -67,11 +76,14 @@ export function CollapsibleCard({
                         </span>
                     )}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                     {headerActions}
                     <Button
                         variant="ghost"
                         size="sm"
+                        tabIndex={-1}
+                        aria-hidden={true}
+                        onClick={() => setIsCollapsed(!isCollapsed)}
                         className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
                     >
                         {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}

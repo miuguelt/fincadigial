@@ -180,11 +180,21 @@ export const OfflineStatusBar = React.memo(function OfflineStatusBar() {
 			>
 				{/* Barra principal (Header) */}
 				<div
-					className="px-4 py-3 flex items-center gap-3 cursor-pointer select-none group"
+					className="px-4 py-3 flex items-center gap-3 cursor-pointer select-none group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-xl"
 					onClick={() => setIsExpanded((prev) => !prev)}
 					role="button"
+					tabIndex={0}
 					aria-label={`Estado: ${LABELS[level]}`}
 					aria-expanded={isExpanded}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter' || e.key === ' ') {
+							e.preventDefault();
+							setIsExpanded((prev) => !prev);
+						} else if (e.key === 'Escape' && isExpanded) {
+							e.preventDefault();
+							setIsExpanded(false);
+						}
+					}}
 				>
 					{/* Icono de estado con pulso suave */}
 					<div className={cn(

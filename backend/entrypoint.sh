@@ -5,6 +5,29 @@ echo "════════════════════════�
 echo "  FINCA VILLA LUZ — Backend Entrypoint (Producción)"
 echo "════════════════════════════════════════════════════════════"
 
+# ── 0. Validar variables de entorno requeridas ────────────────────────
+echo "🔍 Validando variables de entorno requeridas en Coolify..."
+python -c '
+import sys, os
+
+missing = []
+for var in ["DOMAIN", "DATABASE_URL", "FLASK_SECRET_KEY", "VILLALUZ_ADMIN_EMAIL", "VILLALUZ_ADMIN_PASSWORD"]:
+    val = (os.getenv(var) or "").strip()
+    if not val:
+        missing.append(var)
+
+if missing:
+    print(f"❌ ERROR CRÍTICO: Faltan variables obligatorias en Coolify: {\", \".join(missing)}")
+    print("👉 Configure estas variables en Coolify > Proyecto > Environment Variables.")
+    sys.exit(1)
+
+secret = (os.getenv("FLASK_SECRET_KEY") or os.getenv("JWT_SECRET_KEY") or "").strip()
+if len(secret) < 64:
+    print(f"⚠️ ADVERTENCIA: FLASK_SECRET_KEY tiene solo {len(secret)} caracteres (se requieren >= 64).")
+
+print("✅ Variables de entorno requeridas verificadas correctamente.")
+'
+
 # ── 1. Esperar conexión con la base de datos ──────────────────────────
 echo "🔄 Esperando conexión con la base de datos..."
 python -c '
