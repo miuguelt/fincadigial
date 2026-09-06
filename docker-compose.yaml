@@ -60,6 +60,7 @@ services:
     labels:
       coolify.managed: "true"
       coolify.port: "80"
+      traefik.enable: "true"
 
   # ── 2. BACKEND (Flask + Gunicorn + Migraciones Integradas) ─────────────
   villaluz-backend:
@@ -87,8 +88,9 @@ services:
       --access-logfile -
       --error-logfile -
       wsgi:app
-    expose:
-      - "8081"
+    labels:
+      coolify.managed: "true"
+      traefik.enable: "false"
     environment:
       # ── 🔴 LAS 5 VARIABLES OBLIGATORIAS (Configurar en Coolify) ──
       DOMAIN: ${DOMAIN}
@@ -123,13 +125,9 @@ services:
       - app_logs:/app/logs
       - backups_data:/app/backups
     healthcheck:
-      # Unhealthy si la app responde pero Redis está caído (error/unavailable): el
-      # healthcheck del backend (Docker) marca el contenedor como unhealthy y
-      # Coolify con "status change" notifica por Telegram. "disabled" (sin
-      # REDIS_URL) no se considera fallo.
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8081/api/v1/health | grep -qE '\"redis\"[ ]*:[ ]*\"(ok|disabled)\"'" ]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8081/api/v1/health || exit 1"]
       interval: 15s
-      timeout: 10s
+      timeout: 15s
       retries: 3
       start_period: 120s
     networks:

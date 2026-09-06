@@ -47,3 +47,53 @@ def test_probe_celery_uses_the_configured_villaluz_app(monkeypatch):
     assert result["workers_active"] == 1
     assert configured_app.control.inspect_calls == 1
     assert default_app.control.inspect_calls == 0
+
+
+def test_probe_celery_handles_unreachable_broker(monkeypatch):
+    class _FailingConnection:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+        def ensure_connection(self, **kwargs):
+            raise ConnectionError("Host inalcanzable")
+
+    configured_app = SimpleNamespace(
+        connection_for_read=lambda: _FailingConnection(),
+        control=_Control(_Inspector({})),
+    )
+
+    monkeypatch.setattr("app.celery_ext.celery", configured_app)
+
+    result = HealthChecker()._probe_celery()
+
+    assert result["status"] == "warning"
+    assert result["workers_active"] == 0
+    assert "Host inalcanzable" in result["detail"]
+    assert configured_app.control.inspect_calls == 0
+
+
+def test_probe_celery_skips_ping_on_stats_error(monkeypatch):
+    class _ErrorInspector:
+        def __init__(self):
+            self.ping_called = False
+
+        def stats(self):
+            raise RuntimeError("Error de broker al consultar stats")
+
+        def ping(self):
+            self.ping_called = True
+            return {}
+
+    inspector = _ErrorInspector()
+    configured_app = SimpleNamespace(control=_Control(inspector))
+
+    monkeypatch.setattr("app.celery_ext.celery", configured_app)
+
+    result = HealthChecker()._probe_celery()
+
+    assert result["status"] == "warning"
+    assert result["workers_active"] == 0
+    assert not inspector.ping_called
