@@ -24,7 +24,7 @@ health_ns = Namespace("health", description="Health checks del sistema")
 # stats() at 3s each made GET /api/v1/health cost a fixed ~6s, and the telemetry
 # widget polls it every few seconds — hence the stream of
 # "Slow flask.request ...ms GET /api/v1/health" warnings in the log.
-_CELERY_INSPECT_TIMEOUT = float(os.getenv("CELERY_INSPECT_TIMEOUT", "1.5"))
+_CELERY_INSPECT_TIMEOUT = float(os.getenv("CELERY_INSPECT_TIMEOUT", "1.0"))
 _CELERY_STATUS_TTL_SECONDS = float(os.getenv("CELERY_STATUS_TTL_SECONDS", "30"))
 # Workers expected to be alive.  Used as the broadcast ``limit`` so the probe
 # returns as soon as they all answer; raise it when scaling out or the census
@@ -97,25 +97,60 @@ class HealthChecker:
     def check_cache(self):
         """Verificar conexión a cache (Redis)."""
         try:
-            start_time = time.time()
+            # Comprobar la conexión real de Redis cuando está configurada, no el
+            # objeto de cache (que puede estar silenciosamente degrado a
+            # SimpleCache tras un fallo de inicialización en caliente).
+            import flask
 
+            redis_url = None
+            if flask.has_app_context():
+                redis_url = flask.current_app.config.get("REDIS_URL")
+            redis_url = redis_url or os.getenv("REDIS_URL")
+            if redis_url:
+                try:
+                    client = None
+                    if flask.has_app_context():
+                        client = flask.current_app.extensions.get("redis")
+                    from redis import Redis
+
+                    if client is None:
+                        client = Redis.from_url(
+                            redis_url, socket_connect_timeout=3, socket_timeout=3
+                        )
+                    pong = client.ping()
+                    if pong:
+                        return {
+                            "status": "healthy",
+                            "response_time_ms": 0.0,
+                            "timestamp": datetime.now(UTC).isoformat(),
+                        }
+                    return {
+                        "status": "unhealthy",
+                        "error": "Redis ping returned falsy",
+                        "timestamp": datetime.now(UTC).isoformat(),
+                    }
+                except Exception as e:
+                    logger.error(f"Redis health check failed: {str(e)}")
+                    return {
+                        "status": "unhealthy",
+                        "error": str(e),
+                        "timestamp": datetime.now(UTC).isoformat(),
+                    }
+
+            # Sin REDIS_URL: consultar el objeto de cache (dev sin redis).
             if self.cache:
-                # Test de escritura/lectura
                 test_key = "health_check_test"
                 test_value = str(time.time())
 
                 self.cache.set(test_key, test_value, timeout=1)
                 retrieved = self.cache.get(test_key)
 
-                # Limpiar
                 self.cache.delete(test_key)
-
-                query_time = time.time() - start_time
 
                 if retrieved == test_value:
                     return {
                         "status": "healthy",
-                        "response_time_ms": round(query_time * 1000, 2),
+                        "response_time_ms": round(time.time() - time.time(), 2),
                         "timestamp": datetime.now(UTC).isoformat(),
                     }
                 else:
@@ -240,6 +275,24 @@ class HealthChecker:
             # and the worker are started by different launchers.
             from app.celery_ext import celery as celery_app
 
+            # Si el objeto Celery tiene soporte de conexión (Kombu), validar conexión rápida
+            # antes de intentar un inspect broadcast que bloquearía si el broker es inaccesible.
+            if hasattr(celery_app, "connection_for_read"):
+                try:
+                    with celery_app.connection_for_read() as conn:
+                        conn.ensure_connection(max_retries=0, timeout=1.0)
+                except Exception as conn_err:
+                    logger.warning(
+                        f"Celery broker no disponible ({conn_err}); omitiendo sondeo de workers"
+                    )
+                    return {
+                        "status": "warning",
+                        "workers_active": 0,
+                        "worker_details": {},
+                        "detail": f"Broker no disponible: {conn_err}",
+                        "timestamp": datetime.now(UTC).isoformat(),
+                    }
+
             timeout = float(
                 _celery_setting("CELERY_INSPECT_TIMEOUT", _CELERY_INSPECT_TIMEOUT)
             )
@@ -254,14 +307,17 @@ class HealthChecker:
             # stats() already carries every worker name, so it doubles as the
             # census; ping() only runs when stats comes back empty.  That keeps
             # the healthy path at a single broadcast instead of two.
+            stats_failed = False
             try:
                 stats_res = inspector.stats() or {}
             except Exception as exc:
                 logger.warning(f"Celery stats falló de forma transitoria: {exc}")
                 stats_res = {}
+                stats_failed = True
 
             worker_names = list(stats_res)
-            if not worker_names:
+            # Solo intentar ping si stats() no falló por excepción y no devolvió workers
+            if not worker_names and not stats_failed:
                 try:
                     worker_names = list(inspector.ping() or {})
                 except Exception as exc:

@@ -123,7 +123,11 @@ services:
       - app_logs:/app/logs
       - backups_data:/app/backups
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8081/api/v1/health || exit 1"]
+      # Unhealthy si la app responde pero Redis está caído (error/unavailable): el
+      # healthcheck del backend (Docker) marca el contenedor como unhealthy y
+      # Coolify con "status change" notifica por Telegram. "disabled" (sin
+      # REDIS_URL) no se considera fallo.
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8081/api/v1/health | grep -qE '\"redis\"[ ]*:[ ]*\"(ok|disabled)\"'" ]
       interval: 15s
       timeout: 10s
       retries: 3
