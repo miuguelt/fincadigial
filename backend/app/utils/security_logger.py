@@ -18,8 +18,10 @@ security_logger.setLevel(logging.INFO)
 def setup_security_logging(app):
     """Configurar logging de seguridad"""
     if app.config.get("SECURITY_LOG_ENABLED", True):
-        # Los logs son datos de ejecución y viven fuera de la raíz del backend.
-        log_path = Path(__file__).resolve().parents[3] / "maintenance" / "security.log"
+        # Los logs son datos de ejecución y viven en /app/maintenance (volumen maintenance_logs),
+        # hermana de la carpeta app/ del backend. parents[2] resuelve a /app en producción
+        # (backend/ → /app) y a backend/ en desarrollo, consistente con el volumen.
+        log_path = Path(__file__).resolve().parents[2] / "maintenance" / "security.log"
         log_path.parent.mkdir(parents=True, exist_ok=True)
         security_handler = logging.FileHandler(log_path)
         security_handler.setLevel(logging.INFO)

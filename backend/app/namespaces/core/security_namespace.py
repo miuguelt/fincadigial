@@ -159,7 +159,6 @@ def analyze_security_logs():
                 "..",
                 "..",
                 "..",
-                "..",
                 "maintenance",
                 "security.log",
             )
@@ -210,7 +209,6 @@ def get_recent_security_alerts():
         security_log_path = os.path.abspath(
             os.path.join(
                 os.path.dirname(__file__),
-                "..",
                 "..",
                 "..",
                 "..",
@@ -389,7 +387,6 @@ def check_logging_configuration():
     security_log_path = os.path.abspath(
         os.path.join(
             os.path.dirname(__file__),
-            "..",
             "..",
             "..",
             "..",
