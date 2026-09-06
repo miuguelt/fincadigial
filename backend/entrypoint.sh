@@ -36,8 +36,9 @@ for var in ["DOMAIN", "DATABASE_URL", "FLASK_SECRET_KEY", "VILLALUZ_ADMIN_EMAIL"
         missing.append(var)
 
 if missing:
+    missing_names = ", ".join(missing)
     print("=" * 65, flush=True)
-    print(f"❌ ERROR CRÍTICO: Faltan variables obligatorias en Coolify: {\", \".join(missing)}", flush=True)
+    print(f"❌ ERROR CRÍTICO: Faltan variables obligatorias en Coolify: {missing_names}", flush=True)
     print("👉 Configure estas 5 variables en Coolify > Environment Variables:", flush=True)
     for m in missing:
         if m == "DOMAIN":
