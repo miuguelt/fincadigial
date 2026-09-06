@@ -273,9 +273,9 @@ export function AnimalCard({
         prev.focus();
       }
     } else if ((event.key === 'x' || event.key === 'X') && !event.ctrlKey && !event.metaKey && !event.altKey) {
-      if (selectable && onSelect) {
+      if (onSelect) {
         event.preventDefault();
-        onSelect(animal);
+        onSelect(String(animal.id));
       }
     }
   };
