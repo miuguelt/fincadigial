@@ -608,6 +608,33 @@ def seed_catalogs_for_finca(finca_id: int):
             db.session.add(FoodTypes(**ft, finca_id=finca_id))
     db.session.flush()
 
+    # 6. ---- Valores nutricionales de referencia (MS/PB/TDN) — FAO/NRC/FEDEGAN ----
+    # Actualiza solo lo que aún no los tenga (idempotente) para fincas existentes.
+    nutrition_refs = {
+        "Pasto Brachiaria decumbens (Amargo)": (25, 56),
+        "Pasto Brachiaria brizantha (Marandú / Toledo)": (28, 58),
+        "Pasto Brachiaria humidicola (Pomerania)": (26, 54),
+        "Pasto Kikuyo (Pennisetum clandestinum)": (22, 64),
+        "Pasto Ryegrass Perenne (Lolium perenne)": (20, 70),
+        "Pasto Estrella (Cynodon nlemfuensis)": (24, 60),
+        "Pasto Guinea Mombaza (Panicum maximum)": (25, 60),
+        "Botón de Oro (Tithonia diversifolia)": (24, 64),
+        "Matarratón (Gliricidia sepium)": (28, 62),
+        "Pasto Maralfalfa / Pincoya (Corte)": (18, 58),
+        "Ensilaje de Maíz (Zea mays)": (35, 68),
+        "Torta de Palmiste (Suplemento)": (90, 74),
+        "Sal Mineralizada 8% Fósforo": (100, 0),
+        "Sal Mineralizada 12% Fósforo (Cría/Leche)": (100, 0),
+    }
+    for ft in food_types_data:
+        name = ft["food_type"]
+        row = FoodTypes.query.filter_by(food_type=name, finca_id=finca_id).first()
+        if not row or "TDN" in (row.gauges or ""):
+            continue
+        dm, tdn = nutrition_refs.get(name, (0, 0))
+        row.gauges = f"{row.gauges}. Materia seca: {dm}%. TDN: {tdn}%."
+    db.session.flush()
+
     try:
         db.session.commit()
         logger.info(
