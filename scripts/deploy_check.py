@@ -180,18 +180,23 @@ else:
         "Falta script backend/entrypoint.sh para migraciones automáticas",
     )
 import re
-has_custom_networks = bool(re.search(r"^\s*networks\s*:", compose_text2, re.MULTILINE))
+has_networks_block = bool(re.search(r"^\s*networks\s*:", compose_text2, re.MULTILINE))
+has_external_networks = (
+    "coolify:" in compose_text2
+    and "redbd:" in compose_text2
+    and "external: true" in compose_text2
+)
 check(
-    not has_custom_networks,
-    "Sin redes personalizadas (red administrada automáticamente por Coolify)",
-    "Contiene redes personalizadas (puede causar 504 Gateway Timeout en Coolify)",
+    has_networks_block and has_external_networks,
+    "Redes externas de infraestructura configuradas (coolify y redbd con external: true)",
+    "Faltan redes externas requeridas (coolify y redbd) en docker-compose.yaml",
 )
 
-# ── 9. Volúmenes persistentes (Cero pérdida de datos) ─────────────────
+# ── 9. Volúmenes persistentes (Cero pérdida de datos en redeploys) ────
 check(
-    all(v in compose_text2 for v in ["uploads_data", "maintenance_logs", "app_logs", "backups_data"]),
-    "Volúmenes persistentes configurados (uploads_data, maintenance_logs, app_logs, backups_data)",
-    "Faltan volúmenes persistentes — se perderán datos en reinicios",
+    all(v in compose_text2 for v in ["uploads_data", "maintenance_logs", "app_logs", "backups_data", "frontend_logs"]),
+    "Volúmenes persistentes configurados (uploads_data, maintenance_logs, app_logs, backups_data, frontend_logs)",
+    "Faltan volúmenes persistentes requeridos — se perderán datos en reconstrucciones o reinicios",
 )
 
 # ── Reporte final ──────────────────────────────────────────────────────

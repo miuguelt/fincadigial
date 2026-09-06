@@ -9,15 +9,18 @@
 #                             aplica migraciones (flask db upgrade) e inicializa
 #                             catálogos base colombianos y el admin único.
 #
-# Red:
-#   * Sin redes custom. Coolify gestiona automáticamente la
-#     red bridge donde Traefik y los servicios se comunican sin colisiones.
+# Redes de Infraestructura Oficiales (Coolify + redbd):
+#   * coolify: Red bridge de enrutamiento y proxy Traefik (compartida en Coolify).
+#   * redbd: Red compartida del VPS para bases de datos (PostgreSQL 18 y Redis).
+#   * Ingress Anti-504: villaluz-frontend se conecta exclusivamente a 'coolify'.
+#   * villaluz-backend se conecta a 'coolify' y 'redbd' para acceso interno seguro.
 #
-# Volúmenes Persistentes (Cero pérdida de datos en redeploys):
+# Volúmenes Persistentes (Cero pérdida de datos en redeploys y reconstrucción):
 #   * uploads_data      → Fotos de animales, documentos, marcas y certificados ICA
 #   * maintenance_logs  → Auditorías, trazabilidad ganadera y diagnósticos
 #   * app_logs          → Registros de eventos y seguridad de la aplicación
 #   * backups_data      → Respaldos locales de base de datos
+#   * frontend_logs     → Registros de acceso y errores de Nginx
 # ════════════════════════════════════════════════════════════════════════
 
 services:
@@ -44,6 +47,10 @@ services:
     depends_on:
       villaluz-backend:
         condition: service_healthy
+    volumes:
+      - frontend_logs:/var/log/nginx
+    networks:
+      - coolify
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost/ || curl -fsS http://localhost/ || exit 1"]
       interval: 30s
@@ -119,6 +126,9 @@ services:
       timeout: 10s
       retries: 5
       start_period: 45s
+    networks:
+      - coolify
+      - redbd
 
 # ── VOLÚMENES PERSISTENTES (Cero pérdida de datos en redeploys) ────────
 volumes:
@@ -130,4 +140,13 @@ volumes:
     driver: local
   backups_data:
     driver: local
+  frontend_logs:
+    driver: local
+
+# ── REDES EXTERNAS (Integración Coolify y Base de Datos del Servidor) ─
+networks:
+  coolify:
+    external: true
+  redbd:
+    external: true
 
