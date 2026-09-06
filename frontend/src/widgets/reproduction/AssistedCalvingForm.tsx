@@ -56,8 +56,10 @@ export default function AssistedCalvingForm({
         animal_id: Number(formData.animal_id),
         event_type: 'Parto',
         event_date: formData.event_date,
+        alive_count: 1,
+        dead_count: 0,
+        complications: Boolean(formData.complications),
         notes: eventNotes,
-        diagnosis_result: 'Positivo',
       } as any);
 
       // 2. Si se ingresó ID del ternero, crear el registro de cría
@@ -72,9 +74,12 @@ export default function AssistedCalvingForm({
             record: formData.offspring_record,
             birth_date: formData.event_date,
             weight: formData.birth_weight ? parseFloat(formData.birth_weight) : 35.0,
+            breeds_id: motherBreedId,
             breed_id: motherBreedId,
+            sex: formData.sex === 'Macho' ? 'Macho' : 'Hembra',
             gender: formData.sex === 'Macho' ? 'Macho' : 'Hembra',
             status: 'Vivo',
+            idMother: Number(formData.animal_id),
             mother_id: Number(formData.animal_id),
             notes: `Cría nacida del parto del ${formData.event_date}. Vigor: ${formData.vitality}.`,
           } as any);

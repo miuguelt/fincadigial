@@ -291,6 +291,7 @@ class ReproductionCalendar(Resource):
                 "Inseminacion": "#3b82f6",  # azul
                 "Diagnostico": "#f97316",  # naranja
                 "Parto": "#10b981",  # verde
+                "Secado": "#8b5cf6",  # violeta
             }
 
             calendar_events.append(

@@ -78,6 +78,13 @@ export default function ReproductionHub() {
     loadSummaryData();
   }, [loadSummaryData, refreshKey]);
 
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab') || 'eventos';
+    if (tabFromUrl !== activeTab) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams, activeTab]);
+
   const handleTabChange = (val: string) => {
     setActiveTab(val);
     setSearchParams({ tab: val });
@@ -362,6 +369,30 @@ export default function ReproductionHub() {
     onAfterDelete: () => handleDataRefresh(),
   };
 
+  const mapResponseToForm = (item: ReproductiveEventResponse): ReproductiveEventInput => ({
+    animal_id: item.animal_id,
+    event_type: item.event_type as any,
+    event_date: item.event_date ? item.event_date.split('T')[0] : '',
+    technique: item.technique,
+    sire_id: item.sire_id,
+    diagnosis_result: item.diagnosis_result,
+    alive_count: item.alive_count ?? 0,
+    dead_count: item.dead_count ?? 0,
+    complications: item.complications,
+    notes: item.notes || '',
+  });
+
+  const validateForm = (formData: ReproductiveEventInput): string | null => {
+    if (formData.event_type === 'Parto') {
+      const alive = formData.alive_count || 0;
+      const dead = formData.dead_count || 0;
+      if (alive + dead <= 0) {
+        return 'Para registrar un parto, debe indicar al menos 1 cría nacida (viva o muerta).';
+      }
+    }
+    return null;
+  };
+
   return (
     <div className="min-h-full bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 lg:p-8 space-y-6 overflow-x-hidden">
       {/* Header Principal con Acciones Rápidas */}
@@ -537,6 +568,8 @@ export default function ReproductionHub() {
               config={crudConfig}
               service={reproductionService}
               initialFormData={initialFormData}
+              mapResponseToForm={mapResponseToForm}
+              validateForm={validateForm}
             />
           </div>
         </TabsContent>

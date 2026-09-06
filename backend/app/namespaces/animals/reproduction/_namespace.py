@@ -19,7 +19,8 @@ event_input_model = reproduction_ns.model(
     {
         "animal_id": fields.Integer(required=True, description="ID de la hembra"),
         "event_type": fields.String(
-            required=True, enum=["Celo", "Inseminacion", "Diagnostico", "Parto"]
+            required=True,
+            enum=["Celo", "Inseminacion", "Diagnostico", "Parto", "Secado"],
         ),
         "event_date": fields.Date(required=True),
         "sire_id": fields.Integer(description="ID del macho (solo Inseminacion)"),

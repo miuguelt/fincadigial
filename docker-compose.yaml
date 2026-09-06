@@ -50,6 +50,8 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
+    networks:
+      - coolify
     labels:
       coolify.managed: "true"
       coolify.port: "80"
@@ -119,6 +121,9 @@ services:
       timeout: 10s
       retries: 5
       start_period: 45s
+    networks:
+      - coolify
+      - redbd
 
 # ── VOLÚMENES PERSISTENTES (Cero pérdida de datos en redeploys) ────────
 volumes:
@@ -130,3 +135,10 @@ volumes:
     driver: local
   backups_data:
     driver: local
+
+# ── REDES EXTERNAS (Integración Coolify y Base de Datos del Servidor) ─
+networks:
+  coolify:
+    external: true
+  redbd:
+    external: true

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
+import { cn } from '@/shared/ui/cn';
 import { animalImageService, type AnimalImage } from '@/entities/animal/api/animalImage.service';
 
 interface ParentMiniCardProps {
@@ -92,7 +93,25 @@ export function ParentMiniCard({ parentId, parentLabel, gender, onClick }: Paren
   return (
     <div
       onClick={onClick}
-      className="relative group rounded-2xl overflow-hidden bg-gradient-to-br from-card to-background border border-border/70 dark:border-white/10 hover:border-primary/50 w-full max-w-[340px] aspect-[16/10] mx-auto cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
+      title={onClick ? `Ver ficha de ${gender.toLowerCase()} (${parentLabel})` : undefined}
+      className={cn(
+        'relative group rounded-2xl overflow-hidden bg-gradient-to-br from-card to-background border border-border/70 dark:border-white/10 w-full max-w-[340px] aspect-[16/10] mx-auto transition-all duration-300',
+        onClick
+          ? 'cursor-pointer hover:border-primary/50 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]'
+          : ''
+      )}
     >
       {/* Carrusel de imágenes */}
       <div className="absolute inset-0 w-full h-full">
@@ -181,13 +200,20 @@ export function ParentMiniCard({ parentId, parentLabel, gender, onClick }: Paren
       </div>
 
       {/* Información del padre/madre - siempre visible */}
-      <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-black/70 via-black/50 to-transparent backdrop-blur-[1px]">
-        <div className="text-[11px] uppercase tracking-wider font-bold text-white/80 mb-0.5">
-          {gender}
+      <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-black/70 via-black/50 to-transparent backdrop-blur-[1px] flex items-end justify-between">
+        <div className="min-w-0 pr-1">
+          <div className="text-[11px] uppercase tracking-wider font-bold text-white/80 mb-0.5">
+            {gender}
+          </div>
+          <div className="text-sm font-bold text-white fit-clamp drop-shadow-lg" title={parentLabel}>
+            {parentLabel}
+          </div>
         </div>
-        <div className="text-sm font-bold text-white fit-clamp drop-shadow-lg" title={parentLabel}>
-          {parentLabel}
-        </div>
+        {onClick && (
+          <span className="text-[10px] font-semibold text-white/90 bg-white/20 hover:bg-white/30 backdrop-blur-sm px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0 transition-all group-hover:bg-primary group-hover:text-primary-foreground shadow-sm">
+            Ver Ficha
+          </span>
+        )}
       </div>
 
       {/* Indicador de click - sutil */}

@@ -461,43 +461,75 @@ export const AnimalOverviewTab: React.FC<AnimalOverviewTabProps> = ({
           </div>
         </div>
 
-        <div
-          onClick={onFatherClick && (animal.idFather || animal.father_id) ? () => onFatherClick(animal.idFather || animal.father_id) : undefined}
-          className={cn(
-            'rounded-xl border border-blue-500/20 bg-blue-500/5 dark:bg-blue-950/20 p-3.5 flex flex-col justify-between transition-all',
-            animal.idFather || animal.father_id ? 'cursor-pointer hover:border-blue-500/40 hover:shadow-sm' : ''
-          )}
-        >
-          <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">
-            <span className="flex items-center gap-1.5"><Activity className="h-3.5 w-3.5" /> Padre</span>
-            {(animal.idFather || animal.father_id) && <span className="text-[11px] font-semibold underline">Ver Ficha</span>}
-          </div>
-          <div className="mt-2">
-            <p className="text-sm font-black text-foreground fit-clamp">
-              {fatherLabel === '-' ? 'N/A' : fatherLabel}
-            </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Línea Paterna</p>
-          </div>
-        </div>
+        {(() => {
+          const fatherId = Number(animal.idFather || animal.father_id);
+          const motherId = Number(animal.idMother || animal.mother_id);
+          return (
+            <>
+              <div
+                onClick={onFatherClick && fatherId > 0 ? () => onFatherClick(fatherId) : undefined}
+                className={cn(
+                  'rounded-xl border border-blue-500/20 bg-blue-500/5 dark:bg-blue-950/20 p-3.5 flex flex-col justify-between transition-all',
+                  fatherId > 0 && onFatherClick ? 'cursor-pointer hover:border-blue-500/40 hover:shadow-sm' : ''
+                )}
+                role={fatherId > 0 && onFatherClick ? 'button' : undefined}
+                tabIndex={fatherId > 0 && onFatherClick ? 0 : undefined}
+                onKeyDown={
+                  fatherId > 0 && onFatherClick
+                    ? (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onFatherClick(fatherId);
+                        }
+                      }
+                    : undefined
+                }
+              >
+                <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">
+                  <span className="flex items-center gap-1.5"><Activity className="h-3.5 w-3.5" /> Padre</span>
+                  {fatherId > 0 && onFatherClick && <span className="text-[11px] font-semibold underline">Ver Ficha</span>}
+                </div>
+                <div className="mt-2">
+                  <p className="text-sm font-black text-foreground fit-clamp">
+                    {fatherLabel === '-' ? 'N/A' : fatherLabel}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Línea Paterna</p>
+                </div>
+              </div>
 
-        <div
-          onClick={onMotherClick && (animal.idMother || animal.mother_id) ? () => onMotherClick(animal.idMother || animal.mother_id) : undefined}
-          className={cn(
-            'rounded-xl border border-pink-500/20 bg-pink-500/5 dark:bg-pink-950/20 p-3.5 flex flex-col justify-between transition-all',
-            animal.idMother || animal.mother_id ? 'cursor-pointer hover:border-pink-500/40 hover:shadow-sm' : ''
-          )}
-        >
-          <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-pink-700 dark:text-pink-400">
-            <span className="flex items-center gap-1.5"><Heart className="h-3.5 w-3.5" /> Madre</span>
-            {(animal.idMother || animal.mother_id) && <span className="text-[11px] font-semibold underline">Ver Ficha</span>}
-          </div>
-          <div className="mt-2">
-            <p className="text-sm font-black text-foreground fit-clamp">
-              {motherLabel === '-' ? 'N/A' : motherLabel}
-            </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Línea Materna</p>
-          </div>
-        </div>
+              <div
+                onClick={onMotherClick && motherId > 0 ? () => onMotherClick(motherId) : undefined}
+                className={cn(
+                  'rounded-xl border border-pink-500/20 bg-pink-500/5 dark:bg-pink-950/20 p-3.5 flex flex-col justify-between transition-all',
+                  motherId > 0 && onMotherClick ? 'cursor-pointer hover:border-pink-500/40 hover:shadow-sm' : ''
+                )}
+                role={motherId > 0 && onMotherClick ? 'button' : undefined}
+                tabIndex={motherId > 0 && onMotherClick ? 0 : undefined}
+                onKeyDown={
+                  motherId > 0 && onMotherClick
+                    ? (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onMotherClick(motherId);
+                        }
+                      }
+                    : undefined
+                }
+              >
+                <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-pink-700 dark:text-pink-400">
+                  <span className="flex items-center gap-1.5"><Heart className="h-3.5 w-3.5" /> Madre</span>
+                  {motherId > 0 && onMotherClick && <span className="text-[11px] font-semibold underline">Ver Ficha</span>}
+                </div>
+                <div className="mt-2">
+                  <p className="text-sm font-black text-foreground fit-clamp">
+                    {motherLabel === '-' ? 'N/A' : motherLabel}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Línea Materna</p>
+                </div>
+              </div>
+            </>
+          );
+        })()}
       </div>
 
       {/* Bento de Estadísticas Rápidas */}

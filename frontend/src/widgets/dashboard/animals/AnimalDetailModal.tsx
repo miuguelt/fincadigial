@@ -195,6 +195,14 @@ export function AnimalDetailModal({
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [historyAnimal, setHistoryAnimal] = useState<any | null>(null);
 
+  // Estado para abrir modal de progenitores en pila (stacked modal)
+  const [stackedParentId, setStackedParentId] = useState<number | null>(null);
+
+  const handleOpenParent = useCallback((id: number) => {
+    if (!id || Number.isNaN(Number(id))) return;
+    setStackedParentId(Number(id));
+  }, []);
+
   const ancestorsApi = useAnimalTreeApi();
   const descendantsApi = useAnimalTreeApi();
 
@@ -378,6 +386,7 @@ export function AnimalDetailModal({
   }, [currentAnimal, effectiveBreedOptions, effectiveFatherOptions, effectiveMotherOptions]);
 
   const handleModalClose = useCallback(() => {
+    setStackedParentId(null);
     setNavigationHistory([]);
     if (onClose) onClose();
     onOpenChange(false);
@@ -449,8 +458,8 @@ export function AnimalDetailModal({
             breedLabel={labels.breedLabel}
             fatherLabel={labels.fatherLabel}
             motherLabel={labels.motherLabel}
-            onFatherClick={handleOpenAnimal}
-            onMotherClick={handleOpenAnimal}
+            onFatherClick={handleOpenParent}
+            onMotherClick={handleOpenParent}
             currentUserId={currentUserId}
             onOpenHistory={() => handleOpenHistory(currentAnimal)}
             onOpenAncestorsTree={() => handleOpenAncestors(currentAnimal)}
@@ -539,6 +548,23 @@ export function AnimalDetailModal({
           }
         }}
       />
+
+      {/* Modal apilado para ver el detalle de los progenitores en pila */}
+      {stackedParentId && (
+        <AnimalDetailModal
+          isOpen={Boolean(stackedParentId)}
+          onOpenChange={(open) => {
+            if (!open) setStackedParentId(null);
+          }}
+          onClose={() => setStackedParentId(null)}
+          animalId={stackedParentId}
+          breedOptions={effectiveBreedOptions}
+          fatherOptions={effectiveFatherOptions}
+          motherOptions={effectiveMotherOptions}
+          currentUserId={currentUserId}
+          navigate={navigate}
+        />
+      )}
     </>
   );
 }

@@ -200,29 +200,35 @@ export const AnimalReproductionTab: React.FC<AnimalReproductionTabProps> = ({
         defaultCollapsed={false}
       >
         <div className="space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <ParentMiniCard
-              parentId={animal.idFather || animal.father_id}
-              parentLabel={fatherLabel || '-'}
-              gender="Padre"
-              onClick={
-                onFatherClick && (animal.idFather || animal.father_id)
-                  ? () => onFatherClick(animal.idFather || animal.father_id)
-                  : undefined
-              }
-            />
+          {(() => {
+            const fatherId = Number(animal.idFather || animal.father_id);
+            const motherId = Number(animal.idMother || animal.mother_id);
+            return (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <ParentMiniCard
+                  parentId={fatherId > 0 ? fatherId : undefined}
+                  parentLabel={fatherLabel || '-'}
+                  gender="Padre"
+                  onClick={
+                    onFatherClick && fatherId > 0
+                      ? () => onFatherClick(fatherId)
+                      : undefined
+                  }
+                />
 
-            <ParentMiniCard
-              parentId={animal.idMother || animal.mother_id}
-              parentLabel={motherLabel || '-'}
-              gender="Madre"
-              onClick={
-                onMotherClick && (animal.idMother || animal.mother_id)
-                  ? () => onMotherClick(animal.idMother || animal.mother_id)
-                  : undefined
-              }
-            />
-          </div>
+                <ParentMiniCard
+                  parentId={motherId > 0 ? motherId : undefined}
+                  parentLabel={motherLabel || '-'}
+                  gender="Madre"
+                  onClick={
+                    onMotherClick && motherId > 0
+                      ? () => onMotherClick(motherId)
+                      : undefined
+                  }
+                />
+              </div>
+            );
+          })()}
 
           <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-border/50">
             {onOpenAncestorsTree && (

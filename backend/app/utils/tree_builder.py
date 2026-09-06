@@ -39,6 +39,8 @@ def _serialize(animal: Animals, fields: list[str] | None = None) -> dict:
     base = {
         "id": animal.id,
         "record": animal.record,
+        "name": getattr(animal, "name", None),
+        "birth_date": animal.birth_date.isoformat() if getattr(animal, "birth_date", None) else None,
         "sex": str(animal.sex) if getattr(animal, "sex", None) is not None else None,
         "breeds_id": animal.breeds_id,
         "idFather": animal.idFather,

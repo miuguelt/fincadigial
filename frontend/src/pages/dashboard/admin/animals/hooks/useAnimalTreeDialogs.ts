@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { graphToAncestorLevels, graphToDescendantLevels, useAnimalTreeApi } from '@/entities/animal/model/useAnimalTreeApi';
 
-const TREE_FIELDS = 'id,record,sex,breeds_id,idFather,idMother';
+const TREE_FIELDS = 'id,record,name,birth_date,sex,breeds_id,idFather,idMother';
 
 export function useAncestorTreeDialog() {
   const api = useAnimalTreeApi();
