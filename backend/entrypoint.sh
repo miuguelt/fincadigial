@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+ENTRYPOINT_START=$(date +%s)
+
 echo "════════════════════════════════════════════════════════════"
 echo "  FINCA VILLA LUZ — Backend Entrypoint (Producción)"
 echo "════════════════════════════════════════════════════════════"
@@ -111,5 +113,7 @@ echo "🌱 Verificando catálogos base colombianos y usuario administrador..."
 python -m app.scripts.bootstrap_database || echo "⚠️ Advertencia en bootstrap (continuando arranque)"
 
 # ── 4. Arrancar proceso principal (Gunicorn) ──────────────────────────
+ENTRYPOINT_ELAPSED=$(( $(date +%s) - ENTRYPOINT_START ))
+echo "⏱️ Entrypoint completado en ${ENTRYPOINT_ELAPSED}s"
 echo "🚀 Arrancando servidor Gunicorn..."
 exec "$@"
