@@ -55,6 +55,51 @@ class GlobalUsersResource(Resource):
             )
 
 
+@users_ns.route("/pending-approval")
+class PendingApprovalUsersResource(Resource):
+    @users_ns.doc(
+        "list_pending_approval",
+        description="Listar usuarios pendientes de aprobación a nivel plataforma (sin filtro por finca)",
+        security=["Bearer"],
+    )
+    @jwt_required()
+    def get(self):
+        """Return users whose account registration is pending platform approval."""
+        try:
+            jwt_data = get_jwt()
+            current_role = jwt_data.get("role")
+            if current_role not in ("Administrador", "Instructor", "Propietario"):
+                return APIResponse.forbidden(
+                    "Se requiere rol de Administrador, Instructor o Propietario para esta operación"
+                )
+
+            from app.models.user import ApprovalStatus
+
+            pending_users = (
+                User.query.filter(User.approval_status == ApprovalStatus.Pending)
+                .order_by(User.created_at.asc(), User.id.asc())
+                .all()
+            )
+            return APIResponse.success(
+                data=[user.to_namespace_dict() for user in pending_users],
+                message=(
+                    f"Se obtuvieron {len(pending_users)} usuario(s) "
+                    "pendiente(s) de aprobación"
+                ),
+            )
+        except Exception as error:
+            logger.error(
+                "Error listando usuarios pendientes de aprobación: %s",
+                error,
+                exc_info=True,
+            )
+            return APIResponse.error(
+                "Error interno del servidor",
+                details={"error": str(error)},
+                status_code=500,
+            )
+
+
 @users_ns.route("/<int:user_id>/approval-status")
 class UserApprovalStatus(Resource):
     @users_ns.doc(

@@ -264,7 +264,7 @@ export const AnimalMiniCard: React.FC<AnimalMiniCardProps> = ({
                 </div>
 
                 <div className="absolute top-2 left-2 z-10">
-                  <div className="bg-black/60 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
+                  <div className="bg-black/60 backdrop-blur-sm text-white text-[11px] font-medium px-2 py-0.5 rounded-full">
                     {currentImageIndex + 1} / {images.length}
                   </div>
                 </div>

@@ -58,7 +58,7 @@ export function ControlModal({ open, onClose, form, setForm, animals, saving, on
           <textarea id="control-observaciones" rows={2} value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Ej: se ve flaca, hay que subirle el concentrado"
             className={`w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 ${RING} resize-none`} />
         </div>
-        <Button type="submit" disabled={saving} className="w-full bg-teal-600 hover:bg-teal-700 text-white rounded-xl py-3 text-base font-bold">
+        <Button type="submit" disabled={saving} className="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-xl border-teal-600 hover:border-teal-700 text-base font-bold">
           {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Guardando...</> : '✅ Guardar Control'}
         </Button>
       </form>

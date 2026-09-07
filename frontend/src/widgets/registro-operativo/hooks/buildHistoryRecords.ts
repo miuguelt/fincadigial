@@ -1,4 +1,5 @@
 import type { HistoryRecord } from '../types';
+import { formatCurrencyColombia } from '@/shared/utils/dateUtils';
 
 /** Los servicios devuelven `T[]`, pero algunos endpoints todavía envuelven en `{data}`. */
 export const asList = (value: any): any[] => {
@@ -105,7 +106,7 @@ function financeRecords(rows: any[], animalName: (id: number) => string): Histor
     return {
       id: `finance-${ft.id}`, type: 'finance', date: ft.date,
       animalId: ft.animal_id, animalLabel: ft.animal_id ? animalName(ft.animal_id) : undefined,
-      details: `${txType}: $${Number(ft.amount).toLocaleString('es-CO')} (${category})`,
+      details: `${txType}: ${formatCurrencyColombia(Number(ft.amount))} (${category})`,
       notes: ft.description, raw: { ...ft, transaction_type: txType, category },
     };
   });

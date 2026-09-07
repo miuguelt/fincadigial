@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, ChevronDown } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
@@ -7,7 +7,7 @@ import { campesinoServices } from '@/entities/campesino';
 import { useToast } from '@/app/providers/ToastContext';
 import { useOnlineStatus } from '@/shared/hooks/useOnlineStatus';
 import { offlineQueue } from '@/shared/api/offline/offlineQueue';
-import { getTodayColombia } from '@/shared/utils/dateUtils';
+import { getTodayColombia, formatCurrencyColombia } from '@/shared/utils/dateUtils';
 import { ACTIVITY_TYPES } from '../constants';
 import type { CropFormData } from '../types';
 
@@ -28,11 +28,16 @@ export function CropActivityModal({ open, onClose, initialForm, plots, onSave }:
   const [showDetails, setShowDetails] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Solo se rellena al abrir. La página pasa un `initialForm` nuevo en cada
+  // render; si el efecto dependiera de él, un re-render del padre (fin del
+  // historial, banner offline) borraría lo que el campesino va escribiendo.
+  const prevOpen = useRef(open);
   React.useEffect(() => {
-    if (open) {
+    if (open && !prevOpen.current) {
       setForm(initialForm);
       setShowDetails(false);
     }
+    prevOpen.current = open;
   }, [open, initialForm]);
 
   const handleSave = async () => {
@@ -151,7 +156,7 @@ export function CropActivityModal({ open, onClose, initialForm, plots, onSave }:
                         className={`w-full px-4 py-3 min-h-11 rounded-xl border border-border bg-background text-sm tabular-nums focus:outline-none focus:ring-2 ${RING}`} />
                       {Number(form.cost) > 0 && (
                         <p className="mt-1.5 text-sm font-semibold text-foreground tabular-nums" aria-live="polite">
-                          ${Number(form.cost).toLocaleString('es-CO')}
+                          {formatCurrencyColombia(Number(form.cost))}
                         </p>
                       )}
                     </div>
@@ -160,7 +165,7 @@ export function CropActivityModal({ open, onClose, initialForm, plots, onSave }:
               </AnimatePresence>
       </div>
       <div className="border-t border-border/70 px-5 pb-5 pt-1">
-        <Button type="button" onClick={handleSave} disabled={saving} className="w-full py-3 text-base">
+        <Button type="button" onClick={handleSave} disabled={saving} className="w-full h-12 text-base">
           {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Guardando...</> : '✅ Guardar Labor'}
         </Button>
       </div>

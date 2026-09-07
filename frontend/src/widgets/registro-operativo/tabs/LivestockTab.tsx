@@ -91,35 +91,41 @@ export function LivestockTab({ onOpenModal }: LivestockTabProps) {
     <div className="space-y-5">
       <p className="text-sm text-muted-foreground">Toque una opción. La fecha de hoy ya viene lista.</p>
 
-      {/* Única acción destacada: es un modo de trabajo en la manga, no un registro suelto. */}
-      <motion.button
-        whileTap={{ scale: 0.97 }}
-        type="button"
-        onClick={() => onOpenModal('corral-rapido')}
-        className="w-full flex items-center gap-3 rounded-lg border border-primary bg-primary/10 p-4 text-left transition-colors hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-      >
-        {/* Verde oscuro, no `bg-primary`: el par primary/primary-foreground queda en 2,8:1 y el icono se pierde. */}
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-emerald-700 text-white dark:bg-emerald-600 dark:text-emerald-50" aria-hidden="true">
-          <Zap className="h-6 w-6" />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-bold text-foreground">Modo manga rápida</span>
-          <span className="mt-0.5 block text-xs text-muted-foreground">
-            Pese un lote entero seguido, sin salir de la pantalla.
-          </span>
-        </span>
-      </motion.button>
+      {GROUPS.map((group, groupIndex) => (
+        <div key={group.id} className="space-y-2">
+          <section aria-labelledby={`grupo-${group.id}`} className="space-y-2">
+            <div>
+              <h3 id={`grupo-${group.id}`} className="vl-section-title">{group.title}</h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">{group.hint}</p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {group.actions.map(renderAction)}
+            </div>
+          </section>
 
-      {GROUPS.map(group => (
-        <section key={group.id} className="space-y-2" aria-labelledby={`grupo-${group.id}`}>
-          <div>
-            <h3 id={`grupo-${group.id}`} className="vl-section-title">{group.title}</h3>
-            <p className="mt-0.5 text-xs text-muted-foreground">{group.hint}</p>
-          </div>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {group.actions.map(renderAction)}
-          </div>
-        </section>
+          {/* La acción destacada va tras el grupo «Todos los días»: quien entra a
+              anotar la leche de la mañana no debe saltarse la tarea más frecuente
+              para llegar a ella. Al final quedaría perdida; en el medio funciona. */}
+          {groupIndex === 0 && (
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              type="button"
+              onClick={() => onOpenModal('corral-rapido')}
+              className="w-full flex items-center gap-3 rounded-lg border border-primary bg-primary/10 p-4 text-left transition-colors hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            >
+              {/* Verde oscuro, no `bg-primary`: el par primary/primary-foreground queda en 2,8:1 y el icono se pierde. */}
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-emerald-700 text-white dark:bg-emerald-600 dark:text-emerald-50" aria-hidden="true">
+                <Zap className="h-6 w-6" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-bold text-foreground">Modo manga rápida</span>
+                <span className="mt-0.5 block text-xs text-muted-foreground">
+                  Pese un lote entero seguido, sin salir de la pantalla.
+                </span>
+              </span>
+            </motion.button>
+          )}
+        </div>
       ))}
     </div>
   );

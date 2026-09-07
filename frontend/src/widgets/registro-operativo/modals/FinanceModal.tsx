@@ -4,7 +4,7 @@ import { ModalWrapper } from './ModalWrapper';
 import { AnimalSelect } from '../components/AnimalSelect';
 import { getFinanceCategories } from '../constants';
 import type { FinanceFormData } from '../types';
-import { getTodayColombia } from '@/shared/utils/dateUtils';
+import { formatCurrencyColombia, getTodayColombia } from '@/shared/utils/dateUtils';
 
 interface FinanceModalProps {
   open: boolean;
@@ -16,26 +16,28 @@ interface FinanceModalProps {
   onSubmit: () => Promise<boolean>;
 }
 
-const RING = 'focus:ring-emerald-500/30';
-
 export function FinanceModal({ open, onClose, form, setForm, animals, saving, onSubmit }: FinanceModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const ok = await onSubmit();
-    if (ok) setForm({ transaction_type: 'Gasto', category: 'Alimento', animalId: '', amount: '', date: getTodayColombia(), description: '' });
+    // Conserva tipo y categoría elegidos: los ingresos/gastos se anotan de
+    // corrido y volver a «Gasto + Alimento» en cada cierre obligaba a re-tocar.
+    if (ok) setForm({ transaction_type: form.transaction_type, category: form.category, animalId: '', amount: '', date: form.date, description: '' });
   };
 
   const currentCategories = getFinanceCategories(form.transaction_type);
   const selectedCategory = currentCategories.find(c => c.value === form.category);
-  const amountPreview = Number(form.amount) > 0
-    ? `$${Number(form.amount).toLocaleString('es-CO')}`
-    : null;
+  const amountPreview = Number(form.amount) > 0 ? formatCurrencyColombia(Number(form.amount)) : null;
 
   const switchType = (type: 'Ingreso' | 'Gasto') => {
     // La categoría vigente puede no existir en el otro catálogo: si no se
     // reemplaza, el backend rechaza el valor huérfano.
     setForm({ ...form, transaction_type: type, category: getFinanceCategories(type)[0].value });
   };
+
+  // El color del anillo acompaña al tipo: verde mientras se anota un ingreso,
+  // rojo cuando pasa a gasto.
+  const RING = form.transaction_type === 'Ingreso' ? 'focus:ring-emerald-500/30' : 'focus:ring-red-500/30';
 
   return (
     <ModalWrapper open={open} onClose={onClose} title="💰 Registro Financiero">
@@ -94,7 +96,6 @@ export function FinanceModal({ open, onClose, form, setForm, animals, saving, on
             value={form.amount}
             onChange={e => setForm({ ...form, amount: e.target.value })}
             className={`w-full px-4 py-3 min-h-11 rounded-xl border border-border bg-background text-base tabular-nums focus:outline-none focus:ring-2 ${RING}`}
-            required
           />
           {amountPreview && (
             <p className="mt-1.5 text-sm font-semibold text-foreground tabular-nums" aria-live="polite">{amountPreview}</p>
@@ -119,7 +120,6 @@ export function FinanceModal({ open, onClose, form, setForm, animals, saving, on
             value={form.date}
             onChange={e => setForm({ ...form, date: e.target.value })}
             className={`w-full px-4 py-3 min-h-11 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 ${RING}`}
-            required
           />
         </div>
 
@@ -138,8 +138,10 @@ export function FinanceModal({ open, onClose, form, setForm, animals, saving, on
         <Button
           type="submit"
           disabled={saving}
-          className={`w-full text-white rounded-xl py-3 text-base font-bold ${
-            form.transaction_type === 'Ingreso' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'
+          className={`w-full h-12 text-white rounded-xl text-base font-bold ${
+            form.transaction_type === 'Ingreso'
+              ? 'bg-emerald-600 hover:bg-emerald-700 border-emerald-600 hover:border-emerald-700'
+              : 'bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700'
           }`}
         >
           {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Guardando...</> : `✅ Guardar ${form.transaction_type}`}

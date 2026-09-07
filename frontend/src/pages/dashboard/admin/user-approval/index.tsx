@@ -22,12 +22,8 @@ const UserApprovalPage = () => {
   const fetchPendingUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await usersService.getUsers({
-        approval_status: 'Pending',
-        limit: 100,
-        cache_bust: Date.now(),
-      });
-      setUsers((response as any).data ?? []);
+      const data = await usersService.getPendingApproval();
+      setUsers(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching pending users:', error);
       toast({

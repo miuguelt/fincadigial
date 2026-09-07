@@ -1,4 +1,4 @@
-import { getTodayColombia } from '@/shared/utils/dateUtils';
+import { getTodayColombia, formatCurrencyColombia } from '@/shared/utils/dateUtils';
 import type { HistoryRecord } from '../types';
 
 export type TileKey = 'milk' | 'balance' | 'chores' | 'sick';
@@ -18,7 +18,7 @@ interface CropActivitySummaryInput {
 }
 
 const isoDay = (value?: string) => (value ? String(value).split('T')[0] : '');
-const money = (value: number) => `$${Math.round(value).toLocaleString('es-CO')}`;
+const money = (value: number) => formatCurrencyColombia(Math.round(value));
 const liters = (value: number) => value.toLocaleString('es-CO', { maximumFractionDigits: 1 });
 
 function daysAgoColombia(today: string, days: number): string {

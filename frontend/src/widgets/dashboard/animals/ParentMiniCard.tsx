@@ -210,7 +210,7 @@ export function ParentMiniCard({ parentId, parentLabel, gender, onClick }: Paren
           </div>
         </div>
         {onClick && (
-          <span className="text-[10px] font-semibold text-white/90 bg-white/20 hover:bg-white/30 backdrop-blur-sm px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0 transition-all group-hover:bg-primary group-hover:text-primary-foreground shadow-sm">
+          <span className="text-[11px] font-semibold text-white/90 bg-white/20 hover:bg-white/30 backdrop-blur-sm px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0 transition-all group-hover:bg-primary group-hover:text-primary-foreground shadow-sm">
             Ver Ficha
           </span>
         )}

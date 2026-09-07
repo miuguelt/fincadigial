@@ -44,7 +44,7 @@ const LIVESTOCK_MODALS = new Set([
 const RegistroOperativoPage: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { isOnline } = useOnlineStatus();
+  const { isOnline, totalOperations } = useOnlineStatus();
   const [activeTab, setActiveTab] = useState<TabType>('crop');
   const [showCropForm, setShowCropForm] = useState(false);
   const [cropFormType, setCropFormType] = useState('note');
@@ -143,6 +143,11 @@ const RegistroOperativoPage: React.FC = () => {
               <p className="text-amber-800 dark:text-amber-300 text-xs mt-0.5">
                 Puede seguir registrando: todo queda guardado en el teléfono y se sincroniza al recuperar señal.
               </p>
+              {totalOperations > 0 && (
+                <p className="text-amber-900 dark:text-amber-200 text-xs font-bold mt-1.5">
+                  📱 Tiene {totalOperations} registro{totalOperations === 1 ? '' : 's'} guardado{totalOperations === 1 ? '' : 's'} en el teléfono, pendiente{totalOperations === 1 ? '' : 's'} de subir.
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -193,10 +198,10 @@ const RegistroOperativoPage: React.FC = () => {
 
             <div role="tabpanel" id={`panel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
               {activeTab === 'crop' && (
-                <AgricultureTab activities={cropActivities} loading={loadingCrops} errored={cropsError} onQuickAction={handleQuickCrop} onDelete={setPendingDeleteId} />
+                <AgricultureTab activities={cropActivities} loading={loadingCrops} errored={cropsError} onQuickAction={handleQuickCrop} onDelete={setPendingDeleteId} onRetry={() => loadCropData({ force: true })} />
               )}
               {activeTab === 'livestock' && <LivestockTab onOpenModal={openModal} />}
-              {activeTab === 'history' && <HistoryTab records={historyRecords} loading={loadingHistory} errored={historyError} />}
+              {activeTab === 'history' && <HistoryTab records={historyRecords} loading={loadingHistory} errored={historyError} onRetry={() => loadHistoryRecords({ force: true })} />}
             </div>
           </section>
 
@@ -213,7 +218,7 @@ const RegistroOperativoPage: React.FC = () => {
                 variant="sidebar"
                 onAction={handleSummaryAction}
               />
-              <button type="button" disabled={refreshing} onClick={() => { loadCropData(); loadHistoryRecords(); }}
+              <button type="button" disabled={refreshing} onClick={() => { loadCropData({ force: true }); loadHistoryRecords({ force: true }); }}
                 className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 min-h-11 rounded-lg text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-primary transition-colors disabled:opacity-50">
                 <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} aria-hidden="true" />
                 {refreshing ? 'Actualizando datos...' : 'Actualizar datos'}
@@ -245,9 +250,11 @@ const RegistroOperativoPage: React.FC = () => {
       <FinanceModal open={activeModal === 'finance'} onClose={closeModal} form={financeForm} setForm={setFinanceForm} animals={animals} saving={savingForm} onSubmit={handleFinanceSubmit} />
       <ControlModal open={activeModal === 'control'} onClose={closeModal} form={controlForm} setForm={setControlForm} animals={animals} saving={savingForm} onSubmit={handleControlSubmit} />
       <CorralRapidoModal open={activeModal === 'corral-rapido'} onClose={closeModal} animals={animals} fields={fields} onSuccess={loadHistoryRecords} />
-      <AnimalExitModal open={activeModal === 'exit'} onClose={closeModal} animals={animals} onSuccess={() => { loadMasterData(); loadHistoryRecords(); }} />
-      <WeaningModal open={activeModal === 'weaning'} onClose={closeModal} animals={animals} fields={fields} onSuccess={() => { loadMasterData(); loadHistoryRecords(); }} />
-      <LiquidacionLecheModal open={activeModal === 'milk-settlement'} onClose={closeModal} onSuccess={() => { loadMasterData(); loadHistoryRecords(); }} />
+      {/* Recargar solo catálogos: el efecto del hook vuelve a cargar el
+          historial cuando estos cambian, con nombres ya actualizados. */}
+      <AnimalExitModal open={activeModal === 'exit'} onClose={closeModal} animals={animals} onSuccess={loadMasterData} />
+      <WeaningModal open={activeModal === 'weaning'} onClose={closeModal} animals={animals} fields={fields} onSuccess={loadMasterData} />
+      <LiquidacionLecheModal open={activeModal === 'milk-settlement'} onClose={closeModal} onSuccess={loadMasterData} />
       <GSMIAssistantModal open={activeModal === 'gsmi'} onClose={closeModal} animals={animals} />
     </div>
   );

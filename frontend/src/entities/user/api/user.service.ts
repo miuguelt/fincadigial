@@ -184,6 +184,15 @@ class UsersService extends BaseService<UserResponse> {
   }
 
   /**
+   * [ADMIN/INSTRUCTOR/PROPIETARIO] Usuarios pendientes de aprobación.
+   * Nivel plataforma: incluye cuentas registradas vía /register/user que aún
+   * no tienen finca ni membresía, por eso NO pasa por el filtro por finca.
+   */
+  async getPendingApproval(): Promise<UserResponse[]> {
+    return this.customRequest<UserResponse[]>('pending-approval', 'GET');
+  }
+
+  /**
    * [ADMIN/INSTRUCTOR] Cambiar el estado de aprobación de un usuario
    */
   async updateApprovalStatus(id: number, approvalStatus: 'Approved' | 'Rejected' | 'Suspended'): Promise<UserResponse> {

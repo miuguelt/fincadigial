@@ -55,7 +55,7 @@ export function DiseaseModal({ open, onClose, form, setForm, animals, diseases, 
             placeholder="Ej: cojea de la pata trasera, no quiso comer desde ayer"
             className={`w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 ${RING} resize-none`} />
         </div>
-        <Button type="submit" disabled={saving} className="w-full bg-rose-600 hover:bg-rose-700 text-white rounded-xl py-3 text-base font-bold">
+        <Button type="submit" disabled={saving} className="w-full h-12 bg-rose-600 hover:bg-rose-700 text-white rounded-xl border-rose-600 hover:border-rose-700 text-base font-bold">
           {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Guardando...</> : '✅ Guardar Diagnóstico'}
         </Button>
       </form>

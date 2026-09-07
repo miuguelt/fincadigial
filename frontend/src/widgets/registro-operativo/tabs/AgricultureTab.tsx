@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, X } from 'lucide-react';
+import { RefreshCw, Search, X } from 'lucide-react';
+import { Button } from '@/shared/ui/button';
 import { CropActivity } from '@/entities/campesino';
-import { getTodayColombia } from '@/shared/utils/dateUtils';
+import { getTodayColombia, formatCurrencyColombia } from '@/shared/utils/dateUtils';
 import { ACTIVITY_TYPES, getActivityCfg } from '../constants';
 import { RECORD_CHIP_CLASS } from '../record-kinds';
 
@@ -39,21 +40,22 @@ interface AgricultureTabProps {
   errored?: boolean;
   onQuickAction: (type: string) => void;
   onDelete: (id: number) => void;
+  onRetry?: () => void;
 }
 
-export function AgricultureTab({ activities, loading, errored = false, onQuickAction, onDelete }: AgricultureTabProps) {
+export function AgricultureTab({ activities, loading, errored = false, onQuickAction, onDelete, onRetry }: AgricultureTabProps) {
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
 
-  const filtered = activities.filter(a => {
+  const filtered = useMemo(() => activities.filter(a => {
     const term = search.toLowerCase();
     const matchSearch = !term || (a.description || '').toLowerCase().includes(term) || ((a as any).input_name || '').toLowerCase().includes(term);
     const matchType = filterType === 'all' || a.activity_type === filterType;
     return matchSearch && matchType;
-  });
+  }), [activities, search, filterType]);
 
-  const grouped = groupByDate(filtered);
-  const dateKeys = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+  const grouped = useMemo(() => groupByDate(filtered), [filtered]);
+  const dateKeys = useMemo(() => Object.keys(grouped).sort((a, b) => b.localeCompare(a)), [grouped]);
   const isFiltering = Boolean(search) || filterType !== 'all';
 
   return (
@@ -103,7 +105,10 @@ export function AgricultureTab({ activities, loading, errored = false, onQuickAc
         <div className="text-center py-16 space-y-3">
           <span className="text-5xl" aria-hidden="true">⚠️</span>
           <p className="text-muted-foreground font-medium">No se pudieron cargar las labores</p>
-          <p className="text-sm text-muted-foreground">Revise la conexión y toque «Actualizar todo» abajo.</p>
+          <p className="text-sm text-muted-foreground">Revise la conexión e intente de nuevo.</p>
+          <Button type="button" variant="outline" onClick={onRetry} className="mx-auto mt-1 gap-2">
+            <RefreshCw className="w-4 h-4" aria-hidden="true" /> Reintentar
+          </Button>
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 space-y-3">
@@ -136,7 +141,7 @@ export function AgricultureTab({ activities, loading, errored = false, onQuickAc
                   const inputName = activity.input_name;
                   const plotName = activity.crop_plot?.name || activity.crop_plot?.crop_name;
                   return (
-                    <motion.div key={activity.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
+                    <motion.div key={activity.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: Math.min(i, 8) * 0.04 }}
                       className="flex items-start gap-3 rounded-lg border border-border bg-card p-3 shadow-sm">
                       <span className={`${RECORD_CHIP_CLASS} ${cfg.color}`} aria-hidden="true">{cfg.emoji}</span>
                       <div className="flex-1 min-w-0" style={{ overflowWrap: 'break-word' }}>
@@ -148,7 +153,7 @@ export function AgricultureTab({ activities, loading, errored = false, onQuickAc
                         {(inputName || cost) && (
                           <div className="flex gap-3 flex-wrap mt-1 text-xs text-muted-foreground">
                             {inputName && <span>📦 {inputName}{activity.quantity ? ` · ${Number(activity.quantity).toLocaleString('es-CO')} ${activity.unit || ''}` : ''}</span>}
-                            {cost != null && cost !== '' && <span>💰 ${Number(cost).toLocaleString('es-CO')}</span>}
+                            {cost != null && cost !== '' && <span>💰 {formatCurrencyColombia(Number(cost))}</span>}
                           </div>
                         )}
                       </div>

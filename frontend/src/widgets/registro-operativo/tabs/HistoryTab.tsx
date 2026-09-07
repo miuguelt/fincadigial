@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { RefreshCw } from 'lucide-react';
+import { Button } from '@/shared/ui/button';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
 import type { HistoryRecord } from '../types';
 import { RECORD_KINDS, RECORD_CHIP_CLASS } from '../record-kinds';
@@ -7,6 +9,7 @@ interface HistoryTabProps {
   records: HistoryRecord[];
   loading: boolean;
   errored?: boolean;
+  onRetry?: () => void;
 }
 
 type FilterKey = 'all' | HistoryRecord['type'];
@@ -35,7 +38,7 @@ function formatRecordDate(value?: string): string {
   } catch { return day; }
 }
 
-export function HistoryTab({ records, loading, errored = false }: HistoryTabProps) {
+export function HistoryTab({ records, loading, errored = false, onRetry }: HistoryTabProps) {
   const [filter, setFilter] = useState<FilterKey>('all');
   const [visible, setVisible] = useState(PAGE_SIZE);
 
@@ -60,10 +63,13 @@ export function HistoryTab({ records, loading, errored = false }: HistoryTabProp
 
   if (errored) {
     return (
-      <div className="text-center py-12 space-y-2">
+      <div className="text-center py-12 space-y-3">
         <span className="text-4xl" aria-hidden="true">⚠️</span>
         <p className="text-muted-foreground font-medium">No se pudo cargar el historial</p>
-        <p className="text-sm text-muted-foreground">Revise la conexión y toque «Actualizar todo» abajo.</p>
+        <p className="text-sm text-muted-foreground">Revise la conexión e intente de nuevo.</p>
+        <Button type="button" variant="outline" onClick={onRetry} className="mx-auto mt-1 gap-2">
+          <RefreshCw className="w-4 h-4" aria-hidden="true" /> Reintentar
+        </Button>
       </div>
     );
   }

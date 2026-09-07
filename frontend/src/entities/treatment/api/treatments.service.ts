@@ -39,12 +39,8 @@ export class TreatmentsService extends BaseService<TreatmentResponse> {
    * - Removes undefined/null and strips unsupported keys
    */
   private buildApiPayload(data: Partial<TreatmentInput> & { [k: string]: any }): Record<string, any> {
-    console.log('[TreatmentService] buildApiPayload input data:', data);
-
     const startDateRaw = data.treatment_date ?? (data as any).startDate ?? data.treatment_date ?? (data as any).date;
     const startDate = this.normalizeDate(startDateRaw);
-
-    console.log('[TreatmentService] startDateRaw:', startDateRaw, '| normalized:', startDate);
 
     const payload: Record<string, any> = {
       animal_id: data.animal_id,
@@ -84,7 +80,6 @@ export class TreatmentsService extends BaseService<TreatmentResponse> {
       }
     });
 
-    console.log('[TreatmentService] Final payload after cleanup:', payload);
     return payload;
   }
 

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Loader2, Scale, Zap, CheckCircle2, AlertTriangle, XCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { ModalWrapper } from './ModalWrapper';
@@ -29,6 +29,27 @@ export function CorralRapidoModal({
   const [notes, setNotes] = useState<string>('');
   const [saving, setSaving] = useState<boolean>(false);
   const [processedCount, setProcessedCount] = useState<number>(0);
+  const [finished, setFinished] = useState<boolean>(false);
+
+  const resetSession = () => {
+    setSelectedFieldId('');
+    setCurrentIndex(0);
+    setWeight('350');
+    setHealthStatus('Bueno');
+    setNotes('');
+    setSaving(false);
+    setProcessedCount(0);
+    setFinished(false);
+  };
+
+  // El modal se mantiene montado entre aperturas: al abrir se inicia una
+  // sesión limpia (si se reutilizara el índice/peso de la corrida anterior,
+  // un «Guardar» sin querer duplicaría un control ya registrado).
+  const prevOpen = useRef(open);
+  if (open !== prevOpen.current) {
+    prevOpen.current = open;
+    if (open) resetSession();
+  }
 
   // Filtrar animales por potrero si se seleccionó uno
   const queueAnimals = useMemo(() => {
@@ -45,6 +66,7 @@ export function CorralRapidoModal({
   };
 
   const handleSaveAndNext = async () => {
+    if (finished) return;
     if (!currentAnimal) {
       showToast('Seleccione un animal para registrar', 'error');
       return;
@@ -79,6 +101,7 @@ export function CorralRapidoModal({
         }
       } else {
         showToast('🎉 ¡Ha completado el lote de la manga!', 'success');
+        setFinished(true);
       }
 
       onSuccess?.();
@@ -101,6 +124,7 @@ export function CorralRapidoModal({
               onChange={(e) => {
                 setSelectedFieldId(e.target.value);
                 setCurrentIndex(0);
+                setFinished(false);
               }}
               className="w-full text-xs font-bold px-3 py-2 rounded-xl border border-border bg-background"
             >
@@ -113,7 +137,7 @@ export function CorralRapidoModal({
         )}
 
         {/* Current Animal Card */}
-        {currentAnimal ? (
+        {!finished && currentAnimal ? (
           <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/20 border-2 border-emerald-300 dark:border-emerald-700 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
               <div>
@@ -133,7 +157,7 @@ export function CorralRapidoModal({
                 value={currentAnimal.id}
                 onChange={(e) => {
                   const idx = queueAnimals.findIndex((a) => String(a.id) === e.target.value);
-                  if (idx !== -1) setCurrentIndex(idx);
+                  if (idx !== -1) { setCurrentIndex(idx); setFinished(false); }
                 }}
                 className="text-xs font-bold px-3 py-2 rounded-xl border border-emerald-300 bg-background max-w-[140px]"
               >
@@ -203,6 +227,7 @@ export function CorralRapidoModal({
               <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
+                  aria-pressed={healthStatus === 'Bueno'}
                   onClick={() => setHealthStatus('Bueno')}
                   className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition-all ${
                     healthStatus === 'Bueno'
@@ -216,6 +241,7 @@ export function CorralRapidoModal({
 
                 <button
                   type="button"
+                  aria-pressed={healthStatus === 'Regular'}
                   onClick={() => setHealthStatus('Regular')}
                   className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition-all ${
                     healthStatus === 'Regular'
@@ -229,6 +255,7 @@ export function CorralRapidoModal({
 
                 <button
                   type="button"
+                  aria-pressed={healthStatus === 'Malo'}
                   onClick={() => setHealthStatus('Malo')}
                   className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition-all ${
                     healthStatus === 'Malo'
@@ -242,24 +269,34 @@ export function CorralRapidoModal({
               </div>
             </div>
           </div>
+        ) : finished ? (
+          <div className="p-6 rounded-2xl border-2 border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/30 text-center space-y-2" role="status" aria-live="polite">
+            <div className="text-4xl" aria-hidden="true">🎉</div>
+            <p className="text-base font-black text-emerald-800 dark:text-emerald-200">¡Lote terminado!</p>
+            <p className="text-xs text-emerald-700 dark:text-emerald-300">
+              {processedCount} {processedCount === 1 ? 'animal registrado' : 'animales registrados'} en esta sesión de manga.
+            </p>
+          </div>
         ) : (
           <div className="p-8 text-center text-muted-foreground text-sm">
             No hay animales disponibles en este lote.
           </div>
         )}
 
-        {/* Action button */}
+        {/* Action buttons */}
         <Button
           type="button"
-          disabled={saving || !currentAnimal}
+          disabled={saving || !currentAnimal || finished}
           onClick={handleSaveAndNext}
-          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl py-4 text-base font-black shadow-lg shadow-emerald-600/20"
+          className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl border-emerald-600 hover:border-emerald-700 text-base font-black shadow-lg shadow-emerald-600/20"
         >
           {saving ? (
             <>
               <Loader2 className="w-5 h-5 mr-2 animate-spin" />
               Guardando en Manga...
             </>
+          ) : finished ? (
+            '✅ Lote completado'
           ) : (
             <span className="flex items-center justify-center gap-2">
               <Zap className="w-5 h-5 fill-current" />
@@ -268,6 +305,17 @@ export function CorralRapidoModal({
             </span>
           )}
         </Button>
+
+        {finished && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={resetSession}
+            className="w-full h-12 rounded-2xl text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-200"
+          >
+            🔄 Empezar otro lote
+          </Button>
+        )}
 
         {processedCount > 0 && (
           <p className="text-center text-xs font-bold text-emerald-700 dark:text-emerald-300">

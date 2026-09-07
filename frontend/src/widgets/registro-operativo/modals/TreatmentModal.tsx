@@ -88,7 +88,7 @@ export function TreatmentModal({ open, onClose, form, setForm, animals, medicati
             placeholder="Ej: mastitis en el cuarto trasero derecho"
             className={`w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 ${RING} resize-none`} />
         </div>
-        <Button type="submit" disabled={saving} className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl py-3 text-base font-bold">
+        <Button type="submit" disabled={saving} className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-xl border-purple-600 hover:border-purple-700 text-base font-bold">
           {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Guardando...</> : '✅ Guardar Tratamiento'}
         </Button>
       </form>

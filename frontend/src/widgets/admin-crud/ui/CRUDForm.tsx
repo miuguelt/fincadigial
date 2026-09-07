@@ -361,10 +361,21 @@ export function CRUDForm<T extends { id?: number }>({
     const firstKey = Object.keys(fieldErrors)[0];
     if (!firstKey || typeof window === "undefined") return;
     const el = document.getElementById(firstKey);
-    if (el && "focus" in el) {
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-      (el as HTMLElement).focus();
-    }
+    if (!el || !("focus" in el)) return;
+    // No robar el foco mientras la persona está editando: la validación en
+    // vivo re-crea fieldErrors en cada pulsación y, si saltáramos al primer
+    // campo con error, el usuario no podría terminar de escribir el actual.
+    const active = document.activeElement as HTMLElement | null;
+    const isEditing = Boolean(
+      active &&
+        (active.tagName === "INPUT" ||
+          active.tagName === "TEXTAREA" ||
+          active.tagName === "SELECT" ||
+          active.isContentEditable)
+    );
+    if (isEditing) return;
+    el.scrollIntoView?.({ behavior: "smooth", block: "center" });
+    (el as HTMLElement).focus();
   }, [fieldErrors, isOpen]);
 
   // Manejar cambio de un campo específico
