@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { membershipService, MembershipRequest } from '@/entities/user/api/membership.service';
 import { useCallback } from 'react';
 import { useToast } from '@/shared/hooks/use-toast';
@@ -14,6 +14,7 @@ import { es } from 'date-fns/locale';
 const MembershipRequestsPage = () => {
   const [requests, setRequests] = useState<MembershipRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<number | null>(null);
   const { toast } = useToast();
 
   const fetchRequests = useCallback(async () => {
@@ -38,24 +39,30 @@ const MembershipRequestsPage = () => {
   }, [fetchRequests]);
 
   const handleApprove = async (requestId: number, requestedRole: string) => {
+    setActionLoading(requestId);
     try {
       await membershipService.approveRequest(requestId, { role: requestedRole });
       toast({
         title: 'Solicitud aprobada',
-        description: 'El usuario ha sido incorporado a la finca.',
+        description: 'El usuario ha sido incorporado a la finca exitosamente.',
         variant: 'default',
       });
-      fetchRequests();
-    } catch (error) {
+      setRequests((prev) => prev.filter((r) => r.id !== requestId));
+    } catch (error: any) {
+      const status = error?.status || error?.response?.status;
+      if (status === 403 || status === 401) return;
       toast({
-        title: 'Error',
-        description: 'No se pudo aprobar la solicitud.',
+        title: 'Atención',
+        description: error?.response?.data?.message || error?.message || 'No se pudo aprobar la solicitud.',
         variant: 'destructive',
       });
+    } finally {
+      setActionLoading(null);
     }
   };
 
   const handleReject = async (requestId: number) => {
+    setActionLoading(requestId);
     try {
       await membershipService.rejectRequest(requestId);
       toast({
@@ -63,13 +70,17 @@ const MembershipRequestsPage = () => {
         description: 'Se ha denegado el acceso al usuario.',
         variant: 'default',
       });
-      fetchRequests();
-    } catch (error) {
+      setRequests((prev) => prev.filter((r) => r.id !== requestId));
+    } catch (error: any) {
+      const status = error?.status || error?.response?.status;
+      if (status === 403 || status === 401) return;
       toast({
-        title: 'Error',
-        description: 'No se pudo rechazar la solicitud.',
+        title: 'Atención',
+        description: error?.response?.data?.message || error?.message || 'No se pudo rechazar la solicitud.',
         variant: 'destructive',
       });
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -168,7 +179,8 @@ const MembershipRequestsPage = () => {
                         <Button
                           size="sm"
                           onClick={() => handleApprove(request.id, request.requested_role)}
-                          className="bg-success hover:bg-green-700 h-8 w-8 p-0 rounded-full shadow-sm"
+                          disabled={actionLoading === request.id}
+                          className="bg-success hover:bg-green-700 h-8 w-8 p-0 rounded-full shadow-sm disabled:opacity-50"
                           title="Aprobar"
                         >
                           <FaCheck className="h-3 w-3" />
@@ -177,7 +189,8 @@ const MembershipRequestsPage = () => {
                           size="sm"
                           variant="ghost"
                           onClick={() => handleReject(request.id)}
-                          className="text-destructive hover:text-destructive hover:bg-destructive/5 h-8 w-8 p-0 rounded-full"
+                          disabled={actionLoading === request.id}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/5 h-8 w-8 p-0 rounded-full disabled:opacity-50"
                           title="Rechazar"
                         >
                           <FaTimes className="h-3 w-3" />

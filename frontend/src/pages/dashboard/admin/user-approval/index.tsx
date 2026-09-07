@@ -6,6 +6,7 @@ import { useToast } from '@/shared/hooks/use-toast';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
 import { Badge } from '@/shared/ui/badge';
+import { Switch } from '@/shared/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { FaCheck, FaTimes, FaUserCheck, FaCalendarAlt, FaEnvelope, FaIdCard } from 'react-icons/fa';
 import { ClimbingBoxLoader } from 'react-spinners';
@@ -17,7 +18,22 @@ const UserApprovalPage = () => {
   const [users, setUsers] = useState<UserResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
+  const [requireVerification, setRequireVerification] = useState(false);
+  const [loadingConfig, setLoadingConfig] = useState(true);
+  const [updatingConfig, setUpdatingConfig] = useState(false);
   const { toast } = useToast();
+
+  const fetchConfig = useCallback(async () => {
+    setLoadingConfig(true);
+    try {
+      const resp = await usersService.getVerificationConfig();
+      setRequireVerification(Boolean(resp?.require_user_verification));
+    } catch (err) {
+      console.error('Error fetching verification config:', err);
+    } finally {
+      setLoadingConfig(false);
+    }
+  }, []);
 
   const fetchPendingUsers = useCallback(async () => {
     setLoading(true);
@@ -37,8 +53,31 @@ const UserApprovalPage = () => {
   }, [toast]);
 
   useEffect(() => {
+    fetchConfig();
     fetchPendingUsers();
-  }, [fetchPendingUsers]);
+  }, [fetchConfig, fetchPendingUsers]);
+
+  const handleToggleVerification = async (checked: boolean) => {
+    setUpdatingConfig(true);
+    try {
+      await usersService.updateVerificationConfig(checked);
+      setRequireVerification(checked);
+      toast({
+        title: checked ? 'Verificación manual activada' : 'Auto-activación habilitada',
+        description: checked
+          ? 'Los nuevos usuarios registrados quedarán pendientes hasta que los apruebes.'
+          : 'Los nuevos usuarios registrados quedarán activos automáticamente con acceso completo.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error?.response?.data?.message || 'No se pudo actualizar la configuración.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUpdatingConfig(false);
+    }
+  };
 
   const handleApprove = async (userId: number) => {
     setActionLoading(userId);
@@ -111,6 +150,35 @@ const UserApprovalPage = () => {
           {users.length} Pendientes
         </Badge>
       </div>
+
+      {/* Control administrativo de verificación de nuevos usuarios */}
+      <Card className="border-border/60 shadow-sm bg-card/60 backdrop-blur-sm">
+        <CardContent className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-foreground">Verificación previa de nuevos usuarios</span>
+              <Badge
+                variant={requireVerification ? "default" : "secondary"}
+                className={requireVerification ? "bg-amber-600 text-white" : "bg-muted text-muted-foreground"}
+              >
+                {requireVerification ? "Activada" : "Desactivada (Inicio Rápido)"}
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {requireVerification
+                ? "Los nuevos usuarios registrados quedarán en estado 'Pendiente' hasta que un administrador los apruebe."
+                : "Todo usuario que se registre queda activo de inmediato y tiene acceso a todas las funcionalidades."}
+            </p>
+          </div>
+          <div className="flex items-center gap-3 self-end sm:self-center">
+            <Switch
+              checked={requireVerification}
+              onCheckedChange={handleToggleVerification}
+              disabled={loadingConfig || updatingConfig}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="border-green-100 shadow-sm">
         <CardHeader className="bg-success/5/50">

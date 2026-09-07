@@ -207,6 +207,22 @@ class UsersService extends BaseService<UserResponse> {
   async getGlobalUsers(): Promise<UserResponse[]> {
     return this.customRequest('global', 'GET');
   }
+
+  /**
+   * [ADMIN/INSTRUCTOR/PROPIETARIO] Consultar la configuración de verificación previa de usuarios
+   */
+  async getVerificationConfig(): Promise<{ require_user_verification: boolean }> {
+    return this.customRequest<{ require_user_verification: boolean }>('verification-config', 'GET');
+  }
+
+  /**
+   * [ADMIN/INSTRUCTOR/PROPIETARIO] Activar o desactivar la verificación manual de usuarios
+   */
+  async updateVerificationConfig(requireVerification: boolean): Promise<{ require_user_verification: boolean }> {
+    return this.customRequest<{ require_user_verification: boolean }>('verification-config', 'PUT', {
+      require_user_verification: requireVerification,
+    });
+  }
 }
 
 export const usersService = new UsersService();

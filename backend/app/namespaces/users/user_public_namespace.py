@@ -43,9 +43,15 @@ class UserPublicCreate(Resource):
 
             existing_users = User.query.count()
             from app.models.user import ApprovalStatus
+            from app.services.user_verification_service import is_user_verification_required
 
-            if existing_users == 0:
+            # Si es el primer usuario o la verificación de nuevos usuarios está deshabilitada (modo inicio),
+            # el usuario queda inmediatamente activo con acceso a todas las funcionalidades.
+            if existing_users == 0 or not is_user_verification_required():
                 data["approval_status"] = ApprovalStatus.Approved
+                data["status"] = True
+            else:
+                data["approval_status"] = ApprovalStatus.Pending
                 data["status"] = True
             data["password"] = password_raw
             user = User.create(commit=True, **data)

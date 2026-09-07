@@ -355,16 +355,22 @@ class LoginResource(Resource):
                 return APIResponse.error("Usuario inactivo", status_code=403)
 
             from app.models.user import ApprovalStatus
+            from app.services.user_verification_service import is_user_verification_required
 
             if user.approval_status == ApprovalStatus.Pending:
-                log_authentication_attempt(
-                    identifier_str, False, {"reason": "approval_pending"}
-                )
-                return APIResponse.error(
-                    "Tu cuenta está pendiente de aprobación por un administrador. Por favor, espera a que se valide tu registro.",
-                    status_code=403,
-                    error_code="APPROVAL_PENDING",
-                )
+                if is_user_verification_required():
+                    log_authentication_attempt(
+                        identifier_str, False, {"reason": "approval_pending"}
+                    )
+                    return APIResponse.error(
+                        "Tu cuenta está pendiente de aprobación por un administrador. Por favor, espera a que se valide tu registro.",
+                        status_code=403,
+                        error_code="APPROVAL_PENDING",
+                    )
+                else:
+                    user.approval_status = ApprovalStatus.Approved
+                    user.status = True
+                    db.session.commit()
 
             # Incluir finca_id y finca_type en los claims para multi-tenant
             user_claims = {
@@ -634,13 +640,19 @@ class CurrentUserResource(Resource):
                 return APIResponse.error("Usuario inactivo", status_code=403)
 
             from app.models.user import ApprovalStatus
+            from app.services.user_verification_service import is_user_verification_required
 
             if user.approval_status == ApprovalStatus.Pending:
-                return APIResponse.error(
-                    "Tu cuenta está pendiente de aprobación",
-                    status_code=403,
-                    error_code="APPROVAL_PENDING",
-                )
+                if is_user_verification_required():
+                    return APIResponse.error(
+                        "Tu cuenta está pendiente de aprobación",
+                        status_code=403,
+                        error_code="APPROVAL_PENDING",
+                    )
+                else:
+                    user.approval_status = ApprovalStatus.Approved
+                    user.status = True
+                    db.session.commit()
 
             # Envolver en clave 'user' para compatibilidad con el frontend
             return APIResponse.success(

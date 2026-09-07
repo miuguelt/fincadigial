@@ -82,6 +82,22 @@ class User(BaseModel):
 
     finca = db.relationship("Finca", backref="users", lazy="selectin")
 
+    def __init__(self, **kwargs):
+        if "approval_status" not in kwargs or kwargs.get("approval_status") is None:
+            try:
+                from app.services.user_verification_service import (
+                    is_user_verification_required,
+                )
+
+                kwargs["approval_status"] = (
+                    ApprovalStatus.Pending
+                    if is_user_verification_required()
+                    else ApprovalStatus.Approved
+                )
+            except Exception:
+                kwargs["approval_status"] = ApprovalStatus.Approved
+        super().__init__(**kwargs)
+
     _namespace_fields = [
         "id",
         "identification",

@@ -192,3 +192,80 @@ class UserRolesStats(Resource):
             return APIResponse.error(
                 "Error interno del servidor", details={"error": str(error)}, status_code=500
             )
+
+
+@users_ns.route("/verification-config")
+class UserVerificationConfigResource(Resource):
+    @users_ns.doc(
+        "get_verification_config",
+        description="Consultar si la verificación previa de nuevos usuarios está activa",
+        security=["Bearer"],
+    )
+    @jwt_required()
+    def get(self):
+        try:
+            from app.services.user_verification_service import (
+                is_user_verification_required,
+            )
+
+            req = is_user_verification_required()
+            return APIResponse.success(
+                data={"require_user_verification": req},
+                message="Configuración de verificación de usuarios obtenida",
+            )
+        except Exception as error:
+            logger.error(
+                "Error obteniendo configuración de verificación: %s",
+                error,
+                exc_info=True,
+            )
+            return APIResponse.error(
+                "Error interno del servidor",
+                details={"error": str(error)},
+                status_code=500,
+            )
+
+    @users_ns.doc(
+        "update_verification_config",
+        description="Activar o desactivar la verificación previa de nuevos usuarios",
+        security=["Bearer"],
+    )
+    @jwt_required()
+    def put(self):
+        try:
+            jwt_data = get_jwt()
+            current_role = jwt_data.get("role")
+            if current_role not in ("Administrador", "Instructor", "Propietario"):
+                return APIResponse.forbidden(
+                    "Se requiere rol de Administrador, Instructor o Propietario para esta operación"
+                )
+
+            data = flask.request.get_json() or {}
+            require_val = bool(data.get("require_user_verification", False))
+
+            from app.services.user_verification_service import (
+                set_user_verification_required,
+            )
+
+            set_user_verification_required(require_val)
+
+            return APIResponse.success(
+                data={"require_user_verification": require_val},
+                message=(
+                    "Verificación manual de nuevos usuarios activada"
+                    if require_val
+                    else "Auto-activación inmediata de nuevos usuarios habilitada"
+                ),
+            )
+        except Exception as error:
+            logger.error(
+                "Error actualizando configuración de verificación: %s",
+                error,
+                exc_info=True,
+            )
+            return APIResponse.error(
+                "Error interno del servidor",
+                details={"error": str(error)},
+                status_code=500,
+            )
+

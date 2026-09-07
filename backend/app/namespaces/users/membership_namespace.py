@@ -239,6 +239,9 @@ class RespondRequest(Resource):
             if not req:
                 return APIResponse.error("Gestión no encontrada", status_code=404)
 
+            if req.status == (JoinRequestStatus.APPROVED if approve else JoinRequestStatus.REJECTED):
+                return APIResponse.success(message="Esta gestión ya ha sido procesada exitosamente")
+
             if req.status != JoinRequestStatus.PENDING:
                 return APIResponse.error(
                     "Esta gestión ya ha sido procesada", status_code=400
@@ -277,8 +280,18 @@ class RespondRequest(Resource):
                     user_id=req.user_id,
                     finca_id=req.finca_id,
                     role=req.requested_role,
+                    is_active=True,
                     commit=False,
                 )
+
+                # Activar usuario en la plataforma si estaba pendiente
+                from app.models.user import ApprovalStatus
+                target_user = db.session.get(User, req.user_id)
+                if target_user:
+                    target_user.approval_status = ApprovalStatus.Approved
+                    target_user.status = True
+                    if not target_user.finca_id:
+                        target_user.finca_id = req.finca_id
 
                 # Si era una solicitud de usuario, notificar al usuario que fue aceptado
                 if req.request_type == JoinRequestType.REQUEST:
@@ -694,6 +707,9 @@ class ApproveMembershipDirect(Resource):
             if not req:
                 return APIResponse.error("Solicitud no encontrada", status_code=404)
 
+            if req.status == JoinRequestStatus.APPROVED:
+                return APIResponse.success(message="Esta solicitud ya ha sido aprobada previamente")
+
             if req.status != JoinRequestStatus.PENDING:
                 return APIResponse.error(
                     "Esta solicitud ya ha sido procesada", status_code=400
@@ -724,8 +740,18 @@ class ApproveMembershipDirect(Resource):
                 user_id=req.user_id,
                 finca_id=req.finca_id,
                 role=final_role,
+                is_active=True,
                 commit=False,
             )
+
+            # Activar usuario en la plataforma si estaba pendiente
+            from app.models.user import ApprovalStatus
+            target_user = db.session.get(User, req.user_id)
+            if target_user:
+                target_user.approval_status = ApprovalStatus.Approved
+                target_user.status = True
+                if not target_user.finca_id:
+                    target_user.finca_id = req.finca_id
 
             # 1. Enviar notificación push
             try:
@@ -780,6 +806,9 @@ class RejectMembershipDirect(Resource):
             req = db.session.get(JoinRequest, request_id)
             if not req:
                 return APIResponse.error("Solicitud no encontrada", status_code=404)
+
+            if req.status == JoinRequestStatus.REJECTED:
+                return APIResponse.success(message="Esta solicitud ya ha sido rechazada previamente")
 
             if req.status != JoinRequestStatus.PENDING:
                 return APIResponse.error(
