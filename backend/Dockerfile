@@ -66,7 +66,6 @@ ENTRYPOINT ["/app/entrypoint.sh"]
 
 # Comando por defecto para Gunicorn
 CMD ["gunicorn", \
-     "--preload", \
      "--worker-class", "gevent", \
      "--workers", "2", \
      "--worker-connections", "200", \

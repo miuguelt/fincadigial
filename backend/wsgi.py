@@ -1,3 +1,12 @@
+# Parche de gevent ANTES de cualquier import que pueda tocar ssl (jwt.jwks_client).
+# Evita MonkeyPatchWarning y RecursionError si se arranca con --preload.
+try:
+    import gevent.monkey
+
+    gevent.monkey.patch_all()
+except ImportError:
+    pass
+
 import os
 from dotenv import load_dotenv
 from flask import current_app

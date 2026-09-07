@@ -76,7 +76,6 @@ services:
         max-file: '3'
     command: >
       gunicorn
-      --preload
       --worker-class gevent
       --workers 2
       --worker-connections 200
