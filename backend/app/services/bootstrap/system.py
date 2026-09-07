@@ -108,12 +108,6 @@ BREED_CATALOG = {
             "Raza criolla de cuernos desarrollados (Hartón); doble propósito y elevada calidad de leche.",
             "Hasta 2.4 m de altura, excelente rendimiento lechero adaptado a agroecosistemas del valle.",
         ),
-        "Normando Suroccidental": (  # kept for compat with prior seeds if present
-            BreedPurpose.Milk,
-            "Francia",
-            "Raza lechera de doble propósito de la misma base que Normando en las regiones de lechería.",
-            "Alta riqueza grasa en leche, hueso fuerte, temperamento tranquilo.",
-        ),
     },
     "Porcino": {
         "Duroc": (BreedPurpose.Meat, "Estados Unidos", "Raza porcina de carne: gran % magro.", "Pigmentación castaña y excelente rendimiento en canal."),
