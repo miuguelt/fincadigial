@@ -71,12 +71,16 @@ export function extractPaginatedList(resp: any, preferredKeys: string[] = [], li
   for (const k of metaKeys) {
     if (data && data[k] !== undefined) {
       metadata[k] = data[k];
+    } else if (root && root[k] !== undefined) {
+      metadata[k] = root[k];
     }
   }
 
-  // Si la paginación viene en un objeto anidado en data
+  // Si la paginación viene en un objeto anidado en data o root
   if (data && data.pagination && typeof data.pagination === 'object') {
     Object.assign(metadata, data.pagination);
+  } else if (root && root.pagination && typeof root.pagination === 'object') {
+    Object.assign(metadata, root.pagination);
   }
 
   // Si la paginación viene en root.meta (como en algunas APIs)

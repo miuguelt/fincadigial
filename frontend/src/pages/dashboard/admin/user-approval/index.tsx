@@ -135,42 +135,46 @@ const UserApprovalPage = () => {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-success flex items-center gap-2">
-            <FaUserCheck className="text-success" />
-            Aprobaciones Pendientes
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Revisa y aprueba los nuevos usuarios registrados en el sistema.
-          </p>
+    <div className="w-full max-w-7xl mx-auto px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8 space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-sm shrink-0">
+            <FaUserCheck className="h-6 w-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+              Aprobaciones Pendientes
+            </h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Revisa y aprueba los nuevos usuarios registrados en el sistema.
+            </p>
+          </div>
         </div>
-        <Badge variant="outline" className="text-success border-success/30 bg-success/5 self-start md:self-center py-1 px-3">
-          {users.length} Pendientes
+        <Badge variant="outline" className="text-emerald-700 dark:text-emerald-300 border-emerald-500/30 bg-emerald-500/10 self-start sm:self-center py-1.5 px-3.5 rounded-full font-bold text-xs shadow-sm">
+          {users.length} {users.length === 1 ? 'Pendiente' : 'Pendientes'}
         </Badge>
       </div>
 
       {/* Control administrativo de verificación de nuevos usuarios */}
-      <Card className="border-border/60 shadow-sm bg-card/60 backdrop-blur-sm">
-        <CardContent className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-foreground">Verificación previa de nuevos usuarios</span>
+      <Card className="border-border/70 shadow-sm bg-card rounded-2xl overflow-hidden">
+        <CardContent className="p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-bold text-foreground text-sm sm:text-base">Verificación previa de nuevos usuarios</span>
               <Badge
                 variant={requireVerification ? "default" : "secondary"}
-                className={requireVerification ? "bg-amber-600 text-white" : "bg-muted text-muted-foreground"}
+                className={requireVerification ? "bg-amber-600 text-white font-semibold" : "bg-muted text-muted-foreground font-semibold"}
               >
                 {requireVerification ? "Activada" : "Desactivada (Inicio Rápido)"}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
               {requireVerification
                 ? "Los nuevos usuarios registrados quedarán en estado 'Pendiente' hasta que un administrador los apruebe."
                 : "Todo usuario que se registre queda activo de inmediato y tiene acceso a todas las funcionalidades."}
             </p>
           </div>
-          <div className="flex items-center gap-3 self-end sm:self-center">
+          <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
             <Switch
               checked={requireVerification}
               onCheckedChange={handleToggleVerification}
@@ -180,12 +184,12 @@ const UserApprovalPage = () => {
         </CardContent>
       </Card>
 
-      <Card className="border-green-100 shadow-sm">
-        <CardHeader className="bg-success/5/50">
-          <CardTitle className="text-lg text-success">Bandeja de Aprobación</CardTitle>
+      <Card className="border-border/70 bg-card shadow-sm rounded-2xl overflow-hidden">
+        <CardHeader className="p-5 sm:p-6 bg-muted/30 border-b border-border/50">
+          <CardTitle className="text-lg font-bold text-foreground">Bandeja de Aprobación</CardTitle>
           <CardDescription>Valida la identidad de los solicitantes antes de aprobarlos.</CardDescription>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent className="p-4 sm:p-6">
           {users.length === 0 ? (
             <EmptyState
               icon="IconClockCheck"
@@ -196,71 +200,138 @@ const UserApprovalPage = () => {
               className="py-12 border-none bg-transparent"
             />
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead>Usuario</TableHead>
-                  <TableHead>Rol</TableHead>
-                  <TableHead>Registro</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Vista Móvil: Tarjetas independientes con botones táctiles */}
+              <div className="grid grid-cols-1 gap-4 md:hidden">
                 {users.map((user) => (
-                  <TableRow key={user.id} className="group hover:bg-success/5/30 transition-colors">
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="font-bold text-foreground">{user.fullname}</span>
-                        <div className="flex items-center gap-3 mt-1">
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <FaIdCard className="text-[11px]" /> {user.identification}
-                          </span>
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <FaEnvelope className="text-[11px]" /> {user.email}
-                          </span>
+                  <div
+                    key={user.id}
+                    className="p-4 rounded-xl border border-border/80 bg-card hover:border-emerald-500/30 transition-all space-y-3.5 shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="font-bold text-foreground text-base">{user.fullname}</h4>
+                        <div className="mt-1 space-y-1">
+                          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                            <FaIdCard className="text-muted-foreground/70 shrink-0" />
+                            <span>{user.identification || 'Sin documento'}</span>
+                          </p>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1.5 break-anywhere">
+                            <FaEnvelope className="text-muted-foreground/70 shrink-0" />
+                            <span>{user.email || 'Sin correo'}</span>
+                          </p>
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="bg-info/5 text-info border-blue-100">
+                      <Badge variant="secondary" className="bg-info/10 text-info border-blue-200/50 shrink-0">
                         {user.role}
                       </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <FaCalendarAlt className="text-muted-foreground" />
+                    </div>
+
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1 border-t border-border/40">
+                      <FaCalendarAlt className="text-muted-foreground/70" />
+                      <span>
                         {user.created_at
                           ? format(new Date(user.created_at), "d 'de' MMMM, yyyy", { locale: es })
                           : '—'}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => handleApprove(user.id)}
-                          disabled={actionLoading === user.id}
-                          className="bg-success hover:bg-green-700 h-8 w-8 p-0 rounded-full shadow-sm"
-                          title="Aprobar"
-                        >
-                          <FaCheck className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleReject(user.id)}
-                          disabled={actionLoading === user.id}
-                          className="text-destructive hover:text-destructive hover:bg-destructive/5 h-8 w-8 p-0 rounded-full"
-                          title="Rechazar"
-                        >
-                          <FaTimes className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleApprove(user.id)}
+                        disabled={actionLoading === user.id}
+                        className="flex-1 min-h-[44px] bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-sm gap-2"
+                      >
+                        <FaCheck className="h-3.5 w-3.5" />
+                        <span>Aprobar</span>
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleReject(user.id)}
+                        disabled={actionLoading === user.id}
+                        className="flex-1 min-h-[44px] border-destructive/30 text-destructive hover:bg-destructive/10 font-semibold rounded-xl gap-2"
+                      >
+                        <FaTimes className="h-3.5 w-3.5" />
+                        <span>Rechazar</span>
+                      </Button>
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+
+              {/* Vista Escritorio: Tabla con contenedor de desplazamiento limpio */}
+              <div className="hidden md:block overflow-x-auto rounded-xl border border-border/60">
+                <Table>
+                  <TableHeader className="bg-muted/40">
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="font-bold py-3.5">Usuario</TableHead>
+                      <TableHead className="font-bold py-3.5">Rol</TableHead>
+                      <TableHead className="font-bold py-3.5">Registro</TableHead>
+                      <TableHead className="font-bold py-3.5 text-right">Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((user) => (
+                      <TableRow key={user.id} className="group hover:bg-muted/30 transition-colors">
+                        <TableCell className="py-4">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-foreground">{user.fullname}</span>
+                            <div className="flex items-center gap-3 mt-1">
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <FaIdCard className="text-[11px]" /> {user.identification}
+                              </span>
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <FaEnvelope className="text-[11px]" /> {user.email}
+                              </span>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-4">
+                          <Badge variant="secondary" className="bg-info/10 text-info border-blue-200/50">
+                            {user.role}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="py-4">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <FaCalendarAlt className="text-muted-foreground" />
+                            {user.created_at
+                              ? format(new Date(user.created_at), "d 'de' MMMM, yyyy", { locale: es })
+                              : '—'}
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleApprove(user.id)}
+                              disabled={actionLoading === user.id}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white h-9 px-3.5 rounded-xl shadow-sm gap-1.5 disabled:opacity-50"
+                              title="Aprobar"
+                            >
+                              <FaCheck className="h-3 w-3" />
+                              <span className="text-xs font-semibold">Aprobar</span>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleReject(user.id)}
+                              disabled={actionLoading === user.id}
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10 h-9 px-3 rounded-xl disabled:opacity-50 gap-1.5"
+                              title="Rechazar"
+                            >
+                              <FaTimes className="h-3 w-3" />
+                              <span className="text-xs font-semibold">Rechazar</span>
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

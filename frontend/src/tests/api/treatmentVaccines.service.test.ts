@@ -56,6 +56,6 @@ describe('TreatmentVaccinesService', () => {
     (api.get as any).mockResolvedValue({ data: { data: [], total: 0, page: 2, per_page: 10, totalPages: 1 } });
     const page = await treatmentVaccinesService.getTreatmentVaccines({ page: 2, limit: 10 });
     expect(api.get).toHaveBeenCalledWith('treatment-vaccines', { params: { page: 2, limit: 10 } });
-    expect(page).toMatchObject({ data: [], page: 1, limit: 10 });
+    expect(page).toMatchObject({ data: [], page: 2, limit: 10 });
   });
 });

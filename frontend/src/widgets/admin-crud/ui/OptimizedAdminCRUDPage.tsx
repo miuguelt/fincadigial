@@ -361,7 +361,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       // Refrescar datos después de un breve delay
       setTimeout(async () => {
         try {
-          await refetch();
+          await refetch(undefined, { force: true });
         } catch (error) {
           console.error('Error al refrescar datos:', error);
         }

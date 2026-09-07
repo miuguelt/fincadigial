@@ -166,7 +166,7 @@ const AlertConfigsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8 space-y-6 animate-fade-in">
       <div className="bg-warning/5 border border-amber-200 p-4 rounded-lg flex items-start gap-3">
         <AlertTriangle className="h-5 w-5 text-warning mt-1" />
         <div className="flex-1">

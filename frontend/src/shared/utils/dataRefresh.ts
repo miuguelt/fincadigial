@@ -1,3 +1,5 @@
+import { clearAllServiceCaches, clearServiceCaches } from '@/shared/api/service-registry';
+
 export interface DataRefreshDetail {
   resource?: string;
   endpoint?: string;
@@ -20,6 +22,19 @@ export function emitDataRefresh(resource?: string): void {
   // Invalidarla aquí evita que el dashboard vuelva a pintar un snapshot viejo.
   for (const key of ['dashboard_critical_data', 'animal_module_data', 'user_module_data']) {
     try { window.localStorage.removeItem(key); } catch { /* storage opcional */ }
+  }
+
+  // Vaciar cachés en memoria y persistentes de los servicios correspondientes
+  const rootResource = resource ? resource.replace(/^\/+/, '').split('/')[0].split('?')[0].toLowerCase() : undefined;
+  if (rootResource) {
+    void clearServiceCaches(rootResource);
+    if (rootResource === 'animals') {
+      void clearServiceCaches('animal-fields', 'animal-diseases', 'treatments', 'milk', 'controls', 'control');
+    } else if (rootResource === 'animal-fields') {
+      void clearServiceCaches('fields', 'animals');
+    }
+  } else {
+    void clearAllServiceCaches();
   }
 
   const detail: DataRefreshDetail = {

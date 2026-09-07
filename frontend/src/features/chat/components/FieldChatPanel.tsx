@@ -81,6 +81,18 @@ const MessageBubble = memo(function MessageBubble({
 					</p>
 				)}
 				<p style={{ overflowWrap: "break-word" }}>{msg.content}</p>
+				{msg.attachmentUrl && (
+					<div className="mt-1.5 pt-1.5 border-t border-white/20">
+						<a
+							href={msg.attachmentUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="inline-flex items-center gap-1 text-xs underline font-medium hover:opacity-80"
+						>
+							📍 Ver mapa / coordenadas
+						</a>
+					</div>
+				)}
 				<div className="flex justify-end items-center gap-1 mt-1">
 					<span className="text-xs opacity-60">
 						{formatTime(msg.createdAt)}

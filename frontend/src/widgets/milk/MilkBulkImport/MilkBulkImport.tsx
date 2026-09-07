@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Alert, AlertDescription } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
 import { milkService, MilkBatchEntry } from '@/entities/milk/api/milk.service';
+import { getTodayColombia } from '@/shared/utils/dateUtils';
 import { useToast } from '@/app/providers/ToastContext';
 import { cn } from '@/shared/ui/cn';
 
@@ -61,7 +62,7 @@ export function MilkBulkImport({ onSuccess }: MilkBulkImportProps) {
       }
 
       const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
-      let batchDate = new Date().toISOString().split('T')[0];
+      let batchDate = getTodayColombia();
       const entries: MilkBatchEntry[] = [];
 
       for (let i = 1; i < lines.length; i++) {
@@ -73,7 +74,7 @@ export function MilkBulkImport({ onSuccess }: MilkBulkImportProps) {
           row[header] = values[index];
         });
 
-        const entryDate = row.date || new Date().toISOString().split('T')[0];
+        const entryDate = row.date || getTodayColombia();
         if (i === 1) {
           batchDate = entryDate;
         }

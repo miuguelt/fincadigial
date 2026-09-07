@@ -158,13 +158,18 @@ class AcceptByToken(Resource):
 
 
 @invitations_ns.route("/<int:request_id>/respond")
+@invitations_ns.route("/invitations/<int:request_id>")
 class RespondToInvitation(Resource):
     @invitations_ns.doc("respond_to_invitation", security=["Bearer"])
     @invitations_ns.expect(respond_model)
     @jwt_required()
     def post(self, request_id):
         data = flask.request.get_json() or {}
-        approve = data.get("approve", False)
+        approve = data.get("approve")
+        if approve is None and "action" in data:
+            approve = data.get("action") in ("accept", "approved", True)
+        else:
+            approve = bool(approve)
         current_user_id = get_jwt_identity()
 
         req = InvitationService.respond_to_invitation(
@@ -173,6 +178,11 @@ class RespondToInvitation(Resource):
 
         action = "aceptada" if approve else "rechazada"
         return APIResponse.success(message=f"Invitación {action} correctamente")
+
+    @invitations_ns.doc("respond_to_invitation_patch", security=["Bearer"])
+    @jwt_required()
+    def patch(self, request_id):
+        return self.post(request_id)
 
 
 @invitations_ns.route("/<int:request_id>/cancel")

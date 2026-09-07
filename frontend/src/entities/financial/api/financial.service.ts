@@ -70,6 +70,24 @@ class FinancialService extends BaseService<Transaction> {
     });
   }
 
+  private mapTransaction(data: any): any {
+    const payload = { ...data };
+    if (payload.transaction_type === 'Ingreso') {
+      payload.transaction_type = 'Income';
+    } else if (payload.transaction_type === 'Gasto') {
+      payload.transaction_type = 'Expense';
+    }
+    return payload;
+  }
+
+  public async create(data: Partial<Transaction>): Promise<Transaction> {
+    return super.create(this.mapTransaction(data));
+  }
+
+  public async update(id: number | string, data: Partial<Transaction>): Promise<Transaction> {
+    return super.update(id, this.mapTransaction(data));
+  }
+
   async getSummary(fincaId: number, dateFrom?: string, dateTo?: string): Promise<FinancialSummary> {
     return this.customRequest<FinancialSummary>('summary', 'GET', undefined, {
       params: { finca_id: fincaId, date_from: dateFrom, date_to: dateTo }
@@ -82,6 +100,30 @@ class FinancialService extends BaseService<Transaction> {
 
   async getByCategory(category: string, fincaId: number): Promise<Transaction[]> {
     return this.getAll({ category, finca_id: fincaId });
+  }
+
+  private mapResponse(item: any): any {
+    if (!item) return item;
+    const mapped = { ...item };
+    if (mapped.transaction_type === 'Income') mapped.transaction_type = 'Ingreso';
+    if (mapped.transaction_type === 'Expense') mapped.transaction_type = 'Gasto';
+    return mapped;
+  }
+
+  async getAll(params?: Record<string, any>): Promise<Transaction[]> {
+    const list = await super.getAll(params);
+    return list.map(i => this.mapResponse(i));
+  }
+
+  async getPaginated(params?: Record<string, any>): Promise<any> {
+    const res = await super.getPaginated(params);
+    res.data = res.data.map(i => this.mapResponse(i));
+    return res;
+  }
+
+  async getById(id: number | string, params?: Record<string, any>): Promise<Transaction> {
+    const item = await super.getById(id, params);
+    return this.mapResponse(item);
   }
 
   async getAllTransactions(params: Record<string, any> = {}): Promise<Transaction[]> {

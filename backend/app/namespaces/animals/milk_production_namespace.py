@@ -9,6 +9,11 @@ from app.services.milk_production_service import MilkProductionService
 from app import db
 import logging
 from datetime import datetime, date
+from app.utils.cache_helpers import (
+    _cache_clear,
+    _detail_cache_clear,
+    _broadcast_invalidation,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -222,6 +227,10 @@ class MilkBatchEntry(Resource):
 
             if "error" in result:
                 return APIResponse.error(result["error"], code=400)
+
+            _cache_clear("MilkProduction")
+            _detail_cache_clear("MilkProduction")
+            _broadcast_invalidation("MilkProduction")
 
             status_code = 207 if result["errors"] else 201
             return APIResponse.success(

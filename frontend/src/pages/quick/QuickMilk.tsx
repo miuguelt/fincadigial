@@ -43,9 +43,14 @@ export default function QuickMilk() {
   const [animales, setAnimales]     = useState<{ value: string; label: string }[]>([]);
   const [cargando, setCargando]     = useState(true);
 
-  const cargarAnimales = useCallback(async () => {
+  const cargarAnimales = useCallback(async (force = false) => {
     try {
-      const resp = await animalsService.getAnimals({ limit: 200, sex: 'Hembra', status: 'Vivo' });
+      const resp = await animalsService.getAnimals({
+        limit: 200,
+        sex: 'Hembra',
+        status: 'Vivo',
+        cache_bust: force ? Date.now() : undefined,
+      });
       const lista = Array.isArray(resp) ? resp : (resp as any)?.data ?? [];
       setAnimales(lista.map((a: any) => ({
         value: String(a.id),
@@ -58,7 +63,23 @@ export default function QuickMilk() {
     }
   }, [showToast]);
 
-  useEffect(() => { cargarAnimales(); }, [cargarAnimales]);
+  useEffect(() => {
+    void cargarAnimales(true);
+
+    const handleRefresh = (e: Event) => {
+      const detail = (e as CustomEvent).detail || {};
+      const resource = String(detail?.resource || detail?.endpoint || '').toLowerCase();
+      if (!resource || resource.includes('animal')) {
+        void cargarAnimales(true);
+      }
+    };
+    window.addEventListener('crud:refetch', handleRefresh);
+    window.addEventListener('server-resource-changed', handleRefresh);
+    return () => {
+      window.removeEventListener('crud:refetch', handleRefresh);
+      window.removeEventListener('server-resource-changed', handleRefresh);
+    };
+  }, [cargarAnimales]);
 
   const turnoToSession = (t: Turno): 'AM' | 'PM' | 'Extra' => {
     switch (t) {

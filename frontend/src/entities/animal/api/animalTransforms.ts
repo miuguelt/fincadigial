@@ -175,7 +175,11 @@ export function buildApiPayload(
 		if ("exit_reason" in data) payload.exit_reason = data.exit_reason;
 
 		Object.keys(payload).forEach((k) => {
-			if (payload[k] === undefined) delete payload[k];
+			if (payload[k] === undefined) {
+				delete payload[k];
+			} else if ((k === "idFather" || k === "idMother") && payload[k] === 0) {
+				payload[k] = null;
+			}
 		});
 
 		const todayStr = getTodayColombia();
@@ -245,12 +249,12 @@ export function buildApiPayload(
 
 	Object.keys(payload).forEach((k) => {
 		const v = (payload as any)[k];
-		if (v === undefined || v === null || (typeof v === "string" && !v.trim())) {
+		if (v === undefined || (typeof v === "string" && !v.trim())) {
 			delete (payload as any)[k];
 		} else if (k === "breeds_id" && typeof v === "number" && v <= 0) {
 			delete (payload as any)[k];
 		} else if ((k === "idFather" || k === "idMother") && v === 0) {
-			delete (payload as any)[k];
+			(payload as any)[k] = null;
 		}
 	});
 

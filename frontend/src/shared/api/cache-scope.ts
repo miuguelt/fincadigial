@@ -85,7 +85,9 @@ function getClaimFincaId(claims: ScopeRecord | null): unknown {
   );
 }
 
-function getActiveFincaId(user: ScopeRecord | null, claims: ScopeRecord | null): unknown {
+export function getActiveFincaId(user: ScopeRecord | null = null, claims: ScopeRecord | null = null): unknown {
+  user = user || readStoredUser();
+  claims = claims || readTokenClaims();
   return firstValue(readStorage(ACTIVE_FARM_KEY), getProfileFincaId(user), getClaimFincaId(claims));
 }
 

@@ -52,6 +52,27 @@ from app.utils.cache_helpers import (
 API_VERSION = "1.0.0"
 
 
+def _is_cache_busted(req) -> bool:
+    """Detect if client explicitly requested cache bypass via query param or header."""
+    if not req:
+        return False
+    # Check query params: cache_bust, nocache, _nocache
+    for param in ("cache_bust", "nocache", "_nocache"):
+        val = req.args.get(param)
+        if val is not None:
+            val_str = str(val).strip().lower()
+            if val_str not in ("", "0", "false", "no"):
+                return True
+    # Check standard cache-control headers
+    cc = req.headers.get("Cache-Control", "").lower()
+    pragma = req.headers.get("Pragma", "").lower()
+    if "no-cache" in cc or "no-store" in cc or "no-cache" in pragma:
+        return True
+    if req.headers.get("X-Cache-Bust"):
+        return True
+    return False
+
+
 def _validate_sql_identifier(name: str) -> None:
     """Valida que un nombre sea un identificador SQL seguro (solo alfanumérico + underscore)."""
     if not name or not isinstance(name, str):
@@ -423,6 +444,22 @@ def create_optimized_namespace(
                 "Ya existe un registro con estos datos únicos. Modifique el registro o la fecha.",
                 details={"error": msg},
             )
+            
+        # Check for Foreign Key constraint violations
+        if "foreign key" in msg.lower() or "llave foránea" in msg.lower():
+            # Try to extract the field name if possible
+            fk_match = re.search(r'Key \((.*?)\)=\(.*\) is not present in table', msg)
+            if fk_match:
+                field = fk_match.group(1)
+                return APIResponse.conflict(
+                    f"El valor proporcionado para '{field}' no existe o es inválido.",
+                    details={"error": msg, "field": field}
+                )
+            return APIResponse.conflict(
+                "Un registro relacionado requerido no existe. Verifique los datos ingresados.",
+                details={"error": msg}
+            )
+
         return APIResponse.conflict(
             "Violación de unicidad o integridad", details={"error": msg}
         )
@@ -462,7 +499,9 @@ def create_optimized_namespace(
         def get(self):  # List
             try:
                 args_items = sorted(
-                    (k, v) for k, v in flask.request.args.items() if k != "cache_bust"
+                    (k, v)
+                    for k, v in flask.request.args.items()
+                    if k not in ("cache_bust", "nocache", "_nocache", "_", "t")
                 )
                 cache_key = str(args_items)
                 model_key = model_class.__name__
@@ -472,7 +511,7 @@ def create_optimized_namespace(
                     flask.request.args.get("prefer_cache")
                 ) or _parse_bool(flask.request.args.get("offline_fallback"))
                 allow_cache = (
-                    cache_enabled and flask.request.args.get("cache_bust") != "1"
+                    cache_enabled and not _is_cache_busted(flask.request)
                 )
 
                 cached_payload = None
@@ -995,6 +1034,17 @@ def create_optimized_namespace(
                     return _validation_error_response(
                         {"payload": "Se requiere un objeto JSON válido y no vacío."}
                     )
+                
+                # Auto-inject finca_id from JWT if missing
+                if "finca_id" not in payload and "finca_id" in model_class.__table__.columns:
+                    from flask_jwt_extended import get_jwt, verify_jwt_in_request
+                    try:
+                        verify_jwt_in_request(optional=True)
+                        jwt_data = get_jwt() or {}
+                        if jwt_finca_id := jwt_data.get("finca_id"):
+                            payload["finca_id"] = jwt_finca_id
+                    except Exception:
+                        pass
 
                 logger.info(f"Creating {model_class.__name__} with payload: {payload}")
                 # Convert ISO date/datetime strings into Python objects for DB drivers
@@ -1247,7 +1297,7 @@ def create_optimized_namespace(
                     flask.request.args.get("prefer_cache")
                 ) or _parse_bool(flask.request.args.get("offline_fallback"))
                 allow_cache = (
-                    cache_enabled and flask.request.args.get("cache_bust") != "1"
+                    cache_enabled and not _is_cache_busted(flask.request)
                 )
 
                 cached_payload = None
@@ -1476,6 +1526,7 @@ def create_optimized_namespace(
 
                 # Invalidar cache DESPUÉS de serialización exitosa
                 _cache_clear(model_class.__name__)
+                _detail_cache_clear(model_class.__name__, record_id)
 
                 try:
                     relations = build_relations_from_instance(instance)
@@ -1544,6 +1595,9 @@ def create_optimized_namespace(
                 return _handle_integrity_error(ie, "update", record_id)
             except Exception as e:
                 db.session.rollback()
+                from sqlalchemy.orm.exc import StaleDataError
+                if isinstance(e, StaleDataError):
+                    return _version_conflict_response(instance, expected_version)
                 logger.error(
                     f"Error actualizando {model_class.__name__} id={record_id}: {e}",
                     exc_info=True,
@@ -1714,6 +1768,9 @@ def create_optimized_namespace(
                     return _handle_integrity_error(ie, "patch", record_id)
                 except Exception as e:
                     db.session.rollback()
+                    from sqlalchemy.orm.exc import StaleDataError
+                    if isinstance(e, StaleDataError):
+                        return _version_conflict_response(instance, expected_version)
                     logger.error(
                         f"Error patch {model_class.__name__} id={record_id}: {e}",
                         exc_info=True,
@@ -1779,6 +1836,7 @@ def create_optimized_namespace(
 
                 # Invalidar cache INMEDIATAMENTE después de commit exitoso
                 _cache_clear(model_class.__name__)
+                _detail_cache_clear(model_class.__name__, record_id)
 
                 # Respuesta con información de eliminación cascade si aplica
                 response_data: dict[str, Any] = {"deleted_id": record_id}
@@ -2002,7 +2060,7 @@ def create_optimized_namespace(
                         else str(result.last_modified)
                     )
 
-                allow_cache = flask.request.args.get("cache_bust") != "1"
+                allow_cache = not _is_cache_busted(flask.request)
 
                 # Generar ETag estable basado en total y último updated_at
                 etag = _scoped_etag(model_class, total_count, max_updated)

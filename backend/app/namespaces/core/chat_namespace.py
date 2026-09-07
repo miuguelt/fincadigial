@@ -30,10 +30,19 @@ message_model = chat_ns.model(
             required=False, description="URL del archivo adjunto"
         ),
         "attachment_type": fields.String(
-            required=False, description="Tipo de archivo (image/file)"
+            required=False, description="Tipo de archivo (image/file/location/live_location)"
         ),
         "attachment_name": fields.String(
             required=False, description="Nombre del archivo"
+        ),
+        "latitude": fields.Float(
+            required=False, description="Latitud GPS para compartir ubicación"
+        ),
+        "longitude": fields.Float(
+            required=False, description="Longitud GPS para compartir ubicación"
+        ),
+        "accuracy": fields.Float(
+            required=False, description="Precisión en metros de la señal GPS"
         ),
     },
 )
@@ -312,6 +321,45 @@ class ChatSendResource(Resource):
         attachment_url = data.get("attachment_url")
         attachment_type = data.get("attachment_type")
         attachment_name = data.get("attachment_name")
+        latitude = data.get("latitude")
+        longitude = data.get("longitude")
+        accuracy = data.get("accuracy")
+
+        # Extraer o normalizar coordenadas GPS si el adjunto es de ubicación
+        if attachment_type in ("location", "live_location"):
+            if latitude is None or longitude is None:
+                import re
+
+                m = re.search(
+                    r"q=([+-]?\d+\.?\d*),([+-]?\d+\.?\d*)",
+                    str(attachment_url or ""),
+                )
+                if m:
+                    try:
+                        latitude = float(m.group(1))
+                        longitude = float(m.group(2))
+                    except (ValueError, TypeError):
+                        pass
+
+            if latitude is not None and longitude is not None:
+                try:
+                    latitude = float(latitude)
+                    longitude = float(longitude)
+                    accuracy = float(accuracy) if accuracy is not None else None
+                except (ValueError, TypeError):
+                    latitude, longitude, accuracy = None, None, None
+
+            if latitude is not None and longitude is not None:
+                if not attachment_url:
+                    attachment_url = f"https://www.google.com/maps?q={latitude},{longitude}"
+                if not attachment_name:
+                    attachment_name = (
+                        "Ubicación en tiempo real (GPS)"
+                        if attachment_type == "live_location"
+                        else "Ubicación GPS"
+                    )
+                if not message:
+                    message = f"📍 {attachment_name}: {latitude:.5f}, {longitude:.5f}"
 
         if not recipient_id:
             return APIResponse.error(
@@ -371,6 +419,35 @@ class ChatSendResource(Resource):
             )
 
             db.session.add(chat_message)
+
+            # Persistir punto de rastreo en UserLocation si se recibió ubicación
+            if (
+                attachment_type in ("location", "live_location")
+                and latitude is not None
+                and longitude is not None
+            ):
+                try:
+                    from app.models.user_location import UserLocation
+
+                    loc = UserLocation(
+                        user_id=user_id,
+                        finca_id=finca_id,
+                        latitude=latitude,
+                        longitude=longitude,
+                        accuracy=accuracy,
+                        detection_method=(
+                            "GPS_Live"
+                            if attachment_type == "live_location"
+                            else "GPS"
+                        ),
+                    )
+                    db.session.add(loc)
+                except Exception as loc_err:
+                    logger.warning(
+                        "Error guardando UserLocation breadcrumb desde chat: %s",
+                        loc_err,
+                    )
+
             db.session.commit()
             chat_message.client_message_id = client_message_id
 

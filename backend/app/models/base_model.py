@@ -77,13 +77,13 @@ class BaseModel(db.Model):
         str
     ] = []  # Campos extra permitidos para payloads (no columnas directas)
 
-    # Configuración de caché para PWA (optimizado para diferentes tipos de datos)
+    # Configuración de caché para PWA (optimizado para datos transaccionales con revalidación inmediata)
     _cache_config = {
-        "ttl": 120,  # TTL en segundos (2 minutos por defecto)
+        "ttl": 30,  # TTL en segundos de caché en memoria del backend
         "type": "private",  # 'public' (compartido) o 'private' (por usuario)
-        "strategy": "stale-while-revalidate",  # estrategia para Service Worker
-        "max_age": 120,  # max-age para Cache-Control header
-        "stale_while_revalidate": 60,  # tiempo para usar caché stale mientras revalida
+        "strategy": "network-first",  # estrategia para Service Worker
+        "max_age": 0,  # max-age=0 / no-cache para forzar revalidación inmediata del cliente
+        "stale_while_revalidate": 0,
         "stale_if_error": 3600,  # permitir usar caché hasta 1h si el backend falla (modo offline)
     }
 
@@ -188,9 +188,19 @@ class BaseModel(db.Model):
                 try:
                     # Convertir string a instancia de enum
                     if callable(enum_class):
-                        # Explicitly cast to Dict[str, Any] to satisfy strict linter
-                        cast(dict[str, Any], data)[str(field)] = enum_class(raw_value)
-                except (ValueError, TypeError):
+                        try:
+                            cast(dict[str, Any], data)[str(field)] = enum_class(raw_value)
+                        except ValueError:
+                            # Fallback: intentar por nombre (name) o ignorando mayúsculas/minúsculas
+                            matched = False
+                            for e in cast(Iterable[Any], enum_class):
+                                if str(e.value).lower() == str(raw_value).lower() or str(e.name).lower() == str(raw_value).lower():
+                                    cast(dict[str, Any], data)[str(field)] = e
+                                    matched = True
+                                    break
+                            if not matched:
+                                raise ValueError("Valor inválido")
+                except (ValueError, TypeError, KeyError):
                     if isinstance(enum_class, type) and hasattr(enum_class, "__iter__"):
                         valid_values = [
                             str(e.value) for e in cast(Iterable[Any], enum_class)
@@ -269,7 +279,21 @@ class BaseModel(db.Model):
                     f_id = get_current_finca_id()
                     if f_id:
                         data["finca_id"] = f_id
-                    elif not is_update and not allows_global:
+                    elif data.get("animal_id"):
+                        try:
+                            from app.models.animals import Animals
+
+                            animal = Animals.query.get(data["animal_id"])
+                            if animal and animal.finca_id:
+                                data["finca_id"] = animal.finca_id
+                        except Exception:
+                            pass
+
+                    if (
+                        data.get("finca_id") is None
+                        and not is_update
+                        and not allows_global
+                    ):
                         errors.append(
                             "El campo 'finca_id' es requerido para garantizar el aislamiento de datos (Multi-Tenant)"
                         )
@@ -281,7 +305,21 @@ class BaseModel(db.Model):
                 elif data.get("finca_id") is not None:
                     # Permitir finca_id explícito si no hay sesión JWT (petición pública / registro inicial)
                     pass
-                elif not is_update and not allows_global:
+                elif data.get("animal_id"):
+                    try:
+                        from app.models.animals import Animals
+
+                        animal = Animals.query.get(data["animal_id"])
+                        if animal and animal.finca_id:
+                            data["finca_id"] = animal.finca_id
+                    except Exception:
+                        pass
+
+                if (
+                    data.get("finca_id") is None
+                    and not is_update
+                    and not allows_global
+                ):
                     errors.append(
                         "El campo 'finca_id' es requerido para garantizar el aislamiento de datos (Multi-Tenant)"
                     )

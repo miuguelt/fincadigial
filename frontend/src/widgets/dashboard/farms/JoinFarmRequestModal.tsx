@@ -39,7 +39,7 @@ export function JoinFarmRequestModal({
 
     setLoading(true);
     try {
-      await apiClient.post(`/api/v1/invitations/request-join`, {
+      await apiClient.post(`/invitations/request-join`, {
         finca_id: selectedFarm.id,
         message
       });

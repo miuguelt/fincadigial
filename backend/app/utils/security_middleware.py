@@ -114,11 +114,11 @@ def init_security_middlewares(app):
         elif path.startswith("/api/v1/users") or path.startswith("/api/v1/auth"):
             response.headers["Cache-Control"] = "private, no-store"
 
-        # ── Resto de la API: 1 min de stale-while-revalidate para reducir latencia ──
+        # ── Resto de la API operativa: revalidación inmediata para reflejar inserciones en tiempo real ──
         elif path.startswith("/api/v1/") and flask.request.method == "GET":
             if not response.headers.get("Cache-Control"):
                 response.headers["Cache-Control"] = (
-                    "private, max-age=60, stale-while-revalidate=30"
+                    "private, no-cache, must-revalidate"
                 )
 
         return response

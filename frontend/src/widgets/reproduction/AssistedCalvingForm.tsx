@@ -6,6 +6,7 @@ import { Label } from '@/shared/ui/label';
 import { Checkbox } from '@/shared/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { useToast } from '@/app/providers/ToastContext';
+import { getTodayColombia } from '@/shared/utils/dateUtils';
 import { reproductionService } from '@/entities/reproduction/api/reproduction.service';
 import { useAnimals } from '@/entities/animal/model/useAnimals';
 import { animalService } from '@/entities/animal/api/animal.service';
@@ -24,7 +25,7 @@ export default function AssistedCalvingForm({
 
   const [formData, setFormData] = useState({
     animal_id: motherId ? motherId.toString() : '',
-    event_date: new Date().toISOString().split('T')[0],
+    event_date: getTodayColombia(),
     offspring_record: '',
     sex: 'Hembra',
     birth_weight: '',
@@ -103,7 +104,7 @@ export default function AssistedCalvingForm({
       // Reset form
       setFormData({
         animal_id: motherId ? motherId.toString() : '',
-        event_date: new Date().toISOString().split('T')[0],
+        event_date: getTodayColombia(),
         offspring_record: '',
         sex: 'Hembra',
         birth_weight: '',

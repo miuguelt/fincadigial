@@ -130,10 +130,49 @@ class UserApprovalStatus(Resource):
                 return APIResponse.not_found("Usuario no encontrado")
 
             from app.models.user import ApprovalStatus
+            from app.models.join_request import JoinRequest, JoinRequestStatus
+            from app.models.user_finca import UserFinca
+            from datetime import datetime, UTC
 
+            now_utc = datetime.now(UTC).replace(tzinfo=None)
             old_status = target_user.approval_status.value if target_user.approval_status else "None"
             target_user.approval_status = ApprovalStatus(new_status)
             target_user.status = new_status == "Approved"
+
+            pending_requests = JoinRequest.query.filter(
+                JoinRequest.user_id == target_user.id,
+                JoinRequest.status == JoinRequestStatus.PENDING,
+            ).all()
+
+            if new_status == "Approved":
+                for preq in pending_requests:
+                    preq.status = JoinRequestStatus.APPROVED
+                    preq.processed_by = current_user_id
+                    preq.processed_at = now_utc
+                    UserFinca.assign(
+                        user_id=target_user.id,
+                        finca_id=preq.finca_id,
+                        role=preq.requested_role or (target_user.role.value if hasattr(target_user.role, "value") else str(target_user.role or "Operario")),
+                        is_active=True,
+                        commit=False,
+                    )
+                    if not target_user.finca_id:
+                        target_user.finca_id = preq.finca_id
+
+                if not pending_requests and target_user.finca_id:
+                    UserFinca.assign(
+                        user_id=target_user.id,
+                        finca_id=target_user.finca_id,
+                        role=(target_user.role.value if hasattr(target_user.role, "value") else str(target_user.role or "Operario")),
+                        is_active=True,
+                        commit=False,
+                    )
+            elif new_status == "Rejected":
+                for preq in pending_requests:
+                    preq.status = JoinRequestStatus.REJECTED
+                    preq.processed_by = current_user_id
+                    preq.processed_at = now_utc
+
             db.session.commit()
             logger.info(
                 "Usuario %s (ID:%d) cambió approval_status de %s a %s",

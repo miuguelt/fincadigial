@@ -27,6 +27,10 @@ import {
   Video,
   Download,
   Loader2,
+  MapPin,
+  Navigation,
+  Compass,
+  Radio,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/app/providers/ToastContext';
@@ -78,6 +82,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isLiveTracking, setIsLiveTracking] = useState(false);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [showLocationOptions, setShowLocationOptions] = useState(false);
+  const liveWatchIdRef = useRef<number | null>(null);
+  const lastLocationSentTimeRef = useRef<number>(0);
 
   // Nodo local de la finca: permite chatear por el Wi-Fi del predio cuando no hay internet.
   const [showNodeSettings, setShowNodeSettings] = useState(false);
@@ -341,9 +350,223 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
     }
   };
 
+  const handleStopLiveLocation = useCallback(() => {
+    if (liveWatchIdRef.current !== null && typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.clearWatch(liveWatchIdRef.current);
+      liveWatchIdRef.current = null;
+    }
+    setIsLiveTracking(false);
+    showToast('Transmisión de ubicación en vivo detenida.', 'info');
+  }, [showToast]);
+
+  const handleSendCurrentLocation = async () => {
+    if (!('geolocation' in navigator)) {
+      showToast('Tu dispositivo no soporta geolocalización GPS.', 'error');
+      setShowLocationOptions(false);
+      return;
+    }
+    if (!selectedContact) return;
+
+    const senderId = Number(user?.id);
+    if (!Number.isFinite(senderId)) {
+      showToast('Sesión no válida.', 'error');
+      return;
+    }
+
+    setIsGettingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          const accuracy = pos.coords.accuracy;
+          const mapUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+
+          await OfflineChatService.send(
+            senderId,
+            String(user?.fullname || 'Usuario'),
+            selectedContact.id,
+            `📍 Ubicación GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+            {
+              url: mapUrl,
+              type: 'location',
+              name: `Ubicación GPS (±${Math.round(accuracy)}m)`,
+              latitude: lat,
+              longitude: lng,
+              accuracy,
+            },
+          );
+          showToast('Ubicación enviada correctamente.', 'success');
+        } catch (err) {
+          console.error('Error enviando ubicación:', err);
+          showToast('Error al enviar ubicación.', 'error');
+        } finally {
+          setIsGettingLocation(false);
+          setShowLocationOptions(false);
+        }
+      },
+      (err) => {
+        setIsGettingLocation(false);
+        setShowLocationOptions(false);
+        console.error('Error de geolocalización:', err);
+        showToast('No fue posible obtener la señal GPS del teléfono.', 'error');
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+    );
+  };
+
+  const handleToggleLiveLocation = () => {
+    if (isLiveTracking) {
+      handleStopLiveLocation();
+      setShowLocationOptions(false);
+      return;
+    }
+
+    if (!('geolocation' in navigator)) {
+      showToast('Tu dispositivo no soporta geolocalización GPS.', 'error');
+      setShowLocationOptions(false);
+      return;
+    }
+    if (!selectedContact) return;
+
+    const senderId = Number(user?.id);
+    if (!Number.isFinite(senderId)) {
+      showToast('Sesión no válida.', 'error');
+      return;
+    }
+
+    setShowLocationOptions(false);
+    setIsLiveTracking(true);
+    showToast('Compartiendo ubicación en tiempo real...', 'info');
+
+    const targetContactId = selectedContact.id;
+    lastLocationSentTimeRef.current = 0;
+
+    const watchId = navigator.geolocation.watchPosition(
+      async (pos) => {
+        const now = Date.now();
+        // Throttling: transmitir al menos cada 15 segundos
+        if (now - lastLocationSentTimeRef.current < 15000) return;
+        lastLocationSentTimeRef.current = now;
+
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const accuracy = pos.coords.accuracy;
+        const mapUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+
+        try {
+          await OfflineChatService.send(
+            senderId,
+            String(user?.fullname || 'Usuario'),
+            targetContactId,
+            `📡 Ubicación en vivo: ${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+            {
+              url: mapUrl,
+              type: 'live_location',
+              name: `Ubicación en tiempo real (±${Math.round(accuracy)}m)`,
+              latitude: lat,
+              longitude: lng,
+              accuracy,
+            },
+          );
+        } catch (sendErr) {
+          console.error('Error enviando punto en vivo:', sendErr);
+        }
+      },
+      (err) => {
+        console.error('Error en watchPosition GPS:', err);
+        handleStopLiveLocation();
+        showToast('Se interrumpió el rastreo GPS en vivo.', 'warning');
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 }
+    );
+
+    liveWatchIdRef.current = watchId;
+  };
+
+  // Limpiar watch de GPS al desmontar o cambiar de contacto
+  useEffect(() => {
+    return () => {
+      if (liveWatchIdRef.current !== null && typeof navigator !== 'undefined' && navigator.geolocation) {
+        navigator.geolocation.clearWatch(liveWatchIdRef.current);
+        liveWatchIdRef.current = null;
+      }
+    };
+  }, [selectedContact?.id]);
+
   const renderAttachment = (msg: ChatMessage) => {
     if (!msg.attachment_url) return null;
     const type = msg.attachment_type || 'file';
+
+    if (type === 'location' || type === 'live_location') {
+      const isLive = type === 'live_location';
+      let lat = '';
+      let lng = '';
+      const match = (msg.attachment_url || '').match(/q=([+-]?\d+\.?\d*),([+-]?\d+\.?\d*)/);
+      if (match) {
+        lat = match[1];
+        lng = match[2];
+      }
+      const wazeUrl = lat && lng ? `https://waze.com/ul?ll=${lat},${lng}&navigate=yes` : null;
+
+      return (
+        <div className="my-1.5 p-3 rounded-xl bg-background/90 border border-border/60 text-foreground text-xs shadow-sm space-y-2.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className={cn(
+                "p-2 rounded-lg flex items-center justify-center shrink-0",
+                isLive ? "bg-emerald-500/20 text-emerald-400" : "bg-primary/20 text-primary"
+              )}>
+                <MapPin size={18} />
+              </div>
+              <div>
+                <p className="font-bold text-xs">
+                  {isLive ? 'Ubicación en tiempo real' : 'Ubicación GPS'}
+                </p>
+                {lat && lng ? (
+                  <p className="text-[11px] text-muted-foreground font-mono">
+                    {Number(lat).toFixed(5)}, {Number(lng).toFixed(5)}
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-muted-foreground">
+                    {msg.attachment_name || 'Coordenadas del predio'}
+                  </p>
+                )}
+              </div>
+            </div>
+            {isLive && (
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                En vivo
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 pt-1 border-t border-border/30">
+            <a
+              href={msg.attachment_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-bold text-[11px] transition-colors border border-primary/20 min-h-[36px]"
+            >
+              <Navigation size={13} />
+              Google Maps
+            </a>
+            {wazeUrl && (
+              <a
+                href={wazeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 font-bold text-[11px] transition-colors border border-sky-500/20 min-h-[36px]"
+              >
+                <Compass size={13} />
+                Waze
+              </a>
+            )}
+          </div>
+        </div>
+      );
+    }
 
     if (type === 'image') {
       return (
@@ -652,6 +875,79 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                     </div>
                   )}
 
+                  {/* Banner de ubicación en tiempo real activa */}
+                  {isLiveTracking && (
+                    <div className="px-3 py-2 bg-emerald-500/15 border-t border-emerald-500/30 flex items-center justify-between text-xs shrink-0">
+                      <div className="flex items-center gap-2 text-emerald-400 font-semibold">
+                        <span className="relative flex h-2.5 w-2.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                        </span>
+                        <span>Compartiendo ubicación GPS en tiempo real</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleStopLiveLocation}
+                        className="px-2.5 py-1 rounded-md bg-emerald-500/25 hover:bg-emerald-500/35 text-emerald-200 font-bold text-[11px] transition-colors"
+                      >
+                        Detener
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Menú de opciones de ubicación GPS */}
+                  {showLocationOptions && (
+                    <div className="p-2.5 bg-card/95 border-t border-white/10 flex flex-col gap-1.5 text-xs shrink-0 backdrop-blur-md">
+                      <div className="flex items-center justify-between px-1">
+                        <p className="font-bold text-[11px] text-muted-foreground uppercase tracking-wider">
+                          Ubicación GPS Móvil
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setShowLocationOptions(false)}
+                          className="p-1 text-muted-foreground hover:text-foreground rounded"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={isGettingLocation}
+                        onClick={handleSendCurrentLocation}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-white/5 text-foreground text-left transition-colors font-medium min-h-[44px]"
+                      >
+                        {isGettingLocation ? (
+                          <Loader2 size={18} className="animate-spin text-primary shrink-0" />
+                        ) : (
+                          <MapPin size={18} className="text-primary shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-xs">Enviar ubicación actual</p>
+                          <p className="text-[11px] text-muted-foreground">Punto GPS único con coordenadas del predio</p>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleToggleLiveLocation}
+                        className={cn(
+                          "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors font-medium min-h-[44px]",
+                          isLiveTracking ? "bg-rose-500/10 hover:bg-rose-500/20 text-rose-400" : "hover:bg-white/5 text-foreground"
+                        )}
+                      >
+                        <Radio size={18} className={isLiveTracking ? "text-rose-400 animate-pulse shrink-0" : "text-emerald-400 shrink-0"} />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-xs">
+                            {isLiveTracking ? 'Detener transmisión en vivo' : 'Compartir en tiempo real'}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {isLiveTracking ? 'Finalizar actualización continua' : 'Transmite coordenadas automáticamente mientras te mueves'}
+                          </p>
+                        </div>
+                      </button>
+                    </div>
+                  )}
+
                   {/* Footer Input */}
                   <div className="p-3 bg-background/40 backdrop-blur-xl border-t border-white/5 shrink-0">
                     <form onSubmit={handleSendMessage} className="flex items-center gap-2">
@@ -672,6 +968,24 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                         title="Adjuntar documento, imagen o video"
                       >
                         <Paperclip size={18} />
+                      </Button>
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setShowLocationOptions((prev) => !prev)}
+                        className={cn(
+                          "h-11 w-11 shrink-0 rounded-xl transition-all",
+                          isLiveTracking
+                            ? "text-emerald-400 bg-emerald-500/15 animate-pulse border border-emerald-500/30"
+                            : showLocationOptions
+                            ? "text-primary bg-white/10"
+                            : "text-muted-foreground hover:text-primary hover:bg-white/5"
+                        )}
+                        title="Enviar o compartir ubicación GPS"
+                      >
+                        <MapPin size={18} />
                       </Button>
 
                       <Input

@@ -43,11 +43,12 @@ export default function QuickTransfer() {
 
   // Cargar animales activos y potreros
   useEffect(() => {
-    async function loadData() {
+    async function loadData(force = false) {
       try {
+        const bust = force ? Date.now() : undefined;
         const [animalsResp, fieldsResp] = await Promise.all([
-          animalsService.getAnimals({ limit: 200, status: "Vivo" }),
-          fieldService.getFields({ limit: 100 }),
+          animalsService.getAnimals({ limit: 200, status: "Vivo", cache_bust: bust }),
+          fieldService.getFields({ limit: 100, cache_bust: bust }),
         ]);
 
         const animals = Array.isArray(animalsResp) ? animalsResp : (animalsResp as any).data || [];
@@ -68,7 +69,23 @@ export default function QuickTransfer() {
         setCargando(false);
       }
     }
-    loadData();
+    void loadData(true);
+
+    const handleRefresh = (e: Event) => {
+      const detail = (e as CustomEvent).detail || {};
+      const resource = String(detail?.resource || detail?.endpoint || '').toLowerCase();
+      if (!resource || resource.includes('animal') || resource.includes('field')) {
+        void loadData(true);
+      }
+    };
+    window.addEventListener('crud:refetch', handleRefresh);
+    window.addEventListener('server-resource-changed', handleRefresh);
+    window.addEventListener('animal-fields:updated', handleRefresh);
+    return () => {
+      window.removeEventListener('crud:refetch', handleRefresh);
+      window.removeEventListener('server-resource-changed', handleRefresh);
+      window.removeEventListener('animal-fields:updated', handleRefresh);
+    };
   }, [showToast]);
 
   const handleSubmit = async (e: React.FormEvent) => {

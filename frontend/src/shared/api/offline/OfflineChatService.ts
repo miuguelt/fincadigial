@@ -16,7 +16,7 @@ export interface ChatMessage {
   content: string;
   createdAt: string;
   attachmentUrl?: string;
-  attachmentType?: 'image' | 'file' | 'video' | 'audio' | string;
+  attachmentType?: 'image' | 'file' | 'video' | 'audio' | 'location' | 'live_location' | string;
   attachmentName?: string;
   clientMessageId?: string;
   readAt?: string;
@@ -36,7 +36,7 @@ export interface ApiChatMessage {
   client_message_id?: string | null;
   read_at?: string | null;
   attachment_url?: string;
-  attachment_type?: 'image' | 'file' | 'video' | 'audio' | string;
+  attachment_type?: 'image' | 'file' | 'video' | 'audio' | 'location' | 'live_location' | string;
   attachment_name?: string;
 }
 
@@ -295,7 +295,14 @@ class OfflineChatServiceImpl {
     senderName: string,
     recipientId: number,
     text: string,
-    attachment?: { url?: string; type?: string; name?: string },
+    attachment?: {
+      url?: string;
+      type?: string;
+      name?: string;
+      latitude?: number;
+      longitude?: number;
+      accuracy?: number;
+    },
   ): Promise<ChatMessage> {
     this.setCurrentUser(senderId);
     const clientMessageId = globalThis.crypto?.randomUUID?.()
@@ -324,6 +331,9 @@ class OfflineChatServiceImpl {
       attachment_url: attachment?.url,
       attachment_type: attachment?.type,
       attachment_name: attachment?.name,
+      latitude: attachment?.latitude,
+      longitude: attachment?.longitude,
+      accuracy: attachment?.accuracy,
     };
 
     try {

@@ -84,7 +84,7 @@ export default function CalendarPage() {
 	};
 
 	return (
-		<div className="w-full max-w-7xl mx-auto px-2 sm:px-6 py-3 sm:py-6 space-y-3 sm:space-y-4">
+		<div className="w-full max-w-7xl mx-auto px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8 space-y-4 sm:space-y-6">
 			<CalendarToolbar
 				month={month}
 				selected={selected}

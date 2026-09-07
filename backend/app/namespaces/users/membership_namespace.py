@@ -233,7 +233,11 @@ class RespondRequest(Resource):
         try:
             current_user_id = get_jwt_identity()
             data = flask.request.get_json() or {}
-            approve = data.get("approve", False)
+            approve = data.get("approve")
+            if approve is None and "action" in data:
+                approve = data.get("action") in ("accept", "approved", True)
+            else:
+                approve = bool(approve)
 
             req = db.session.get(JoinRequest, request_id)
             if not req:
@@ -268,11 +272,24 @@ class RespondRequest(Resource):
                 )
 
             # Actualizar estado
+            now_utc = datetime.now(UTC)
             req.status = (
                 JoinRequestStatus.APPROVED if approve else JoinRequestStatus.REJECTED
             )
-            req.processed_at = datetime.now(UTC)
+            req.processed_at = now_utc
             req.processed_by = current_user_id
+
+            # Auto-cerrar solicitudes duplicadas pendientes para este mismo usuario y finca
+            duplicate_pending = JoinRequest.query.filter(
+                JoinRequest.id != req.id,
+                JoinRequest.user_id == req.user_id,
+                JoinRequest.finca_id == req.finca_id,
+                JoinRequest.status == JoinRequestStatus.PENDING,
+            ).all()
+            for dup in duplicate_pending:
+                dup.status = JoinRequestStatus.APPROVED if approve else JoinRequestStatus.REJECTED
+                dup.processed_by = current_user_id
+                dup.processed_at = now_utc
 
             if approve:
                 # Asignar a la finca
@@ -327,6 +344,11 @@ class RespondRequest(Resource):
             db.session.rollback()
             logger.error(f"Error procesando respuesta de membresía: {e}")
             return APIResponse.error("Error al procesar la respuesta")
+
+    @membership_ns.doc("respond_membership_request_patch", security=["Bearer"])
+    @jwt_required()
+    def patch(self, request_id):
+        return self.post(request_id)
 
 
 @membership_ns.route("/members")
@@ -730,10 +752,23 @@ class ApproveMembershipDirect(Resource):
             # Usar rol proporcionado por el frontend o por defecto el solicitado
             final_role = role or req.requested_role
 
+            now_utc = datetime.now(UTC)
             req.status = JoinRequestStatus.APPROVED
-            req.processed_at = datetime.now(UTC)
+            req.processed_at = now_utc
             req.processed_by = current_user_id
             req.requested_role = final_role
+
+            # Auto-cerrar solicitudes duplicadas pendientes para este mismo usuario y finca
+            duplicate_pending = JoinRequest.query.filter(
+                JoinRequest.id != req.id,
+                JoinRequest.user_id == req.user_id,
+                JoinRequest.finca_id == req.finca_id,
+                JoinRequest.status == JoinRequestStatus.PENDING,
+            ).all()
+            for dup in duplicate_pending:
+                dup.status = JoinRequestStatus.APPROVED
+                dup.processed_by = current_user_id
+                dup.processed_at = now_utc
 
             # Asignar a la finca
             UserFinca.assign(

@@ -143,12 +143,14 @@ class MilkSummary(BaseModel):
         delta = -liters if is_reversion else liters
         count_delta = -1 if is_reversion else 1
 
-        self.total_liters += delta
-        self.total_entries += count_delta
+        self.total_liters = (self.total_liters or 0.0) + delta
+        self.total_entries = (self.total_entries or 0) + count_delta
 
         if self.total_entries > 0:
             self.avg_liters_per_animal = self.total_liters / self.total_entries
         else:
             self.avg_liters_per_animal = 0.0
+            self.total_liters = max(0.0, self.total_liters)
+            self.total_entries = max(0, self.total_entries)
 
         self.last_update = datetime.now(UTC)

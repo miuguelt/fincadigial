@@ -226,6 +226,24 @@ class MembershipService:
                 commit=False,
             )
 
+            from app.models.user import ApprovalStatus
+            target_user = db.session.get(User, req.user_id)
+            if target_user:
+                target_user.approval_status = ApprovalStatus.Approved
+                target_user.status = True
+                if not target_user.finca_id:
+                    target_user.finca_id = req.finca_id
+
+            # Cerrar solicitudes duplicadas pendientes para la misma finca
+            dup_requests = JoinRequest.query.filter(
+                JoinRequest.id != req.id,
+                JoinRequest.user_id == req.user_id,
+                JoinRequest.finca_id == req.finca_id,
+                JoinRequest.status == JoinRequestStatus.PENDING,
+            ).all()
+            for dup in dup_requests:
+                dup.accept(user_id)
+
             if req.request_type == JoinRequestType.REQUEST:
                 try:
                     PushNotificationService.send_to_user(

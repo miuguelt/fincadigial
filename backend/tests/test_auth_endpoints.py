@@ -63,19 +63,34 @@ class TestLogin:
 
     def test_login_usuario_pendiente_aprobacion(self, client, pending_user):
         """Login con usuario pendiente de aprobación devuelve 403 con APPROVAL_PENDING."""
-        resp = client.post(
-            f"{BASE}/auth/login",
-            json={
-                "identifier": pending_user["identification"],
-                "password": pending_user["password"],
-            },
+        from app.services.user_verification_service import (
+            is_user_verification_required,
+            set_user_verification_required,
         )
-        assert resp.status_code == 403
-        body = resp.get_json()
-        assert (
-            body.get("error_code") == "APPROVAL_PENDING"
-            or "aprobación" in str(body).lower()
-        )
+
+        # La verificación manual está desactivada por defecto (auto-aprobación).
+        # Para validar el contrato "pendiente -> 403" hay que activarla y luego restaurarla.
+        with client.application.app_context():
+            set_user_verification_required(True)
+
+        try:
+            resp = client.post(
+                f"{BASE}/auth/login",
+                json={
+                    "identifier": pending_user["identification"],
+                    "password": pending_user["password"],
+                },
+            )
+            assert resp.status_code == 403
+            body = resp.get_json()
+            assert (
+                body.get("error_code") == "APPROVAL_PENDING"
+                or "aprobación" in str(body).lower()
+            )
+        finally:
+            with client.application.app_context():
+                set_user_verification_required(False)
+                assert is_user_verification_required() is False
 
     def test_login_sin_body(self, client):
         """Login sin body devuelve error de validación (400 o 422)."""

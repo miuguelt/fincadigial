@@ -15,6 +15,7 @@ import { financialService } from '@/entities/financial/api/financial.service';
 import { controlService } from '@/entities/control/api/control.service';
 import { inventoryService } from '@/entities/inventory/api/inventory.service';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
+import { clearServiceCaches } from '@/shared/api/service-registry';
 import { useLivestockSubmit } from './useLivestockSubmit';
 import { asList, buildHistoryRecords } from './buildHistoryRecords';
 import type { CropFormData, MilkFormData, TransferFormData, DiseaseFormData, TreatmentFormData, HistoryRecord, FinanceFormData, ControlFormData } from '../types';
@@ -91,6 +92,7 @@ export function useRegistroOperativo() {
   const openModal = (type: string) => {
     setActiveModal(type);
     resetLivestockForms();
+    void loadMasterData({ force: true });
     const newParams = new URLSearchParams(searchParams);
     newParams.set('modal', type);
     // `replace` evita que Back/Forward del navegador vuelva a abrir modales.
@@ -126,17 +128,21 @@ export function useRegistroOperativo() {
     finally { setLoadingCrops(false); }
   }, [showToast]);
 
-  const loadMasterData = useCallback(async () => {
+  const loadMasterData = useCallback(async (opts?: { force?: boolean }) => {
     setLoadingMaster(true);
+    const bust = opts?.force ? Date.now() : undefined;
+    if (opts?.force) {
+      await clearServiceCaches('animals', 'fields', 'diseases', 'medications', 'inventory');
+    }
     try {
       // Cada fuente con fallback propio: que falle el inventario no debe
       // descartar animales, potreros, diagnósticos ni medicamentos ya resueltos.
       const [animalsResp, fieldsResp, diseasesResp, medsResp, inventoryResp] = await Promise.all([
-        animalsService.getAnimals({ limit: 300, status: 'Vivo' }).catch(() => []),
-        fieldService.getFields({ limit: 100 }).catch(() => []),
-        diseaseService.getDiseases({ limit: 100 }).catch(() => []),
-        medicationsService.getMedications({ limit: 100 }).catch(() => []),
-        inventoryService.getLots({ limit: 300 }).catch(() => [])
+        animalsService.getAnimals(withBust({ limit: 300, status: 'Vivo' }, bust)).catch(() => []),
+        fieldService.getFields(withBust({ limit: 100 }, bust)).catch(() => []),
+        diseaseService.getDiseases(withBust({ limit: 100 }, bust)).catch(() => []),
+        medicationsService.getMedications(withBust({ limit: 100 }, bust)).catch(() => []),
+        inventoryService.getLots(withBust({ limit: 300 }, bust)).catch(() => [])
       ]);
       setAnimals(asList(animalsResp));
       setFields(asList(fieldsResp));
@@ -196,6 +202,33 @@ export function useRegistroOperativo() {
   useEffect(() => { loadCropData(); }, [loadCropData]);
   useEffect(() => { loadMasterData(); }, [loadMasterData]);
   useEffect(() => { if (!loadingMaster) loadHistoryRecords(); }, [loadingMaster, loadHistoryRecords]);
+
+  // Escuchar eventos globales de sincronización y cambios en entidades ganaderas
+  useEffect(() => {
+    const handleDataRefresh = (e: Event) => {
+      const detail = (e as CustomEvent).detail || {};
+      const resource = String(detail?.resource || detail?.endpoint || '').toLowerCase();
+      if (
+        !resource ||
+        resource.includes('animal') ||
+        resource.includes('field') ||
+        resource.includes('disease') ||
+        resource.includes('medication') ||
+        resource.includes('inventory')
+      ) {
+        void loadMasterData({ force: true });
+      }
+      void loadHistoryRecords({ force: true });
+    };
+    window.addEventListener('crud:refetch', handleDataRefresh);
+    window.addEventListener('server-resource-changed', handleDataRefresh);
+    window.addEventListener('animal-fields:updated', handleDataRefresh);
+    return () => {
+      window.removeEventListener('crud:refetch', handleDataRefresh);
+      window.removeEventListener('server-resource-changed', handleDataRefresh);
+      window.removeEventListener('animal-fields:updated', handleDataRefresh);
+    };
+  }, [loadMasterData, loadHistoryRecords]);
 
   const animalOptions = useMemo(
     () => [...animals].sort((a, b) => String(a.record ?? '').localeCompare(String(b.record ?? ''), 'es-CO', { numeric: true })),

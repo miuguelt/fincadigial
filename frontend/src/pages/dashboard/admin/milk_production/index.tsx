@@ -7,35 +7,42 @@ import { useAuth } from '@/features/auth/model/useAuth';
 import { useGlobalViewMode } from '@/shared/hooks/useGlobalViewMode';
 import { Badge } from '@/shared/ui/badge';
 import { IconFlask, IconCalendar } from '@/shared/ui/icons';
-import { formatDateColombia } from '@/shared/utils/dateUtils';
+import { formatDateColombia, getTodayColombia } from '@/shared/utils/dateUtils';
 import { animalService } from '@/entities/animal/api/animal.service';
 import { cn } from '@/shared/ui/cn';
 
-type DateFilter = 'today' | 'week' | 'month';
+type DateFilter = 'all' | 'today' | 'week' | 'month';
 
 const FILTER_OPTIONS: { value: DateFilter; label: string }[] = [
   { value: 'today', label: 'Hoy' },
   { value: 'week', label: 'Esta semana' },
   { value: 'month', label: 'Este mes' },
+  { value: 'all', label: 'Todos' },
 ];
 
-function getDateRange(filter: DateFilter): { date_from: string; date_to: string } {
-  const now = new Date();
-  const today = now.toISOString().split('T')[0];
+function getDateRange(filter: DateFilter): { date_from?: string; date_to?: string } {
+  const today = getTodayColombia();
+
+  if (filter === 'all') {
+    return {};
+  }
 
   if (filter === 'today') {
     return { date_from: today, date_to: today };
   }
 
+  const [y, m, d] = today.split('-').map(Number);
+  const now = new Date(y, m - 1, d);
+
   if (filter === 'week') {
     const start = new Date(now);
     start.setDate(start.getDate() - start.getDay());
-    return { date_from: start.toISOString().split('T')[0], date_to: today };
+    return { date_from: formatDateColombia(start), date_to: today };
   }
 
   if (filter === 'month') {
     const start = new Date(now.getFullYear(), now.getMonth(), 1);
-    return { date_from: start.toISOString().split('T')[0], date_to: today };
+    return { date_from: formatDateColombia(start), date_to: today };
   }
 
   return { date_from: today, date_to: today };
@@ -71,7 +78,7 @@ const MilkProductionPage = () => {
   const dateFilters = useMemo(() => getDateRange(dateFilter), [dateFilter]);
 
   const initialFormData: Partial<MilkProduction> = {
-    date: new Date().toISOString().split('T')[0],
+    date: getTodayColombia(),
     liters: 0,
     milking_session: 'AM',
   };
@@ -250,6 +257,7 @@ const MilkProductionPage = () => {
         service={milkService}
         initialFormData={initialFormData}
         filters={dateFilters}
+        realtime={true}
       />
     </div>
   );

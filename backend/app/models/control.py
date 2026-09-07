@@ -75,6 +75,10 @@ class Control(BaseModel):
     _required_fields = ["checkup_date", "health_status", "animal_id"]
     _unique_fields = []
     _enum_fields = {"health_status": HealthStatus}
+    _input_aliases = {
+        "control_date": "checkup_date",
+        "observations": "description",
+    }
 
     # Relación optimizada - FIXED: Changed from lazy='select' to lazy='selectin' to prevent N+1 queries
     animals = db.relationship("Animals", back_populates="controls", lazy="selectin")

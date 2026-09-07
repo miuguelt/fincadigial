@@ -93,7 +93,7 @@ services:
     environment:
       # ── 🔴 LAS 5 VARIABLES OBLIGATORIAS (Configurar en Coolify) ──
       DOMAIN: ${DOMAIN}
-      # Conexión PostgreSQL (formato: postgresql://user:password@host:5432/villaluz)
+      # Conexión PostgreSQL (formato: postgresql://usuario:clave@host:5432/villaluz)
       DATABASE_URL: ${DATABASE_URL}
       FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
       VILLALUZ_ADMIN_EMAIL: ${VILLALUZ_ADMIN_EMAIL}

@@ -51,9 +51,9 @@ export default function QuickControl() {
 
   // Cargar animales activos
   useEffect(() => {
-    async function loadAnimals() {
+    async function loadAnimals(force = false) {
       try {
-        const response = await animalsService.getAnimals({ limit: 200, status: "Vivo" });
+        const response = await animalsService.getAnimals({ limit: 200, status: "Vivo", cache_bust: force ? Date.now() : undefined });
         const animals = Array.isArray(response) ? response : (response as any).data || [];
         const options = animals.map((a: any) => ({
           value: String(a.id),
@@ -67,7 +67,21 @@ export default function QuickControl() {
         setCargandoAnimales(false);
       }
     }
-    loadAnimals();
+    void loadAnimals(true);
+
+    const handleRefresh = (e: Event) => {
+      const detail = (e as CustomEvent).detail || {};
+      const resource = String(detail?.resource || detail?.endpoint || '').toLowerCase();
+      if (!resource || resource.includes('animal')) {
+        void loadAnimals(true);
+      }
+    };
+    window.addEventListener('crud:refetch', handleRefresh);
+    window.addEventListener('server-resource-changed', handleRefresh);
+    return () => {
+      window.removeEventListener('crud:refetch', handleRefresh);
+      window.removeEventListener('server-resource-changed', handleRefresh);
+    };
   }, [showToast]);
 
   const handleSubmit = async (e: React.FormEvent) => {

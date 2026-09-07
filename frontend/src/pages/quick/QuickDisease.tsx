@@ -54,11 +54,12 @@ export default function QuickDisease() {
 
   // Cargar animales activos y catálogo de enfermedades
   useEffect(() => {
-    async function loadData() {
+    async function loadData(force = false) {
       try {
+        const bust = force ? Date.now() : undefined;
         const [animalsResp, diseasesResp] = await Promise.all([
-          animalsService.getAnimals({ limit: 200, status: "Vivo" }),
-          diseaseService.getDiseases({ limit: 100 }),
+          animalsService.getAnimals({ limit: 200, status: "Vivo", cache_bust: bust }),
+          diseaseService.getDiseases({ limit: 100, cache_bust: bust }),
         ]);
 
         const animals = Array.isArray(animalsResp) ? animalsResp : (animalsResp as any).data || [];
@@ -79,7 +80,21 @@ export default function QuickDisease() {
         setCargando(false);
       }
     }
-    loadData();
+    void loadData(true);
+
+    const handleRefresh = (e: Event) => {
+      const detail = (e as CustomEvent).detail || {};
+      const resource = String(detail?.resource || detail?.endpoint || '').toLowerCase();
+      if (!resource || resource.includes('animal') || resource.includes('disease')) {
+        void loadData(true);
+      }
+    };
+    window.addEventListener('crud:refetch', handleRefresh);
+    window.addEventListener('server-resource-changed', handleRefresh);
+    return () => {
+      window.removeEventListener('crud:refetch', handleRefresh);
+      window.removeEventListener('server-resource-changed', handleRefresh);
+    };
   }, [showToast]);
 
   const handleSubmit = async (e: React.FormEvent) => {

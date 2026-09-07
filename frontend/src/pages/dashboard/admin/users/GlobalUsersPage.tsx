@@ -60,7 +60,7 @@ const GlobalUsersPage = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in pb-16 w-full">
+    <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in pb-16">
       <GlobalUsersBentoHeader users={users} loading={loading} onRefresh={refresh} />
 
       <GlobalUsersToolbar

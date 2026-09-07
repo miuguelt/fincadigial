@@ -21,6 +21,8 @@ import { reproductionService } from '@/entities/reproduction/api/reproduction.se
 import { useAnimals } from '@/entities/animal/model/useAnimals';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/shared/ui/cn.ts';
+import { getTodayColombia } from '@/shared/utils/dateUtils';
+import { emitDataRefresh } from '@/shared/utils/dataRefresh';
 
 export default function QuickActionCards() {
   const { showToast } = useToast();
@@ -65,7 +67,7 @@ export default function QuickActionCards() {
   ];
 
   const handleAction = (id: string) => {
-    setFormData({ date: new Date().toISOString().split('T')[0] });
+    setFormData({ date: getTodayColombia() });
     setActiveModal(id);
   };
 
@@ -109,6 +111,15 @@ export default function QuickActionCards() {
         } as any);
       }
 
+      const resourceMap: Record<string, string> = {
+        milk: 'milk-production',
+        weight: 'control',
+        health: 'treatments',
+        repro: 'reproduction'
+      };
+      if (activeModal && resourceMap[activeModal]) {
+        emitDataRefresh(resourceMap[activeModal]);
+      }
       showToast('Registro guardado con éxito', 'success');
       closeModal();
     } catch (error: any) {

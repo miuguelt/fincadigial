@@ -93,7 +93,11 @@ class APIResponse:
         status_code: int = 400,
         error_code: str | None = None,
         details: dict | None = None,
+        code: int | None = None,
+        **kwargs,
     ) -> tuple:
+        if code is not None:
+            status_code = code
         """
         Respuesta de error estandarizada.
 

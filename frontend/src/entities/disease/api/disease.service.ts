@@ -20,7 +20,7 @@ export class DiseaseService extends BaseService<DiseaseResponse> {
    * @param {number} [options.limit=10] - The number of items per page.
    * @returns {Promise<PaginatedResponse<DiseaseResponse>>} A promise that resolves to the paginated list of diseases.
    */
-  public async getDiseases(options: { page?: number; limit?: number } = {}): Promise<PaginatedResponse<DiseaseResponse>> {
+  public async getDiseases(options: { page?: number; limit?: number; cache_bust?: number | string } = {}): Promise<PaginatedResponse<DiseaseResponse>> {
     return this.getPaginated(options);
   }
 

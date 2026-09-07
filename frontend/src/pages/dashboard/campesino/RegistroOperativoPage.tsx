@@ -218,7 +218,7 @@ const RegistroOperativoPage: React.FC = () => {
                 variant="sidebar"
                 onAction={handleSummaryAction}
               />
-              <button type="button" disabled={refreshing} onClick={() => { loadCropData({ force: true }); loadHistoryRecords({ force: true }); }}
+              <button type="button" disabled={refreshing} onClick={() => { loadMasterData({ force: true }); loadCropData({ force: true }); loadHistoryRecords({ force: true }); }}
                 className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 min-h-11 rounded-lg text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-primary transition-colors disabled:opacity-50">
                 <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} aria-hidden="true" />
                 {refreshing ? 'Actualizando datos...' : 'Actualizar datos'}

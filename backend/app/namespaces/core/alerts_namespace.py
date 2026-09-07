@@ -220,16 +220,30 @@ class AlertList(Resource):
                 # Solo para roles con privilegios de aprobación (Admin, Propietario, Instructor)
                 if user_role in ["Administrador", "Propietario", "Instructor"]:
                     from app.models.user import User, ApprovalStatus
+                    from app.models.user_finca import UserFinca
 
                     user_query = User.query.filter(
-                        User.approval_status == ApprovalStatus.Pending
+                        User.approval_status == ApprovalStatus.Pending,
+                        User.status.is_(False),
                     )
 
                     # Restringir por finca si no es el administrador global
                     if user_role != "Administrador" and finca_id:
                         user_query = user_query.filter(User.finca_id == finca_id)
 
-                    pending_users = user_query.all()
+                    active_member_user_ids = {
+                        uf.user_id
+                        for uf in UserFinca.query.filter_by(
+                            finca_id=finca_id, is_active=True
+                        ).all()
+                    } if finca_id else set()
+
+                    pending_users = [
+                        u for u in user_query.all()
+                        if u.id not in active_member_user_ids
+                        and u.approval_status == ApprovalStatus.Pending
+                        and not u.status
+                    ]
 
                     virtual_alerts = []
                     for u in pending_users:

@@ -46,6 +46,24 @@ class InventoryService extends BaseService<InventoryLotResponse> {
     return this.getPaginated(params);
   }
 
+  private enforceMutuallyExclusive(data: any): any {
+    const payload = { ...data };
+    if (payload.medication_id) {
+      payload.vaccine_id = null;
+    } else if (payload.vaccine_id) {
+      payload.medication_id = null;
+    }
+    return payload;
+  }
+
+  public async create(data: Partial<InventoryLotResponse>): Promise<InventoryLotResponse> {
+    return super.create(this.enforceMutuallyExclusive(data));
+  }
+
+  public async update(id: number | string, data: Partial<InventoryLotResponse>): Promise<InventoryLotResponse> {
+    return super.update(id, this.enforceMutuallyExclusive(data));
+  }
+
   // Movimientos (usan el namespace base /inventory/movements)
   async getMovements(params?: Record<string, any>): Promise<PaginatedResponse<InventoryMovementResponse>> {
     return this.customRequest<PaginatedResponse<InventoryMovementResponse>>('../movements', 'GET', undefined, { params });

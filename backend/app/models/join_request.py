@@ -136,10 +136,10 @@ class JoinRequest(db.Model):
         if self.status != JoinRequestStatus.PENDING:
             return False
         if self.is_expired():
-            return True
+            return False
         if self.current_uses >= self.max_uses:
-            return True
-        return False
+            return False
+        return True
 
     def mark_expired(self):
         self.status = JoinRequestStatus.EXPIRED

@@ -14,7 +14,7 @@ export interface ChatMessage {
   read_at?: string | null;
   status?: 'pending' | 'delivered' | 'synced';
   attachment_url?: string | null;
-  attachment_type?: 'image' | 'video' | 'file' | 'document' | 'audio' | string | null;
+  attachment_type?: 'image' | 'video' | 'file' | 'document' | 'audio' | 'location' | 'live_location' | string | null;
   attachment_name?: string | null;
   created_at: string;
 }
@@ -76,13 +76,20 @@ export const chatService = {
   },
 
   /**
-   * Enviar mensaje con texto o adjunto
+   * Enviar mensaje con texto o adjunto (incluye soporte de ubicación GPS)
    */
   async sendMessage(
     recipientId: number,
     message: string,
     clientMessageId?: string,
-    attachment?: { url?: string; type?: string; name?: string },
+    attachment?: {
+      url?: string;
+      type?: string;
+      name?: string;
+      latitude?: number;
+      longitude?: number;
+      accuracy?: number;
+    },
   ) {
     const response = await api.post<ApiResponse<ChatMessage>>('/chat/send', {
       recipient_id: recipientId,
@@ -91,6 +98,9 @@ export const chatService = {
       attachment_url: attachment?.url,
       attachment_type: attachment?.type,
       attachment_name: attachment?.name,
+      latitude: attachment?.latitude,
+      longitude: attachment?.longitude,
+      accuracy: attachment?.accuracy,
     });
     return response.data;
   },

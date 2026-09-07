@@ -14,6 +14,11 @@ from app.models import User, Finca, Species, Breeds, Animal, MilkProduction, Far
 from app.models.animals import Sex, AnimalStatus
 from app.models.milk_production import MilkSession
 
+# Credencial solo para los usuarios simulados de la prueba de estrés. No es un
+# secreto de producción: se puede sobreescribir por entorno para no fijar una
+# cadena en el código.
+TEST_USER_PASSWORD = os.getenv("VILLALUZ_STRESS_TEST_PASSWORD", "password.123")
+
 def run_crud_test():
     app = create_app('testing')
     results = []
@@ -63,7 +68,7 @@ def run_crud_test():
                             "email": f"test_{i}_{int(time.time())}@villaluz.com",
                             "phone": f"300{random.randint(1000000, 9999999)}",
                             "role": Role.Operario,
-                            "password": "password123",
+                            "password": TEST_USER_PASSWORD,
                             "finca_id": test_finca.id
                         }
                     elif name == "Species":

@@ -10,6 +10,7 @@ import { useToast } from '@/app/providers/ToastContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { Button } from '@/shared/ui/button';
 import { GenericModal } from '@/shared/ui/common/GenericModal';
+import { emitDataRefresh } from '@/shared/utils/dataRefresh';
 import { RefreshCw, TrendingUp, Table2, Upload, Bell, Plus, MoreVertical } from 'lucide-react';
 
 interface MilkDashboardProps {
@@ -201,7 +202,11 @@ export function MilkDashboard({ fincaId, tableComponent }: MilkDashboardProps) {
       >
         <div className="p-4 sm:p-6 bg-card rounded-b-2xl">
           <MilkEntryFormWidget
-            onSuccess={() => { setIsEntryModalOpen(false); loadData(); }}
+            onSuccess={() => {
+              setIsEntryModalOpen(false);
+              loadData();
+              emitDataRefresh('milk-production');
+            }}
             onCancel={() => setIsEntryModalOpen(false)}
           />
         </div>
@@ -215,7 +220,14 @@ export function MilkDashboard({ fincaId, tableComponent }: MilkDashboardProps) {
         size="3xl"
       >
         <div className="p-4 sm:p-6 bg-card rounded-b-2xl">
-          <MilkBulkImport fincaId={fincaId} onSuccess={() => { setIsImportModalOpen(false); loadData(); }} />
+          <MilkBulkImport
+            fincaId={fincaId}
+            onSuccess={() => {
+              setIsImportModalOpen(false);
+              loadData();
+              emitDataRefresh('milk-production');
+            }}
+          />
         </div>
       </GenericModal>
     </div>

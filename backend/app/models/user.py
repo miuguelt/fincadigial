@@ -154,11 +154,11 @@ class User(BaseModel):
     _enum_fields = {"role": Role, "approval_status": ApprovalStatus}
 
     _cache_config = {
-        "ttl": 60,
+        "ttl": 30,
         "type": "private",
         "strategy": "network-first",
-        "max_age": 60,
-        "stale_while_revalidate": 30,
+        "max_age": 0,
+        "stale_while_revalidate": 0,
     }
 
     diseases = db.relationship(

@@ -45,7 +45,7 @@ export class BaseService<T> {
     this.endpoint = endpoint;
     this.options = {
       enableCache: true,
-      cacheTimeout: 5 * 60 * 1000, // 5 minutos
+      cacheTimeout: 30 * 1000, // 30 segundos (optimizado para frescura de datos en operaciones)
       preferredListKeys: [],
       retryAttempts: 3,
       timeout: 30000,
@@ -242,7 +242,15 @@ export class BaseService<T> {
 
   async create(data: Partial<T>): Promise<T> {
     try {
-      const response = await api.post(this.endpoint, data);
+      const payload = { ...data } as any;
+      if (!('finca_id' in payload) && !('farm_id' in payload)) {
+        const { getActiveFincaId } = await import('@/shared/api/cache-scope');
+        const activeFincaId = getActiveFincaId();
+        if (activeFincaId) {
+          payload.finca_id = Number(activeFincaId);
+        }
+      }
+      const response = await api.post(this.endpoint, payload);
       await this.clearCache();
       return response.data?.data || response.data;
     } catch (e: any) {

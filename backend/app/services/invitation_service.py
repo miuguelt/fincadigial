@@ -126,6 +126,25 @@ class InvitationService:
             role=req.requested_role,
             commit=False,
         )
+
+        from app.models.user import ApprovalStatus
+        target_user = db.session.get(User, req.user_id)
+        if target_user:
+            target_user.approval_status = ApprovalStatus.Approved
+            target_user.status = True
+            if not target_user.finca_id:
+                target_user.finca_id = req.finca_id
+
+        # Cerrar solicitudes duplicadas pendientes para la misma finca
+        dup_requests = JoinRequest.query.filter(
+            JoinRequest.id != req.id,
+            JoinRequest.user_id == req.user_id,
+            JoinRequest.finca_id == req.finca_id,
+            JoinRequest.status == JoinRequestStatus.PENDING,
+        ).all()
+        for dup in dup_requests:
+            dup.accept(accepting_user_id)
+
         db.session.commit()
 
         logger.info(f"Invitation {req.id} accepted by user {accepting_user_id}")
@@ -164,6 +183,23 @@ class InvitationService:
                 role=req.requested_role,
                 commit=False,
             )
+            from app.models.user import ApprovalStatus
+            target_user = db.session.get(User, req.user_id)
+            if target_user:
+                target_user.approval_status = ApprovalStatus.Approved
+                target_user.status = True
+                if not target_user.finca_id:
+                    target_user.finca_id = req.finca_id
+
+            # Cerrar cualquier otra solicitud redundante pendiente del mismo usuario y finca
+            dup_requests = JoinRequest.query.filter(
+                JoinRequest.id != req.id,
+                JoinRequest.user_id == req.user_id,
+                JoinRequest.finca_id == req.finca_id,
+                JoinRequest.status == JoinRequestStatus.PENDING,
+            ).all()
+            for dup in dup_requests:
+                dup.accept(admin_user_id)
         else:
             req.reject(admin_user_id, reason)
 
@@ -205,6 +241,23 @@ class InvitationService:
                 role=req.requested_role,
                 commit=False,
             )
+            from app.models.user import ApprovalStatus
+            target_user = db.session.get(User, req.user_id)
+            if target_user:
+                target_user.approval_status = ApprovalStatus.Approved
+                target_user.status = True
+                if not target_user.finca_id:
+                    target_user.finca_id = req.finca_id
+
+            # Cerrar solicitudes duplicadas pendientes para la misma finca
+            dup_requests = JoinRequest.query.filter(
+                JoinRequest.id != req.id,
+                JoinRequest.user_id == req.user_id,
+                JoinRequest.finca_id == req.finca_id,
+                JoinRequest.status == JoinRequestStatus.PENDING,
+            ).all()
+            for dup in dup_requests:
+                dup.accept(user_id)
         else:
             req.reject(user_id)
 
