@@ -199,6 +199,18 @@ class AnimalBatchWeight(Resource):
             _cache_clear("Animals")
             _cache_clear("Control")
 
+            # Tiempo real: publicar el evento por cada animal para que los
+            # clientes conectados por SSE refresquen sus tarjetas.
+            try:
+                from flask import current_app
+
+                bus = current_app.extensions.get("event_bus")
+                if bus:
+                    for result in results:
+                        bus.publish("animals", "update", result.id)
+            except Exception:
+                pass
+
             return APIResponse.success(
                 data=[r.to_namespace_dict() for r in results],
                 message=f"Pesaje masivo registrado para {len(results)} animales",

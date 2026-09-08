@@ -73,6 +73,41 @@ def _is_cache_busted(req) -> bool:
     return False
 
 
+def _apply_related_invalidations(model_class, instance) -> None:
+    """Invalida caché y publica eventos de modelos relacionados tras un write.
+
+    Un write de ``Control`` con peso muta ``animals.weight``; sin esta
+    invalidación las vistas de ``Animals`` (listado, detalle, tarjetas) seguían
+    sirviendo el peso viejo hasta que expirara el TTL. Los modelos registran
+    sus dependencias por clase con el hook ``related_invalidations()``.
+    """
+    hook = getattr(model_class, "related_invalidations", None)
+    if not hook or not instance:
+        return
+    try:
+        from flask import current_app
+
+        bus = current_app.extensions.get("event_bus")
+        for rel in hook(instance) or []:
+            model_name = rel.get("model")
+            if model_name:
+                _cache_clear(model_name)
+                if rel.get("record_id") is not None:
+                    _detail_cache_clear(model_name, rel["record_id"])
+                logger.info(
+                    f"[cache] Invalidada caché de {model_name} por write de "
+                    f"{model_class.__name__} (record_id={rel.get('record_id')})"
+                )
+            if bus and rel.get("endpoint"):
+                bus.publish(rel["endpoint"], "update", rel.get("record_id"))
+    except Exception:
+        logger.debug(
+            "No se pudieron aplicar invalidaciones relacionadas de "
+            f"{model_class.__name__}",
+            exc_info=True,
+        )
+
+
 def _validate_sql_identifier(name: str) -> None:
     """Valida que un nombre sea un identificador SQL seguro (solo alfanumérico + underscore)."""
     if not name or not isinstance(name, str):
@@ -444,20 +479,20 @@ def create_optimized_namespace(
                 "Ya existe un registro con estos datos únicos. Modifique el registro o la fecha.",
                 details={"error": msg},
             )
-            
+
         # Check for Foreign Key constraint violations
         if "foreign key" in msg.lower() or "llave foránea" in msg.lower():
             # Try to extract the field name if possible
-            fk_match = re.search(r'Key \((.*?)\)=\(.*\) is not present in table', msg)
+            fk_match = re.search(r"Key \((.*?)\)=\(.*\) is not present in table", msg)
             if fk_match:
                 field = fk_match.group(1)
                 return APIResponse.conflict(
                     f"El valor proporcionado para '{field}' no existe o es inválido.",
-                    details={"error": msg, "field": field}
+                    details={"error": msg, "field": field},
                 )
             return APIResponse.conflict(
                 "Un registro relacionado requerido no existe. Verifique los datos ingresados.",
-                details={"error": msg}
+                details={"error": msg},
             )
 
         return APIResponse.conflict(
@@ -510,9 +545,7 @@ def create_optimized_namespace(
                 prefer_cache = _parse_bool(
                     flask.request.args.get("prefer_cache")
                 ) or _parse_bool(flask.request.args.get("offline_fallback"))
-                allow_cache = (
-                    cache_enabled and not _is_cache_busted(flask.request)
-                )
+                allow_cache = cache_enabled and not _is_cache_busted(flask.request)
 
                 cached_payload = None
                 cache_is_stale = False
@@ -613,7 +646,11 @@ def create_optimized_namespace(
                 sort_by = flask.request.args.get(
                     "sort_by", type=str
                 ) or flask.request.args.get("sort", type=str)
-                sort_order = flask.request.args.get("sort_order", type=str) or flask.request.args.get("sort_dir", type=str) or flask.request.args.get("order", type=str)
+                sort_order = (
+                    flask.request.args.get("sort_order", type=str)
+                    or flask.request.args.get("sort_dir", type=str)
+                    or flask.request.args.get("order", type=str)
+                )
                 # Default más seguro para UX: descendente cuando no se especifica
                 if not sort_order:
                     sort_order = "desc"
@@ -1034,10 +1071,14 @@ def create_optimized_namespace(
                     return _validation_error_response(
                         {"payload": "Se requiere un objeto JSON válido y no vacío."}
                     )
-                
+
                 # Auto-inject finca_id from JWT if missing
-                if "finca_id" not in payload and "finca_id" in model_class.__table__.columns:
+                if (
+                    "finca_id" not in payload
+                    and "finca_id" in model_class.__table__.columns
+                ):
                     from flask_jwt_extended import get_jwt, verify_jwt_in_request
+
                     try:
                         verify_jwt_in_request(optional=True)
                         jwt_data = get_jwt() or {}
@@ -1122,6 +1163,9 @@ def create_optimized_namespace(
                 _cache_clear(model_class.__name__)
                 _detail_cache_clear(model_class.__name__, instance_id)
                 logger.debug(f"Cache cleared for {model_class.__name__}")
+                # Modelos relacionados que esta escritura dejó obsoletos
+                # (ej: un Control con peso invalida la caché de Animals).
+                _apply_related_invalidations(model_class, instance)
 
                 try:
                     relations = build_relations_from_instance(instance)
@@ -1296,9 +1340,7 @@ def create_optimized_namespace(
                 prefer_cache = _parse_bool(
                     flask.request.args.get("prefer_cache")
                 ) or _parse_bool(flask.request.args.get("offline_fallback"))
-                allow_cache = (
-                    cache_enabled and not _is_cache_busted(flask.request)
-                )
+                allow_cache = cache_enabled and not _is_cache_busted(flask.request)
 
                 cached_payload = None
                 cache_is_stale = False
@@ -1527,6 +1569,8 @@ def create_optimized_namespace(
                 # Invalidar cache DESPUÉS de serialización exitosa
                 _cache_clear(model_class.__name__)
                 _detail_cache_clear(model_class.__name__, record_id)
+                # Modelos relacionados que esta escritura dejó obsoletos.
+                _apply_related_invalidations(model_class, instance)
 
                 try:
                     relations = build_relations_from_instance(instance)
@@ -1596,6 +1640,7 @@ def create_optimized_namespace(
             except Exception as e:
                 db.session.rollback()
                 from sqlalchemy.orm.exc import StaleDataError
+
                 if isinstance(e, StaleDataError):
                     return _version_conflict_response(instance, expected_version)
                 logger.error(
@@ -1699,6 +1744,8 @@ def create_optimized_namespace(
                     # Invalidar cache DESPUÉS de serialización exitosa
                     _cache_clear(model_class.__name__)
                     _detail_cache_clear(model_class.__name__, record_id)
+                    # Modelos relacionados que esta escritura dejó obsoletos.
+                    _apply_related_invalidations(model_class, instance)
 
                     try:
                         relations = build_relations_from_instance(instance)
@@ -1769,6 +1816,7 @@ def create_optimized_namespace(
                 except Exception as e:
                     db.session.rollback()
                     from sqlalchemy.orm.exc import StaleDataError
+
                     if isinstance(e, StaleDataError):
                         return _version_conflict_response(instance, expected_version)
                     logger.error(
@@ -1837,6 +1885,8 @@ def create_optimized_namespace(
                 # Invalidar cache INMEDIATAMENTE después de commit exitoso
                 _cache_clear(model_class.__name__)
                 _detail_cache_clear(model_class.__name__, record_id)
+                # Modelos relacionados que esta escritura dejó obsoletos.
+                _apply_related_invalidations(model_class, instance)
 
                 # Respuesta con información de eliminación cascade si aplica
                 response_data: dict[str, Any] = {"deleted_id": record_id}

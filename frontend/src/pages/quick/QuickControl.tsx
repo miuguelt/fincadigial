@@ -72,7 +72,9 @@ export default function QuickControl() {
     const handleRefresh = (e: Event) => {
       const detail = (e as CustomEvent).detail || {};
       const resource = String(detail?.resource || detail?.endpoint || '').toLowerCase();
-      if (!resource || resource.includes('animal')) {
+      // Un control con peso también cambia animals.weight: refrescar la lista
+      // de animales para que el selector muestre datos actualizados.
+      if (!resource || resource.includes('animal') || resource.includes('control')) {
         void loadAnimals(true);
       }
     };
@@ -102,7 +104,7 @@ export default function QuickControl() {
     try {
       if (!isOnline) {
         // Offline: encolar operación
-        await offlineQueue.enqueue("POST", "controls", payload);
+        await offlineQueue.enqueue("POST", "control", payload);
         showToast("Control guardado sin señal. Se sincronizará al volver la conexión.", "success");
       } else {
         // Online: enviar directamente

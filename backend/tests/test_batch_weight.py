@@ -97,3 +97,73 @@ def test_animal_batch_weight(app):
         assert results[0].weight == 210.0
         assert results[0].finca_id == finca.id
         assert animal.weight == 210.0
+
+
+def test_control_latest_weight_sync_and_invalidation_hook(app):
+    """Un control con fecha retroactiva no pisa el peso actual y la invalidación
+    relacionada (Animals) se declara junto al control con peso."""
+    with app.app_context():
+        finca = Finca.create(
+            name="Finca Test Latest Weight",
+            type=FarmType.Tradicional,
+        )
+        species = Species(name="Bovino Test Latest")
+        db.session.add(species)
+        db.session.commit()
+
+        breed = Breeds(name="Raza Test Latest", species_id=species.id)
+        db.session.add(breed)
+        db.session.commit()
+
+        animal = Animals.create(
+            record="BW-TEST-003",
+            breeds_id=breed.id,
+            sex=Sex.Hembra,
+            status=AnimalStatus.Vivo,
+            birth_date=date.today(),
+            weight=100.0,
+            finca_id=finca.id,
+        )
+
+        # 1. Control de hoy: sincroniza animals.weight
+        today = date.today().isoformat()
+        control = Control.create(
+            animal_id=animal.id,
+            weight=150.5,
+            checkup_date=today,
+            health_status="Sano",
+            finca_id=finca.id,
+        )
+        db.session.refresh(animal)
+        assert animal.weight == 150.5
+
+        # 2. Control retroactivo: NO debe pisar el peso actual
+        past = (date.today() - timedelta(days=60)).isoformat()
+        Control.create(
+            animal_id=animal.id,
+            weight=80.0,
+            checkup_date=past,
+            health_status="Sano",
+            finca_id=finca.id,
+        )
+        db.session.refresh(animal)
+        assert animal.weight == 150.5
+
+        # 3. Hook de invalidaciones relacionadas: el control con peso declara Animals
+        rels = Control.related_invalidations(control)
+        assert rels == [
+            {"model": "Animals", "endpoint": "animals", "record_id": animal.id}
+        ]
+        # Un control sin peso no invalida la caché de Animals.
+        assert (
+            Control.related_invalidations(
+                Control.create(
+                    animal_id=animal.id,
+                    weight=None,
+                    checkup_date=today,
+                    health_status="Sano",
+                    finca_id=finca.id,
+                )
+            )
+            == []
+        )

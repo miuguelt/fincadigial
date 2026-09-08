@@ -84,23 +84,62 @@ class Control(BaseModel):
     animals = db.relationship("Animals", back_populates="controls", lazy="selectin")
 
     @classmethod
-    def create(cls, **kwargs):
+    def create(cls, commit=True, **kwargs):
         """
         Sobreescribe create para actualizar el peso del animal si se provee.
-        """
-        instance = super().create(**kwargs)
 
-        # Si el control tiene peso, actualizar el peso actual del animal
+        Actualiza ``animals.weight`` solo cuando este control es el control más
+        reciente (por ``checkup_date``) del animal: un control con fecha
+        retroactiva no debe pisar el peso actual. Toda la operación (control +
+        animal) se persiste en un ÚNICO commit para evitar estados parciales
+        (control guardado con peso de animal sin actualizar o viceversa).
+        """
+        instance = super().create(commit=False, **kwargs)
+
+        # Si el control tiene peso, actualizar el peso actual del animal en el
+        # mismo commit. El control recién creado ya está en el session (flush) y
+        # será el "más reciente" cuando sus datos sean los últimos por fecha.
         if instance.weight and instance.animal_id:
             from app.models.animals import Animals
 
             animal = Animals.query.get(instance.animal_id)
             if animal:
-                # Solo actualizar si el control es el más reciente (por fecha)
-                # Para simplificar y mejorar UX, actualizamos si es hoy o futuro respecto al registro actual
-                animal.update(weight=instance.weight, commit=True)
+                latest = (
+                    Control.query.filter_by(
+                        animal_id=instance.animal_id, is_deleted=False
+                    )
+                    .order_by(Control.checkup_date.desc(), Control.id.desc())
+                    .first()
+                )
+                if latest is None or instance.checkup_date >= latest.checkup_date:
+                    animal.update(weight=instance.weight, commit=False)
 
+        if commit:
+            db.session.commit()
+            try:
+                db.session.refresh(instance)
+            except Exception:
+                pass
         return instance
+
+    @classmethod
+    def related_invalidations(cls, instance):
+        """Modelos relacionados que quedan obsoletos tras guardar un control.
+
+        Cada write de ``Control`` con peso muta ``animals.weight`` y, por lo
+        tanto, invalida la caché de ``Animals`` (listado + detalle) y publica el
+        evento ``animals`` para que los clientes conectados por SSE refresquen
+        la tarjeta del animal en tiempo real.
+        """
+        if getattr(instance, "weight", None) and getattr(instance, "animal_id", None):
+            return [
+                {
+                    "model": "Animals",
+                    "endpoint": "animals",
+                    "record_id": instance.animal_id,
+                }
+            ]
+        return []
 
     @classmethod
     def _validate_and_normalize(cls, data, is_update=False, instance_id=None):

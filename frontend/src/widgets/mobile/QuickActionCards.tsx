@@ -93,6 +93,7 @@ export default function QuickActionCards() {
           animal_id: parseInt(formData.animal_id),
           weight: parseInt(formData.weight),
           checkup_date: formData.date,
+          health_status: 'Sano',
           observations: formData.notes
         } as any);
       } else if (activeModal === 'health') {

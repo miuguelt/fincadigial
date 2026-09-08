@@ -30,6 +30,10 @@ export function emitDataRefresh(resource?: string): void {
     void clearServiceCaches(rootResource);
     if (rootResource === 'animals') {
       void clearServiceCaches('animal-fields', 'animal-diseases', 'treatments', 'milk', 'controls', 'control');
+    } else if (rootResource === 'control' || rootResource === 'controls') {
+      // Un pesaje (control) muta animals.weight: las tarjetas y el detalle
+      // siguen leyendo el peso desde el servicio de animals.
+      void clearServiceCaches('animals', 'controls');
     } else if (rootResource === 'animal-fields') {
       void clearServiceCaches('fields', 'animals');
     }

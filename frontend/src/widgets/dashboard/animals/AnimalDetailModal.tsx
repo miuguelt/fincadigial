@@ -240,7 +240,8 @@ export function AnimalDetailModal({
 
     if (!loadedAnimal || String(currentLoadedId) !== String(targetId) || !isLoadedComplete) {
       setIsLoadingAnimal(true);
-      void animalsService.getById(Number(targetId)).then((res) => {
+      // cache_bust: nunca mostrar el snapshot viejo (memoria 30s / IndexedDB).
+      void animalsService.getById(Number(targetId), { cache_bust: Date.now() }).then((res) => {
         if (res) setLoadedAnimal(res);
       }).catch((err) => {
         console.error('[AnimalDetailModal] Error loading animal by ID:', err);
@@ -249,6 +250,42 @@ export function AnimalDetailModal({
       });
     }
   }, [isOpen, targetId, loadedAnimal]);
+
+  // Mantener la tarjeta al día en caliente: si se registra un control o cambia
+  // el animal, recargar el detalle (force fresh) sin esperar a cerrar el modal.
+  useEffect(() => {
+    if (!isOpen || !targetId) return;
+    let active = true;
+
+    const reloadAnimal = () => {
+      if (!active) return;
+      void animalsService
+        .getById(Number(targetId), { cache_bust: Date.now() })
+        .then((res) => {
+          if (active && res && Object.keys(res).length > 0) setLoadedAnimal(res);
+        })
+        .catch(() => { /* conservar datos actuales */ });
+    };
+
+    const matchesResource = (detail: any) => {
+      const resource = String(detail?.resource || detail?.endpoint || '').toLowerCase();
+      return !resource || resource.includes('control') || resource.includes('animals');
+    };
+    const onRefetch = (e: Event) => {
+      if (matchesResource((e as CustomEvent).detail)) reloadAnimal();
+    };
+    const onResourceChanged = (e: Event) => {
+      if (matchesResource((e as CustomEvent).detail)) reloadAnimal();
+    };
+
+    window.addEventListener('crud:refetch', onRefetch);
+    window.addEventListener('server-resource-changed', onResourceChanged);
+    return () => {
+      active = false;
+      window.removeEventListener('crud:refetch', onRefetch);
+      window.removeEventListener('server-resource-changed', onResourceChanged);
+    };
+  }, [isOpen, targetId]);
 
   // Cargar opciones de razas y padres si no fueron provistas
   useEffect(() => {
@@ -286,7 +323,7 @@ export function AnimalDetailModal({
         setNavigationHistory((prev) => [...prev, loadedAnimal]);
       }
       setIsLoadingAnimal(true);
-      const nextAnimal = await animalsService.getById(id);
+      const nextAnimal = await animalsService.getById(id, { cache_bust: Date.now() });
       setLoadedAnimal(nextAnimal);
     } catch (err) {
       console.error('[AnimalDetailModal] Error switching animal:', err);
