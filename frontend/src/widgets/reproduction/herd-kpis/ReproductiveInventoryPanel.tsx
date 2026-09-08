@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/sha
 import type { ReproductiveInventory } from '@/entities/reproduction/model/herdKpis.types';
 
 /**
- * Composición reproductiva del hato: en qué estado está cada hembra hoy.
+ * Composición reproductiva del ganado: en qué estado está cada hembra hoy.
  *
  * Responde la pregunta operativa de la finca —cuántas están preñadas, cuántas
  * esperan diagnóstico y cuántas están vacías— antes de mirar cualquier tasa.
@@ -32,7 +32,7 @@ export const ReproductiveInventoryPanel: React.FC<ReproductiveInventoryPanelProp
   return (
     <Card className="min-w-0">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">Composición del hato</CardTitle>
+        <CardTitle className="text-base">Composición del ganado</CardTitle>
         <CardDescription>
           {total.toLocaleString('es-CO')} hembras vivas · {inventory.breeding_females.toLocaleString('es-CO')} en edad reproductiva
         </CardDescription>

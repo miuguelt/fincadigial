@@ -8,6 +8,7 @@ import { ChatWidget } from '@/widgets/chat/ChatWidget';
 import { FloatingQuickActions } from '@/widgets/dashboard/FloatingQuickActions';
 import { QuickActionsModal } from '@/widgets/dashboard-layout/QuickActionsModal';
 import { CrearFincaPage } from '@/features/multi-finca/ui/CrearFincaPage';
+import { OnboardingTour } from '@/widgets/onboarding/OnboardingTour';
 import { cn } from '@/shared/lib/utils';
 
 // Ancho reservado por el menú lateral flotante: 280px de panel + 16px de gap izquierdo + 12px margen de respiro.
@@ -132,6 +133,7 @@ const DashboardLayout: React.FC = () => {
       {showSidebar && <FloatingQuickActions />}
       {showSidebar && <ChatWidget hideToggleButton={true} />}
       {showSidebar && <QuickActionsModal />}
+      {showSidebar && <OnboardingTour />}
       {isAuthenticated && <CrearFincaPage modal />}
     </div>
   );

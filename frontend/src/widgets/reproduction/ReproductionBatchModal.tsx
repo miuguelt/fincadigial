@@ -247,7 +247,7 @@ export function ReproductionBatchModal({
             {/* Lista con scroll y checkboxes */}
             <div className="border border-border rounded-xl max-h-56 overflow-y-auto divide-y divide-border bg-card">
               {loadingFemales ? (
-                <div className="p-4 text-center text-xs text-muted-foreground">Cargando hembras del hato...</div>
+                <div className="p-4 text-center text-xs text-muted-foreground">Cargando hembras del ganado...</div>
               ) : filteredFemales.length === 0 ? (
                 <div className="p-4 text-center text-xs text-muted-foreground">No se encontraron hembras activas</div>
               ) : (

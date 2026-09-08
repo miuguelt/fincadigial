@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Milk, Baby, Scale, Sparkles, X } from 'lucide-react';
+import { Milk, Baby, Scissors, TrendingDown, SlidersHorizontal, X } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
+import { cn } from '@/shared/ui/cn';
 
 export interface SmartFilter {
   id: string;
@@ -11,6 +12,7 @@ export interface SmartFilter {
   activeColorClass: string;
   queryParam: string;
   value: any;
+  tooltip: string;
 }
 
 export interface SmartFiltersToolbarProps {
@@ -23,40 +25,55 @@ export const SMART_FILTERS: SmartFilter[] = [
   {
     id: 'pregnant',
     label: 'En Gestación',
-    icon: Sparkles,
-    colorClass: 'hover:bg-amber-500/10 hover:text-amber-600 hover:border-amber-500/30 text-muted-foreground border-border/50 bg-card/60',
-    activeColorClass: 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/60 shadow-sm shadow-amber-500/10 font-bold',
+    icon: Baby,
+    colorClass:
+      'text-muted-foreground border-border/60 bg-card/40 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-500/40',
+    activeColorClass:
+      'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/50 shadow-sm shadow-amber-500/10',
     queryParam: 'is_pregnant',
-    value: 'true'
+    value: 'true',
+    tooltip: 'Filtras hembras con gestación activa',
   },
   {
     id: 'lactating',
     label: 'En Lactancia',
     icon: Milk,
-    colorClass: 'hover:bg-blue-500/10 hover:text-blue-600 hover:border-blue-500/30 text-muted-foreground border-border/50 bg-card/60',
-    activeColorClass: 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/60 shadow-sm shadow-blue-500/10 font-bold',
+    colorClass:
+      'text-muted-foreground border-border/60 bg-card/40 hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-500/40',
+    activeColorClass:
+      'bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/50 shadow-sm shadow-blue-500/10',
     queryParam: 'is_lactating',
-    value: 'true'
+    value: 'true',
+    tooltip: 'Filtra hembras en producción de leche',
   },
   {
     id: 'destetar',
     label: 'Para Destete',
-    icon: Baby,
-    colorClass: 'hover:bg-purple-500/10 hover:text-purple-600 hover:border-purple-500/30 text-muted-foreground border-border/50 bg-card/60',
-    activeColorClass: 'bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/60 shadow-sm shadow-purple-500/10 font-bold',
+    icon: Scissors,
+    colorClass:
+      'text-muted-foreground border-border/60 bg-card/40 hover:bg-violet-500/10 hover:text-violet-600 dark:hover:text-violet-400 hover:border-violet-500/40',
+    activeColorClass:
+      'bg-violet-500/15 text-violet-700 dark:text-violet-400 border-violet-500/50 shadow-sm shadow-violet-500/10',
     queryParam: 'destetar',
-    value: 'true'
+    value: 'true',
+    tooltip: 'Terneros de 7 a 8 meses a punto de destetar',
   },
   {
     id: 'bajo_peso',
     label: 'Bajo Peso',
-    icon: Scale,
-    colorClass: 'hover:bg-red-500/10 hover:text-red-600 hover:border-red-500/30 text-muted-foreground border-border/50 bg-card/60',
-    activeColorClass: 'bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/60 shadow-sm shadow-red-500/10 font-bold',
+    icon: TrendingDown,
+    colorClass:
+      'text-muted-foreground border-border/60 bg-card/40 hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 hover:border-red-500/40',
+    activeColorClass:
+      'bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/50 shadow-sm shadow-red-500/10',
     queryParam: 'bajo_peso',
-    value: 'true'
-  }
+    value: 'true',
+    tooltip: 'Animales por debajo del peso estándar de su raza y edad',
+  },
 ];
+
+const chipBase =
+  'h-8 shrink-0 snap-start rounded-full border px-3 text-xs font-semibold gap-1.5 transition-all duration-200 active:scale-95 whitespace-nowrap shadow-none';
 
 export function SmartFiltersToolbar({
   activeFilters: propActiveFilters,
@@ -74,6 +91,10 @@ export function SmartFiltersToolbar({
     });
     return filters;
   }, [propActiveFilters, searchParams]);
+
+  const activeCount = SMART_FILTERS.filter(
+    (f) => activeFilters[f.queryParam] === f.value
+  ).length;
 
   const toggleFilter = (filter: SmartFilter) => {
     if (propOnFilterChange) {
@@ -115,11 +136,30 @@ export function SmartFiltersToolbar({
     setSearchParams(nextParams, { replace: true });
   };
 
-  const hasActiveSmartFilters = SMART_FILTERS.some(f => activeFilters[f.queryParam] === f.value);
-
   return (
-    <div className={`flex items-center gap-1.5 py-1 px-1 rounded-xl overflow-x-auto hide-scrollbar ${className}`}>
-      <div className="flex items-center gap-1.5 shrink-0">
+    <div
+      className={cn(
+        'flex w-full min-w-0 items-center gap-2',
+        className
+      )}
+      role="toolbar"
+      aria-label="Filtros del inventario"
+    >
+      {/* Etiqueta del grupo — visible desde md para no robar ancho en móvil */}
+      <div className="hidden md:flex shrink-0 items-center gap-1.5 border-r border-border/60 pr-2">
+        <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Filtros
+        </span>
+        {activeCount > 0 && (
+          <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold leading-none text-primary-foreground">
+            {activeCount}
+          </span>
+        )}
+      </div>
+
+      {/* Chips: en móvil la fila se desliza horizontalmente */}
+      <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto pb-0.5 -mb-0.5 scroll-smooth hide-scrollbar snap-x snap-mandatory">
         {SMART_FILTERS.map((filter) => {
           const isActive = activeFilters[filter.queryParam] === filter.value;
           const Icon = filter.icon;
@@ -129,29 +169,34 @@ export function SmartFiltersToolbar({
               variant="outline"
               size="sm"
               onClick={() => toggleFilter(filter)}
-              className={`h-9 px-2.5 sm:px-3 text-xs font-semibold rounded-xl border transition-all duration-200 active:scale-95 flex items-center gap-1.5 whitespace-nowrap ${
-                isActive ? filter.activeColorClass : filter.colorClass
-              }`}
+              title={filter.tooltip}
               aria-pressed={isActive}
+              className={cn(
+                chipBase,
+                isActive ? filter.activeColorClass : filter.colorClass
+              )}
             >
-              <Icon className="h-3.5 w-3.5" />
+              <Icon className={cn('h-3.5 w-3.5 shrink-0', isActive && 'stroke-[2.5]')} />
               {filter.label}
               {isActive && (
-                <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" aria-hidden="true" />
               )}
             </Button>
           );
         })}
 
-        {hasActiveSmartFilters && (
+        {activeCount > 0 && (
           <Button
             variant="ghost"
             size="sm"
             onClick={clearFilters}
-            className="h-9 px-2 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/60 rounded-xl transition-all whitespace-nowrap"
-            title="Limpiar filtros inteligentes"
+            className={cn(
+              chipBase,
+              'h-8 shrink-0 border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+            )}
+            title="Quitar todos los filtros"
           >
-            <X className="h-3.5 w-3.5 mr-1" />
+            <X className="h-3.5 w-3.5 shrink-0" />
             Limpiar
           </Button>
         )}

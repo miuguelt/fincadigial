@@ -374,6 +374,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                         : "bg-transparent text-foreground/90 font-medium"
                     )}
                     aria-expanded={isOpen}
+                    data-tour={`menu-group-${category.title}`}
                   >
                     <div className="flex items-center gap-3 text-foreground/80 group-hover:text-primary transition-colors duration-200">
                       <span className={cn(
@@ -489,6 +490,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                             key={`${category.title}-${child.title}-${child.path}`}
                             to={fullPath}
                             onClick={handleItemClick}
+                            data-tour={`menu-item-${child.title}`}
                             className={cn(
                               "flex items-center py-2 px-3 rounded-lg transition-colors duration-200 group relative min-h-[44px]",
                               isActive

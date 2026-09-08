@@ -90,7 +90,7 @@ export function OffspringManagementTab() {
         weight: newWeight ? parseFloat(newWeight) : undefined,
       });
 
-      showToast(`Cría ingresada al hato con éxito: Arete ${res?.record || newRecord}`, 'success');
+      showToast(`Cría ingresada al ganado con éxito: Arete ${res?.record || newRecord}`, 'success');
       setRegisterModalOpen(false);
       loadOffspring();
     } catch (err: any) {
@@ -126,7 +126,7 @@ export function OffspringManagementTab() {
                 Gestión de Crías y Nacimientos
               </CardTitle>
               <CardDescription className="text-xs mt-1 font-medium">
-                Seguimiento a terneros nacidos en partos, estado vital y alta oficial en el inventario del hato
+                Seguimiento a terneros nacidos en partos, estado vital y alta oficial en el inventario del ganado
               </CardDescription>
             </div>
             <Button

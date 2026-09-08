@@ -19,10 +19,9 @@ function flush() {
   if (batch.length === 0) return;
   const payload = batch.splice(0, MAX_BATCH);
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000);
-    navigator.sendBeacon(ERROR_ENDPOINT, JSON.stringify({ errors: payload }));
-    clearTimeout(timeout);
+    const data = JSON.stringify({ errors: payload });
+    const blob = new Blob([data], { type: 'application/json' });
+    navigator.sendBeacon(ERROR_ENDPOINT, blob);
   } catch {
     // Fallback silencioso — no causar más errores
   }

@@ -1,5 +1,5 @@
 /**
- * Contrato del panel de indicadores reproductivos del hato.
+ * Contrato del panel de indicadores reproductivos del ganado.
  *
  * Refleja la respuesta de `GET /reproduction/kpis`. Cada serie viene con su
  * meta y su semáforo ya resueltos en el servidor, para que la interfaz no
@@ -19,7 +19,7 @@ export interface KpiSeries {
   status: KpiStatus | null;
 }
 
-/** Composición reproductiva del hato en el momento de la consulta. */
+/** Composición reproductiva del ganado en el momento de la consulta. */
 export interface ReproductiveInventory {
   total_females: number;
   breeding_females: number;

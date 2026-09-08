@@ -40,7 +40,7 @@ const AdminDashboardOverview: React.FC = () => {
     {
       label: 'Ganado Activo',
       value: dashboardStats?.animales_activos?.valor ?? dashboardStats?.animales_registrados?.valor ?? 0,
-      sub: `${dashboardStats?.animales_registrados?.valor || 0} en hato`,
+      sub: `${dashboardStats?.animales_registrados?.valor || 0} en el ganado`,
       icon: Heart,
       color: 'text-success',
       bgColor: 'bg-success/10 border-success/20'
@@ -48,7 +48,7 @@ const AdminDashboardOverview: React.FC = () => {
     {
       label: 'Sanidad & Alertas',
       value: criticalAlertsCount,
-      sub: criticalAlertsCount > 0 ? 'Requiere atención' : 'Hato saludable',
+      sub: criticalAlertsCount > 0 ? 'Requiere atención' : 'Ganado saludable',
       icon: ShieldAlert,
       color: criticalAlertsCount > 0 ? 'text-destructive' : 'text-success',
       bgColor: criticalAlertsCount > 0 ? 'bg-destructive/10 border-destructive/20' : 'bg-success/10 border-success/20'
@@ -98,7 +98,7 @@ const AdminDashboardOverview: React.FC = () => {
               )}
             </div>
             <p className="text-text-secondary text-sm sm:text-base max-w-xl leading-relaxed">
-              Gestión integral de Villa Luz. Monitoreo sanitario en tiempo real, alertas de hato y coordinación operativa.
+              Gestión integral de Villa Luz. Monitoreo sanitario en tiempo real, alertas del ganado y coordinación operativa.
             </p>
           </div>
 

@@ -48,7 +48,7 @@ export const BulkTagPrintModal: React.FC<BulkTagPrintModalProps> = ({
 
   const qrSize = qrDefinition === 'high' ? 128 : 96;
 
-  /** Los paneles electrónicos necesitan la finca para no cruzar chapetas entre hatos. */
+  /** Los paneles electrónicos necesitan la finca para no cruzar chapetas entre fincas. */
   const tagAnimals = useMemo<NfcTagAnimal[]>(
     () =>
       animals.map((animal) => ({
@@ -73,7 +73,7 @@ export const BulkTagPrintModal: React.FC<BulkTagPrintModalProps> = ({
           </div>
           <div>
             <span className="text-xl font-black uppercase tracking-tight text-white">
-              Identificación del hato
+              Identificación del ganado
             </span>
             <Badge className="ml-3 rounded-full border-none bg-indigo-500 px-3 py-0.5 text-[11px] font-black uppercase tracking-widest text-black">
               {animals.length} animales

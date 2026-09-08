@@ -86,7 +86,7 @@ const routeConfig: Record<string, string> = {
   'records': 'Registro ICA',
 
   // Rutas y Vistas Específicas
-  'kpis': 'Indicadores del Hato',
+  'kpis': 'Indicadores del Ganado',
   'estadisticas': 'Estadísticas',
   'alert-configs': 'Configuración de Alertas',
   'configs': 'Configuración',

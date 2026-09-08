@@ -13,7 +13,7 @@ import ReproductiveInventoryPanel from '@/widgets/reproduction/herd-kpis/Reprodu
 import AttentionLists from '@/widgets/reproduction/herd-kpis/AttentionLists';
 
 /**
- * Panel de indicadores reproductivos del hato.
+ * Panel de indicadores reproductivos del ganado.
  *
  * Muestra la eficiencia del ciclo (intervalo entre partos, días abiertos,
  * servicios por concepción, detección de celo) contra las metas de la finca, y
@@ -57,7 +57,7 @@ export default function HerdKpisPage({ isEmbedded = false }: HerdKpisProps) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-3 text-muted-foreground">
         <Activity className="h-10 w-10 animate-spin text-primary" />
-        <p className="text-sm font-semibold">Calculando indicadores del hato...</p>
+        <p className="text-sm font-semibold">Calculando indicadores del ganado...</p>
       </div>
     );
   }
@@ -71,7 +71,7 @@ export default function HerdKpisPage({ isEmbedded = false }: HerdKpisProps) {
         <p className="text-sm text-muted-foreground">
           {failed
             ? 'Revise la conexión con el servidor y vuelva a intentarlo.'
-            : 'Registre celos, servicios, diagnósticos y partos para que el hato tenga historial que analizar.'}
+            : 'Registre celos, servicios, diagnósticos y partos para que el ganado tenga historial que analizar.'}
         </p>
         <Button onClick={load}>Reintentar</Button>
       </div>
@@ -97,7 +97,7 @@ export default function HerdKpisPage({ isEmbedded = false }: HerdKpisProps) {
           }
           icon={<Target className="h-5 w-5 text-white" />}
           iconClassName="from-purple-500 to-fuchsia-600 shadow-purple-500/20"
-          title={<>Indicadores del <span className="text-purple-600">Hato</span></>}
+          title={<>Indicadores del <span className="text-purple-600">Ganado</span></>}
           description={`Eficiencia reproductiva contra metas · corte ${data.as_of}`}
           actions={
             <Select value={months.toString()} onValueChange={(value) => setMonths(parseInt(value, 10))}>
@@ -119,7 +119,7 @@ export default function HerdKpisPage({ isEmbedded = false }: HerdKpisProps) {
           <div>
             <h3 className="text-base font-bold text-foreground flex items-center gap-2">
               <Target className="h-4 w-4 text-purple-600" />
-              Indicadores Clave de Eficiencia del Hato
+              Indicadores Clave de Eficiencia del Ganado
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
               Corte actualizado al {data.as_of} · Evaluación biológica de intervalos y tasas

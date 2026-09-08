@@ -10,7 +10,7 @@ export class ControlService extends BaseService<ControlResponse> {
    * Creates an instance of ControlService.
    */
   constructor() {
-    super('controls');
+    super('control');
   }
 
   private mapData(data: any): any {

@@ -1,7 +1,8 @@
 from app import db
 import enum
 import logging
-from datetime import date
+from datetime import date, timedelta
+from sqlalchemy import cast, func, case, String, select
 from app.models.base_model import BaseModel, ValidationError
 from app.models.electronic_id_mixin import ElectronicIdMixin
 from app.services.analytics.cattle_metrics_service import calculate_frame_score
@@ -64,6 +65,23 @@ class Animals(BaseModel, ElectronicIdMixin):
         db.Index("ix_animals_created_at", "created_at"),
         db.Index("ix_animals_updated_at", "updated_at"),  # Para ?since= y /metadata
         db.Index("ix_animals_finca_id", "finca_id"),  # Índice para filtrado tenant
+        # Índices para la barra de filtros de inventario ("Gestación / Lactancia /
+        # Destete / Bajo peso"): ventanas de edad por birth_date, umbral de peso y
+        # banderas reproductivas. Los booleans usan índices PARCIALES: solo
+        # contienen filas con el flag activo (compactos y el planner los usa
+        # directo para `WHERE is_pregnant = true`).
+        db.Index("ix_animals_birth_date", "birth_date"),
+        db.Index("ix_animals_weight", "weight"),
+        db.Index(
+            "ix_animals_pregnant_true",
+            "id",
+            postgresql_where=db.text("is_pregnant IS TRUE"),
+        ),
+        db.Index(
+            "ix_animals_lactating_true",
+            "id",
+            postgresql_where=db.text("is_lactating IS TRUE"),
+        ),
         db.UniqueConstraint("record", "finca_id", name="uq_animals_record_finca"),
     )
 
@@ -716,6 +734,95 @@ class Animals(BaseModel, ElectronicIdMixin):
         return data
 
     @classmethod
+    def _apply_smart_filters(cls, query, custom_filters):
+        """Filtros de la barra "Filtros inteligentes" del inventario.
+
+        Auditoría (2026-09):
+        - is_pregnant / is_lactating: igualdad booleana, usa índices parciales.
+        - destetar: ANTES devolvía `birth_date <= today-210`, es decir TODOS los
+          animales de 7+ meses (adultos incluidos). Ahora devuelve la ventana real
+          de terneros próximos a destetar (7-8 meses, ventana 200-250 días,
+          regla KB MAN-001) con un solo rango sobre ix_animals_birth_date.
+        - bajo_peso: ANTES `weight < 200` (kg fijos, ignoraba raza y edad).
+          Ahora compara contra el estándar por raza/sexo/edad (min_weight_kg de
+          breed_growth_standards interpolado) igual que el motor de alertas.
+        """
+        if "is_pregnant" in custom_filters:
+            val = custom_filters["is_pregnant"]
+            if str(val).lower() in ("true", "1", "yes"):
+                query = query.filter(cls.is_pregnant == True)
+            elif str(val).lower() in ("false", "0", "no"):
+                query = query.filter(cls.is_pregnant == False)
+
+        if "is_lactating" in custom_filters:
+            val = custom_filters["is_lactating"]
+            if str(val).lower() in ("true", "1", "yes"):
+                query = query.filter(cls.is_lactating == True)
+            elif str(val).lower() in ("false", "0", "no"):
+                query = query.filter(cls.is_lactating == False)
+
+        if "destetar" in custom_filters and str(custom_filters["destetar"]).lower() in (
+            "true",
+            "1",
+            "yes",
+        ):
+            # Ventana de destete: 200-250 días de edad (7-8 meses, KB MAN-001).
+            today = date.today()
+            query = query.filter(
+                cls.birth_date >= today - timedelta(days=250),
+                cls.birth_date <= today - timedelta(days=200),
+            )
+
+        if "bajo_peso" in custom_filters:
+            from app.models.breed_growth_standards import BreedGrowthStandard
+
+            # Edad en meses (portable: date-date = int días en PG, julianday en SQLite)
+            bind = db.session.get_bind()
+            if bind.dialect.name == "postgresql":
+                age_days = func.current_date() - cls.birth_date
+            else:
+                age_days = func.julianday(func.current_date()) - func.julianday(
+                    cls.birth_date
+                )
+            age_months = age_days / 30.44
+            sex_str = cast(cls.sex, String)
+
+            bgs = BreedGrowthStandard.__table__
+            # Puntos de referencia: inmediato inferior y superior a la edad
+            lo = (
+                select(bgs.c.min_weight_kg, bgs.c.age_months)
+                .where(
+                    bgs.c.breed_id == cls.breeds_id,
+                    bgs.c.sex == sex_str,
+                    bgs.c.age_months <= age_months,
+                )
+                .order_by(bgs.c.age_months.desc())
+                .limit(1)
+            )
+            hole = (
+                select(bgs.c.min_weight_kg, bgs.c.age_months)
+                .where(
+                    bgs.c.breed_id == cls.breeds_id,
+                    bgs.c.sex == sex_str,
+                    bgs.c.age_months >= age_months,
+                )
+                .order_by(bgs.c.age_months.asc())
+                .limit(1)
+            )
+            min_w = case(
+                (lo.c.age_months == hole.c.age_months, lo.c.min_weight_kg),
+                else_=lo.c.min_weight_kg
+                + (hole.c.min_weight_kg - lo.c.min_weight_kg)
+                * (
+                    (age_months - lo.c.age_months)
+                    / func.nullif(hole.c.age_months - lo.c.age_months, 0)
+                ),
+            )
+            query = query.filter(cls.weight > 0, cls.weight < min_w)
+
+        return query
+
+    @classmethod
     def get_namespace_query(
         cls,
         filters=None,
@@ -744,32 +851,7 @@ class Animals(BaseModel, ElectronicIdMixin):
             include_relations,
         )
 
-        if "is_pregnant" in custom_filters:
-            val = custom_filters["is_pregnant"]
-            if str(val).lower() in ("true", "1", "yes"):
-                query = query.filter(cls.is_pregnant == True)
-            elif str(val).lower() in ("false", "0", "no"):
-                query = query.filter(cls.is_pregnant == False)
-
-        if "is_lactating" in custom_filters:
-            val = custom_filters["is_lactating"]
-            if str(val).lower() in ("true", "1", "yes"):
-                query = query.filter(cls.is_lactating == True)
-            elif str(val).lower() in ("false", "0", "no"):
-                query = query.filter(cls.is_lactating == False)
-
-        if "destetar" in custom_filters and str(custom_filters["destetar"]).lower() in (
-            "true",
-            "1",
-            "yes",
-        ):
-            from datetime import date, timedelta
-
-            destete_date = date.today() - timedelta(days=210)
-            query = query.filter(cls.birth_date <= destete_date)
-
-        if "bajo_peso" in custom_filters:
-            query = query.filter(cls.weight < 200)
+        query = cls._apply_smart_filters(query, custom_filters)
 
         if page and per_page:
             query = query.paginate(page=page, per_page=per_page, error_out=False)

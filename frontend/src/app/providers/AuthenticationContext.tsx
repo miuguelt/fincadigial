@@ -588,11 +588,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       persistUser(normalized)
       clearAutoLoginBlock()
 
-      // Elegir destino por rol usando rutas que existen en AppRoutes
+      // Elegir destino por rol usando rutas que existen en AppRoutes.
+      // Los roles de la finca aterrizan en Animales: es la vista de arranque
+      // del proceso (inventario vivo) y la puerta de entrada al recorrido guiado.
       const roleToPath: Record<string, string> = {
-        [Role.Administrador]: '/admin/dashboard',
-        [Role.Propietario]: '/admin/dashboard',
-        [Role.Capataz]: '/admin/dashboard',
+        [Role.Administrador]: '/admin/animals',
+        [Role.Propietario]: '/admin/animals',
+        [Role.Capataz]: '/admin/animals',
         [Role.Instructor]: '/instructor/dashboard',
         [Role.Veterinario]: '/veterinario/dashboard',
         [Role.Aprendiz]: '/apprentice/dashboard',
@@ -621,15 +623,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     clearAutoLoginBlock()
     prefetchRoleRoutes(newUser.role)
     const roleToPath: Record<string, string> = {
-      [Role.Administrador]: '/admin/dashboard',
-      [Role.Propietario]: '/admin/dashboard',
-      [Role.Capataz]: '/admin/dashboard',
+      [Role.Administrador]: '/admin/animals',
+      [Role.Propietario]: '/admin/animals',
+      [Role.Capataz]: '/admin/animals',
       [Role.Instructor]: '/instructor/dashboard',
       [Role.Veterinario]: '/instructor/dashboard',
       [Role.Aprendiz]: '/apprentice/dashboard',
       [Role.Operario]: '/apprentice/dashboard',
     }
-    const nextPath = roleToPath[newUser.role as Role] || '/admin/dashboard'
+    const nextPath = roleToPath[newUser.role as Role] || '/admin/animals'
     navigate(nextPath, { replace: true })
   }, [enableRoleSwitch, navigate, user])
 

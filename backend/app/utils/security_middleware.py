@@ -22,6 +22,7 @@ def init_security_middlewares(app):
             "/api/v1/auth/logout",
             "/api/v1/auth/dev-users",
             "/api/v1/enums",
+            "/api/v1/errors/client",
             "/api/v1/health",
             "/api/v1/docs",
             "/api/v1/public/",

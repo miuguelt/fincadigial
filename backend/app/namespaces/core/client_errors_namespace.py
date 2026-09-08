@@ -1,3 +1,4 @@
+import json
 import logging
 from flask_restx import Namespace, Resource, fields
 from flask import request
@@ -32,9 +33,22 @@ batch_model = client_errors_ns.model(
 class ClientErrors(Resource):
     @client_errors_ns.expect(batch_model, validate=False)
     def post(self):
-        data = request.get_json(silent=True) or {}
+        # navigator.sendBeacon envía text/plain; forzar parseo cuando
+        # Flask-RESTX no detecte JSON por Content-Type.
+        data = request.get_json(silent=True)
+        if data is None:
+            try:
+                data = json.loads(request.get_data(as_text=True) or "{}")
+            except (ValueError, TypeError):
+                data = {}
+        if not isinstance(data, dict):
+            data = {}
         errors = data.get("errors", [])
+        if not isinstance(errors, list):
+            errors = []
         for err in errors:
+            if not isinstance(err, dict):
+                continue
             logger.error(
                 "[CLIENT] %s | type=%s | url=%s | msg=%s",
                 err.get("type", "unknown"),

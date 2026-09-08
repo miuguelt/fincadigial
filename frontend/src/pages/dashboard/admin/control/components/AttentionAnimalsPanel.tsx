@@ -70,7 +70,7 @@ export const AttentionAnimalsPanel = forwardRef<HTMLElement, AttentionAnimalsPan
             <div>
               <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
                 <Sparkles className="h-3 w-3" />
-                <span>Salud del Hato Óptima</span>
+                <span>Salud del Ganado Óptima</span>
               </div>
               <p className="mt-0.5 text-sm font-bold sm:text-base">
                 Ningún animal necesita atención en este momento.

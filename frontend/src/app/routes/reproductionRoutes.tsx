@@ -5,7 +5,7 @@ import { Route } from 'react-router-dom';
  * Rutas del módulo reproductivo.
  *
  * Viven aparte de `AppRoutes` porque el módulo tiene varias pantallas propias
- * (registro, fertilidad, reproductores, indicadores del hato) y se montan bajo
+ * (registro, fertilidad, reproductores, indicadores del ganado) y se montan bajo
  * dos prefijos distintos: el genérico por rol y el explícito de administración.
  */
 

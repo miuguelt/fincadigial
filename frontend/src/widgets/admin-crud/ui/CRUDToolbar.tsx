@@ -68,6 +68,7 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
               searchQuery && "pr-8"
             )}
             aria-label="Buscar registros"
+            data-tour="entity-search"
             style={{ fontSize: '16px' }} /* Evitar zoom en iOS */
           />
           {/* Botón clear (X) cuando hay texto */}
@@ -119,6 +120,7 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
               onClick={onOpenCreate}
               disabled={saving}
               aria-label={createLabel}
+              data-tour="entity-create"
             >
               {saving ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

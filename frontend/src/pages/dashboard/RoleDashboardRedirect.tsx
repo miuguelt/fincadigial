@@ -5,9 +5,11 @@ import { useAuth } from '@/features/auth/model/useAuth';
 import { Role } from '@/entities/user/model/types';
 
 const roleDestinations: Record<string, string> = {
-  Administrador: '/admin/dashboard',
-  Propietario: '/admin/dashboard',
-  Capataz: '/admin/dashboard',
+  // Vista de arranque: la gestión del ganado (Animales) precede al panel,
+  // para que el primer clic del campesino sea registrar su ganado o revisarlo.
+  Administrador: '/admin/animals',
+  Propietario: '/admin/animals',
+  Capataz: '/admin/animals',
   Instructor: '/instructor/dashboard',
   Veterinario: '/veterinario/dashboard',
   Aprendiz: '/apprentice/dashboard',
@@ -26,7 +28,7 @@ const RoleDashboardRedirect: React.FC = () => {
   }
 
   const normalizedRole = role as Role;
-  const destination = roleDestinations[normalizedRole] ?? '/admin/dashboard';
+  const destination = roleDestinations[normalizedRole] ?? '/admin/animals';
 
   return <Navigate to={destination} replace />;
 };

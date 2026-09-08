@@ -89,7 +89,7 @@ export const AnimalTimelineTab: React.FC<AnimalTimelineTabProps> = ({
         date: animal.entry_date,
         type: 'entry',
         title: 'Ingreso a la Finca',
-        subtitle: animal.purchase_date ? `Compra: ${formatDate(animal.purchase_date)}` : 'Alta en el hato',
+        subtitle: animal.purchase_date ? `Compra: ${formatDate(animal.purchase_date)}` : 'Alta en el inventario de animales',
         badge: 'Trazabilidad',
         icon: <CheckCircle2 className="h-4 w-4" />,
         iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',

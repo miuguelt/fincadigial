@@ -76,7 +76,7 @@ class ReproductionService extends BaseService<ReproductiveEventResponse> {
     });
   }
 
-  /** Panel de indicadores del hato: eficiencia, riesgo y proyección. */
+  /** Panel de indicadores del ganado: eficiencia, riesgo y proyección. */
   async getHerdKpis(months: number = 12): Promise<HerdKpis> {
     return this.customRequest<HerdKpis>('../kpis', 'GET', undefined, {
       params: { months },
@@ -135,7 +135,7 @@ class ReproductionService extends BaseService<ReproductiveEventResponse> {
     return this.customRequest<any>('../batch', 'POST', payload);
   }
 
-  /** Da de alta una cría como animal oficial en el inventario del hato. */
+  /** Da de alta una cría como animal oficial en el inventario del ganado. */
   async registerCalfAnimal(offspringId: number, data: {
     record: string;
     sex?: 'Hembra' | 'Macho';

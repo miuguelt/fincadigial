@@ -41,12 +41,12 @@ const GROUPS: { id: string; title: string; hint: string; actions: LivestockActio
   {
     id: 'novedades',
     title: 'Cuando pasa algo',
-    hint: 'Novedades de salud y movimientos del hato.',
+    hint: 'Novedades de salud y movimientos del ganado.',
     actions: [
       { type: 'disease', label: 'Reportar enfermedad', sub: 'Síntomas y diagnóstico', icon: IconHealthAlert, chip: RECORD_KINDS.disease.chip },
       { type: 'treatment', label: 'Aplicar tratamiento', sub: 'Vacunas y medicinas', icon: IconHealthCheck, chip: RECORD_KINDS.treatment.chip },
       { type: 'weaning', label: 'Destetar ternero', sub: 'Paso a levante y peso a 205 días', icon: Baby, chip: RECORD_KINDS.control.chip },
-      { type: 'exit', label: 'Salida, venta o muerte', sub: 'Dar de baja del hato', icon: LogOut, chip: RECORD_KINDS.disease.chip },
+      { type: 'exit', label: 'Salida, venta o muerte', sub: 'Dar de baja del ganado', icon: LogOut, chip: RECORD_KINDS.disease.chip },
     ],
   },
   {

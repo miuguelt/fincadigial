@@ -8,6 +8,7 @@ import { Breadcrumbs } from '@/shared/ui/common';
 import HeaderActions from './HeaderActions';
 import HeaderSearch from './HeaderSearch';
 import ProfileMenu from './profile-menu/ProfileMenu';
+import { OnboardingRestartButton } from '@/widgets/onboarding/OnboardingTour';
 import { FincaSelector } from '@/features/multi-finca/ui/FincaSelector';
 
 interface HeaderProps {
@@ -83,6 +84,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar }) => {
               <div className="mr-2 hidden xl:block">
                 <SyncStatus />
               </div>
+              <OnboardingRestartButton />
               <HeaderActions />
             </>
           )}

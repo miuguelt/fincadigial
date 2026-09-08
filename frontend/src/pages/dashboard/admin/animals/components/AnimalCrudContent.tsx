@@ -1,9 +1,11 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 import type { AnimalInput } from '@/shared/api/generated/swaggerTypes';
 import { AdminCRUDPage } from '@/widgets/admin-crud';
 import { AnimalImagePreUpload } from '@/widgets/dashboard/animals/AnimalImagePreUpload';
 import { animalsService } from '@/entities/animal/api/animal.service';
 import { AnimalPageOverlays, type AnimalPageOverlaysProps } from './AnimalPageOverlays';
+import { AnimalsFirstAnimalGuide } from './AnimalsFirstAnimalGuide';
 import type { AnimalCrudConfig } from '../config/crud.config';
 
 function AnimalImageField({ files, onChange }: { files: File[]; onChange: (files: File[]) => void }) {
@@ -23,8 +25,14 @@ interface AnimalCrudContentProps {
 }
 
 export function AnimalCrudContent({ config, initialFormData, mapResponseToForm, validateForm, renderDetail, onFormDataChange, pendingImages, setPendingImages, overlays }: AnimalCrudContentProps) {
+  const location = useLocation();
+  // Recomendación de arranque: cuando la finca aún no tiene animales, invitamos
+  // a crear el primero antes del listado.
+  const [hasAnimals, setHasAnimals] = useState(true);
+
   return (
     <>
+      {!hasAnimals && <AnimalsFirstAnimalGuide currentPath={location.pathname} />}
       <AdminCRUDPage
         config={config}
         service={animalsService}
@@ -34,6 +42,7 @@ export function AnimalCrudContent({ config, initialFormData, mapResponseToForm, 
         customDetailContent={renderDetail}
         onOpenDetail={(item: any) => overlays.detail.onOpenAnimal(Number(item.id))}
         onFormDataChange={onFormDataChange}
+        onItemsChange={(items) => setHasAnimals((items?.length || 0) > 0)}
         realtime
         pollIntervalMs={0}
         refetchOnFocus={false}

@@ -400,7 +400,7 @@ export default function ReproductionHub() {
         icon={<Heart className="h-5 w-5 text-white" />}
         iconClassName="from-purple-600 to-indigo-600 shadow-purple-600/20"
         title={<>Gestión <span className="text-purple-600 dark:text-purple-400">Reproductiva</span></>}
-        description="Centro integral de celos, servicios, partos, fertilidad y descendencia del hato"
+        description="Centro integral de celos, servicios, partos, fertilidad y descendencia del ganado"
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Button
@@ -512,7 +512,7 @@ export default function ReproductionHub() {
         <Card className="border-border/50 border-l-4 border-l-teal-500 bg-card/50 backdrop-blur-sm shadow-sm rounded-xl overflow-hidden">
           <CardHeader className="pb-1 flex flex-row items-center justify-between">
             <CardDescription className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              Nacimientos del Hato
+              Nacimientos del Ganado
             </CardDescription>
             <div className="p-2 rounded-lg bg-teal-500/10 text-teal-600">
               <Baby className="h-4 w-4" />
@@ -620,7 +620,7 @@ export default function ReproductionHub() {
           </div>
         </TabsContent>
 
-        {/* PESTAÑA 4: Indicadores del Hato (IEP, Días Abiertos) */}
+        {/* PESTAÑA 4: Indicadores del Ganado (IEP, Días Abiertos) */}
         <TabsContent value="indicadores" className="mt-0">
           <HerdKpisPage isEmbedded />
         </TabsContent>
