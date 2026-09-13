@@ -1,5 +1,4 @@
-import { motion } from 'framer-motion';
-import { ChevronRight, Search, Wifi, WifiOff } from 'lucide-react';
+import { ChevronDown, ChevronRight, Search, Wifi, WifiOff } from 'lucide-react';
 import type { ToolGroup, ToolItem } from '../config/dashboard.config';
 
 interface ToolGroupsSectionProps {
@@ -11,96 +10,91 @@ interface ToolGroupsSectionProps {
 interface ToolCardProps {
   group: ToolGroup;
   tool: ToolItem;
-  index: number;
-  groupIndex: number;
   onNavigate: (path: string) => void;
 }
 
-function ToolCard({ group, tool, index, groupIndex, onNavigate }: ToolCardProps) {
+function ToolCard({ group, tool, onNavigate }: ToolCardProps) {
   const ToolIcon = tool.icon;
+
   return (
-    <motion.button
+    <button
       type="button"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1 + (groupIndex * 0.1) + (index * 0.05), duration: 0.4 }}
-      whileHover={{ scale: 1.03, translateY: -2 }}
-      whileTap={{ scale: 0.97 }}
       onClick={() => onNavigate(tool.path)}
-      className={`group relative flex min-h-[190px] w-full cursor-pointer flex-col overflow-hidden rounded-3xl border ${tool.bg} bg-card/50 p-5 text-left backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg`}
+      className={`group flex min-h-[84px] w-full items-center gap-3 rounded-2xl border p-3 text-left transition hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary sm:p-4 ${tool.bg}`}
+      aria-label={`${tool.title}. ${tool.description}`}
     >
-      <div className="flex items-start justify-between w-full mb-5">
-        <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-white/80 text-3xl shadow-sm transition-transform duration-500 group-hover:rotate-[-5deg] group-hover:scale-110 dark:bg-black/20">
-          {tool.emoji}
-          <div className="absolute -bottom-1 -right-1 bg-white dark:bg-background rounded-full p-1 shadow-sm border border-border/20">
-            <ToolIcon className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-          </div>
-        </div>
+      <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/80 text-2xl shadow-sm dark:bg-black/20" aria-hidden="true">
+        {tool.emoji || <ToolIcon className="h-5 w-5 text-muted-foreground" />}
+        <span className="absolute -bottom-1 -right-1 rounded-full border border-border/30 bg-card p-1 shadow-sm">
+          <ToolIcon className="h-3.5 w-3.5 text-muted-foreground" />
+        </span>
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className={`block text-sm font-bold leading-tight ${group.color}`}>{tool.title}</span>
+        <span className="mt-1 block text-xs leading-snug text-muted-foreground">{tool.description}</span>
+      </span>
+      <span className="flex shrink-0 flex-col items-end gap-1">
         <SignalBadge requiresOnline={tool.requiresOnline} />
-      </div>
-
-      <div className="flex-1 mt-auto">
-        <p className={`font-extrabold text-base md:text-lg mb-1 ${group.color} transition-colors duration-300`}>{tool.title}</p>
-        <p className="text-sm text-muted-foreground/90 font-medium leading-relaxed">{tool.description}</p>
-      </div>
-
-      <div className="absolute right-4 bottom-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 bg-white/50 dark:bg-black/20 p-2 rounded-full">
-        <ChevronRight className={`w-5 h-5 ${group.color}`} />
-      </div>
-    </motion.button>
+        <ChevronRight className={`h-4 w-4 ${group.color}`} aria-hidden="true" />
+      </span>
+    </button>
   );
 }
 
 function SignalBadge({ requiresOnline }: { requiresOnline: boolean }) {
   return requiresOnline ? (
-    <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 px-2.5 py-1 rounded-full border border-amber-500/20 shadow-sm">
-      <Wifi className="w-3 h-3" /> Con red
+    <span className="inline-flex items-center gap-1 whitespace-nowrap text-[11px] font-bold text-amber-700 dark:text-amber-300">
+      <Wifi className="h-3 w-3" aria-hidden="true" /> Con señal
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-full border border-emerald-500/20 shadow-sm">
-      <WifiOff className="w-3 h-3" /> Sin red OK
+    <span className="inline-flex items-center gap-1 whitespace-nowrap text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+      <WifiOff className="h-3 w-3" aria-hidden="true" /> Sin señal
     </span>
   );
 }
 
 function EmptyToolsState({ onClearSearch }: { onClearSearch: () => void }) {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="rounded-3xl border-2 border-dashed border-border/60 bg-card/40 px-6 py-16 text-center shadow-sm backdrop-blur-sm"
-    >
-      <div className="bg-muted w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-        <Search className="w-10 h-10 text-muted-foreground/50" />
-      </div>
-      <p className="text-lg md:text-xl font-bold text-foreground mb-2">No encontramos herramientas para tu búsqueda</p>
-      <p className="text-muted-foreground max-w-md mx-auto mb-6">Prueba con palabras como "ordeño", "parcela", "enfermedad" o "clima".</p>
+    <div className="rounded-2xl border-2 border-dashed border-border bg-card px-5 py-12 text-center">
+      <Search className="mx-auto h-9 w-9 text-muted-foreground/50" aria-hidden="true" />
+      <p className="mt-3 text-base font-bold text-foreground">No encontramos esa herramienta</p>
+      <p className="mt-1 text-sm text-muted-foreground">Pruebe con «ordeño», «parcela», «clima» o «salud».</p>
       <button
         type="button"
         onClick={onClearSearch}
-        className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-primary/10 text-primary font-bold hover:bg-primary/20 transition-colors"
+        className="mt-5 min-h-11 rounded-xl bg-primary/10 px-4 py-2 text-sm font-bold text-primary transition hover:bg-primary/20"
       >
         Ver todas las herramientas
       </button>
-    </motion.div>
+    </div>
   );
 }
 
 export function ToolGroupsSection({ groups, onClearSearch, onNavigate }: ToolGroupsSectionProps) {
+  if (groups.length === 0) return <EmptyToolsState onClearSearch={onClearSearch} />;
+
   return (
-    <section className="space-y-10 pt-2">
-      {groups.length === 0 ? <EmptyToolsState onClearSearch={onClearSearch} /> : groups.map((group, groupIndex) => (
-        <div key={group.title} className="space-y-5">
-          <h2 className={`flex items-center gap-3 border-b pb-3 text-lg font-extrabold uppercase tracking-wider md:text-xl ${group.color} ${group.border}`}>
-            {group.title}
-          </h2>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {group.tools.map((tool, index) => (
-              <ToolCard key={tool.id} group={group} tool={tool} index={index} groupIndex={groupIndex} onNavigate={onNavigate} />
-            ))}
-          </div>
-        </div>
-      ))}
+    <section aria-labelledby="tools-title" className="space-y-3">
+      <div>
+        <h2 id="tools-title" className="text-lg font-bold text-foreground">Todas las herramientas</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Organizadas para trabajar, cuidar y decidir mejor.</p>
+      </div>
+
+      <div className="space-y-3">
+        {groups.map((group, groupIndex) => (
+          <details key={group.title} open={groupIndex === 0} className="group/section rounded-2xl border border-border bg-card shadow-sm">
+            <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 focus-visible:ring-2 focus-visible:ring-primary [&::-webkit-details-marker]:hidden">
+              <span className={`text-sm font-bold ${group.color}`}>{group.title}</span>
+              <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open/section:rotate-180" aria-hidden="true" />
+            </summary>
+            <div className="grid gap-2 border-t border-border/70 p-3 sm:grid-cols-2 sm:p-4">
+              {group.tools.map((tool) => (
+                <ToolCard key={tool.id} group={group} tool={tool} onNavigate={onNavigate} />
+              ))}
+            </div>
+          </details>
+        ))}
+      </div>
     </section>
   );
 }

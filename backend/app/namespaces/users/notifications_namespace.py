@@ -41,13 +41,17 @@ class MyNotifications(Resource):
         return APIResponse.success(data=items)
 
 
-@notifications_ns.route("/<int:notification_id>")
+@notifications_ns.route("/<string:notification_id>")
 class NotificationAction(Resource):
     @notifications_ns.doc("act_on_notification", security=["Bearer"])
     @notifications_ns.expect(action_model)
     @jwt_required()
     def patch(self, notification_id):
         user_id = int(get_jwt_identity())
+        try:
+            notification_id = int(notification_id)
+        except (TypeError, ValueError):
+            return APIResponse.validation_error({"notification_id": "Debe ser un identificador numérico"})
         data = flask.request.get_json() or {}
         action = data.get("action")
         if not action:

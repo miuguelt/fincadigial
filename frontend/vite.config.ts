@@ -196,10 +196,25 @@ export default defineConfig(({ command, mode }) => {
             Connection: 'keep-alive',
           },
           configure: (proxy) => {
-            proxy.on('error', (err, req) => {
+            proxy.on('error', (err, req, res: any) => {
               // Ignorar ECONNRESET en SSE ya que es el comportamiento normal al recargar o cerrar pestañas
               if (err.message.includes('ECONNRESET') && req.url?.includes('sse')) return;
               console.error('[Vite Proxy] Error:', err.message, '→', req.url);
+
+              if (res && typeof res.writeHead === 'function' && !res.headersSent) {
+                res.writeHead(503, {
+                  'Content-Type': 'application/json',
+                  'Retry-After': '2',
+                });
+                res.end(
+                  JSON.stringify({
+                    error: 'Servidor backend no disponible temporalmente',
+                    code: 'BACKEND_UNAVAILABLE',
+                    message: err.message,
+                    url: req.url,
+                  })
+                );
+              }
             });
             proxy.on('proxyReq', (proxyReq, req) => {
               const origin = req.headers.origin || (disableHttps ? 'http://localhost:3005' : 'https://localhost:3005');

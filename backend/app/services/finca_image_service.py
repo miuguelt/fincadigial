@@ -9,9 +9,17 @@ from app.utils.file_storage import get_public_url
 
 
 def can_manage_finca_images(user_id: Any, finca_id: int) -> bool:
-    """Valida que el usuario tenga una membresía activa en la finca."""
+    """Valida que el usuario tenga una membresía activa en la finca o sea Administrador del sistema."""
     if not user_id:
         return False
+    try:
+        from app import db
+        from app.models.user import User, Role
+        user = db.session.get(User, int(user_id))
+        if user and (user.role == Role.Administrador or getattr(user.role, "value", None) == "Administrador"):
+            return True
+    except Exception:
+        pass
     return UserFinca.has_access(int(user_id), finca_id)
 
 

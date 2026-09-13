@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { IconCow, IconMilk, IconPlant2, IconQrcode, IconStethoscope } from '@/shared/ui/icons';
+import { IconCow, IconFirstAidKit, IconMilk, IconPlant2, IconQrcode, IconStethoscope } from '@/shared/ui/icons';
 import { useAuth } from '@/features/auth/model/useAuth';
 import {
   DropdownMenu,
@@ -37,6 +37,7 @@ function buildActions(prefix: string): Action[] {
     { label: 'Escáner QR', path: '/scanner', icon: IconQrcode, color: 'text-sky-500', group: 1 },
     { label: 'Registrar leche', path: '/quick/milk', icon: IconMilk, color: 'text-blue-500', group: 2 },
     { label: 'Reportar enfermedad', path: '/quick/disease', icon: IconStethoscope, color: 'text-rose-500', group: 2 },
+    { label: 'Atender una res', path: '/quick/care', icon: IconFirstAidKit, color: 'text-indigo-500', group: 2 },
   ];
 }
 

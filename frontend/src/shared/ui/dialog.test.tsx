@@ -82,7 +82,7 @@ describe('Dialog y ModalStackContext', () => {
     expect(childContent.style.zIndex).toBe('1300');
   });
 
-  it('dispara markDialogClosing al pulsar el botón de cerrar', () => {
+  it('dispara markDialogClosing al hacer clic en el botón de cerrar', () => {
     const onOpenChange = vi.fn();
 
     render(

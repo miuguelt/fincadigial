@@ -158,6 +158,54 @@ class TestAnimalSmartFilters(unittest.TestCase):
             self.assertIn("PRE-LAC", [a.record for a in query])
             self.assertNotIn("PRE-ONLY", [a.record for a in query])
 
+    def test_filtros_via_http_endpoint(self):
+        """Los filtros inteligentes funcionan a través del endpoint HTTP /api/v1/animals."""
+        from flask_jwt_extended import create_access_token
+        from app.models.user import User, Role
+
+        with self.app.app_context():
+            user = User.query.filter_by(finca_id=self.finca.id).first()
+            if not user:
+                user = User.query.first()
+            if not user:
+                user = User.create(
+                    fullname="Admin Test",
+                    email="admin_filter_unique@villaluz.com",
+                    phone="3199998877",
+                    password="password123",
+                    role=Role.Administrador,
+                    finca_id=self.finca.id,
+                    identification="9876543210",
+                )
+            token = create_access_token(
+                identity=str(user.id),
+                additional_claims={
+                    "id": user.id,
+                    "identification": user.identification,
+                    "role": user.role.value,
+                    "fullname": user.fullname,
+                    "finca_id": user.finca_id,
+                    "finca_type": self.finca.type.value,
+                },
+            )
+            headers = {"Authorization": f"Bearer {token}"}
+
+            today = date.today()
+            self._create_animal("HTTP-PREG", today - timedelta(days=500), 400, is_pregnant=True)
+            self._create_animal("HTTP-VACIA", today - timedelta(days=500), 400, is_pregnant=False)
+            db.session.commit()
+
+            client = self.app.test_client()
+            resp = client.get("/api/v1/animals?is_pregnant=true", headers=headers)
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            raw_data = data.get("data")
+            items = raw_data.get("items", []) if isinstance(raw_data, dict) else (raw_data or [])
+            records = [it["record"] for it in items if isinstance(it, dict) and "record" in it]
+            self.assertIn("HTTP-PREG", records)
+            self.assertNotIn("HTTP-VACIA", records)
+
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -154,7 +154,7 @@ def search_fields(query: str, finca_id: int, limit: int = 10) -> list[dict[str, 
                 "description": " • ".join(filter(None, parts)) or "Potrero de pastoreo",
                 "score": round(score, 3),
                 "type": "field",
-                "url": "/admin/fields",
+                "url": f"/admin/fields?edit={field.id}",
             }
         )
 

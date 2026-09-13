@@ -55,7 +55,9 @@ export const CacheUtils = {
     species: 'api:species',
     breeds: 'api:breeds',
     vaccines: 'api:vaccines',
-    vaccinations: 'api:vaccinations'
+    vaccinations: 'api:vaccinations',
+    animalDiseases: 'api:animalDiseases',
+    animalDiseaseProgress: 'api:animalDiseaseProgress'
   },
 
   // Generar claves relacionadas para invalidación en cascada
@@ -79,6 +81,12 @@ export const CacheUtils = {
         break;
       case 'treatments':
         keys.push('api:treatmentMedications');
+        break;
+      case 'animalDiseases':
+        keys.push('api:animalDiseaseProgress', 'api:treatments', 'api:vaccinations');
+        break;
+      case 'animalDiseaseProgress':
+        keys.push('api:animalDiseases');
         break;
     }
 

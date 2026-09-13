@@ -7,6 +7,12 @@ export interface RecommendationAnimal {
 	status?: string;
 }
 
+export type RecommendationFulfillmentKind =
+	| "observation"
+	| "control"
+	| "vaccination"
+	| "treatment";
+
 export interface TreatmentRecommendationControl {
 	id: number;
 	treatment_recommendation_id: number;
@@ -16,6 +22,8 @@ export interface TreatmentRecommendationControl {
 	completed: boolean;
 	recorded_by?: number | null;
 	recorder?: { id: number; fullname?: string; role?: string } | null;
+	fulfilled_kind?: RecommendationFulfillmentKind | null;
+	fulfilled_ref_id?: number | null;
 }
 
 export interface TreatmentRecommendation {
@@ -53,4 +61,6 @@ export interface TreatmentRecommendationControlUpdate {
 	completed: boolean;
 	control_date?: string | null;
 	observation?: string;
+	fulfilled_kind?: RecommendationFulfillmentKind | null;
+	fulfilled_ref_id?: number | null;
 }

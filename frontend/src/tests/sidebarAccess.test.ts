@@ -59,4 +59,23 @@ describe('acceso del sidebar por RBAC', () => {
     expect(masterAdminTitles).toContain('Usuarios del sistema');
     expect(masterAdminTitles).toContain('Todas las fincas');
   });
+
+  it('organiza Mi espacio por tareas campesinas y conserva el trabajo sin señal', () => {
+    const campesino = filterSidebarItemsByRole(sidebarItems, 'Operario')
+      .find((item) => item.title === 'Mi espacio');
+    const titles = campesino?.children?.map((item) => item.title) ?? [];
+
+    expect(titles).toEqual([
+      'Mi panel',
+      'Mi registro diario',
+      'Cultivos y agua',
+      'Clima y alertas',
+      'Mercado campesino',
+      'Asistencia técnica',
+      'Aprender sin conexión',
+    ]);
+    expect(campesino?.children?.find((item) => item.title === 'Mi registro diario')?.requiresOnline).toBe(false);
+    expect(campesino?.children?.find((item) => item.title === 'Aprender sin conexión')?.requiresOnline).toBe(false);
+    expect(campesino?.children?.find((item) => item.title === 'Aprender sin conexión')?.path).toBe('/campesino/aprender');
+  });
 });

@@ -46,8 +46,8 @@ class KBService extends BaseService<any> {
   }
 
   /** Sobrescribir getAll si es necesario, o usar el por defecto que apunta a /knowledge_base */
-  async getHatoCalendar(): Promise<KBCalendario[]> {
-    const response = await api.get(`${this.endpoint}/calendario/hato`);
+  async getGanadoCalendar(): Promise<KBCalendario[]> {
+    const response = await api.get(`${this.endpoint}/calendario/ganado`);
     return response.data?.data || [];
   }
 }

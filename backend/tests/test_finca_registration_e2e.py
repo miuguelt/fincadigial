@@ -11,7 +11,17 @@ Uso:
 import unittest
 import json
 from app import create_app, db
-from app.models import Finca, FarmType, User, Role
+from app.legal.consent import CURRENT_PRIVACY_NOTICE_VERSION, CURRENT_TERMS_VERSION
+from app.models import Finca, FarmType, User, Role, UserConsent
+
+
+def _consent_payload():
+    return {
+        "privacy_notice_version": CURRENT_PRIVACY_NOTICE_VERSION,
+        "privacy_notice_accepted": True,
+        "terms_version": CURRENT_TERMS_VERSION,
+        "terms_accepted": True,
+    }
 
 
 class TestFincaRegistrationE2E(unittest.TestCase):
@@ -38,6 +48,7 @@ class TestFincaRegistrationE2E(unittest.TestCase):
     def setUp(self):
         """Limpiar datos antes de cada test."""
         with self.app.app_context():
+            db.session.query(UserConsent).delete()
             db.session.query(User).delete()
             db.session.query(Finca).delete()
             db.session.commit()
@@ -69,6 +80,7 @@ class TestFincaRegistrationE2E(unittest.TestCase):
                 "password": "SecurePass123!",
                 "address": "Calle 123 # 45-67",
             },
+            "consent": _consent_payload(),
         }
 
         # Ejecutar registro
@@ -128,6 +140,7 @@ class TestFincaRegistrationE2E(unittest.TestCase):
                 "phone": "3109876543",
                 "password": "EduPass123!",
             },
+            "consent": _consent_payload(),
         }
 
         response = self.client.post(
@@ -228,6 +241,7 @@ class TestFincaRegistrationE2E(unittest.TestCase):
                 "phone": "3001111111",
                 "password": "Pass123!",
             },
+            "consent": _consent_payload(),
         }
 
         self.client.post(
@@ -246,6 +260,7 @@ class TestFincaRegistrationE2E(unittest.TestCase):
                 "phone": "3002222222",
                 "password": "Pass123!",
             },
+            "consent": _consent_payload(),
         }
 
         response = self.client.post(
@@ -272,6 +287,7 @@ class TestFincaRegistrationE2E(unittest.TestCase):
                 "phone": "3001111111",
                 "password": "Pass123!",
             },
+            "consent": _consent_payload(),
         }
 
         self.client.post(
@@ -290,6 +306,7 @@ class TestFincaRegistrationE2E(unittest.TestCase):
                 "phone": "3002222222",
                 "password": "Pass123!",
             },
+            "consent": _consent_payload(),
         }
 
         response = self.client.post(
@@ -342,6 +359,7 @@ class TestFincaRegistrationE2E(unittest.TestCase):
                 "phone": "3005555555",
                 "password": "MyPass123!",
             },
+            "consent": _consent_payload(),
         }
 
         reg_response = self.client.post(

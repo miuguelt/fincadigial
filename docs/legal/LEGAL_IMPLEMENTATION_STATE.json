@@ -1,0 +1,323 @@
+{
+  "schema_version": "1.0",
+  "document_type": "ai_legal_implementation_continuation",
+  "project": "VillaLuz",
+  "jurisdiction": "CO",
+  "sector_profile": "SENA_PUBLIC_ENTITY",
+  "last_reviewed": "2026-09-10",
+  "audit_trail": {
+    "last_legal_change_reviewed_on": "2026-09-10",
+    "last_legal_change_summary": "Se incorporó el estado de continuidad, clasificación por perfiles, auditoría de ciclo de vida DevBrain y controles de contención para producción provisional. Los bloqueadores institucionales y operativos permanecen abiertos."
+  },
+  "source_of_truth": [
+    "docs/legal/COMPLIANCE_MANIFEST.json",
+    "docs/legal/08_MATRIZ_CUMPLIMIENTO_SENA.md",
+    "docs/legal/11_EVIDENCIA_APROBACION_SENA.md",
+    "docs/legal/13_GUIA_CICLO_VIDA_LEGAL_DEVBRAIN.md"
+  ],
+  "reported_context": {
+    "institution": "Servicio Nacional de Aprendizaje - SENA",
+    "institutional_approval_reported_by_team": true,
+    "approval_description": "Producto técnico-pedagógico aprobado en reunión directiva, según información suministrada por el equipo.",
+    "approval_does_not_yet_prove": [
+      "autorización operativa para captar datos personales reales",
+      "autorización para alojar datos en un VPS de tercero",
+      "contrato o instrucciones de tratamiento entre responsable y encargado",
+      "autorización de marca, dominio o integración con sistemas oficiales",
+      "aceptación de producción y continuidad institucional"
+    ]
+  },
+  "verdict": {
+    "current": "RESTRINGIDA_A_PRUEBAS_SIN_DATOS_REALES",
+    "production_with_real_personal_data": "BLOCKED",
+    "safe_deployment_allowed": "Sí, únicamente en modo provisional, con datos sintéticos o expresamente autorizados y sin afirmar que es un sistema oficial.",
+    "legal_certification": "No emitida; este archivo es una guía de control técnico y documental, no un concepto jurídico ni una certificación.",
+    "release_condition": "Cambiar a APPROVED solamente después de cerrar todos los bloqueadores, obtener las aprobaciones humanas exigidas y ejecutar scripts/Test-ColombiaLegalCompliance.ps1 -Mode Release sin bloqueadores."
+  },
+  "safe_defaults_currently_required": {
+    "SENA_INSTITUTIONAL_MODE": "provisional_not_authorized",
+    "LEGAL_RELEASE_APPROVED": "false",
+    "DATA_COLLECTION_ENABLED": "false",
+    "PUBLIC_USER_CREATION_ENABLED": "false",
+    "AUTH_COOKIE_ONLY": "true",
+    "JWT_COOKIE_SECURE": "true",
+    "JWT_COOKIE_SAMESITE": "Lax",
+    "JWT_COOKIE_CSRF_PROTECT": "true",
+    "VITE_USE_BEARER_AUTH": "false"
+  },
+  "implemented_or_partially_implemented": [
+    {
+      "id": "TECH-001",
+      "area": "captación",
+      "state": "implemented_partial",
+      "summary": "Registro público bloqueable, aviso y términos versionables, y evidencia de aceptación preparada.",
+      "evidence": [
+        "backend/app/namespaces/users/user_public_namespace.py",
+        "backend/app/models/user_consent.py",
+        "frontend/src/pages/legal/",
+        "frontend/src/pages/auth/register/",
+        "frontend/src/pages/auth/register-user/",
+        "backend/tests/test_public_registration_consent.py"
+      ],
+      "remaining": "No activar captación real hasta completar identidad del responsable, política publicada, instrucciones SENA y acta de liberación."
+    },
+    {
+      "id": "TECH-002",
+      "area": "autenticación",
+      "state": "implemented_partial",
+      "summary": "Producción configurada para cookies protegidas y no persistencia de JWT en localStorage.",
+      "evidence": [
+        "backend/app/utils/auth_response.py",
+        "backend/config.py",
+        "frontend/src/shared/api/config.ts",
+        "backend/tests/test_cookie_only_auth.py",
+        "frontend/src/pages/auth/register/index.tsx",
+        "frontend/src/pages/auth/register-user/index.tsx"
+      ],
+      "remaining": "Revisar MFA para perfiles privilegiados, recuperación, revocación y evidencia de pruebas de seguridad."
+    },
+    {
+      "id": "TECH-003",
+      "area": "archivos",
+      "state": "implemented_partial",
+      "summary": "Las rutas de archivos requieren firma temporal y respuesta privada.",
+      "evidence": [
+        "backend/app/utils/private_file_urls.py",
+        "backend/app/api/__init__.py",
+        "backend/tests/test_private_file_urls.py"
+      ],
+      "remaining": "Probar autorización por usuario/tenencia, expiración, borrado, antivirus y respaldo/borrado de archivos."
+    },
+    {
+      "id": "TECH-004",
+      "area": "despliegue",
+      "state": "implemented_partial",
+      "summary": "Compose de Coolify con defaults de contención y sin exposición directa de PostgreSQL/Redis.",
+      "evidence": [
+        "docker-compose.coolify.yml",
+        "docs/legal/05_CHECKLIST_COOLIFY_VPS.md",
+        "docs/legal/13_GUIA_CICLO_VIDA_LEGAL_DEVBRAIN.md"
+      ],
+      "remaining": "Completar proveedor, región, contrato, backups externos, restauración, RPO/RTO, monitoreo y aprobación de alojamiento."
+    },
+    {
+      "id": "TECH-005",
+      "area": "automatización",
+      "state": "implemented_partial",
+      "summary": "Auditoría local, gate de Release, CI y pre-commit legal existentes.",
+      "evidence": [
+        "scripts/Test-ColombiaLegalCompliance.ps1",
+        ".github/workflows/legal-compliance.yml",
+        ".pre-commit-config.yaml",
+        "C:/Users/Miguel/Documents/Aplicaciones/_infrastructure/devbraind/scripts/Test-DevBrainLegalLifecycle.ps1"
+      ],
+      "remaining": "Instalar la estrategia global de DevBrain en todos los proyectos y exigir el manifiesto de estado en el ciclo de vida."
+    }
+  ],
+  "pending_blockers": [
+    {
+      "id": "LEGAL-001",
+      "priority": "P0",
+      "status": "BLOCKED",
+      "area": "responsable del tratamiento",
+      "what_is_missing": "Nombre legal, identificación/NIT, domicilio, canal de privacidad y responsable institucional completos.",
+      "why_it_matters": "Sin responsable identificable no se puede publicar un aviso válido ni atender derechos de titulares.",
+      "how_to_obtain": "Solicitar a la dependencia SENA dueña del proceso y al área jurídica/privacidad los datos oficiales que deben aparecer en la política y en el manifiesto.",
+      "owner_to_assign": "SENA - dueño del proceso / privacidad institucional",
+      "evidence_to_store": "docs/legal/COMPLIANCE_MANIFEST.json y copia de la aprobación de privacidad",
+      "files_to_update": ["docs/legal/COMPLIANCE_MANIFEST.json", "frontend/src/pages/legal/", "backend/app/legal/"]
+    },
+    {
+      "id": "LEGAL-002",
+      "priority": "P0",
+      "status": "BLOCKED",
+      "area": "aprobación institucional",
+      "what_is_missing": "Copia oficial redactada del acta/acto que identifique versión, alcance y órgano competente, más hash SHA-256.",
+      "why_it_matters": "La aprobación reportada por el equipo no puede ser verificada por el repositorio ni por la compuerta.",
+      "how_to_obtain": "Pedir a la secretaría de la reunión, comité o dependencia que expida copia auténtica o certificada; retirar datos personales innecesarios antes de versionar.",
+      "evidence_to_store": "docs/legal/evidence/sena-approval/ACTA_APROBACION_SENA_REDACTADA.pdf",
+      "registration_command": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Register-SenaApprovalEvidence.ps1 -ApprovalFile docs/legal/evidence/sena-approval/ACTA_APROBACION_SENA_REDACTADA.pdf",
+      "important_scope": "La copia pública debe conservarse en esa ruta; el original debe quedar bajo custodia institucional restringida."
+    },
+    {
+      "id": "LEGAL-003",
+      "priority": "P0",
+      "status": "BLOCKED",
+      "area": "alcance de la aprobación",
+      "what_is_missing": "Acta de liberación que diga expresamente si permite piloto, uso interno o producción con datos reales, población, regionales, centros, dominio y fecha.",
+      "why_it_matters": "Aprobar un producto técnico-pedagógico no equivale necesariamente a autorizar un tratamiento operativo en un VPS.",
+      "how_to_obtain": "Solicitar a la dependencia propietaria una decisión escrita de alcance y un acta independiente de aceptación de producción.",
+      "evidence_to_store": "docs/legal/evidence/sena-approval/ y docs/legal/08_MATRIZ_CUMPLIMIENTO_SENA.md"
+    },
+    {
+      "id": "LEGAL-004",
+      "priority": "P0",
+      "status": "BLOCKED",
+      "area": "roles y contrato",
+      "what_is_missing": "Definición formal de SENA como responsable, proveedor como encargado o roles alternativos, instrucciones documentadas y anexo de tratamiento.",
+      "why_it_matters": "El tratamiento por un proveedor/VPS requiere instrucciones, confidencialidad, seguridad, subencargados, auditoría, incidentes, devolución y eliminación.",
+      "how_to_obtain": "Usar como borrador docs/legal/09_ANEXO_CONTRACTUAL_SENA_DATOS_SOFTWARE.md y someterlo a contratación y jurídica del SENA; no asumir que la licencia MIT reemplaza el contrato de datos.",
+      "evidence_to_store": "Número de contrato/convenio firmado, anexo y acta de inicio/aceptación"
+    },
+    {
+      "id": "LEGAL-005",
+      "priority": "P0",
+      "status": "BLOCKED",
+      "area": "privacidad",
+      "what_is_missing": "Política y aviso publicados con identidad real, finalidades, derechos, canal, vigencia, cambios, encargados y transferencias.",
+      "why_it_matters": "El usuario debe conocer el tratamiento antes de entregar datos; los textos de desarrollo no sustituyen la política aprobada.",
+      "how_to_obtain": "Completar la plantilla de privacidad con jurídica/privacidad del responsable y publicarla en el dominio autorizado; congelar versión y hash en la aceptación.",
+      "evidence_to_store": "URL pública, versión, hash, aprobación y prueba de visualización previa al registro"
+    },
+    {
+      "id": "LEGAL-006",
+      "priority": "P0",
+      "status": "BLOCKED",
+      "area": "inventario y retención",
+      "what_is_missing": "Inventario aprobado campo por campo, finalidad, base jurídica, acceso, plazo, borrado, archivo y tratamiento de copias.",
+      "why_it_matters": "VillaLuz combina cuentas, ubicación, fincas, fotografías, archivos, datos educativos y registros veterinarios que pueden elevar el riesgo.",
+      "how_to_obtain": "Completar docs/legal/02_INVENTARIO_TRATAMIENTO_DATOS.md con el dueño del proceso y jurídico; anexar matriz de retención y disposición final.",
+      "evidence_to_store": "Inventario firmado, matriz de retención, procedimiento de borrado y pruebas de exportación/supresión"
+    },
+    {
+      "id": "LEGAL-007",
+      "priority": "P0",
+      "status": "BLOCKED",
+      "area": "derechos de titulares",
+      "what_is_missing": "Canal operativo, validación de identidad, radicado, tiempos, respuesta y trazabilidad de consulta, corrección, actualización, supresión y revocatoria.",
+      "why_it_matters": "El botón o endpoint no basta si no existe un responsable que tramite y evidencie el caso.",
+      "how_to_obtain": "Definir correo o formulario oficial, procedimiento con jurídica/privacidad y responsable de atención; ejecutar un caso de prueba con datos sintéticos.",
+      "evidence_to_store": "docs/legal/04_PLAN_INCIDENTES_Y_DSAR.md, procedimiento aprobado y evidencia de prueba"
+    },
+    {
+      "id": "LEGAL-008",
+      "priority": "P0",
+      "status": "BLOCKED",
+      "area": "proveedores y transferencias",
+      "what_is_missing": "Proveedor real de VPS/Coolify, región, subencargados, correo, almacenamiento, correo transaccional, monitoreo, copias y análisis de transmisión/transferencia internacional.",
+      "why_it_matters": "La ubicación y los subencargados afectan el contrato, la información al titular y los controles de transferencia.",
+      "how_to_obtain": "Completar docs/legal/03_REGISTRO_PROVEEDORES_TRANSFERENCIAS.md con contratos, regiones y términos vigentes; obtener autorización institucional cuando corresponda.",
+      "evidence_to_store": "Registro de proveedores aprobado y anexos/contratos"
+    },
+    {
+      "id": "LEGAL-009",
+      "priority": "P0",
+      "status": "BLOCKED",
+      "area": "seguridad privilegiada",
+      "what_is_missing": "MFA, recuperación segura, bloqueo de intentos, sesiones revocables y revisión de cuentas administrativas.",
+      "why_it_matters": "La cuenta administrativa controla datos de múltiples fincas y puede causar una exposición masiva.",
+      "how_to_obtain": "Implementar o integrar MFA y gestión de identidades; guardar pruebas de configuración y pruebas negativas de autorización.",
+      "evidence_to_store": "Pruebas automatizadas, configuración, revisión de cuentas y registro de acceso administrativo"
+    },
+    {
+      "id": "LEGAL-010",
+      "priority": "P0",
+      "status": "BLOCKED",
+      "area": "continuidad",
+      "what_is_missing": "Backups cifrados fuera del VPS, retención, restauración probada, RPO/RTO y custodia de claves.",
+      "why_it_matters": "La disponibilidad y recuperación forman parte de la seguridad del tratamiento; Coolify no demuestra por sí solo un backup restaurable.",
+      "how_to_obtain": "Contratar/configurar destino externo, cifrar, documentar retención y ejecutar restauración en ambiente aislado sin datos productivos expuestos.",
+      "evidence_to_store": "Informe de backup/restauración, configuración de retención y aprobación de RPO/RTO"
+    },
+    {
+      "id": "LEGAL-011",
+      "priority": "P0",
+      "status": "BLOCKED",
+      "area": "incidentes",
+      "what_is_missing": "Simulacro documentado, contactos, escalamiento, conservación de evidencia y comunicación al responsable/SIC cuando corresponda.",
+      "why_it_matters": "Debe existir capacidad real para contener y reportar una pérdida, acceso o alteración de datos.",
+      "how_to_obtain": "Ejecutar el plan de docs/legal/04_PLAN_INCIDENTES_Y_DSAR.md con datos sintéticos y registrar resultados/correctivos.",
+      "evidence_to_store": "Acta de simulacro, bitácora de incidente y lista de contactos"
+    },
+    {
+      "id": "LEGAL-012",
+      "priority": "P0",
+      "status": "BLOCKED",
+      "area": "propiedad intelectual y licencia MIT",
+      "what_is_missing": "Cadena de titularidad del código, confirmación de compatibilidad de dependencias, contribuciones, contenido, logo/nombre SENA y alcance de MIT.",
+      "why_it_matters": "MIT licencia el código que el licenciante puede licenciar; no transfiere datos, marcas, contratos ni derechos de terceros.",
+      "how_to_obtain": "Revisar contrato de desarrollo, aportes de aprendices/servidores/contratistas, dependencias y recursos; obtener autorización de marca SENA por escrito.",
+      "evidence_to_store": "Inventario de licencias, avisos de terceros, CONTRIBUTORS/CLA si aplica y autorización de marca"
+    },
+    {
+      "id": "LEGAL-013",
+      "priority": "P1",
+      "status": "BLOCKED",
+      "area": "cadena de suministro",
+      "what_is_missing": "SBOM, escaneo de dependencias/imágenes, criterio de vulnerabilidades críticas y proceso de actualización.",
+      "why_it_matters": "Un componente vulnerable puede comprometer confidencialidad, integridad o disponibilidad y hacer inválida la evidencia de seguridad.",
+      "how_to_obtain": "Ejecutar el escaneo aprobado, corregir críticas/altas según riesgo y archivar el informe de la versión liberada.",
+      "evidence_to_store": "SBOM, informe de escaneo, excepciones firmadas y fecha de revisión"
+    },
+    {
+      "id": "LEGAL-014",
+      "priority": "P1",
+      "status": "CONDITIONAL",
+      "area": "ICA e integraciones oficiales",
+      "what_is_missing": "Autorización expresa si se presenta como interoperable con ICA, SINIGAN u otro sistema oficial, o declaración visible de que no existe integración oficial.",
+      "why_it_matters": "Una herramienta pedagógica no debe aparentar ser una plataforma oficial ni usar datos/servicios institucionales sin permiso.",
+      "how_to_obtain": "Solicitar autorización de integración o retirar referencias, logos y afirmaciones oficiales; mantener una declaración de alcance.",
+      "evidence_to_store": "Acta/contrato de integración o declaración de no integración"
+    },
+    {
+      "id": "LEGAL-015",
+      "priority": "P1",
+      "status": "CONDITIONAL",
+      "area": "poblaciones y datos de mayor riesgo",
+      "what_is_missing": "Decisión sobre menores, geolocalización precisa, imágenes, biometría, datos de salud humana, decisiones automatizadas y publicación de evidencias.",
+      "why_it_matters": "Cada funcionalidad puede activar controles reforzados de necesidad, autorización, interés superior, acceso y evaluación de impacto.",
+      "how_to_obtain": "Marcar cada perfil en el manifiesto; deshabilitar lo no aprobado y completar el análisis de impacto antes de habilitarlo.",
+      "evidence_to_store": "Matriz de perfiles, análisis de impacto y autorización específica"
+    },
+    {
+      "id": "LEGAL-016",
+      "priority": "P1",
+      "status": "BLOCKED",
+      "area": "dominio y alojamiento",
+      "what_is_missing": "Dominio autorizado, proveedor, región del VPS, certificado TLS, contacto de soporte, aprobación de Coolify/VPS y esquema de salida.",
+      "why_it_matters": "La aprobación pedagógica no identifica dónde se almacenarán datos ni quién tendrá acceso operativo.",
+      "how_to_obtain": "Completar la ficha técnica de hosting con SENA, contratar/configurar el proveedor y anexar la aprobación de seguridad/infraestructura.",
+      "evidence_to_store": "Ficha de hosting, contrato, configuración Coolify redactada, certificado y acta de aprobación"
+    }
+  ],
+  "resume_order": [
+    "1. Completar LEGAL-001 y LEGAL-002 con documentos oficiales, sin inventar valores.",
+    "2. Obtener el alcance de producción de LEGAL-003 y formalizar LEGAL-004.",
+    "3. Aprobar política, inventario, retención, proveedores y derechos: LEGAL-005 a LEGAL-008.",
+    "4. Cerrar seguridad privilegiada, continuidad, incidentes y cadena de suministro: LEGAL-009 a LEGAL-013.",
+    "5. Resolver perfiles condicionales y hosting: LEGAL-014 a LEGAL-016.",
+    "6. Actualizar COMPLIANCE_MANIFEST.json únicamente con evidencias reales; nunca cambiar status por intención.",
+    "7. Ejecutar npm run legal:audit, corregir hallazgos y luego npm run legal:release.",
+    "8. Cambiar variables de Coolify a modo contratado/producción únicamente después del acta de liberación."
+  ],
+  "ai_resume_contract": {
+    "first_file_to_read": "docs/legal/LEGAL_IMPLEMENTATION_STATE.json",
+    "then_read": [
+      "docs/legal/COMPLIANCE_MANIFEST.json",
+      "docs/legal/08_MATRIZ_CUMPLIMIENTO_SENA.md",
+      "docs/legal/13_GUIA_CICLO_VIDA_LEGAL_DEVBRAIN.md"
+    ],
+    "never_do": [
+      "No inventar NIT, actas, contratos, responsables, correos, hashes ni autorizaciones.",
+      "No cambiar status a approved mientras exista cualquier blocker o falte firma humana.",
+      "No activar captación real ni PUBLIC_USER_CREATION_ENABLED=true por conveniencia técnica.",
+      "No tratar la licencia MIT como autorización de datos, marca SENA, infraestructura o integraciones oficiales.",
+      "No guardar el acta original con datos personales innecesarios en un repositorio público."
+    ],
+    "required_output_each_resume": [
+      "hallazgos nuevos",
+      "evidencia comprobada",
+      "bloqueadores que permanecen",
+      "archivos modificados",
+      "comandos ejecutados y resultado",
+      "decisiones humanas pendientes"
+    ]
+  },
+  "verification_commands": [
+    "npm run legal:audit",
+    "npm run legal:release",
+    "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Register-SenaApprovalEvidence.ps1 -ApprovalFile docs/legal/evidence/sena-approval/ACTA_APROBACION_SENA_REDACTADA.pdf",
+    "git diff --check"
+  ],
+  "approval_evidence_canonical_location": "docs/legal/evidence/sena-approval/ACTA_APROBACION_SENA_REDACTADA.pdf"
+}

@@ -11,6 +11,7 @@ import type { HerdKpis as HerdKpisData } from '@/entities/reproduction/model/her
 import KpiMetricCard from '@/widgets/reproduction/herd-kpis/KpiMetricCard';
 import ReproductiveInventoryPanel from '@/widgets/reproduction/herd-kpis/ReproductiveInventoryPanel';
 import AttentionLists from '@/widgets/reproduction/herd-kpis/AttentionLists';
+import { AnimalDetailModal } from '@/widgets/dashboard/animals/AnimalDetailModal';
 
 /**
  * Panel de indicadores reproductivos del ganado.
@@ -33,6 +34,7 @@ export default function HerdKpisPage({ isEmbedded = false }: HerdKpisProps) {
   const [data, setData] = useState<HerdKpisData | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
+  const [selectedAnimalId, setSelectedAnimalId] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -260,10 +262,20 @@ export default function HerdKpisPage({ isEmbedded = false }: HerdKpisProps) {
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
           Listas de atención
         </h2>
-        <AttentionLists risk={data.risk} />
+        <AttentionLists risk={data.risk} onAnimalClick={setSelectedAnimalId} />
       </section>
 
       <ProjectionCard projection={projection} />
+
+      {selectedAnimalId ? (
+        <AnimalDetailModal
+          isOpen={Boolean(selectedAnimalId)}
+          onOpenChange={(open) => {
+            if (!open) setSelectedAnimalId(null);
+          }}
+          animalId={selectedAnimalId}
+        />
+      ) : null}
     </div>
   );
 }

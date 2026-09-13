@@ -55,7 +55,7 @@ class ReproductionKpis(Resource):
         params={"months": "Período de análisis en meses (default: 12, máximo: 60)"},
     )
     def get(self):
-        """Panel de indicadores reproductivos del hato con metas y semáforo.
+        """Panel de indicadores reproductivos del ganado con metas y semáforo.
 
         Devuelve inventario reproductivo, eficiencia (intervalo entre partos,
         días abiertos, servicios por concepción, detección de celo y tasa de
@@ -66,7 +66,7 @@ class ReproductionKpis(Resource):
             return APIResponse.error("Finca no resuelta para el usuario", status_code=400)
         return APIResponse.success(
             data=build_herd_kpis(finca_id, _months(12)),
-            message="Indicadores reproductivos del hato",
+            message="Indicadores reproductivos del ganado",
         )
 
 

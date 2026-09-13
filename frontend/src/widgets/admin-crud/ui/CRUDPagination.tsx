@@ -124,18 +124,18 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
     <div className={cn(
       "pointer-events-auto w-fit max-w-full transition-all duration-300 ease-out",
       floating
-        ? "opacity-90 hover:opacity-100 focus-within:opacity-100 shadow-xl hover:shadow-2xl"
+        ? "opacity-95 hover:opacity-100 focus-within:opacity-100 shadow-lg hover:shadow-xl"
         : "scale-100 opacity-100 shadow-sm",
-      "bg-slate-900/90 dark:bg-slate-900/95 text-white backdrop-blur-xl border border-white/15 dark:border-white/10 hover:border-white/25 rounded-full px-1.5 sm:px-2.5 py-0.5"
+      "bg-background/95 dark:bg-slate-900/95 text-foreground backdrop-blur-xl border border-border/50 hover:border-border/80 rounded-full px-1.5 sm:px-2.5 py-0.5"
     )}>
       <div className="px-1 py-0.5 sm:px-2 sm:py-0.5">
         <div className="flex justify-between items-center text-[11px] sm:text-xs gap-1.5 sm:gap-2.5">
           {/* Información de paginación con badge compacto */}
           <div className="font-medium flex items-center shrink-0">
-            <span className="whitespace-nowrap px-2 py-0.5 rounded-full bg-primary/20 text-white font-bold text-[11px] sm:text-xs border border-primary/30">
+            <span className="whitespace-nowrap px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-[11px] sm:text-xs border border-primary/25">
               Pág. {currentPage} / {Math.max(totalPages, 1)}
             </span>
-            <span className="ml-1.5 hidden md:inline text-[11px] sm:text-[11px] text-white/70 font-medium">
+            <span className="ml-1.5 hidden md:inline text-[11px] sm:text-[11px] text-muted-foreground font-medium">
               ({totalItems} {totalItems === 1 ? 'reg.' : 'registros'})
             </span>
           </div>
@@ -150,7 +150,7 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
               disabled={loading || currentPage <= 1}
               aria-label={t('common.first', 'Primera')}
               title={t('common.first', 'Primera')}
-              className="hidden sm:inline-flex items-center justify-center h-7 w-7 p-0 text-xs font-medium text-white/80 hover:bg-white/15 hover:text-white rounded-full transition-colors disabled:opacity-30"
+              className="hidden sm:inline-flex items-center justify-center h-7 w-7 p-0 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground rounded-full transition-colors disabled:opacity-30"
             >
               <ChevronsLeft className="h-3.5 w-3.5" aria-hidden />
             </Button>
@@ -163,7 +163,7 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
               disabled={loading || currentPage <= 1}
               aria-label={t('common.previous', 'Anterior')}
               title={`${t('common.previous', 'Anterior')} (Alt+←)`}
-              className="inline-flex items-center justify-center h-8 w-8 sm:h-7 sm:w-7 p-0 text-xs font-medium text-white/80 hover:bg-white/15 hover:text-white rounded-full transition-colors disabled:opacity-30"
+              className="inline-flex items-center justify-center h-8 w-8 sm:h-7 sm:w-7 p-0 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground rounded-full transition-colors disabled:opacity-30"
             >
               <ChevronLeft className="h-4 w-4 sm:h-3.5 sm:w-3.5" aria-hidden />
             </Button>
@@ -173,7 +173,7 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
               {visiblePages.map((page, index) => (
                 <React.Fragment key={index}>
                   {page === '...' ? (
-                    <span className="px-1 text-white/50 text-[11px]">...</span>
+                    <span className="px-1 text-muted-foreground/60 text-[11px]">...</span>
                   ) : (
                     <Button
                       variant={currentPage === page ? "primary" : "ghost"}
@@ -184,7 +184,7 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
                         "h-7 w-7 p-0 text-[11px] font-bold rounded-full transition-all",
                         currentPage === page
                           ? "bg-primary text-white shadow-sm scale-105"
-                          : "text-white/80 hover:bg-white/15 hover:text-white"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
                       )}
                     >
                       {page}
@@ -196,7 +196,7 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
 
             {/* Paginación simplificada para móviles. `whitespace-nowrap`: a 320 px
                 el flex comprimía la caja y "1 / 1" se partía en tres renglones. */}
-            <div className="sm:hidden whitespace-nowrap text-xs text-white/90 font-bold px-2 py-1">
+            <div className="sm:hidden whitespace-nowrap text-xs text-foreground font-bold px-2 py-1">
               {currentPage} / {totalPages}
             </div>
 
@@ -208,7 +208,7 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
               disabled={loading || currentPage >= totalPages}
               aria-label={t('common.next', 'Siguiente')}
               title={`${t('common.next', 'Siguiente')} (Alt+→)`}
-              className="inline-flex items-center justify-center h-8 w-8 sm:h-7 sm:w-7 p-0 text-xs font-medium text-white/80 hover:bg-white/15 hover:text-white rounded-full transition-colors disabled:opacity-30"
+              className="inline-flex items-center justify-center h-8 w-8 sm:h-7 sm:w-7 p-0 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground rounded-full transition-colors disabled:opacity-30"
             >
               <ChevronRight className="h-4 w-4 sm:h-3.5 sm:w-3.5" aria-hidden />
             </Button>
@@ -221,7 +221,7 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
               disabled={loading || currentPage >= totalPages}
               aria-label={t('common.last', 'Última')}
               title={t('common.last', 'Última')}
-              className="hidden sm:inline-flex items-center justify-center h-7 w-7 p-0 text-xs font-medium text-white/80 hover:bg-white/15 hover:text-white rounded-full transition-colors disabled:opacity-30"
+              className="hidden sm:inline-flex items-center justify-center h-7 w-7 p-0 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground rounded-full transition-colors disabled:opacity-30"
             >
               <ChevronsRight className="h-3.5 w-3.5" aria-hidden />
             </Button>
@@ -229,17 +229,17 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
             {/* Selector de registros por página */}
             {pageSizeOptions && pageSizeOptions.length > 0 && onPageSizeChange && (
               <>
-                <span className="mx-1 hidden h-3.5 w-px bg-white/20 sm:block" aria-hidden />
+                <span className="mx-1 hidden h-3.5 w-px bg-border sm:block" aria-hidden />
                 <select
                   value={pageSize}
                   onChange={(e) => onPageSizeChange(Number(e.target.value))}
                   disabled={loading}
                   aria-label="Registros por página"
                   title="Registros por página"
-                  className="hidden sm:block h-6 sm:h-7 rounded-full border border-white/20 bg-slate-800/90 px-2 text-[11px] sm:text-[11px] font-bold text-white outline-none transition-colors hover:bg-slate-700/90 focus-visible:ring-2 focus-visible:ring-primary/60 disabled:opacity-30"
+                  className="hidden sm:block h-6 sm:h-7 rounded-full border border-border/50 bg-background/80 px-2 text-[11px] sm:text-[11px] font-bold text-foreground outline-none transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-primary/60 disabled:opacity-30"
                 >
                   {pageSizeOptions.map((size) => (
-                    <option key={size} value={size} className="bg-slate-900 text-white">
+                    <option key={size} value={size} className="bg-background text-foreground">
                       {size >= 1000 ? `${size} (Ver todos)` : `${size} / pág.`}
                     </option>
                   ))}
@@ -259,14 +259,17 @@ export const CRUDPagination = memo<CRUDPaginationProps>(({
   return (
     <div
       className={cn(
-        'pointer-events-none fixed z-[100] flex -translate-x-1/2 justify-center px-2',
-        hasSelection ? 'bottom-16 sm:bottom-[4.5rem]' : 'bottom-7 sm:bottom-8',
+        // En móvil la barra queda dentro del flujo y no tapa tarjetas durante
+        // el desplazamiento. En escritorio conserva su posición flotante.
+        'relative z-20 flex w-full shrink-0 justify-center py-1.5 sm:pointer-events-none sm:fixed sm:z-[100] sm:w-auto sm:-translate-x-1/2 sm:px-2 sm:py-0',
+        hasSelection ? 'sm:bottom-[4.5rem]' : 'sm:bottom-8',
+        'sm:left-[var(--crud-pagination-left)] sm:max-w-[var(--crud-pagination-max-width)]',
       )}
       style={{
-        left: 'calc(50% + var(--app-content-left, 0px) / 2)',
-        maxWidth: 'calc(100vw - var(--app-content-left, 0px) - 1rem)',
+        '--crud-pagination-left': 'calc(50% + var(--app-content-left, 0px) / 2)',
+        '--crud-pagination-max-width': 'calc(100vw - var(--app-content-left, 0px) - 1rem)',
         opacity: 'var(--app-floating-opacity, 1)',
-      }}
+      } as React.CSSProperties}
     >
       {/* El envoltorio no intercepta el mouse (las filas de debajo siguen siendo
           clicables); solo la píldora lo hace, y se apaga con el cajón abierto. */}

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { HeartPulse, ShieldCheck, Stethoscope, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import type { CampesinoKpiGauge } from '../hooks/useCampesinoEstadisticas';
 
-interface TermometroHatoGaugeProps {
+interface TermometroGanadoGaugeProps {
   gauge: CampesinoKpiGauge;
   vacCoverage?: number;
   controlComp?: number;
@@ -11,7 +11,7 @@ interface TermometroHatoGaugeProps {
   sickAnimals?: number;
 }
 
-export const TermometroHatoGauge: React.FC<TermometroHatoGaugeProps> = ({
+export const TermometroGanadoGauge: React.FC<TermometroGanadoGaugeProps> = ({
   gauge,
   vacCoverage = 100,
   controlComp = 100,

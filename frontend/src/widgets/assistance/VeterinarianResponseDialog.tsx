@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, MessageSquareText, Send, Stethoscope, User } from 'lucide-react';
+import { CheckCircle2, MessageSquareText, Send, ShieldCheck, Stethoscope, User } from 'lucide-react';
 import type { TechnicalAssistanceRequest } from '@/entities/campesino';
 import { Button } from '@/shared/ui/button';
-import { Dialog, DialogContent } from '@/shared/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/shared/ui/dialog';
 import { Badge } from '@/shared/ui/badge';
 import { getCategoryConfig, PRIORITY_CONFIG } from './assistance.constants';
+import { openFloatingChat } from '@/features/chat/model/floatingChat';
 
 interface Props {
   item: TechnicalAssistanceRequest | null;
@@ -73,8 +74,24 @@ export function VeterinarianResponseDialog({ item, open, onOpenChange, onSubmit 
   };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="max-h-[92vh] overflow-y-auto p-0 sm:max-w-xl">
+      <DialogTitle className="sr-only">Respuesta veterinaria para {item.title}</DialogTitle>
+      <DialogDescription className="sr-only">Responda la solicitud y mantenga una conversación segura con el solicitante.</DialogDescription>
       <div className="fit-container min-w-0 space-y-5 p-4 sm:p-6">
         <CaseHeader item={item} /><ResponseEditor notes={notes} setNotes={setNotes} /><ResolutionChoice resolved={resolved} setResolved={setResolved} />
+        {item.requester?.id && (
+          <section className="rounded-xl border border-primary/15 bg-primary/5 p-4">
+            <div className="flex items-start gap-3">
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden />
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-black text-foreground">Comunicación segura con el solicitante</h3>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Continúe la conversación dentro de Villa Luz. El chat solo permite comunicarse con personas activas de la misma finca.</p>
+                <Button type="button" size="sm" variant="secondary" className="mt-3 rounded-xl" onClick={() => openFloatingChat({ id: item.requester!.id, fullname: item.requester!.fullname, role: 'Campesino' })}>
+                  <MessageSquareText className="mr-2 h-4 w-4" aria-hidden /> Abrir conversación segura
+                </Button>
+              </div>
+            </div>
+          </section>
+        )}
         <Button className="w-full" size="lg" disabled={notes.trim().length < 10} loading={saving} onClick={submit}><Send className="mr-2 h-4 w-4" aria-hidden /> Enviar respuesta y notificar</Button>
       </div>
     </DialogContent></Dialog>

@@ -145,6 +145,14 @@ def seed_default_configs_for_finca(finca_id: int, replace: bool = False) -> dict
 
     result = {"created": 0, "skipped": 0, "deleted": 0}
 
+    if not replace:
+        existing_count = AnimalAlertConfig.query.filter_by(
+            finca_id=finca_id, animal_id=None, is_default=True
+        ).count()
+        if existing_count >= len(DEFAULT_GLOBAL_CONFIGS):
+            result["skipped"] = existing_count
+            return result
+
     if replace:
         deleted = AnimalAlertConfig.query.filter_by(
             finca_id=finca_id, animal_id=None, is_default=True

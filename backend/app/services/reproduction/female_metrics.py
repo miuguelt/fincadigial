@@ -1,7 +1,7 @@
 """Indicadores reproductivos por hembra.
 
 Cada hembra aporta series cortas (intervalos entre partos, días abiertos,
-servicios por concepción) que después se agregan a nivel de hato. Separar el
+servicios por concepción) que después se agregan a nivel de ganado. Separar el
 cálculo individual del agregado permite reutilizarlo en la ficha del animal.
 """
 

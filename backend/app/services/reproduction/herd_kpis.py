@@ -1,4 +1,4 @@
-"""Panel de indicadores reproductivos del hato.
+"""Panel de indicadores reproductivos del ganado.
 
 Agrega las series individuales en los indicadores que una finca usa para
 decidir: intervalo entre partos, días abiertos, servicios por concepción,
@@ -141,7 +141,7 @@ def _efficiency(metrics: dict, outcomes: dict, period_start: date) -> dict:
 
 
 def _inventory(females: dict[int, Animals], metrics: dict) -> dict:
-    """Composición reproductiva del hato en el momento de la consulta."""
+    """Composición reproductiva del ganado en el momento de la consulta."""
     counters = {
         "total_females": len(females),
         "pregnant": 0,

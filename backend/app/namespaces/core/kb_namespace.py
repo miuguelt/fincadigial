@@ -93,9 +93,9 @@ class KBTest(Resource):
         return {"status": "ok"}
 
 
-@kb_ns.route("/calendario/hato")
-class CalendarioHato(Resource):
-    @kb_ns.doc("get_hato_calendar")
+@kb_ns.route("/calendario/ganado")
+class CalendarioGanado(Resource):
+    @kb_ns.doc("get_ganado_calendar")
     def get(self):
         """Resumen del calendario sanitario para todo el ganado (próximos 30 días)."""
         try:

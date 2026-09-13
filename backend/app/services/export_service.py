@@ -291,6 +291,7 @@ class ExportService:
     def export_animal_health_pdf(animal_id):
         from app.models.treatments import Treatments
         from app.models.animalDiseases import AnimalDiseases
+        from app.models.animalDiseaseProgress import AnimalDiseaseProgress
         from app.models.control import Control
 
         animal = Animals.get_by_id(animal_id)
@@ -317,9 +318,25 @@ class ExportService:
             .order_by(AnimalDiseases.diagnosis_date.desc())
             .all()
         )
+        progress = (
+            AnimalDiseaseProgress.query.join(
+                AnimalDiseases,
+                AnimalDiseases.id == AnimalDiseaseProgress.animal_disease_id,
+            )
+            .filter(
+                AnimalDiseases.animal_id == animal_id,
+                AnimalDiseaseProgress.is_deleted == False,  # noqa: E712
+            )
+            .order_by(
+                AnimalDiseaseProgress.progress_date.desc(),
+                AnimalDiseaseProgress.id.desc(),
+            )
+            .limit(40)
+            .all()
+        )
 
         pdf_bytes = _build_health_pdf(
-            animal, controls, vaccinations, treatments, diseases
+            animal, controls, vaccinations, treatments, diseases, progress
         )
         fname = f"historial_{animal.record}_{date.today().isoformat()}.pdf"
         return io.BytesIO(pdf_bytes), fname

@@ -4,7 +4,7 @@ import { useToast } from '@/app/providers/ToastContext';
 
 export interface NotificationItem {
   id: number;
-  type: 'JOIN_REQUEST' | 'INVITATION_RECEIVED' | 'INVITATION_ACCEPTED' | 'INVITATION_REJECTED' | 'JOIN_APPROVED';
+  type: 'JOIN_REQUEST' | 'INVITATION_RECEIVED' | 'INVITATION_ACCEPTED' | 'INVITATION_REJECTED' | 'JOIN_APPROVED' | 'ANIMAL_TRANSFER_REQUEST';
   finca_id: number;
   finca_name: string;
   sender_name?: string;

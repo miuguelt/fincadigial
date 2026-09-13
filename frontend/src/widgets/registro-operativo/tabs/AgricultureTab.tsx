@@ -1,11 +1,14 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { RefreshCw, Search, X } from 'lucide-react';
-import { Button } from '@/shared/ui/button';
+import { Search, X } from 'lucide-react';
+import { Input } from '@/shared/ui/input';
 import { CropActivity } from '@/entities/campesino';
-import { getTodayColombia, formatCurrencyColombia } from '@/shared/utils/dateUtils';
+import { formatCurrencyColombia } from '@/shared/utils/dateUtils';
+import { formatGroupDate } from './dateGrouping';
 import { ACTIVITY_TYPES, getActivityCfg } from '../constants';
-import { RECORD_CHIP_CLASS } from '../record-kinds';
+import { RECORD_CHIP_CLASS, RECORD_TILE_CLASS } from '../record-kinds';
+import { FilterChips, type FilterChipItem } from '../components/FilterChips';
+import { ListEmpty, ListError, ListSkeleton } from '../components/ListStates';
 
 function groupByDate(activities: any[]): Record<string, any[]> {
   const groups: Record<string, any[]> = {};
@@ -15,23 +18,6 @@ function groupByDate(activities: any[]): Record<string, any[]> {
     groups[key].push(a);
   });
   return groups;
-}
-
-function yesterdayColombia(): string {
-  const [y, m, d] = getTodayColombia().split('-').map(Number);
-  const ref = new Date(Date.UTC(y, m - 1, d));
-  ref.setUTCDate(ref.getUTCDate() - 1);
-  return ref.toISOString().split('T')[0];
-}
-
-function formatGroupDate(dateStr: string): string {
-  if (dateStr === 'sin-fecha') return 'Sin fecha';
-  if (dateStr === getTodayColombia()) return '📅 Hoy';
-  if (dateStr === yesterdayColombia()) return '🕐 Ayer';
-  try {
-    const d = new Date(dateStr + 'T12:00:00');
-    return '📆 ' + d.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
-  } catch { return dateStr; }
 }
 
 interface AgricultureTabProps {
@@ -58,68 +44,67 @@ export function AgricultureTab({ activities, loading, errored = false, onQuickAc
   const dateKeys = useMemo(() => Object.keys(grouped).sort((a, b) => b.localeCompare(a)), [grouped]);
   const isFiltering = Boolean(search) || filterType !== 'all';
 
+  const filterItems: FilterChipItem[] = useMemo(() => [
+    { key: 'all', label: '📋 Todas' },
+    ...ACTIVITY_TYPES.map(t => ({ key: t.value, label: `${t.emoji} ${t.label}` })),
+  ], []);
+
   return (
     <div className="space-y-5">
       <div className="space-y-2">
         <p className="vl-section-title">¿Qué hizo hoy?</p>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {ACTIVITY_TYPES.map(type => (
-            <motion.button key={type.value} whileTap={{ scale: 0.94 }} type="button" onClick={() => onQuickAction(type.value)}
-              onKeyDown={event => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  onQuickAction(type.value);
-                }
-              }}
-              className={`flex flex-col items-center justify-center gap-1.5 p-3 min-h-20 rounded-lg border ${type.border} ${type.color} transition-all hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2`}>
-              <span className="text-2xl" aria-hidden="true">{type.emoji}</span>
-              <span className="text-[11px] font-semibold leading-tight text-center" style={{ overflowWrap: 'break-word' }}>{type.label}</span>
+            <motion.button
+              key={type.value}
+              whileTap={{ scale: 0.97 }}
+              type="button"
+              onClick={() => onQuickAction(type.value)}
+              className={`${RECORD_TILE_CLASS} min-h-[4.5rem] hover:shadow-md`}
+            >
+              <span className={`${RECORD_CHIP_CLASS} ${type.color}`} aria-hidden="true">{type.emoji}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-bold text-foreground" style={{ overflowWrap: 'break-word' }}>{type.label}</span>
+                <span className="mt-0.5 block text-xs text-muted-foreground" style={{ overflowWrap: 'break-word' }}>{type.hint}</span>
+              </span>
             </motion.button>
           ))}
         </div>
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
-        <input type="search" placeholder="Buscar por descripción o insumo..." value={search} onChange={e => setSearch(e.target.value)}
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" aria-hidden="true" />
+        <Input
+          type="search"
+          placeholder="Buscar por descripción o insumo..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
           aria-label="Buscar labores registradas"
-          className="w-full min-h-11 pl-9 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" />
+          className="pl-9 h-11"
+        />
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-        <button type="button" onClick={() => setFilterType('all')} aria-pressed={filterType === 'all'}
-          className={`min-h-10 px-3 rounded-lg text-xs font-semibold whitespace-nowrap border transition-colors ${filterType === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-muted-foreground border-border hover:border-primary hover:text-primary'}`}>
-          📋 Todas
-        </button>
-        {ACTIVITY_TYPES.map(t => (
-          <button key={t.value} type="button" onClick={() => setFilterType(t.value)} aria-pressed={filterType === t.value}
-            className={`min-h-10 px-3 rounded-lg text-xs font-semibold whitespace-nowrap border transition-colors ${filterType === t.value ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-muted-foreground border-border hover:border-primary hover:text-primary'}`}>
-            {t.emoji} {t.label}
-          </button>
-        ))}
-      </div>
+      <FilterChips
+        ariaLabel="Filtrar labores por tipo"
+        items={filterItems}
+        active={filterType}
+        onChange={setFilterType}
+      />
 
       {loading ? (
-        <div className="space-y-3">{[1, 2, 3].map(i => <div key={i} className="h-16 rounded-lg bg-muted animate-pulse" />)}</div>
+        <ListSkeleton />
       ) : errored ? (
-        <div className="text-center py-16 space-y-3">
-          <span className="text-5xl" aria-hidden="true">⚠️</span>
-          <p className="text-muted-foreground font-medium">No se pudieron cargar las labores</p>
-          <p className="text-sm text-muted-foreground">Revise la conexión e intente de nuevo.</p>
-          <Button type="button" variant="outline" onClick={onRetry} className="mx-auto mt-1 gap-2">
-            <RefreshCw className="w-4 h-4" aria-hidden="true" /> Reintentar
-          </Button>
-        </div>
+        <ListError
+          title="No se pudieron cargar las labores"
+          hint="Revise la conexión e intente de nuevo."
+          onRetry={onRetry}
+        />
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 space-y-3">
-          <span className="text-5xl" aria-hidden="true">📋</span>
-          <p className="text-muted-foreground font-medium">
-            {isFiltering ? 'Ninguna labor coincide con el filtro' : 'Todavía no hay labores registradas'}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {isFiltering ? 'Pruebe con otra búsqueda o quite el filtro.' : 'Toque uno de los botones de arriba para registrar la primera.'}
-          </p>
-        </div>
+        <ListEmpty
+          emoji="📋"
+          title={isFiltering ? 'Ninguna labor coincide con el filtro' : 'Todavía no hay labores registradas'}
+          hint={isFiltering ? 'Pruebe con otra búsqueda o quite el filtro.' : 'Toque uno de los botones de arriba para registrar la primera.'}
+        />
       ) : (
         <div className="space-y-6">
           <p className="text-xs text-muted-foreground">
@@ -131,7 +116,7 @@ export function AgricultureTab({ activities, loading, errored = false, onQuickAc
             <div key={dateKey}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="h-px flex-1 bg-border" />
-                <span className="text-xs font-bold text-muted-foreground capitalize whitespace-nowrap">{formatGroupDate(dateKey)}</span>
+                <span className="text-xs font-bold text-muted-foreground whitespace-nowrap">{formatGroupDate(dateKey)}</span>
                 <div className="h-px flex-1 bg-border" />
               </div>
               <div className="space-y-3">

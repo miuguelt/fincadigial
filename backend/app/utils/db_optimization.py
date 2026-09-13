@@ -51,6 +51,8 @@ class DatabaseOptimizer:
         pool_config.setdefault("pool_timeout", 30)
         pool_config.setdefault("pool_recycle", 1800)
         pool_config.setdefault("pool_pre_ping", True)
+        pool_config.setdefault("pool_use_lifo", True)
+        pool_config.setdefault("pool_reset_on_return", "rollback")
         app.config.update({"SQLALCHEMY_ENGINE_OPTIONS": pool_config})
         logger.info(
             "Connection pooling configurado: pool_size=%s, max_overflow=%s",

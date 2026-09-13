@@ -83,6 +83,63 @@ class BodyConditionScore(BaseModel):
         )
 
     @classmethod
+    def create(cls, commit=True, **kwargs):
+        """Crea el BCS y lo espeja en la bitácora unificada."""
+        instance = super().create(commit=False, **kwargs)
+        instance._mirror_to_health_history()
+        if commit:
+            db.session.commit()
+            db.session.refresh(instance)
+        return instance
+
+    def update(self, commit=True, **kwargs):
+        """Actualiza el BCS y su espejo en la bitácora."""
+        result = super().update(commit=False, **kwargs)
+        self._mirror_to_health_history()
+        if commit:
+            db.session.commit()
+            db.session.refresh(self)
+        return result
+
+    def delete(self, commit=True, hard_delete=False):
+        """Retira el espejo de la bitácora."""
+        self._remove_health_history_mirror()
+        return super().delete(commit=commit, hard_delete=hard_delete)
+
+    def restore(self, commit=True):
+        """Recrea el espejo de la bitácora."""
+        result = super().restore(commit=commit)
+        self._mirror_to_health_history()
+        if commit:
+            db.session.commit()
+        return result
+
+    def _mirror_to_health_history(self):
+        """Espeja la evaluación de condición corporal en la bitácora unificada."""
+        from app.models.animal_health_history import HealthEventType
+        from app.services.health_history_timeline import upsert_event
+
+        detail = f"Condición corporal: {self.score} ({self.category})"
+
+        upsert_event(
+            event_type=HealthEventType.Nutrition,
+            reference_kind="body_condition_score",
+            reference_id=self.id,
+            animal_id=self.animal_id,
+            finca_id=self.finca_id,
+            event_date=self.score_date,
+            description=detail,
+            performed_by=self.evaluator_id,
+        )
+
+    def _remove_health_history_mirror(self):
+        """Retira el espejo de la bitácora."""
+        from app.models.animal_health_history import HealthEventType
+        from app.services.health_history_timeline import drop_event
+
+        drop_event(HealthEventType.Nutrition, "body_condition_score", self.id)
+
+    @classmethod
     def get_trend(cls, animal_id, days=90):
         """Obtiene la tendencia de BCS en los últimos N días."""
         from datetime import timedelta

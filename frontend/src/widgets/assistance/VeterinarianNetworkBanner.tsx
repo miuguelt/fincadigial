@@ -1,9 +1,12 @@
-import { BadgeCheck, BellRing, ShieldAlert, Users } from 'lucide-react';
+import { AlertTriangle, BadgeCheck, BellRing, ShieldAlert, Users } from 'lucide-react';
+import { Button } from '@/shared/ui/button';
 import type { AssistanceNetwork, AssistanceVeterinarian } from '@/entities/campesino';
 
 interface Props {
   network: AssistanceNetwork | null;
   loading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
 const initials = (name: string) => name.split(/\s+/).filter(Boolean).slice(0, 2)
@@ -50,8 +53,24 @@ function EmptyNetwork() {
   );
 }
 
-export function VeterinarianNetworkBanner({ network, loading = false }: Props) {
+export function VeterinarianNetworkBanner({ network, loading = false, error = null, onRetry }: Props) {
   if (loading) return <div className="h-28 animate-pulse rounded-2xl border border-border/40 bg-muted/40" />;
+  if (error) {
+    return (
+      <section role="alert" className="rounded-2xl border border-amber-300/70 bg-amber-50 p-4 text-amber-950 dark:border-amber-800/60 dark:bg-amber-950/25 dark:text-amber-100">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex min-w-0 items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
+            <div className="min-w-0">
+              <h2 className="text-sm font-black">No pudimos consultar la red veterinaria</h2>
+              <p className="mt-1 text-xs leading-relaxed opacity-85">{error}</p>
+            </div>
+          </div>
+          {onRetry && <Button type="button" size="sm" variant="outline" onClick={onRetry} className="min-h-11 rounded-xl border-amber-400/70 bg-transparent text-amber-950 hover:bg-amber-100 dark:text-amber-100 dark:hover:bg-amber-900/30">Reintentar</Button>}
+        </div>
+      </section>
+    );
+  }
   if (!network?.total) return <EmptyNetwork />;
   return (
     <section className="fit-container rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50 to-background p-4 shadow-sm dark:border-emerald-900/70 dark:from-emerald-950/30">
@@ -60,7 +79,9 @@ export function VeterinarianNetworkBanner({ network, loading = false }: Props) {
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm"><BellRing className="h-5 w-5" aria-hidden /></span>
           <div className="min-w-0">
             <p className="text-[11px] font-black uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">Red veterinaria de tu finca</p>
-            <h2 className="mt-1 text-sm font-black text-foreground sm:text-base">{network.total} veterinario{network.total === 1 ? '' : 's'} recibirán tu solicitud</h2>
+            <h2 className="mt-1 text-sm font-black text-foreground sm:text-base">
+              {network.total === 1 ? '1 veterinario recibirá tu solicitud' : `${network.total} veterinarios recibirán tu solicitud`}
+            </h2>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Se envía un aviso dentro de Villa Luz y, si lo activaron, una notificación al dispositivo. El primero que tome el caso queda asignado.</p>
           </div>
         </div>

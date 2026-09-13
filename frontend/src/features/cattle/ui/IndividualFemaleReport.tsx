@@ -52,7 +52,7 @@ const IndividualFemaleReport: React.FC<FemaleReportProps> = ({
           <button
             onClick={() =>
               window.open(
-                `/api/analytics/reports_pro/animal-cv/${animal?.id || 0}`,
+                `/api/v1/analytics/reports_pro/animal-cv/${animal?.id || 0}`,
                 "_blank"
               )
             }

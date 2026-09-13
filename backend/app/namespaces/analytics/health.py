@@ -24,6 +24,48 @@ def _tf(query, model_class):
     return apply_tenant_filter(query, model_class)
 
 
+@health_analytics_ns.route("/weight-deltas")
+class WeightDeltas(Resource):
+    @health_analytics_ns.doc(
+        "get_weight_deltas",
+        description="Variación de peso entre los dos últimos controles de una "
+        "lista de animales (máximo 100). Ideal para detectar pérdidas de peso "
+        "en el listado del ganado.",
+        params={
+            "animal_ids": {
+                "description": "IDs de animales separados por coma",
+                "type": "string",
+                "required": True,
+            }
+        },
+    )
+    @jwt_required()
+    def get(self):
+        try:
+            ids_str = flask.request.args.get("animal_ids", "")
+            animal_ids = [
+                int(x) for x in ids_str.replace(";", ",").split(",") if x.strip()
+            ][:100]
+        except (TypeError, ValueError):
+            return APIResponse.validation_error(
+                {"animal_ids": "La lista de IDs debe contener solo números"}
+            )
+        if not animal_ids:
+            return APIResponse.validation_error(
+                {"animal_ids": "Se requiere al menos un animal_id"}
+            )
+
+        from app.services.analytics.medical.episode_analytics import (
+            build_weight_deltas,
+        )
+
+        results = build_weight_deltas(animal_ids)
+        return APIResponse.success(
+            data=results,
+            message="Variaciones de peso obtenidas exitosamente",
+        )
+
+
 @health_analytics_ns.route("/statistics")
 class HealthStatistics(Resource):
     @health_analytics_ns.doc(
@@ -190,6 +232,15 @@ class HealthStatistics(Resource):
                 else None
             )
 
+            # ---- Episodios de enfermedad (seguimiento sanidad) ----
+            from app.services.analytics.medical.episode_analytics import (
+                build_episode_stats,
+            )
+
+            disease_episodes = build_episode_stats(
+                animal_id=animal_id, months_back=months_back
+            )
+
             return APIResponse.success(
                 data={
                     "treatments_by_month": [
@@ -220,6 +271,7 @@ class HealthStatistics(Resource):
                     "medication_usage": [
                         {"medication": m, "usage_count": c} for m, c in medication_usage
                     ],
+                    "disease_episodes": disease_episodes,
                     "summary": {
                         "total_treatments": sum(c for _, _, c in treatments_by_month),
                         "total_vaccinations": sum(

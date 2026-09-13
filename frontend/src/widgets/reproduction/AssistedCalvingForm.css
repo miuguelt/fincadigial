@@ -1,0 +1,155 @@
+.assisted-calving {
+  container-name: assisted-calving;
+  container-type: inline-size;
+  inline-size: 100%;
+  min-width: 0;
+}
+
+.assisted-calving,
+.assisted-calving *,
+.assisted-calving *::before,
+.assisted-calving *::after {
+  box-sizing: border-box;
+}
+
+.assisted-calving :where(button, input, label, p, span, div, section) {
+  min-width: 0;
+}
+
+.assisted-calving button {
+  min-height: 42px;
+}
+
+.assisted-calving__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.assisted-calving__panel {
+  container-name: calving-panel;
+  container-type: inline-size;
+  min-width: 0;
+  padding: 1rem;
+}
+
+.assisted-calving__panel-header {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+.assisted-calving__panel-heading {
+  width: 100%;
+}
+
+.assisted-calving__header-badge {
+  align-self: flex-start;
+}
+
+.assisted-calving__birth-count,
+.assisted-calving__delivery-grid,
+.assisted-calving__outcome-grid,
+.assisted-calving__field-grid,
+.assisted-calving__weight-presets {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.assisted-calving__birth-count,
+.assisted-calving__weight-presets {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.assisted-calving__weight-presets {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.assisted-calving__actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+  align-items: center;
+  gap: 0.5rem;
+  margin-inline: -1rem;
+  margin-bottom: -1rem;
+  padding: 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  background: color-mix(in srgb, var(--card) 96%, transparent);
+  box-shadow: 0 -12px 24px -20px rgb(15 23 42 / 0.45);
+  backdrop-filter: blur(12px);
+}
+
+@container calving-panel (min-width: 26rem) {
+  .assisted-calving__panel-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .assisted-calving__panel-heading {
+    width: auto;
+  }
+
+  .assisted-calving__header-badge {
+    align-self: auto;
+  }
+
+  .assisted-calving__birth-count {
+    width: auto;
+  }
+
+  .assisted-calving__outcome-grid,
+  .assisted-calving__delivery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container calving-panel (min-width: 32rem) {
+  .assisted-calving__field-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.875rem;
+  }
+}
+
+@container assisted-calving (min-width: 40rem) {
+  .assisted-calving__panel {
+    padding: 1.25rem;
+  }
+
+  .assisted-calving__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-inline: -1.25rem;
+    margin-bottom: -1.25rem;
+    padding-inline: 1.25rem;
+  }
+}
+
+@container assisted-calving (min-width: 64rem) {
+  .assisted-calving__layout {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .assisted-calving__actions {
+    margin-inline: -1.5rem;
+    margin-bottom: -1.5rem;
+    padding-inline: 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .assisted-calving *,
+  .assisted-calving *::before,
+  .assisted-calving *::after {
+    scroll-behavior: auto !important;
+  }
+}

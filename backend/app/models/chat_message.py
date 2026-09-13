@@ -24,6 +24,8 @@ class ChatMessage(db.Model):
     )
 
     def to_dict(self):
+        from app.utils.file_storage import refresh_public_file_url
+
         return {
             "id": self.id,
             "finca_id": self.finca_id,
@@ -35,7 +37,7 @@ class ChatMessage(db.Model):
             # exigen alterar instalaciones existentes de PostgreSQL.
             "client_message_id": getattr(self, "client_message_id", None),
             "message": self.message,
-            "attachment_url": self.attachment_url,
+            "attachment_url": refresh_public_file_url(self.attachment_url),
             "attachment_type": self.attachment_type,
             "attachment_name": self.attachment_name,
             "is_read": self.is_read,

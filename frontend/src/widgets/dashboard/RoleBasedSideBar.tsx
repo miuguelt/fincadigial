@@ -32,6 +32,22 @@ const getRolePrefix = (r: string): string => {
   }
 };
 
+function toSidebarPath(path: string, rolePrefix: string): string {
+  return path.startsWith('/') ? path : `${rolePrefix}/${path}`;
+}
+
+function isSidebarItemActive(
+  item: { path?: string; activePaths?: string[] },
+  pathname: string,
+  rolePrefix: string,
+): boolean {
+  const paths = [item.path, ...(item.activePaths ?? [])].filter((path): path is string => Boolean(path));
+  return paths.some((path) => {
+    const candidate = toSidebarPath(path, rolePrefix).split('?')[0].replace(/\/$/, '') || '/';
+    return pathname === candidate || pathname.startsWith(`${candidate}/`);
+  });
+}
+
 interface SidebarProps {
   isSidebarOpen: boolean;
   setIsSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -147,11 +163,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
       let categoryHasActive = false;
 
       (category.children || []).forEach((child) => {
-        const childFullPath = child.path?.startsWith("/") ? child.path : `${rolePrefix}/${child.path}`;
-        const isChildActive = child.path && (
-          path === childFullPath ||
-          path.startsWith(`${childFullPath}/`)
-        );
+        const isChildActive = isSidebarItemActive(child, path, rolePrefix);
 
         if (isChildActive) {
           categoryHasActive = true;
@@ -160,11 +172,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
         if (child.children) {
           let submenuHasActive = false;
           child.children.forEach((subChild) => {
-            const subFullPath = subChild.path?.startsWith("/") ? subChild.path : `${rolePrefix}/${subChild.path}`;
-            const isSubActive = subChild.path && (
-              path === subFullPath ||
-              path.startsWith(`${subFullPath}/`)
-            );
+            const isSubActive = isSidebarItemActive(subChild, path, rolePrefix);
             if (isSubActive) {
               submenuHasActive = true;
               categoryHasActive = true;
@@ -316,10 +324,8 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
               const badge = getBadge(category);
 
               if (isLeaf) {
-                const fullPath = category.path!.startsWith("/") ? category.path! : `${rolePrefix}/${category.path}`;
-                const isActive =
-                  location.pathname === fullPath ||
-                  location.pathname.startsWith(`${fullPath}/`);
+                const fullPath = toSidebarPath(category.path!, rolePrefix);
+                const isActive = isSidebarItemActive(category, location.pathname, rolePrefix);
 
                 return (
                   <Link
@@ -333,6 +339,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                         : "text-foreground/80 border-transparent hover:bg-muted hover:text-primary"
                     )}
                     role="menuitem"
+                    aria-current={isActive ? "page" : undefined}
                   >
                     <span className={cn("flex items-center justify-center transition-transform group-hover:scale-110", isActive && "text-primary")}>
                       {category.icon}
@@ -448,8 +455,8 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                               {isSubmenuOpen && (
                                 <div className="mt-1 ml-4 pl-3.5 border-l border-border/40 space-y-1 animate-in slide-in-from-top-1 duration-150">
                                   {(child.children || []).map((subChild) => {
-                                    const subPath = subChild.path?.startsWith('/') ? subChild.path : `${rolePrefix}/${subChild.path}`;
-                                    const isSubActive = location.pathname === subPath || location.pathname.startsWith(`${subPath}/`);
+                                    const subPath = subChild.path ? toSidebarPath(subChild.path, rolePrefix) : '#';
+                                    const isSubActive = isSidebarItemActive(subChild, location.pathname, rolePrefix);
                                     const subChildBadge = getBadge(subChild);
 
                                     return (
@@ -457,6 +464,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                                         key={`${category.title}-${child.title}-${subChild.title}-${subChild.path}`}
                                         to={subPath}
                                         onClick={handleItemClick}
+                                        aria-current={isSubActive ? "page" : undefined}
                                         className={cn(
                                           "flex items-center py-2 px-3 rounded-lg transition-colors duration-200 group relative min-h-[44px]",
                                           isSubActive
@@ -482,8 +490,8 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                           );
                         }
 
-                        const fullPath = child.path?.startsWith('/') ? child.path : `${rolePrefix}/${child.path}`;
-                        const isActive = location.pathname === fullPath || location.pathname.startsWith(`${fullPath}/`);
+                        const fullPath = child.path ? toSidebarPath(child.path, rolePrefix) : '#';
+                        const isActive = isSidebarItemActive(child, location.pathname, rolePrefix);
 
                         return (
                           <Link
@@ -491,6 +499,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                             to={fullPath}
                             onClick={handleItemClick}
                             data-tour={`menu-item-${child.title}`}
+                            aria-current={isActive ? "page" : undefined}
                             className={cn(
                               "flex items-center py-2 px-3 rounded-lg transition-colors duration-200 group relative min-h-[44px]",
                               isActive
@@ -498,12 +507,19 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                                 : "text-muted-foreground hover:bg-primary/8 hover:text-primary",
                             )}
                           >
-                            <span className="mr-3 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                            <span className="mr-3 flex items-center justify-center transition-transform duration-300 group-hover:scale-110 shrink-0">
                               {child.icon}
                             </span>
-                            <span className="text-sm text-foreground/80">{child.title}</span>
+                            <div className="min-w-0 flex-1">
+                              <span className="block text-sm text-foreground/80 font-medium group-hover:text-primary transition-colors">{child.title}</span>
+                              {child.subtitle && (
+                                <span className="block text-[11px] text-muted-foreground/75 leading-tight line-clamp-1 group-hover:text-muted-foreground">
+                                  {child.subtitle}
+                                </span>
+                              )}
+                            </div>
                             {childBadge && (
-                              <span className={cn("ml-auto text-[11px] font-black px-2 py-0.5 rounded-full shadow-md text-white animate-pulse", childBadge.color)}>
+                              <span className={cn("ml-2 shrink-0 text-[11px] font-black px-2 py-0.5 rounded-full shadow-md text-white animate-pulse", childBadge.color)}>
                                 {childBadge.count}
                               </span>
                             )}
@@ -548,20 +564,28 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                   {!isCollapsed && isOpen && (
                     <div className="mt-2 space-y-1">
                       {(category.children || []).map((child) => {
-                        const fullPath = child.path?.startsWith('/') ? child.path : `${rolePrefix}/${child.path}`;
-                        const isActive = location.pathname === fullPath || location.pathname.startsWith(`${fullPath}/`);
+                         const fullPath = child.path ? toSidebarPath(child.path, rolePrefix) : '#';
+                         const isActive = isSidebarItemActive(child, location.pathname, rolePrefix);
                         return (
                           <Link
                             key={child.title}
                             to={fullPath}
                             onClick={handleItemClick}
-                            className={cn(
-                              "flex items-center py-2 px-3 rounded-lg text-sm transition-colors min-h-[44px]",
+                             className={cn(
+                              "flex items-center py-2 px-3 rounded-lg text-sm transition-colors min-h-[44px] group",
                               isActive ? "bg-primary/10 text-primary font-bold" : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
-                            )}
+                             )}
+                             aria-current={isActive ? "page" : undefined}
                           >
-                            <span className="mr-3">{child.icon}</span>
-                            <span>{child.title}</span>
+                            <span className="mr-3 shrink-0">{child.icon}</span>
+                            <div className="min-w-0 flex-1">
+                              <span className="block font-medium">{child.title}</span>
+                              {child.subtitle && (
+                                <span className="block text-[11px] text-muted-foreground/75 leading-tight line-clamp-1 group-hover:text-muted-foreground">
+                                  {child.subtitle}
+                                </span>
+                              )}
+                            </div>
                           </Link>
                         );
                       })}

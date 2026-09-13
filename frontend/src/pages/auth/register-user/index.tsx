@@ -10,6 +10,10 @@ import { usersService } from '@/entities/user/api/user.service';
 import { getUserProfile } from '@/features/auth/api/auth.service';
 import { useToast } from '@/app/providers/ToastContext';
 import {
+  CURRENT_PRIVACY_NOTICE_VERSION,
+  CURRENT_TERMS_VERSION,
+} from '@/legal/consent';
+import {
   buildValidationErrors,
   mapBackendValidationErrors,
   type FormErrors,
@@ -28,6 +32,8 @@ const RegisterUserPage: React.FC = () => {
     identification_number: '',
     role: 'Aprendiz',
     address: '',
+    privacy_notice_accepted: false,
+    terms_accepted: false,
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -70,7 +76,9 @@ const RegisterUserPage: React.FC = () => {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+    const { name } = e.target;
+    const target = e.target as HTMLInputElement;
+    const value = target.type === 'checkbox' ? target.checked : target.value;
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -114,6 +122,12 @@ const RegisterUserPage: React.FC = () => {
         identification: parseInt(formData.identification_number.trim(), 10),
         role: formData.role as "Administrador" | "Instructor" | "Aprendiz",
         address: formData.address?.trim() || undefined,
+        consent: {
+          privacy_notice_accepted: formData.privacy_notice_accepted,
+          privacy_notice_version: CURRENT_PRIVACY_NOTICE_VERSION,
+          terms_accepted: formData.terms_accepted,
+          terms_version: CURRENT_TERMS_VERSION,
+        },
       };
 
       if (import.meta.env.DEV) {
@@ -391,6 +405,50 @@ const RegisterUserPage: React.FC = () => {
                   </div>
                   {getFieldError('confirmPassword') && (
                     <p className="text-destructive text-xs">{getFieldError('confirmPassword')}</p>
+                  )}
+                </div>
+
+                <div className="space-y-3 rounded-lg border bg-muted/30 p-4 text-sm">
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      name="privacy_notice_accepted"
+                      checked={formData.privacy_notice_accepted}
+                      onChange={handleInputChange}
+                      aria-describedby="register-user-privacy-error"
+                    />
+                    <span>
+                      He leído y acepto el{' '}
+                      <Link className="text-primary underline" to="/legal/privacidad" target="_blank">
+                        aviso de privacidad
+                      </Link>.
+                    </span>
+                  </label>
+                  {getFieldError('consent.privacy_notice_accepted') && (
+                    <p id="register-user-privacy-error" className="text-destructive text-xs">
+                      {getFieldError('consent.privacy_notice_accepted')}
+                    </p>
+                  )}
+
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      name="terms_accepted"
+                      checked={formData.terms_accepted}
+                      onChange={handleInputChange}
+                      aria-describedby="register-user-terms-error"
+                    />
+                    <span>
+                      He leído y acepto los{' '}
+                      <Link className="text-primary underline" to="/legal/terminos" target="_blank">
+                        términos de uso
+                      </Link>.
+                    </span>
+                  </label>
+                  {getFieldError('consent.terms_accepted') && (
+                    <p id="register-user-terms-error" className="text-destructive text-xs">
+                      {getFieldError('consent.terms_accepted')}
+                    </p>
                   )}
                 </div>
 

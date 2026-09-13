@@ -235,7 +235,7 @@ GMD = (peso_final - peso_inicial) / días_transcurridos
 Eficiencia = hijos_vivos / años_reproductivos
 ```
 
-### 3. Índice de Salud del Hato
+### 3. Índice de Salud del Ganado
 ```python
 Salud = (
     (Excelente * 1.0) +
@@ -486,7 +486,7 @@ curl -H "Authorization: Bearer $TOKEN" \
 ### Lo que el sistema ahora puede hacer:
 
 1. **Monitoreo en Tiempo Real**
-   - Estado completo del hato con 30+ KPIs
+   - Estado completo del ganado con 30+ KPIs
    - Alertas inteligentes automáticas
    - Detección de brotes de enfermedades
 

@@ -29,12 +29,25 @@ export function classifyTransportError(error: any, originalRequest: any): Transp
   const method = String(originalRequest?.method || 'get').toLowerCase();
   const codeStr = String(error?.code || '').toUpperCase();
   const msgStr = String(error?.message || '').toLowerCase();
+  const errorCode = error?.response?.data?.code;
+  const isBackendUnavailable =
+    status === 502 || status === 503 || errorCode === 'BACKEND_UNAVAILABLE';
+
   return {
     method,
     status,
-    isTimeoutLike: status === 408 || codeStr === 'ECONNABORTED' || codeStr === 'ETIMEDOUT' || msgStr.includes('timeout'),
-    isNetworkLike: codeStr === 'ERR_NETWORK' || (!status && msgStr.includes('network')),
-    aborted: axios.isCancel(error) || (!!originalRequest?.signal && originalRequest.signal.aborted === true),
+    isTimeoutLike:
+      status === 408 ||
+      codeStr === 'ECONNABORTED' ||
+      codeStr === 'ETIMEDOUT' ||
+      msgStr.includes('timeout'),
+    isNetworkLike:
+      codeStr === 'ERR_NETWORK' ||
+      (!status && msgStr.includes('network')) ||
+      isBackendUnavailable,
+    aborted:
+      axios.isCancel(error) ||
+      (!!originalRequest?.signal && originalRequest.signal.aborted === true),
     skipRetry: originalRequest?.skipTimeoutRetry === true,
   };
 }

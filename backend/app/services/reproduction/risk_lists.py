@@ -1,4 +1,4 @@
-"""Listas accionables del hato reproductivo.
+"""Listas accionables del ganado reproductivo.
 
 Los indicadores agregados dicen si la finca va bien; estas listas dicen sobre
 qué animal actuar hoy. Cada entrada nombra el animal, la razón y el dato que

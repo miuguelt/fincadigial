@@ -13,6 +13,7 @@ import {
   HeartPulse,
   MapPin,
   Pill,
+  ShieldAlert,
   ShieldCheck,
   Stethoscope,
   Syringe,
@@ -94,7 +95,8 @@ export interface QuickShortcut {
 export const QUICK_SHORTCUTS: QuickShortcut[] = [
   { label: 'Ver Animales activos', url: '/admin/animals', icon: Tag, desc: 'Inventario general de ganado' },
   { label: 'Ver Potreros y Lotes', url: '/admin/fields', icon: MapPin, desc: 'Rotación y estado de pasturas' },
-  { label: 'Tratamientos veterinarios', url: '/admin/treatments', icon: Stethoscope, desc: 'Historial clínico' },
+  { label: 'Animales enfermos', url: '/admin/disease-animals', icon: ShieldAlert, desc: 'Casos clínicos y seguimiento' },
+  { label: 'Tratamientos veterinarios', url: '/admin/treatments', icon: Stethoscope, desc: 'Registros vinculados a cada caso' },
   { label: 'Vacunaciones y biológicos', url: '/admin/vaccinations', icon: Syringe, desc: 'Calendario y dosis' },
   { label: 'Tareas y labores', url: '/admin/tasks', icon: CheckSquare, desc: 'Actividades de la finca' },
   { label: 'Insumos y medicamentos', url: '/admin/supplies', icon: Pill, desc: 'Inventario de farmacia' },

@@ -82,9 +82,9 @@ export const MiJornadaSection: React.FC = () => {
 			initial={{ opacity: 0, y: 10 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ delay: 0.15, duration: 0.4 }}
-			className="rounded-3xl border border-amber-200/60 bg-gradient-to-br from-amber-50/80 via-orange-50/40 to-transparent p-5 shadow-lg dark:border-amber-800/30 dark:from-amber-950/30 dark:via-orange-950/10 dark:to-transparent md:p-6"
+			className="rounded-2xl border border-amber-200/70 bg-amber-50/70 p-4 shadow-sm dark:border-amber-800/30 dark:bg-amber-950/20 sm:p-5"
 		>
-			<div className="flex items-center justify-between mb-4">
+			<div className="mb-4 flex flex-wrap items-start justify-between gap-3">
 				<div className="flex items-center gap-3">
 					<div className="bg-amber-100 dark:bg-amber-900/50 p-2 rounded-xl">
 						<span className="text-2xl">🌅</span>
@@ -147,7 +147,7 @@ export const MiJornadaSection: React.FC = () => {
 								onClick={() =>
 									navigate(actionRoutes[alert.type] || "/campesino/ganaderia")
 								}
-								className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-l-4 text-left transition-all hover:shadow-md hover:-translate-y-0.5 ${getPriorityBg(alert.priority)}`}
+								className={`flex min-h-14 w-full items-center gap-3 rounded-xl border-l-4 px-3 py-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-md sm:px-4 ${getPriorityBg(alert.priority)}`}
 							>
 								{getPriorityIcon(alert.priority)}
 								<div className="flex-1 min-w-0">
@@ -175,7 +175,7 @@ export const MiJornadaSection: React.FC = () => {
 							<button
 								type="button"
 								onClick={() => navigate("/campesino/health")}
-								className="w-full text-center text-sm font-semibold text-primary py-2 hover:bg-primary/5 rounded-xl transition-colors"
+								className="min-h-11 w-full rounded-xl py-2 text-center text-sm font-semibold text-primary transition-colors hover:bg-primary/5"
 							>
 								Ver todas las alertas →
 							</button>
@@ -184,7 +184,7 @@ export const MiJornadaSection: React.FC = () => {
 				)}
 			</div>
 
-			<div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-amber-200/50 dark:border-amber-800/30">
+			<div className="mt-4 flex flex-wrap gap-2 border-t border-amber-200/50 pt-4 dark:border-amber-800/30">
 				{[
 					{
 						label: "🥛 Ordeño",
@@ -199,7 +199,7 @@ export const MiJornadaSection: React.FC = () => {
 						type="button"
 						key={link.path}
 						onClick={() => navigate(link.path)}
-						className="px-3 py-1.5 text-xs font-medium bg-white/60 dark:bg-black/20 border border-amber-200/50 dark:border-amber-800/30 rounded-lg hover:bg-amber-100/50 dark:hover:bg-amber-900/20 transition-colors text-foreground"
+						className="min-h-10 rounded-lg border border-amber-200/50 bg-white/60 px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-amber-100/50 dark:border-amber-800/30 dark:bg-black/20 dark:hover:bg-amber-900/20"
 					>
 						{link.label}
 					</button>

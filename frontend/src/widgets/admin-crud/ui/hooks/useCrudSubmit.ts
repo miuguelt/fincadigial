@@ -7,6 +7,7 @@ import {
   mapBackendFieldErrorsToLabels,
 } from '@/shared/utils/validationMessages';
 import { extractValidationErrors, getCrudErrorMessage } from '../crudPage.helpers';
+import { markRecentChange } from '@/shared/utils/recentChanges';
 
 /** El backend puede tardar en reflejar la escritura; se refresca tras esta pausa. */
 const REFETCH_DELAY_MS = 300;
@@ -42,6 +43,7 @@ interface UseCrudSubmitArgs<T extends { id: number }, TInput> {
   setPage?: (page: number) => void;
   refetch: () => Promise<any>;
   onSuccess: () => void;
+  onItemCreated?: (item: T) => void;
   showToast: (message: string, type?: ToastType, duration?: number) => void;
   t: (key: string, fallback: string) => string;
 }
@@ -59,7 +61,7 @@ export function useCrudSubmit<T extends { id: number }, TInput extends Record<st
   const {
     config, service, validateForm, formData, formErrorMessages, setFormErrors, setFormErrorMessages,
     editingItem, canCreate, canUpdate, createItem, updateItem, meta, setPage, refetch,
-    onSuccess, showToast, t,
+    onSuccess, onItemCreated, showToast, t,
   } = args;
 
   const [saving, setSaving] = useState(false);
@@ -162,13 +164,29 @@ export function useCrudSubmit<T extends { id: number }, TInput extends Record<st
         }
       } else {
         const result = await createItem(formData as any);
-        showToast(`✅ ${config.entityName} creado correctamente`, 'success');
+        const createdId = (result as any)?.id;
+        if (createdId != null) {
+          const resourceSlug = String(service?.endpoint || '').split('/').filter(Boolean).pop()?.toLowerCase() ?? '';
+          if (resourceSlug) {
+            markRecentChange(resourceSlug, createdId, 'created');
+          }
+        }
+        const isTransferPending = (result as any)?.registration_status === 'TRANSFER_PENDING';
+        showToast(
+          isTransferPending
+            ? '📨 Solicitud enviada al propietario original. El animal aparecerá cuando sea aprobada.'
+            : `✅ ${config.entityName} creado correctamente`,
+          isTransferPending ? 'warning' : 'success'
+        );
         if (config.onAfterCreate) {
           try {
             await config.onAfterCreate(result);
           } catch (err) {
             console.error('Error in onAfterCreate hook:', err);
           }
+        }
+        if (result && onItemCreated) {
+          onItemCreated(result);
         }
         // Lo nuevo va al inicio de la lista: volver a la primera página.
         if (setPage && meta?.page && meta.page > 1) setPage(1);

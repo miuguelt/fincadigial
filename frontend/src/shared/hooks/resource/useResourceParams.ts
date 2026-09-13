@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 /**
@@ -19,6 +19,25 @@ export function useResourceParams<P extends Record<string, any>>(
   const orderingQP = searchParams.get('ordering') || undefined;
   const sortByQP = searchParams.get('sort_by') || undefined;
   const sortOrderQP = (searchParams.get('sort_order') as 'asc' | 'desc' | undefined) || undefined;
+
+  // Extraer cualquier otro parámetro de la URL que actúe como filtro (excluyendo estado interno de navegación/modales)
+  const urlFilters = useMemo(() => {
+    const customFilters: Record<string, any> = {};
+    const excludedKeys = new Set([
+      'page', 'limit', 'search', 'fields', 'ordering', 'sort_by', 'sort_order',
+      'vista', 'create', 'edit', 'tab', 'detail'
+    ]);
+    searchParams.forEach((val, key) => {
+      if (!excludedKeys.has(key) && val !== null && val !== undefined && val !== '') {
+        customFilters[key] = val;
+      }
+    });
+    return customFilters;
+  }, [searchParams]);
+
+  const urlFiltersKey = useMemo(() => {
+    return JSON.stringify(Object.entries(urlFilters).sort(([a], [b]) => a[0].localeCompare(b[0])));
+  }, [urlFilters]);
 
   const setPage = useCallback((page: number) => {
     const sp = new URLSearchParams(searchParams);
@@ -51,7 +70,7 @@ export function useResourceParams<P extends Record<string, any>>(
   const buildEffectiveParams = useCallback((): Record<string, any> | undefined => {
     const base = { ...(initialParams as any), ...(filters || {}) };
     const last = { ...(lastParamsRef?.current as any) };
-    const fromURL: Record<string, any> = {};
+    const fromURL: Record<string, any> = { ...urlFilters };
     if (pageQP !== undefined) fromURL.page = pageQP;
     if (limitQP !== undefined) fromURL.limit = limitQP;
     if (searchQP !== undefined) fromURL.search = searchQP;
@@ -63,10 +82,10 @@ export function useResourceParams<P extends Record<string, any>>(
       fromURL.ordering = orderingQP;
     }
     return { ...base, ...last, ...fromURL };
-  }, [fieldsQP, initialParams, filters, limitQP, pageQP, searchQP, orderingQP, sortByQP, sortOrderQP, lastParamsRef]);
+  }, [fieldsQP, initialParams, filters, limitQP, pageQP, searchQP, orderingQP, sortByQP, sortOrderQP, lastParamsRef, urlFilters]);
 
   return {
-    pageQP, limitQP, searchQP, fieldsQP,
+    pageQP, limitQP, searchQP, fieldsQP, urlFiltersKey, urlFilters,
     setPage, setLimit, setSearch, setFields,
     buildEffectiveParams
   };

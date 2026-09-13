@@ -10,11 +10,20 @@ POST /api/v1/public/register
 
 from flask_restx import Namespace, Resource, fields
 import flask
-from flask_jwt_extended import create_access_token, create_refresh_token
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    set_access_cookies,
+    set_refresh_cookies,
+)
 from app import db
 from app.models import Finca, FarmType, User, Role, get_default_role_for_finca
+from app.models import UserConsent
+from app.legal import build_registration_consent_records, validate_registration_consent
 from app.models.base_model import ValidationError
 from app.utils.response_handler import APIResponse
+from app.utils.auth_response import sanitize_auth_response_data
+from app.legal.release_guard import data_collection_allowed
 from app.utils.validators import validate_password
 import logging
 
@@ -76,6 +85,24 @@ owner_model = public_ns.model(
     },
 )
 
+consent_model = public_ns.model(
+    "RegistrationConsent",
+    {
+        "privacy_notice_accepted": fields.Boolean(
+            required=True, description="Aceptación expresa del aviso de privacidad"
+        ),
+        "privacy_notice_version": fields.String(
+            required=True, description="Versión del aviso aceptado"
+        ),
+        "terms_accepted": fields.Boolean(
+            required=True, description="Aceptación expresa de los términos de uso"
+        ),
+        "terms_version": fields.String(
+            required=True, description="Versión de los términos aceptados"
+        ),
+    },
+)
+
 register_model = public_ns.model(
     "RegisterRequest",
     {
@@ -86,6 +113,11 @@ register_model = public_ns.model(
             owner_model,
             required=True,
             description="Datos del propietario/administrador",
+        ),
+        "consent": fields.Nested(
+            consent_model,
+            required=True,
+            description="Evidencia de aceptación legal del titular",
         ),
     },
 )
@@ -150,6 +182,13 @@ class RegisterFincaResource(Resource):
         - Educativa -> Administrador
         - Tradicional -> Propietario
         """
+        if not data_collection_allowed(flask.current_app.config):
+            return APIResponse.error(
+                "La captación de datos está deshabilitada hasta completar la autorización institucional.",
+                status_code=503,
+                error_code="DATA_COLLECTION_DISABLED",
+            )
+
         data = flask.request.get_json() or {}
         finca_data = data.get("finca", {})
         owner_data = data.get("owner", {})
@@ -163,6 +202,10 @@ class RegisterFincaResource(Resource):
 
         if errors:
             return APIResponse.validation_error(errors)
+
+        consent_errors = validate_registration_consent(data.get("consent"))
+        if consent_errors:
+            return APIResponse.validation_error({"consent": consent_errors})
 
         # Validar tipo de finca
         finca_type_str = finca_data.get("type")
@@ -212,6 +255,7 @@ class RegisterFincaResource(Resource):
         try:
             # 1. Crear la finca
             finca = Finca.create(
+                commit=False,
                 name=finca_data.get("name"),
                 type=finca_type,
                 nit=finca_data.get("nit"),
@@ -227,6 +271,7 @@ class RegisterFincaResource(Resource):
             from app.models.user import ApprovalStatus
 
             user = User.create(
+                commit=False,
                 identification=owner_data.get("identification"),
                 fullname=owner_data.get("fullname"),
                 email=owner_data.get("email"),
@@ -238,6 +283,17 @@ class RegisterFincaResource(Resource):
                 finca_id=finca.id,
                 approval_status=ApprovalStatus.Approved,
             )
+
+            for consent in build_registration_consent_records(
+                data["consent"], source="public_finca_registration"
+            ):
+                db.session.add(
+                UserConsent(
+                        user_id=user.id,
+                        **consent,
+                    )
+                )
+            db.session.commit()
 
             # 3. Generar tokens JWT
             user_claims = {
@@ -260,17 +316,25 @@ class RegisterFincaResource(Resource):
                 f"Nueva finca registrada: {finca.name} (ID: {finca.id}) por usuario {user.email}"
             )
 
-            return APIResponse.success(
+            api_response_dict, status_code = APIResponse.success(
                 message="Finca registrada exitosamente",
-                data={
+                data=sanitize_auth_response_data({
                     "finca": finca.to_namespace_dict(),
                     "user": user.to_namespace_dict(),
                     "access_token": access_token,
                     "refresh_token": refresh_token,
                     "token_type": "Bearer",
-                },
+                }),
                 status_code=201,
             )
+
+            # Cookie-only browser deployments receive JWTs through HttpOnly
+            # cookies; bearer clients keep the legacy JSON response contract.
+            response = flask.jsonify(api_response_dict)
+            set_access_cookies(response, access_token)
+            set_refresh_cookies(response, refresh_token)
+            response.status_code = status_code
+            return response
 
         except ValidationError as e:
             db.session.rollback()

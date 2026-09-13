@@ -40,4 +40,24 @@ describe('CRUDToolbar: ubicación del slot personalizado', () => {
     const row = custom.parentElement as HTMLElement
     expect(row.className).toContain('w-full')
   })
+
+  it('con "expandableSearch" la búsqueda arranca compacta y crece al enfocarse', () => {
+    render(<CRUDToolbar {...baseProps} expandableSearch />)
+
+    const search = screen.getByRole('textbox', { name: /buscar/i })
+    const wrapper = search.parentElement as HTMLElement
+
+    expect(wrapper.className).toContain('sm:w-52')
+    expect(wrapper.className).toContain('focus-within:w-full')
+    expect(wrapper.className).not.toContain('flex-1')
+  })
+
+  it('sin "expandableSearch" la búsqueda ocupa el espacio libre', () => {
+    render(<CRUDToolbar {...baseProps} />)
+
+    const search = screen.getByRole('textbox', { name: /buscar/i })
+    const wrapper = search.parentElement as HTMLElement
+
+    expect(wrapper.className).toContain('flex-1')
+  })
 })

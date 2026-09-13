@@ -436,6 +436,36 @@ class MilkProductionService:
                     )
                     continue
 
+                # Período de retiro por tratamiento: la leche debe descartarse,
+                # no registrarse como producida.
+                from app.models.treatments import Treatments
+
+                withdrawal = (
+                    Treatments.query.filter(
+                        Treatments.animal_id == animal.id,
+                        Treatments.is_deleted.is_(False),
+                        Treatments.withdrawal_days > 0,
+                        Treatments.withdrawal_end_date.isnot(None),
+                        Treatments.withdrawal_end_date >= target_date,
+                        Treatments.treatment_date <= target_date,
+                    )
+                    .order_by(Treatments.withdrawal_end_date.desc())
+                    .first()
+                )
+                if withdrawal:
+                    errors.append(
+                        {
+                            "index": i,
+                            "error": (
+                                f"Animal {animal.id} está en período de retiro por "
+                                f"'{withdrawal.description}' hasta "
+                                f"{withdrawal.withdrawal_end_date}: la leche debe "
+                                "descartarse y no registrarse como producida"
+                            ),
+                        }
+                    )
+                    continue
+
                 record = MilkProduction(
                     animal_id=entry["animal_id"],
                     finca_id=finca_id,

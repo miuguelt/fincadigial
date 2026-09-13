@@ -5,6 +5,9 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 import flask
 import logging
+from urllib.parse import quote, urlparse
+
+from app.utils.private_file_urls import create_file_url_signature, normalize_upload_path
 
 logger = logging.getLogger(__name__)
 
@@ -428,11 +431,25 @@ def get_public_url(filepath):
     except Exception:
         base_url = flask.current_app.config.get("API_BASE_URL_NO_VERSION", "")
 
-    # Normalizar filepath y extraer ruta relativa
-    relative_path = (filepath or "").replace("\\", "/")
-    if relative_path.startswith("static/uploads/"):
-        relative_path = relative_path[len("static/uploads/") :]
-    return f"{base_url}/api/v1/public/images/{relative_path}"
+    relative_path = normalize_upload_path(filepath)
+    signature = create_file_url_signature(relative_path)
+    encoded_path = quote(relative_path, safe="/")
+    return f"{base_url}/api/v1/public/images/{encoded_path}?sig={quote(signature, safe='')}"
+
+
+def refresh_public_file_url(url: str | None) -> str | None:
+    """Re-sign a stored VillaLuz upload URL while preserving external links."""
+    if not url:
+        return url
+    parsed = urlparse(str(url))
+    path = parsed.path or ""
+    marker = "/api/v1/public/images/"
+    if marker in path:
+        return get_public_url(path.split(marker, 1)[1])
+    static_marker = "/static/uploads/"
+    if static_marker in path:
+        return get_public_url(f"static/uploads/{path.split(static_marker, 1)[1]}")
+    return url
 
 
 def validate_image_count(animal_id, max_images=20):

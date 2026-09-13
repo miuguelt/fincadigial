@@ -72,6 +72,31 @@ class TestStateSync:
             assert cycle.lactation_number == 1
             assert cycle.status == LactationStatus.Active
 
+    def test_el_hilo_vincula_servicio_diagnostico_y_parto(self, app, farm):
+        """La cadena del ciclo: el diagnóstico vuelve al servicio y el parto al diagnóstico."""
+        from app.services.reproduction import apply_event_effects
+
+        with app.app_context():
+            cow = _reload(farm["cow"])
+            service = _event(
+                cow,
+                EventType.Inseminacion,
+                _d(300),
+                sire_id=farm["sire"].id,
+            )
+            diagnosis = _event(
+                cow,
+                EventType.Diagnostico,
+                _d(200),
+                diagnosis_result=DiagnosisResult.Positivo,
+            )
+            apply_event_effects(diagnosis)
+            assert diagnosis.linked_event_id == service.id
+
+            birth = _event(cow, EventType.Parto, _d(17), alive_count=1, dead_count=0)
+            apply_event_effects(birth)
+            assert birth.linked_event_id == diagnosis.id
+
     def test_el_parto_materializa_las_crias_declaradas(self, app, farm):
         from app.services.reproduction import apply_event_effects
 

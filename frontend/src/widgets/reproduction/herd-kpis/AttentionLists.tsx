@@ -13,6 +13,7 @@ import type { RiskEntry, RiskListKey } from '@/entities/reproduction/model/herdK
 
 interface AttentionListsProps {
   risk: Record<RiskListKey, RiskEntry[]>;
+  onAnimalClick?: (animalId: number) => void;
 }
 
 interface ListDefinition {
@@ -81,7 +82,7 @@ const TONE_BADGE: Record<ListDefinition['tone'], string> = {
   info: 'bg-sky-600 text-white',
 };
 
-export const AttentionLists: React.FC<AttentionListsProps> = ({ risk }) => {
+export const AttentionLists: React.FC<AttentionListsProps> = ({ risk, onAnimalClick }) => {
   const populated = LISTS.filter((list) => (risk?.[list.key]?.length ?? 0) > 0);
 
   if (populated.length === 0) {
@@ -116,13 +117,16 @@ export const AttentionLists: React.FC<AttentionListsProps> = ({ risk }) => {
             </CardHeader>
             <CardContent className="space-y-2">
               {entries.slice(0, 6).map((entry) => (
-                <div
+                <button
                   key={`${list.key}-${entry.animal_id}`}
-                  className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 rounded-lg bg-muted/30 px-3 py-2 min-w-0"
+                  type="button"
+                  onClick={() => onAnimalClick?.(entry.animal_id)}
+                  disabled={!onAnimalClick}
+                  className="flex w-full min-w-0 flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 rounded-lg bg-muted/30 px-3 py-2 text-left transition-colors hover:bg-primary/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-default disabled:hover:bg-muted/30"
                 >
                   <span className="text-sm font-bold text-primary min-w-0 fit-clamp">{entry.record}</span>
                   <span className="text-[11px] text-muted-foreground min-w-0">{list.detail(entry)}</span>
-                </div>
+                </button>
               ))}
               {entries.length > 6 ? (
                 <p className="text-[11px] text-muted-foreground">

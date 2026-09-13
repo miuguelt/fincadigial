@@ -26,6 +26,10 @@ with app.app_context():
         ("param.alert.somatic_cells_critical", "800000", "Células somáticas críticas"),
         ("param.alert.somatic_cells_high", "400000", "Células somáticas altas"),
         ("param.alert.somatic_cells_medium", "200000", "Células somáticas media"),
+        ("param.alert.temperature_fever_c", "39.8", "Fiebre bovina (°C)"),
+        ("param.alert.temperature_critical_c", "41.0", "Fiebre crítica bovina (°C)"),
+        ("param.alert.disease_followup_days_critical", "14", "Seguimiento crítico sin avance (días)"),
+        ("param.alert.disease_followup_days_high", "7", "Seguimiento alto sin avance (días)"),
     ]
 
     for key, value, desc in params:

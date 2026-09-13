@@ -10,15 +10,46 @@ interface UserPageToolbarProps {
 
 export function UserPageToolbar({ viewMode, onViewModeChange, onOpenChat }: UserPageToolbarProps) {
   return (
-    <div className="flex items-center gap-2 bg-muted/40 p-1 rounded-xl border border-border/40">
-      <Button variant="outline" size="sm" onClick={onOpenChat} className="h-8 gap-1.5 rounded-lg px-2.5" title="Abrir chat">
-        <MessagesSquare className="w-4 h-4" /><span className="hidden sm:inline">Chat</span>
-      </Button>
-      <Button variant="ghost" size="sm" onClick={() => onViewModeChange('table')} className={cn('rounded-lg h-8 w-8 p-0', viewMode === 'table' && 'bg-background shadow-sm text-primary')} aria-label="Vista de tabla">
-        <Table className="w-4 h-4" />
-      </Button>
-      <Button variant="ghost" size="sm" onClick={() => onViewModeChange('cards')} className={cn('rounded-lg h-8 w-8 p-0', viewMode === 'cards' && 'bg-background shadow-sm text-primary')} aria-label="Vista de tarjetas">
-        <Grid className="w-4 h-4" />
+    <div className="flex w-full flex-wrap items-center justify-between gap-2">
+      <div className="inline-flex rounded-xl border border-border/40 bg-muted/60 p-1 shadow-xs">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onViewModeChange('cards')}
+          className={cn(
+            'rounded-lg h-8 px-2.5 text-xs font-semibold gap-1.5 transition-all cursor-pointer',
+            viewMode === 'cards' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+          )}
+          aria-label="Vista de tarjetas"
+        >
+          <Grid className="w-3.5 h-3.5" />
+          <span>Tarjetas</span>
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onViewModeChange('table')}
+          className={cn(
+            'rounded-lg h-8 px-2.5 text-xs font-semibold gap-1.5 transition-all cursor-pointer',
+            viewMode === 'table' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+          )}
+          aria-label="Vista de tabla"
+        >
+          <Table className="w-3.5 h-3.5" />
+          <span>Tabla</span>
+        </Button>
+      </div>
+
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onOpenChat}
+        className="h-8 sm:h-9 gap-1.5 rounded-xl border-border/70 text-xs font-bold px-3 shadow-xs hover:bg-accent cursor-pointer"
+        title="Abrir chat"
+      >
+        <MessagesSquare className="w-3.5 h-3.5 text-primary" />
+        <span className="hidden sm:inline">Abrir chat</span>
+        <span className="sm:hidden">Chat</span>
       </Button>
     </div>
   );

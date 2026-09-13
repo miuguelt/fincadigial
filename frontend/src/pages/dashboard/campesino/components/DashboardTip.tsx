@@ -4,20 +4,20 @@ import type { DashboardTip as DashboardTipData } from '../config/dashboard.confi
 export function DashboardTip({ tip }: { tip: DashboardTipData | null }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4, duration: 0.5 }}
-      className="mt-6 rounded-3xl border border-green-500/20 bg-gradient-to-r from-lime-500/10 via-green-500/10 to-emerald-500/10 p-5 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-xl dark:border-green-800/40 dark:from-lime-500/20 dark:via-green-500/20 dark:to-emerald-500/20 md:p-6"
+      transition={{ delay: 0.2, duration: 0.25 }}
+      className="rounded-2xl border border-green-500/20 bg-green-50/70 p-4 shadow-sm transition-all duration-300 hover:shadow-md dark:border-green-800/40 dark:bg-green-950/20 sm:p-5"
     >
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-        <div className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/50 shadow-sm dark:bg-black/20 md:h-20 md:w-20">
-          <span className="text-4xl animate-bounce" style={{ animationDuration: '3s' }}>{tip?.icon || '💡'}</span>
+      <div className="flex items-start gap-3 sm:gap-4">
+        <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/70 shadow-sm dark:bg-black/20 sm:h-12 sm:w-12">
+          <span className="text-2xl" aria-hidden="true">{tip?.icon || '💡'}</span>
         </div>
-        <div className="text-center md:text-left flex-1">
-          <p className="text-xs font-black text-green-700 dark:text-green-400 uppercase tracking-widest mb-2 flex items-center justify-center md:justify-start gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500" /> Consejo Útil del Día
+        <div className="min-w-0 flex-1">
+          <p className="mb-1 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-green-700 dark:text-green-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-green-500" /> Consejo útil
           </p>
-          <p className="text-base md:text-lg text-green-900 dark:text-green-100 leading-relaxed font-semibold max-w-4xl">
+          <p className="text-sm font-semibold leading-relaxed text-green-900 dark:text-green-100 sm:text-base">
             {tip?.text || 'Usa la app sin internet. Los datos se sincronizan cuando vuelva la señal.'}
           </p>
         </div>

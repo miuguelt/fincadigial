@@ -71,6 +71,6 @@ export function getFloatingChatState(): FloatingChatState {
  * `true` cuando el usuario ya está leyendo esa conversación en pantalla: sirve
  * para no repetir con una notificación lo que acaba de ver llegar.
  */
-export function isFloatingChatOpenWith(contactId: number): boolean {
+export function isFloatingChatWithPeer(contactId: number): boolean {
   return state.open && state.contactId === Number(contactId);
 }

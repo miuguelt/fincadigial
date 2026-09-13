@@ -5,12 +5,25 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 
 ---
 
+## [1.3.0] — 2026-09-08
+
+### ✅ Añadido
+- **Bitácora unificada del animal** — `animal_health_history` ahora recibe el espejo de todos los dominios: controles, vacunaciones, tratamientos, eventos reproductivos, producción de leche, condición corporal y movimientos ICA (antes solo entraban los avances de enfermedad). Nuevos tipos de evento (Reproducción, Movimiento, Producción de leche, Nutrición), columna `reference_kind` con índice (origen identificable) y las entradas nuevas ya se mezclan en la línea de tiempo del historial médico analítico sin duplicados. Migración `sani004_unified_health_history`.
+- **Acto vinculado en recomendaciones veterinarias** — los controles programados de una recomendación (`TreatmentRecommendationControls`) ahora aceptan `fulfilled_kind` + `fulfilled_ref_id`: al completar un control se enlaza el registro sanitario real (control, vacunación, tratamiento u observación) que lo materializa, cerrando el ciclo indicación → acción. UI en "Línea de tiempo de controles". Migración `sani005_recommendation_controls_fulfillment`.
+- **Hilo de ciclo reproductivo** — `reproductive_events` ganó `linked_event_id` con auto-vinculación: el diagnóstico vuelve a la inseminación que lo originó y el parto al diagnóstico que lo pronosticó. El historial reproductivo se recorre como una cadena. Migración `sani006_reproduction_event_links`.
+- **Agenda sanitarias desde el calendario KB** — servicio `kb_calendar_tasks_service`: materializa las obligaciones del calendario sanitario (vacunaciones, desparasitaciones, revisiones por edad/frecuencia) como tareas pendientes con fecha límite para el equipo, sin duplicar por ejecución. Se dispara con la evaluación programada de alertas.
+- **Plan de manejo por animal (pegamento transversal)** — `animal_care_plans` + `animal_care_plan_stages`: plan sanitario/reproductivo/nutricional con hitos programados y su acto vinculado; API de planes y etapas, página `/admin/plans` con pestaña en el módulo Sanitario. Migración `sani007_animal_care_plans`.
+- **Bloqueo de res en retiro** — la producción de leche (registro individual y por lote) rechaza registros cuando la res tiene un tratamiento activo dentro de su `withdrawal_end_date`: la leche en retiro se descarta, no se cuenta como producida.
+
+### 🔧 Modificado
+- **Semáforo de salud (`health_indicator`)** — corregido: el estado crítico antes comparaba contra "Enfermo" (valor inexistente en el enum de controles); ahora un control "Malo" o "Regular" enciende el semáforo en rojo.
+
 ## [1.2.0] — 2026-05-09
 
 ### ✅ Añadido
 - **Motor de Conocimiento v2.0** — Base de Conocimiento expandida de 5 a 50+ reglas agropecuarias basadas en ICA/FEDEGAN/SENA (reproducción, sanidad, nutrición, manejo, genética, bienestar).
 - **12 eventos de Calendario Sanitario** — incluyendo IBR, Leptospirosis, control de garrapatas, podología, vitaminas ADE y ecografía reproductiva.
-- **`CalendarioSanitarioWidget`** — visualización de eventos pendientes por animal y por hato completo, con semáforo ICA (rojo = obligatorio).
+- **`CalendarioSanitarioWidget`** — visualización de eventos pendientes por animal y por ganado completo, con semáforo ICA (rojo = obligatorio).
 - **`QuickMilk`** — formulario táctil rural-first para registro diario de producción lechera con soporte offline-queue automático. Ruta: `/quick/milk`.
 - **`FieldReadyWidget`** — widget de "Modo Campo" en OperarioDashboard para pre-cargar datos antes de salir a campo sin señal (TTL 8h, IndexedDB).
 - **`FieldReadyService`** — servicio de prefetch a IndexedDB con 9 endpoints críticos de campo.
@@ -21,12 +34,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 - **`offline.html`** — página fallback de Service Worker con auto-redirect al volver la señal.
 - **`robots.txt`** — bloquea indexación de rutas privadas del dashboard.
 - **`.dockerignore` backend** — excluye scripts de test y logs de la imagen Docker (~300MB menos).
-- **Endpoint `GET /api/v1/knowledge_base/calendario/hato`** — calendario sanitario del hato completo.
+- **Endpoint `GET /api/v1/knowledge_base/calendario/ganado`** — calendario sanitario del ganado completo.
 - **Endpoint `GET /api/v1/knowledge_base/stats`** — estadísticas del motor de reglas para validar seed.
 - **Rate limiting 60 req/min** en endpoints `/knowledge_base/*`.
 - **Botón "Registrar Leche" 🥛** en OperarioDashboard (cyan).
 - **Sección "Modo Campo"** en OperarioDashboard reemplaza el simple banner offline.
-- **Widget "Calendario Sanitario del Hato"** en AdminDashboard (lazy-loaded).
+- **Widget "Calendario Sanitario del Ganado"** en AdminDashboard (lazy-loaded).
 
 ### 🔧 Modificado
 - **Backend `Dockerfile`** — Refactorizado a Multi-Stage (builder + production): usuario no-root `appuser`, imagen ~60% más liviana.

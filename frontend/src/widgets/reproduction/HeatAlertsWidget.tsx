@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
-import { useCallback } from 'react';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { AlertTriangle, Clock, Plus, RefreshCw } from 'lucide-react';
@@ -8,6 +7,7 @@ import { reproductionService } from '@/entities/reproduction/api/reproduction.se
 import { useToast } from '@/app/providers/ToastContext';
 import { getAutoStatusClass } from '@/shared/utils/badgeStyles';
 import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
+import { AnimalDetailModal } from '@/widgets/dashboard/animals/AnimalDetailModal';
 
 interface HeatAlert {
   animal_id: number;
@@ -19,11 +19,16 @@ interface HeatAlert {
   age_days: number | null;
 }
 
-export default function HeatAlertsWidget() {
+interface HeatAlertsWidgetProps {
+  onRegisterHeat?: (animalId: number, record?: string) => void;
+}
+
+export default function HeatAlertsWidget({ onRegisterHeat }: HeatAlertsWidgetProps) {
   const { goTo } = useRoleNavigation();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [alerts, setAlerts] = useState<HeatAlert[]>([]);
+  const [selectedAnimalId, setSelectedAnimalId] = useState<number | null>(null);
 
   const loadAlerts = useCallback(async () => {
     setLoading(true);
@@ -42,12 +47,13 @@ export default function HeatAlertsWidget() {
     loadAlerts();
   }, [loadAlerts]);
 
-  const handleRegisterHeat = (animalId: number) => {
-    goTo('/admin/reproduction', { state: { preselectAnimal: animalId, eventType: 'Celo' } });
+  const handleRegister = (alert: HeatAlert) => {
+    if (onRegisterHeat) {
+      onRegisterHeat(alert.animal_id, alert.record);
+    } else {
+      goTo('/admin/reproduction', { state: { preselectAnimal: alert.animal_id, eventType: 'Celo' } });
+    }
   };
-
-  // getPriorityColor reemplazado por getAutoStatusClass() de badgeStyles
-  // Alta→danger, Media→warning, Baja→info
 
   if (loading) {
     return (
@@ -65,74 +71,95 @@ export default function HeatAlertsWidget() {
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-warning-600 dark:text-warning-400" />
-              Alertas de Celo
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Hembras en ventana de celo (18-23 días)
-            </CardDescription>
+    <>
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-warning-600 dark:text-warning-400" />
+                Alertas de Celo
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Hembras en ventana de celo (18-23 días)
+              </CardDescription>
+            </div>
+            <Button variant="ghost" size="icon" onClick={loadAlerts}>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
           </div>
-          <Button variant="ghost" size="icon" onClick={loadAlerts}>
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {alerts.length === 0 ? (
-          <div className="text-center py-6 text-muted-foreground text-sm">
-            <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p>No hay alertas de celo activas</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {alerts.slice(0, 5).map((alert) => (
-              <div
-                key={alert.animal_id}
-                className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
-              >
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <Badge className={getAutoStatusClass(alert.priority)}>
-                    {alert.priority}
-                  </Badge>
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm fit-clamp">{alert.record}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {alert.breed} • {alert.age_days ? `${Math.floor(alert.age_days / 365)} años` : '---'}
-                    </p>
+        </CardHeader>
+        <CardContent>
+          {alerts.length === 0 ? (
+            <div className="text-center py-6 text-muted-foreground text-sm">
+              <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p>No hay alertas de celo activas</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {alerts.slice(0, 5).map((alert) => (
+                <div
+                  key={alert.animal_id}
+                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <Badge className={getAutoStatusClass(alert.priority)}>
+                      {alert.priority}
+                    </Badge>
+                    <div className="min-w-0">
+                      <p
+                        onClick={() => setSelectedAnimalId(alert.animal_id)}
+                        className="font-bold text-sm text-foreground hover:text-primary hover:underline cursor-pointer truncate"
+                      >
+                        {alert.record}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {alert.breed} • {alert.age_days ? `${Math.floor(alert.age_days / 365)} años` : '---'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="text-right mr-2">
+                      <p className="text-xs text-muted-foreground">Días desde celo</p>
+                      <p className="font-semibold text-sm">{alert.days_since_last_heat}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleRegister(alert)}
+                      title="Registrar Celo / Servicio"
+                      className="font-bold text-xs"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="text-right mr-2">
-                    <p className="text-xs text-muted-foreground">Días desde celo</p>
-                    <p className="font-semibold text-sm">{alert.days_since_last_heat}</p>
-                  </div>
-                  <Button size="sm"
-                    variant="outline"
-                    onClick={() => handleRegisterHeat(alert.animal_id)}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-            {alerts.length > 5 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full"
-                onClick={() => goTo('/admin/reproduction')}
-              >
-                Ver {alerts.length - 5} más
-              </Button>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              ))}
+              {alerts.length > 5 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => goTo('/admin/reproduction?tab=alertas')}
+                >
+                  Ver {alerts.length - 5} más
+                </Button>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Modal de Detalle Animal */}
+      {selectedAnimalId && (
+        <AnimalDetailModal
+          isOpen={Boolean(selectedAnimalId)}
+          onOpenChange={(open) => {
+            if (!open) setSelectedAnimalId(null);
+          }}
+          animalId={selectedAnimalId}
+        />
+      )}
+    </>
   );
 }

@@ -311,7 +311,8 @@ class AnimalMovementsResource(Resource):
                     summary_destino.recalculate()
 
                 # Create Movement Audit Log
-                movement = AnimalMovement(
+                movement = AnimalMovement.create(
+                    commit=False,
                     animal_id=animal.id,
                     finca_origen_id=finca_id,
                     finca_destino_id=finca_destino_id
@@ -337,7 +338,6 @@ class AnimalMovementsResource(Resource):
                     precinto_seguridad=data.get("precinto_seguridad"),
                     notes=data.get("notes"),
                 )
-                db.session.add(movement)
 
                 db.session.commit()
 

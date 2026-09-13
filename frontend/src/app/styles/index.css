@@ -1191,6 +1191,70 @@
   }
 }
 
+/* Resaltado de registro recién creado: brillo esmeralda volumétrico con borde y anillo. */
+@keyframes crudHighlightCreatedIn {
+  0% {
+    background-color: hsl(142 76% 36% / 0.16);
+    border-color: hsl(142 76% 36% / 0.9);
+    box-shadow: 0 0 0 4px hsl(142 76% 36% / 0.4), 0 10px 25px -5px hsl(142 76% 36% / 0.25);
+  }
+
+  30% {
+    background-color: hsl(142 76% 36% / 0.18);
+    border-color: hsl(142 76% 40% / 1);
+    box-shadow: 0 0 0 5px hsl(142 76% 36% / 0.5), 0 15px 30px -5px hsl(142 76% 36% / 0.35);
+  }
+
+  70% {
+    background-color: hsl(142 76% 36% / 0.10);
+    border-color: hsl(142 76% 36% / 0.6);
+    box-shadow: 0 0 0 3px hsl(142 76% 36% / 0.25), 0 8px 20px -5px hsl(142 76% 36% / 0.15);
+  }
+
+  100% {
+    background-color: transparent;
+    border-color: inherit;
+    box-shadow: none;
+  }
+}
+
+/* Resaltado de registro recién editado: tinte azulado que se desvanece. */
+@keyframes crudHighlightUpdatedIn {
+  0% {
+    background-color: hsl(224 76% 48% / 0.16);
+    border-color: hsl(224 76% 48% / 0.85);
+    box-shadow: 0 0 0 3px hsl(224 76% 48% / 0.35);
+  }
+
+  60% {
+    background-color: hsl(224 76% 48% / 0.10);
+    border-color: hsl(224 76% 48% / 0.5);
+    box-shadow: 0 0 0 2px hsl(224 76% 48% / 0.2);
+  }
+
+  100% {
+    background-color: transparent;
+    border-color: inherit;
+    box-shadow: none;
+  }
+}
+
+.crud-highlight-created {
+  animation: crudHighlightCreatedIn 8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.crud-highlight-updated {
+  animation: crudHighlightUpdatedIn 5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .crud-highlight-created,
+  .crud-highlight-updated {
+    animation-duration: 0.01s;
+  }
+}
+
 /* Clases utilitarias de animación */
 .animate-spin {
   animation: spin 1s linear infinite;
@@ -1464,12 +1528,14 @@
  * El scroll sigue siendo nativo: rueda, teclado y gestos táctiles intactos.
  * Ver docs/estandar-pantallas-de-datos.md §1.2b.
  */
-.no-native-scrollbar {
+.no-native-scrollbar,
+.no-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 
-.no-native-scrollbar::-webkit-scrollbar {
+.no-native-scrollbar::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
   width: 0;
   height: 0;
   display: none;
@@ -1574,28 +1640,6 @@
     box-shadow: var(--shadow-sm);
   }
 
-  .vl-tabs {
-    display: flex;
-    gap: 0.25rem;
-    padding: 0.25rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface-secondary);
-  }
-
-  .vl-tab {
-    min-height: 2.5rem;
-    flex: 1;
-    border: 1px solid transparent;
-    border-radius: var(--radius-md);
-    background: var(--color-surface-primary);
-    color: var(--color-text-secondary);
-    font-weight: 600;
-  }
-
-  .vl-tab:hover { border-color: var(--color-border-strong); color: var(--color-foreground); }
-  .vl-tab[data-active="true"] { border-color: var(--color-primary); background: var(--color-primary); color: var(--color-primary-foreground); }
-
   .vl-status-badge {
     display: inline-flex;
     align-items: center;
@@ -1616,6 +1660,4 @@
 @media (max-width: 767px) {
   .vl-page-container { padding: var(--space-page-y) var(--space-page-x); }
   .vl-page-header { flex-direction: column; }
-  .vl-tabs { overflow-x: auto; }
-  .vl-tab { flex: 0 0 auto; min-width: 7rem; padding-inline: 0.75rem; }
 }

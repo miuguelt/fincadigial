@@ -55,10 +55,17 @@ export const ExecutiveIntelligence: React.FC = () => {
     };
     loadData();
 
+    // Refresco inmediato tras cualquier escritura: las tarjetas del "Cerebro"
+    // deben reflejar lo registrado sin recargar manualmente la página.
+    const handleRefetch = () => { void loadData(); };
+    window.addEventListener('crud:refetch', handleRefetch);
+
     // Obtener estadísticas reales de sincronización Mesh
     const syncState = proximitySync.getSyncState();
     setMeshSyncs(syncState.messagesReceived + syncState.messagesSent);
     setLastSyncAt(syncState.lastSyncAt);
+
+    return () => window.removeEventListener('crud:refetch', handleRefetch);
   }, []);
 
   const handleRunAnalysis = async () => {

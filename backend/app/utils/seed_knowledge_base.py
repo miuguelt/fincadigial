@@ -64,6 +64,16 @@ def _regla(rec, campo, op, valor, valor_max=None, desc=None):
     )
 
 
+def _purge_reglas_de(rec, campo):
+    """Retira reglas obsoletas de una recomendación (p. ej. condiciones sobre
+    ``status`` heredadas de versiones anteriores del motor). Sin esta purga,
+    una regla vieja que ya no aplica seguiría bloqueando la recomendación."""
+    for r in list(rec.reglas):
+        if r.campo_condicion == campo:
+            rec.reglas.remove(r)
+            db.session.delete(r)
+
+
 def _cal(
     codigo,
     nombre,
@@ -465,6 +475,26 @@ def seed_knowledge_base():
         _regla(r, "age_in_days", KBOperador.BETWEEN, 200, 250)
         db.session.add(r)
 
+        # Ejemplo de recomendación combinada por EDAD (desde birth_date) Y PESO:
+        # solo se activa si el ternero está en la ventana de destete y además
+        # no alcanza el peso mínimo de referencia FEDEGAN/AGROSAVIA.
+        r = _rec(
+            "NUT-005",
+            KBCategoria.NUTRICION,
+            "Ternero en Destete con Bajo Peso",
+            "Ternero entre 7-8 meses (200-250 días) que no alcanza el peso objetivo de destete (160 kg mínimo para la mayoría de razas).",
+            "Suplementar y evaluar carga parasitaria; si el peso persiste bajo, descartar causa sanitaria con el veterinario.",
+            KBUrgencia.MEDIA,
+            KBSexo.AMBOS,
+            False,
+            edad_min=200,
+            edad_max=250,
+            fuente="FEDEGAN/AGROSAVIA",
+        )
+        _regla(r, "age_in_days", KBOperador.BETWEEN, 200, 250)
+        _regla(r, "weight", KBOperador.LT, 160)
+        db.session.add(r)
+
         r = _rec(
             "MAN-002",
             KBCategoria.MANEJO,
@@ -539,9 +569,11 @@ def seed_knowledge_base():
             KBUrgencia.MEDIA,
             KBSexo.AMBOS,
             False,
+            edad_min=30,
             fuente="FEDEGAN",
         )
-        _regla(r, "dias_desde_control", KBOperador.GT, 90)
+        _purge_reglas_de(r, "dias_desde_control")
+        _regla(r, "dias_desde_desparasitacion", KBOperador.GT, 90)
         db.session.add(r)
 
         r = _rec(
@@ -555,21 +587,23 @@ def seed_knowledge_base():
             False,
             fuente="ICA Colombia",
         )
-        _regla(r, "status", KBOperador.EQ, "Enfermo")
+        _purge_reglas_de(r, "status")
+        _regla(r, "disease_active", KBOperador.EQ, "true")
         db.session.add(r)
 
         r = _rec(
             "SAN-003",
             KBCategoria.SANIDAD,
             "Animal Enfermo — Cuarentena",
-            'Animal con estado "Enfermo". Riesgo de contagio al ganado.',
+            'Animal con caso clínico abierto. Riesgo de contagio al ganado.',
             "Separar del ganado. Diagnóstico veterinario. Registrar en historial clínico.",
             KBUrgencia.INMEDIATA,
             KBSexo.AMBOS,
             True,
             fuente="ICA Colombia",
         )
-        _regla(r, "status", KBOperador.EQ, "Enfermo")
+        _purge_reglas_de(r, "status")
+        _regla(r, "disease_active", KBOperador.EQ, "true")
         db.session.add(r)
 
         r = _rec(
@@ -612,7 +646,8 @@ def seed_knowledge_base():
             False,
             fuente="ICA Colombia",
         )
-        _regla(r, "dias_desde_control", KBOperador.GT, 180)
+        _purge_reglas_de(r, "dias_desde_control")
+        _regla(r, "dias_desde_vacuna_aftosa", KBOperador.GT, 180)
         db.session.add(r)
 
         r = _rec(

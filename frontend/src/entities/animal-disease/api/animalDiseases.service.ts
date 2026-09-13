@@ -14,6 +14,50 @@ export class AnimalDiseasesService extends BaseService<AnimalDiseaseResponse> {
   }
 
   /**
+   * Retrieves the complete follow-up of a disease episode: progress entries,
+   * linked treatments (with medications and vaccines), vaccinations,
+   * recommendations and the chart series for the evolution graphs.
+   * @param {number | string} id - The episode ID.
+   * @returns {Promise<any>} A promise that resolves to the follow-up payload.
+   */
+  public async getFollowup(id: number | string, cacheBust = false): Promise<any> {
+    return this.customRequest<any>(
+      `${id}/followup${cacheBust ? `?cache_bust=${Date.now()}` : ''}`,
+      'GET',
+      null,
+      cacheBust ? { params: { cache_bust: Date.now() } } : {}
+    );
+  }
+
+  /**
+   * Closes a disease episode: marks the recovery status and the discharge
+   * (recovery) date.
+   * @param {number | string} id - The episode ID.
+   * @param {{ status?: string; recovery_date?: string }} [data] - Close data.
+   * @returns {Promise<AnimalDiseaseResponse>} The updated episode.
+   */
+  public async closeEpisode(
+    id: number | string,
+    data: { status?: string; recovery_date?: string } = {}
+  ): Promise<AnimalDiseaseResponse> {
+    return this.customRequest<AnimalDiseaseResponse>(
+      `${id}/followup/close`,
+      'POST',
+      data
+    );
+  }
+
+  /**
+   * Episodes for the clinical case selector: id, animal/disease labels, status,
+   * severity and the linked-record kinds (Tratamiento, Vacuna, Recomendación
+   * profesional). Used by the treatment form to filter cases by kind.
+   * @returns {Promise<any[]>} A promise that resolves to the case options list.
+   */
+  public async getCaseOptions(): Promise<any[]> {
+    return this.customRequest<any[]>('case-options', 'GET');
+  }
+
+  /**
    * Retrieves a paginated list of animal diseases.
    * @param {object} [options] - Optional parameters for the request.
    * @param {number} [options.page=1] - The page number to retrieve.

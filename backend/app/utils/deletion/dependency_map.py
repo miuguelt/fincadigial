@@ -90,6 +90,10 @@ def _links_from_relationships(model_class: type) -> dict[tuple[str, str], Depend
 
         cascade = "delete" in rel.cascade
         for _local, remote in rel.local_remote_pairs:
+            # La identidad de un animal es una fila auxiliar de auditoría, no
+            # una dependencia operativa que deba mostrarse al usuario.
+            if remote.table.name == "animal_identities":
+                continue
             key = (remote.table.name, remote.name)
             previous = links.get(key)
             links[key] = DependencyLink(
@@ -113,6 +117,8 @@ def _links_from_metadata(
     links = dict(known)
 
     for table in db.metadata.tables.values():
+        if table.name == "animal_identities":
+            continue
         for column in table.columns:
             for fk in column.foreign_keys:
                 if fk.column.table.name != table_name:

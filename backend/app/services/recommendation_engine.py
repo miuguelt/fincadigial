@@ -11,6 +11,8 @@ Fuentes de datos de los campos calculados:
 
 from __future__ import annotations
 import logging
+import re
+import unicodedata
 from datetime import date
 from typing import Any
 
@@ -31,6 +33,43 @@ _URGENCIA_ORDEN = {
     KBUrgencia.MEDIA.value: 2,
     KBUrgencia.BAJA.value: 3,
 }
+
+# Eventos del calendario que se materializan como aplicaciones registradas en
+# ``Vaccinations`` (vacuna o desparasitante). El resto (nutrición, manejo,
+# reproducción) no tiene producto asociado y conserva la heurística anterior.
+_TIPOS_APLICABLES = ("Vacunación", "Desparasitación")
+
+# Términos del catálogo de vacunas que identifican aplicaciones antiparasitarias
+# y de aftosa, para medir el ciclo sanitario en reglas tipo "vencida".
+_TOKEN_DESPARASITANTES = (
+    "ivermectina",
+    "albendazol",
+    "levamisol",
+    "fenbendazol",
+    "doramectina",
+    "moxidectina",
+    "desparasitante",
+)
+_TOKEN_AFTOSA = ("aftosa",)
+
+_TOKEN_RE = re.compile(r"[a-z0-9]{3,}")
+
+
+def _tokens(texto: str | None) -> set[str]:
+    """Tokens alfanuméricos normalizados (minúsculas, sin tildes)."""
+    if not texto:
+        return set()
+    sin_tildes = "".join(
+        c for c in unicodedata.normalize("NFKD", str(texto)) if not unicodedata.combining(c)
+    )
+    return set(_TOKEN_RE.findall(sin_tildes.lower()))
+
+
+def _hay_coincidencia_por_tokens(evento_texto: str, producto_texto: str) -> bool:
+    """True si el evento del calendario comparte vocabulario con una vacuna."""
+    tokens_evento = _tokens(evento_texto)
+    tokens_producto = _tokens(producto_texto)
+    return bool(tokens_evento and tokens_evento & tokens_producto)
 
 
 class RecomendacionMotor:
@@ -79,6 +118,10 @@ class RecomendacionMotor:
         """
         Devuelve los eventos del calendario sanitario pendientes para el animal,
         basados en su edad y el historial de vacunaciones registrado.
+
+        Desde v2.1 la cadencia se mide **por producto aplicado**, no contra la
+        última vacunación global: vacunar contra aftosa ya no "cancela" el ciclo
+        de brucelosis ni el de desparasitación interna.
         """
         from app.models.animals import Animals
         from app.models.vaccinations import Vaccinations
@@ -91,6 +134,11 @@ class RecomendacionMotor:
         sexo = animal.sex.value if animal.sex else "Ambos"
 
         eventos = KBCalendario.query.filter_by(activo=True).all()
+        registros = (
+            Vaccinations.query.filter_by(animal_id=animal_id)
+            .order_by(Vaccinations.vaccination_date.desc())
+            .all()
+        )
         pendientes = []
 
         for evento in eventos:
@@ -103,17 +151,40 @@ class RecomendacionMotor:
             if evento.edad_fin_dias and edad_dias > evento.edad_fin_dias:
                 continue
 
-            # Verificar si ya fue aplicado recientemente
-            if evento.frecuencia_dias and evento.frecuencia_dias > 0:
-                ultima = (
-                    Vaccinations.query.filter_by(animal_id=animal_id)
-                    .order_by(Vaccinations.vaccination_date.desc())
-                    .first()
+            frecuencia = evento.frecuencia_dias or 0
+            es_aplicable = evento.tipo in _TIPOS_APLICABLES
+
+            if es_aplicable:
+                # Solo las aplicaciones cuyo producto coincide con el evento
+                # cuentan para su ciclo (p. ej. aftosa 180 días, brucelosis única).
+                texto_evento = (
+                    f"{evento.nombre} {evento.producto_sugerido or ''} {evento.tipo}"
                 )
-                if ultima:
-                    dias_desde = (date.today() - ultima.vaccination_date).days
-                    if dias_desde < evento.frecuencia_dias:
-                        continue  # Aún no vence
+                relevantes = [
+                    reg
+                    for reg in registros
+                    if reg.vaccines
+                    and _hay_coincidencia_por_tokens(
+                        texto_evento,
+                        f"{reg.vaccines.name} {reg.vaccines.national_plan or ''}",
+                    )
+                ]
+                if frecuencia > 0:
+                    if relevantes:
+                        dias_desde = (
+                            date.today() - relevantes[0].vaccination_date
+                        ).days
+                        if dias_desde < frecuencia:
+                            continue  # Aún no vence el ciclo de este producto
+                elif relevantes:
+                    continue  # Dosis única (frecuencia 0): ya fue aplicada
+
+            elif frecuencia > 0 and registros:
+                # Eventos sin producto (ecografía, cascos, minerales...):
+                # heurística histórica contra la última aplicación registrada.
+                dias_desde = (date.today() - registros[0].vaccination_date).days
+                if dias_desde < frecuencia:
+                    continue
 
             d = evento.to_dict()
             d["animal_id"] = animal_id
@@ -216,7 +287,62 @@ class RecomendacionMotor:
         except Exception:
             ctx["leche_promedio_7d"] = None
 
+        # Estado sanitario derivado de episodios abiertos en animal_diseases.
+        # El catálogo Animals.status (Vivo/Vendido/Muerto) no tiene "Enfermo":
+        # la condición se infiere de casos activos, no del estado vital.
+        try:
+            from app.models.animalDiseases import AnimalDiseases
+
+            episodios = AnimalDiseases.query.filter(
+                AnimalDiseases.animal_id == animal.id,
+                AnimalDiseases.status.notin_(AnimalDiseases.RESOLVED_STATUSES),
+                AnimalDiseases.recovery_date.is_(None),
+            ).count()
+            ctx["enfermedades_activas"] = episodios
+            ctx["disease_active"] = episodios > 0
+        except Exception:
+            ctx["enfermedades_activas"] = 0
+            ctx["disease_active"] = False
+
+        # Ciclos preventivos por tipo de producto (desparasitación / aftosa).
+        # Sin aplicación registrada del tipo se usa 9999 (nunca aplicado →
+        # vencido), coherente con la heurística histórica de "días desde".
+        try:
+            ctx["dias_desde_desparasitacion"] = cls._dias_desde_aplicacion_por_tokens(
+                animal.id, _TOKEN_DESPARASITANTES
+            )
+            ctx["dias_desde_vacuna_aftosa"] = cls._dias_desde_aplicacion_por_tokens(
+                animal.id, _TOKEN_AFTOSA
+            )
+        except Exception:
+            ctx["dias_desde_desparasitacion"] = 9999
+            ctx["dias_desde_vacuna_aftosa"] = 9999
+
         return ctx
+
+    @classmethod
+    def _dias_desde_aplicacion_por_tokens(
+        cls, animal_id: int, tokens_busqueda: tuple[str, ...]
+    ) -> int | None:
+        """Días desde la última aplicación cuyo producto contiene algún término.
+
+        Retorna 9999 cuando nunca se registró una aplicación del tipo (equivale
+        a "vencido") y None solo ante errores de consulta.
+        """
+        from app.models.vaccinations import Vaccinations
+
+        registros = Vaccinations.query.filter_by(animal_id=animal_id).order_by(
+            Vaccinations.vaccination_date.desc()
+        )
+        for reg in registros:
+            if not reg.vaccines:
+                continue
+            nombre = (
+                f"{reg.vaccines.name} {reg.vaccines.national_plan or ''}"
+            ).lower()
+            if any(tok in nombre for tok in tokens_busqueda):
+                return (date.today() - reg.vaccination_date).days
+        return 9999
 
     # ──────────────────────────────────────────────────────────────────────────
     # Evaluación de reglas

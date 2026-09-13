@@ -1,4 +1,4 @@
-﻿import { BaseService } from '@/shared/api/base-service';
+import { BaseService } from '@/shared/api/base-service';
 
 export interface Task {
   id: number;
@@ -26,7 +26,7 @@ class TaskService extends BaseService<Task> {
   }
 
   async updateStatus(id: number, status: Task['status']): Promise<any> {
-    return this.customRequest(`${id}/status`, 'PATCH', { status });
+    return this.patch(id, { status });
   }
 }
 

@@ -37,4 +37,47 @@ export const buildAnimalFormSections = ({ breedOptions, fatherOptions, motherOpt
       { name: 'exit_reason', label: 'Motivo de Salida', type: 'text', placeholder: 'Ej: Venta, Traslado, Muerte' },
     ],
   },
+  {
+    title: 'Transferencia e historial', gridCols: 3,
+    fields: [
+      {
+        name: 'claim_code',
+        label: 'Código privado del vendedor (opcional)',
+        type: 'text',
+        placeholder: 'Ej: VL-ABC123...',
+        showIf: (data: any) => !data?.id,
+        helperText: 'Si recibió un código al comprar el animal, introdúzcalo para solicitar la asociación del historial.',
+      },
+      {
+        name: 'request_history',
+        label: 'Buscar una venta coincidente antes de crear otro animal',
+        type: 'checkbox',
+        placeholder: 'Solicitar al propietario original compartir el historial',
+        showIf: (data: any) => !data?.id,
+        helperText: 'La finca de origen recibirá una notificación y decidirá si acepta la transferencia.',
+      },
+      {
+        name: 'official_code',
+        label: 'Código oficial ICA/SINIGAN (opcional)',
+        type: 'text',
+        placeholder: 'Se guardará como pendiente de verificación oficial',
+        showIf: (data: any) => !data?.id,
+        helperText: 'La consulta automática a la plataforma oficial queda preparada para una futura integración; nunca se marca como verificado por este dato solo.',
+      },
+      {
+        name: 'nfc_uid',
+        label: 'UID NFC / arete electrónico (opcional)',
+        type: 'text',
+        placeholder: 'Identificador leído del dispositivo',
+        showIf: (data: any) => !data?.id,
+      },
+      {
+        name: 'lf_tag_code',
+        label: 'Código arete LF (opcional)',
+        type: 'text',
+        placeholder: 'Código del arete de baja frecuencia',
+        showIf: (data: any) => !data?.id,
+      },
+    ],
+  },
 ];

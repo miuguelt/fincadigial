@@ -30,7 +30,7 @@ from app.services.reproduction import apply_event_effects, load_rules  # noqa: E
 
 #: Prefijo de los animales creados por este script, para poder revertirlo.
 DEMO_PREFIX = "DEMO-R"
-#: Composición objetivo del hato de prueba.
+#: Composición objetivo del ganado de prueba.
 TARGET_FEMALES = 24
 TARGET_SIRES = 3
 #: Probabilidades del modelo de simulación.
@@ -87,7 +87,7 @@ def _ensure_animals(
     base_age_days: int,
     rng: random.Random,
 ) -> list[Animals]:
-    """Completa el hato hasta el tamaño objetivo con animales de prueba."""
+    """Completa el ganado hasta el tamaño objetivo con animales de prueba."""
     existing = Animals.query.filter_by(
         finca_id=finca_id, sex=sex, status=AnimalStatus.Vivo
     ).all()

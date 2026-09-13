@@ -84,7 +84,9 @@ class APIResponse:
         if meta:
             response["meta"] = meta
 
-        logger.info(f"Success response: {status_code} - {message}")
+        # A log line per successful request becomes a significant I/O cost at
+        # scale and drowns out actionable warnings. Keep it available in DEBUG.
+        logger.debug("Success response: %s - %s", status_code, message)
         return response, status_code
 
     @staticmethod

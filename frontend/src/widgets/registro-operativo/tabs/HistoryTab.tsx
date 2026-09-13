@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react';
-import { RefreshCw } from 'lucide-react';
-import { Button } from '@/shared/ui/button';
-import { getTodayColombia } from '@/shared/utils/dateUtils';
+import { ChevronRight } from 'lucide-react';
 import type { HistoryRecord } from '../types';
-import { RECORD_KINDS, RECORD_CHIP_CLASS } from '../record-kinds';
+import { RECORD_KINDS, RECORD_CHIP_CLASS, RECORD_TILE_CLASS } from '../record-kinds';
+import { formatRecordDate } from './dateGrouping';
+import { FilterChips, type FilterChipItem } from '../components/FilterChips';
+import { ListEmpty, ListError, ListSkeleton } from '../components/ListStates';
+import { HistoryRecordDetailModal } from '../components/HistoryRecordDetailModal';
 
 interface HistoryTabProps {
   records: HistoryRecord[];
@@ -14,33 +16,12 @@ interface HistoryTabProps {
 
 type FilterKey = 'all' | HistoryRecord['type'];
 
-/* Etiqueta, emoji y tono salen del catálogo compartido: aquí no se inventa paleta. */
-const FILTER_ORDER: HistoryRecord['type'][] = [
-  'milking', 'treatment', 'disease', 'control', 'transfer', 'finance',
-];
-
-const FILTERS: { key: FilterKey; label: string }[] = [
-  { key: 'all', label: '📋 Todo' },
-  ...FILTER_ORDER.map(key => ({
-    key: key as FilterKey,
-    label: `${RECORD_KINDS[key].emoji} ${RECORD_KINDS[key].label}`,
-  })),
-];
-
 const PAGE_SIZE = 50;
-
-function formatRecordDate(value?: string): string {
-  if (!value) return 'Sin fecha';
-  const day = String(value).split('T')[0];
-  if (day === getTodayColombia()) return 'Hoy';
-  try {
-    return new Date(day + 'T12:00:00').toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
-  } catch { return day; }
-}
 
 export function HistoryTab({ records, loading, errored = false, onRetry }: HistoryTabProps) {
   const [filter, setFilter] = useState<FilterKey>('all');
   const [visible, setVisible] = useState(PAGE_SIZE);
+  const [selectedRecord, setSelectedRecord] = useState<HistoryRecord | null>(null);
 
   const counts = useMemo(() => {
     const map = new Map<FilterKey, number>([['all', records.length]]);
@@ -48,29 +29,31 @@ export function HistoryTab({ records, loading, errored = false, onRetry }: Histo
     return map;
   }, [records]);
 
+  const filterItems: FilterChipItem[] = useMemo(() => {
+    const order: HistoryRecord['type'][] = ['milking', 'treatment', 'disease', 'control', 'transfer', 'finance'];
+    return order
+      .filter(key => (counts.get(key) ?? 0) > 0)
+      .map(key => ({
+        key,
+        label: `${RECORD_KINDS[key].emoji} ${RECORD_KINDS[key].label}`,
+        count: counts.get(key) ?? 0,
+      }));
+  }, [counts]);
+
   const filtered = useMemo(
     () => (filter === 'all' ? records : records.filter(r => r.type === filter)),
     [records, filter],
   );
 
-  if (loading) {
-    return (
-      <div className="space-y-3">
-        {[1, 2, 3].map(i => <div key={i} className="h-16 rounded-lg bg-muted animate-pulse" />)}
-      </div>
-    );
-  }
+  if (loading) return <ListSkeleton />;
 
   if (errored) {
     return (
-      <div className="text-center py-12 space-y-3">
-        <span className="text-4xl" aria-hidden="true">⚠️</span>
-        <p className="text-muted-foreground font-medium">No se pudo cargar el historial</p>
-        <p className="text-sm text-muted-foreground">Revise la conexión e intente de nuevo.</p>
-        <Button type="button" variant="outline" onClick={onRetry} className="mx-auto mt-1 gap-2">
-          <RefreshCw className="w-4 h-4" aria-hidden="true" /> Reintentar
-        </Button>
-      </div>
+      <ListError
+        title="No se pudo cargar el historial"
+        hint="Revise la conexión e intente de nuevo."
+        onRetry={onRetry}
+      />
     );
   }
 
@@ -78,31 +61,21 @@ export function HistoryTab({ records, loading, errored = false, onRetry }: Histo
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-        {FILTERS.map(f => {
-          const count = counts.get(f.key) ?? 0;
-          if (f.key !== 'all' && count === 0) return null;
-          return (
-            <button key={f.key} type="button" onClick={() => { setFilter(f.key); setVisible(PAGE_SIZE); }} aria-pressed={filter === f.key}
-              className={`min-h-10 px-3 rounded-lg text-xs font-semibold whitespace-nowrap border transition-colors ${filter === f.key ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-muted-foreground border-border hover:border-primary hover:text-primary'}`}>
-              {f.label} ({count})
-            </button>
-          );
-        })}
-      </div>
+      <FilterChips
+        ariaLabel="Filtrar historial por tipo"
+        items={[{ key: 'all', label: '📋 Todo', count: counts.get('all') ?? 0 }, ...filterItems]}
+        active={filter}
+        onChange={key => { setFilter(key as FilterKey); setVisible(PAGE_SIZE); }}
+      />
 
       {filtered.length === 0 ? (
-        <div className="text-center py-12 space-y-2">
-          <span className="text-4xl" aria-hidden="true">📊</span>
-          <p className="text-muted-foreground font-medium">
-            {records.length === 0 ? 'Todavía no hay registros' : 'Ningún registro de este tipo'}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {records.length === 0
-              ? 'Lo que registre en Agricultura y Ganadería aparece aquí.'
-              : 'Cambie el filtro para ver los demás movimientos.'}
-          </p>
-        </div>
+        <ListEmpty
+          emoji="📊"
+          title={records.length === 0 ? 'Todavía no hay registros' : 'Ningún registro de este tipo'}
+          hint={records.length === 0
+            ? 'Lo que registre en Agricultura y Ganadería aparece aquí.'
+            : 'Cambie el filtro para ver los demás movimientos.'}
+        />
       ) : (
         <>
           <p className="text-xs text-muted-foreground">
@@ -112,7 +85,14 @@ export function HistoryTab({ records, loading, errored = false, onRetry }: Histo
             {shown.map(r => {
               const kind = RECORD_KINDS[r.type];
               return (
-                <div key={r.id} className="flex items-start gap-3 rounded-lg border border-border bg-card p-3 shadow-sm">
+                <button
+                  key={r.id}
+                  type="button"
+                  className={`${RECORD_TILE_CLASS} group hover:bg-muted/20`}
+                  aria-label={`Ver detalle de ${kind.label}: ${r.details}`}
+                  title="Abrir detalle completo"
+                  onClick={() => setSelectedRecord(r)}
+                >
                   <span className={`${RECORD_CHIP_CLASS} ${kind.chip}`} aria-hidden="true">{kind.emoji}</span>
                   <div className="flex-1 min-w-0" style={{ overflowWrap: 'break-word' }}>
                     <div className="flex items-baseline justify-between gap-2">
@@ -123,18 +103,21 @@ export function HistoryTab({ records, loading, errored = false, onRetry }: Histo
                     <p className="text-sm mt-1 text-foreground">{r.details}</p>
                     {r.notes && <p className="text-xs mt-0.5 text-muted-foreground italic">{r.notes}</p>}
                   </div>
-                </div>
+                  <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                </button>
               );
             })}
           </div>
           {visible < filtered.length && (
             <button type="button" onClick={() => setVisible(v => v + PAGE_SIZE)}
-              className="w-full min-h-11 rounded-lg border border-border bg-card text-sm font-semibold text-primary hover:border-primary transition-colors">
+              className="w-full min-h-11 rounded-lg border border-border bg-card text-sm font-semibold text-primary hover:border-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background">
               Ver {Math.min(PAGE_SIZE, filtered.length - visible)} más
             </button>
           )}
         </>
       )}
+
+      <HistoryRecordDetailModal record={selectedRecord} onClose={() => setSelectedRecord(null)} />
     </div>
   );
 }

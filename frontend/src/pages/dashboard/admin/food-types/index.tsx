@@ -20,6 +20,7 @@ import {
   Leaf,
   Plus,
 } from 'lucide-react';
+import { ZootecnicToolsDropdown, type ZootecnicToolItem } from '@/widgets/dashboard/ZootecnicToolsDropdown';
 import {
   FoodTypesHeader,
   FoodCategoryTabs,
@@ -298,93 +299,98 @@ export const AdminFoodTypesPage: React.FC = () => {
     [fields, handleOpenDetail, handleOpenEdit, handleOpenAforo]
   );
 
-  // ─── Toolbar Personalizado con Filtros & Herramientas ──────────────────────
+  // ─── Herramientas Zootécnicas y Agronómicas ──────────────────────────────
+  const zootecnicTools: ZootecnicToolItem[] = useMemo(
+    () => [
+      {
+        id: 'raciones',
+        label: 'Calculadora de Raciones',
+        shortLabel: 'Raciones',
+        description: 'Balanceo nutricional de materia seca (MS) y proteína cruda (PC) para bovinos',
+        icon: <Calculator size={15} className="text-blue-500" />,
+        onClick: () => setIsRationModalOpen(true),
+        highlight: true,
+      },
+      {
+        id: 'aforo',
+        label: 'Aforo de Pasturas',
+        shortLabel: 'Aforo de Pastos',
+        description: 'Cálculo agronómico de rendimiento por m² y capacidad de carga',
+        icon: <Scale size={15} className="text-emerald-500" />,
+        onClick: () => handleOpenAforo(),
+        highlight: true,
+      },
+      {
+        id: 'semaforo',
+        label: 'Semáforo de Reposo',
+        shortLabel: 'Semáforo Reposo',
+        description: 'Monitoreo de descanso y tiempo de rebrote de potreros',
+        icon: <Sprout size={15} className="text-amber-500" />,
+        onClick: () => setIsRestModalOpen(true),
+      },
+    ],
+    [handleOpenAforo]
+  );
+
+  // ─── Toolbar Personalizado con Filtros & Herramientas (Fila 2) ────────────
   const customToolbar = useMemo(
     () => (
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 w-full pb-2">
-        {/* Selector de Categorías Forrajeras */}
-        <FoodCategoryTabs
-          activeCategory={activeCategory}
-          onSelectCategory={setActiveCategory}
-          counts={categoryCounts}
-        />
-
-        {/* Herramientas Zootécnicas & Conmutador de Vistas */}
-        <div className="flex items-center gap-2 shrink-0 self-end md:self-auto">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 gap-1.5 px-3 text-xs font-bold border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 shadow-xs"
-            onClick={() => handleOpenAforo()}
-            title="Calculadora de Aforo de Pasturas"
-          >
-            <Scale size={14} className="text-emerald-500" />
-            <span className="hidden sm:inline">Aforo de</span> Pastos
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 gap-1.5 px-3 text-xs font-bold border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 shadow-xs"
-            onClick={() => setIsRestModalOpen(true)}
-            title="Semáforo de Reposo y Rebrote de Potreros"
-          >
-            <Sprout size={14} className="text-amber-500" />
-            <span className="hidden sm:inline">Semáforo</span> Reposo
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 gap-1.5 px-3 text-xs font-bold border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 shadow-xs"
-            onClick={() => setIsRationModalOpen(true)}
-            title="Calculadora de Raciones y Concentrados"
-          >
-            <Calculator size={14} className="text-blue-500" />
-            <span className="hidden sm:inline">Raciones</span>
-          </Button>
-
-          {/* View mode toggle */}
-          <div className="flex items-center bg-muted/60 p-0.5 rounded-xl border border-border/50">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 w-full">
+        {/* Lado izquierdo: Selector de vistas + Categorías forrajeras */}
+        <div className="flex items-center gap-2 min-w-0 flex-1 overflow-x-auto no-scrollbar py-0.5">
+          {/* Conmutador de vistas compacto */}
+          <div className="flex items-center bg-card/60 p-0.5 rounded-xl border border-border/50 shrink-0 shadow-2xs">
             <Button
-              variant="ghost"
-              size="icon"
-              className={`h-7 w-7 rounded-lg ${viewMode === 'cards' ? 'bg-card shadow-xs text-foreground' : 'text-muted-foreground'}`}
+              variant={viewMode === 'cards' ? 'primary' : 'ghost'}
+              size="sm"
+              className="h-7 px-2.5 text-xs font-bold gap-1 rounded-lg"
               onClick={() => setViewMode('cards')}
-              title="Vista Cuadrícula / Tarjetas Bento"
+              title="Vista Tarjetas Bento"
             >
-              <LayoutGrid size={14} />
+              <LayoutGrid size={13} />
+              <span className="hidden md:inline">Tarjetas</span>
             </Button>
             <Button
-              variant="ghost"
-              size="icon"
-              className={`h-7 w-7 rounded-lg ${viewMode === 'table' ? 'bg-card shadow-xs text-foreground' : 'text-muted-foreground'}`}
+              variant={viewMode === 'table' ? 'primary' : 'ghost'}
+              size="sm"
+              className="h-7 px-2.5 text-xs font-bold gap-1 rounded-lg"
               onClick={() => setViewMode('table')}
               title="Vista Tabla Detallada"
             >
-              <TableIcon size={14} />
+              <TableIcon size={13} />
+              <span className="hidden md:inline">Tabla</span>
             </Button>
           </div>
 
-          {/* Botón de Crear Nuevo Forraje / Alimento */}
-          <Button
-            size="sm"
-            className="h-8 gap-1.5 px-3.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs shadow-emerald-600/25 rounded-xl"
-            onClick={handleOpenCreate}
-          >
-            <Plus size={14} />
-            <span>Nuevo</span>
-          </Button>
+          <div className="h-5 w-px bg-border/60 mx-0.5 hidden sm:block shrink-0" />
+
+          {/* Selector de Categorías Forrajeras */}
+          <div className="min-w-0 flex-1">
+            <FoodCategoryTabs
+              activeCategory={activeCategory}
+              onSelectCategory={setActiveCategory}
+              counts={categoryCounts}
+            />
+          </div>
+        </div>
+
+        {/* Lado derecho: Herramientas Zootécnicas */}
+        <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
+          <ZootecnicToolsDropdown
+            tools={zootecnicTools}
+            label="Herramientas"
+            align="end"
+            showHighlightedDirectly={true}
+          />
         </div>
       </div>
     ),
     [
       activeCategory,
       categoryCounts,
-      handleOpenAforo,
-      handleOpenCreate,
       viewMode,
       setViewMode,
+      zootecnicTools,
     ]
   );
 
@@ -396,6 +402,8 @@ export const AdminFoodTypesPage: React.FC = () => {
       columns,
       customHeader: <FoodTypesHeader items={currentItems} fields={fields} />,
       customToolbar,
+      toolbarPlacement: 'row',
+      onOpenCreate: handleOpenCreate,
       viewMode,
       renderCard: renderFoodTypeCard,
       cardGridClassName: 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-5 !auto-rows-max',
@@ -403,12 +411,12 @@ export const AdminFoodTypesPage: React.FC = () => {
       emptyStateMessage: 'No se encontraron alimentos ni forrajes',
       emptyStateDescription: 'Registra una nueva pastura o alimento para comenzar a monitorear la nutrición.',
       enableDetailModal: false,
-      enableCreateModal: false,
+      enableCreateModal: true,
       enableEditModal: false,
       enableDelete: true,
       onOpenDetail: handleOpenDetail,
     }),
-    [columns, currentItems, fields, customToolbar, viewMode, renderFoodTypeCard, handleOpenDetail]
+    [columns, currentItems, fields, customToolbar, viewMode, renderFoodTypeCard, handleOpenDetail, handleOpenCreate]
   );
 
   // Filtro por categoría en memoria para la lista
@@ -439,6 +447,7 @@ export const AdminFoodTypesPage: React.FC = () => {
         filterItems={filterItemsByCategory}
         onItemsChange={setCurrentItems}
         onOpenDetail={handleOpenDetail}
+        onOpenCreate={handleOpenCreate}
         realtime={true}
         pollIntervalMs={0}
         refetchOnFocus={false}

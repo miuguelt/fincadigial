@@ -10,6 +10,8 @@ const form = (overrides: Partial<SignUpFormData> = {}): SignUpFormData => ({
   identification_number: '1094123456',
   role: 'Aprendiz',
   address: '',
+  privacy_notice_accepted: true,
+  terms_accepted: true,
   ...overrides,
 });
 

@@ -71,6 +71,8 @@ def test_campesino_v1_crud_smoke(client, token_for):
         )
     )
 
+    import uuid
+
     _assert_created(
         client.post(
             f"{BASE}/market-offers",
@@ -79,8 +81,10 @@ def test_campesino_v1_crud_smoke(client, token_for):
                 "product_name": "Queso campesino",
                 "quantity": 20,
                 "unit": "kg",
+                "delivery_location": "Vélez",
+                "community_visible": True,
             },
-            headers=headers,
+            headers={**headers, "Idempotency-Key": str(uuid.uuid4())},
         )
     )
 

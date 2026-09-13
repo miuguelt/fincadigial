@@ -123,5 +123,8 @@
     "vite-plugin-compression2": "^2.5.3",
     "vite-plugin-pwa": "^1.0.3",
     "vitest": "^4.1.6"
+  },
+  "overrides": {
+    "@radix-ui/react-dismissable-layer": "1.1.11"
   }
 }

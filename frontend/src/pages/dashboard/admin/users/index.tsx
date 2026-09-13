@@ -35,6 +35,7 @@ function AdminUsersPageWrapper() {
         config={{
           ...crudConfig,
           columns,
+          toolbarPlacement: 'row',
           customActions: (item) => <UserCustomActions item={item} currentUser={currentUser} contactIds={chatContactIds} onOpenChat={openChatWith} />,
           customToolbar: <UserPageToolbar viewMode={viewMode} onViewModeChange={setViewMode} onOpenChat={() => openFloatingChat()} />,
           customHeader: <UsersBentoHeader items={items} />,

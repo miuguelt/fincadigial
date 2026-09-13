@@ -20,6 +20,7 @@ import { Card, CardContent, CardFooter } from '@/shared/ui/card';
 import { PotrerosBoardPage, AforoCalculatorModal, PastureRestModal, getStandardRestDays } from '@/features/potreros';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Badge } from '@/shared/ui/badge';
+import { ZootecnicToolsDropdown } from '@/widgets/dashboard/ZootecnicToolsDropdown';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 type FieldFormInput = {
@@ -509,9 +510,39 @@ const FieldsViewSwitcher: React.FC<FieldsViewSwitcherProps> = ({
     setViewMode(mode);
   };
 
+  const potreroTools = useMemo(() => [
+    ...(onOpenAforo
+      ? [
+          {
+            id: 'aforo',
+            label: 'Aforo de Pasturas',
+            shortLabel: 'Aforo de Pastos',
+            description: 'Calculadora agronómica de biomasa, capacidad de carga y días de ocupación',
+            icon: <Scale size={15} className="text-emerald-500" />,
+            onClick: () => onOpenAforo(),
+            highlight: true,
+          },
+        ]
+      : []),
+    ...(onOpenRestModal
+      ? [
+          {
+            id: 'semaforo',
+            label: 'Semáforo de Reposo',
+            shortLabel: 'Semáforo de Reposo',
+            description: 'Semáforo de recuperación, descanso y rebrote de potreros',
+            icon: <Sprout size={15} className="text-amber-500" />,
+            onClick: onOpenRestModal,
+            highlight: true,
+          },
+        ]
+      : []),
+  ], [onOpenAforo, onOpenRestModal]);
+
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <div className="flex items-center gap-1 bg-muted/40 p-0.5 rounded-xl border border-border/50">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 w-full">
+      {/* Selector de vistas */}
+      <div className="flex items-center gap-1 bg-card/60 p-0.5 rounded-xl border border-border/50 shrink-0 shadow-2xs">
         <Button
           variant={!isRotationView && viewMode === 'table' ? 'primary' : 'ghost'}
           size="sm"
@@ -546,33 +577,16 @@ const FieldsViewSwitcher: React.FC<FieldsViewSwitcherProps> = ({
         </Button>
       </div>
 
-      <div className="h-5 w-px bg-border/60 mx-0.5 hidden sm:block" />
-
-      {/* Herramientas zootécnicas para el campesino */}
-      {onOpenAforo && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1.5 px-3 text-xs font-bold border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 shadow-sm"
-          onClick={onOpenAforo}
-          title="Calculadora de aforo de pasturas y capacidad de carga"
-        >
-          <Scale size={14} className="text-emerald-500" />
-          Aforo de Pastos
-        </Button>
-      )}
-
-      {onOpenRestModal && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1.5 px-3 text-xs font-bold border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 shadow-sm"
-          onClick={onOpenRestModal}
-          title="Semáforo de recuperación y descanso de potreros"
-        >
-          <Sprout size={14} className="text-amber-500" />
-          Semáforo de Reposo
-        </Button>
+      {/* Herramientas zootécnicas para el campo */}
+      {potreroTools.length > 0 && (
+        <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
+          <ZootecnicToolsDropdown
+            tools={potreroTools}
+            label="Herramientas"
+            align="end"
+            showHighlightedDirectly={true}
+          />
+        </div>
       )}
     </div>
   );
@@ -925,6 +939,7 @@ function FieldsCrudPage({ viewSwitcher, onOpenAforo }: FieldsCrudPageProps) {
     renderCard: renderFieldCard,
     cardGridClassName: 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 lg:gap-6 !auto-rows-max',
     customToolbar: viewSwitcher,
+    toolbarPlacement: 'row',
     customActions: isCampesino ? undefined : (record: any) => (
       <div className="flex items-center gap-1">
         <FieldActionsMenu field={record as FieldResponse} />

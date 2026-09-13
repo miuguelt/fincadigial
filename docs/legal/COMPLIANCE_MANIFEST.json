@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "project": "VillaLuz",
+  "jurisdiction": "CO",
+  "profile": "P2",
+  "sector_profile": "SENA_PUBLIC_ENTITY",
+  "institutional_mode": "approved_technical_pedagogical_pending_operational_release",
+  "status": "blocked",
+  "last_reviewed": "2026-09-10",
+  "controller": {
+    "legal_name": "<NOMBRE_LEGAL_RESPONSABLE>",
+    "tax_id": "<NIT_O_IDENTIFICACION>",
+    "address": "<DOMICILIO>",
+    "privacy_contact": "<CORREO_PRIVACIDAD>",
+    "privacy_officer": "<RESPONSABLE_PRIVACIDAD>"
+  },
+  "institutional_context": {
+    "institution": "Servicio Nacional de Aprendizaje - SENA",
+    "approval_status": "reported_approved_pending_documentary_evidence",
+    "approval_document_type": "<ACTA_O_ACTO_INSTITUCIONAL>",
+    "approval_document_number": "<NUMERO_ACTA_O_ACTO>",
+    "approval_date": "<FECHA_APROBACION>",
+    "approval_body": "<DIRECTIVA_COMITE_U_ORGANO>",
+    "approval_scope": "producto técnico-pedagógico; alcance de producción pendiente",
+    "approval_evidence_file": "docs/legal/evidence/sena-approval/ACTA_APROBACION_SENA_REDACTADA.pdf",
+    "approval_evidence_sha256": "<HASH_DEL_DOCUMENTO_REDACTADO>",
+    "approval_original_location": "<UBICACION_INSTITUCIONAL_RESTRINGIDA>",
+    "approval_access_restriction": "Original bajo custodia institucional; copia pública redactada",
+    "contract_or_agreement": "<NUMERO_CONTRATO_O_CONVENIO>",
+    "institutional_sponsor": "<DEPENDENCIA_CENTRO_O_REGIONAL>",
+    "process_owner": "<DUEÑO_DEL_PROCESO>",
+    "systems_integration_authorization": "pending",
+    "brand_authorization": "pending",
+    "coolify_hosting_approval": "pending",
+    "production_domain": "<DOMINIO_AUTORIZADO>"
+  },
+  "processing_roles": {
+    "intended_controller": "SENA, si determina finalidades y medios institucionales",
+    "intended_processor": "<PROVEEDOR_VILLALUZ>",
+    "subprocessors": "<LISTA_POR_APROBAR>"
+  },
+  "software_rights": {
+    "license": "MIT",
+    "license_file": "LICENSE",
+    "copyright_holder": "VillaLuz contributors; validar titularidad contractual SENA",
+    "third_party_license_review": "pending",
+    "contributor_policy": "CONTRIBUTING.md",
+    "sena_brand_authorization": "pending"
+  },
+  "required_profiles": [
+    "personal_data",
+    "multi_tenant",
+    "file_uploads",
+    "geolocation",
+    "veterinary_or_livestock_records",
+    "offline_sync"
+  ],
+  "controls": {
+    "privacy_notice_visible_before_collection": false,
+    "consent_evidence_versioned": false,
+    "optional_purposes_separated": false,
+    "data_subject_requests_operational": false,
+    "retention_and_deletion_implemented": false,
+    "processor_and_transfer_register_approved": false,
+    "rnbd_analysis_approved": false,
+    "private_file_access_enforced": false,
+    "tenant_isolation_tested": false,
+    "mfa_for_privileged_roles": false,
+    "secrets_rotated": false,
+    "encrypted_offsite_backups_tested": false,
+    "incident_response_tested": false,
+    "dependency_and_container_scan_passing": false,
+    "ip_and_open_source_review_approved": false,
+    "electronic_acceptance_evidence_preserved": false,
+    "official_ica_integration_authorized": false
+  },
+  "release_rule": "No production with real personal data while status is blocked or any critical control is false.",
+  "evidence_directory": "docs/legal/evidence/"
+}

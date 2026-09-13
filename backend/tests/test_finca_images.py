@@ -1,3 +1,5 @@
+from urllib.parse import urlparse
+
 from flask_jwt_extended import create_access_token
 
 from app import db
@@ -39,7 +41,9 @@ def test_image_list_is_public_and_returns_real_image_data(client, app):
     assert response.status_code == 200
     data = response.get_json()["data"]
     assert data["total"] == 1
-    assert data["images"][0]["url"].endswith("paisaje.webp")
+    image_url = urlparse(data["images"][0]["url"])
+    assert image_url.path.endswith("/paisaje.webp")
+    assert "sig" in image_url.query
 
 
 def test_image_upload_is_forbidden_without_finca_membership(client, app):
@@ -69,3 +73,34 @@ def test_image_upload_is_forbidden_without_finca_membership(client, app):
     )
 
     assert response.status_code == 403
+
+
+def test_image_upload_is_allowed_for_system_administrator(client, app):
+    with app.app_context():
+        from tests.conftest import get_test_password
+
+        finca = _create_finca("Finca administrada globalmente")
+        admin = User.create(
+            identification=91919191,
+            fullname="Administrador Global",
+            password=get_test_password(),
+            email="admin-global@tests.villaluz",
+            phone="3009191919",
+            role=Role.Administrador,
+            approval_status=ApprovalStatus.Approved,
+            finca_id=None,
+        )
+        db.session.commit()
+        headers = _auth_headers(admin.id)
+        finca_id = finca.id
+
+    response = client.post(
+        "/api/v1/finca-images/upload",
+        data={"finca_id": str(finca_id)},
+        headers=headers,
+        content_type="multipart/form-data",
+    )
+
+    # Debe pasar la compuerta de permisos (no 403) y fallar por falta de archivos (400)
+    assert response.status_code == 400
+    assert "archivos" in response.get_json().get("message", "").lower()

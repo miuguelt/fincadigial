@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { FoodTypes } from '@/entities/food-type/model/types';
 import { Save } from 'lucide-react';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
@@ -71,7 +71,12 @@ const FoodTypeForm: React.FC<FoodTypeFormProps> = ({ initialData, onSubmit, load
       return;
     }
 
-    onSubmit({ ...form, area: form.area === undefined ? undefined : Number(form.area) });
+    const payload: any = {
+      ...form,
+      area: form.area === undefined ? undefined : Math.round(Number(form.area)),
+      harvest_date: form.harvest_date?.trim() ? form.harvest_date.trim() : undefined,
+    };
+    onSubmit(payload);
   };
 
   return (

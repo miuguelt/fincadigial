@@ -5,6 +5,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { normalizeRole } from '@/features/auth/api/auth.service';
 import { cn } from '@/shared/ui/cn';
+import { getRouteSection } from '@/shared/lib/routeAccess';
 import { FitText } from '@/shared/ui/FitText';
 import {
   findActiveSanidadTab,
@@ -20,12 +21,17 @@ export {
 
 interface SanidadTabsProps {
   className?: string;
+  /**
+   * Contadores por sección (p. ej. `{ 'disease-animals': 13, treatments: 47 }`)
+   * que se pintan como badge en el botón del grupo correspondiente.
+   */
+  counts?: Record<string, number>;
 }
 
 /**
  * Navegación contextual única para todas las vistas de sanidad.
  */
-export const SanidadTabs: React.FC<SanidadTabsProps> = ({ className }) => {
+export const SanidadTabs: React.FC<SanidadTabsProps> = ({ className, counts }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, role } = useAuth() as any;
@@ -74,13 +80,15 @@ export const SanidadTabs: React.FC<SanidadTabsProps> = ({ className }) => {
           </div>
 
           <div
-            className="grid grid-cols-3 gap-1 sm:flex sm:items-center sm:gap-1 bg-muted/40 p-0.5 rounded-xl border border-border/30"
+            className="grid grid-cols-2 gap-1 sm:flex sm:items-center sm:gap-1 bg-muted/40 p-0.5 rounded-xl border border-border/30"
             aria-label="Secciones de sanidad"
           >
             {visibleGroups.map(([groupId, group]) => {
               const isActiveGroup = activeGroupId === groupId;
               const firstItemPath = group.items[0]?.path;
               if (!firstItemPath) return null;
+
+              const count = counts?.[getRouteSection(firstItemPath)];
 
               return (
                 <button
@@ -104,6 +112,14 @@ export const SanidadTabs: React.FC<SanidadTabsProps> = ({ className }) => {
                   <FitText as="span" minScale={0.8} className="hidden min-w-0 sm:inline">
                     {group.title}
                   </FitText>
+                  {count !== undefined && count > 0 && (
+                    <span className={cn(
+                      'px-1.5 py-0.5 rounded-full text-[11px] font-black leading-none',
+                      isActiveGroup ? 'bg-white/25 text-white' : 'bg-muted/40 text-muted-foreground',
+                    )}>
+                      {count}
+                    </span>
+                  )}
                 </button>
               );
             })}

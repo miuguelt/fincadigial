@@ -1,0 +1,5201 @@
+{
+  "activity_daily_agg": {
+    "models": [
+      {
+        "name": "ActivityDailyAgg",
+        "module": "app.models.activity_daily_agg",
+        "columns": [
+          "id",
+          "date",
+          "actor_id",
+          "entity",
+          "action",
+          "severity",
+          "animal_id",
+          "count",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_tenant_isolation.py": [
+        "model:ActivityDailyAgg"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "activity_log": {
+    "models": [
+      {
+        "name": "ActivityLog",
+        "module": "app.models.activity_log",
+        "columns": [
+          "id",
+          "action",
+          "entity",
+          "entity_id",
+          "title",
+          "description",
+          "severity",
+          "actor_id",
+          "animal_id",
+          "relations",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_activity_service.py": [
+        "table_word:activity_log",
+        "model:ActivityLog"
+      ],
+      "test_tenant_isolation.py": [
+        "model:ActivityLog"
+      ],
+      "test_users_service.py": [
+        "table_word:activity_log",
+        "model:ActivityLog"
+      ]
+    },
+    "test_count": 3,
+    "has_tests": true
+  },
+  "animal_alert_configs": {
+    "models": [
+      {
+        "name": "AnimalAlertConfig",
+        "module": "app.models.alerts",
+        "columns": [
+          "id",
+          "animal_id",
+          "alert_type",
+          "dimension",
+          "condition_value",
+          "message",
+          "priority",
+          "is_active",
+          "is_default",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_tenant_isolation.py": [
+        "model:AnimalAlertConfig"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "animal_alerts": {
+    "models": [
+      {
+        "name": "AnimalAlert",
+        "module": "app.models.alerts",
+        "columns": [
+          "id",
+          "animal_id",
+          "field_id",
+          "config_id",
+          "alert_type",
+          "message",
+          "recommendation",
+          "priority",
+          "is_read",
+          "triggered_at",
+          "finca_id",
+          "dedupe_key",
+          "superseded_by_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_alerts_bulk_read.py": [
+        "model:AnimalAlert"
+      ],
+      "test_alert_deduplication.py": [
+        "model:AnimalAlert"
+      ],
+      "test_calendar_endpoint.py": [
+        "model:AnimalAlert"
+      ],
+      "test_tenant_isolation.py": [
+        "model:AnimalAlert"
+      ]
+    },
+    "test_count": 4,
+    "has_tests": true
+  },
+  "animal_care_plan_stages": {
+    "models": [
+      {
+        "name": "AnimalCarePlanStage",
+        "module": "app.models.animal_care_plans",
+        "columns": [
+          "id",
+          "plan_id",
+          "finca_id",
+          "stage_order",
+          "stage_name",
+          "start_date",
+          "due_date",
+          "completed",
+          "completed_at",
+          "observation",
+          "fulfilled_kind",
+          "fulfilled_ref_id",
+          "created_by",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_animal_care_plans.py": [
+        "model:AnimalCarePlanStage",
+        "endpoint:animal-care-plan-stages"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "animal_care_plans": {
+    "models": [
+      {
+        "name": "AnimalCarePlan",
+        "module": "app.models.animal_care_plans",
+        "columns": [
+          "id",
+          "animal_id",
+          "finca_id",
+          "plan_type",
+          "status",
+          "name",
+          "description",
+          "start_date",
+          "end_date",
+          "notes",
+          "created_by",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_animal_care_plans.py": [
+        "table_word:animal_care_plans",
+        "model:AnimalCarePlan",
+        "endpoint:animal-care-plans"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "animal_disease_progress": {
+    "models": [
+      {
+        "name": "AnimalDiseaseProgress",
+        "module": "app.models.animalDiseaseProgress",
+        "columns": [
+          "id",
+          "animal_disease_id",
+          "progress_date",
+          "weight",
+          "temperature",
+          "status",
+          "observation",
+          "performed_by",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_disease_followup.py": [
+        "model:AnimalDiseaseProgress",
+        "endpoint:animal-disease-progress"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "animal_diseases": {
+    "models": [
+      {
+        "name": "AnimalDiseases",
+        "module": "app.models.animalDiseases",
+        "columns": [
+          "id",
+          "animal_id",
+          "disease_id",
+          "instructor_id",
+          "diagnosis_date",
+          "status",
+          "severity",
+          "recovery_date",
+          "notes",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_animal_disease_case_options.py": [
+        "endpoint:animal-diseases"
+      ],
+      "test_disease_followup.py": [
+        "endpoint:animal-diseases"
+      ],
+      "test_multi_tenant_rbac.py": [
+        "endpoint:animal-diseases"
+      ],
+      "test_tenant_isolation.py": [
+        "model:AnimalDiseases"
+      ],
+      "test_treatment_protocols.py": [
+        "model:AnimalDiseases"
+      ]
+    },
+    "test_count": 5,
+    "has_tests": true
+  },
+  "animal_fields": {
+    "models": [
+      {
+        "name": "AnimalFields",
+        "module": "app.models.animalFields",
+        "columns": [
+          "id",
+          "animal_id",
+          "field_id",
+          "assignment_date",
+          "removal_date",
+          "notes",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_animal_fields_transfer.py": [
+        "model:AnimalFields",
+        "endpoint:animal-fields"
+      ],
+      "test_deletion_integrity.py": [
+        "table_literal:animal_fields",
+        "model:AnimalFields"
+      ],
+      "test_field_occupancy_sync.py": [
+        "model:AnimalFields",
+        "endpoint:animal-fields"
+      ],
+      "test_rbac_middleware.py": [
+        "endpoint:animal-fields"
+      ],
+      "test_tenant_isolation.py": [
+        "model:AnimalFields"
+      ]
+    },
+    "test_count": 5,
+    "has_tests": true
+  },
+  "animal_group_membership": {
+    "models": [
+      {
+        "name": "AnimalGroupMembership",
+        "module": "app.models.operational",
+        "columns": [
+          "animal_id",
+          "group_id"
+        ],
+        "repr_methods": [
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_model_registry_integrity.py": [
+        "table_literal:animal_group_membership"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "animal_groups": {
+    "models": [
+      {
+        "name": "AnimalGroup",
+        "module": "app.models.operational",
+        "columns": [
+          "id",
+          "name",
+          "description",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_model_registry_integrity.py": [
+        "table_literal:animal_groups"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "animal_health_history": {
+    "models": [
+      {
+        "name": "AnimalHealthHistory",
+        "module": "app.models.animal_health_history",
+        "columns": [
+          "id",
+          "animal_id",
+          "finca_id",
+          "event_type",
+          "event_date",
+          "weight",
+          "height",
+          "temperature",
+          "health_status",
+          "description",
+          "performed_by",
+          "reference_id",
+          "reference_kind",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_control_persistence.py": [
+        "table_word:animal_health_history",
+        "model:AnimalHealthHistory"
+      ],
+      "test_disease_followup.py": [
+        "table_word:animal_health_history",
+        "model:AnimalHealthHistory"
+      ],
+      "test_unified_health_history.py": [
+        "table_word:animal_health_history",
+        "model:AnimalHealthHistory"
+      ]
+    },
+    "test_count": 3,
+    "has_tests": true
+  },
+  "animal_images": {
+    "models": [
+      {
+        "name": "AnimalImages",
+        "module": "app.models.animal_images",
+        "columns": [
+          "id",
+          "animal_id",
+          "filename",
+          "filepath",
+          "thumbnail_path",
+          "file_size",
+          "mime_type",
+          "is_primary",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_database_bootstrap.py": [
+        "table_word:animal_images",
+        "model:AnimalImages"
+      ],
+      "test_tenant_isolation.py": [
+        "model:AnimalImages"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "animal_movements": {
+    "models": [
+      {
+        "name": "AnimalMovement",
+        "module": "app.models.animal_movements",
+        "columns": [
+          "id",
+          "animal_id",
+          "finca_origen_id",
+          "finca_destino_id",
+          "finca_destino_externa",
+          "rpp_destino_externo",
+          "tipo_movimiento",
+          "fecha_movimiento",
+          "precio_venta",
+          "comprador",
+          "comprador_nit",
+          "arete_sinigan",
+          "guia_movilizacion",
+          "ruv_vacunacion",
+          "placa_vehiculo",
+          "nombre_conductor",
+          "cedula_conductor",
+          "precinto_seguridad",
+          "notes",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_animal_movements.py": [
+        "model:AnimalMovement"
+      ],
+      "test_unified_health_history.py": [
+        "table_word:animal_movements",
+        "model:AnimalMovement"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "animal_production_metrics": {
+    "models": [
+      {
+        "name": "AnimalProductionMetrics",
+        "module": "app.models.animal_production_metrics",
+        "columns": [
+          "id",
+          "animal_id",
+          "finca_id",
+          "metric_type",
+          "recorded_date",
+          "value",
+          "unit",
+          "notes",
+          "recorded_by",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_production_and_finance_models.py": [
+        "table_word:animal_production_metrics",
+        "model:AnimalProductionMetrics"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "animals": {
+    "models": [
+      {
+        "name": "Animals",
+        "module": "app.models.animals",
+        "columns": [
+          "id",
+          "sex",
+          "birth_date",
+          "weight",
+          "record",
+          "qr_code",
+          "status",
+          "entry_date",
+          "purchase_date",
+          "sale_date",
+          "exit_date",
+          "exit_reason",
+          "finca_id",
+          "breeds_id",
+          "idFather",
+          "idMother",
+          "idFatherFather",
+          "idFatherMother",
+          "idMotherFather",
+          "idMotherMother",
+          "is_pregnant",
+          "is_lactating",
+          "last_calving_date",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by",
+          "nfc_uid",
+          "nfc_written_at",
+          "lf_tag_code"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_analytics_endpoints.py": [
+        "table_word:animals",
+        "endpoint:animals"
+      ],
+      "test_animal_care_plans.py": [
+        "table_word:animals",
+        "model:Animals"
+      ],
+      "test_animal_disease_case_options.py": [
+        "table_word:animals",
+        "model:Animals"
+      ],
+      "test_animal_fields_transfer.py": [
+        "table_word:animals",
+        "model:Animals"
+      ],
+      "test_animal_movements.py": [
+        "table_word:animals",
+        "model:Animals",
+        "endpoint:animals"
+      ],
+      "test_animal_nfc_binding.py": [
+        "table_word:animals",
+        "model:Animals"
+      ],
+      "test_animal_search_query.py": [
+        "table_word:animals",
+        "model:Animals"
+      ],
+      "test_animal_smart_filters.py": [
+        "table_word:animals"
+      ],
+      "test_batch_weight.py": [
+        "table_literal:animals",
+        "model:Animals",
+        "endpoint:animals"
+      ],
+      "test_cache_and_milk_sync.py": [
+        "table_word:animals"
+      ],
+      "test_calendar_endpoint.py": [
+        "table_word:animals",
+        "model:Animals"
+      ],
+      "test_concurrent_admins.py": [
+        "table_literal:animals",
+        "endpoint:animals"
+      ],
+      "test_control_persistence.py": [
+        "table_word:animals",
+        "model:Animals"
+      ],
+      "test_crud_endpoints.py": [
+        "table_word:animals",
+        "endpoint:animals"
+      ],
+      "test_crud_full.py": [
+        "table_word:animals",
+        "model:Animals",
+        "endpoint:animals"
+      ],
+      "test_deletion_integrity.py": [
+        "table_literal:animals",
+        "endpoint:animals"
+      ],
+      "test_disease_followup.py": [
+        "table_word:animals",
+        "model:Animals",
+        "endpoint:animals"
+      ],
+      "test_fertility_dashboard.py": [
+        "table_word:animals",
+        "model:Animals"
+      ],
+      "test_field_occupancy_sync.py": [
+        "table_word:animals",
+        "model:Animals"
+      ],
+      "test_finca_baseline_and_scope.py": [
+        "table_word:animals",
+        "model:Animals"
+      ],
+      "test_integrity_checker.py": [
+        "table_literal:animals",
+        "model:Animals",
+        "endpoint:animals"
+      ],
+      "test_inventory_ledger.py": [
+        "table_word:animals",
+        "model:Animals"
+      ],
+      "test_medical_history_timeline.py": [
+        "table_word:animals",
+        "model:Animals"
+      ],
+      "test_middleware.py": [
+        "table_word:animals",
+        "endpoint:animals"
+      ],
+      "test_multi_tenant_rbac.py": [
+        "table_word:animals",
+        "endpoint:animals"
+      ],
+      "test_production_and_finance_models.py": [
+        "table_word:animals",
+        "model:Animals"
+      ],
+      "test_public_finca_detail.py": [
+        "table_word:animals",
+        "model:Animals"
+      ],
+      "test_rbac_middleware.py": [
+        "table_word:animals",
+        "endpoint:animals"
+      ],
+      "test_redis_bus_resilience.py": [
+        "table_literal:animals",
+        "endpoint:animals"
+      ],
+      "test_regulatory_reports.py": [
+        "table_literal:animals",
+        "endpoint:animals"
+      ],
+      "test_report_services.py": [
+        "table_word:animals"
+      ],
+      "test_semantic_search.py": [
+        "table_literal:animals",
+        "model:Animals",
+        "endpoint:animals"
+      ],
+      "test_tenant_isolation.py": [
+        "table_literal:animals",
+        "model:Animals"
+      ],
+      "test_treatment_protocols.py": [
+        "table_word:animals",
+        "model:Animals"
+      ],
+      "test_treatment_recommendations.py": [
+        "table_word:animals",
+        "model:Animals"
+      ],
+      "test_unified_health_history.py": [
+        "table_word:animals",
+        "model:Animals"
+      ],
+      "test_user_and_farm_membership_models.py": [
+        "table_word:animals",
+        "model:Animals",
+        "endpoint:animals"
+      ],
+      "test_weather_and_kb_rules_models.py": [
+        "table_word:animals",
+        "model:Animals"
+      ],
+      "reproduction/test_calf.py": [
+        "table_word:animals"
+      ],
+      "reproduction/test_endpoints.py": [
+        "table_word:animals",
+        "model:Animals"
+      ],
+      "reproduction/test_kpis.py": [
+        "table_word:animals",
+        "model:Animals"
+      ]
+    },
+    "test_count": 41,
+    "has_tests": true
+  },
+  "attachment_blobs": {
+    "models": [
+      {
+        "name": "AttachmentBlob",
+        "module": "app.models.sync",
+        "columns": [
+          "id",
+          "attachment_id",
+          "entity_type",
+          "entity_id",
+          "filename",
+          "content_type",
+          "sha256",
+          "total_size",
+          "received_size",
+          "storage_path",
+          "is_complete",
+          "finca_id",
+          "uploaded_by",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_model_registry_integrity.py": [
+        "table_literal:attachment_blobs"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "body_condition_scores": {
+    "models": [
+      {
+        "name": "BodyConditionScore",
+        "module": "app.models.body_condition_scores",
+        "columns": [
+          "id",
+          "animal_id",
+          "finca_id",
+          "score_date",
+          "score",
+          "evaluator_id",
+          "notes",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_unified_health_history.py": [
+        "table_word:body_condition_scores",
+        "model:BodyConditionScore"
+      ],
+      "reproduction/test_kpis.py": [
+        "table_word:body_condition_scores",
+        "model:BodyConditionScore"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "breed_growth_standards": {
+    "models": [
+      {
+        "name": "BreedGrowthStandard",
+        "module": "app.models.breed_growth_standards",
+        "columns": [
+          "id",
+          "breed_id",
+          "sex",
+          "growth_stage",
+          "age_months",
+          "expected_weight_kg",
+          "min_weight_kg",
+          "max_weight_kg",
+          "expected_adg_kg",
+          "min_adg_kg",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_animal_smart_filters.py": [
+        "table_word:breed_growth_standards",
+        "model:BreedGrowthStandard"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "breeds": {
+    "models": [
+      {
+        "name": "Breeds",
+        "module": "app.models.breeds",
+        "columns": [
+          "id",
+          "name",
+          "description",
+          "characteristics",
+          "species_id",
+          "purpose",
+          "origin",
+          "is_active",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_animal_care_plans.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_animal_disease_case_options.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_animal_fields_transfer.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_animal_movements.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_animal_nfc_binding.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_animal_search_query.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_animal_smart_filters.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_batch_weight.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_calendar_endpoint.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_control_persistence.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_crud_endpoints.py": [
+        "table_word:breeds",
+        "endpoint:breeds"
+      ],
+      "test_crud_full.py": [
+        "table_word:breeds",
+        "model:Breeds",
+        "endpoint:breeds"
+      ],
+      "test_disease_followup.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_fertility_dashboard.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_field_occupancy_sync.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_finca_baseline_and_scope.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_inventory_ledger.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_medical_history_timeline.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_production_and_finance_models.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_public_finca_detail.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_semantic_search.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_tenant_isolation.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_treatment_protocols.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_treatment_recommendations.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_unified_health_history.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_user_and_farm_membership_models.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "test_weather_and_kb_rules_models.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "reproduction/test_endpoints.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ],
+      "reproduction/test_kpis.py": [
+        "table_word:breeds",
+        "model:Breeds"
+      ]
+    },
+    "test_count": 29,
+    "has_tests": true
+  },
+  "chat_messages": {
+    "models": [
+      {
+        "name": "ChatMessage",
+        "module": "app.models.chat_message",
+        "columns": [
+          "id",
+          "finca_id",
+          "sender_id",
+          "recipient_id",
+          "message",
+          "attachment_url",
+          "attachment_type",
+          "attachment_name",
+          "is_read",
+          "created_at"
+        ],
+        "repr_methods": [
+          "to_dict",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_chat_location_and_user_approval_sync.py": [
+        "model:ChatMessage"
+      ],
+      "test_chat_realtime.py": [
+        "model:ChatMessage"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "climate_risk_alerts": {
+    "models": [
+      {
+        "name": "ClimateRiskAlert",
+        "module": "app.models.campesino",
+        "columns": [
+          "id",
+          "finca_id",
+          "territory_id",
+          "title",
+          "risk_type",
+          "severity",
+          "description",
+          "recommendation",
+          "valid_from",
+          "valid_until",
+          "source",
+          "is_active",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_model_registry_integrity.py": [
+        "table_literal:climate_risk_alerts"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "community_nodes": {
+    "models": [
+      {
+        "name": "CommunityNode",
+        "module": "app.models.territory",
+        "columns": [
+          "id",
+          "node_id",
+          "name",
+          "territory_id",
+          "finca_id",
+          "host",
+          "port",
+          "latitude",
+          "longitude",
+          "is_active",
+          "last_seen_at",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_model_registry_integrity.py": [
+        "table_literal:community_nodes"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "control": {
+    "models": [
+      {
+        "name": "Control",
+        "module": "app.models.control",
+        "columns": [
+          "id",
+          "checkup_date",
+          "health_status",
+          "weight",
+          "height",
+          "temperature",
+          "description",
+          "animal_id",
+          "animal_disease_id",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_batch_weight.py": [
+        "table_word:control",
+        "model:Control"
+      ],
+      "test_cache_and_milk_sync.py": [
+        "table_word:control",
+        "model:Control"
+      ],
+      "test_control_persistence.py": [
+        "table_literal:control",
+        "model:Control",
+        "endpoint:control"
+      ],
+      "test_crud_endpoints.py": [
+        "table_word:control",
+        "endpoint:control"
+      ],
+      "test_crud_full.py": [
+        "table_word:control",
+        "endpoint:control"
+      ],
+      "test_deletion_integrity.py": [
+        "table_word:control",
+        "model:Control"
+      ],
+      "test_disease_followup.py": [
+        "table_literal:control",
+        "model:Control",
+        "endpoint:control"
+      ],
+      "test_health_check.py": [
+        "table_word:control"
+      ],
+      "test_integrity_checker.py": [
+        "table_literal:control",
+        "model:Control",
+        "endpoint:control"
+      ],
+      "test_jwt_blocklist.py": [
+        "table_word:control",
+        "model:Control"
+      ],
+      "test_private_file_urls.py": [
+        "table_word:control",
+        "model:Control"
+      ],
+      "test_semantic_search.py": [
+        "table_word:control",
+        "model:Control"
+      ],
+      "test_tenant_isolation.py": [
+        "table_literal:control",
+        "model:Control"
+      ],
+      "test_treatment_recommendations.py": [
+        "table_word:control",
+        "model:Control"
+      ],
+      "test_unified_health_history.py": [
+        "table_literal:control",
+        "model:Control",
+        "endpoint:control"
+      ],
+      "test_validators.py": [
+        "table_word:control",
+        "model:Control"
+      ],
+      "test_weather_and_kb_rules_models.py": [
+        "table_word:control",
+        "model:Control"
+      ],
+      "contract/test_api_contract.py": [
+        "table_word:control",
+        "model:Control"
+      ]
+    },
+    "test_count": 18,
+    "has_tests": true
+  },
+  "crop_activities": {
+    "models": [
+      {
+        "name": "CropActivity",
+        "module": "app.models.campesino",
+        "columns": [
+          "id",
+          "finca_id",
+          "crop_plot_id",
+          "activity_type",
+          "activity_date",
+          "description",
+          "input_name",
+          "quantity",
+          "unit",
+          "cost",
+          "performed_by",
+          "attachment_blob_id",
+          "notes",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_campesino_modules.py": [
+        "endpoint:crop-activities"
+      ],
+      "test_model_registry_integrity.py": [
+        "table_literal:crop_activities"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "crop_plots": {
+    "models": [
+      {
+        "name": "CropPlot",
+        "module": "app.models.campesino",
+        "columns": [
+          "id",
+          "finca_id",
+          "field_id",
+          "name",
+          "crop_name",
+          "variety",
+          "area",
+          "area_unit",
+          "sowing_date",
+          "expected_harvest_date",
+          "harvest_date",
+          "status",
+          "seed_source",
+          "notes",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_campesino_modules.py": [
+        "endpoint:crop-plots"
+      ],
+      "test_model_registry_integrity.py": [
+        "table_literal:crop_plots"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "devices": {
+    "models": [
+      {
+        "name": "Device",
+        "module": "app.models.sync",
+        "columns": [
+          "id",
+          "device_id",
+          "name",
+          "public_key",
+          "platform",
+          "status",
+          "last_seen_at",
+          "finca_id",
+          "user_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_model_registry_integrity.py": [
+        "table_literal:devices",
+        "endpoint:devices"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "diseases": {
+    "models": [
+      {
+        "name": "Diseases",
+        "module": "app.models.diseases",
+        "columns": [
+          "id",
+          "name",
+          "symptoms",
+          "details",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_animal_disease_case_options.py": [
+        "table_word:diseases",
+        "model:Diseases"
+      ],
+      "test_bootstrap_and_seeds.py": [
+        "table_word:diseases",
+        "model:Diseases"
+      ],
+      "test_calendar_endpoint.py": [
+        "table_word:diseases",
+        "model:Diseases"
+      ],
+      "test_crud_endpoints.py": [
+        "table_word:diseases",
+        "endpoint:diseases"
+      ],
+      "test_crud_full.py": [
+        "table_word:diseases",
+        "model:Diseases",
+        "endpoint:diseases"
+      ],
+      "test_disease_followup.py": [
+        "table_word:diseases",
+        "model:Diseases"
+      ],
+      "test_finca_baseline_and_scope.py": [
+        "table_word:diseases",
+        "model:Diseases"
+      ],
+      "test_multi_tenant_rbac.py": [
+        "table_word:diseases"
+      ],
+      "test_rbac_middleware.py": [
+        "table_word:diseases"
+      ],
+      "test_semantic_search.py": [
+        "table_word:diseases",
+        "model:Diseases"
+      ],
+      "test_treatment_protocols.py": [
+        "table_word:diseases",
+        "model:Diseases"
+      ]
+    },
+    "test_count": 11,
+    "has_tests": true
+  },
+  "farm_entity_alert_configs": {
+    "models": [
+      {
+        "name": "FarmEntityAlertConfig",
+        "module": "app.models.farm_entity_alerts",
+        "columns": [
+          "id",
+          "entity_type",
+          "entity_id",
+          "dimension",
+          "condition_value",
+          "message",
+          "priority",
+          "is_active",
+          "is_default",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_alert_runtime.py": [
+        "table_literal:farm_entity_alert_configs",
+        "model:FarmEntityAlertConfig"
+      ],
+      "test_database_bootstrap.py": [
+        "model:FarmEntityAlertConfig"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "farm_entity_alerts": {
+    "models": [
+      {
+        "name": "FarmEntityAlert",
+        "module": "app.models.farm_entity_alerts",
+        "columns": [
+          "id",
+          "entity_type",
+          "entity_id",
+          "config_id",
+          "alert_type",
+          "message",
+          "recommendation",
+          "priority",
+          "is_read",
+          "triggered_at",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_alert_runtime.py": [
+        "table_literal:farm_entity_alerts",
+        "model:FarmEntityAlert"
+      ],
+      "test_database_bootstrap.py": [
+        "table_word:farm_entity_alerts"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "farm_expenses": {
+    "models": [
+      {
+        "name": "FarmExpenses",
+        "module": "app.models.production_finance",
+        "columns": [
+          "id",
+          "finca_id",
+          "expense_date",
+          "category",
+          "description",
+          "amount",
+          "is_income",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_production_and_finance_models.py": [
+        "table_word:farm_expenses",
+        "model:FarmExpenses"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "fields": {
+    "models": [
+      {
+        "name": "Fields",
+        "module": "app.models.fields",
+        "columns": [
+          "id",
+          "name",
+          "ubication",
+          "capacity",
+          "state",
+          "handlings",
+          "gauges",
+          "area",
+          "food_type_id",
+          "finca_id",
+          "latitude",
+          "longitude",
+          "radius_meters",
+          "last_grazing_date",
+          "rest_days",
+          "grazing_days",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_animal_fields_transfer.py": [
+        "table_word:fields",
+        "model:Fields"
+      ],
+      "test_bootstrap_and_seeds.py": [
+        "table_word:fields",
+        "model:Fields"
+      ],
+      "test_concurrent_admins.py": [
+        "table_literal:fields",
+        "model:Fields",
+        "endpoint:fields"
+      ],
+      "test_crud_endpoints.py": [
+        "table_word:fields",
+        "model:Fields",
+        "endpoint:fields"
+      ],
+      "test_crud_full.py": [
+        "table_word:fields",
+        "model:Fields",
+        "endpoint:fields"
+      ],
+      "test_deletion_integrity.py": [
+        "table_word:fields",
+        "model:Fields"
+      ],
+      "test_field_occupancy_sync.py": [
+        "table_literal:fields",
+        "model:Fields",
+        "endpoint:fields"
+      ],
+      "test_multi_tenant_rbac.py": [
+        "table_word:fields",
+        "endpoint:fields"
+      ],
+      "test_rbac_middleware.py": [
+        "table_word:fields",
+        "endpoint:fields"
+      ],
+      "test_semantic_search.py": [
+        "table_literal:fields",
+        "model:Fields",
+        "endpoint:fields"
+      ],
+      "test_tenant_isolation.py": [
+        "table_literal:fields",
+        "model:Fields"
+      ],
+      "contract/test_api_contract.py": [
+        "table_word:fields"
+      ]
+    },
+    "test_count": 12,
+    "has_tests": true
+  },
+  "financial_summary": {
+    "models": [
+      {
+        "name": "FinancialSummary",
+        "module": "app.models.extended_summaries",
+        "columns": [
+          "id",
+          "finca_id",
+          "total_income",
+          "total_expense",
+          "balance",
+          "last_update",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_production_and_finance_models.py": [
+        "table_word:financial_summary",
+        "model:FinancialSummary"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "finca": {
+    "models": [
+      {
+        "name": "Finca",
+        "module": "app.models.finca",
+        "columns": [
+          "id",
+          "name",
+          "type",
+          "nit",
+          "department",
+          "municipality",
+          "address",
+          "latitude",
+          "longitude",
+          "is_active",
+          "logo_url",
+          "ica_registration",
+          "territory_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_alerts_bulk_read.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_alert_deduplication.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_analytics_endpoints.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_animal_disease_case_options.py": [
+        "table_word:finca"
+      ],
+      "test_animal_movements.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_animal_nfc_binding.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_animal_search_query.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_animal_smart_filters.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_audit_fixes.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_batch_weight.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_bootstrap_and_seeds.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_chat_location_and_user_approval_sync.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_chat_realtime.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_cleanup_simulated_data.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_client_errors_endpoint.py": [
+        "table_word:finca"
+      ],
+      "test_concurrent_admins.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_control_persistence.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_crud_endpoints.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_crud_full.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_database_bootstrap.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_deletion_integrity.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_fertility_dashboard.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_field_occupancy_sync.py": [
+        "table_word:finca"
+      ],
+      "test_finca_baseline_and_scope.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_finca_images.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_finca_registration_e2e.py": [
+        "table_literal:finca",
+        "model:Finca",
+        "endpoint:finca"
+      ],
+      "test_integrity_checker.py": [
+        "table_literal:finca",
+        "model:Finca",
+        "endpoint:finca"
+      ],
+      "test_inventory_ledger.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_marketplace_models.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_medical_history_timeline.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_multi_finca.py": [
+        "table_word:finca",
+        "model:Finca",
+        "endpoint:finca"
+      ],
+      "test_multi_tenant_rbac.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_production_and_finance_models.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_professional_credentials.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_public_finca_detail.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_public_registration_consent.py": [
+        "table_literal:finca",
+        "model:Finca",
+        "endpoint:finca"
+      ],
+      "test_push_notifications.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_regulatory_reports.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_report_services.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_role_dashboards_smoke.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_semantic_search.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_support_scripts_alignment.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_technical_assistance_workflow.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_tenant_isolation.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_treatment_protocols.py": [
+        "table_word:finca"
+      ],
+      "test_user_and_farm_membership_models.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_user_approval_pending.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_user_farm_scope.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_user_verification_config.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_weather_and_kb_rules_models.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_weather_namespace_auth.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "test_weather_service.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "contract/test_api_contract.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "reproduction/test_endpoints.py": [
+        "table_word:finca",
+        "model:Finca"
+      ],
+      "reproduction/test_kpis.py": [
+        "table_literal:finca",
+        "model:Finca",
+        "endpoint:finca"
+      ],
+      "reproduction/test_state_sync.py": [
+        "table_literal:finca",
+        "endpoint:finca"
+      ],
+      "reproduction/test_validators.py": [
+        "table_literal:finca",
+        "endpoint:finca"
+      ]
+    },
+    "test_count": 57,
+    "has_tests": true
+  },
+  "finca_images": {
+    "models": [
+      {
+        "name": "FincaImages",
+        "module": "app.models.finca_images",
+        "columns": [
+          "id",
+          "finca_id",
+          "filename",
+          "filepath",
+          "thumbnail_path",
+          "file_size",
+          "mime_type",
+          "is_primary",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_finca_images.py": [
+        "table_word:finca_images",
+        "model:FincaImages",
+        "endpoint:finca-images"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "food_types": {
+    "models": [
+      {
+        "name": "FoodTypes",
+        "module": "app.models.foodTypes",
+        "columns": [
+          "id",
+          "food_type",
+          "sowing_date",
+          "harvest_date",
+          "area",
+          "handlings",
+          "gauges",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_animal_fields_transfer.py": [
+        "model:FoodTypes"
+      ],
+      "test_bootstrap_and_seeds.py": [
+        "model:FoodTypes"
+      ],
+      "test_crud_endpoints.py": [
+        "table_word:food_types"
+      ],
+      "test_crud_full.py": [
+        "table_word:food_types"
+      ],
+      "test_field_occupancy_sync.py": [
+        "model:FoodTypes"
+      ],
+      "test_finca_baseline_and_scope.py": [
+        "model:FoodTypes"
+      ],
+      "test_middleware.py": [
+        "table_word:food_types",
+        "endpoint:food-types"
+      ],
+      "test_tenant_isolation.py": [
+        "model:FoodTypes"
+      ]
+    },
+    "test_count": 8,
+    "has_tests": true
+  },
+  "genetic_improvements": {
+    "models": [
+      {
+        "name": "GeneticImprovements",
+        "module": "app.models.geneticImprovements",
+        "columns": [
+          "id",
+          "date",
+          "details",
+          "results",
+          "genetic_event_technique",
+          "animal_id",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_crud_full.py": [
+        "endpoint:genetic-improvements"
+      ],
+      "test_medical_history_timeline.py": [
+        "model:GeneticImprovements"
+      ],
+      "test_tenant_isolation.py": [
+        "model:GeneticImprovements"
+      ]
+    },
+    "test_count": 3,
+    "has_tests": true
+  },
+  "infrastructure": {
+    "models": [
+      {
+        "name": "Infrastructure",
+        "module": "app.models.operational",
+        "columns": [
+          "id",
+          "name",
+          "type",
+          "last_maintenance",
+          "next_maintenance",
+          "status",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_model_registry_integrity.py": [
+        "table_literal:infrastructure",
+        "endpoint:infrastructure"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "inventory_lots": {
+    "models": [
+      {
+        "name": "InventoryLot",
+        "module": "app.models.inventory",
+        "columns": [
+          "id",
+          "product_type",
+          "medication_id",
+          "vaccine_id",
+          "lot_number",
+          "quantity",
+          "current_quantity",
+          "unit",
+          "expiry_date",
+          "entry_date",
+          "supplier",
+          "unit_cost",
+          "min_stock",
+          "notes",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_inventory_ledger.py": [
+        "model:InventoryLot"
+      ],
+      "test_tenant_isolation.py": [
+        "model:InventoryLot"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "inventory_movements": {
+    "models": [
+      {
+        "name": "InventoryMovement",
+        "module": "app.models.inventory",
+        "columns": [
+          "id",
+          "lot_id",
+          "movement_type",
+          "quantity",
+          "balance_before",
+          "balance_after",
+          "reference_type",
+          "reference_id",
+          "notes",
+          "actor_id",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_inventory_ledger.py": [
+        "model:InventoryMovement"
+      ],
+      "test_tenant_isolation.py": [
+        "model:InventoryMovement"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "join_requests": {
+    "models": [
+      {
+        "name": "JoinRequest",
+        "module": "app.models.join_request",
+        "columns": [
+          "id",
+          "user_id",
+          "finca_id",
+          "request_type",
+          "status",
+          "requested_role",
+          "notes",
+          "invitation_token",
+          "token_hash",
+          "invitation_method",
+          "max_uses",
+          "current_uses",
+          "expires_at",
+          "processed_at",
+          "processed_by",
+          "rejection_reason",
+          "created_at",
+          "updated_at"
+        ],
+        "repr_methods": [
+          "to_dict",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_chat_location_and_user_approval_sync.py": [
+        "model:JoinRequest"
+      ],
+      "test_user_verification_config.py": [
+        "model:JoinRequest"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "kb_calendario": {
+    "models": [
+      {
+        "name": "KBCalendario",
+        "module": "app.models.knowledge_base",
+        "columns": [
+          "id",
+          "codigo",
+          "nombre",
+          "descripcion",
+          "tipo",
+          "obligatorio_ica",
+          "sexo",
+          "edad_inicio_dias",
+          "edad_fin_dias",
+          "frecuencia_dias",
+          "producto_sugerido",
+          "dosis_referencia",
+          "fuente",
+          "activo"
+        ],
+        "repr_methods": [
+          "to_dict",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_bootstrap_and_seeds.py": [
+        "model:KBCalendario"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "kb_recomendaciones": {
+    "models": [
+      {
+        "name": "KBRecomendacion",
+        "module": "app.models.knowledge_base",
+        "columns": [
+          "id",
+          "codigo",
+          "categoria",
+          "titulo",
+          "descripcion",
+          "accion",
+          "cuando",
+          "profesional",
+          "urgencia",
+          "sexo",
+          "edad_min_dias",
+          "edad_max_dias",
+          "fuente",
+          "activo",
+          "creado_en"
+        ],
+        "repr_methods": [
+          "to_dict",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_bootstrap_and_seeds.py": [
+        "model:KBRecomendacion"
+      ],
+      "test_weather_and_kb_rules_models.py": [
+        "table_word:kb_recomendaciones",
+        "model:KBRecomendacion"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "kb_reglas": {
+    "models": [
+      {
+        "name": "KBRegla",
+        "module": "app.models.knowledge_base",
+        "columns": [
+          "id",
+          "recomendacion_id",
+          "campo_condicion",
+          "operador",
+          "valor",
+          "valor_max",
+          "descripcion_corta"
+        ],
+        "repr_methods": [
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_weather_and_kb_rules_models.py": [
+        "table_word:kb_reglas",
+        "model:KBRegla"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "lactation_cycles": {
+    "models": [
+      {
+        "name": "LactationCycle",
+        "module": "app.models.lactation_cycle",
+        "columns": [
+          "id",
+          "animal_id",
+          "finca_id",
+          "calving_date",
+          "dry_off_date",
+          "expected_dry_off_date",
+          "lactation_number",
+          "status",
+          "peak_liters",
+          "peak_date",
+          "total_liters_lactation",
+          "notes",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_crud_full.py": [
+        "endpoint:lactation-cycles"
+      ],
+      "test_database_bootstrap.py": [
+        "model:LactationCycle"
+      ],
+      "reproduction/test_calf.py": [
+        "model:LactationCycle"
+      ],
+      "reproduction/test_state_sync.py": [
+        "model:LactationCycle"
+      ],
+      "reproduction/test_validators.py": [
+        "model:LactationCycle"
+      ]
+    },
+    "test_count": 5,
+    "has_tests": true
+  },
+  "livestock_summary": {
+    "models": [
+      {
+        "name": "LivestockSummary",
+        "module": "app.models.livestock_summary",
+        "columns": [
+          "id",
+          "finca_id",
+          "total_animals",
+          "active_animals",
+          "sold_animals",
+          "dead_animals",
+          "male_count",
+          "female_count",
+          "sick_animals",
+          "last_recalculation",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_animal_movements.py": [
+        "model:LivestockSummary"
+      ],
+      "test_public_finca_detail.py": [
+        "table_literal:livestock_summary"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "management_plans": {
+    "models": [
+      {
+        "name": "ManagementPlan",
+        "module": "app.models.management_plans",
+        "columns": [
+          "id",
+          "finca_id",
+          "name",
+          "description",
+          "plan_type",
+          "status",
+          "start_date",
+          "end_date",
+          "created_by_user",
+          "approved_by_user",
+          "notes",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_crud_full.py": [
+        "endpoint:management-plans"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "market_blocks": {
+    "models": [
+      {
+        "name": "MarketBlock",
+        "module": "app.marketplace.models",
+        "columns": [
+          "blocker_id",
+          "blocked_id",
+          "created_at"
+        ],
+        "repr_methods": [
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_marketplace_models.py": [
+        "table_word:market_blocks",
+        "model:MarketBlock"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "market_conversations": {
+    "models": [
+      {
+        "name": "MarketConversation",
+        "module": "app.marketplace.models",
+        "columns": [
+          "id",
+          "offer_id",
+          "offer_snapshot",
+          "owner_id",
+          "guest_id",
+          "status",
+          "proposal_by",
+          "terms",
+          "owner_confirmed",
+          "guest_confirmed",
+          "owner_read_at",
+          "guest_read_at",
+          "version",
+          "created_at",
+          "updated_at"
+        ],
+        "repr_methods": [
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_marketplace_models.py": [
+        "table_word:market_conversations",
+        "model:MarketConversation"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "market_events": {
+    "models": [
+      {
+        "name": "MarketEvent",
+        "module": "app.marketplace.models",
+        "columns": [
+          "id",
+          "conversation_id",
+          "actor_id",
+          "kind",
+          "body",
+          "request_key",
+          "request_hash",
+          "created_at"
+        ],
+        "repr_methods": [
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_marketplace_models.py": [
+        "table_word:market_events",
+        "model:MarketEvent"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "market_offers": {
+    "models": [
+      {
+        "name": "MarketOffer",
+        "module": "app.models.market_offer",
+        "columns": [
+          "id",
+          "finca_id",
+          "territory_id",
+          "offer_type",
+          "product_name",
+          "quantity",
+          "unit",
+          "price",
+          "currency",
+          "available_from",
+          "available_until",
+          "contact_name",
+          "contact_phone",
+          "delivery_location",
+          "status",
+          "notes",
+          "public_id",
+          "category",
+          "exchange_for",
+          "community_visible",
+          "share_phone",
+          "request_key",
+          "request_hash",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_campesino_modules.py": [
+        "endpoint:market-offers"
+      ],
+      "test_marketplace.py": [
+        "endpoint:market-offers"
+      ],
+      "test_marketplace_models.py": [
+        "model:MarketOffer"
+      ],
+      "test_model_registry_integrity.py": [
+        "table_literal:market_offers"
+      ]
+    },
+    "test_count": 4,
+    "has_tests": true
+  },
+  "market_reports": {
+    "models": [
+      {
+        "name": "MarketReport",
+        "module": "app.marketplace.models",
+        "columns": [
+          "id",
+          "offer_id",
+          "reporter_id",
+          "reason",
+          "status",
+          "created_at"
+        ],
+        "repr_methods": [
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_marketplace_models.py": [
+        "table_word:market_reports",
+        "model:MarketReport"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "medications": {
+    "models": [
+      {
+        "name": "Medications",
+        "module": "app.models.medications",
+        "columns": [
+          "id",
+          "name",
+          "description",
+          "indications",
+          "dosis",
+          "contraindications",
+          "route_administration_id",
+          "finca_id",
+          "availability",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_crud_endpoints.py": [
+        "table_word:medications",
+        "endpoint:medications"
+      ],
+      "test_crud_full.py": [
+        "table_word:medications",
+        "model:Medications",
+        "endpoint:medications"
+      ],
+      "test_disease_followup.py": [
+        "table_word:medications",
+        "model:Medications"
+      ],
+      "test_finca_baseline_and_scope.py": [
+        "table_word:medications",
+        "model:Medications"
+      ],
+      "test_inventory_ledger.py": [
+        "table_word:medications",
+        "model:Medications"
+      ],
+      "test_semantic_search.py": [
+        "table_word:medications",
+        "model:Medications"
+      ],
+      "test_treatment_protocols.py": [
+        "table_word:medications",
+        "model:Medications"
+      ]
+    },
+    "test_count": 7,
+    "has_tests": true
+  },
+  "membership_request": {
+    "models": [
+      {
+        "name": "MembershipRequest",
+        "module": "app.models.membership_request",
+        "columns": [
+          "id",
+          "user_id",
+          "finca_id",
+          "status",
+          "requested_role",
+          "message",
+          "processed_by",
+          "processed_at",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_user_and_farm_membership_models.py": [
+        "table_word:membership_request",
+        "model:MembershipRequest"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "milk_production": {
+    "models": [
+      {
+        "name": "MilkProduction",
+        "module": "app.models.milk_production",
+        "columns": [
+          "id",
+          "animal_id",
+          "finca_id",
+          "control_id",
+          "date",
+          "liters",
+          "milking_session",
+          "fat_percentage",
+          "protein_percentage",
+          "somatic_cells",
+          "notes",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_cache_and_milk_sync.py": [
+        "endpoint:milk-production"
+      ],
+      "test_crud_full.py": [
+        "endpoint:milk-production"
+      ],
+      "test_deletion_integrity.py": [
+        "table_literal:milk_production",
+        "model:MilkProduction"
+      ],
+      "test_production_and_finance_models.py": [
+        "table_word:milk_production",
+        "model:MilkProduction"
+      ],
+      "test_unified_health_history.py": [
+        "table_literal:milk_production",
+        "model:MilkProduction"
+      ]
+    },
+    "test_count": 5,
+    "has_tests": true
+  },
+  "milk_summary": {
+    "models": [
+      {
+        "name": "MilkSummary",
+        "module": "app.models.extended_summaries",
+        "columns": [
+          "id",
+          "finca_id",
+          "total_liters",
+          "avg_liters_per_animal",
+          "total_entries",
+          "last_update",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_production_and_finance_models.py": [
+        "table_word:milk_summary",
+        "model:MilkSummary"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "node_messages": {
+    "models": [
+      {
+        "name": "NodeMessage",
+        "module": "app.models.node_message",
+        "columns": [
+          "id",
+          "message_id",
+          "sender_user_id",
+          "sender_device_id",
+          "recipient_user_id",
+          "recipient_node_id",
+          "message_type",
+          "content",
+          "status",
+          "priority",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_model_registry_integrity.py": [
+        "table_literal:node_messages"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "offline_learning_materials": {
+    "models": [
+      {
+        "name": "OfflineLearningMaterial",
+        "module": "app.models.campesino",
+        "columns": [
+          "id",
+          "territory_id",
+          "title",
+          "category",
+          "content_type",
+          "summary",
+          "local_uri",
+          "attachment_blob_id",
+          "language",
+          "reading_level",
+          "is_active",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_model_registry_integrity.py": [
+        "table_literal:offline_learning_materials"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "offspring": {
+    "models": [
+      {
+        "name": "Offspring",
+        "module": "app.models.reproduction",
+        "columns": [
+          "id",
+          "birth_event_id",
+          "animal_id",
+          "sex",
+          "alive",
+          "birth_weight",
+          "notes",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_tenant_isolation.py": [
+        "table_literal:offspring",
+        "model:Offspring"
+      ],
+      "reproduction/test_calf.py": [
+        "table_word:offspring"
+      ],
+      "reproduction/test_endpoints.py": [
+        "table_word:offspring",
+        "endpoint:offspring"
+      ],
+      "reproduction/test_state_sync.py": [
+        "table_word:offspring"
+      ]
+    },
+    "test_count": 4,
+    "has_tests": true
+  },
+  "operational_costs": {
+    "models": [
+      {
+        "name": "OperationalCost",
+        "module": "app.models.operational_costs",
+        "columns": [
+          "id",
+          "concept",
+          "amount",
+          "date",
+          "category",
+          "notes",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_production_and_finance_models.py": [
+        "table_word:operational_costs",
+        "model:OperationalCost"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "pasture_aforos": {
+    "models": [
+      {
+        "name": "PastureAforo",
+        "module": "app.models.operational",
+        "columns": [
+          "id",
+          "field_id",
+          "entry_height",
+          "exit_height",
+          "pasture_quality",
+          "notes",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_model_registry_integrity.py": [
+        "table_literal:pasture_aforos"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "producer_profiles": {
+    "models": [
+      {
+        "name": "ProducerProfile",
+        "module": "app.models.producer_profiles",
+        "columns": [
+          "id",
+          "user_id",
+          "producer_type",
+          "certifications",
+          "has_credit_access",
+          "association_name",
+          "years_experience",
+          "land_tenure",
+          "notes",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_user_and_farm_membership_models.py": [
+        "table_word:producer_profiles",
+        "model:ProducerProfile"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "production_targets": {
+    "models": [
+      {
+        "name": "ProductionTarget",
+        "module": "app.models.production_target",
+        "columns": [
+          "id",
+          "finca_id",
+          "animal_id",
+          "target_liters",
+          "period",
+          "start_date",
+          "end_date",
+          "is_active",
+          "notes",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_crud_full.py": [
+        "endpoint:production-targets"
+      ],
+      "test_database_bootstrap.py": [
+        "model:ProductionTarget"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "professional_credentials": {
+    "models": [
+      {
+        "name": "ProfessionalCredential",
+        "module": "app.models.professional_credentials",
+        "columns": [
+          "id",
+          "user_id",
+          "title",
+          "professional_card_number",
+          "issuing_authority",
+          "card_issued_at",
+          "university",
+          "graduation_year",
+          "specialization",
+          "ica_registration",
+          "practice_areas",
+          "liability_insurer",
+          "liability_policy_number",
+          "liability_expires_at",
+          "status",
+          "verified_by_id",
+          "verified_at",
+          "verification_source",
+          "verification_reference",
+          "verification_expires_at",
+          "verification_notes",
+          "rejection_reason",
+          "consent_version",
+          "consent_accepted_at",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_professional_credentials.py": [
+        "table_word:professional_credentials",
+        "model:ProfessionalCredential",
+        "endpoint:professional-credentials"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "push_subscription": {
+    "models": [
+      {
+        "name": "PushSubscription",
+        "module": "app.models.push_subscription",
+        "columns": [
+          "id",
+          "user_id",
+          "endpoint",
+          "p256dh",
+          "auth",
+          "user_agent",
+          "platform",
+          "browser",
+          "is_active",
+          "created_at",
+          "updated_at",
+          "last_used"
+        ],
+        "repr_methods": [
+          "to_dict",
+          "create",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_push_notifications.py": [
+        "model:PushSubscription"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "reproductive_events": {
+    "models": [
+      {
+        "name": "ReproductiveEvent",
+        "module": "app.models.reproduction",
+        "columns": [
+          "id",
+          "animal_id",
+          "control_id",
+          "event_type",
+          "event_date",
+          "linked_event_id",
+          "sire_id",
+          "technique",
+          "diagnosis_result",
+          "expected_birth_date",
+          "alive_count",
+          "dead_count",
+          "complications",
+          "actor_id",
+          "notes",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_fertility_dashboard.py": [
+        "model:ReproductiveEvent"
+      ],
+      "test_tenant_isolation.py": [
+        "model:ReproductiveEvent"
+      ],
+      "test_unified_health_history.py": [
+        "model:ReproductiveEvent"
+      ],
+      "reproduction/test_endpoints.py": [
+        "model:ReproductiveEvent"
+      ],
+      "reproduction/test_kpis.py": [
+        "model:ReproductiveEvent"
+      ]
+    },
+    "test_count": 5,
+    "has_tests": true
+  },
+  "route_administrations": {
+    "models": [
+      {
+        "name": "RouteAdministration",
+        "module": "app.models.route_administration",
+        "columns": [
+          "id",
+          "name",
+          "description",
+          "status",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_animal_disease_case_options.py": [
+        "model:RouteAdministration"
+      ],
+      "test_bootstrap_and_seeds.py": [
+        "model:RouteAdministration"
+      ],
+      "test_calendar_endpoint.py": [
+        "model:RouteAdministration"
+      ],
+      "test_crud_full.py": [
+        "endpoint:route-administrations"
+      ],
+      "test_database_bootstrap.py": [
+        "model:RouteAdministration"
+      ],
+      "test_disease_followup.py": [
+        "model:RouteAdministration"
+      ],
+      "test_finca_baseline_and_scope.py": [
+        "model:RouteAdministration"
+      ],
+      "test_inventory_ledger.py": [
+        "model:RouteAdministration"
+      ],
+      "test_semantic_search.py": [
+        "model:RouteAdministration"
+      ],
+      "test_treatment_protocols.py": [
+        "model:RouteAdministration"
+      ]
+    },
+    "test_count": 10,
+    "has_tests": true
+  },
+  "seasonal_adjustments": {
+    "models": [
+      {
+        "name": "SeasonalAdjustment",
+        "module": "app.models.seasonal_adjustments",
+        "columns": [
+          "id",
+          "finca_id",
+          "month",
+          "adg_multiplier",
+          "pasture_quality_index",
+          "milk_production_multiplier",
+          "heat_stress_risk",
+          "description",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_database_bootstrap.py": [
+        "table_word:seasonal_adjustments",
+        "model:SeasonalAdjustment"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "sinigan_registrations": {
+    "models": [
+      {
+        "name": "SiniganRegistrations",
+        "module": "app.models.sinigan_registrations",
+        "columns": [
+          "id",
+          "finca_id",
+          "animal_id",
+          "arete_sinigan",
+          "fecha_registro",
+          "predio_origen",
+          "guia_movilizacion",
+          "notes",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_user_and_farm_membership_models.py": [
+        "table_word:sinigan_registrations",
+        "model:SiniganRegistrations"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "species": {
+    "models": [
+      {
+        "name": "Species",
+        "module": "app.models.species",
+        "columns": [
+          "id",
+          "name",
+          "description",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_animal_care_plans.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_animal_disease_case_options.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_animal_fields_transfer.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_animal_movements.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_animal_nfc_binding.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_animal_search_query.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_animal_smart_filters.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_audit_fixes.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_batch_weight.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_calendar_endpoint.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_control_persistence.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_crud_endpoints.py": [
+        "table_word:species",
+        "endpoint:species"
+      ],
+      "test_crud_full.py": [
+        "table_word:species",
+        "model:Species",
+        "endpoint:species"
+      ],
+      "test_database_bootstrap.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_deletion_integrity.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_disease_followup.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_fertility_dashboard.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_field_occupancy_sync.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_finca_baseline_and_scope.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_integrity_checker.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_inventory_ledger.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_medical_history_timeline.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_production_and_finance_models.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_public_finca_detail.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_regulatory_reports.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_report_services.py": [
+        "table_literal:species",
+        "endpoint:species"
+      ],
+      "test_semantic_search.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_tenant_isolation.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_treatment_protocols.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_treatment_recommendations.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_unified_health_history.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_user_and_farm_membership_models.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "test_weather_and_kb_rules_models.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "contract/test_api_contract.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "reproduction/test_endpoints.py": [
+        "table_word:species",
+        "model:Species"
+      ],
+      "reproduction/test_kpis.py": [
+        "table_word:species",
+        "model:Species"
+      ]
+    },
+    "test_count": 36,
+    "has_tests": true
+  },
+  "sync_conflicts": {
+    "models": [
+      {
+        "name": "SyncConflict",
+        "module": "app.models.sync",
+        "columns": [
+          "id",
+          "operation_id",
+          "entity_type",
+          "entity_id",
+          "local_payload",
+          "incoming_payload",
+          "resolution",
+          "resolved_by",
+          "resolved_at",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_model_registry_integrity.py": [
+        "table_literal:sync_conflicts"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "sync_operation_receipts": {
+    "models": [
+      {
+        "name": "SyncOperationReceipt",
+        "module": "app.models.sync",
+        "columns": [
+          "id",
+          "operation_id",
+          "device_id",
+          "received_at",
+          "applied",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_model_registry_integrity.py": [
+        "table_literal:sync_operation_receipts"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "sync_operations": {
+    "models": [
+      {
+        "name": "SyncOperation",
+        "module": "app.models.sync",
+        "columns": [
+          "id",
+          "operation_id",
+          "entity_type",
+          "entity_id",
+          "operation",
+          "payload",
+          "base_version",
+          "logical_clock",
+          "priority",
+          "status",
+          "signature",
+          "origin_device_id",
+          "author_user_id",
+          "finca_id",
+          "created_at_device",
+          "applied_at",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_model_registry_integrity.py": [
+        "table_literal:sync_operations"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "sync_sessions": {
+    "models": [
+      {
+        "name": "SyncSession",
+        "module": "app.models.sync",
+        "columns": [
+          "id",
+          "session_id",
+          "local_device_id",
+          "peer_device_id",
+          "transport",
+          "status",
+          "operations_sent",
+          "operations_received",
+          "conflicts_count",
+          "started_at",
+          "completed_at",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_model_registry_integrity.py": [
+        "table_literal:sync_sessions"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "system_contents": {
+    "models": [
+      {
+        "name": "SystemContent",
+        "module": "app.models.system_content",
+        "columns": [
+          "id",
+          "key",
+          "category",
+          "content_type",
+          "priority",
+          "title",
+          "content",
+          "extra",
+          "is_active",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_public_finca_detail.py": [
+        "model:SystemContent"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "tasks": {
+    "models": [
+      {
+        "name": "Tasks",
+        "module": "app.models.tasks",
+        "columns": [
+          "id",
+          "title",
+          "description",
+          "status",
+          "priority",
+          "due_date",
+          "animal_id",
+          "field_id",
+          "assigned_to",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_alert_deduplication.py": [
+        "table_word:tasks"
+      ],
+      "test_calendar_endpoint.py": [
+        "table_word:tasks",
+        "model:Tasks"
+      ],
+      "test_crud_full.py": [
+        "table_word:tasks",
+        "model:Tasks",
+        "endpoint:tasks"
+      ],
+      "test_intelligence_endpoints.py": [
+        "table_word:tasks"
+      ],
+      "test_semantic_search.py": [
+        "table_word:tasks",
+        "model:Tasks"
+      ]
+    },
+    "test_count": 5,
+    "has_tests": true
+  },
+  "technical_assistance_requests": {
+    "models": [
+      {
+        "name": "TechnicalAssistanceRequest",
+        "module": "app.models.campesino",
+        "columns": [
+          "id",
+          "finca_id",
+          "territory_id",
+          "requester_user_id",
+          "assigned_user_id",
+          "title",
+          "category",
+          "description",
+          "priority",
+          "status",
+          "requested_at",
+          "resolved_at",
+          "resolution_notes",
+          "attachment_blob_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_model_registry_integrity.py": [
+        "table_literal:technical_assistance_requests"
+      ],
+      "test_technical_assistance_workflow.py": [
+        "model:TechnicalAssistanceRequest"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "territories": {
+    "models": [
+      {
+        "name": "Territory",
+        "module": "app.models.territory",
+        "columns": [
+          "id",
+          "name",
+          "vereda",
+          "municipality",
+          "department",
+          "latitude",
+          "longitude",
+          "connectivity_level",
+          "notes",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_bootstrap_and_seeds.py": [
+        "model:Territory"
+      ],
+      "test_model_registry_integrity.py": [
+        "table_literal:territories",
+        "endpoint:territories"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "transactions": {
+    "models": [
+      {
+        "name": "Transaction",
+        "module": "app.models.financial",
+        "columns": [
+          "id",
+          "finca_id",
+          "animal_id",
+          "transaction_type",
+          "category",
+          "amount",
+          "date",
+          "description",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_analytics_endpoints.py": [
+        "table_word:transactions",
+        "model:Transaction",
+        "endpoint:transactions"
+      ],
+      "test_animal_movements.py": [
+        "model:Transaction"
+      ],
+      "test_crud_full.py": [
+        "table_word:transactions",
+        "endpoint:transactions"
+      ],
+      "test_deletion_integrity.py": [
+        "table_literal:transactions",
+        "endpoint:transactions"
+      ],
+      "test_production_and_finance_models.py": [
+        "model:Transaction"
+      ]
+    },
+    "test_count": 5,
+    "has_tests": true
+  },
+  "treatment_medications": {
+    "models": [
+      {
+        "name": "TreatmentMedications",
+        "module": "app.models.treatment_medications",
+        "columns": [
+          "id",
+          "treatment_id",
+          "medication_id",
+          "lot_id",
+          "quantity",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_crud_full.py": [
+        "endpoint:treatment-medications"
+      ],
+      "test_finca_baseline_and_scope.py": [
+        "model:TreatmentMedications"
+      ],
+      "test_inventory_ledger.py": [
+        "table_word:treatment_medications",
+        "model:TreatmentMedications"
+      ]
+    },
+    "test_count": 3,
+    "has_tests": true
+  },
+  "treatment_protocol_insumos": {
+    "models": [
+      {
+        "name": "TreatmentProtocolInsumo",
+        "module": "app.models.treatment_protocol_insumos",
+        "columns": [
+          "id",
+          "protocol_id",
+          "finca_id",
+          "kind",
+          "medication_id",
+          "vaccine_id",
+          "recommended_dosis",
+          "recommended_quantity",
+          "notes",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_treatment_protocols.py": [
+        "endpoint:treatment-protocol-insumos"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "treatment_protocols": {
+    "models": [
+      {
+        "name": "TreatmentProtocol",
+        "module": "app.models.treatment_protocols",
+        "columns": [
+          "id",
+          "name",
+          "description",
+          "disease_id",
+          "severity",
+          "default_dosis",
+          "default_frequency",
+          "withdrawal_days",
+          "duration_days",
+          "is_default",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_treatment_protocols.py": [
+        "endpoint:treatment-protocols"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "treatment_recommendation_controls": {
+    "models": [
+      {
+        "name": "TreatmentRecommendationControls",
+        "module": "app.models.treatment_recommendation_controls",
+        "columns": [
+          "id",
+          "treatment_recommendation_id",
+          "scheduled_date",
+          "control_date",
+          "observation",
+          "completed",
+          "recorded_by",
+          "fulfilled_kind",
+          "fulfilled_ref_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_weather_and_kb_rules_models.py": [
+        "table_word:treatment_recommendation_controls",
+        "model:TreatmentRecommendationControls"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "treatment_recommendations": {
+    "models": [
+      {
+        "name": "TreatmentRecommendations",
+        "module": "app.models.treatment_recommendations",
+        "columns": [
+          "id",
+          "animal_id",
+          "finca_id",
+          "animal_disease_id",
+          "title",
+          "recommendation",
+          "responsible",
+          "start_date",
+          "estimated_end_date",
+          "duration_days",
+          "control_interval_days",
+          "status",
+          "final_notes",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_animal_disease_case_options.py": [
+        "endpoint:treatment-recommendations"
+      ],
+      "test_treatment_recommendations.py": [
+        "endpoint:treatment-recommendations"
+      ],
+      "test_weather_and_kb_rules_models.py": [
+        "table_word:treatment_recommendations",
+        "model:TreatmentRecommendations"
+      ]
+    },
+    "test_count": 3,
+    "has_tests": true
+  },
+  "treatment_vaccines": {
+    "models": [
+      {
+        "name": "TreatmentVaccines",
+        "module": "app.models.treatment_vaccines",
+        "columns": [
+          "id",
+          "treatment_id",
+          "vaccine_id",
+          "lot_id",
+          "quantity",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_crud_full.py": [
+        "endpoint:treatment-vaccines"
+      ],
+      "test_finca_baseline_and_scope.py": [
+        "model:TreatmentVaccines"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "treatments": {
+    "models": [
+      {
+        "name": "Treatments",
+        "module": "app.models.treatments",
+        "columns": [
+          "id",
+          "treatment_date",
+          "description",
+          "frequency",
+          "observations",
+          "dosis",
+          "withdrawal_days",
+          "withdrawal_end_date",
+          "animal_id",
+          "control_id",
+          "animal_disease_id",
+          "finca_id",
+          "performed_by",
+          "cost",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_animal_disease_case_options.py": [
+        "table_word:treatments",
+        "endpoint:treatments"
+      ],
+      "test_calendar_endpoint.py": [
+        "table_word:treatments",
+        "model:Treatments"
+      ],
+      "test_crud_endpoints.py": [
+        "table_word:treatments",
+        "endpoint:treatments"
+      ],
+      "test_crud_full.py": [
+        "table_word:treatments",
+        "model:Treatments",
+        "endpoint:treatments"
+      ],
+      "test_disease_followup.py": [
+        "table_literal:treatments",
+        "model:Treatments",
+        "endpoint:treatments"
+      ],
+      "test_finca_baseline_and_scope.py": [
+        "table_word:treatments",
+        "model:Treatments"
+      ],
+      "test_inventory_ledger.py": [
+        "table_word:treatments",
+        "model:Treatments"
+      ],
+      "test_multi_tenant_rbac.py": [
+        "table_word:treatments",
+        "endpoint:treatments"
+      ],
+      "test_rbac_middleware.py": [
+        "table_word:treatments",
+        "endpoint:treatments"
+      ],
+      "test_tenant_isolation.py": [
+        "table_literal:treatments",
+        "model:Treatments"
+      ],
+      "test_treatment_protocols.py": [
+        "table_word:treatments",
+        "model:Treatments"
+      ],
+      "test_unified_health_history.py": [
+        "table_word:treatments",
+        "model:Treatments"
+      ]
+    },
+    "test_count": 12,
+    "has_tests": true
+  },
+  "user": {
+    "models": [
+      {
+        "name": "User",
+        "module": "app.models.user",
+        "columns": [
+          "id",
+          "identification",
+          "fullname",
+          "password",
+          "email",
+          "phone",
+          "address",
+          "role",
+          "status",
+          "approval_status",
+          "finca_id",
+          "avatar_url",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_animal_disease_case_options.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_animal_smart_filters.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_bootstrap_and_seeds.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_chat_location_and_user_approval_sync.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_chat_realtime.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_cleanup_simulated_data.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_concurrent_admins.py": [
+        "table_word:user"
+      ],
+      "test_database_bootstrap.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_disease_followup.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_finca_images.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_finca_registration_e2e.py": [
+        "table_literal:user",
+        "model:User",
+        "endpoint:user"
+      ],
+      "test_marketplace.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_marketplace_models.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_multi_finca.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_multi_tenant_rbac.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_professional_credentials.py": [
+        "table_word:user",
+        "model:User",
+        "endpoint:user"
+      ],
+      "test_public_registration_consent.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_push_notifications.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_regulatory_reports.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_role_dashboards_smoke.py": [
+        "table_literal:user",
+        "model:User",
+        "endpoint:user"
+      ],
+      "test_seed_identities.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_seed_master_alignment.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_support_scripts_alignment.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_tenant_isolation.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_treatment_protocols.py": [
+        "table_literal:user",
+        "model:User"
+      ],
+      "test_users_service.py": [
+        "table_literal:user",
+        "model:User"
+      ],
+      "test_user_and_farm_membership_models.py": [
+        "table_literal:user",
+        "model:User"
+      ],
+      "test_user_approval_pending.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_user_farm_scope.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_user_verification_config.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_validators.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_weather_and_kb_rules_models.py": [
+        "table_word:user",
+        "model:User"
+      ],
+      "test_weather_namespace_auth.py": [
+        "table_word:user"
+      ]
+    },
+    "test_count": 33,
+    "has_tests": true
+  },
+  "user_consents": {
+    "models": [
+      {
+        "name": "UserConsent",
+        "module": "app.models.user_consent",
+        "columns": [
+          "id",
+          "user_id",
+          "purpose",
+          "version",
+          "consent_text_hash",
+          "accepted_at",
+          "source"
+        ],
+        "repr_methods": [
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_finca_registration_e2e.py": [
+        "model:UserConsent"
+      ],
+      "test_public_registration_consent.py": [
+        "model:UserConsent"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "user_favorites": {
+    "models": [
+      {
+        "name": "UserFavorite",
+        "module": "app.models.user_favorite",
+        "columns": [
+          "id",
+          "user_id",
+          "endpoint",
+          "label",
+          "method",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_user_and_farm_membership_models.py": [
+        "table_word:user_favorites",
+        "model:UserFavorite"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "user_finca": {
+    "models": [
+      {
+        "name": "UserFinca",
+        "module": "app.models.user_finca",
+        "columns": [
+          "id",
+          "user_id",
+          "finca_id",
+          "role",
+          "supervisor_id",
+          "is_active",
+          "is_primary",
+          "created_at",
+          "updated_at"
+        ],
+        "repr_methods": [
+          "to_dict",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_chat_location_and_user_approval_sync.py": [
+        "table_word:user_finca",
+        "model:UserFinca"
+      ],
+      "test_chat_realtime.py": [
+        "table_word:user_finca",
+        "model:UserFinca"
+      ],
+      "test_database_bootstrap.py": [
+        "table_word:user_finca",
+        "model:UserFinca"
+      ],
+      "test_marketplace.py": [
+        "table_word:user_finca",
+        "model:UserFinca"
+      ],
+      "test_multi_finca.py": [
+        "model:UserFinca"
+      ],
+      "test_user_farm_scope.py": [
+        "table_word:user_finca",
+        "model:UserFinca"
+      ],
+      "test_weather_namespace_auth.py": [
+        "table_word:user_finca",
+        "model:UserFinca"
+      ]
+    },
+    "test_count": 7,
+    "has_tests": true
+  },
+  "user_locations": {
+    "models": [
+      {
+        "name": "UserLocation",
+        "module": "app.models.user_location",
+        "columns": [
+          "id",
+          "user_id",
+          "finca_id",
+          "latitude",
+          "longitude",
+          "accuracy",
+          "detection_method",
+          "reported_by_node_id",
+          "created_at"
+        ],
+        "repr_methods": [
+          "to_dict",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_chat_location_and_user_approval_sync.py": [
+        "model:UserLocation"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "vaccinations": {
+    "models": [
+      {
+        "name": "Vaccinations",
+        "module": "app.models.vaccinations",
+        "columns": [
+          "id",
+          "animal_id",
+          "vaccine_id",
+          "vaccination_date",
+          "dosis",
+          "batch_number",
+          "next_due_date",
+          "notes",
+          "performed_by",
+          "apprentice_id",
+          "instructor_id",
+          "animal_disease_id",
+          "finca_id",
+          "kb_codigo",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_animal_disease_case_options.py": [
+        "table_word:vaccinations",
+        "endpoint:vaccinations"
+      ],
+      "test_calendar_endpoint.py": [
+        "table_word:vaccinations",
+        "model:Vaccinations"
+      ],
+      "test_crud_endpoints.py": [
+        "table_word:vaccinations"
+      ],
+      "test_crud_full.py": [
+        "table_word:vaccinations",
+        "model:Vaccinations",
+        "endpoint:vaccinations"
+      ],
+      "test_disease_followup.py": [
+        "table_literal:vaccinations",
+        "endpoint:vaccinations"
+      ],
+      "test_multi_tenant_rbac.py": [
+        "table_word:vaccinations",
+        "endpoint:vaccinations"
+      ],
+      "test_rbac_middleware.py": [
+        "table_word:vaccinations",
+        "endpoint:vaccinations"
+      ],
+      "test_regulatory_reports.py": [
+        "table_word:vaccinations"
+      ],
+      "test_tenant_isolation.py": [
+        "table_literal:vaccinations",
+        "model:Vaccinations"
+      ]
+    },
+    "test_count": 9,
+    "has_tests": true
+  },
+  "vaccines": {
+    "models": [
+      {
+        "name": "Vaccines",
+        "module": "app.models.vaccines",
+        "columns": [
+          "id",
+          "name",
+          "dosis",
+          "route_administration_id",
+          "vaccination_interval",
+          "type",
+          "national_plan",
+          "target_disease_id",
+          "finca_id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_animal_disease_case_options.py": [
+        "table_word:vaccines",
+        "model:Vaccines"
+      ],
+      "test_bootstrap_and_seeds.py": [
+        "table_word:vaccines",
+        "model:Vaccines"
+      ],
+      "test_calendar_endpoint.py": [
+        "table_word:vaccines",
+        "model:Vaccines"
+      ],
+      "test_crud_endpoints.py": [
+        "table_word:vaccines",
+        "endpoint:vaccines"
+      ],
+      "test_crud_full.py": [
+        "table_word:vaccines",
+        "model:Vaccines",
+        "endpoint:vaccines"
+      ],
+      "test_disease_followup.py": [
+        "table_word:vaccines",
+        "model:Vaccines"
+      ],
+      "test_finca_baseline_and_scope.py": [
+        "table_word:vaccines",
+        "model:Vaccines"
+      ],
+      "test_semantic_search.py": [
+        "table_word:vaccines",
+        "model:Vaccines"
+      ],
+      "test_treatment_protocols.py": [
+        "table_word:vaccines",
+        "model:Vaccines"
+      ]
+    },
+    "test_count": 9,
+    "has_tests": true
+  },
+  "water_measurements": {
+    "models": [
+      {
+        "name": "WaterMeasurement",
+        "module": "app.models.campesino",
+        "columns": [
+          "id",
+          "finca_id",
+          "water_source_id",
+          "measured_at",
+          "level_percent",
+          "flow_liters_minute",
+          "ph",
+          "turbidity",
+          "rainfall_mm",
+          "measured_by",
+          "notes",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_campesino_modules.py": [
+        "endpoint:water-measurements"
+      ],
+      "test_model_registry_integrity.py": [
+        "table_literal:water_measurements"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "water_sources": {
+    "models": [
+      {
+        "name": "WaterSource",
+        "module": "app.models.campesino",
+        "columns": [
+          "id",
+          "finca_id",
+          "territory_id",
+          "name",
+          "source_type",
+          "latitude",
+          "longitude",
+          "capacity_liters",
+          "is_potable",
+          "reliability",
+          "notes",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_campesino_modules.py": [
+        "endpoint:water-sources"
+      ],
+      "test_model_registry_integrity.py": [
+        "table_literal:water_sources"
+      ]
+    },
+    "test_count": 2,
+    "has_tests": true
+  },
+  "weather_alerts": {
+    "models": [
+      {
+        "name": "WeatherAlert",
+        "module": "app.models.weather",
+        "columns": [
+          "id",
+          "finca_id",
+          "title",
+          "alert_type",
+          "severity",
+          "description",
+          "recommendation",
+          "current_temperature",
+          "current_humidity",
+          "current_wind_speed",
+          "valid_from",
+          "valid_until",
+          "is_active",
+          "is_dismissed",
+          "dismissed_by",
+          "dismissed_at",
+          "source",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_weather_and_kb_rules_models.py": [
+        "table_word:weather_alerts",
+        "model:WeatherAlert"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  },
+  "weather_records": {
+    "models": [
+      {
+        "name": "WeatherRecord",
+        "module": "app.models.weather",
+        "columns": [
+          "id",
+          "finca_id",
+          "recorded_at",
+          "temperature_celsius",
+          "feels_like_celsius",
+          "humidity_percent",
+          "wind_speed_kmh",
+          "wind_direction_degrees",
+          "precipitation_mm",
+          "pressure_hpa",
+          "uv_index",
+          "cloud_cover_percent",
+          "weather_code",
+          "weather_condition",
+          "sunrise_time",
+          "sunset_time",
+          "latitude",
+          "longitude",
+          "source",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "is_deleted",
+          "deleted_at",
+          "created_by",
+          "updated_by"
+        ],
+        "repr_methods": [
+          "create",
+          "update",
+          "delete",
+          "__repr__"
+        ]
+      }
+    ],
+    "matched_tests": {
+      "test_weather_and_kb_rules_models.py": [
+        "model:WeatherRecord"
+      ]
+    },
+    "test_count": 1,
+    "has_tests": true
+  }
+}

@@ -167,6 +167,7 @@ TENANT_MODELS = {
     "ReproductiveEvent",
     "Offspring",
     "AnimalDiseases",
+    "AnimalDiseaseProgress",
     "AnimalImages",
     "AnimalFields",
     "InventoryLot",
@@ -212,6 +213,10 @@ TENANT_MODELS = {
     "Medications",
     "Diseases",
     "RouteAdministration",
+    "AnimalCarePlan",
+    "AnimalCarePlanStage",
+    "TreatmentProtocol",
+    "TreatmentProtocolInsumo",
 }
 
 

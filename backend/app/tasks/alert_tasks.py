@@ -39,6 +39,28 @@ def evaluate_all_alerts(finca_id=None):
 
         results = AlertEngine.evaluate_all(finca_id=finca_id)
         logger.info(f"Evaluación de alertas finalizada: {results}")
+
+        # Agenda sanitaria: materializa las obligaciones del calendario KB
+        # como tareas pendientes para el equipo.
+        try:
+            from app.models.finca import Finca
+            from app.services.kb_calendar_tasks_service import (
+                materialize_upcoming_tasks,
+            )
+
+            if finca_id is not None:
+                finca_ids = [finca_id]
+            else:
+                finca_ids = [
+                    row[0] for row in Finca.query.with_entities(Finca.id).all()
+                ]
+            task_count = sum(
+                materialize_upcoming_tasks(f_id) for f_id in finca_ids
+            )
+            logger.info(f"Tareas del calendario sanitario materializadas: {task_count}")
+        except Exception as exc:
+            logger.error(f"Error materializando tareas del calendario KB: {exc}")
+
         return results
     except Exception as e:
         logger.error(f"Error en la ejecución de AlertEngine en Celery: {e}")

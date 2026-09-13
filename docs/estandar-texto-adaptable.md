@@ -175,7 +175,7 @@ Cuánto texto se gana frente a `truncate`, medido:
 | Contenido | Caja / base | `truncate` | `.fit-clamp` |
 |---|---|---|---|
 | Potrero La Esperanza Alta | 160 px / 16 px | 21 de 25 caracteres | **25 de 25**, entero |
-| Mejoramiento genético del hato lechero | 120 px / 14 px | 16 de 38 | **22 de 38** |
+| Mejoramiento genético del ganado lechero | 120 px / 14 px | 16 de 38 | **22 de 38** |
 | Vacunación contra fiebre aftosa — lote 3 | 140 px / 12 px | 25 de 40 | **27 de 40** |
 | Juan Sebastián Martínez | 100 px / 14 px | 15 de 23 | **18 de 23** |
 

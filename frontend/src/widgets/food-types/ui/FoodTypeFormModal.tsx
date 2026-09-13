@@ -105,19 +105,30 @@ export const FoodTypeFormModal: React.FC<FoodTypeFormModalProps> = ({
     if (formData.area !== undefined && formData.area <= 0) {
       newErrors.area = 'El área debe ser mayor a 0.';
     }
+    if (formData.harvest_date && formData.sowing_date && formData.harvest_date < formData.sowing_date) {
+      newErrors.harvest_date = 'La fecha de cosecha no puede ser anterior a la de siembra.';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
-    await onSubmit({
-      ...formData,
+    const payload: FoodTypeFormData = {
       food_type: formData.food_type.trim(),
       handlings: formData.handlings?.trim() || 'Manejo estándar según condiciones de la finca.',
       gauges: formData.gauges?.trim() || 'Aforo y composición nutricional estándar.',
-      area: formData.area ? Number(formData.area) : 1,
-    });
+      area: formData.area ? Math.round(Number(formData.area)) : 1,
+      sowing_date: formData.sowing_date?.trim() || getTodayColombia(),
+    };
+
+    if (formData.harvest_date && formData.harvest_date.trim()) {
+      payload.harvest_date = formData.harvest_date.trim();
+    } else if (isEditing) {
+      payload.harvest_date = undefined;
+    }
+
+    await onSubmit(payload);
   };
 
   return (

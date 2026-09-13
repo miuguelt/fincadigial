@@ -3,7 +3,7 @@ from app.models.finca import Finca
 from app.models.activity_log import ActivityLog
 from app.utils.namespace_helpers import create_optimized_namespace
 from flask_restx import Resource, fields
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from app.utils.response_handler import APIResponse
 from app.utils.rbac import require_permission
 from app import db
@@ -96,6 +96,55 @@ class FincaStatistics(Resource):
             )
             return APIResponse.error(
                 "Error interno del servidor", details={"error": str(e)}, status_code=500
+            )
+
+
+@fincas_ns.route("/performance")
+class FincaPerformance(Resource):
+    """KPI operativos por finca para el panel global de administración."""
+
+    @fincas_ns.doc(
+        "get_finca_performance",
+        description="Consolidar indicadores productivos y financieros por finca",
+        security=["Bearer"],
+    )
+    @require_permission("fincas", "read")
+    def get(self):
+        try:
+            role = (get_jwt() or {}).get("role")
+            query = Finca.query.filter(Finca.is_deleted.is_(False))
+
+            # Administrador y Propietario tienen alcance global en esta vista;
+            # los demás perfiles solo reciben las fincas con membresía activa.
+            if role not in ["Administrador", "Propietario"]:
+                from app.models.user_finca import UserFinca
+
+                query = query.join(UserFinca).filter(
+                    UserFinca.user_id == get_jwt_identity(),
+                    UserFinca.is_active.is_(True),
+                )
+
+            fincas = query.order_by(Finca.name.asc()).all()
+            finca_ids = [finca.id for finca in fincas]
+            from app.services.finca_kpis import get_fincas_kpis
+
+            kpis = get_fincas_kpis(finca_ids)
+            data = [
+                {"finca_id": finca_id, "kpis": kpis[finca_id]}
+                for finca_id in finca_ids
+            ]
+            return APIResponse.success(
+                data=data,
+                message="Indicadores de rendimiento por finca obtenidos",
+            )
+        except Exception as e:
+            logger.error(
+                "Error obteniendo indicadores por finca: %s", e, exc_info=True
+            )
+            return APIResponse.error(
+                "Error obteniendo indicadores de rendimiento",
+                details={"error": str(e)},
+                status_code=500,
             )
 
 

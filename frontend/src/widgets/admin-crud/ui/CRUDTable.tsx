@@ -26,6 +26,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
+import type { RecentChangeAction } from '@/shared/utils/recentChanges';
 
 // Interfaces
 import { CRUDColumn, CRUDConfig } from '@/shared/types/crud';
@@ -58,6 +59,8 @@ interface CRUDTableProps<T extends { id: number }> {
    * bajo un encabezado fijo.
    */
   headerSlot?: React.ReactNode;
+  /** id → acción de registros recién creados/editados, para resaltado sutil. */
+  recentFlags?: Record<string, RecentChangeAction>;
 }
 
 interface InternalTableProps<T extends { id: number }> {
@@ -74,6 +77,7 @@ interface InternalTableProps<T extends { id: number }> {
   onToggleSelect?: (id: number) => void;
   onToggleSelectAll?: () => void;
   onUpdateCell?: (item: T, key: string, value: any) => Promise<void>;
+  recentFlags?: Record<string, RecentChangeAction>;
 }
 
 interface TableRowProps<T extends { id: number }> {
@@ -90,6 +94,7 @@ interface TableRowProps<T extends { id: number }> {
   selectedIds?: number[];
   onToggleSelect?: (id: number) => void;
   onUpdateCell?: (item: T, key: string, value: any) => Promise<void>;
+  highlight?: RecentChangeAction;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -106,14 +111,12 @@ interface MobileCardProps<T extends { id: number }> {
   fkLabelMap: Record<string, Map<string, string>>;
   selectedIds?: number[];
   onToggleSelect?: (id: number) => void;
+  highlight?: RecentChangeAction;
 }
 
 function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>) {
-  const { item, index, columns, config, onOpenDetail, onOpenEdit, onOpenDelete, fkLabelMap, selectedIds, onToggleSelect } = props;
+  const { item, index, columns, config, onOpenDetail, onOpenEdit, onOpenDelete, fkLabelMap, selectedIds, onToggleSelect, highlight } = props;
   const t = useT();
-
-  const firstCol = columns[0];
-  const titleText = getCrudItemTitle(item, config, fkLabelMap);
 
   const hasActions = Boolean(onOpenDetail || onOpenEdit || onOpenDelete);
   const actionCount = [
@@ -131,49 +134,58 @@ function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>
     return mapCrudValue(raw, String(col.key), item, fkLabelMap);
   };
 
+  const findColumn = (key?: string) => (key ? columns.find((column) => String(column.key) === key) : undefined);
+  const titleColumn = findColumn(config.mobileTitleColumn) ?? columns[0];
+  const highlightColumn = findColumn(config.mobileHighlightColumn) ?? columns[1];
+  const titleText = titleColumn
+    ? mapCrudValue(
+        (item as any)[titleColumn.key] ?? (String(titleColumn.key) === 'diagnosis' ? (item as any).description : undefined),
+        String(titleColumn.key),
+        item,
+        fkLabelMap,
+      )
+    : getCrudItemTitle(item, config, fkLabelMap);
+  const detailColumns = config.mobileColumns
+    ? config.mobileColumns
+        .map((key) => findColumn(key))
+        .filter((column): column is CRUDColumn<T> => Boolean(column))
+        .filter((column) => column.key !== titleColumn?.key && column.key !== highlightColumn?.key)
+    : columns.slice(2);
+
   return (
     <div
+      id={`crud-item-${item.id}`}
+      data-crud-id={item.id}
       className={cn(
         "bg-card border border-border/60 rounded-lg p-4 shadow-sm",
         "hover:shadow-md hover:border-primary/20 transition-all duration-200",
         "active:scale-[0.99]",
+        highlight && (highlight === 'created'
+          ? 'crud-highlight-created ring-4 ring-emerald-500/50 border-emerald-500 shadow-xl shadow-emerald-500/20'
+          : 'crud-highlight-updated ring-2 ring-blue-500/40 border-blue-500'),
       )}
-      onClick={() => {
+      onClick={(event) => {
+        const target = event.target as HTMLElement | null;
+        if (target?.closest('button, a, input, textarea, select, [role="button"]')) return;
         if (isDialogClosingRecently()) return;
         onOpenDetail?.(item);
       }}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        const target = e.target as HTMLElement | null;
-        if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
-
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onOpenDetail?.(item);
-        } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
-          e.preventDefault();
-          const current = e.currentTarget as HTMLElement;
-          const next = current.nextElementSibling as HTMLElement | null;
-          if (next && (next.getAttribute('role') === 'button' || next.tabIndex >= 0)) {
-            next.focus();
-          }
-        } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-          e.preventDefault();
-          const current = e.currentTarget as HTMLElement;
-          const prev = current.previousElementSibling as HTMLElement | null;
-          if (prev && (prev.getAttribute('role') === 'button' || prev.tabIndex >= 0)) {
-            prev.focus();
-          }
-        }
-      }}
+      role="group"
       aria-label={`${t('common.view', 'Ver')} ${config.entityName} ${titleText}`}
     >
       {/* ── Título principal ── */}
       <div className="flex items-start justify-between gap-2 mb-3">
-        <h3 className="font-bold text-sm text-foreground fit-clamp flex-1" title={titleText}>
-          {firstCol && firstCol.render ? getCellValue(firstCol) : titleText}
-        </h3>
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <h3 className="font-bold text-sm text-foreground fit-clamp flex-1" title={titleText}>
+            {titleColumn ? getCellValue(titleColumn) : titleText}
+          </h3>
+          {highlight === 'created' && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 dark:bg-emerald-500 px-2 py-0.5 text-[10px] font-extrabold text-white shadow-sm animate-pulse shrink-0">
+              <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping" />
+              ✨ Nuevo
+            </span>
+          )}
+        </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
           {config.enableSelection && onToggleSelect && (
@@ -186,14 +198,14 @@ function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>
             </div>
           )}
           {/* Badge del segundo campo (usualmente el tipo/evento) */}
-          {columns[1] && (
-            columns[1].render ? (
+          {highlightColumn && (
+            highlightColumn.render ? (
               <div className="flex-shrink-0">
-                {getCellValue(columns[1])}
+                {getCellValue(highlightColumn)}
               </div>
             ) : (
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 flex-shrink-0">
-                {getCellValue(columns[1])}
+                {getCellValue(highlightColumn)}
               </span>
             )
           )}
@@ -202,7 +214,7 @@ function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>
 
       {/* ── Pares clave:valor ── */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-2 mb-3">
-        {columns.slice(2).map((col) => (
+        {detailColumns.map((col) => (
           <div key={String(col.key)} className="min-w-0">
             <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70 mb-0.5">
               {col.label}
@@ -318,7 +330,7 @@ const MobileCard = memo(MobileCardComponent) as typeof MobileCardComponent;
 // MOBILE CARD LIST — renderiza cards en stack vertical
 // ═══════════════════════════════════════════════════════
 function MobileCardList<T extends { id: number }>(props: InternalTableProps<T>) {
-  const { items, columns, config, onOpenDetail, onOpenEdit, onOpenDelete, fkLabelMap, selectedIds, onToggleSelect } = props;
+  const { items, columns, config, onOpenDetail, onOpenEdit, onOpenDelete, fkLabelMap, selectedIds, onToggleSelect, recentFlags } = props;
 
   return (
     <div className="p-3 space-y-3">
@@ -335,6 +347,7 @@ function MobileCardList<T extends { id: number }>(props: InternalTableProps<T>) 
           fkLabelMap={fkLabelMap}
           selectedIds={selectedIds}
           onToggleSelect={onToggleSelect}
+          highlight={recentFlags?.[String(item.id)]}
         />
       ))}
     </div>
@@ -359,6 +372,7 @@ function TableRowComponent<T extends { id: number }>(props: TableRowProps<T>) {
     selectedIds,
     onToggleSelect,
     onUpdateCell,
+    highlight,
   } = props;
 
   const t = useT();
@@ -387,13 +401,18 @@ function TableRowComponent<T extends { id: number }>(props: TableRowProps<T>) {
 
   return (
     <tr
+      id={`crud-item-${item.id}`}
+      data-crud-id={item.id}
       className={cn(
         "h-10 md:h-12 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-muted/50",
         "transition-all duration-300 relative overflow-visible",
         enhancedHover
           ? "hover:bg-gradient-to-r hover:from-primary/5 hover:via-primary/[0.02] hover:to-transparent"
           : "hover:bg-muted/30",
-        isDeleting && "opacity-50 bg-destructive/5 dark:bg-red-950/20"
+        isDeleting && "opacity-50 bg-destructive/5 dark:bg-red-950/20",
+        highlight && (highlight === 'created'
+          ? 'crud-highlight-created bg-emerald-50/70 dark:bg-emerald-950/30 border-l-4 border-l-emerald-500 ring-2 ring-emerald-500/40 shadow-sm'
+          : 'crud-highlight-updated ring-2 ring-blue-500/30')
       )}
       onClick={handleClick}
       role="button"
@@ -457,7 +476,7 @@ function TableRowComponent<T extends { id: number }>(props: TableRowProps<T>) {
           />
         </td>
       )}
-      {columns.map((col) => (
+      {columns.map((col, colIdx) => (
         <td
           key={String(col.key)}
           className={cn(
@@ -467,30 +486,65 @@ function TableRowComponent<T extends { id: number }>(props: TableRowProps<T>) {
           )}
           title={col.render ? undefined : (fkLabelMap[String(col.key)]?.get(String((item as any)[col.key])) ?? String((item as any)[col.key] ?? ''))}
         >
-          {col.editable && onUpdateCell
-            ? (
-              <InlineEditCell
-                value={(item as any)[col.key]}
-                editType={col.editType}
-                options={
-                  col.editOptions ||
-                  (config.formSections || [])
-                    .flatMap((s) => s.fields || [])
-                    .find((f) => String(f.name) === String(col.key))?.options
-                }
-                onSave={async (newValue) => {
-                  if (onUpdateCell) {
-                    await onUpdateCell(item, String(col.key), newValue);
+          {colIdx === 0 && highlight === 'created' ? (
+            <div className="flex items-center gap-2">
+              <span className="truncate">
+                {col.editable && onUpdateCell
+                  ? (
+                    <InlineEditCell
+                      value={(item as any)[col.key]}
+                      editType={col.editType}
+                      options={
+                        col.editOptions ||
+                        (config.formSections || [])
+                          .flatMap((s) => s.fields || [])
+                          .find((f) => String(f.name) === String(col.key))?.options
+                      }
+                      onSave={async (newValue) => {
+                        if (onUpdateCell) {
+                          await onUpdateCell(item, String(col.key), newValue);
+                        }
+                      }}
+                    />
+                  )
+                  : col.render
+                    ? col.render((item as any)[col.key], item, index)
+                    : (() => {
+                        const raw = (item as any)[col.key];
+                        return mapCrudValue(raw, String(col.key), item, fkLabelMap);
+                      })()}
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 dark:bg-emerald-500 px-2 py-0.5 text-[10px] font-extrabold text-white shadow-sm animate-pulse shrink-0">
+                <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping" />
+                ✨ Nuevo
+              </span>
+            </div>
+          ) : (
+            col.editable && onUpdateCell
+              ? (
+                <InlineEditCell
+                  value={(item as any)[col.key]}
+                  editType={col.editType}
+                  options={
+                    col.editOptions ||
+                    (config.formSections || [])
+                      .flatMap((s) => s.fields || [])
+                      .find((f) => String(f.name) === String(col.key))?.options
                   }
-                }}
-              />
-            )
-            : col.render
-              ? col.render((item as any)[col.key], item, index)
-              : (() => {
-                  const raw = (item as any)[col.key];
-                  return mapCrudValue(raw, String(col.key), item, fkLabelMap);
-                })()}
+                  onSave={async (newValue) => {
+                    if (onUpdateCell) {
+                      await onUpdateCell(item, String(col.key), newValue);
+                    }
+                  }}
+                />
+              )
+              : col.render
+                ? col.render((item as any)[col.key], item, index)
+                : (() => {
+                    const raw = (item as any)[col.key];
+                    return mapCrudValue(raw, String(col.key), item, fkLabelMap);
+                  })()
+          )}
         </td>
       ))}
 
@@ -565,6 +619,7 @@ function TraditionalTableComponent<T extends { id: number }>(props: InternalTabl
     onToggleSelect,
     onToggleSelectAll,
     onUpdateCell,
+    recentFlags,
   } = props;
 
   const allSelected = items.length > 0 && items.every((item) => selectedIds?.includes(item.id));
@@ -637,6 +692,7 @@ function TraditionalTableComponent<T extends { id: number }>(props: InternalTabl
             selectedIds={selectedIds}
             onToggleSelect={onToggleSelect}
             onUpdateCell={onUpdateCell}
+            highlight={recentFlags?.[String(item.id)]}
           />
         ))}
       </tbody>
@@ -663,6 +719,7 @@ export function CRUDTable<T extends { id: number }>({
   onToggleSelectAll,
   onUpdateCell,
   headerSlot,
+  recentFlags,
 }: CRUDTableProps<T>) {
   const isMobile = useMediaQuery('(max-width: 767px)');
 
@@ -705,6 +762,7 @@ export function CRUDTable<T extends { id: number }>({
             onOpenDetail={onOpenDetail}
             onOpenEdit={onOpenEdit}
             onOpenDelete={onOpenDelete}
+            recentFlags={recentFlags}
           />
         ) : isMobile ? (
           /* ── MOBILE: Cards apiladas ── */
@@ -720,6 +778,7 @@ export function CRUDTable<T extends { id: number }>({
             enhancedHover={enhancedHover}
             selectedIds={selectedIds}
             onToggleSelect={onToggleSelect}
+            recentFlags={recentFlags}
           />
         ) : (
           /* ── TABLET/DESKTOP: Tabla tradicional ── */
@@ -737,6 +796,7 @@ export function CRUDTable<T extends { id: number }>({
             onToggleSelect={onToggleSelect}
             onToggleSelectAll={onToggleSelectAll}
             onUpdateCell={onUpdateCell}
+            recentFlags={recentFlags}
           />
         )}
       </FloatingScrollArea>

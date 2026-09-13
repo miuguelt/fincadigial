@@ -116,8 +116,8 @@ export const getBackendDocsURL = (): string => {
 
 // URL de health check del backend
 export const getBackendHealthURL = (): string => {
-  const backendUrl = getBackendBaseURL();
-  return `${backendUrl}/health`;
+  const apiUrl = getApiBaseURL().replace(/\/$/, '');
+  return `${apiUrl}/health`;
 };
 
 // URL del frontend según el entorno

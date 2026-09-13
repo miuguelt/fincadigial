@@ -1,0 +1,1462 @@
+{
+  "total_tables": 97,
+  "tested_count": 76,
+  "untested_count": 21,
+  "untested_tables": [
+    "animal_production_metrics",
+    "farm_expenses",
+    "financial_summary",
+    "kb_reglas",
+    "management_plans",
+    "market_blocks",
+    "market_conversations",
+    "market_events",
+    "market_reports",
+    "membership_request",
+    "milk_summary",
+    "operational_costs",
+    "producer_profiles",
+    "sinigan_registrations",
+    "treatment_protocol_insumos",
+    "treatment_protocols",
+    "treatment_recommendation_controls",
+    "treatment_recommendations",
+    "user_favorites",
+    "weather_alerts",
+    "weather_records"
+  ],
+  "details": {
+    "activity_daily_agg": {
+      "models": [
+        {
+          "class_name": "ActivityDailyAgg",
+          "module": "app.models.activity_daily_agg"
+        }
+      ],
+      "test_files": [
+        "test_tenant_isolation.py"
+      ],
+      "tested": true
+    },
+    "activity_log": {
+      "models": [
+        {
+          "class_name": "ActivityLog",
+          "module": "app.models.activity_log"
+        }
+      ],
+      "test_files": [
+        "test_activity_service.py",
+        "test_tenant_isolation.py",
+        "test_users_service.py"
+      ],
+      "tested": true
+    },
+    "animal_alert_configs": {
+      "models": [
+        {
+          "class_name": "AnimalAlertConfig",
+          "module": "app.models.alerts"
+        }
+      ],
+      "test_files": [
+        "test_tenant_isolation.py"
+      ],
+      "tested": true
+    },
+    "animal_alerts": {
+      "models": [
+        {
+          "class_name": "AnimalAlert",
+          "module": "app.models.alerts"
+        }
+      ],
+      "test_files": [
+        "test_alerts_bulk_read.py",
+        "test_alert_deduplication.py",
+        "test_calendar_endpoint.py",
+        "test_tenant_isolation.py"
+      ],
+      "tested": true
+    },
+    "animal_care_plan_stages": {
+      "models": [
+        {
+          "class_name": "AnimalCarePlanStage",
+          "module": "app.models.animal_care_plans"
+        }
+      ],
+      "test_files": [
+        "test_animal_care_plans.py"
+      ],
+      "tested": true
+    },
+    "animal_care_plans": {
+      "models": [
+        {
+          "class_name": "AnimalCarePlan",
+          "module": "app.models.animal_care_plans"
+        }
+      ],
+      "test_files": [
+        "test_animal_care_plans.py"
+      ],
+      "tested": true
+    },
+    "animal_disease_progress": {
+      "models": [
+        {
+          "class_name": "AnimalDiseaseProgress",
+          "module": "app.models.animalDiseaseProgress"
+        }
+      ],
+      "test_files": [
+        "test_disease_followup.py"
+      ],
+      "tested": true
+    },
+    "animal_diseases": {
+      "models": [
+        {
+          "class_name": "AnimalDiseases",
+          "module": "app.models.animalDiseases"
+        }
+      ],
+      "test_files": [
+        "test_tenant_isolation.py",
+        "test_treatment_protocols.py"
+      ],
+      "tested": true
+    },
+    "animal_fields": {
+      "models": [
+        {
+          "class_name": "AnimalFields",
+          "module": "app.models.animalFields"
+        }
+      ],
+      "test_files": [
+        "test_animal_fields_transfer.py",
+        "test_deletion_integrity.py",
+        "test_field_occupancy_sync.py",
+        "test_tenant_isolation.py"
+      ],
+      "tested": true
+    },
+    "animal_group_membership": {
+      "models": [
+        {
+          "class_name": "AnimalGroupMembership",
+          "module": "app.models.operational"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "animal_groups": {
+      "models": [
+        {
+          "class_name": "AnimalGroup",
+          "module": "app.models.operational"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "animal_health_history": {
+      "models": [
+        {
+          "class_name": "AnimalHealthHistory",
+          "module": "app.models.animal_health_history"
+        }
+      ],
+      "test_files": [
+        "test_control_persistence.py",
+        "test_disease_followup.py",
+        "test_unified_health_history.py"
+      ],
+      "tested": true
+    },
+    "animal_images": {
+      "models": [
+        {
+          "class_name": "AnimalImages",
+          "module": "app.models.animal_images"
+        }
+      ],
+      "test_files": [
+        "test_database_bootstrap.py",
+        "test_tenant_isolation.py"
+      ],
+      "tested": true
+    },
+    "animal_movements": {
+      "models": [
+        {
+          "class_name": "AnimalMovement",
+          "module": "app.models.animal_movements"
+        }
+      ],
+      "test_files": [
+        "test_animal_movements.py",
+        "test_unified_health_history.py"
+      ],
+      "tested": true
+    },
+    "animal_production_metrics": {
+      "models": [
+        {
+          "class_name": "AnimalProductionMetrics",
+          "module": "app.models.animal_production_metrics"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "animals": {
+      "models": [
+        {
+          "class_name": "Animals",
+          "module": "app.models.animals"
+        }
+      ],
+      "test_files": [
+        "test_analytics_endpoints.py",
+        "test_animal_care_plans.py",
+        "test_animal_disease_case_options.py",
+        "test_animal_fields_transfer.py",
+        "test_animal_movements.py",
+        "test_animal_nfc_binding.py",
+        "test_animal_search_query.py",
+        "test_animal_smart_filters.py",
+        "test_batch_weight.py",
+        "test_cache_and_milk_sync.py",
+        "test_calendar_endpoint.py",
+        "test_concurrent_admins.py",
+        "test_control_persistence.py",
+        "test_crud_endpoints.py",
+        "test_crud_full.py",
+        "test_deletion_integrity.py",
+        "test_disease_followup.py",
+        "test_fertility_dashboard.py",
+        "test_field_occupancy_sync.py",
+        "test_finca_baseline_and_scope.py",
+        "test_integrity_checker.py",
+        "test_inventory_ledger.py",
+        "test_medical_history_timeline.py",
+        "test_middleware.py",
+        "test_multi_tenant_rbac.py",
+        "test_public_finca_detail.py",
+        "test_rbac_middleware.py",
+        "test_redis_bus_resilience.py",
+        "test_regulatory_reports.py",
+        "test_report_services.py",
+        "test_semantic_search.py",
+        "test_tenant_isolation.py",
+        "test_treatment_protocols.py",
+        "test_treatment_recommendations.py",
+        "test_unified_health_history.py",
+        "reproduction/test_calf.py",
+        "reproduction/test_endpoints.py",
+        "reproduction/test_kpis.py"
+      ],
+      "tested": true
+    },
+    "attachment_blobs": {
+      "models": [
+        {
+          "class_name": "AttachmentBlob",
+          "module": "app.models.sync"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "body_condition_scores": {
+      "models": [
+        {
+          "class_name": "BodyConditionScore",
+          "module": "app.models.body_condition_scores"
+        }
+      ],
+      "test_files": [
+        "test_unified_health_history.py",
+        "reproduction/test_kpis.py"
+      ],
+      "tested": true
+    },
+    "breed_growth_standards": {
+      "models": [
+        {
+          "class_name": "BreedGrowthStandard",
+          "module": "app.models.breed_growth_standards"
+        }
+      ],
+      "test_files": [
+        "test_animal_smart_filters.py"
+      ],
+      "tested": true
+    },
+    "breeds": {
+      "models": [
+        {
+          "class_name": "Breeds",
+          "module": "app.models.breeds"
+        }
+      ],
+      "test_files": [
+        "test_animal_care_plans.py",
+        "test_animal_disease_case_options.py",
+        "test_animal_fields_transfer.py",
+        "test_animal_movements.py",
+        "test_animal_nfc_binding.py",
+        "test_animal_search_query.py",
+        "test_animal_smart_filters.py",
+        "test_batch_weight.py",
+        "test_calendar_endpoint.py",
+        "test_control_persistence.py",
+        "test_crud_endpoints.py",
+        "test_crud_full.py",
+        "test_disease_followup.py",
+        "test_fertility_dashboard.py",
+        "test_field_occupancy_sync.py",
+        "test_finca_baseline_and_scope.py",
+        "test_inventory_ledger.py",
+        "test_medical_history_timeline.py",
+        "test_public_finca_detail.py",
+        "test_semantic_search.py",
+        "test_tenant_isolation.py",
+        "test_treatment_protocols.py",
+        "test_treatment_recommendations.py",
+        "test_unified_health_history.py",
+        "reproduction/test_endpoints.py",
+        "reproduction/test_kpis.py"
+      ],
+      "tested": true
+    },
+    "chat_messages": {
+      "models": [
+        {
+          "class_name": "ChatMessage",
+          "module": "app.models.chat_message"
+        }
+      ],
+      "test_files": [
+        "test_chat_location_and_user_approval_sync.py",
+        "test_chat_realtime.py"
+      ],
+      "tested": true
+    },
+    "climate_risk_alerts": {
+      "models": [
+        {
+          "class_name": "ClimateRiskAlert",
+          "module": "app.models.campesino"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "community_nodes": {
+      "models": [
+        {
+          "class_name": "CommunityNode",
+          "module": "app.models.territory"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "control": {
+      "models": [
+        {
+          "class_name": "Control",
+          "module": "app.models.control"
+        }
+      ],
+      "test_files": [
+        "test_batch_weight.py",
+        "test_cache_and_milk_sync.py",
+        "test_control_persistence.py",
+        "test_crud_endpoints.py",
+        "test_crud_full.py",
+        "test_deletion_integrity.py",
+        "test_disease_followup.py",
+        "test_health_check.py",
+        "test_integrity_checker.py",
+        "test_jwt_blocklist.py",
+        "test_private_file_urls.py",
+        "test_semantic_search.py",
+        "test_tenant_isolation.py",
+        "test_treatment_recommendations.py",
+        "test_unified_health_history.py",
+        "test_validators.py",
+        "contract/test_api_contract.py"
+      ],
+      "tested": true
+    },
+    "crop_activities": {
+      "models": [
+        {
+          "class_name": "CropActivity",
+          "module": "app.models.campesino"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "crop_plots": {
+      "models": [
+        {
+          "class_name": "CropPlot",
+          "module": "app.models.campesino"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "devices": {
+      "models": [
+        {
+          "class_name": "Device",
+          "module": "app.models.sync"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "diseases": {
+      "models": [
+        {
+          "class_name": "Diseases",
+          "module": "app.models.diseases"
+        }
+      ],
+      "test_files": [
+        "test_animal_disease_case_options.py",
+        "test_bootstrap_and_seeds.py",
+        "test_calendar_endpoint.py",
+        "test_crud_endpoints.py",
+        "test_crud_full.py",
+        "test_disease_followup.py",
+        "test_finca_baseline_and_scope.py",
+        "test_multi_tenant_rbac.py",
+        "test_rbac_middleware.py",
+        "test_semantic_search.py",
+        "test_treatment_protocols.py"
+      ],
+      "tested": true
+    },
+    "farm_entity_alert_configs": {
+      "models": [
+        {
+          "class_name": "FarmEntityAlertConfig",
+          "module": "app.models.farm_entity_alerts"
+        }
+      ],
+      "test_files": [
+        "test_alert_runtime.py",
+        "test_database_bootstrap.py"
+      ],
+      "tested": true
+    },
+    "farm_entity_alerts": {
+      "models": [
+        {
+          "class_name": "FarmEntityAlert",
+          "module": "app.models.farm_entity_alerts"
+        }
+      ],
+      "test_files": [
+        "test_alert_runtime.py",
+        "test_database_bootstrap.py"
+      ],
+      "tested": true
+    },
+    "farm_expenses": {
+      "models": [
+        {
+          "class_name": "FarmExpenses",
+          "module": "app.models.production_finance"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "fields": {
+      "models": [
+        {
+          "class_name": "Fields",
+          "module": "app.models.fields"
+        }
+      ],
+      "test_files": [
+        "test_animal_fields_transfer.py",
+        "test_bootstrap_and_seeds.py",
+        "test_concurrent_admins.py",
+        "test_crud_endpoints.py",
+        "test_crud_full.py",
+        "test_deletion_integrity.py",
+        "test_field_occupancy_sync.py",
+        "test_multi_tenant_rbac.py",
+        "test_rbac_middleware.py",
+        "test_semantic_search.py",
+        "test_tenant_isolation.py",
+        "contract/test_api_contract.py"
+      ],
+      "tested": true
+    },
+    "financial_summary": {
+      "models": [
+        {
+          "class_name": "FinancialSummary",
+          "module": "app.models.extended_summaries"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "finca": {
+      "models": [
+        {
+          "class_name": "Finca",
+          "module": "app.models.finca"
+        }
+      ],
+      "test_files": [
+        "test_alerts_bulk_read.py",
+        "test_alert_deduplication.py",
+        "test_analytics_endpoints.py",
+        "test_animal_disease_case_options.py",
+        "test_animal_movements.py",
+        "test_animal_nfc_binding.py",
+        "test_animal_search_query.py",
+        "test_animal_smart_filters.py",
+        "test_audit_fixes.py",
+        "test_batch_weight.py",
+        "test_bootstrap_and_seeds.py",
+        "test_chat_location_and_user_approval_sync.py",
+        "test_chat_realtime.py",
+        "test_cleanup_simulated_data.py",
+        "test_client_errors_endpoint.py",
+        "test_concurrent_admins.py",
+        "test_control_persistence.py",
+        "test_crud_endpoints.py",
+        "test_crud_full.py",
+        "test_database_bootstrap.py",
+        "test_deletion_integrity.py",
+        "test_fertility_dashboard.py",
+        "test_field_occupancy_sync.py",
+        "test_finca_baseline_and_scope.py",
+        "test_finca_images.py",
+        "test_finca_registration_e2e.py",
+        "test_integrity_checker.py",
+        "test_inventory_ledger.py",
+        "test_medical_history_timeline.py",
+        "test_multi_finca.py",
+        "test_multi_tenant_rbac.py",
+        "test_professional_credentials.py",
+        "test_public_finca_detail.py",
+        "test_public_registration_consent.py",
+        "test_push_notifications.py",
+        "test_regulatory_reports.py",
+        "test_report_services.py",
+        "test_role_dashboards_smoke.py",
+        "test_semantic_search.py",
+        "test_support_scripts_alignment.py",
+        "test_technical_assistance_workflow.py",
+        "test_tenant_isolation.py",
+        "test_treatment_protocols.py",
+        "test_user_approval_pending.py",
+        "test_user_farm_scope.py",
+        "test_user_verification_config.py",
+        "test_weather_namespace_auth.py",
+        "test_weather_service.py",
+        "contract/test_api_contract.py",
+        "reproduction/test_endpoints.py",
+        "reproduction/test_kpis.py",
+        "reproduction/test_state_sync.py",
+        "reproduction/test_validators.py"
+      ],
+      "tested": true
+    },
+    "finca_images": {
+      "models": [
+        {
+          "class_name": "FincaImages",
+          "module": "app.models.finca_images"
+        }
+      ],
+      "test_files": [
+        "test_finca_images.py"
+      ],
+      "tested": true
+    },
+    "food_types": {
+      "models": [
+        {
+          "class_name": "FoodTypes",
+          "module": "app.models.foodTypes"
+        }
+      ],
+      "test_files": [
+        "test_animal_fields_transfer.py",
+        "test_bootstrap_and_seeds.py",
+        "test_crud_endpoints.py",
+        "test_crud_full.py",
+        "test_field_occupancy_sync.py",
+        "test_finca_baseline_and_scope.py",
+        "test_middleware.py",
+        "test_tenant_isolation.py"
+      ],
+      "tested": true
+    },
+    "genetic_improvements": {
+      "models": [
+        {
+          "class_name": "GeneticImprovements",
+          "module": "app.models.geneticImprovements"
+        }
+      ],
+      "test_files": [
+        "test_medical_history_timeline.py",
+        "test_tenant_isolation.py"
+      ],
+      "tested": true
+    },
+    "infrastructure": {
+      "models": [
+        {
+          "class_name": "Infrastructure",
+          "module": "app.models.operational"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "inventory_lots": {
+      "models": [
+        {
+          "class_name": "InventoryLot",
+          "module": "app.models.inventory"
+        }
+      ],
+      "test_files": [
+        "test_inventory_ledger.py",
+        "test_tenant_isolation.py"
+      ],
+      "tested": true
+    },
+    "inventory_movements": {
+      "models": [
+        {
+          "class_name": "InventoryMovement",
+          "module": "app.models.inventory"
+        }
+      ],
+      "test_files": [
+        "test_inventory_ledger.py",
+        "test_tenant_isolation.py"
+      ],
+      "tested": true
+    },
+    "join_requests": {
+      "models": [
+        {
+          "class_name": "JoinRequest",
+          "module": "app.models.join_request"
+        }
+      ],
+      "test_files": [
+        "test_chat_location_and_user_approval_sync.py",
+        "test_user_verification_config.py"
+      ],
+      "tested": true
+    },
+    "kb_calendario": {
+      "models": [
+        {
+          "class_name": "KBCalendario",
+          "module": "app.models.knowledge_base"
+        }
+      ],
+      "test_files": [
+        "test_bootstrap_and_seeds.py"
+      ],
+      "tested": true
+    },
+    "kb_recomendaciones": {
+      "models": [
+        {
+          "class_name": "KBRecomendacion",
+          "module": "app.models.knowledge_base"
+        }
+      ],
+      "test_files": [
+        "test_bootstrap_and_seeds.py"
+      ],
+      "tested": true
+    },
+    "kb_reglas": {
+      "models": [
+        {
+          "class_name": "KBRegla",
+          "module": "app.models.knowledge_base"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "lactation_cycles": {
+      "models": [
+        {
+          "class_name": "LactationCycle",
+          "module": "app.models.lactation_cycle"
+        }
+      ],
+      "test_files": [
+        "test_database_bootstrap.py",
+        "reproduction/test_calf.py",
+        "reproduction/test_state_sync.py",
+        "reproduction/test_validators.py"
+      ],
+      "tested": true
+    },
+    "livestock_summary": {
+      "models": [
+        {
+          "class_name": "LivestockSummary",
+          "module": "app.models.livestock_summary"
+        }
+      ],
+      "test_files": [
+        "test_animal_movements.py",
+        "test_public_finca_detail.py"
+      ],
+      "tested": true
+    },
+    "management_plans": {
+      "models": [
+        {
+          "class_name": "ManagementPlan",
+          "module": "app.models.management_plans"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "market_blocks": {
+      "models": [
+        {
+          "class_name": "MarketBlock",
+          "module": "app.marketplace.models"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "market_conversations": {
+      "models": [
+        {
+          "class_name": "MarketConversation",
+          "module": "app.marketplace.models"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "market_events": {
+      "models": [
+        {
+          "class_name": "MarketEvent",
+          "module": "app.marketplace.models"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "market_offers": {
+      "models": [
+        {
+          "class_name": "MarketOffer",
+          "module": "app.models.market_offer"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "market_reports": {
+      "models": [
+        {
+          "class_name": "MarketReport",
+          "module": "app.marketplace.models"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "medications": {
+      "models": [
+        {
+          "class_name": "Medications",
+          "module": "app.models.medications"
+        }
+      ],
+      "test_files": [
+        "test_crud_endpoints.py",
+        "test_crud_full.py",
+        "test_disease_followup.py",
+        "test_finca_baseline_and_scope.py",
+        "test_inventory_ledger.py",
+        "test_semantic_search.py",
+        "test_treatment_protocols.py"
+      ],
+      "tested": true
+    },
+    "membership_request": {
+      "models": [
+        {
+          "class_name": "MembershipRequest",
+          "module": "app.models.membership_request"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "milk_production": {
+      "models": [
+        {
+          "class_name": "MilkProduction",
+          "module": "app.models.milk_production"
+        }
+      ],
+      "test_files": [
+        "test_deletion_integrity.py",
+        "test_unified_health_history.py"
+      ],
+      "tested": true
+    },
+    "milk_summary": {
+      "models": [
+        {
+          "class_name": "MilkSummary",
+          "module": "app.models.extended_summaries"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "node_messages": {
+      "models": [
+        {
+          "class_name": "NodeMessage",
+          "module": "app.models.node_message"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "offline_learning_materials": {
+      "models": [
+        {
+          "class_name": "OfflineLearningMaterial",
+          "module": "app.models.campesino"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "offspring": {
+      "models": [
+        {
+          "class_name": "Offspring",
+          "module": "app.models.reproduction"
+        }
+      ],
+      "test_files": [
+        "test_tenant_isolation.py",
+        "reproduction/test_calf.py",
+        "reproduction/test_endpoints.py",
+        "reproduction/test_state_sync.py"
+      ],
+      "tested": true
+    },
+    "operational_costs": {
+      "models": [
+        {
+          "class_name": "OperationalCost",
+          "module": "app.models.operational_costs"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "pasture_aforos": {
+      "models": [
+        {
+          "class_name": "PastureAforo",
+          "module": "app.models.operational"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "producer_profiles": {
+      "models": [
+        {
+          "class_name": "ProducerProfile",
+          "module": "app.models.producer_profiles"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "production_targets": {
+      "models": [
+        {
+          "class_name": "ProductionTarget",
+          "module": "app.models.production_target"
+        }
+      ],
+      "test_files": [
+        "test_database_bootstrap.py"
+      ],
+      "tested": true
+    },
+    "professional_credentials": {
+      "models": [
+        {
+          "class_name": "ProfessionalCredential",
+          "module": "app.models.professional_credentials"
+        }
+      ],
+      "test_files": [
+        "test_professional_credentials.py"
+      ],
+      "tested": true
+    },
+    "push_subscription": {
+      "models": [
+        {
+          "class_name": "PushSubscription",
+          "module": "app.models.push_subscription"
+        }
+      ],
+      "test_files": [
+        "test_push_notifications.py"
+      ],
+      "tested": true
+    },
+    "reproductive_events": {
+      "models": [
+        {
+          "class_name": "ReproductiveEvent",
+          "module": "app.models.reproduction"
+        }
+      ],
+      "test_files": [
+        "test_fertility_dashboard.py",
+        "test_tenant_isolation.py",
+        "test_unified_health_history.py",
+        "reproduction/test_endpoints.py",
+        "reproduction/test_kpis.py"
+      ],
+      "tested": true
+    },
+    "route_administrations": {
+      "models": [
+        {
+          "class_name": "RouteAdministration",
+          "module": "app.models.route_administration"
+        }
+      ],
+      "test_files": [
+        "test_animal_disease_case_options.py",
+        "test_bootstrap_and_seeds.py",
+        "test_calendar_endpoint.py",
+        "test_database_bootstrap.py",
+        "test_disease_followup.py",
+        "test_finca_baseline_and_scope.py",
+        "test_inventory_ledger.py",
+        "test_semantic_search.py",
+        "test_treatment_protocols.py"
+      ],
+      "tested": true
+    },
+    "seasonal_adjustments": {
+      "models": [
+        {
+          "class_name": "SeasonalAdjustment",
+          "module": "app.models.seasonal_adjustments"
+        }
+      ],
+      "test_files": [
+        "test_database_bootstrap.py"
+      ],
+      "tested": true
+    },
+    "sinigan_registrations": {
+      "models": [
+        {
+          "class_name": "SiniganRegistrations",
+          "module": "app.models.sinigan_registrations"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "species": {
+      "models": [
+        {
+          "class_name": "Species",
+          "module": "app.models.species"
+        }
+      ],
+      "test_files": [
+        "test_animal_care_plans.py",
+        "test_animal_disease_case_options.py",
+        "test_animal_fields_transfer.py",
+        "test_animal_movements.py",
+        "test_animal_nfc_binding.py",
+        "test_animal_search_query.py",
+        "test_animal_smart_filters.py",
+        "test_audit_fixes.py",
+        "test_batch_weight.py",
+        "test_calendar_endpoint.py",
+        "test_control_persistence.py",
+        "test_crud_endpoints.py",
+        "test_crud_full.py",
+        "test_database_bootstrap.py",
+        "test_deletion_integrity.py",
+        "test_disease_followup.py",
+        "test_fertility_dashboard.py",
+        "test_field_occupancy_sync.py",
+        "test_finca_baseline_and_scope.py",
+        "test_integrity_checker.py",
+        "test_inventory_ledger.py",
+        "test_medical_history_timeline.py",
+        "test_public_finca_detail.py",
+        "test_regulatory_reports.py",
+        "test_report_services.py",
+        "test_semantic_search.py",
+        "test_tenant_isolation.py",
+        "test_treatment_protocols.py",
+        "test_treatment_recommendations.py",
+        "test_unified_health_history.py",
+        "contract/test_api_contract.py",
+        "reproduction/test_endpoints.py",
+        "reproduction/test_kpis.py"
+      ],
+      "tested": true
+    },
+    "sync_conflicts": {
+      "models": [
+        {
+          "class_name": "SyncConflict",
+          "module": "app.models.sync"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "sync_operation_receipts": {
+      "models": [
+        {
+          "class_name": "SyncOperationReceipt",
+          "module": "app.models.sync"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "sync_operations": {
+      "models": [
+        {
+          "class_name": "SyncOperation",
+          "module": "app.models.sync"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "sync_sessions": {
+      "models": [
+        {
+          "class_name": "SyncSession",
+          "module": "app.models.sync"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "system_contents": {
+      "models": [
+        {
+          "class_name": "SystemContent",
+          "module": "app.models.system_content"
+        }
+      ],
+      "test_files": [
+        "test_public_finca_detail.py"
+      ],
+      "tested": true
+    },
+    "tasks": {
+      "models": [
+        {
+          "class_name": "Tasks",
+          "module": "app.models.tasks"
+        }
+      ],
+      "test_files": [
+        "test_alert_deduplication.py",
+        "test_calendar_endpoint.py",
+        "test_crud_full.py",
+        "test_intelligence_endpoints.py",
+        "test_semantic_search.py"
+      ],
+      "tested": true
+    },
+    "technical_assistance_requests": {
+      "models": [
+        {
+          "class_name": "TechnicalAssistanceRequest",
+          "module": "app.models.campesino"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py",
+        "test_technical_assistance_workflow.py"
+      ],
+      "tested": true
+    },
+    "territories": {
+      "models": [
+        {
+          "class_name": "Territory",
+          "module": "app.models.territory"
+        }
+      ],
+      "test_files": [
+        "test_bootstrap_and_seeds.py",
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "transactions": {
+      "models": [
+        {
+          "class_name": "Transaction",
+          "module": "app.models.financial"
+        }
+      ],
+      "test_files": [
+        "test_analytics_endpoints.py",
+        "test_animal_movements.py",
+        "test_crud_full.py",
+        "test_deletion_integrity.py"
+      ],
+      "tested": true
+    },
+    "treatment_medications": {
+      "models": [
+        {
+          "class_name": "TreatmentMedications",
+          "module": "app.models.treatment_medications"
+        }
+      ],
+      "test_files": [
+        "test_finca_baseline_and_scope.py",
+        "test_inventory_ledger.py"
+      ],
+      "tested": true
+    },
+    "treatment_protocol_insumos": {
+      "models": [
+        {
+          "class_name": "TreatmentProtocolInsumo",
+          "module": "app.models.treatment_protocol_insumos"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "treatment_protocols": {
+      "models": [
+        {
+          "class_name": "TreatmentProtocol",
+          "module": "app.models.treatment_protocols"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "treatment_recommendation_controls": {
+      "models": [
+        {
+          "class_name": "TreatmentRecommendationControls",
+          "module": "app.models.treatment_recommendation_controls"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "treatment_recommendations": {
+      "models": [
+        {
+          "class_name": "TreatmentRecommendations",
+          "module": "app.models.treatment_recommendations"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "treatment_vaccines": {
+      "models": [
+        {
+          "class_name": "TreatmentVaccines",
+          "module": "app.models.treatment_vaccines"
+        }
+      ],
+      "test_files": [
+        "test_finca_baseline_and_scope.py"
+      ],
+      "tested": true
+    },
+    "treatments": {
+      "models": [
+        {
+          "class_name": "Treatments",
+          "module": "app.models.treatments"
+        }
+      ],
+      "test_files": [
+        "test_animal_disease_case_options.py",
+        "test_calendar_endpoint.py",
+        "test_crud_endpoints.py",
+        "test_crud_full.py",
+        "test_disease_followup.py",
+        "test_finca_baseline_and_scope.py",
+        "test_inventory_ledger.py",
+        "test_multi_tenant_rbac.py",
+        "test_rbac_middleware.py",
+        "test_tenant_isolation.py",
+        "test_treatment_protocols.py",
+        "test_unified_health_history.py"
+      ],
+      "tested": true
+    },
+    "user": {
+      "models": [
+        {
+          "class_name": "User",
+          "module": "app.models.user"
+        }
+      ],
+      "test_files": [
+        "test_animal_disease_case_options.py",
+        "test_animal_smart_filters.py",
+        "test_bootstrap_and_seeds.py",
+        "test_chat_location_and_user_approval_sync.py",
+        "test_chat_realtime.py",
+        "test_cleanup_simulated_data.py",
+        "test_concurrent_admins.py",
+        "test_database_bootstrap.py",
+        "test_disease_followup.py",
+        "test_finca_images.py",
+        "test_finca_registration_e2e.py",
+        "test_marketplace.py",
+        "test_multi_finca.py",
+        "test_multi_tenant_rbac.py",
+        "test_professional_credentials.py",
+        "test_public_registration_consent.py",
+        "test_push_notifications.py",
+        "test_regulatory_reports.py",
+        "test_role_dashboards_smoke.py",
+        "test_seed_identities.py",
+        "test_seed_master_alignment.py",
+        "test_support_scripts_alignment.py",
+        "test_tenant_isolation.py",
+        "test_treatment_protocols.py",
+        "test_users_service.py",
+        "test_user_approval_pending.py",
+        "test_user_farm_scope.py",
+        "test_user_verification_config.py",
+        "test_validators.py",
+        "test_weather_namespace_auth.py"
+      ],
+      "tested": true
+    },
+    "user_consents": {
+      "models": [
+        {
+          "class_name": "UserConsent",
+          "module": "app.models.user_consent"
+        }
+      ],
+      "test_files": [
+        "test_finca_registration_e2e.py",
+        "test_public_registration_consent.py"
+      ],
+      "tested": true
+    },
+    "user_favorites": {
+      "models": [
+        {
+          "class_name": "UserFavorite",
+          "module": "app.models.user_favorite"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "user_finca": {
+      "models": [
+        {
+          "class_name": "UserFinca",
+          "module": "app.models.user_finca"
+        }
+      ],
+      "test_files": [
+        "test_chat_location_and_user_approval_sync.py",
+        "test_chat_realtime.py",
+        "test_database_bootstrap.py",
+        "test_marketplace.py",
+        "test_multi_finca.py",
+        "test_user_farm_scope.py",
+        "test_weather_namespace_auth.py"
+      ],
+      "tested": true
+    },
+    "user_locations": {
+      "models": [
+        {
+          "class_name": "UserLocation",
+          "module": "app.models.user_location"
+        }
+      ],
+      "test_files": [
+        "test_chat_location_and_user_approval_sync.py"
+      ],
+      "tested": true
+    },
+    "vaccinations": {
+      "models": [
+        {
+          "class_name": "Vaccinations",
+          "module": "app.models.vaccinations"
+        }
+      ],
+      "test_files": [
+        "test_animal_disease_case_options.py",
+        "test_calendar_endpoint.py",
+        "test_crud_endpoints.py",
+        "test_crud_full.py",
+        "test_disease_followup.py",
+        "test_multi_tenant_rbac.py",
+        "test_rbac_middleware.py",
+        "test_regulatory_reports.py",
+        "test_tenant_isolation.py"
+      ],
+      "tested": true
+    },
+    "vaccines": {
+      "models": [
+        {
+          "class_name": "Vaccines",
+          "module": "app.models.vaccines"
+        }
+      ],
+      "test_files": [
+        "test_animal_disease_case_options.py",
+        "test_bootstrap_and_seeds.py",
+        "test_calendar_endpoint.py",
+        "test_crud_endpoints.py",
+        "test_crud_full.py",
+        "test_disease_followup.py",
+        "test_finca_baseline_and_scope.py",
+        "test_semantic_search.py",
+        "test_treatment_protocols.py"
+      ],
+      "tested": true
+    },
+    "water_measurements": {
+      "models": [
+        {
+          "class_name": "WaterMeasurement",
+          "module": "app.models.campesino"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "water_sources": {
+      "models": [
+        {
+          "class_name": "WaterSource",
+          "module": "app.models.campesino"
+        }
+      ],
+      "test_files": [
+        "test_model_registry_integrity.py"
+      ],
+      "tested": true
+    },
+    "weather_alerts": {
+      "models": [
+        {
+          "class_name": "WeatherAlert",
+          "module": "app.models.weather"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    },
+    "weather_records": {
+      "models": [
+        {
+          "class_name": "WeatherRecord",
+          "module": "app.models.weather"
+        }
+      ],
+      "test_files": [],
+      "tested": false
+    }
+  }
+}

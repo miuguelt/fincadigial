@@ -31,6 +31,8 @@ export interface PageHeaderProps {
   dense?: boolean;
   // Opcional: clases extra para el <h1>
   titleClassName?: string;
+  /** Slot secundario de ancho completo (100%), ideal para conmutadores de vista y filtros */
+  bottomBar?: React.ReactNode;
 }
 
 /** Título y descripción, ambos ajustados al ancho disponible. */
@@ -69,6 +71,7 @@ export function PageHeader({
   className,
   dense = false,
   titleClassName,
+  bottomBar,
 }: PageHeaderProps) {
   const headerBase = dense
     ? "mb-0 bg-transparent rounded-none p-0 sm:p-1 shadow-none border-none"
@@ -97,15 +100,18 @@ export function PageHeader({
         <TitleBlock title={title} description={description} titleClasses={titleClasses} />
         {actions ? (
           /*
-           * `min-w-0` en vez de `shrink-0`: un slot de acciones ancho —una barra
-           * de búsqueda con chips— ya no puede empujar el encabezado más allá
-           * del viewport ni dejar el título en una columna de una letra. Las
-           * acciones cortas siguen midiendo lo que miden porque `flex` no las
-           * encoge por debajo de su contenido salvo que falte sitio.
+           * `min-w-0` en vez de `shrink-0`: un slot de acciones ancho ya no
+           * empuja el encabezado más allá del viewport ni deja el título
+           * en una columna de una letra.
            */
-          <div className="flex min-w-0 flex-wrap items-center gap-2 sm:flex-[2] sm:gap-3 sm:justify-end">{actions}</div>
+          <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3 sm:justify-end">{actions}</div>
         ) : null}
       </div>
+      {bottomBar ? (
+        <div className="mt-2.5 pt-2 border-t border-border/30 w-full min-w-0">
+          {bottomBar}
+        </div>
+      ) : null}
     </header>
   );
 }

@@ -1,4 +1,4 @@
-"""Alta de la cría del parto como animal del hato, con su genealogía."""
+"""Alta de la cría del parto como animal del ganado, con su genealogía."""
 
 from datetime import timedelta
 
@@ -44,6 +44,10 @@ class TestCalfRegistration:
             assert calf.idFather == sire.id
             assert calf.breeds_id == cow.breeds_id
             assert calf_row.animal_id == calf.id
+            identity = calf.identity
+            assert identity is not None
+            assert identity.origin_type == "BORN_ON_FARM"
+            assert identity.identification_due_at == calf.birth_date + timedelta(days=365)
 
     def test_hereda_los_abuelos_conocidos(self, app, farm):
         from app.services.reproduction.calf_registration import register_calf

@@ -7,6 +7,7 @@
  * working when the internet disappears but the local network is still present.
  */
 import { getEnvVar } from '@/shared/utils/viteEnv';
+import { USE_BEARER_AUTH } from '@/shared/api/client/settings';
 
 const STORAGE_KEY = 'villaluz.field-node.api-url';
 const NODE_CHANGED_EVENT = 'villaluz:field-node-changed';
@@ -20,6 +21,7 @@ export interface FieldNodeProbe {
 }
 
 function authHeaders(): Record<string, string> {
+  if (!USE_BEARER_AUTH) return {};
   try {
     const storageKey = String(getEnvVar('VITE_AUTH_STORAGE_KEY', 'finca_access_token'));
     const token = localStorage.getItem(storageKey)

@@ -1,9 +1,9 @@
 import React from 'react';
-import { User, Calendar, MessageCircle, Clock, AlertTriangle } from 'lucide-react';
+import { User, Calendar, MessageCircle, Clock, AlertTriangle, Paperclip } from 'lucide-react';
 import type { TechnicalAssistanceRequest } from '@/entities/campesino';
 import { Badge } from '@/shared/ui/badge';
 import { FitText } from '@/shared/ui/FitText';
-import { getCategoryConfig, STATUS_CONFIG, PRIORITY_CONFIG, CONTACT_PHONE } from './assistance.constants';
+import { getCategoryConfig, STATUS_CONFIG, PRIORITY_CONFIG } from './assistance.constants';
 import { timeAgo, isOverdue, formatDateLong } from './timeUtils';
 
 interface AssistanceCardProps {
@@ -23,7 +23,8 @@ interface AssistanceCardProps {
  */
 export const AssistanceCard = React.memo<AssistanceCardProps>(({ item, onDetail, onCancel }) => {
   const cat = getCategoryConfig(item.category || 'otro');
-  const statusCfg = STATUS_CONFIG[item.status || 'open'] || STATUS_CONFIG.open;
+  const displayStatus = item.status === 'in_progress' && !item.assigned_user_id ? 'open' : (item.status || 'open');
+  const statusCfg = STATUS_CONFIG[displayStatus] || STATUS_CONFIG.open;
   const priorityCfg = PRIORITY_CONFIG[item.priority || 'medium'] || PRIORITY_CONFIG.medium;
   const CatIcon = cat.icon;
   const elapsed = timeAgo(item.requested_at);
@@ -89,6 +90,12 @@ export const AssistanceCard = React.memo<AssistanceCardProps>(({ item, onDetail,
           <MessageCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
           <span className="min-w-0 flex-1">{item.resolution_notes ? 'Respuesta del veterinario disponible' : 'Sin respuestas aún'}</span>
         </div>
+        {item.attachment && (
+          <div className="flex items-start gap-2 text-primary min-w-0">
+            <Paperclip className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+            <span className="min-w-0 flex-1">Foto o audio adjunto</span>
+          </div>
+        )}
       </div>
 
       {!item.assigned_user_id && (
@@ -96,8 +103,7 @@ export const AssistanceCard = React.memo<AssistanceCardProps>(({ item, onDetail,
           <div className="flex items-start gap-2 text-fluid-xs text-amber-800 dark:text-amber-300 min-w-0">
             <Clock className="w-3.5 h-3.5 shrink-0 mt-0.5" />
             <span className="min-w-0 flex-1">
-              Un veterinario responde en máximo 48 horas. Si es urgente, llama al{' '}
-              <strong className="whitespace-nowrap">{CONTACT_PHONE}</strong>
+              Recibirás una notificación cuando un veterinario tome el caso. Si es una urgencia que no puede esperar, usa la ruta de emergencia de la finca.
             </span>
           </div>
         </div>

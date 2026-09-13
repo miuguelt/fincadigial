@@ -637,7 +637,8 @@ def create_optimized_namespace(
                 if per_page is None:
                     per_page = 50
 
-                search = flask.request.args.get("search", type=str)
+                search_raw = flask.request.args.get("search", type=str) or flask.request.args.get("q", type=str)
+                search = search_raw.strip() if search_raw else None
                 search_type = flask.request.args.get(
                     "search_type", default="auto", type=str
                 )
@@ -696,77 +697,80 @@ def create_optimized_namespace(
                         try:
                             source_field = range_filter_fields.get(field, field)
                             column = getattr(model_class, source_field, None)
-                            if column is not None and hasattr(column, "type"):
-                                column_type = column.type
+                            column_type = getattr(column, "type", None) if column is not None else None
+
+                            def convert_single_value(v):
+                                """Convierte un valor según el tipo de columna si existe."""
+                                if column_type is None:
+                                    return v
+
                                 from sqlalchemy import Enum as SQLEnum, Date, DateTime
                                 import datetime as dt
 
-                                def convert_single_value(v):
-                                    """Convierte un valor según el tipo de columna"""
-                                    # Enums
-                                    if isinstance(
-                                        column_type, SQLEnum
-                                    ) and field in getattr(
-                                        model_class, "_enum_fields", {}
-                                    ):
-                                        enum_class = model_class._enum_fields[field]
+                                # Enums
+                                if isinstance(
+                                    column_type, SQLEnum
+                                ) and field in getattr(
+                                    model_class, "_enum_fields", {}
+                                ):
+                                    enum_class = model_class._enum_fields[field]
+                                    try:
+                                        return enum_class(v)
+                                    except (ValueError, KeyError):
                                         try:
-                                            return enum_class(v)
-                                        except (ValueError, KeyError):
-                                            try:
-                                                return enum_class[str(v).upper()]
-                                            except KeyError:
-                                                logger.warning(
-                                                    f"Valor enum inválido para {field}: {v}"
-                                                )
-                                                return v
-
-                                    # Dates y DateTimes
-                                    elif isinstance(column_type, (Date, DateTime)):
-                                        try:
-                                            if isinstance(column_type, DateTime):
-                                                return dt.datetime.fromisoformat(v)
-                                            else:
-                                                return dt.date.fromisoformat(v)
-                                        except (ValueError, TypeError):
+                                            return enum_class[str(v).upper()]
+                                        except KeyError:
                                             logger.warning(
-                                                f"Fecha inválida para {field}: {v}"
+                                                f"Valor enum inválido para {field}: {v}"
                                             )
                                             return v
 
-                                    # Tipos primitivos
-                                    elif hasattr(column_type, "python_type"):
-                                        py_type = column_type.python_type
-                                        if py_type is int:
-                                            return int(v)
-                                        elif py_type is float:
-                                            return float(v)
-                                        elif py_type is bool:
-                                            return v.lower() in ("true", "1", "yes")
+                                # Dates y DateTimes
+                                elif isinstance(column_type, (Date, DateTime)):
+                                    try:
+                                        if isinstance(column_type, DateTime):
+                                            return dt.datetime.fromisoformat(v)
                                         else:
-                                            return v
-                                    else:
+                                            return dt.date.fromisoformat(v)
+                                    except (ValueError, TypeError):
+                                        logger.warning(
+                                            f"Fecha inválida para {field}: {v}"
+                                        )
                                         return v
 
-                                # Manejar listas de valores (múltiples filtros)
-                                if raw and "," in raw:
-                                    values = [
-                                        v.strip() for v in raw.split(",") if v.strip()
-                                    ]
-                                    converted_values = []
-                                    for v in values:
-                                        try:
-                                            converted_values.append(
-                                                convert_single_value(v)
-                                            )
-                                        except (ValueError, TypeError):
-                                            converted_values.append(v)
-                                    filters[field] = converted_values
+                                # Tipos primitivos
+                                elif hasattr(column_type, "python_type"):
+                                    py_type = column_type.python_type
+                                    if py_type is int:
+                                        return int(v)
+                                    elif py_type is float:
+                                        return float(v)
+                                    elif py_type is bool:
+                                        return v.lower() in ("true", "1", "yes")
+                                    else:
+                                        return v
                                 else:
-                                    # Valor único
-                                    filters[field] = convert_single_value(raw)
+                                    return v
 
-                        except (ValueError, TypeError, AttributeError) as e:
+                            # Manejar listas de valores (múltiples filtros)
+                            if raw and "," in raw:
+                                values = [
+                                    v.strip() for v in raw.split(",") if v.strip()
+                                ]
+                                converted_values = []
+                                for v in values:
+                                    try:
+                                        converted_values.append(
+                                            convert_single_value(v)
+                                        )
+                                    except (ValueError, TypeError):
+                                        converted_values.append(v)
+                                filters[field] = converted_values
+                            else:
+                                # Valor único
+                                filters[field] = convert_single_value(raw)
+
+                        except Exception as e:
                             # Si falla la conversión, usar el valor raw como fallback
                             logger.warning(
                                 f"No se pudo convertir filtro {field}={raw}: {e}"
@@ -1096,16 +1100,24 @@ def create_optimized_namespace(
                     for col in model_class.__table__.columns:
                         cname = col.name
                         if cname in payload and isinstance(payload[cname], str):
+                            if payload[cname].strip() == "":
+                                if col.nullable:
+                                    payload[cname] = None
+                                    continue
                             try:
                                 if isinstance(col.type, Date):
-                                    payload[cname] = _dt.date.fromisoformat(
-                                        payload[cname]
-                                    )
+                                    if payload[cname]:
+                                        payload[cname] = _dt.date.fromisoformat(
+                                            payload[cname]
+                                        )
                                 elif isinstance(col.type, DateTime):
-                                    # datetime.fromisoformat handles both naive and offset-aware
-                                    payload[cname] = _dt.datetime.fromisoformat(
-                                        payload[cname]
-                                    )
+                                    if payload[cname]:
+                                        txt = payload[cname]
+                                        if txt.endswith("Z"):
+                                            txt = txt[:-1] + "+00:00"
+                                        payload[cname] = _dt.datetime.fromisoformat(
+                                            txt
+                                        )
                             except Exception:
                                 # Leave as-is; let model validation handle the error
                                 pass
@@ -1513,16 +1525,22 @@ def create_optimized_namespace(
                     for col in model_class.__table__.columns:
                         cname = col.name
                         if cname in payload and isinstance(payload[cname], str):
+                            if payload[cname].strip() == "":
+                                if col.nullable:
+                                    payload[cname] = None
+                                    continue
                             try:
                                 if isinstance(col.type, Date):
-                                    payload[cname] = _dt.date.fromisoformat(
-                                        payload[cname]
-                                    )
+                                    if payload[cname]:
+                                        payload[cname] = _dt.date.fromisoformat(
+                                            payload[cname]
+                                        )
                                 elif isinstance(col.type, DateTime):
-                                    txt = payload[cname]
-                                    if txt.endswith("Z"):
-                                        txt = txt[:-1] + "+00:00"
-                                    payload[cname] = _dt.datetime.fromisoformat(txt)
+                                    if payload[cname]:
+                                        txt = payload[cname]
+                                        if txt.endswith("Z"):
+                                            txt = txt[:-1] + "+00:00"
+                                        payload[cname] = _dt.datetime.fromisoformat(txt)
                             except Exception:
                                 pass
                 except Exception:
@@ -1688,16 +1706,22 @@ def create_optimized_namespace(
                         for col in model_class.__table__.columns:
                             cname = col.name
                             if cname in payload and isinstance(payload[cname], str):
+                                if payload[cname].strip() == "":
+                                    if col.nullable:
+                                        payload[cname] = None
+                                        continue
                                 try:
                                     if isinstance(col.type, Date):
-                                        payload[cname] = _dt.date.fromisoformat(
-                                            payload[cname]
-                                        )
+                                        if payload[cname]:
+                                            payload[cname] = _dt.date.fromisoformat(
+                                                payload[cname]
+                                            )
                                     elif isinstance(col.type, DateTime):
-                                        txt = payload[cname]
-                                        if txt.endswith("Z"):
-                                            txt = txt[:-1] + "+00:00"
-                                        payload[cname] = _dt.datetime.fromisoformat(txt)
+                                        if payload[cname]:
+                                            txt = payload[cname]
+                                            if txt.endswith("Z"):
+                                                txt = txt[:-1] + "+00:00"
+                                            payload[cname] = _dt.datetime.fromisoformat(txt)
                                 except Exception:
                                     pass
                     except Exception:
@@ -2197,6 +2221,8 @@ def create_optimized_namespace(
                     results = [inst.to_namespace_dict() for inst in instances]
 
                     _cache_clear(model_class.__name__)
+                    for instance in instances:
+                        _apply_related_invalidations(model_class, instance)
                     return APIResponse.created(
                         results, message=f"{len(results)} registros creados"
                     )
@@ -2235,6 +2261,8 @@ def create_optimized_namespace(
                     results = [inst.to_namespace_dict() for inst in instances]
 
                     _cache_clear(model_class.__name__)
+                    for instance in instances:
+                        _apply_related_invalidations(model_class, instance)
                     return APIResponse.success(
                         results, message=f"{len(results)} registros actualizados"
                     )
@@ -2266,8 +2294,17 @@ def create_optimized_namespace(
                             "Se requiere lista de IDs", status_code=400
                         )
 
+                    from app.utils.tenant_context import apply_tenant_filter
+
+                    related_instances = (
+                        apply_tenant_filter(model_class.query, model_class)
+                        .filter(model_class.id.in_(ids))
+                        .all()
+                    )
                     count = model_class.bulk_delete(ids)
                     _cache_clear(model_class.__name__)
+                    for instance in related_instances:
+                        _apply_related_invalidations(model_class, instance)
                     return APIResponse.success(
                         {"deleted_count": count},
                         message=f"{count} registros eliminados",

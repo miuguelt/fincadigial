@@ -18,6 +18,7 @@ from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 
 from app.utils.response_handler import APIResponse
+from app.utils.auth_response import sanitize_auth_response_data
 from app.models import (
     UserFinca,
     User,
@@ -304,7 +305,7 @@ class SwitchFincaResource(Resource):
 
             api_response_dict, status_code = APIResponse.success(
                 message=f"Cambiado a {target_finca.name} exitosamente",
-                data={
+                data=sanitize_auth_response_data({
                     "finca": {
                         "id": None,  # Se actualizará después
                         "finca_id": target_finca_id,
@@ -319,7 +320,7 @@ class SwitchFincaResource(Resource):
                     "access_token": new_access_token,
                     "refresh_token": new_refresh_token,
                     "token_type": "Bearer",
-                },
+                }),
             )
 
             resp = flask.jsonify(api_response_dict)

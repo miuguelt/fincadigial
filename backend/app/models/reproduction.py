@@ -42,6 +42,7 @@ class ReproductiveEvent(BaseModel):
         Index("ix_repr_events_event_date", "event_date"),
         Index("ix_repr_events_event_type", "event_type"),
         Index("ix_repr_events_finca_id", "finca_id"),
+        Index("ix_repr_events_linked", "linked_event_id"),
     )
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -49,6 +50,14 @@ class ReproductiveEvent(BaseModel):
     control_id = db.Column(db.Integer, db.ForeignKey("control.id"), nullable=True)
     event_type = db.Column(db.Enum(EventType), nullable=False)
     event_date = db.Column(db.Date, nullable=False)
+
+    # Evento que dio origen a este (Parto ← Diagnóstico ← Inseminación): arma
+    # el hilo del ciclo reproductivo para poder recorrerlo desde el historial.
+    linked_event_id = db.Column(
+        db.Integer,
+        db.ForeignKey("reproductive_events.id", ondelete="SET NULL"),
+        nullable=True,
+    )
 
     # Inseminación
     sire_id = db.Column(db.Integer, db.ForeignKey("animals.id"), nullable=True)
@@ -71,6 +80,12 @@ class ReproductiveEvent(BaseModel):
     control = db.relationship("Control", foreign_keys=[control_id], lazy="selectin")
     sire = db.relationship("Animals", foreign_keys=[sire_id], lazy="selectin")
     actor = db.relationship("User", foreign_keys=[actor_id], lazy="selectin")
+    linked_event = db.relationship(
+        "ReproductiveEvent",
+        remote_side=[id],
+        foreign_keys=[linked_event_id],
+        lazy="selectin",
+    )
     offspring = db.relationship(
         "Offspring",
         back_populates="birth_event",
@@ -84,6 +99,7 @@ class ReproductiveEvent(BaseModel):
         "control_id",
         "event_type",
         "event_date",
+        "linked_event_id",
         "sire_id",
         "technique",
         "diagnosis_result",
@@ -102,6 +118,7 @@ class ReproductiveEvent(BaseModel):
         "control": {"fields": ["id", "health_status"]},
         "sire": {"fields": ["id", "record"]},
         "actor": {"fields": ["id", "fullname"]},
+        "linked_event": {"fields": ["id", "event_type", "event_date"]},
     }
     _searchable_fields = ["notes"]
     _filterable_fields = [
@@ -129,6 +146,70 @@ class ReproductiveEvent(BaseModel):
         data["days_to_birth"] = self.days_to_birth
         data["is_overdue"] = self.is_overdue
         return data
+
+    @classmethod
+    def create(cls, commit=True, **kwargs):
+        """Crea el evento reproductivo y lo espeja en la bitácora unificada."""
+        instance = super().create(commit=False, **kwargs)
+        instance._mirror_to_health_history()
+        if commit:
+            db.session.commit()
+            db.session.refresh(instance)
+        return instance
+
+    def update(self, commit=True, **kwargs):
+        """Actualiza el evento y su espejo en la bitácora."""
+        result = super().update(commit=False, **kwargs)
+        self._mirror_to_health_history()
+        if commit:
+            db.session.commit()
+            db.session.refresh(self)
+        return result
+
+    def delete(self, commit=True, hard_delete=False):
+        """Retira el espejo de la bitácora."""
+        self._remove_health_history_mirror()
+        return super().delete(commit=commit, hard_delete=hard_delete)
+
+    def restore(self, commit=True):
+        """Recrea el espejo de la bitácora."""
+        result = super().restore(commit=commit)
+        self._mirror_to_health_history()
+        if commit:
+            db.session.commit()
+        return result
+
+    def _mirror_to_health_history(self):
+        """Espeja el evento reproductivo en la bitácora unificada del animal."""
+        from app.models.animal_health_history import HealthEventType
+        from app.services.health_history_timeline import upsert_event
+
+        event_type = self.event_type.value if self.event_type else "Evento"
+        detail = event_type
+        if self.diagnosis_result:
+            detail = f"{detail} — {self.diagnosis_result.value}"
+        if self.expected_birth_date:
+            detail = f"{detail} — Parto probable: {self.expected_birth_date}"
+        if self.notes:
+            detail = f"{detail} | {self.notes}"
+
+        upsert_event(
+            event_type=HealthEventType.Reproduction,
+            reference_kind="reproductive_event",
+            reference_id=self.id,
+            animal_id=self.animal_id,
+            finca_id=self.finca_id,
+            event_date=self.event_date,
+            description=detail,
+            performed_by=self.actor_id,
+        )
+
+    def _remove_health_history_mirror(self):
+        """Retira el espejo de la bitácora."""
+        from app.models.animal_health_history import HealthEventType
+        from app.services.health_history_timeline import drop_event
+
+        drop_event(HealthEventType.Reproduction, "reproductive_event", self.id)
 
     #: Eventos que pueden anunciar un parto: el servicio y el diagnóstico que
     #: lo confirma, al que el módulo le hereda la fecha probable.

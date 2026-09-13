@@ -10,6 +10,7 @@ import { FaCheck, FaTimes, FaUserPlus, FaCalendarAlt, FaEnvelope, FaIdCard } fro
 import { ClimbingBoxLoader } from 'react-spinners';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
 
 const MembershipRequestsPage = () => {
   const [requests, setRequests] = useState<MembershipRequest[]>([]);
@@ -94,25 +95,18 @@ const MembershipRequestsPage = () => {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8 space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-start sm:items-center gap-3.5">
-          <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-sm shrink-0">
-            <FaUserPlus className="h-6 w-6" />
-          </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-              Solicitudes de Acceso
-            </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Gestiona y valida los nuevos usuarios que desean unirse a tu finca.
-            </p>
-          </div>
-        </div>
-        <Badge variant="outline" className="text-emerald-700 dark:text-emerald-300 border-emerald-500/30 bg-emerald-500/10 self-start sm:self-center py-1.5 px-3.5 rounded-full font-bold text-xs shadow-sm">
-          {requests.length} {requests.length === 1 ? 'Pendiente' : 'Pendientes'}
-        </Badge>
-      </div>
+    <div className="min-h-full space-y-6 overflow-x-hidden p-4 sm:p-6 lg:p-8 animate-fade-in">
+      <DataScreenHeader
+        icon={<FaUserPlus className="h-5 w-5 text-white" />}
+        iconClassName="from-emerald-600 to-teal-700 shadow-emerald-600/20"
+        title={<>Solicitudes de <span className="text-primary">Acceso</span></>}
+        description="Gestiona y valida los nuevos trabajadores o miembros que desean unirse a tu finca"
+        actions={
+          <Badge variant="outline" className="text-emerald-700 dark:text-emerald-300 border-emerald-500/30 bg-emerald-500/10 py-1.5 px-3.5 rounded-xl font-bold text-xs shadow-sm">
+            {requests.length} {requests.length === 1 ? 'Pendiente' : 'Pendientes'}
+          </Badge>
+        }
+      />
 
       <Card className="border-border/70 bg-card shadow-sm rounded-2xl overflow-hidden">
         <CardHeader className="p-5 sm:p-6 bg-muted/30 border-b border-border/50">

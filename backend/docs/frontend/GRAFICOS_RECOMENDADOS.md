@@ -305,7 +305,7 @@
 
 #### Gráfico de Barras Apiladas - Distribución de Salud
 ```
-   Estado de Salud del Hato
+   Estado de Salud del Ganado
    ┌──────────────────────────────────┐
    │                                  │
  100│ ████████████████████████         │

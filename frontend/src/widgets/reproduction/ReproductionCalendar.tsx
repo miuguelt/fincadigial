@@ -54,6 +54,14 @@ export default function ReproductionCalendar() {
     loadEvents();
   }, [loadEvents]);
 
+  // Refresco inmediato tras cualquier escritura: un celo, evento o tratamiento
+  // recién guardado debe aparecer en la agenda sin recargar manualmente.
+  useEffect(() => {
+    const handleRefetch = () => { void loadEvents(); };
+    window.addEventListener('crud:refetch', handleRefetch);
+    return () => window.removeEventListener('crud:refetch', handleRefetch);
+  }, [loadEvents]);
+
   const filteredEvents = events.filter((ev) => {
     if (selectedEventType === 'ALL') return true;
     return ev.extendedProps.event_type === selectedEventType;

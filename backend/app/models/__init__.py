@@ -8,12 +8,17 @@ from .user import (
     is_role_valid_for_finca,
     get_default_role_for_finca,
 )
+from .user_consent import UserConsent
 from .animals import Animals, Animals as Animal
 from .species import Species
 from .breeds import Breeds, Breeds as Breed
 from .fields import Fields, Fields as Field
 from .diseases import Diseases, Diseases as Disease
 from .animalDiseases import AnimalDiseases, AnimalDiseases as AnimalDisease
+from .animalDiseaseProgress import (
+    AnimalDiseaseProgress,
+    AnimalDiseaseProgress as AnimalDiseaseProgressRecord,
+)
 from .animalFields import AnimalFields, AnimalFields as AnimalField
 from .vaccinations import Vaccinations, Vaccinations as Vaccination
 from .vaccines import Vaccines, Vaccines as Vaccine
@@ -25,6 +30,8 @@ from .treatment_medications import (
 )
 from .treatment_vaccines import TreatmentVaccines, TreatmentVaccines as TreatmentVaccine
 from .control import Control
+from .treatment_protocols import TreatmentProtocol
+from .treatment_protocol_insumos import TreatmentProtocolInsumo
 from .foodTypes import FoodTypes, FoodTypes as FoodType
 from .geneticImprovements import (
     GeneticImprovements,
@@ -46,6 +53,12 @@ from .treatment_recommendations import (
     TreatmentRecommendationStatus,
 )
 from .treatment_recommendation_controls import TreatmentRecommendationControls
+from .animal_care_plans import (
+    AnimalCarePlan,
+    AnimalCarePlanStage,
+    CarePlanType,
+    CarePlanStatus,
+)
 from .user_favorite import UserFavorite
 from .reproduction import ReproductiveEvent, Offspring
 from .milk_production import MilkProduction
@@ -114,6 +127,14 @@ from .knowledge_base import (
     KBOperador,
 )
 from .sinigan_registrations import SiniganRegistrations
+from .animal_transfers import (
+    AnimalIdentity,
+    AnimalIdentityStatus,
+    AnimalTransfer,
+    AnimalTransferClaim,
+    TransferStatus,
+    TransferClaimStatus,
+)
 from .management_plans import ManagementPlan, PlanType, PlanStatus
 from .producer_profiles import ProducerProfile, ProducerType
 from .professional_credentials import (
@@ -140,6 +161,7 @@ __all__ = [
     "Finca",
     "FarmType",
     "User",
+    "UserConsent",
     "Role",
     "is_role_valid_for_finca",
     "get_default_role_for_finca",
@@ -154,6 +176,8 @@ __all__ = [
     "Diseases",
     "AnimalDisease",
     "AnimalDiseases",
+    "AnimalDiseaseProgress",
+    "AnimalDiseaseProgressRecord",
     "AnimalField",
     "AnimalFields",
     "Vaccination",
@@ -168,6 +192,8 @@ __all__ = [
     "TreatmentMedications",
     "TreatmentVaccine",
     "TreatmentVaccines",
+    "TreatmentProtocol",
+    "TreatmentProtocolInsumo",
     "Control",
     "FoodType",
     "FoodTypes",
@@ -191,6 +217,10 @@ __all__ = [
     "TreatmentRecommendations",
     "TreatmentRecommendationStatus",
     "TreatmentRecommendationControls",
+    "AnimalCarePlan",
+    "AnimalCarePlanStage",
+    "CarePlanType",
+    "CarePlanStatus",
     "UserFavorite",
     "ReproductiveEvent",
     "Offspring",
@@ -259,6 +289,12 @@ __all__ = [
     "KBRegla",
     "KBCalendario",
     "SiniganRegistrations",
+    "AnimalIdentity",
+    "AnimalIdentityStatus",
+    "AnimalTransfer",
+    "AnimalTransferClaim",
+    "TransferStatus",
+    "TransferClaimStatus",
     "ManagementPlan",
     "PlanType",
     "PlanStatus",

@@ -129,4 +129,81 @@ describe('CRUDForm no roba el foco mientras se escribe', () => {
 
     expect(breed).toHaveFocus()
   })
+
+  it('deshabilita un campo dependiente cuando el campo padre no tiene valor', () => {
+    const handleValueChange = vi.fn()
+    render(
+      <CRUDForm
+        isOpen
+        onOpenChange={vi.fn()}
+        title="Tratamiento"
+        formData={{ animal_id: undefined, animal_disease_id: undefined }}
+        setFormData={vi.fn()}
+        onFieldValueChange={handleValueChange}
+        formSections={[
+          {
+            title: 'Datos',
+            fields: [
+              {
+                name: 'animal_id',
+                label: 'Res',
+                type: 'select',
+                options: [{ label: 'Vaca 104', value: 10 }],
+              },
+              {
+                name: 'animal_disease_id',
+                label: 'Caso clínico',
+                type: 'select',
+                dependsOn: 'animal_id',
+                options: [{ label: 'Caso Mastitis', value: 1 }],
+              },
+            ],
+          },
+        ]}
+        onSubmit={(e) => e.preventDefault()}
+        saving={false}
+      />
+    )
+
+    const caseSelect = screen.getByLabelText(/caso clínico/i) as HTMLSelectElement
+    expect(caseSelect.disabled).toBe(true)
+  })
+
+  it('renderiza sugerencias rápidas (chips) y permite autocompletar al hacer clic', () => {
+    const handleValueChange = vi.fn()
+    render(
+      <CRUDForm
+        isOpen
+        onOpenChange={vi.fn()}
+        title="Tratamiento"
+        formData={{ diagnosis: '' }}
+        setFormData={vi.fn()}
+        onFieldValueChange={handleValueChange}
+        formSections={[
+          {
+            title: 'Datos',
+            fields: [
+              {
+                name: 'diagnosis',
+                label: 'Diagnóstico',
+                type: 'text',
+                suggestions: ['Mastitis', 'Purgado'],
+              },
+            ],
+          },
+        ]}
+        onSubmit={(e) => e.preventDefault()}
+        saving={false}
+      />
+    )
+
+    expect(screen.getByRole('button', { name: 'Mastitis' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Purgado' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mastitis' }))
+    expect(handleValueChange).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'diagnosis' }),
+      'Mastitis'
+    )
+  })
 })

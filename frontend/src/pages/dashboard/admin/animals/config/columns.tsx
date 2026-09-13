@@ -2,6 +2,7 @@ import type { AnimalResponse } from '@/shared/api/generated/swaggerTypes';
 import type { CRUDColumn } from '@/shared/types/crud';
 import { AnimalLink } from '@/entities/animal/ui';
 import { BreedLink } from '@/entities/breed/ui';
+import { AnimalWeightCell } from '../AnimalWeightCell';
 
 type AnimalRecord = AnimalResponse & { [key: string]: any };
 
@@ -19,13 +20,23 @@ export const buildAnimalColumns = ({ breedOptions, fatherOptions, motherOptions 
   { key: 'sex', label: 'Sexo', render: (value, record) => value || record.sex || '-' },
   { key: 'status', label: 'Estado', render: (value) => value || '-' },
   {
+    key: 'current_field_name',
+    label: 'Potrero',
+    render: (value, record) => {
+      const field = value || record.current_field_name;
+      return field && field !== 'Sin potrero' ? field : '-';
+    },
+  },
+  {
     key: 'breeds_id', label: 'Raza', render: (value, record) => {
       const id = value || record.breeds_id || record.breed_id;
       return id ? <BreedLink id={Number(id)} label={optionLabel(breedOptions, id, `Raza ${id}`)} /> : '-';
     },
   },
   { key: 'birth_date', label: 'Nacimiento', render: formatDate },
-  { key: 'weight', label: 'Peso (kg)', render: (value) => value ?? '-' },
+  { key: 'weight', label: 'Peso (kg)', render: (value, record) => (
+    <AnimalWeightCell animalId={Number(record.id)} current={value ?? record.weight} />
+  ) },
   { key: 'age_in_months', label: 'Edad (meses)', render: (value) => value ?? '-' },
   { key: 'is_adult', label: 'Adulto', render: (value) => value === true ? 'Sí' : value === false ? 'No' : '-' },
   {

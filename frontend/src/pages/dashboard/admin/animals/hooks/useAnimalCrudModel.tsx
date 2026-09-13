@@ -33,7 +33,13 @@ export function useAnimalCrudModel() {
     cardGridClassName: '[grid-template-columns:repeat(auto-fill,minmax(min(100%,17rem),1fr))]',
     defaultLimit: 25,
     customToolbar: <AnimalsViewSwitcher />,
+    // El conmutador de vista más los chips de filtros ocupan su propia fila
+    // debajo de la búsqueda: en línea quedaban comprimidos junto al título y
+    // los chips terminaban huérfanos ("Bajo Peso" solo en la última línea).
     toolbarPlacement: 'row',
+    // La fila de la búsqueda es de ancho completo: no hay dos controles
+    // compitiendo por el espacio y se evita el salto de ancho al enfocar.
+    expandableSearch: false,
     customActions: createAnimalActions(user?.id, details.openHistory, openAncestors, openDescendants),
     preDeleteCheck,
     ...createAnimalLifecycle(runtime.pendingImages, runtime.setPendingImages, runtime.refreshFathers, runtime.refreshMothers),

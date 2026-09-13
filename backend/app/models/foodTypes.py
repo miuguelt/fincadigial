@@ -61,12 +61,48 @@ class FoodTypes(BaseModel):
     fields = db.relationship("Fields", back_populates="food_types", lazy="dynamic")
 
     @classmethod
+    def _validate_and_normalize(cls, data, is_update=False, instance_id=None):
+        data = dict(data or {})
+        if not is_update:
+            from datetime import date
+
+            if not data.get("sowing_date"):
+                data["sowing_date"] = date.today().isoformat()
+            if data.get("area") is None:
+                data["area"] = 1
+            if not data.get("handlings"):
+                data["handlings"] = "Sin observaciones"
+            if not data.get("gauges"):
+                data["gauges"] = "Sin especificaciones"
+        return super()._validate_and_normalize(
+            data, is_update=is_update, instance_id=instance_id
+        )
+
+    @classmethod
     def _validate_namespace_data(cls, data):
         errors = []
-        if "food_type" in data and not data["food_type"]:
+        if "food_type" in data and not str(data["food_type"]).strip():
             errors.append("El tipo de alimento no puede estar vacío")
-        if "area" in data and (not isinstance(data["area"], int) or data["area"] <= 0):
-            errors.append("El área debe ser un número entero positivo")
+        if "harvest_date" in data and (data["harvest_date"] == "" or data["harvest_date"] is None):
+            data["harvest_date"] = None
+        if "sowing_date" in data and not data["sowing_date"]:
+            from datetime import date
+            data["sowing_date"] = date.today()
+        if "area" in data and data["area"] is not None:
+            try:
+                area_val = float(data["area"])
+                if area_val <= 0:
+                    errors.append("El área debe ser un número positivo")
+                else:
+                    data["area"] = int(round(area_val))
+            except (ValueError, TypeError):
+                errors.append("El área debe ser un número válido")
+        if data.get("harvest_date") and data.get("sowing_date"):
+            try:
+                if data["harvest_date"] < data["sowing_date"]:
+                    errors.append("La fecha de cosecha no puede ser anterior a la fecha de siembra")
+            except TypeError:
+                pass
         super()._validate_namespace_data(data)
         if errors:
             raise ValidationError("; ".join(errors), code="validation_error")

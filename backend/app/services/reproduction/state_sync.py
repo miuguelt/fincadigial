@@ -3,7 +3,7 @@
 El estado del animal (``is_pregnant``, ``is_lactating``, ``last_calving_date``)
 y el ciclo de lactancia son datos *derivados* del historial de eventos. Se
 recalculan desde el historial completo en lugar de aplicarse como delta, para
-que corregir o borrar un evento deje el hato consistente en vez de congelar el
+que corregir o borrar un evento deje el ganado consistente en vez de congelar el
 estado que dejó el último alta.
 """
 
@@ -29,12 +29,55 @@ def apply_event_effects(event, rules: CycleRules | None = None) -> None:
     rules = rules or load_rules(event.finca_id)
     if event.event_type == EventType.Diagnostico:
         _backfill_expected_birth(event, rules)
+        _link_diagnostico_to_service(event)
     elif event.event_type == EventType.Parto:
+        _link_parto_to_diagnosis(event)
         _sync_offspring_rows(event)
         _open_lactation_cycle(event, rules)
     elif event.event_type == EventType.Secado:
         _close_lactation_cycle(event)
     resync_animal(event.animal_id, event.finca_id, rules)
+
+
+def _link_diagnostico_to_service(event) -> None:
+    """El diagnóstico se enlaza al servicio (inseminación) que lo originó."""
+    if event.linked_event_id is not None:
+        return
+    from app.models.reproduction import ReproductiveEvent
+
+    candidate = (
+        ReproductiveEvent.query.filter_by(
+            animal_id=event.animal_id,
+            event_type=EventType.Inseminacion,
+            is_deleted=False,
+        )
+        .filter(ReproductiveEvent.event_date <= event.event_date)
+        .order_by(ReproductiveEvent.event_date.desc(), ReproductiveEvent.id.desc())
+        .first()
+    )
+    if candidate is not None:
+        event.linked_event_id = candidate.id
+
+
+def _link_parto_to_diagnosis(event) -> None:
+    """El parto se enlaza al diagnóstico positivo que lo pronosticó."""
+    if event.linked_event_id is not None:
+        return
+    from app.models.reproduction import ReproductiveEvent
+
+    candidate = (
+        ReproductiveEvent.query.filter_by(
+            animal_id=event.animal_id,
+            event_type=EventType.Diagnostico,
+            diagnosis_result=DiagnosisResult.Positivo,
+            is_deleted=False,
+        )
+        .filter(ReproductiveEvent.event_date <= event.event_date)
+        .order_by(ReproductiveEvent.event_date.desc(), ReproductiveEvent.id.desc())
+        .first()
+    )
+    if candidate is not None:
+        event.linked_event_id = candidate.id
 
 
 def revert_event_effects(event, rules: CycleRules | None = None) -> None:

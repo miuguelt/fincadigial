@@ -183,16 +183,18 @@ export function Combobox({
             className="h-9"
           />
           <CommandList ref={listRef}>
-            <CommandEmpty>
-              {isSearching || loading ? (
-                <div className="flex items-center justify-center gap-2 py-6">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Buscando...</span>
-                </div>
-              ) : (
-                emptyMessage
-              )}
-            </CommandEmpty>
+            {filteredOptions.length === 0 && (
+              <CommandEmpty>
+                {isSearching || loading ? (
+                  <div className="flex items-center justify-center gap-2 py-6">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Buscando...</span>
+                  </div>
+                ) : (
+                  emptyMessage
+                )}
+              </CommandEmpty>
+            )}
             <CommandGroup className="max-h-[200px] overflow-auto">
               {filteredOptions.map((option, index) => (
                 <CommandItem

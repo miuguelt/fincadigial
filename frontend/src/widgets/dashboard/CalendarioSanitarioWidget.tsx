@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useCallback } from "react";
 import {
@@ -51,7 +51,7 @@ export const CalendarioSanitarioWidget: React.FC<Props> = ({
       const t = new Date().getTime();
       const url = animalId
         ? `/knowledge_base/calendario/animal/${animalId}?_t=${t}`
-        : `/knowledge_base/calendario/hato?_t=${t}`;
+        : `/knowledge_base/calendario/ganado?_t=${t}`;
       const res = await api.get(url);
       const data = res.data?.data || res.data || [];
       setEventos(Array.isArray(data) ? data.slice(0, maxItems) : []);
@@ -63,6 +63,14 @@ export const CalendarioSanitarioWidget: React.FC<Props> = ({
   }, [animalId, maxItems]);
   useEffect(() => {
     cargar();
+  }, [cargar]);
+
+  // Refresco inmediato tras cualquier escritura: el calendario sanitario debe
+  // mostrar los registros nuevos sin recargar manualmente.
+  useEffect(() => {
+    const handleRefetch = () => { void cargar(); };
+    window.addEventListener('crud:refetch', handleRefetch);
+    return () => window.removeEventListener('crud:refetch', handleRefetch);
   }, [cargar]);
   if (loading)
     return (

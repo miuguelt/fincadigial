@@ -13,6 +13,7 @@ from config import config
 from app.extensions import db, jwt, migrate, cache, init_extensions
 from app.utils.logging_config import configure_logging
 from app.utils.request_hooks import register_request_hooks
+from app.legal.release_guard import validate_sena_release_gate
 
 
 def create_app(config_name="development"):
@@ -36,6 +37,7 @@ def create_app(config_name="development"):
     app_config = config.get(config_name, "default")
     app.config.from_object(app_config)
     app.config["CONFIG_NAME"] = config_name
+    validate_sena_release_gate(app.config)
 
     # Configurar el logging
     configure_logging(app)

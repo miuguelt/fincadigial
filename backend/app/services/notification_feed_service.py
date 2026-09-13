@@ -6,6 +6,8 @@ from app import db
 from app.models.join_request import JoinRequest, JoinRequestStatus, JoinRequestType
 from app.models.user_finca import UserFinca
 from app.services.invitation_service import InvitationService, InvitationError
+from app.models.animal_transfers import AnimalTransferClaim
+from app.services.animal_transfer_service import AnimalTransferService, AnimalTransferError
 
 logger = logging.getLogger(__name__)
 
@@ -89,12 +91,52 @@ class NotificationFeedService:
             for r in invitations_q.order_by(JoinRequest.created_at.desc()).all()
         )
 
+        # Las solicitudes de asociación de animales se proyectan en el mismo
+        # feed para que el propietario las reciba sin crear un segundo centro
+        # de notificaciones. Sus IDs son negativos para no colisionar con los
+        # JoinRequest históricos; el endpoint de acciones los resuelve de forma
+        # explícita y vuelve a comprobar permisos.
+        if status in (None, "pending"):
+            items.extend(AnimalTransferService.claims_for_user(user_id))
+
         items.sort(key=lambda i: i["created_at"] or "", reverse=True)
         return items
 
     @classmethod
     def apply_action(cls, notification_id: int, user_id: int, action: str) -> dict:
         """Aprueba, rechaza o marca como leída una notificación."""
+        if notification_id < 0:
+            claim_id = abs(notification_id)
+            claim = db.session.get(AnimalTransferClaim, claim_id)
+            if not claim:
+                raise InvitationError("Notificación no encontrada", status_code=404)
+            owner_finca_ids = [
+                membership.finca_id
+                for membership in UserFinca.query.filter_by(
+                    user_id=user_id, is_active=True
+                ).all()
+                if getattr(membership.role, "value", membership.role)
+                in ("Administrador", "Propietario")
+            ]
+            visible = claim.transfer and (
+                claim.transfer.seller_user_id == user_id
+                or claim.transfer.origin_finca_id in owner_finca_ids
+            )
+            if not visible:
+                raise InvitationError("Notificación no encontrada", status_code=404)
+            if action == "read":
+                return claim.to_notification_dict()
+            if action not in ("approve", "reject"):
+                raise InvitationError(f"Acción no soportada: {action}")
+            try:
+                return AnimalTransferService.decide_claim(
+                    claim_id=claim_id,
+                    user_id=user_id,
+                    approve=action == "approve",
+                )
+            except AnimalTransferError as error:
+                raise InvitationError(error.message, status_code=error.status_code) from error
+
         req = db.session.get(JoinRequest, notification_id)
         if not req:
             raise InvitationError("Notificación no encontrada", status_code=404)

@@ -51,6 +51,7 @@ export interface ActivityConfig {
   emoji: string;
   color: string;
   border: string;
+  hint: string;
 }
 
 export interface HistoryRecord {

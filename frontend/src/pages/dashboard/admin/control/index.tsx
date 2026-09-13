@@ -6,13 +6,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { animalsService } from '@/entities/animal/api/animal.service';
 import { useAuth } from '@/features/auth/model/useAuth';
 import type { ControlResponse } from '@/shared/api/generated/swaggerTypes';
-import { Button } from '@/shared/ui/button';
 import { ControlStats } from '@/widgets/control';
 import { MilkStats } from '@/widgets/milk';
 import MilkProductionPage from '../milk_production';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
 import { AnimalLink } from '@/entities/animal/ui';
-import { BarChart3, Heart, LayoutDashboard, Milk, Stethoscope } from 'lucide-react';
+import { BarChart3, Heart, LayoutDashboard, Milk } from 'lucide-react';
 import { TaskIndicator } from './components/TaskIndicator';
 import { AttentionAnimalsPanel } from './components/AttentionAnimalsPanel';
 import { buildAttentionViews } from './components/attentionAnimals.model';
@@ -40,6 +39,7 @@ const AdminControlPage = () => {
   const [healthAnimalId, setHealthAnimalId] = useState<number | undefined>();
   const [activeTab, setActiveTab] = useState('resumen');
   const attentionRef = useRef<HTMLElement>(null);
+  const [milkFocus, setMilkFocus] = useState<{ seq: number; date?: string }>({ seq: 0 });
 
   const summary = useControlsSummary(fincaId);
 
@@ -119,12 +119,16 @@ const AdminControlPage = () => {
     });
   }, []);
 
-  const handleMilkSuccess = () => {
+  const handleMilkSuccess = (record?: { date: string }) => {
     setActiveModal(null);
     summary.refresh();
     if (typeof window !== 'undefined') {
       emitDataRefresh('milk-production');
     }
+    // Remonta el panel de leche con la pestaña "Ver Registros" activa para que
+    // el registro guardado se vea de inmediato, sin clics adicionales.
+    setMilkFocus((prev) => ({ seq: prev.seq + 1, date: record?.date }));
+    setActiveTab('leche');
   };
 
   const handleControlSuccess = () => {
@@ -133,6 +137,9 @@ const AdminControlPage = () => {
     if (typeof window !== 'undefined') {
       emitDataRefresh('control');
     }
+    // El listado de controles vive en esta pestaña: dejarlo visible después
+    // de guardar evita que el registro recién creado quede oculto en "Hoy".
+    setActiveTab('salud');
   };
 
   return (
@@ -219,33 +226,27 @@ const AdminControlPage = () => {
         {/* PESTAÑA 2: Ordeño */}
         <TabsContent value="leche" className="mt-0">
           <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/90 p-4 text-card-foreground shadow-sm backdrop-blur-xl sm:p-6">
-            <MilkProductionPage />
+            <MilkProductionPage
+              key={milkFocus.seq}
+              initialTab="table"
+              focusDate={milkFocus.date}
+            />
           </div>
         </TabsContent>
 
         {/* PESTAÑA 3: Revisiones */}
         <TabsContent value="salud" className="mt-0">
           <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/90 p-4 text-card-foreground shadow-sm backdrop-blur-xl sm:p-6">
-            <div className="mb-4 flex flex-col gap-3 min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between">
-              <div>
-                <h2 className="text-lg font-black tracking-tight text-foreground">Revisiones de salud</h2>
-                <p className="mt-0.5 text-xs font-medium text-muted-foreground">Historial completo de chequeos y novedades.</p>
-              </div>
-              <Button onClick={() => openHealthModal(undefined)} size="sm" className="min-h-11 w-full rounded-xl bg-emerald-600 px-5 text-sm font-bold text-white shadow-sm shadow-emerald-600/25 transition-all hover:bg-emerald-700 active:scale-95 min-[480px]:w-auto">
-                <Stethoscope className="mr-2 h-4 w-4" aria-hidden="true" /> Reportar salud
-              </Button>
-            </div>
-            <div className="p-0">
-              <AdminCRUDPage
-                config={buildCrudConfig(animalOptions, columns, viewMode, setViewMode, isCampesino) as any}
-                service={serviceAdapter}
-                initialFormData={initialFormData}
-                mapResponseToForm={mapResponseToForm}
-                validateForm={validateControlForm}
-                customDetailContent={makeCustomDetailContent(animalOptions)}
-                realtime enhancedHover refetchOnReconnect
-              />
-            </div>
+            <AdminCRUDPage
+              config={buildCrudConfig(animalOptions, columns, viewMode, setViewMode, isCampesino) as any}
+              service={serviceAdapter}
+              initialFormData={initialFormData}
+              mapResponseToForm={mapResponseToForm}
+              validateForm={validateControlForm}
+              customDetailContent={makeCustomDetailContent(animalOptions)}
+              onOpenCreate={() => openHealthModal(undefined)}
+              realtime enhancedHover refetchOnReconnect
+            />
           </div>
         </TabsContent>
 

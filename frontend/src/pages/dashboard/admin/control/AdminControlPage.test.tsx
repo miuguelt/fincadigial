@@ -142,6 +142,18 @@ describe('AdminControlPage mobile-first modals', () => {
     expect(within(dialog).getByRole('button', { name: 'Guardar ordeño' })).toBeInTheDocument();
     expect(within(dialog).getByText('Agregar datos de calidad (opcional)').closest('details')).not.toHaveAttribute('open');
   });
+
+  it('muestra el listado de controles después de guardar desde Hoy', async () => {
+    const user = userEvent.setup();
+    render(<AdminControlPage />);
+    const attentionPanel = screen.getByRole('region', { name: 'Animales que necesitan atención' });
+    await user.click(within(attentionPanel).getAllByRole('button', { name: /Registrar revisión/ })[0]);
+    const dialog = screen.getByRole('dialog', { name: 'Reportar novedad de salud' });
+    await user.click(within(dialog).getByRole('radio', { name: 'Normal' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Guardar novedad' }));
+
+    expect(await screen.findByText('Listado de revisiones')).toBeInTheDocument();
+  });
 });
 
 describe('AdminControlPage animales que necesitan atención', () => {

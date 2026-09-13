@@ -19,7 +19,7 @@ const Card = React.forwardRef<
       ref={ref}
       initial={false}
       className={cn(
-        "relative isolate h-full min-h-0 w-full overflow-hidden rounded-lg text-card-foreground",
+        "relative isolate h-full min-h-0 w-full overflow-hidden rounded-xl text-card-foreground",
         premium && [
           "border border-border/70 bg-card shadow-sm",
         ],

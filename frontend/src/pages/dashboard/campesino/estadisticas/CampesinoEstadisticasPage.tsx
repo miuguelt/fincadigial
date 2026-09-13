@@ -13,11 +13,11 @@ import {
 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { useCampesinoEstadisticas } from './hooks/useCampesinoEstadisticas';
-import { TermometroHatoGauge } from './components/TermometroHatoGauge';
+import { TermometroGanadoGauge } from './components/TermometroGanadoGauge';
 import { OsciladorGananciaPeso } from './components/OsciladorGananciaPeso';
 import { OsciladorCargaPotreros } from './components/OsciladorCargaPotreros';
 import { OsciladorProduccionLechera } from './components/OsciladorProduccionLechera';
-import { DistribucionHatoCampesina } from './components/DistribucionHatoCampesina';
+import { DistribucionGanadoCampesina } from './components/DistribucionGanadoCampesina';
 import { CalculadorasCampesinas } from './components/CalculadorasCampesinas';
 import { AlertasReproductivasCampesinas } from './components/AlertasReproductivasCampesinas';
 import { SemaforoPotrerosCard } from '@/features/potreros';
@@ -168,7 +168,7 @@ export const CampesinoEstadisticasPage: React.FC = () => {
           >
             {activeTab === 'termometro' && (
               <>
-                <TermometroHatoGauge
+                <TermometroGanadoGauge
                   gauge={healthGauge}
                   vacCoverage={vacCoverage}
                   controlComp={controlComp}
@@ -176,7 +176,7 @@ export const CampesinoEstadisticasPage: React.FC = () => {
                   sickAnimals={sickAnimals}
                 />
                 <AlertasReproductivasCampesinas />
-                <DistribucionHatoCampesina demographics={demographics} />
+                <DistribucionGanadoCampesina demographics={demographics} />
               </>
             )}
 

@@ -101,6 +101,17 @@ class AnalyticsService {
 		return getWithMicroCache<HealthStatistics>(`${this.base}/health/statistics`, params);
 	}
 
+	/**
+	 * Variación de peso entre los dos últimos controles de un conjunto de
+	 * animales (máximo 100). Claves: "{animal_id}".
+	 */
+	async getWeightDeltas(animalIds: number[]): Promise<Record<string, any>> {
+		if (!animalIds?.length) return {};
+		return getWithMicroCache<Record<string, any>>(`${this.base}/health/weight-deltas`, {
+			animal_ids: animalIds.join(','),
+		});
+	}
+
 	/** Estadísticas de producción / operación */
 	async getProductionStatistics(params?: Partial<FilterOptions>): Promise<ProductionStatistics> {
 		return getWithMicroCache<ProductionStatistics>(`${this.base}/production/statistics`, params);

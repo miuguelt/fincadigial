@@ -4,6 +4,7 @@ export { LivestockTab } from './tabs/LivestockTab';
 export { HistoryTab } from './tabs/HistoryTab';
 export { ResumenOperativo } from './components/ResumenOperativo';
 export { RegistroOperativoIntro } from './components/RegistroOperativoIntro';
+export { HistoryRecordDetailModal } from './components/HistoryRecordDetailModal';
 export { AnimalSelect, animalLabel } from './components/AnimalSelect';
 export { CropActivityModal } from './modals/CropActivityModal';
 export { MilkModal } from './modals/MilkModal';

@@ -36,6 +36,10 @@ class TreatmentRecommendations(BaseModel):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     animal_id = db.Column(db.Integer, db.ForeignKey("animals.id"), nullable=False)
     finca_id = db.Column(db.Integer, db.ForeignKey("finca.id"), nullable=False)
+    # Episodio de enfermedad al que pertenece esta recomendación (seguimiento sanidad)
+    animal_disease_id = db.Column(
+        db.Integer, db.ForeignKey("animal_diseases.id"), nullable=True
+    )
     title = db.Column(db.String(160), nullable=False)
     recommendation = db.Column(db.Text, nullable=False)
     responsible = db.Column(db.String(160), nullable=True)
@@ -53,6 +57,7 @@ class TreatmentRecommendations(BaseModel):
     _namespace_fields = [
         "id",
         "animal_id",
+        "animal_disease_id",
         "finca_id",
         "title",
         "recommendation",
@@ -68,6 +73,7 @@ class TreatmentRecommendations(BaseModel):
     ]
     _namespace_relations = {
         "animal": {"fields": ["id", "record", "sex", "status"], "depth": 1},
+        "animal_disease": {"fields": ["id", "disease_id", "status"], "depth": 1},
         "finca": {"fields": ["id", "name"]},
         "controls": {
             "fields": [
@@ -84,6 +90,7 @@ class TreatmentRecommendations(BaseModel):
     _searchable_fields = ["title", "recommendation", "responsible", "final_notes"]
     _filterable_fields = [
         "animal_id",
+        "animal_disease_id",
         "finca_id",
         "status",
         "start_date",
@@ -112,6 +119,9 @@ class TreatmentRecommendations(BaseModel):
         "Animals",
         backref="treatment_recommendations",
         lazy="selectin",
+    )
+    animal_disease = db.relationship(
+        "AnimalDiseases", foreign_keys=[animal_disease_id], lazy="selectin"
     )
     finca = db.relationship(
         "Finca", backref="treatment_recommendations", lazy="selectin"

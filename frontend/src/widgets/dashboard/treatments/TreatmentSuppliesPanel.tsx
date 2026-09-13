@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { cn } from '@/shared/ui/cn';
 import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
-import { RefreshCw } from 'lucide-react';
+import { Pill, Plus, RefreshCw, Syringe } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { TreatmentResponse, TreatmentVaccineResponse, TreatmentMedicationResponse } from '@/shared/api/generated/swaggerTypes';
 import { vaccinesService } from '@/entities/vaccine/api/vaccines.service';
@@ -9,6 +9,7 @@ import { medicationsService } from '@/entities/medication/api/medications.servic
 import { treatmentVaccinesService } from '@/entities/treatment-vaccine/api/treatmentVaccines.service';
 import { treatmentMedicationService } from '@/entities/treatment-medication/api/treatmentMedication.service';
 import { TreatmentSuppliesCards } from './TreatmentSuppliesCards';
+import { TreatmentSupplyPicker } from './TreatmentSupplyPicker';
 import { useToast } from '@/app/providers/ToastContext';
 import { ItemDetailModal } from '../animals/ItemDetailModal';
 
@@ -441,112 +442,83 @@ export const TreatmentSuppliesPanel: React.FC<TreatmentSuppliesPanelProps> = ({
     return (
         <div className={cn("space-y-4", className)}>
             {/* Header Actions */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-muted/30 p-3 rounded-lg border border-border/50">
-                <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-muted-foreground">Gestión de Insumos</span>
+            <div className="flex flex-col gap-3 rounded-xl border border-border/70 bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex min-w-0 items-start gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden="true">
+                        <Syringe className="h-4 w-4" />
+                    </span>
+                    <div className="min-w-0">
+                        <h2 className="text-sm font-bold text-foreground">Gestión de insumos</h2>
+                        <p className="mt-0.5 text-xs text-muted-foreground">Asocia vacunas y medicamentos con este tratamiento.</p>
+                    </div>
                     <Button
                         variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 hover:bg-primary/20 hover:text-primary transition-colors"
+                        size="icon"
+                        className="h-[42px] w-[42px] shrink-0"
                         onClick={() => treatment?.id && refreshAssociations(treatment.id, true, 'all')}
-                        title="Refrescar datos (bypass cache)"
+                        title="Actualizar insumos"
+                        aria-label="Actualizar insumos"
                     >
-                        <RefreshCw className={cn("h-3.5 w-3.5", (loadingVaccines || loadingMedications) && "animate-spin")} />
+                        <RefreshCw className={cn("h-4 w-4", (loadingVaccines || loadingMedications) && "animate-spin")} />
                     </Button>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap gap-2 sm:justify-end">
                     <Button
-                        variant="primary"
-                        size="sm"
+                        variant="outline"
+                        size="md"
+                        className="min-h-[42px] border-cyan-600 text-cyan-700 hover:bg-cyan-50 hover:text-cyan-800 dark:text-cyan-300 dark:hover:bg-cyan-950/40"
                         onClick={() => { setShowAddVaccine((s) => !s); setShowAddMedication(false); }}
                         disabled={!treatment}
-                        className="h-8 text-xs bg-cyan-600 hover:bg-cyan-700"
+                        aria-expanded={showAddVaccine}
                     >
-                        + Vacuna
+                        <Plus className="h-4 w-4" aria-hidden="true" />
+                        <Syringe className="h-4 w-4" aria-hidden="true" />
+                        Vacuna
                     </Button>
                     <Button
-                        variant="primary"
-                        size="sm"
+                        variant="outline"
+                        size="md"
+                        className="min-h-[42px] border-purple-600 text-purple-700 hover:bg-purple-50 hover:text-purple-800 dark:text-purple-300 dark:hover:bg-purple-950/40"
                         onClick={() => { setShowAddMedication((s) => !s); setShowAddVaccine(false); }}
                         disabled={!treatment}
-                        className="h-8 text-xs bg-purple-600 hover:bg-purple-700"
+                        aria-expanded={showAddMedication}
                     >
-                        + Medicamento
+                        <Plus className="h-4 w-4" aria-hidden="true" />
+                        <Pill className="h-4 w-4" aria-hidden="true" />
+                        Medicamento
                     </Button>
                 </div>
             </div>
 
             {/* Forms */}
             {showAddVaccine && treatment && (
-                <form onSubmit={handleCreateVaccine} className="rounded-lg border bg-background/80 p-3 space-y-3 animate-in fade-in zoom-in-95 duration-200">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                            <label className="block text-xs text-muted-foreground mb-1">Vacuna</label>
-                            <input
-                                type="text"
-                                className="mb-2 w-full h-8 rounded-md border bg-background px-2 text-sm"
-                                placeholder="Buscar vacuna…"
-                                value={vaccineSearch}
-                                onChange={(e) => setVaccineSearch(e.target.value)}
-                            />
-                            <select
-                                aria-label="Seleccionar vacunas"
-                                className="w-full h-9 rounded-md border bg-background px-2 text-sm"
-                                multiple
-                                value={newVaccines.map(String)}
-                                onChange={(e) => setNewVaccines(Array.from(e.target.selectedOptions).map((o) => Number(o.value)))}
-                                required
-                            >
-                                {vaccineOptions
-                                    .filter((opt) => opt.label.toLowerCase().includes(vaccineSearch.toLowerCase()))
-                                    .map((opt) => (
-                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                    ))}
-                            </select>
-                        </div>
-                        <div className="flex items-end gap-2">
-                            <Button type="submit" size="sm" disabled={savingVaccine}>Guardar</Button>
-                            <Button type="button" variant="ghost" size="sm" onClick={() => setShowAddVaccine(false)}>Cancelar</Button>
-                        </div>
-                    </div>
-                    {newVaccineError && <div className="text-xs text-destructive">{newVaccineError}</div>}
-                </form>
+                <TreatmentSupplyPicker
+                    kind="vaccine"
+                    options={vaccineOptions}
+                    search={vaccineSearch}
+                    onSearchChange={setVaccineSearch}
+                    selected={newVaccines}
+                    onSelectedChange={setNewVaccines}
+                    onSubmit={handleCreateVaccine}
+                    onCancel={() => setShowAddVaccine(false)}
+                    saving={savingVaccine}
+                    error={newVaccineError}
+                />
             )}
 
             {showAddMedication && treatment && (
-                <form onSubmit={handleCreateMedication} className="rounded-lg border bg-background/80 p-3 space-y-3 animate-in fade-in zoom-in-95 duration-200">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                            <label className="block text-xs text-muted-foreground mb-1">Medicamento</label>
-                            <input
-                                type="text"
-                                className="mb-2 w-full h-8 rounded-md border bg-background px-2 text-sm"
-                                placeholder="Buscar medicamento…"
-                                value={medicationSearch}
-                                onChange={(e) => setMedicationSearch(e.target.value)}
-                            />
-                            <select
-                                aria-label="Seleccionar medicamentos"
-                                className="w-full h-9 rounded-md border bg-background px-2 text-sm"
-                                multiple
-                                value={newMedications.map(String)}
-                                onChange={(e) => setNewMedications(Array.from(e.target.selectedOptions).map((o) => Number(o.value)))}
-                                required
-                            >
-                                {medicationOptions
-                                    .filter((opt) => opt.label.toLowerCase().includes(medicationSearch.toLowerCase()))
-                                    .map((opt) => (
-                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                    ))}
-                            </select>
-                        </div>
-                        <div className="flex items-end gap-2">
-                            <Button type="submit" size="sm" disabled={savingMedication}>Guardar</Button>
-                            <Button type="button" variant="ghost" size="sm" onClick={() => setShowAddMedication(false)}>Cancelar</Button>
-                        </div>
-                    </div>
-                    {newMedicationError && <div className="text-xs text-destructive">{newMedicationError}</div>}
-                </form>
+                <TreatmentSupplyPicker
+                    kind="medication"
+                    options={medicationOptions}
+                    search={medicationSearch}
+                    onSearchChange={setMedicationSearch}
+                    selected={newMedications}
+                    onSelectedChange={setNewMedications}
+                    onSubmit={handleCreateMedication}
+                    onCancel={() => setShowAddMedication(false)}
+                    saving={savingMedication}
+                    error={newMedicationError}
+                />
             )}
 
             {/* Cards */}

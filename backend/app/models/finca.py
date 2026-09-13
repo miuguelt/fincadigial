@@ -57,9 +57,11 @@ class Finca(BaseModel):
     _searchable_fields = ["name", "department", "municipality"]
     _filterable_fields = ["type", "is_active"]
     _sortable_fields = ["id", "name", "created_at"]
+    _allowed_input_fields = ["public_visibility"]
 
     @classmethod
     def create(cls, commit=True, **kwargs):
+        visibility = kwargs.pop("public_visibility", None)
         instance = super().create(commit=False, **kwargs)
 
         # Asignar usuario creador como propietario/administrador de la finca
@@ -107,6 +109,12 @@ class Finca(BaseModel):
 
         if commit:
             db.session.commit()
+            if visibility:
+                try:
+                    from app.services.finca_visibility_service import set_finca_visibility
+                    set_finca_visibility(instance.id, visibility)
+                except Exception:
+                    pass
             # Sembrar datos predeterminados (alertas, etc.) para la nueva finca
             try:
                 from app.services.system_initializer import initialize_finca_defaults
@@ -125,7 +133,50 @@ class Finca(BaseModel):
                 db.session.refresh(instance)
             except Exception:
                 pass
+        elif visibility:
+            try:
+                from app.services.finca_visibility_service import set_finca_visibility
+                set_finca_visibility(instance.id, visibility)
+            except Exception:
+                pass
         return instance
+
+    @classmethod
+    def update(cls, id, commit=True, **kwargs):
+        visibility = kwargs.pop("public_visibility", None)
+        instance = super().update(id, commit=commit, **kwargs)
+        if visibility:
+            try:
+                from app.services.finca_visibility_service import set_finca_visibility
+                set_finca_visibility(instance.id, visibility)
+            except Exception:
+                pass
+        return instance
+
+    def to_namespace_dict(self, include_relations=False, depth=1, fields=None):
+        data = super().to_namespace_dict(include_relations, depth, fields)
+        from app.services.finca_image_service import serialize_public_image
+        from app.services.finca_visibility_service import get_finca_visibility
+
+        try:
+            images_list = [serialize_public_image(img) for img in (self.images or [])]
+            data["images"] = images_list
+            primary = next((img for img in images_list if img.get("is_primary")), None)
+            data["primary_image_url"] = (
+                primary["url"]
+                if primary
+                else (images_list[0]["url"] if images_list else self.logo_url)
+            )
+        except Exception:
+            data["images"] = []
+            data["primary_image_url"] = self.logo_url
+
+        try:
+            data["public_visibility"] = get_finca_visibility(self.id)
+        except Exception:
+            data["public_visibility"] = "minimal"
+
+        return data
 
     def __repr__(self):
         return f"<Finca {self.id}: {self.name} ({getattr(self.type, 'value', str(self.type)) if self.type else '?'})>"

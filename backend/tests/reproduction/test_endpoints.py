@@ -35,7 +35,7 @@ class TestReproductionEndpoints:
 
 
 class TestHerdKpisEndpoint:
-    """Contrato HTTP del panel de indicadores del hato."""
+    """Contrato HTTP del panel de indicadores del ganado."""
 
     def test_kpis_responde_el_contrato_completo(self, client, token_for):
         resp = client.get(f"{BASE}/reproduction/kpis?months=12", headers=token_for(ADMIN))
@@ -140,3 +140,120 @@ class TestCalfRegistrationEndpoint:
             json={"record": "X", "sex": "Hembra"},
         )
         assert resp.status_code in (401, 422)
+
+
+class TestAnimalReproductiveHistoryEndpoint:
+    def test_historial_hembra_con_iep_y_dias_abiertos(self, app, client, token_for):
+        from datetime import date
+        from app import db
+        from app.models.animals import Animals, AnimalStatus, Sex
+        from app.models.breeds import Breeds
+        from app.models.finca import Finca
+        from app.models.reproduction import EventType, ReproductiveEvent
+
+        headers = token_for(ADMIN)
+        with app.app_context():
+            finca = Finca.query.first()
+            breed = Breeds.query.first()
+            cow = Animals(
+                record="COW-IEP-TEST",
+                sex=Sex.Hembra,
+                birth_date=date(2019, 1, 1),
+                weight=450,
+                status=AnimalStatus.Vivo,
+                finca_id=finca.id,
+                breeds_id=breed.id if breed else 1,
+            )
+            db.session.add(cow)
+            db.session.flush()
+
+            # 2 partos separados por 400 días
+            p1 = ReproductiveEvent(
+                animal_id=cow.id,
+                finca_id=finca.id,
+                event_type=EventType.Parto,
+                event_date=date(2023, 1, 1),
+                alive_count=1,
+            )
+            p2 = ReproductiveEvent(
+                animal_id=cow.id,
+                finca_id=finca.id,
+                event_type=EventType.Parto,
+                event_date=date(2024, 2, 5),
+                alive_count=1,
+            )
+            db.session.add_all([p1, p2])
+            db.session.commit()
+            cow_id = cow.id
+
+        resp = client.get(
+            f"{BASE}/reproduction/events/animal/{cow_id}",
+            headers=headers,
+        )
+        assert resp.status_code == 200
+        body = resp.get_json()
+        assert body["success"] is True
+        data = body["data"]
+        assert data["is_male"] is False
+        assert data["metrics"]["total_births"] == 2
+        assert data["metrics"]["iep_days"] == 400
+        assert data["metrics"]["days_open"] is not None
+        assert len(data["events"]) == 2
+
+    def test_historial_macho_reproductor(self, app, client, token_for):
+        from datetime import date
+        from app import db
+        from app.models.animals import Animals, AnimalStatus, Sex
+        from app.models.breeds import Breeds
+        from app.models.finca import Finca
+        from app.models.reproduction import EventType, ReproductiveEvent
+
+        headers = token_for(ADMIN)
+        with app.app_context():
+            finca = Finca.query.first()
+            breed = Breeds.query.first()
+            bull = Animals(
+                record="BULL-HISTORY-TEST",
+                sex=Sex.Macho,
+                birth_date=date(2018, 1, 1),
+                weight=700,
+                status=AnimalStatus.Vivo,
+                finca_id=finca.id,
+                breeds_id=breed.id if breed else 1,
+            )
+            cow = Animals(
+                record="COW-SERV-TEST",
+                sex=Sex.Hembra,
+                birth_date=date(2020, 1, 1),
+                weight=420,
+                status=AnimalStatus.Vivo,
+                finca_id=finca.id,
+                breeds_id=breed.id if breed else 1,
+            )
+            db.session.add_all([bull, cow])
+            db.session.flush()
+
+            # Servicio donde el toro es sire_id
+            service = ReproductiveEvent(
+                animal_id=cow.id,
+                sire_id=bull.id,
+                finca_id=finca.id,
+                event_type=EventType.Inseminacion,
+                event_date=date(2025, 6, 1),
+            )
+            db.session.add(service)
+            db.session.commit()
+            bull_id = bull.id
+
+        resp = client.get(
+            f"{BASE}/reproduction/events/animal/{bull_id}",
+            headers=headers,
+        )
+        assert resp.status_code == 200
+        body = resp.get_json()
+        assert body["success"] is True
+        data = body["data"]
+        assert data["is_male"] is True
+        assert data["metrics"]["total_inseminations"] == 1
+        assert len(data["events"]) == 1
+

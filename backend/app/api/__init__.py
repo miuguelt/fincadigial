@@ -9,6 +9,7 @@ from .docs import register_docs_routes
 from .namespaces_registry import register_namespaces
 from .limiter import apply_rate_limit_exemptions
 from ..utils.response_handler import APIResponse
+from ..utils.private_file_urls import verify_file_url_signature
 
 
 def register_api(app, limiter=None):
@@ -102,6 +103,9 @@ def register_api(app, limiter=None):
     @api_bp.route("/public/images/<path:filename>", methods=["GET"])
     def serve_chat_file(filename):
         try:
+            if not verify_file_url_signature(filename, flask.request.args.get("sig")):
+                return flask.jsonify({"error": "URL de archivo inválida o vencida"}), 403
+
             uploads_folder = app.config.get("UPLOAD_FOLDER", "static/uploads")
             file_path = (
                 pathlib.Path(app.root_path).parent / uploads_folder / filename

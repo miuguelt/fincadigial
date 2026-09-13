@@ -69,6 +69,7 @@ const SECTION_ALIASES: Record<string, string> = {
   animalFields: 'fields',
   genetic_improvements: 'genetic-improvements',
   user: 'users',
+  treatment_protocols: 'treatment-protocols',
 };
 
 /** Secciones reservadas a quien administra la finca (espejo de los `ProtectedRoute` anidados). */
@@ -85,10 +86,13 @@ const RESOURCE_RULES: Array<{ prefix: string; entity: string }> = [
   { prefix: 'diseases', entity: 'diseases' },
   { prefix: 'treatment_medications', entity: 'treatment-medications' },
   { prefix: 'treatment_vaccines', entity: 'treatment-vaccines' },
+  { prefix: 'treatment_recommendations', entity: 'treatment-recommendations' },
   { prefix: 'treatments', entity: 'treatments' },
   { prefix: 'controls', entity: 'controls' },
   { prefix: 'animal-fields', entity: 'animal-fields' },
   { prefix: 'disease-animals', entity: 'animal-diseases' },
+  { prefix: 'treatment-protocols', entity: 'treatment-protocols' },
+  { prefix: 'treatment-protocol-insumos', entity: 'treatment-protocol-insumos' },
   { prefix: 'genetic-improvements', entity: 'genetic-improvements' },
   { prefix: 'species', entity: 'species' },
   { prefix: 'breeds', entity: 'breeds' },

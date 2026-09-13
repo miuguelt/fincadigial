@@ -6,7 +6,9 @@ import { FitText } from '@/shared/ui/FitText';
 import type { TechnicalAssistanceRequest } from '@/entities/campesino';
 import { getCategoryConfig, STATUS_CONFIG, PRIORITY_CONFIG } from './assistance.constants';
 import { formatDateLong } from './timeUtils';
-import { User, Calendar, MessageCircle, CheckCircle2, Clock, BadgeCheck } from 'lucide-react';
+import { AssistanceAttachmentPreview } from './AssistanceAttachmentPreview';
+import { openFloatingChat } from '@/features/chat/model/floatingChat';
+import { User, Calendar, MessageCircle, CheckCircle2, Clock, BadgeCheck, ShieldCheck } from 'lucide-react';
 
 interface AssistanceDetailDialogProps {
   item: TechnicalAssistanceRequest | null;
@@ -40,16 +42,28 @@ export const AssistanceDetailDialog = React.memo<AssistanceDetailDialogProps>(({
   if (!item) return null;
 
   const cat = getCategoryConfig(item.category || 'otro');
-  const statusCfg = STATUS_CONFIG[item.status || 'open'] || STATUS_CONFIG.open;
   const priorityCfg = PRIORITY_CONFIG[item.priority || 'medium'] || PRIORITY_CONFIG.medium;
   const CatIcon = cat.icon;
-  const currentStatus = item.status || 'open';
+  const currentStatus = item.status === 'in_progress' && !item.assigned_user_id ? 'open' : (item.status || 'open');
+  const statusCfg = STATUS_CONFIG[currentStatus] || STATUS_CONFIG.open;
   const currentStatusIdx = STATUS_ORDER[currentStatus] ?? 0;
+  const canChat = Boolean(item.assignee?.id && currentStatus !== 'closed');
+
+  const handleOpenChat = () => {
+    if (!item.assignee?.id) return;
+    openFloatingChat({
+      id: item.assignee.id,
+      fullname: item.assignee.fullname,
+      role: 'Veterinario',
+    });
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto p-0" aria-describedby="assistance-detail-description">
         <div className="fit-container p-4 sm:p-6 space-y-5 min-w-0">
+          <p id="assistance-detail-description" className="sr-only">Detalle de la solicitud de asistencia técnica y sus opciones de seguimiento.</p>
           <div className="flex items-start gap-3 min-w-0">
             <div className={`shrink-0 w-10 h-10 rounded-lg ${cat.bg} flex items-center justify-center`}>
               <CatIcon className={`w-5 h-5 ${cat.color}`} />
@@ -70,6 +84,8 @@ export const AssistanceDetailDialog = React.memo<AssistanceDetailDialogProps>(({
             <h3 className="text-sm font-semibold text-foreground">Descripción del problema</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">{item.description || 'Sin descripción'}</p>
           </div>
+
+          <AssistanceAttachmentPreview attachment={item.attachment} />
 
           <div className="border-t border-border/30 pt-4 space-y-2">
             <h3 className="text-sm font-semibold text-foreground">Información</h3>
@@ -105,6 +121,23 @@ export const AssistanceDetailDialog = React.memo<AssistanceDetailDialogProps>(({
               )}
             </div>
           </div>
+
+          {canChat && (
+            <section className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+              <div className="flex items-start gap-3">
+                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden />
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-sm font-black text-foreground">Acompañamiento directo</h3>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    Continúe la conversación con {item.assignee?.fullname} dentro de Villa Luz. El chat solo permite comunicarse con personas activas de la misma finca.
+                  </p>
+                  <Button type="button" variant="secondary" onClick={handleOpenChat} className="mt-3 min-h-11 w-full sm:w-auto">
+                    <MessageCircle className="mr-2 h-4 w-4" aria-hidden /> Abrir conversación segura
+                  </Button>
+                </div>
+              </div>
+            </section>
+          )}
 
           <div className="border-t border-border/30 pt-4">
             <h3 className="text-sm font-semibold text-foreground mb-3">Estado de la solicitud</h3>

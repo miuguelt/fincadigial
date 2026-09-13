@@ -33,7 +33,8 @@ const milkEntrySchema = z.object({
 type MilkEntryForm = z.infer<typeof milkEntrySchema>;
 
 interface MilkEntryFormWidgetProps {
-  onSuccess?: () => void;
+  /** Se llama tras guardar; entrega la fecha del registro para escenarios y filtros. */
+  onSuccess?: (record?: { date: string }) => void;
   defaultDate?: string;
   onCancel?: () => void;
 }
@@ -85,7 +86,7 @@ export function MilkEntryFormWidget({ onSuccess, defaultDate, onCancel }: MilkEn
         date: data.date,
         milking_session: data.milking_session === 'AM' ? 'PM' : 'AM',
       });
-      onSuccess?.();
+      onSuccess?.({ date: data.date });
     } catch (error: any) {
       showToast(error.message || 'Error al registrar producción', 'error');
     } finally {

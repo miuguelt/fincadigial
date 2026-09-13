@@ -99,29 +99,36 @@ export function ExportCenterTab() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20 shadow-sm">
-        <div className="bg-primary/10 p-2 rounded-lg">
-          <Download className="h-5 w-5 text-primary" />
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-primary/5 border border-primary/20 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="bg-primary/10 p-2.5 rounded-xl shrink-0">
+            <Download className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-foreground">
+              Centro Unificado de Descargas y Exportaciones
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Descarga los libros oficiales y registros de la finca en hojas de cálculo Excel o documentos PDF listos para imprimir.
+            </p>
+          </div>
         </div>
-        <p className="text-sm font-medium text-foreground">
-          Descarga los datos de tu finca en formato Excel o PDF.
-        </p>
       </div>
 
-      <Card className="bg-card shadow-sm border border-border/80 rounded-xl overflow-hidden mb-8">
-        <CardHeader className="bg-muted/30 p-5 border-b border-border/50 pb-4">
-          <div className="flex items-center gap-3 mb-1.5">
-            <div className="bg-destructive/10 p-2 rounded-lg">
+      <Card className="bg-card shadow-sm border border-border/70 rounded-2xl overflow-hidden mb-6">
+        <CardHeader className="bg-muted/30 p-5 sm:p-6 border-b border-border/50 pb-4">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="bg-destructive/10 p-2 rounded-xl">
               <Heart className="h-4 w-4 text-destructive" />
             </div>
-            <CardTitle className="text-lg">Reporte Sanitario Individual</CardTitle>
+            <CardTitle className="text-base sm:text-lg font-bold">Ficha Sanitaria Individual por Animal</CardTitle>
           </div>
-          <CardDescription className="text-xs">
-            Descarga el historial clínico de un animal específico
+          <CardDescription className="text-xs text-muted-foreground">
+            Descarga el historial clínico completo, tratamientos y controles biométricos de un bovino específico
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-5 bg-background/50">
+        <CardContent className="p-5 sm:p-6 bg-background/50">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1 min-w-0">
               <Combobox
@@ -165,15 +172,15 @@ export function ExportCenterTab() {
           const Icon = item.icon;
           const isLoading = loading === item.id;
           return (
-            <Card key={item.id} className="group flex flex-col bg-card shadow-sm hover:shadow-md transition-all duration-300 border border-border/60 rounded-xl overflow-hidden">
-              <CardHeader className="p-5 pb-4">
-                <div className={cn('w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-black/5 dark:border-white/5', item.bg)}>
+            <Card key={item.id} className="group flex flex-col bg-card shadow-sm hover:shadow-md transition-all duration-300 border border-border/70 rounded-2xl overflow-hidden">
+              <CardHeader className="p-5 sm:p-6 pb-4">
+                <div className={cn('w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-200 shadow-sm border border-black/5 dark:border-white/5', item.bg)}>
                   <Icon className={cn('h-5 w-5', item.color)} />
                 </div>
-                <CardTitle className="text-base tracking-tight mb-1">{item.title}</CardTitle>
-                <CardDescription className="min-h-[40px] text-xs leading-relaxed">{item.description}</CardDescription>
+                <CardTitle className="text-base font-bold tracking-tight mb-1">{item.title}</CardTitle>
+                <CardDescription className="min-h-[40px] text-xs leading-relaxed text-muted-foreground">{item.description}</CardDescription>
               </CardHeader>
-              <CardContent className="p-5 pt-0 mt-auto">
+              <CardContent className="p-5 sm:p-6 pt-0 mt-auto">
                 {item.formats.map((fmt) => {
                   const FmtIcon = fmt.icon;
                   return (
@@ -181,7 +188,7 @@ export function ExportCenterTab() {
                       key={fmt.ext}
                       variant="outline"
                       size="sm"
-                      className="w-full gap-2 h-9 text-xs bg-background hover:bg-muted border-border/80 shadow-sm transition-colors mt-2"
+                      className="w-full gap-2 h-9 text-xs bg-background hover:bg-muted border-border/80 rounded-xl shadow-sm transition-colors mt-2 font-semibold"
                       disabled={isLoading}
                       onClick={() => handleExport(item)}
                     >

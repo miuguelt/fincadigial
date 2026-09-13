@@ -31,7 +31,7 @@ export function useResource<
   T extends { id?: number | string },
   P extends Record<string, any> = Record<string, any>
 >(service: BaseService<T>, options: UseResourceOptions<P> = {}): UseResourceResult<T, P> {
-  const { autoFetch = true, initialParams, deps = [], map, cache = true, cacheTTL, cacheKeyPrefix } = options;
+  const { autoFetch = true, initialParams, deps = [], map, cache = true, cacheTTL, cacheKeyPrefix, filters } = options;
 
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
@@ -105,7 +105,9 @@ export function useResource<
 
   useResourceRealtime(options, refetch, crudInProgress, skipCacheUntil, entityKeyRef.current);
 
-  // Fetch inicial y re-disparo por dependencias externas.
+  // Fetch inicial y re-disparo por dependencias externas. `filters` (rangos de
+  // fecha, finca, etc.) debe refrescar la lista inmediatamente al cambiar: la
+  // regla es que cualquier cambio se vea sin recargar ni navegar.
   useEffect(() => {
     if (autoFetch) {
       void refetch(initialParams as P | undefined).catch(() => { /* noop */ });
@@ -115,7 +117,7 @@ export function useResource<
       cancelSource.current = axios.CancelToken.source();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoFetch, service, cache, params.pageQP, params.limitQP, params.searchQP, params.fieldsQP, ...deps]);
+  }, [autoFetch, service, cache, params.pageQP, params.limitQP, params.searchQP, params.fieldsQP, params.urlFiltersKey, filters, ...deps]);
 
   // Rate limit del cliente: frenar ese endpoint el tiempo que pida el servidor.
   useEffect(() => {

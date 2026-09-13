@@ -17,6 +17,7 @@ import {
   Mail,
   Tractor,
   UserPlus,
+  ArrowRightLeft,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
@@ -31,6 +32,7 @@ const getNotificationIcon = (type: NotificationItem['type']): LucideIcon => {
     case 'INVITATION_ACCEPTED': return CircleCheck;
     case 'INVITATION_REJECTED': return CircleX;
     case 'JOIN_APPROVED': return Tractor;
+    case 'ANIMAL_TRANSFER_REQUEST': return ArrowRightLeft;
     default: return Bell;
   }
 };
@@ -64,6 +66,9 @@ export const NotificationsPanel: React.FC = () => {
       case 'JOIN_APPROVED':
         text = `Tu solicitud a "${notif.finca_name}" fue aprobada`;
         break;
+      case 'ANIMAL_TRANSFER_REQUEST':
+        text = `${notif.sender_name || 'Otra finca'} solicita registrar el animal ${notif.metadata?.record || ''} y compartir su historial`;
+        break;
       default:
         text = `Notificación de ${notif.finca_name}`;
     }
@@ -90,14 +95,14 @@ export const NotificationsPanel: React.FC = () => {
               {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: es })}
             </div>
 
-            {isPending && (notif.type === 'JOIN_REQUEST' || notif.type === 'INVITATION_RECEIVED') && (
+            {isPending && (notif.type === 'JOIN_REQUEST' || notif.type === 'INVITATION_RECEIVED' || notif.type === 'ANIMAL_TRANSFER_REQUEST') && (
               <div className="flex items-center gap-2">
                 <Button
                   size="sm"
                   onClick={() => approve(notif.id)}
                   className="h-8 text-xs px-3 font-bold bg-primary text-primary-foreground hover:bg-primary/90 rounded-md"
                 >
-                  {notif.type === 'JOIN_REQUEST' ? 'Aprobar' : 'Aceptar'}
+                  {notif.type === 'ANIMAL_TRANSFER_REQUEST' ? 'Aceptar y compartir historial' : (notif.type === 'JOIN_REQUEST' ? 'Aprobar' : 'Aceptar')}
                 </Button>
                 <Button
                   size="sm"

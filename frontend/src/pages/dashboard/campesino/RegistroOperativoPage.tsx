@@ -1,8 +1,9 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Leaf, ClipboardList, RefreshCw } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { ConfirmDialog } from '@/shared/ui/common/ConfirmDialog';
 import { campesinoServices } from '@/entities/campesino';
 import { useToast } from '@/app/providers/ToastContext';
@@ -49,6 +50,7 @@ const RegistroOperativoPage: React.FC = () => {
   const [showCropForm, setShowCropForm] = useState(false);
   const [cropFormType, setCropFormType] = useState('note');
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+  const tabRefs = useRef<Partial<Record<TabType, HTMLButtonElement | null>>>({});
 
   const {
     activeModal, savingForm,
@@ -96,10 +98,8 @@ const RegistroOperativoPage: React.FC = () => {
 
   const focusSection = (tab: TabType) => {
     setActiveTab(tab);
-    window.requestAnimationFrame(() => document.getElementById(`tab-${tab}`)?.focus());
-  };
-
-  const handleSummaryAction = (key: 'milk' | 'balance' | 'chores' | 'sick') => {
+    window.requestAnimationFrame(() => tabRefs.current[tab]?.focus());
+  };  const handleSummaryAction = (key: 'milk' | 'balance' | 'chores' | 'sick') => {
     if (key === 'milk') {
       setActiveTab('livestock');
       openModal('milk');
@@ -159,50 +159,37 @@ const RegistroOperativoPage: React.FC = () => {
               <p className="mt-1 text-sm text-muted-foreground">Elija una sección y toque la actividad que realizó.</p>
             </div>
 
-            <div className="vl-tabs !grid grid-cols-3 overflow-visible" role="tablist" aria-label="Secciones del registro diario">
-              {tabs.map((tab, tabIdx) => {
-                const Icon = tab.icon;
-                return (
-                  <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-                    onKeyDown={event => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        setActiveTab(tab.key);
-                      } else if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
-                        event.preventDefault();
-                        const nextIdx = (tabIdx + 1) % tabs.length;
-                        setActiveTab(tabs[nextIdx].key);
-                        const nextBtn = document.getElementById(`tab-${tabs[nextIdx].key}`);
-                        nextBtn?.focus();
-                      } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
-                        event.preventDefault();
-                        const prevIdx = (tabIdx - 1 + tabs.length) % tabs.length;
-                        setActiveTab(tabs[prevIdx].key);
-                        const prevBtn = document.getElementById(`tab-${tabs[prevIdx].key}`);
-                        prevBtn?.focus();
-                      }
-                    }}
-                    type="button"
-                    role="tab"
-                    id={`tab-${tab.key}`}
-                    aria-selected={activeTab === tab.key}
-                    aria-controls={`panel-${tab.key}`}
-                    data-active={activeTab === tab.key}
-                    className="vl-tab !min-w-0 !px-1 flex items-center justify-center gap-0.5 py-2.5 min-h-11 sm:gap-2">
-                    <Icon className="w-3.5 h-3.5 shrink-0 sm:h-4 sm:w-4" aria-hidden="true" />
-                    <span className="whitespace-nowrap text-[11px] sm:text-sm">{tab.label}</span>
-                  </button>
-                );
-              })}
-            </div>
+            <Tabs value={activeTab} onValueChange={value => setActiveTab(value as TabType)} className="w-full">
+              <TabsList
+                aria-label="Secciones del registro diario"
+                className="grid h-12 w-full grid-cols-3 rounded-xl border border-border bg-card p-1.5 shadow-sm"
+              >
+                {tabs.map(tab => {
+                  const Icon = tab.icon;
+                  return (
+                    <TabsTrigger
+                      key={tab.key}
+                      value={tab.key}
+                      ref={el => { tabRefs.current[tab.key] = el; }}
+                      className="flex items-center justify-center gap-0.5 rounded-lg px-1 py-2.5 min-h-11 text-[11px] font-semibold text-muted-foreground sm:gap-2 sm:text-sm data-[state=active]:bg-primary-700 data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                    >
+                      <Icon className="w-3.5 h-3.5 shrink-0 sm:h-4 sm:w-4" aria-hidden="true" />
+                      <span className="whitespace-nowrap">{tab.label}</span>
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
 
-            <div role="tabpanel" id={`panel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
-              {activeTab === 'crop' && (
+              <TabsContent value="crop" className="mt-5 focus-visible:outline-none">
                 <AgricultureTab activities={cropActivities} loading={loadingCrops} errored={cropsError} onQuickAction={handleQuickCrop} onDelete={setPendingDeleteId} onRetry={() => loadCropData({ force: true })} />
-              )}
-              {activeTab === 'livestock' && <LivestockTab onOpenModal={openModal} />}
-              {activeTab === 'history' && <HistoryTab records={historyRecords} loading={loadingHistory} errored={historyError} onRetry={() => loadHistoryRecords({ force: true })} />}
-            </div>
+              </TabsContent>
+              <TabsContent value="livestock" className="mt-5 focus-visible:outline-none">
+                <LivestockTab onOpenModal={openModal} />
+              </TabsContent>
+              <TabsContent value="history" className="mt-5 focus-visible:outline-none">
+                <HistoryTab records={historyRecords} loading={loadingHistory} errored={historyError} onRetry={() => loadHistoryRecords({ force: true })} />
+              </TabsContent>
+            </Tabs>
           </section>
 
           <aside className="space-y-4" aria-label="Resultado del registro diario">
@@ -218,11 +205,16 @@ const RegistroOperativoPage: React.FC = () => {
                 variant="sidebar"
                 onAction={handleSummaryAction}
               />
-              <button type="button" disabled={refreshing} onClick={() => { loadMasterData({ force: true }); loadCropData({ force: true }); loadHistoryRecords({ force: true }); }}
-                className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 min-h-11 rounded-lg text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-primary transition-colors disabled:opacity-50">
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={refreshing}
+                onClick={() => { loadMasterData({ force: true }); loadCropData({ force: true }); loadHistoryRecords({ force: true }); }}
+                className="mt-3 w-full gap-2 text-muted-foreground hover:text-primary"
+              >
                 <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} aria-hidden="true" />
                 {refreshing ? 'Actualizando datos...' : 'Actualizar datos'}
-              </button>
+              </Button>
             </section>
 
             <RegistroOperativoIntro />

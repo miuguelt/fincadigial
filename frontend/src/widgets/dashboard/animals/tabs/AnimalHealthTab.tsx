@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Syringe,
   Pill,
@@ -11,12 +11,15 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock,
+  HeartPulse,
 } from 'lucide-react';
 import { cn } from '@/shared/ui/cn';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { CollapsibleCard } from '@/shared/ui/common/CollapsibleCard';
 import { resolveRecordId } from '@/shared/utils/recordIdUtils';
+import { DiseaseFollowupModal } from '@/widgets/dashboard/disease-followup/DiseaseFollowupModal';
+import { AnimalRecommendationsWidget } from '@/entities/knowledge-base';
 
 interface AnimalHealthTabProps {
   animal: any;
@@ -33,6 +36,8 @@ interface AnimalHealthTabProps {
   onOpenSuppliesModal?: (treatment: any) => void;
   confirmingDeleteId?: string | number | null;
   deletingItemId?: string | number | null;
+  /** Notifica al padre para refrescar el episodio tras un cambio del seguimiento (ej: cierre del caso). */
+  onRefreshData?: (type: string) => void;
 }
 
 export const AnimalHealthTab: React.FC<AnimalHealthTabProps> = ({
@@ -50,7 +55,21 @@ export const AnimalHealthTab: React.FC<AnimalHealthTabProps> = ({
   onOpenSuppliesModal,
   confirmingDeleteId,
   deletingItemId,
+  onRefreshData,
 }) => {
+  const [followupDiseaseId, setFollowupDiseaseId] = useState<number | string | null>(null);
+  const [followupLabel, setFollowupLabel] = useState<string | undefined>(undefined);
+
+  const openFollowup = (disease: any) => {
+    const recordId = resolveRecordId(disease);
+    if (!recordId) return;
+    const name =
+      diseaseOptions[disease.disease_id] ||
+      disease.disease_name ||
+      `Enfermedad #${disease.disease_id}`;
+    setFollowupLabel(`${name} · ${formatDate(disease.diagnosis_date)}`);
+    setFollowupDiseaseId(recordId);
+  };
   const activeDiseasesCount = useMemo(
     () => diseases.filter((d: any) => d.status === 'Activo').length,
     [diseases]
@@ -540,14 +559,44 @@ export const AnimalHealthTab: React.FC<AnimalHealthTabProps> = ({
                         >
                           {d.status || 'Activo'}
                         </Badge>
+                        {d.severity && (
+                          <span
+                            className={cn(
+                              'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold border',
+                              d.severity === 'Leve' && 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30',
+                              d.severity === 'Moderada' && 'bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/30',
+                              d.severity === 'Severa' && 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30',
+                              d.severity === 'Crítica' && 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30'
+                            )}
+                          >
+                            {d.severity}
+                          </span>
+                        )}
                       </div>
                       <div className="text-[11px] text-muted-foreground mt-1">
                         <span>Diagnóstico: {formatDate(d.diagnosis_date)}</span>
+                        {d.recovery_date && (
+                          <span className="ml-2 text-emerald-600 dark:text-emerald-400 font-semibold">
+                            Alta: {formatDate(d.recovery_date)}
+                          </span>
+                        )}
                         {d.notes && <p className="italic fit-clamp mt-0.5">"{d.notes}"</p>}
                       </div>
                     </div>
 
                     <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openFollowup(d)}
+                        className={cn(
+                          'h-6.5 w-6.5 p-0 rounded-md text-rose-600 hover:text-rose-800 dark:hover:text-rose-300 hover:bg-rose-500/10',
+                          isActive && 'animate-pulse'
+                        )}
+                        title="Ver seguimiento de esta enfermedad"
+                      >
+                        <HeartPulse className="h-3 w-3" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -587,6 +636,32 @@ export const AnimalHealthTab: React.FC<AnimalHealthTabProps> = ({
           )}
         </div>
       </CollapsibleCard>
+
+      {/* 4. Recomendaciones del motor (por edad desde birth_date, peso y sanidad) */}
+      {_animal?.id ? (
+        <CollapsibleCard
+          title="Recomendaciones automáticas (edad · peso · sanidad)"
+          accent="teal"
+          defaultCollapsed={true}
+        >
+          <AnimalRecommendationsWidget animalId={Number(_animal.id)} />
+        </CollapsibleCard>
+      ) : null}
+
+      {/* Modal de seguimiento del episodio de enfermedad */}
+      <DiseaseFollowupModal
+        isOpen={followupDiseaseId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setFollowupDiseaseId(null);
+            setFollowupLabel(undefined);
+          }
+        }}
+        episodeId={followupDiseaseId}
+        episodeLabel={followupLabel}
+        onEpisodeChange={() => onRefreshData?.('animal_disease')}
+        zIndex={2200}
+      />
     </div>
   );
 };

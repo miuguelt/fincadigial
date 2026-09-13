@@ -42,11 +42,20 @@ def register_namespaces(api):
     from ..namespaces.health.medications_namespace import medications_ns
     from ..namespaces.farm.route_administration_namespace import route_admin_ns
     from ..namespaces.animals.animal_diseases_namespace import animal_diseases_ns
+    from ..namespaces.health.animal_disease_progress_namespace import (
+        animal_disease_progress_ns,
+    )
     from ..namespaces.animals.animal_fields_namespace import animal_fields_ns
     from ..namespaces.health.treatment_medications_namespace import (
         treatment_medications_ns,
     )
     from ..namespaces.health.treatment_vaccines_namespace import treatment_vaccines_ns
+    from ..namespaces.health.treatment_protocols_namespace import (
+        treatment_protocols_ns,
+    )
+    from ..namespaces.health.treatment_protocol_insumos_namespace import (
+        treatment_protocol_insumos_ns,
+    )
     from ..namespaces.users.user_preferences_namespace import prefs_ns
     from ..namespaces.core.navigation_namespace import nav_ns
     from ..namespaces.animals.animal_images_namespace import animal_images_ns
@@ -59,7 +68,12 @@ def register_namespaces(api):
     from ..namespaces.animals.growth_namespace import growth_ns
     from ..namespaces.core.public_namespace import public_ns
     from ..namespaces.animals.animal_movements_namespace import animal_movements_ns
+    from ..namespaces.animals.animal_transfers_namespace import animal_transfers_ns
     from ..namespaces.animals.animal_nfc_namespace import animal_nfc_ns
+    from ..namespaces.animals.animal_care_plans_namespace import animal_care_plans_ns
+    from ..namespaces.animals.animal_care_plan_stages_namespace import (
+        animal_care_plan_stages_ns,
+    )
     from ..namespaces.farm.finca_images_namespace import finca_images_ns
     from ..namespaces.health.treatment_recommendations_namespace import (
         treatment_recommendations_ns,
@@ -69,6 +83,7 @@ def register_namespaces(api):
     from ..namespaces.system.projects_namespace import projects_ns
     from ..namespaces.finanzas.multi_finca_namespace import multi_finca_ns
     from ..namespaces.finanzas.regulatory_reports_namespace import regulatory_ns
+    from ..namespaces.analytics.professional_reports import ns as reports_pro_ns
     from ..namespaces.users.push_notifications_namespace import push_ns
     from ..namespaces.core.api_docs_namespace import docs_ns
     from ..namespaces.farm.fincas_namespace import fincas_ns
@@ -147,9 +162,12 @@ def register_namespaces(api):
     api.add_namespace(medications_ns)
     api.add_namespace(route_admin_ns)
     api.add_namespace(animal_diseases_ns)
+    api.add_namespace(animal_disease_progress_ns)
     api.add_namespace(animal_fields_ns)
     api.add_namespace(treatment_medications_ns)
     api.add_namespace(treatment_vaccines_ns)
+    api.add_namespace(treatment_protocols_ns)
+    api.add_namespace(treatment_protocol_insumos_ns)
     api.add_namespace(prefs_ns)
     api.add_namespace(nav_ns)
     api.add_namespace(animal_images_ns)
@@ -163,6 +181,9 @@ def register_namespaces(api):
     api.add_namespace(inventory_ns)
     api.add_namespace(inventory_insights_ns)
     api.add_namespace(animal_movements_ns)
+    api.add_namespace(animal_transfers_ns)
+    api.add_namespace(animal_care_plans_ns)
+    api.add_namespace(animal_care_plan_stages_ns)
     api.add_namespace(finca_images_ns)
     api.add_namespace(treatment_recommendations_ns)
     api.add_namespace(p2p_signal_ns)
@@ -174,6 +195,7 @@ def register_namespaces(api):
     api.add_namespace(public_ns)
     api.add_namespace(multi_finca_ns)
     api.add_namespace(regulatory_ns)
+    api.add_namespace(reports_pro_ns, path="/analytics/reports_pro")
     api.add_namespace(push_ns)
     api.add_namespace(docs_ns)
     api.add_namespace(fincas_ns)

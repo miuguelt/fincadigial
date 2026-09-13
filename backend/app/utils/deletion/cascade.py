@@ -7,13 +7,29 @@ un padre invisible.
 """
 
 import logging
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from app import db
 
 from .dependency_map import cascading_relationships
 
 logger = logging.getLogger(__name__)
+
+# Marca de tiempo del último borrado lógico emitido. Garantiza que dos
+# ``apply_delete`` consecutivos jamás compartan microsegundo: la restauración
+# decide qué hijo se restauró "con" su padre comparando marcas de tiempo, y
+# una colisión hacía que un borrado previo (decisión aparte) se restaurara
+# por accidente cuando corría en el mismo microsegundo.
+_last_deleted_at: datetime = datetime.min.replace(tzinfo=UTC)
+
+
+def _next_deleted_at() -> datetime:
+    global _last_deleted_at
+    now = datetime.now(UTC)
+    if now <= _last_deleted_at:
+        now = _last_deleted_at + timedelta(microseconds=1)
+    _last_deleted_at = now
+    return now
 
 
 def apply_delete(instance, hard_delete: bool = False) -> None:
@@ -22,7 +38,7 @@ def apply_delete(instance, hard_delete: bool = False) -> None:
         db.session.delete(instance)
         return
 
-    deleted_at = datetime.now(UTC)
+    deleted_at = _next_deleted_at()
     instance.is_deleted = True
     instance.deleted_at = deleted_at
     db.session.add(instance)

@@ -10,6 +10,7 @@ const QuickDisease = lazy(() => import('@/pages/quick/QuickDisease'));
 const QuickTreatment = lazy(() => import('@/pages/quick/QuickTreatment'));
 const QuickMilk = lazy(() => import('@/pages/quick/QuickMilk'));
 const QuickWater = lazy(() => import('@/pages/quick/QuickWater'));
+const QuickCare = lazy(() => import('@/pages/quick/QuickCare'));
 
 export function QuickActionsModal() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -40,6 +41,8 @@ export function QuickActionsModal() {
         return <QuickMilk />;
       case 'water':
         return <QuickWater />;
+      case 'care':
+        return <QuickCare />;
       default:
         return null;
     }

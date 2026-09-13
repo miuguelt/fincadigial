@@ -33,7 +33,9 @@ export function useCrudUrlSync<T extends { id: number }>({
   onEditLoadError,
 }: UseCrudUrlSyncArgs<T>) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState('');
+  const urlSearchParam = (searchParams.get('search') || '').toString();
+  const [searchQuery, setSearchQuery] = useState(urlSearchParam);
+  const lastPushedSearchRef = useRef(urlSearchParam);
 
   // Cada petición de edición lleva número de secuencia: si el usuario cambia de
   // registro mientras carga el anterior, la respuesta vieja se descarta.
@@ -58,23 +60,29 @@ export function useCrudUrlSync<T extends { id: number }>({
   // Lo escrito -> URL (con retardo). useResource lee `search` de la URL.
   useEffect(() => {
     const handle = setTimeout(() => {
-      const sp = new URLSearchParams(window.location.search);
-      if (searchQuery === (sp.get('search') || '')) return;
+      const currentInUrl = (searchParams.get('search') || '').toString();
+      if (searchQuery === currentInUrl) return;
 
+      const sp = new URLSearchParams(searchParams);
       if (searchQuery) sp.set('search', searchQuery);
       else sp.delete('search');
       sp.set('page', '1');
+      lastPushedSearchRef.current = searchQuery;
       setSearchParams(sp, { replace: true });
     }, SEARCH_DEBOUNCE_MS);
 
     return () => clearTimeout(handle);
-  }, [searchQuery, setSearchParams]);
+  }, [searchQuery, searchParams, setSearchParams]);
 
-  // URL -> campo de búsqueda, para que el botón atrás y los enlaces funcionen.
+  // URL -> campo de búsqueda, para que el botón atrás y los enlaces externos funcionen
+  // sin pisar lo que el usuario está tecleando antes del debounce.
   useEffect(() => {
-    const search = (searchParams.get('search') || '').toString();
-    if (searchQuery !== search) setSearchQuery(search);
-  }, [searchParams, searchQuery]);
+    const currentInUrl = (searchParams.get('search') || '').toString();
+    if (currentInUrl !== lastPushedSearchRef.current) {
+      lastPushedSearchRef.current = currentInUrl;
+      setSearchQuery(currentInUrl);
+    }
+  }, [searchParams]);
 
   // ?create=1
   useEffect(() => {
@@ -106,7 +114,7 @@ export function useCrudUrlSync<T extends { id: number }>({
         const item = await service.getById(id);
         // Descartar si llegó tarde o si la URL ya apunta a otro registro.
         if (editRequestSeqRef.current !== requestSeq) return;
-        if (new URLSearchParams(window.location.search).get('edit') !== String(id)) return;
+        if (searchParams.get('edit') !== String(id)) return;
         openEdit(item);
       } catch {
         onEditLoadError();

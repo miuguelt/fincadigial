@@ -34,6 +34,7 @@ import { withoutTombstones } from './crudPage.helpers';
 
 // Utilidades
 import { getTombstoneIds, clearExpired } from '@/shared/api/cache/tombstones';
+import { buildRecentFlags } from '@/shared/utils/recentChanges';
 
 // Interfaces y hooks propios
 import type { CRUDConfig } from '../../../shared/types/crud';
@@ -45,6 +46,7 @@ import { useOfflineFlag } from './hooks/useOfflineFlag';
 import { useCrudUrlSync } from './hooks/useCrudUrlSync';
 import { useCrudSubmit } from './hooks/useCrudSubmit';
 import { useCrudDelete } from './hooks/useCrudDelete';
+import { useCrudInitialDetail } from './hooks/useCrudInitialDetail';
 
 export interface AdminCRUDPageProps<T extends { id: number }, TInput extends Record<string, any>> {
   config: CRUDConfig<T, TInput>;
@@ -65,6 +67,13 @@ export interface AdminCRUDPageProps<T extends { id: number }, TInput extends Rec
   additionalFormContent?: (formData: TInput, editingItem: T | null) => React.ReactNode;
   onItemsChange?: (items: T[]) => void;
   onOpenDetail?: (item: T) => void;
+  onOpenCreate?: () => void;
+  /**
+   * Abre el modal de detalle del registro indicado al cargar la tabla por
+   * primera vez. Permite enlaces directos entre vistas del mismo modulo
+   * (ej. de un tratamiento a su caso clinico).
+   */
+  initialDetailId?: number | null;
   selectedIds?: number[];
   onSelectionChange?: (ids: number[]) => void;
   // Filtros dinámicos desde el contenedor superior
@@ -80,6 +89,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   mapResponseToForm,
   validateForm,
   customDetailContent,
+  initialDetailId,
   onFormDataChange: _onFormDataChange,
   realtime,
   pollIntervalMs,
@@ -89,11 +99,13 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   additionalFormContent,
   onItemsChange,
   onOpenDetail: externalOnOpenDetail,
+  onOpenCreate: externalOnOpenCreate,
   filters,
   filterItems,
 }: AdminCRUDPageProps<T, TInput>) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<T | null>(null);
+  const [lastCreatedId, setLastCreatedId] = useState<string | number | null>(null);
   const isOffline = useOfflineFlag();
 
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -164,6 +176,17 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     const base = withoutTombstones(items || [], getTombstoneIds(entityKey));
     return filterItems ? filterItems(base) : base;
   }, [items, entityKey, filterItems]);
+
+  // Registros creados/editados hace poco (incluso desde otra pantalla): la
+  // lista los resalta sutilmente para que el usuario confirme su cambio.
+  const resourceSlug = useMemo(
+    () => String((service as any)?.endpoint || '').split('/').filter(Boolean).pop()?.toLowerCase() ?? '',
+    [service],
+  );
+  const recentFlags = useMemo(
+    () => buildRecentFlags(resourceSlug, (filteredItems ?? []).map((item: any) => item.id)),
+    [resourceSlug, filteredItems],
+  );
   const { selectedIds, toggleSelect, clearSelection, toggleSelectAll } = useCrudSelection(filteredItems);
 
   useEffect(() => {
@@ -198,12 +221,18 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
       externalOnOpenDetail(item);
       return;
     }
+    // El modal de detalle interno es opcional: si la pantalla lo deshabilita
+    // sin aportar su propio handler, el clic en fila/tarjeta no debe abrir nada.
+    if (config.enableDetailModal === false) return;
     const idx = filteredItems.findIndex((i) => i.id === item.id);
     const safeIndex = idx >= 0 ? idx : 0;
     setDetailIndex(safeIndex);
     setDetailItem(filteredItems[safeIndex] || item);
     setIsDetailOpen(true);
-  }, [filteredItems, externalOnOpenDetail]);
+  }, [filteredItems, externalOnOpenDetail, config.enableDetailModal]);
+
+  // Apertura dirigida de detalle desde el contenedor (enlaces entre vistas).
+  useCrudInitialDetail<T>(initialDetailId, filteredItems, openDetail);
 
   const onEditLoadError = useCallback(() => {
     showToast(t('common.errorLoading', 'No se pudo cargar el registro para edición'), 'error');
@@ -243,8 +272,63 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     config, service, validateForm, formData, formErrorMessages,
     setFormErrors, setFormErrorMessages, editingItem, canCreate, canUpdate,
     createItem, updateItem, meta, setPage, refetch,
-    onSuccess: handleModalClose, showToast, t,
+    onSuccess: handleModalClose,
+    onItemCreated: (created: any) => {
+      const id = created?.id ?? created?.item_id ?? created?.data?.id;
+      if (id != null) {
+        setLastCreatedId(id);
+      }
+    },
+    showToast, t,
   });
+
+  // Desplaza suavemente la vista hacia el elemento recién creado para que el
+  // usuario verifique de inmediato dónde quedó ubicado en la lista.
+  useEffect(() => {
+    if (lastCreatedId == null) return;
+
+    let attempts = 0;
+    const maxAttempts = 15;
+    let timerId: any = null;
+
+    const tryScroll = () => {
+      attempts += 1;
+      const selector = `[data-crud-id="${lastCreatedId}"], #crud-item-${lastCreatedId}`;
+      const element = document.querySelector(selector) as HTMLElement | null;
+
+      if (element) {
+        const prefersReducedMotion = typeof window !== 'undefined'
+          && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+
+        element.scrollIntoView({
+          behavior: prefersReducedMotion ? 'auto' : 'smooth',
+          block: 'center',
+        });
+
+        // Intentar dar foco accesible a la tarjeta / fila sin romper el flujo
+        if (element.tabIndex >= 0) {
+          try {
+            element.focus({ preventScroll: true });
+          } catch {
+            /* noop */
+          }
+        }
+
+        // Limpiar el ID tras confirmar el desplazamiento exitoso
+        setLastCreatedId(null);
+      } else if (attempts < maxAttempts) {
+        timerId = setTimeout(tryScroll, 100);
+      } else {
+        setLastCreatedId(null);
+      }
+    };
+
+    timerId = setTimeout(tryScroll, 100);
+
+    return () => {
+      if (timerId) clearTimeout(timerId);
+    };
+  }, [lastCreatedId, filteredItems]);
 
   const onDeleted = useCallback((deletedId: number) => {
     if (isDetailOpen && detailItem?.id === deletedId) {
@@ -278,6 +362,8 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     }
   }, [canUpdate, config, updateItem]);
 
+  const isRowToolbar = config.toolbarPlacement === 'row';
+
   const header = (
     <PageHeader
       title={config.title}
@@ -289,12 +375,14 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           searchPlaceholder={config.searchPlaceholder}
-          onOpenCreate={canCreate ? () => openCreate() : undefined}
+          onOpenCreate={externalOnOpenCreate || config.onOpenCreate || (canCreate ? () => openCreate() : undefined)}
           createLabel={`${t('common.create', 'Crear')} ${config.entityName.toLowerCase()}`}
-          customToolbar={config.customToolbar}
+          customToolbar={isRowToolbar ? undefined : config.customToolbar}
           toolbarPlacement={config.toolbarPlacement}
+          expandableSearch={config.expandableSearch}
         />
       }
+      bottomBar={isRowToolbar ? config.customToolbar : undefined}
     />
   );
 
@@ -376,6 +464,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
         usesScrollableHeader={usesScrollableHeader}
         isCardsView={isCardsView}
         pagination={pagination}
+        recentFlags={recentFlags}
         canCreate={canCreate}
         canUpdate={canUpdate}
         canDelete={canDelete}

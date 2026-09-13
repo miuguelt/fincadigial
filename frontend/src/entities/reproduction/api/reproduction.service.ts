@@ -18,7 +18,12 @@ export interface ReproductionSummary {
 export interface AnimalReproductionHistory {
   animal_id: number;
   animal_record: string;
-  events: ReproductiveEventResponse[];
+  is_male?: boolean;
+  events: (ReproductiveEventResponse & {
+    offspring_list?: OffspringResponse[];
+    days_to_birth?: number;
+    is_overdue?: boolean;
+  })[];
   metrics: {
     total_inseminations: number;
     positive_diagnoses: number;
@@ -26,6 +31,8 @@ export interface AnimalReproductionHistory {
     total_alive_offspring: number;
     total_dead_offspring: number;
     conception_rate_pct: number | null;
+    iep_days?: number | null;
+    days_open?: number | null;
   };
   active_pregnancy: {
     insemination_date: string;

@@ -13,6 +13,7 @@ import { ClimbingBoxLoader } from 'react-spinners';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { EmptyState } from '@/widgets/feedback/EmptyState';
+import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
 
 const UserApprovalPage = () => {
   const [users, setUsers] = useState<UserResponse[]>([]);
@@ -135,25 +136,17 @@ const UserApprovalPage = () => {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8 space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-start sm:items-center gap-3.5">
-          <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-sm shrink-0">
-            <FaUserCheck className="h-6 w-6" />
-          </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-              Aprobaciones Pendientes
-            </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Revisa y aprueba los nuevos usuarios registrados en el sistema.
-            </p>
-          </div>
-        </div>
-        <Badge variant="outline" className="text-emerald-700 dark:text-emerald-300 border-emerald-500/30 bg-emerald-500/10 self-start sm:self-center py-1.5 px-3.5 rounded-full font-bold text-xs shadow-sm">
-          {users.length} {users.length === 1 ? 'Pendiente' : 'Pendientes'}
-        </Badge>
-      </div>
+    <div className="min-h-full space-y-6 overflow-x-hidden p-4 sm:p-6 lg:p-8 animate-fade-in">
+      <DataScreenHeader
+        icon={<FaUserCheck className="h-5 w-5 text-white" />}
+        title="Aprobaciones Pendientes"
+        description="Revisa y aprueba los nuevos usuarios registrados en el sistema."
+        actions={
+          <Badge variant="outline" className="text-emerald-700 dark:text-emerald-300 border-emerald-500/30 bg-emerald-500/10 py-1.5 px-3.5 rounded-full font-bold text-xs shadow-xs">
+            {users.length} {users.length === 1 ? 'Pendiente' : 'Pendientes'}
+          </Badge>
+        }
+      />
 
       {/* Control administrativo de verificación de nuevos usuarios */}
       <Card className="border-border/70 shadow-sm bg-card rounded-2xl overflow-hidden">

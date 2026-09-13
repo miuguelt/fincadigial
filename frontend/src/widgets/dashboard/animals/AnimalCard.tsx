@@ -445,6 +445,7 @@ export function AnimalCard({
               {actions || (
                 <AnimalActionsMenu
                   animal={animal}
+                  breedLabel={breed}
                   currentUserId={currentUserId}
                 />
               )}
@@ -480,4 +481,3 @@ export function AnimalCard({
     </Card>
   );
 }
-

@@ -26,11 +26,17 @@ import {
   Area,
 } from 'recharts';
 
+import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
+
+export interface CustomReportsProps {
+  embedded?: boolean;
+}
+
 /**
  * Página para generar reportes personalizados
  * Consume el endpoint POST /api/analytics/reports/custom
  */
-const CustomReports: React.FC = () => {
+const CustomReports: React.FC<CustomReportsProps> = ({ embedded = false }) => {
   const successRef = useRef<HTMLDivElement>(null);
   const [config, setConfig] = useState({
     period: '1y',
@@ -115,352 +121,433 @@ const CustomReports: React.FC = () => {
     const details = report.details || {};
     const metadata = (generateReport.data as any).metadata || {};
 
-    const doc = new jsPDF();
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+    });
+
     const runAutoTable = (docObj: any, options: any) => {
       try {
         if (typeof autoTable === "function") autoTable(docObj, options);
         else if (typeof (autoTable as any).default === "function")
           (autoTable as any).default(docObj, options);
       } catch (e) {
-        console.error(e);
+        console.error("AutoTable error:", e);
       }
     };
 
-    // Título y branding premium
-    doc.setFillColor(15, 23, 42);
-    doc.rect(0, 0, 210, 35, 'F');
+    // --- 1. BANNER INSTITUCIONAL ---
+    doc.setFillColor(22, 78, 38); // Verde bosque profundo #164e26
+    doc.rect(0, 0, 210, 32, 'F');
+    doc.setFillColor(46, 125, 50); // Verde esmeralda acento
+    doc.rect(0, 32, 210, 2.5, 'F');
 
     doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
     doc.setTextColor(255, 255, 255);
-    doc.text("REPORTE ANALÍTICO PERSONALIZADO", 20, 18);
+    doc.text("HACIENDA VILLA LUZ", 14, 13);
 
-    doc.setFontSize(9);
-    doc.setTextColor(200, 200, 255);
-    doc.text("Ecosistema Villa Luz OS - Gestión Inteligente de Ganado", 20, 27);
+    doc.setFontSize(8.5);
+    doc.setTextColor(200, 230, 201);
+    doc.text("SISTEMA DE GESTIÓN GANADERA • REPORTE ANALÍTICO PERSONALIZADO", 14, 20);
 
-    // Metadatos
-    doc.setFontSize(10);
-    doc.setTextColor(80, 80, 80);
-    doc.text(`Generado por: ${metadata.user || 'Usuario'}`, 20, 45);
-    doc.text(`Fecha del Reporte: ${new Date(metadata.generated_at).toLocaleString('es-CO')}`, 20, 52);
-    doc.text(`Período de Análisis: ${periodOptions.find(p => p.value === config.period)?.label || 'N/A'}`, 20, 59);
+    const nowStr = new Date(metadata.generated_at || new Date()).toLocaleString('es-CO', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
 
-    let currentY = 70;
+    doc.setFontSize(10.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.text("INTELIGENCIA OPERATIVA", 196, 13, { align: 'right' });
 
-    // Resumen Ejecutivo
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(200, 230, 201);
+    doc.text(`Emisión: ${nowStr}`, 196, 20, { align: 'right' });
+    doc.text(`Generado por: ${metadata.user || 'Administrador'}`, 196, 26, { align: 'right' });
+
+    // --- 2. TARJETA DE METADATOS Y PARÁMETROS DEL REPORTE ---
+    const metaY = 39;
+    doc.setFillColor(248, 251, 248);
+    doc.setDrawColor(200, 220, 200);
+    doc.setLineWidth(0.3);
+    doc.rect(14, metaY, 182, 16, 'DF');
+
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(71, 85, 105);
+    doc.text("PARÁMETROS DEL ANÁLISIS:", 18, metaY + 5);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(30, 41, 59);
+    const periodLabel = periodOptions.find(p => p.value === config.period)?.label || 'Personalizado';
+    const metricsLabel = config.metrics.map(m => metricsOptions.find(o => o.value === m)?.label || m).join(', ');
+    const groupsLabel = config.groupBy.length > 0
+      ? config.groupBy.map(g => groupByOptions.find(o => o.value === g)?.label || g).join(', ')
+      : 'Ninguna';
+
+    doc.text(`Período: ${periodLabel}  |  Métricas: ${metricsLabel}`, 18, metaY + 10.5);
+    doc.text(`Agrupaciones activas: ${groupsLabel}`, 18, metaY + 14.5);
+
+    let currentY = metaY + 22;
+
+    // --- 3. RESUMEN EJECUTIVO (KPIs) ---
     if (Object.keys(summary).length > 0) {
-      doc.setFontSize(12);
-      doc.setTextColor(15, 23, 42);
-      doc.text("1. Resumen Ejecutivo (Indicadores)", 20, currentY);
-      currentY += 8;
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(22, 78, 38);
+      doc.text("1. Resumen Ejecutivo de Indicadores Clave", 14, currentY);
+      currentY += 5;
 
       const summaryRows = Object.entries(summary).map(([key, val]: [string, any]) => [
         key.replace(/_/g, ' ').toUpperCase(),
-        typeof val === 'number' && val % 1 !== 0 ? val.toFixed(1) : String(val)
+        typeof val === 'number'
+          ? (key.includes('cop') || key.includes('costo') || key.includes('precio') || key.includes('balance') || key.includes('ingreso') || key.includes('gasto')
+              ? `$ ${val.toLocaleString('es-CO')}`
+              : val.toLocaleString('es-CO', { maximumFractionDigits: 1 }))
+          : String(val)
       ]);
 
       runAutoTable(doc, {
         startY: currentY,
-        head: [["Indicador Clave", "Valor Medido"]],
+        head: [["Indicador Operativo / Biológico", "Valor Medido"]],
         body: summaryRows,
-        headStyles: { fillColor: [30, 41, 59] },
+        headStyles: {
+          fillColor: [22, 78, 38],
+          textColor: [255, 255, 255],
+          fontSize: 8.5,
+          fontStyle: 'bold',
+          halign: 'left',
+        },
+        columnStyles: {
+          0: { cellWidth: 120, fontStyle: 'bold' },
+          1: { cellWidth: 62, halign: 'right' },
+        },
+        styles: { fontSize: 8, cellPadding: 2.2 },
         theme: 'striped',
-        margin: { left: 20, right: 20 }
-      });
-
-      currentY = (doc as any).lastAutoTable.finalY + 15;
-    }
-
-    // Detalle: Inventario de Animales
-    if (details.inventario_animales) {
-      if (currentY > 230) { doc.addPage(); currentY = 20; }
-      doc.setFontSize(12);
-      doc.setTextColor(15, 23, 42);
-      doc.text("2. Distribución y Demografía del Ganado", 20, currentY);
-      currentY += 8;
-
-      const estadoRows = Object.entries(details.inventario_animales.estados).map(([state, qty]: [string, any]) => [
-        state.toUpperCase(),
-        String(qty)
-      ]);
-
-      runAutoTable(doc, {
-        startY: currentY,
-        head: [["Estado del Animal", "Cantidad"]],
-        body: estadoRows,
-        headStyles: { fillColor: [37, 99, 235] },
-        theme: 'grid',
-        margin: { left: 20, right: 20 }
+        margin: { left: 14, right: 14 },
       });
 
       currentY = (doc as any).lastAutoTable.finalY + 10;
+    }
+
+    // --- 4. DETALLE: INVENTARIO DE GANADO ---
+    if (details.inventario_animales) {
+      if (currentY > 235) { doc.addPage(); currentY = 30; }
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(22, 78, 38);
+      doc.text("2. Distribución y Demografía del Ganado", 14, currentY);
+      currentY += 5;
+
+      const estadoRows = Object.entries(details.inventario_animales.estados).map(([state, qty]: [string, any]) => [
+        state.toUpperCase(),
+        Number(qty).toLocaleString('es-CO')
+      ]);
+
+      runAutoTable(doc, {
+        startY: currentY,
+        head: [["Estado del Animal", "Cantidad Registrada"]],
+        body: estadoRows,
+        headStyles: { fillColor: [30, 41, 59], halign: 'left' },
+        columnStyles: {
+          0: { cellWidth: 120 },
+          1: { cellWidth: 62, halign: 'right', fontStyle: 'bold' },
+        },
+        styles: { fontSize: 8, cellPadding: 2 },
+        theme: 'grid',
+        margin: { left: 14, right: 14 },
+      });
+
+      currentY = (doc as any).lastAutoTable.finalY + 8;
 
       const sexoRows = Object.entries(details.inventario_animales.sexo).map(([sex, qty]: [string, any]) => [
         formatSexLabel(sex).toUpperCase(),
-        String(qty)
+        Number(qty).toLocaleString('es-CO')
       ]);
+
       runAutoTable(doc, {
         startY: currentY,
         head: [["Distribución por Sexo", "Cabezas Activas"]],
         body: sexoRows,
-        headStyles: { fillColor: [14, 165, 233] },
+        headStyles: { fillColor: [14, 165, 233], halign: 'left' },
+        columnStyles: {
+          0: { cellWidth: 120 },
+          1: { cellWidth: 62, halign: 'right', fontStyle: 'bold' },
+        },
+        styles: { fontSize: 8, cellPadding: 2 },
         theme: 'grid',
-        margin: { left: 20, right: 20 }
+        margin: { left: 14, right: 14 },
       });
 
-      currentY = (doc as any).lastAutoTable.finalY + 15;
+      currentY = (doc as any).lastAutoTable.finalY + 10;
     }
 
-    // Detalle: Distribución por Razas
+    // --- 5. DETALLE: RAZAS PREDOMINANTES ---
     if (details.distribucion_razas && Object.keys(details.distribucion_razas).length > 0) {
-      if (currentY > 230) { doc.addPage(); currentY = 20; }
-      doc.setFontSize(12);
-      doc.setTextColor(15, 23, 42);
-      doc.text("3. Distribución por Razas Predominantes", 20, currentY);
-      currentY += 8;
+      if (currentY > 235) { doc.addPage(); currentY = 30; }
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(22, 78, 38);
+      doc.text("3. Distribución por Razas Predominantes", 14, currentY);
+      currentY += 5;
 
       const breedRows = Object.entries(details.distribucion_razas).map(([breed, qty]: [string, any]) => [
         breed.toUpperCase(),
-        String(qty)
+        Number(qty).toLocaleString('es-CO')
       ]);
 
       runAutoTable(doc, {
         startY: currentY,
         head: [["Raza del Ganado", "Cantidad de Cabezas"]],
         body: breedRows,
-        headStyles: { fillColor: [139, 92, 246] },
+        headStyles: { fillColor: [109, 40, 217], halign: 'left' },
+        columnStyles: {
+          0: { cellWidth: 120 },
+          1: { cellWidth: 62, halign: 'right', fontStyle: 'bold' },
+        },
+        styles: { fontSize: 8, cellPadding: 2 },
         theme: 'striped',
-        margin: { left: 20, right: 20 }
+        margin: { left: 14, right: 14 },
       });
 
-      currentY = (doc as any).lastAutoTable.finalY + 15;
+      currentY = (doc as any).lastAutoTable.finalY + 10;
     }
 
-    // Detalle: Historial Sanitario
+    // --- 6. DETALLE: HISTORIAL SANITARIO ---
     if (details.historial_salud) {
-      if (currentY > 230) { doc.addPage(); currentY = 20; }
-      doc.setFontSize(12);
-      doc.setTextColor(15, 23, 42);
-      doc.text("4. Historial Sanitario e Intervenciones", 20, currentY);
-      currentY += 8;
+      if (currentY > 235) { doc.addPage(); currentY = 30; }
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(22, 78, 38);
+      doc.text("4. Historial Sanitario e Intervenciones Médicas", 14, currentY);
+      currentY += 5;
 
       const saludRows = details.historial_salud.ultimos_tratamientos.map((t: any) => [
-        t.fecha,
-        t.descripcion,
-        t.dosis,
-        t.observaciones
+        t.fecha || '-',
+        t.descripcion || 'Tratamiento',
+        t.dosis || '-',
+        t.observaciones || 'Sin observaciones'
       ]);
 
       runAutoTable(doc, {
         startY: currentY,
         head: [["Fecha", "Descripción del Tratamiento", "Dosis", "Observaciones"]],
-        body: saludRows.length > 0 ? saludRows : [["N/A", "Sin tratamientos registrados", "N/A", "N/A"]],
-        headStyles: { fillColor: [5, 150, 105] },
+        body: saludRows.length > 0 ? saludRows : [["-", "Sin tratamientos en el periodo", "-", "-"]],
+        headStyles: { fillColor: [5, 150, 105], halign: 'center' },
+        columnStyles: {
+          0: { cellWidth: 26, halign: 'center' },
+          1: { cellWidth: 54 },
+          2: { cellWidth: 28, halign: 'center' },
+          3: { cellWidth: 74 },
+        },
+        styles: { fontSize: 7.8, cellPadding: 2 },
         theme: 'striped',
-        margin: { left: 20, right: 20 }
+        margin: { left: 14, right: 14 },
       });
 
-      currentY = (doc as any).lastAutoTable.finalY + 15;
+      currentY = (doc as any).lastAutoTable.finalY + 10;
     }
 
-    // Detalle: Controles Biométricos
+    // --- 7. DETALLE: CONTROLES BIOMÉTRICOS ---
     if (details.produccion_y_biometria) {
-      if (currentY > 230) { doc.addPage(); currentY = 20; }
-      doc.setFontSize(12);
-      doc.setTextColor(15, 23, 42);
-      doc.text("5. Controles Biométricos y de Peso Corporal", 20, currentY);
-      currentY += 8;
+      if (currentY > 235) { doc.addPage(); currentY = 30; }
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(22, 78, 38);
+      doc.text("5. Controles Biométricos y Pesaje Corporal", 14, currentY);
+      currentY += 5;
 
       const pesoRows = details.produccion_y_biometria.ultimos_controles.map((c: any) => [
-        c.fecha,
-        `${c.peso_kg} kg`,
-        `${c.altura_cm} cm`,
-        c.estado_salud
+        c.fecha || '-',
+        `${Number(c.peso_kg || 0).toLocaleString('es-CO', { maximumFractionDigits: 1 })} kg`,
+        c.altura_cm ? `${c.altura_cm} cm` : '-',
+        c.estado_salud || 'Bueno'
       ]);
 
       runAutoTable(doc, {
         startY: currentY,
         head: [["Fecha Control", "Peso Corporal", "Altura", "Estado de Salud"]],
-        body: pesoRows.length > 0 ? pesoRows : [["N/A", "Sin controles registrados", "N/A", "N/A"]],
-        headStyles: { fillColor: [234, 88, 12] },
+        body: pesoRows.length > 0 ? pesoRows : [["-", "Sin controles en el periodo", "-", "-"]],
+        headStyles: { fillColor: [217, 119, 6], halign: 'center' },
+        columnStyles: {
+          0: { cellWidth: 32, halign: 'center' },
+          1: { cellWidth: 45, halign: 'right', fontStyle: 'bold' },
+          2: { cellWidth: 45, halign: 'center' },
+          3: { cellWidth: 60, halign: 'center' },
+        },
+        styles: { fontSize: 8, cellPadding: 2 },
         theme: 'striped',
-        margin: { left: 20, right: 20 }
+        margin: { left: 14, right: 14 },
       });
 
-      currentY = (doc as any).lastAutoTable.finalY + 15;
+      currentY = (doc as any).lastAutoTable.finalY + 10;
     }
 
-    // Detalle: Gestión de Potreros
+    // --- 8. DETALLE: GESTIÓN DE POTREROS ---
     if (details.gestion_potreros) {
-      if (currentY > 230) { doc.addPage(); currentY = 20; }
-      doc.setFontSize(12);
-      doc.setTextColor(15, 23, 42);
-      doc.text("6. Estado e Infraestructura de Potreros", 20, currentY);
-      currentY += 8;
+      if (currentY > 235) { doc.addPage(); currentY = 30; }
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(22, 78, 38);
+      doc.text("6. Estado e Infraestructura de Potreros", 14, currentY);
+      currentY += 5;
 
       const potreroRows = details.gestion_potreros.potreros.map((p: any) => [
-        p.nombre,
-        p.ubicacion || 'N/A',
-        `${p.area_ha} Ha`,
-        `${p.capacidad_cabezas} Cabezas`,
-        p.estado
+        p.nombre || 'Potrero',
+        p.ubicacion || 'Sector Principal',
+        `${p.area_ha || 0} ha`,
+        `${p.capacidad_cabezas || 0} cabezas`,
+        p.estado || 'Activo'
       ]);
 
       runAutoTable(doc, {
         startY: currentY,
         head: [["Potrero", "Ubicación", "Área", "Capacidad Máx.", "Estado Actual"]],
-        body: potreroRows.length > 0 ? potreroRows : [["N/A", "N/A", "N/A", "N/A", "N/A"]],
-        headStyles: { fillColor: [16, 185, 129] },
+        body: potreroRows.length > 0 ? potreroRows : [["-", "-", "-", "-", "-"]],
+        headStyles: { fillColor: [16, 185, 129], halign: 'center' },
+        columnStyles: {
+          0: { cellWidth: 40 },
+          1: { cellWidth: 45 },
+          2: { cellWidth: 30, halign: 'right' },
+          3: { cellWidth: 35, halign: 'right' },
+          4: { cellWidth: 32, halign: 'center' },
+        },
+        styles: { fontSize: 8, cellPadding: 2 },
         theme: 'striped',
-        margin: { left: 20, right: 20 }
+        margin: { left: 14, right: 14 },
       });
 
-      currentY = (doc as any).lastAutoTable.finalY + 15;
+      currentY = (doc as any).lastAutoTable.finalY + 10;
     }
 
-    // Detalle: Finanzas
+    // --- 9. DETALLE: FINANZAS Y ECONOMÍA ---
     if (details.finanzas_y_economia) {
-      if (currentY > 230) { doc.addPage(); currentY = 20; }
-      doc.setFontSize(12);
-      doc.setTextColor(15, 23, 42);
-      doc.text("7. Balance Financiero y Transacciones", 20, currentY);
-      currentY += 8;
+      if (currentY > 235) { doc.addPage(); currentY = 30; }
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(22, 78, 38);
+      doc.text("7. Balance Financiero y Transacciones Recientes", 14, currentY);
+      currentY += 5;
 
       const finRows = details.finanzas_y_economia.ultimos_movimientos.map((f: any) => [
-        f.fecha,
-        f.tipo,
-        f.categoria,
-        `$ ${f.monto}`,
-        f.descripcion
+        f.fecha || '-',
+        f.tipo || 'Movimiento',
+        f.categoria || 'General',
+        `$ ${Number(f.monto || 0).toLocaleString('es-CO', { minimumFractionDigits: 2 })}`,
+        f.descripcion || 'Sin descripción'
       ]);
 
       runAutoTable(doc, {
         startY: currentY,
         head: [["Fecha", "Tipo", "Categoría", "Monto", "Descripción"]],
-        body: finRows.length > 0 ? finRows : [["N/A", "N/A", "N/A", "N/A", "N/A"]],
-        headStyles: { fillColor: [79, 70, 229] },
+        body: finRows.length > 0 ? finRows : [["-", "-", "-", "-", "-"]],
+        headStyles: { fillColor: [79, 70, 229], halign: 'center' },
+        columnStyles: {
+          0: { cellWidth: 26, halign: 'center' },
+          1: { cellWidth: 24, halign: 'center' },
+          2: { cellWidth: 36 },
+          3: { cellWidth: 36, halign: 'right', fontStyle: 'bold' },
+          4: { cellWidth: 60 },
+        },
+        styles: { fontSize: 8, cellPadding: 2 },
         theme: 'striped',
-        margin: { left: 20, right: 20 }
+        margin: { left: 14, right: 14 },
       });
 
-      currentY = (doc as any).lastAutoTable.finalY + 15;
+      currentY = (doc as any).lastAutoTable.finalY + 10;
     }
 
-    // Detalle: Lechería
+    // --- 10. DETALLE: PRODUCCIÓN LECHERA ---
     if (details.produccion_lechera) {
-      if (currentY > 230) { doc.addPage(); currentY = 20; }
-      doc.setFontSize(12);
-      doc.setTextColor(15, 23, 42);
-      doc.text("8. Producción Lechera y Ordeños", 20, currentY);
-      currentY += 8;
+      if (currentY > 235) { doc.addPage(); currentY = 30; }
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(22, 78, 38);
+      doc.text("8. Producción Lechera y Ordeños del Período", 14, currentY);
+      currentY += 5;
 
       const milkRows = details.produccion_lechera.ultimos_ordenos.map((m: any) => [
-        m.fecha,
-        m.jornada,
-        `${m.litros} L`,
-        m.observaciones
+        m.fecha || '-',
+        m.jornada || 'Mañana',
+        `${Number(m.litros || 0).toLocaleString('es-CO', { maximumFractionDigits: 1 })} L`,
+        m.observaciones || 'Sin observaciones'
       ]);
 
       runAutoTable(doc, {
         startY: currentY,
-        head: [["Fecha", "Jornada", "Litros Producidos", "Observaciones"]],
-        body: milkRows.length > 0 ? milkRows : [["N/A", "N/A", "N/A", "N/A"]],
-        headStyles: { fillColor: [56, 189, 248] },
+        head: [["Fecha Ordeño", "Jornada", "Litros Producidos", "Observaciones"]],
+        body: milkRows.length > 0 ? milkRows : [["-", "-", "-", "-"]],
+        headStyles: { fillColor: [2, 132, 199], halign: 'center' },
+        columnStyles: {
+          0: { cellWidth: 34, halign: 'center' },
+          1: { cellWidth: 34, halign: 'center' },
+          2: { cellWidth: 44, halign: 'right', fontStyle: 'bold' },
+          3: { cellWidth: 70 },
+        },
+        styles: { fontSize: 8, cellPadding: 2 },
         theme: 'striped',
-        margin: { left: 20, right: 20 }
+        margin: { left: 14, right: 14 },
       });
 
-      currentY = (doc as any).lastAutoTable.finalY + 15;
+      currentY = (doc as any).lastAutoTable.finalY + 10;
     }
 
-    // Detalle: Agricultura
-    if (details.actividades_agricolas) {
-      if (currentY > 230) { doc.addPage(); currentY = 20; }
-      doc.setFontSize(12);
-      doc.setTextColor(15, 23, 42);
-      doc.text("9. Estado Agrícola y Cultivos", 20, currentY);
-      currentY += 8;
-
-      const cropRows = details.actividades_agricolas.ultimas_actividades.map((c: any) => [
-        c.fecha,
-        c.tipo,
-        c.cultivo,
-        `$ ${c.costo}`,
-        c.observaciones
-      ]);
-
-      runAutoTable(doc, {
-        startY: currentY,
-        head: [["Fecha", "Actividad", "Cultivo Relacionado", "Costo", "Observaciones"]],
-        body: cropRows.length > 0 ? cropRows : [["N/A", "N/A", "N/A", "N/A", "N/A"]],
-        headStyles: { fillColor: [101, 163, 13] },
-        theme: 'striped',
-        margin: { left: 20, right: 20 }
-      });
-
-      currentY = (doc as any).lastAutoTable.finalY + 15;
-    }
-
-    // Detalle: Inventario de insumos
+    // --- 11. DETALLE: INVENTARIO DE INSUMOS ---
     if (details.inventario_insumos) {
-      if (currentY > 230) { doc.addPage(); currentY = 20; }
-      doc.setFontSize(12);
-      doc.setTextColor(15, 23, 42);
-      doc.text("10. Inventario de Insumos", 20, currentY);
-      currentY += 8;
+      if (currentY > 235) { doc.addPage(); currentY = 30; }
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(22, 78, 38);
+      doc.text("9. Inventario de Insumos, Medicamentos y Existencias", 14, currentY);
+      currentY += 5;
 
       const inventoryRows = details.inventario_insumos.lotes.map((lot: any) => [
-        lot.producto,
-        lot.lote,
-        `${lot.cantidad} ${lot.unidad}`,
-        lot.vencimiento,
-        lot.estado
+        lot.producto || 'Insumo',
+        lot.lote || 'S/N',
+        `${lot.cantidad} ${lot.unidad || 'uds'}`,
+        lot.vencimiento || 'No registra',
+        lot.estado || 'Disponible'
       ]);
 
       runAutoTable(doc, {
         startY: currentY,
-        head: [["Producto", "Lote", "Cantidad", "Vencimiento", "Estado"]],
-        body: inventoryRows.length > 0 ? inventoryRows : [["N/A", "N/A", "N/A", "N/A", "Sin lotes"]],
-        headStyles: { fillColor: [2, 132, 199] },
+        head: [["Producto / Medicamento", "Lote", "Stock Actual", "Vencimiento", "Estado"]],
+        body: inventoryRows.length > 0 ? inventoryRows : [["-", "-", "-", "-", "-"]],
+        headStyles: { fillColor: [13, 148, 136], halign: 'center' },
+        columnStyles: {
+          0: { cellWidth: 55 },
+          1: { cellWidth: 30, halign: 'center' },
+          2: { cellWidth: 35, halign: 'right', fontStyle: 'bold' },
+          3: { cellWidth: 32, halign: 'center' },
+          4: { cellWidth: 30, halign: 'center' },
+        },
+        styles: { fontSize: 8, cellPadding: 2 },
         theme: 'striped',
-        margin: { left: 20, right: 20 }
+        margin: { left: 14, right: 14 },
       });
 
-      currentY = (doc as any).lastAutoTable.finalY + 15;
+      currentY = (doc as any).lastAutoTable.finalY + 10;
     }
 
-    // Detalle: Agrupaciones
-    if (details.agrupaciones && Object.keys(details.agrupaciones).length > 0) {
-      if (currentY > 230) { doc.addPage(); currentY = 20; }
-      doc.setFontSize(12);
-      doc.setTextColor(15, 23, 42);
-      doc.text("11. Agrupaciones del Reporte", 20, currentY);
-      currentY += 8;
-
-      const groupingRows: string[][] = [];
-      Object.entries(details.agrupaciones).forEach(([group, values]: [string, any]) => {
-        Object.entries(values as Record<string, number>).forEach(([label, value]) => {
-          groupingRows.push([group.replace(/_/g, ' '), label, String(value)]);
-        });
-      });
-
-      runAutoTable(doc, {
-        startY: currentY,
-        head: [["Agrupación", "Categoría", "Cantidad"]],
-        body: groupingRows.length > 0 ? groupingRows : [["N/A", "N/A", "0"]],
-        headStyles: { fillColor: [124, 58, 237] },
-        theme: 'grid',
-        margin: { left: 20, right: 20 }
-      });
-
-      currentY = (doc as any).lastAutoTable.finalY + 15;
+    // --- 12. PIE DE PÁGINA Y CERTIFICACIÓN FORMAL ---
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(140, 140, 140);
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.3);
+      doc.line(14, 284, 196, 284);
+      doc.text("Hacienda Villa Luz • Sistema de Inteligencia y Gestión Ganadera", 14, 289);
+      doc.text(`Página ${i} de ${totalPages}`, 196, 289, { align: 'right' });
     }
-
-    // Firma y pie de página
-    doc.setFontSize(9);
-    doc.setTextColor(150, 150, 150);
-    doc.text("Reporte generado a partir de los datos devueltos por la API de VillaLuz.", 20, currentY + 10);
-    doc.text("Este documento no constituye una firma o certificación digital.", 20, currentY + 15);
 
     doc.save(`VillaLuz_ReporteAnalitico_${new Date().toISOString().split('T')[0]}.pdf`);
   };
@@ -494,31 +581,29 @@ const CustomReports: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-full bg-muted/50 p-4 sm:p-6 lg:p-8 overflow-x-hidden" tabIndex={0}>
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <BarChart3 className="w-8 h-8 text-info" />
-          <h1 className="text-3xl font-bold text-foreground">Reportes Personalizados</h1>
-        </div>
-        <p className="text-muted-foreground">
-          Genere reportes personalizados con las métricas y filtros que necesite
-        </p>
-      </div>
+    <div className={embedded ? "space-y-6 animate-fade-in" : "min-h-full bg-background/50 p-4 sm:p-6 lg:p-8 space-y-8 overflow-x-hidden animate-fade-in"} tabIndex={0}>
+      {!embedded && (
+        <DataScreenHeader
+          icon={<BarChart3 className="h-5 w-5 text-white" />}
+          iconClassName="from-emerald-600 to-teal-700 shadow-emerald-600/20"
+          title={<>Reportes <span className="text-primary">Personalizados</span></>}
+          description="Genera informes a medida con las métricas, períodos y agrupaciones que necesites"
+        />
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Panel de configuración */}
         <div className="lg:col-span-2 space-y-6">
           {/* Configuración del reporte */}
-          <div className="bg-card rounded-lg shadow p-6">
+          <div className="bg-card rounded-2xl shadow-sm border border-border/70 p-5 sm:p-6">
             <div className="flex items-center gap-2 mb-6">
               <Settings className="w-5 h-5 text-muted-foreground" />
-              <h2 className="text-lg font-semibold">Configuración del Reporte</h2>
+              <h2 className="text-base sm:text-lg font-bold">Configuración del Reporte</h2>
             </div>
 
             {/* Período */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-foreground/80 mb-2">
+              <label className="block text-xs sm:text-sm font-semibold text-foreground/80 mb-2">
                 Período de Análisis
               </label>
               <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
@@ -526,9 +611,9 @@ const CustomReports: React.FC = () => {
                   <button
                     key={option.value}
                     onClick={() => setConfig({ ...config, period: option.value })}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${config.period === option.value
-                        ? 'bg-info text-white'
-                        : 'bg-muted text-foreground/80 hover:bg-secondary'
+                    className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${config.period === option.value
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'bg-muted/70 text-foreground/80 hover:bg-muted'
                       }`}
                   >
                     {option.label}
@@ -539,16 +624,16 @@ const CustomReports: React.FC = () => {
 
             {/* Métricas */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-foreground/80 mb-3">
+              <label className="block text-xs sm:text-sm font-semibold text-foreground/80 mb-3">
                 Métricas a Incluir
               </label>
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {metricsOptions.map((option) => (
                   <label
                     key={option.value}
-                    className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all ${config.metrics.includes(option.value)
-                        ? 'border-info bg-info/5'
-                        : 'border-border hover:border-border'
+                    className={`flex items-start p-3.5 sm:p-4 border rounded-xl cursor-pointer transition-all ${config.metrics.includes(option.value)
+                        ? 'border-primary/80 bg-primary/5 dark:bg-primary/10 shadow-sm'
+                        : 'border-border/70 hover:border-border hover:bg-muted/30'
                       }`}
                   >
                     <input
@@ -567,14 +652,14 @@ const CustomReports: React.FC = () => {
                           });
                         }
                       }}
-                      className="mt-1 mr-3 w-4 h-4"
+                      className="mt-1 mr-3 w-4 h-4 accent-primary rounded cursor-pointer"
                     />
                     <div className="flex-1">
-                      <div className="font-medium text-foreground">{option.label}</div>
-                      <div className="text-xs text-muted-foreground mt-1">{option.description}</div>
+                      <div className="font-bold text-sm text-foreground">{option.label}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">{option.description}</div>
                     </div>
                     {config.metrics.includes(option.value) && (
-                      <CheckCircle className="w-5 h-5 text-info" />
+                      <CheckCircle className="w-5 h-5 text-primary shrink-0" />
                     )}
                   </label>
                 ))}
@@ -583,7 +668,7 @@ const CustomReports: React.FC = () => {
 
             {/* Agrupar Por */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-foreground/80 mb-3">
+              <label className="block text-xs sm:text-sm font-semibold text-foreground/80 mb-3">
                 Agrupar Resultados Por (Opcional)
               </label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -596,9 +681,9 @@ const CustomReports: React.FC = () => {
                         : [...config.groupBy, option.value];
                       setConfig({ ...config, groupBy: newGroupBy });
                     }}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${config.groupBy.includes(option.value)
-                        ? 'bg-info text-white'
-                        : 'bg-muted text-foreground/80 hover:bg-secondary'
+                    className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${config.groupBy.includes(option.value)
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'bg-muted/70 text-foreground/80 hover:bg-muted'
                       }`}
                   >
                     {option.label}
@@ -611,23 +696,23 @@ const CustomReports: React.FC = () => {
             <button
               onClick={handleGenerate}
               disabled={generateReport.isPending || config.metrics.length === 0}
-              className="w-full px-6 py-3 bg-info text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-muted disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              className="w-full px-6 py-3 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {generateReport.isPending ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Generando Reporte...
+                  <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
+                  <span>Generando Reporte...</span>
                 </>
               ) : (
                 <>
                   <BarChart3 className="w-5 h-5" />
-                  Generar Reporte
+                  <span>Generar Reporte Analítico</span>
                 </>
               )}
             </button>
 
             {config.metrics.length === 0 && (
-              <p className="text-center text-sm text-destructive mt-2">
+              <p className="text-center text-xs text-destructive mt-2">
                 Selecciona al menos una métrica para generar el reporte
               </p>
             )}
@@ -636,24 +721,24 @@ const CustomReports: React.FC = () => {
 
         {/* Panel de resultados */}
         <div className="lg:col-span-1">
-          <div className="bg-card rounded-lg shadow p-6 sticky top-6">
-            <h3 className="font-semibold mb-4">Configuración Actual</h3>
+          <div className="bg-card rounded-2xl shadow-sm border border-border/70 p-5 sm:p-6 sticky top-6">
+            <h3 className="font-bold text-sm sm:text-base mb-4 text-foreground">Configuración Seleccionada</h3>
 
-            <div className="space-y-3 text-sm">
+            <div className="space-y-3.5 text-xs sm:text-sm">
               <div>
-                <span className="text-muted-foreground">Período:</span>
-                <span className="ml-2 font-medium">
+                <span className="text-muted-foreground font-medium">Período:</span>
+                <span className="ml-2 font-bold text-foreground">
                   {periodOptions.find((p) => p.value === config.period)?.label}
                 </span>
               </div>
 
               <div>
-                <span className="text-muted-foreground">Métricas:</span>
-                <div className="mt-1 flex flex-wrap gap-1">
+                <span className="text-muted-foreground font-medium">Métricas:</span>
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {config.metrics.map((m) => (
                     <span
                       key={m}
-                      className="px-2 py-1 bg-info/10 text-info text-xs rounded-full"
+                      className="px-2.5 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-lg"
                     >
                       {metricsOptions.find((opt) => opt.value === m)?.label}
                     </span>
@@ -666,12 +751,12 @@ const CustomReports: React.FC = () => {
 
               {config.groupBy.length > 0 && (
                 <div>
-                  <span className="text-muted-foreground">Agrupar por:</span>
-                  <div className="mt-1 flex flex-wrap gap-1">
+                  <span className="text-muted-foreground font-medium">Agrupar por:</span>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
                     {config.groupBy.map((g) => (
                       <span
                         key={g}
-                        className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full"
+                        className="px-2.5 py-1 bg-violet-500/10 text-violet-700 dark:text-violet-300 text-xs font-semibold rounded-lg"
                       >
                         {groupByOptions.find((opt) => opt.value === g)?.label}
                       </span>
@@ -687,15 +772,15 @@ const CustomReports: React.FC = () => {
                 initial={{ opacity: 0, y: 16, scale: 0.97 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
-                className="mt-6 pt-6 border-t border-border"
+                className="mt-6 pt-6 border-t border-border/70"
               >
                 <motion.p
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: 0.1 }}
-                  className="text-sm text-success font-medium mb-3 flex items-center gap-2"
+                  className="text-xs sm:text-sm text-emerald-600 dark:text-emerald-400 font-bold mb-3 flex items-center gap-2"
                 >
-                  <CheckCircle className="w-5 h-5" />
+                  <CheckCircle className="w-4 h-4" />
                   Reporte Generado Exitosamente
                 </motion.p>
                 <motion.div
@@ -707,25 +792,25 @@ const CustomReports: React.FC = () => {
                   <motion.button
                     variants={{ hidden: { opacity: 0, y: 12, scale: 0.9 }, visible: { opacity: 1, y: 0, scale: 1 } }}
                     onClick={handleDownloadJSON}
-                    className="px-2 py-2.5 bg-muted hover:bg-secondary text-foreground/80 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 border border-border shadow-sm"
+                    className="px-2 py-2 bg-muted hover:bg-muted/80 text-foreground rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1 border border-border shadow-sm"
                   >
-                    <Download className="w-4 h-4" />
+                    <Download className="w-3.5 h-3.5" />
                     JSON
                   </motion.button>
                   <motion.button
                     variants={{ hidden: { opacity: 0, y: 12, scale: 0.9 }, visible: { opacity: 1, y: 0, scale: 1 } }}
                     onClick={handleDownloadCSV}
-                    className="px-2 py-2.5 bg-info/5 hover:bg-info/10 text-info rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 border border-info/30 shadow-sm"
+                    className="px-2 py-2 bg-card hover:bg-muted text-foreground rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1 border border-border shadow-sm"
                   >
-                    <Download className="w-4 h-4" />
+                    <Download className="w-3.5 h-3.5" />
                     CSV
                   </motion.button>
                   <motion.button
                     variants={{ hidden: { opacity: 0, y: 12, scale: 0.9 }, visible: { opacity: 1, y: 0, scale: 1 } }}
                     onClick={handleDownloadPDF}
-                    className="px-2 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 border border-emerald-200 shadow-sm"
+                    className="px-2 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1 shadow-sm"
                   >
-                    <Download className="w-4 h-4" />
+                    <Download className="w-3.5 h-3.5" />
                     PDF
                   </motion.button>
                 </motion.div>
@@ -733,8 +818,8 @@ const CustomReports: React.FC = () => {
             )}
 
             {generateReport.isError && (
-              <div className="mt-6 pt-6 border-t border-border">
-                <p className="text-sm text-destructive font-medium bg-destructive/5 p-3 rounded-lg border border-red-150">
+              <div className="mt-6 pt-6 border-t border-border/70">
+                <p className="text-xs text-destructive font-medium bg-destructive/10 p-3 rounded-xl border border-destructive/30">
                   ⚠️ {(generateReport.error as any)?.message || 'Error al generar el reporte. Verifica la selección de filtros e intenta nuevamente.'}
                 </p>
               </div>

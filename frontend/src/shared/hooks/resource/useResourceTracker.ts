@@ -7,7 +7,7 @@ export function useResourceTracker<T>() {
 
   const recentlyUpdatedIds = useRef<Set<string>>(new Set());
   const recentlyUpdatedTimestamps = useRef<Map<string, number>>(new Map());
-  const recentlyUpdatedItems = useRef<Map<string, T>>(new Map());
+  const recentlyUpdatedItems = useRef<Map<string, Partial<T>>>(new Map());
 
   const recentlyDeletedIds = useRef<Set<string>>(new Set());
   const recentlyDeletedTimestamps = useRef<Map<string, number>>(new Map());

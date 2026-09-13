@@ -1,0 +1,5 @@
+# Nunca versionar el original institucional ni copias sin redactar.
+original/
+*.original.pdf
+*sin-redactar*.pdf
+*sin_redactar*.pdf

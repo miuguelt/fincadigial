@@ -99,6 +99,9 @@ describe('toRolePath', () => {
     expect(toRolePath('Instructor', '/admin/genetic_improvements')).toBe(
       '/instructor/genetic-improvements',
     );
+    expect(toRolePath('Veterinario', '/admin/treatment_protocols')).toBe(
+      '/veterinario/treatment-protocols',
+    );
   });
 
   it('envía las secciones globales a su ruta sin prefijo', () => {
@@ -122,6 +125,8 @@ describe('getRouteSection', () => {
     expect(getRouteSection('/veterinario/treatments/analytics')).toBe('treatments/analytics');
     expect(getRouteSection('/admin/treatments/analytics')).toBe('treatments/analytics');
     expect(getRouteSection('/admin/control')).toBe('controls');
+    expect(getRouteSection('/admin/treatment-protocols')).toBe('treatment-protocols');
+    expect(getRouteSection('/admin/treatment_protocols')).toBe('treatment-protocols');
   });
 });
 
@@ -167,6 +172,10 @@ describe('enlaces de navegación por rol', () => {
       groupId: 'treatments',
       tabId: 'analytics',
     });
+    expect(findActiveSanidadTab(groups, '/admin/treatment_recommendations')).toEqual({
+      groupId: 'treatments',
+      tabId: 'recommendations',
+    });
   });
 
   it.each(ROLES)('el menú de %s sólo ofrece destinos que puede abrir', (role) => {
@@ -195,5 +204,13 @@ describe('enlaces de navegación por rol', () => {
     expect(paths).toContain('/veterinario/disease-animals');
     expect(paths).toContain('/veterinario/vaccinations');
     expect(paths).toContain('/veterinario/inventory');
+    expect(paths).toContain('/veterinario/treatment_recommendations');
+    expect(paths).toContain('/veterinario/treatment-protocols');
+  });
+
+  it('el Administrador conserva los protocolos en las pestañas de sanidad', () => {
+    const paths = sanidadTabPaths('Administrador');
+    expect(paths).toContain('/admin/treatment-protocols');
+    expect(canAccessRoutePath('Administrador', '/admin/treatment-protocols')).toBe(true);
   });
 });

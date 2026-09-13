@@ -17,6 +17,7 @@ import { useAuth } from "@/features/auth/model/useAuth";
 import { fincaService } from "@/entities/finca/api/finca.service";
 import { useToast } from "@/app/providers/ToastContext";
 import { GenericModal } from "@/shared/ui/common/GenericModal";
+import { USE_BEARER_AUTH } from "@/shared/api/client/settings";
 
 export const CrearFincaPage: React.FC<{ modal?: boolean }> = ({ modal = false }) => {
   const { refreshUserData } = useAuth();
@@ -74,11 +75,10 @@ export const CrearFincaPage: React.FC<{ modal?: boolean }> = ({ modal = false })
     try {
       const resp = await apiClient.post("/multi-finca/switch", { finca_id: created.finca_id });
 
-      // Persistir token de forma explícita si se recibió en la respuesta
-      const token = resp.data?.data?.access_token || resp.data?.access_token;
-      if (token) {
-        localStorage.setItem("finca_access_token", token);
-        sessionStorage.setItem("finca_access_token", token);
+      // Cookie-only es el modo predeterminado para la aplicación web.
+      if (USE_BEARER_AUTH) {
+        const token = resp.data?.data?.access_token || resp.data?.access_token;
+        if (token) sessionStorage.setItem("finca_access_token", token);
       }
 
       // Limpiar caché local offline para evitar datos residuales de la finca anterior

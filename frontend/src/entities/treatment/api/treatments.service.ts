@@ -39,8 +39,9 @@ export class TreatmentsService extends BaseService<TreatmentResponse> {
    * - Removes undefined/null and strips unsupported keys
    */
   private buildApiPayload(data: Partial<TreatmentInput> & { [k: string]: any }): Record<string, any> {
-    const startDateRaw = data.treatment_date ?? (data as any).startDate ?? data.treatment_date ?? (data as any).date;
+    const startDateRaw = data.treatment_date ?? (data as any).startDate ?? (data as any).date;
     const startDate = this.normalizeDate(startDateRaw);
+    const withdrawalEndDate = this.normalizeDate((data as any).withdrawal_end_date ?? (data as any).end_date);
 
     const payload: Record<string, any> = {
       animal_id: data.animal_id,
@@ -55,6 +56,8 @@ export class TreatmentsService extends BaseService<TreatmentResponse> {
       dosis: (data as any).dosis,
       frequency: (data as any).frequency,
       observations: (data as any).observations,
+      // Vinculo opcional al episodio de enfermedad (modulo de sanidad)
+      animal_disease_id: (data as any).animal_disease_id,
       treatment_type: data.treatment_type,
       // Keep other optional metadata if provided
       veterinarian: (data as any).veterinarian,
@@ -64,7 +67,7 @@ export class TreatmentsService extends BaseService<TreatmentResponse> {
       cost: (data as any).cost,
       notes: (data as any).notes,
       status: (data as any).status,
-      end_date: (data as any).end_date,
+      withdrawal_end_date: withdrawalEndDate,
     };
 
     // Remove keys with undefined, null, empty string or empty plain object values

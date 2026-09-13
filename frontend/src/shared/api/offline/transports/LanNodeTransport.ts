@@ -1,4 +1,5 @@
 import { API_CONFIG } from '@/shared/api/config';
+import { USE_BEARER_AUTH } from '@/shared/api/client/settings';
 import { FieldNodeService } from '../FieldNodeService';
 import type { TransportAdapter, TransportPacket, TransportPeer } from './TransportAdapter';
 
@@ -53,6 +54,7 @@ export class LanNodeTransport implements TransportAdapter {
   }
 
   private authHeaders(): Record<string, string> {
+    if (!USE_BEARER_AUTH) return {};
     try {
       const token = localStorage.getItem(API_CONFIG.authStorageKey)
         || localStorage.getItem('access_token');

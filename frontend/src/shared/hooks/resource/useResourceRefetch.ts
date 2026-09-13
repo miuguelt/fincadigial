@@ -38,6 +38,8 @@ interface RefetchDeps<T, P extends Record<string, any>> {
   tracker: {
     recentlyCreatedIds: React.MutableRefObject<Set<string>>;
     recentlyCreatedItems: React.MutableRefObject<Map<string, T>>;
+    recentlyUpdatedIds: React.MutableRefObject<Set<string>>;
+    recentlyUpdatedItems: React.MutableRefObject<Map<string, Partial<T>>>;
     recentlyDeletedIds: React.MutableRefObject<Set<string>>;
     applyStableOrder: (list: T[], currentData: T[]) => T[];
   };
@@ -60,7 +62,11 @@ export function useResourceRefetch<T extends { id?: number | string }, P extends
     lastParamsRef, cancelSourceRef, skipCacheUntilRef, tracker, createCancelSource,
   } = deps;
 
-  const { recentlyCreatedIds, recentlyCreatedItems, recentlyDeletedIds, applyStableOrder } = tracker;
+  const {
+    recentlyCreatedIds, recentlyCreatedItems,
+    recentlyUpdatedIds, recentlyUpdatedItems,
+    recentlyDeletedIds, applyStableOrder,
+  } = tracker;
 
   const reconcile = useCallback(
     (serverList: T[], respLimit: unknown, paramLimit: unknown) => {
@@ -69,11 +75,16 @@ export function useResourceRefetch<T extends { id?: number | string }, P extends
         currentData: data,
         recentlyCreatedIds: recentlyCreatedIds.current,
         recentlyCreatedItems: recentlyCreatedItems.current,
+        recentlyUpdatedIds: recentlyUpdatedIds.current,
+        recentlyUpdatedItems: recentlyUpdatedItems.current,
       });
       const capped = capToPageLimit(merged, missing.length, Number(respLimit ?? paramLimit) || undefined);
       return filterDeleted(capped, recentlyDeletedIds.current);
     },
-    [data, recentlyCreatedIds, recentlyCreatedItems, recentlyDeletedIds]
+    [
+      data, recentlyCreatedIds, recentlyCreatedItems,
+      recentlyUpdatedIds, recentlyUpdatedItems, recentlyDeletedIds,
+    ]
   );
 
   const refetch = useCallback(async (params?: P, options?: ResourceRefetchOptions): Promise<T[]> => {
@@ -88,6 +99,14 @@ export function useResourceRefetch<T extends { id?: number | string }, P extends
 
     const throttleMs = searchQP ? SEARCH_THROTTLE_MS : DEFAULT_THROTTLE_MS;
     if (!force && nowTs - (__resourceLastFetchAt.get(cacheKey) || 0) < throttleMs) return data;
+
+    // Una revalidación forzada debe reemplazar la lectura anterior. Antes se
+    // cancelaba la solicitud en vuelo, pero luego se reutilizaba su promesa;
+    // eso dejaba la vista esperando una petición cancelada y sin traer el dato
+    // recién guardado.
+    const previousInflight = __resourceInflight.get(cacheKey);
+    if (previousInflight && !force) return previousInflight as Promise<T[]>;
+    if (previousInflight && force) __resourceInflight.delete(cacheKey);
 
     try { cancelSourceRef.current.cancel('Refetching: cancel previous request'); } catch { /* noop */ }
     cancelSourceRef.current = createCancelSource();
@@ -115,7 +134,10 @@ export function useResourceRefetch<T extends { id?: number | string }, P extends
         if (cache) {
           setCache(
             cacheKey,
-            { items: serverList, meta: buildMeta(resp, callParams, serverList), timestamp: Date.now() },
+            // Guardar lo que el usuario ve (incluye creaciones/actualizaciones
+            // recientes) evita que una caché intermedia lo haga desaparecer al
+            // desmontar y volver a montar la vista.
+            { items: mergedList, meta: buildMeta(resp, callParams, mergedList), timestamp: Date.now() },
             cacheTTL
           );
         }
@@ -128,7 +150,7 @@ export function useResourceRefetch<T extends { id?: number | string }, P extends
 
       setData(applyStableOrder(mergedList, data));
       setMeta(null);
-      if (cache) setCache(cacheKey, { data: serverList, timestamp: Date.now() }, cacheTTL);
+      if (cache) setCache(cacheKey, { data: mergedList, timestamp: Date.now() }, cacheTTL);
       return mergedList;
     };
 
@@ -140,7 +162,11 @@ export function useResourceRefetch<T extends { id?: number | string }, P extends
         const cached = getCache<{ items?: T[]; data?: T[]; meta?: any; timestamp?: number }>(cacheKey);
         if (cached && cached.timestamp) {
           const items = (cached.items || cached.data || []) as T[];
-          const finalList = map ? map(items) : items;
+          const cachedServerList = map ? map(items) : items;
+          const finalList = applyStableOrder(
+            reconcile(cachedServerList, cached.meta?.limit, effective?.limit),
+            data,
+          );
           setData(finalList);
           setMeta(cached.meta ? buildMeta(cached.meta, effective, finalList) : null);
 
@@ -149,7 +175,9 @@ export function useResourceRefetch<T extends { id?: number | string }, P extends
           if (isOnline && !__resourceInflight.has(cacheKey)) {
             const bgPromise = safeExecute(() => fetchAndApply({ ...requestParams, cache_bust: Date.now() }));
             __resourceInflight.set(cacheKey, bgPromise as Promise<any>);
-            void bgPromise.finally(() => { __resourceInflight.delete(cacheKey); }).catch(() => { /* noop */ });
+            void bgPromise.finally(() => {
+              if (__resourceInflight.get(cacheKey) === bgPromise) __resourceInflight.delete(cacheKey);
+            }).catch(() => { /* noop */ });
           }
           return finalList;
         }
@@ -166,7 +194,7 @@ export function useResourceRefetch<T extends { id?: number | string }, P extends
         // undefined = petición cancelada: conservar lo que ya se muestra.
         return result === undefined ? data : result;
       } finally {
-        __resourceInflight.delete(cacheKey);
+        if (__resourceInflight.get(cacheKey) === fetchPromise) __resourceInflight.delete(cacheKey);
       }
     } finally {
       if (hasData) setRefreshing(false);

@@ -71,7 +71,7 @@ backend/app/services/reproduction/
 backend/app/namespaces/animals/reproduction/
 ├── _namespace.py          Namespace y modelos Swagger
 ├── events_routes.py       CRUD de eventos reproductivos
-├── offspring_routes.py    Crías y su alta como animal del hato
+├── offspring_routes.py    Crías y su alta como animal del ganado
 ├── analytics_routes.py    /summary, /kpis, /fertility-dashboard, /sire-performance
 ├── planning_routes.py     /pending-births, /heat-alerts, /calendar
 └── batch_routes.py        /genealogy, /batch
@@ -169,7 +169,7 @@ a mes.
 ### Detección de celo
 
 No se puede contar directamente: hay que compararla con las oportunidades que el
-hato ofreció. Una hembra elegible —en edad, no preñada y pasado el período de
+ganado ofreció. Una hembra elegible —en edad, no preñada y pasado el período de
 espera voluntario— presenta un celo por ciclo estral, así que:
 
 ```
@@ -197,7 +197,7 @@ tras año.
 > **Nota sobre datos sembrados:** con historial simulado de 30 meses sobre
 > animales adultos, la edad al primer parto sale alta (≈45 meses) porque su
 > primer parto *registrado* es reciente. El indicador solo es interpretable
-> cuando el hato tiene historial real desde la novilla.
+> cuando el ganado tiene historial real desde la novilla.
 
 ## 8. Código retirado
 

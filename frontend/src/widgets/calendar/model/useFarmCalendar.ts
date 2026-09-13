@@ -157,6 +157,14 @@ export function useFarmCalendar(
 
 	const reload = useCallback(() => setRefreshKey((value) => value + 1), []);
 
+	// Refresco inmediato tras cualquier escritura del sistema: el calendario no
+	// debe quedarse mostrando eventos viejos hasta que el usuario lo recargue.
+	useEffect(() => {
+		const handleRefetch = () => reload();
+		window.addEventListener('crud:refetch', handleRefetch);
+		return () => window.removeEventListener('crud:refetch', handleRefetch);
+	}, [reload]);
+
 	const eventsByDay = useMemo(() => {
 		const map = new Map<string, CalendarEvent[]>();
 		for (const e of events) {

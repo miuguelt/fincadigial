@@ -132,6 +132,31 @@ class MilkProduction(BaseModel):
             if data["protein_percentage"] < 0 or data["protein_percentage"] > 100:
                 errors.append("Porcentaje de proteína debe estar entre 0 y 100")
 
+        # Período de retiro: la leche de una res en tratamiento con retiro
+        # activo no se registra como producida (debe descartarse).
+        animal_id = data.get("animal_id")
+        target_date = data.get("date")
+        if animal_id and target_date:
+            from app.models.treatments import Treatments
+
+            conflicting = (
+                Treatments.query.filter(
+                    Treatments.animal_id == int(animal_id),
+                    Treatments.is_deleted == False,  # noqa: E712
+                    Treatments.withdrawal_days > 0,
+                    Treatments.withdrawal_end_date.isnot(None),
+                    Treatments.withdrawal_end_date >= target_date,
+                    Treatments.treatment_date <= target_date,
+                )
+                .order_by(Treatments.withdrawal_end_date.desc())
+                .first()
+            )
+            if conflicting:
+                errors.append(
+                    f"La res está en período de retiro por '{conflicting.description}' "
+                    f"hasta {conflicting.withdrawal_end_date}: la leche debe descartarse"
+                )
+
         if errors:
             raise ValidationError(
                 "; ".join(errors), code="validation_error", errors=errors
@@ -142,13 +167,18 @@ class MilkProduction(BaseModel):
     @classmethod
     def create(cls, **kwargs):
         """Sobreescribe create para disparar la actualización incremental de producción."""
-        instance = super().create(**kwargs)
+        instance = super().create(commit=False, **kwargs)
+        instance._mirror_to_health_history()
         if instance and instance.finca_id:
             from app.models.extended_summaries import MilkSummary
 
             summary = MilkSummary.get_for_finca(instance.finca_id)
             summary.apply_production(instance.liters)
-            db.session.commit()
+        db.session.commit()
+        try:
+            db.session.refresh(instance)
+        except Exception:
+            pass
         return instance
 
     def update(self, commit=True, **kwargs):
@@ -164,14 +194,21 @@ class MilkProduction(BaseModel):
             summary.apply_production(old_liters, is_reversion=True)
             summary.apply_production(self.liters)
 
+        self._mirror_to_health_history()
+
         if commit:
             db.session.commit()
+            try:
+                db.session.refresh(self)
+            except Exception:
+                pass
         return result
 
     def delete(self, commit=True):
         """Sobreescribe para disparar la actualización incremental tras borrar un registro de leche."""
         f_id = self.finca_id
         liters = self.liters
+        self._remove_health_history_mirror()
         result = super().delete(commit=commit)
         if f_id:
             from app.models.extended_summaries import MilkSummary
@@ -185,6 +222,7 @@ class MilkProduction(BaseModel):
     def restore(self, commit=True):
         """Sobreescribe restore para disparar la actualización incremental al restaurar."""
         result = super().restore(commit=commit)
+        self._mirror_to_health_history()
         if self.finca_id:
             from app.models.extended_summaries import MilkSummary
 
@@ -193,6 +231,37 @@ class MilkProduction(BaseModel):
             if commit:
                 db.session.commit()
         return result
+
+    def _mirror_to_health_history(self):
+        """Espeja el registro de producción en la bitácora unificada del animal."""
+        from app.models.animal_health_history import HealthEventType
+        from app.services.health_history_timeline import upsert_event
+
+        session = self.milking_session.value if self.milking_session else "N/A"
+        detail = f"Producción: {self.liters} L ({session})"
+        if self.fat_percentage is not None:
+            detail = f"{detail} | Grasa: {self.fat_percentage}%"
+        if self.protein_percentage is not None:
+            detail = f"{detail} | Proteína: {self.protein_percentage}%"
+        if self.somatic_cells is not None:
+            detail = f"{detail} | Células: {self.somatic_cells}"
+
+        upsert_event(
+            event_type=HealthEventType.Milk,
+            reference_kind="milk_production",
+            reference_id=self.id,
+            animal_id=self.animal_id,
+            finca_id=self.finca_id,
+            event_date=self.date,
+            description=detail,
+        )
+
+    def _remove_health_history_mirror(self):
+        """Retira el espejo de la bitácora."""
+        from app.models.animal_health_history import HealthEventType
+        from app.services.health_history_timeline import drop_event
+
+        drop_event(HealthEventType.Milk, "milk_production", self.id)
 
     @classmethod
     def bulk_create(cls, items_data):

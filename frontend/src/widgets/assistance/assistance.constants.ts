@@ -52,5 +52,3 @@ export const STATUS_LABELS: Record<string, string> = {
   resolved: 'Resuelta',
   closed: 'Cerrada',
 };
-
-export const CONTACT_PHONE = '+57 314 000 0000';

@@ -317,7 +317,7 @@ const DialogContent = React.forwardRef<
           "ring-1 ring-black/5 dark:ring-white/10",
           "rounded-2xl",
           "shadow-2xl shadow-black/20 dark:shadow-black/40",
-          "p-0 sm:p-0 gap-0 overflow-hidden",
+          "p-6 gap-4 overflow-y-auto",
           "motion-safe:duration-300 motion-safe:ease-out motion-reduce:duration-0",
           "data-[state=open]:animate-in data-[state=closed]:animate-out motion-reduce:animate-none",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
@@ -364,7 +364,7 @@ const DialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col space-y-1.5 text-center sm:text-left",
+      "flex flex-col space-y-1.5 text-center sm:text-left pr-9 sm:pr-10",
       className
     )}
     {...props}
@@ -378,7 +378,7 @@ const DialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 gap-2 sm:gap-0 pt-4 sm:pt-6",
       className
     )}
     {...props}

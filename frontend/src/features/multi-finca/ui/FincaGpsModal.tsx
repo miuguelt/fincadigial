@@ -160,7 +160,7 @@ export const FincaGpsModal: React.FC<FincaGpsModalProps> = ({
 
 	return (
 		<Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-			<DialogContent className="sm:max-w-md sm:!rounded-[24px] bg-card text-card-foreground border-border/90">
+			<DialogContent className="sm:max-w-md sm:!rounded-[24px] bg-card text-card-foreground border-border/90 p-0">
 				<DialogHeader className="p-5 pb-4 sm:p-6 sm:pb-4">
 					<div className="flex items-center gap-3">
 						<div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/30 shadow-sm">

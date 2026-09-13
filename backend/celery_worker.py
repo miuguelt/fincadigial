@@ -39,4 +39,4 @@ celery.conf.beat_schedule = {
         "schedule": 86400.0,  # 24 horas en segundos
     },
 }
-celery.conf.timezone = "UTC"
+celery.conf.timezone = "America/Bogota"

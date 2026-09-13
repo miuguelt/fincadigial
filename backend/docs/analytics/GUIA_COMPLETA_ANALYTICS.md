@@ -55,7 +55,7 @@ Esta guía mapea cada métrica solicitada con su endpoint correspondiente y prop
 | **Distribución por sexo** | `/analytics/dashboard/complete` | `distribucion_sexo` |
 | **Distribución por raza** | `/analytics/dashboard/complete` | `distribucion_razas_top5` |
 | **Distribución por grupo de edad** | `/analytics/animals/statistics` | `by_age_group` |
-| **Peso promedio del hato** | `/analytics/dashboard/complete` | `peso_promedio_kg` |
+| **Peso promedio del ganado** | `/analytics/dashboard/complete` | `peso_promedio_kg` |
 | **Distribución de pesos** | `/analytics/animals/statistics` | `weight_distribution` |
 | **Tendencia de crecimiento** | `/analytics/production/statistics` | `weight_trends` |
 | **GMD (Ganancia Media Diaria)** | `/analytics/production/statistics` | `productivity_metrics.average_daily_gain_kg` |
@@ -67,7 +67,7 @@ Esta guía mapea cada métrica solicitada con su endpoint correspondiente y prop
 
 | Métrica Solicitada | Endpoint | Campo en Response |
 |-------------------|----------|-------------------|
-| **Estado de salud del hato** | `/analytics/dashboard/complete` | `distribucion_salud` |
+| **Estado de salud del ganado** | `/analytics/dashboard/complete` | `distribucion_salud` |
 | **Tratamientos por mes** | `/analytics/health/statistics` | `treatments_by_month` |
 | **Vacunaciones por mes** | `/analytics/health/statistics` | `vaccinations_by_month` |
 | **Tratamientos activos** | `/analytics/dashboard/complete` | `tratamientos_activos.valor` |

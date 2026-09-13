@@ -11,6 +11,11 @@ class HealthEventType(enum.Enum):
     Disease = "Disease"
     Surgery = "Surgery"
     Deworming = "Deworming"
+    # Bitácora unificada: dominios que antes quedaban fuera de la línea de tiempo
+    Reproduction = "Reproduction"
+    Movement = "Movement"
+    Milk = "Milk"
+    Nutrition = "Nutrition"
 
 
 class AnimalHealthHistory(BaseModel):
@@ -25,6 +30,11 @@ class AnimalHealthHistory(BaseModel):
         db.Index("ix_health_history_animal_date", "animal_id", "event_date"),
         db.Index("ix_health_history_type", "event_type"),
         db.Index("ix_health_history_finca", "finca_id"),
+        db.Index(
+            "ix_health_history_reference",
+            "reference_kind",
+            "reference_id",
+        ),
     )
 
     id = db.Column(db.Integer, primary_key=True)
@@ -39,6 +49,11 @@ class AnimalHealthHistory(BaseModel):
     description = db.Column(db.Text, nullable=True)
     performed_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     reference_id = db.Column(db.Integer, nullable=True)
+    # Origen del evento (control, vaccination, treatment, reproductive_event,
+    # milk_production, body_condition_score, animal_movement,
+    # animal_disease_progress...). Con reference_id identifica la fila de
+    # origen de forma segura sin depender del contexto del evento.
+    reference_kind = db.Column(db.String(40), nullable=True)
 
     animal = db.relationship(
         "Animals", back_populates="health_history", lazy="selectin"
@@ -61,6 +76,7 @@ class AnimalHealthHistory(BaseModel):
         "description",
         "performed_by",
         "reference_id",
+        "reference_kind",
         "created_at",
         "updated_at",
     ]

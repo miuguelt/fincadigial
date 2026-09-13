@@ -12,24 +12,29 @@ export function DashboardSearch({ value, onChange }: DashboardSearchProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1, duration: 0.4 }}
-      className="relative max-w-3xl mx-auto"
+      className="relative"
     >
-      <div className="group relative flex w-full items-center rounded-full border border-border/50 bg-white/80 px-5 py-3.5 shadow-md backdrop-blur-xl transition-all duration-300 hover:border-primary/50 hover:shadow-lg dark:bg-card/80 md:px-6 md:py-4">
-        <Search className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors duration-300 mr-4 shrink-0" />
+      <label className="mb-2 block text-sm font-bold text-foreground" htmlFor="campesino-tool-search">
+        Buscar una herramienta
+      </label>
+      <div className="group relative flex min-h-12 w-full items-center rounded-2xl border border-border bg-card px-4 shadow-sm transition-all duration-300 hover:border-primary/50 hover:shadow-md sm:px-5">
+        <Search className="mr-3 h-5 w-5 shrink-0 text-muted-foreground transition-colors duration-300 group-focus-within:text-primary" aria-hidden="true" />
         <input
+          id="campesino-tool-search"
           type="text"
-          placeholder="¿Qué labor vas a realizar hoy? (ej. ordeño, registrar, parcela...)"
+          placeholder="Ejemplo: ordeño, parcela, clima…"
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="w-full bg-transparent border-0 outline-none text-base md:text-lg text-foreground placeholder:text-muted-foreground/60 focus:ring-0 p-0 font-medium"
-          aria-label="Buscar herramienta o labor"
+          className="min-w-0 w-full bg-transparent p-0 text-base font-medium text-foreground outline-none placeholder:text-muted-foreground/70 focus:ring-0"
+          autoComplete="off"
         />
         {value && (
           <button
             type="button"
             onClick={() => onChange('')}
-            className="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-primary/20 ml-2"
+            className="ml-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
             title="Limpiar búsqueda"
+            aria-label="Limpiar búsqueda"
           >
             <X className="w-5 h-5" />
           </button>

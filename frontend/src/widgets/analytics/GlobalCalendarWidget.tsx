@@ -37,6 +37,14 @@ export default function GlobalCalendarWidget() {
     loadEvents();
   }, [loadEvents]);
 
+  // Refresco inmediato tras cualquier escritura del sistema: el calendario debe
+  // mostrar lo recién registrado sin forzar la recarga manual.
+  useEffect(() => {
+    const handleRefetch = () => { void loadEvents(); };
+    window.addEventListener('crud:refetch', handleRefetch);
+    return () => window.removeEventListener('crud:refetch', handleRefetch);
+  }, [loadEvents]);
+
   const groupEventsByDate = () => {
     const grouped: Record<string, CalendarEvent[]> = {};
     events.forEach(event => {

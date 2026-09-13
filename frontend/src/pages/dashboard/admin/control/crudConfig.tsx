@@ -182,8 +182,8 @@ export function buildCrudConfig(
   ];
 
   return {
-    title: 'Controles',
-    entityName: 'Control',
+    title: 'Revisiones de salud',
+    entityName: 'Revisión',
     columns,
     formSections,
     searchPlaceholder: 'Buscar por animal o estado...',
@@ -200,20 +200,25 @@ export function buildCrudConfig(
     viewMode,
     cardGridClassName: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 pb-20',
     renderCard: renderControlCard(animalOptions),
+    toolbarPlacement: 'row',
     customToolbar: isCampesino ? null : (
-      <div className="inline-flex rounded-lg border bg-muted/60 p-0.5 shadow-sm">
-        <button
-          onClick={() => setViewMode('table')}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${viewMode === 'table' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-        >
-          Tabla
-        </button>
-        <button
-          onClick={() => setViewMode('cards')}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${viewMode === 'cards' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-        >
-          Tarjetas
-        </button>
+      <div className="flex w-full items-center justify-between gap-2">
+        <div className="inline-flex rounded-xl border border-border/40 bg-muted/60 p-1 shadow-xs">
+          <button
+            type="button"
+            onClick={() => setViewMode('cards')}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${viewMode === 'cards' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            Tarjetas
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('table')}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${viewMode === 'table' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            Tabla
+          </button>
+        </div>
       </div>
     ),
     customActions: (item: any) => <AnimalGrowthLink id={item.animal_id} label="" />,

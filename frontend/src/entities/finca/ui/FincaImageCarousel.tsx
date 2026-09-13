@@ -25,13 +25,23 @@ export const FincaImageCarousel: React.FC<FincaImageCarouselProps> = ({
 	useThumbnail = true,
 }) => {
 	const visibleImages = images.filter((image) => Boolean(image.url));
+	const imageSignature = visibleImages.map((image) => image.id).join(',');
 	const [activeIndex, setActiveIndex] = useState(0);
+	const [failedImageIds, setFailedImageIds] = useState<number[]>([]);
 
 	useEffect(() => {
 		setActiveIndex((current) =>
 			visibleImages.length ? Math.min(current, visibleImages.length - 1) : 0,
 		);
 	}, [visibleImages.length]);
+
+	useEffect(() => {
+		const validIds = new Set(imageSignature ? imageSignature.split(',').map(Number) : []);
+		setFailedImageIds((current) => {
+			const next = current.filter((imageId) => validIds.has(imageId));
+			return next.length === current.length ? current : next;
+		});
+	}, [imageSignature]);
 
 	const move = (direction: number) => {
 		if (visibleImages.length < 2) return;
@@ -42,6 +52,7 @@ export const FincaImageCarousel: React.FC<FincaImageCarouselProps> = ({
 	};
 
 	const activeImage = visibleImages[activeIndex];
+	const activeImageFailed = activeImage ? failedImageIds.includes(activeImage.id) : false;
 	return (
 		<div
 			className={cn(
@@ -49,17 +60,24 @@ export const FincaImageCarousel: React.FC<FincaImageCarouselProps> = ({
 				className,
 			)}
 		>
-			{activeImage ? (
+			{activeImage && !activeImageFailed ? (
 				<img
 					src={getImageSource(activeImage, useThumbnail)}
 					alt={`${fincaName} · foto ${activeIndex + 1}`}
 					className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
 					loading="lazy"
+					onError={() => {
+						if (!activeImage) return;
+						setFailedImageIds((current) => current.includes(activeImage.id) ? current : [...current, activeImage.id]);
+					}}
 				/>
 			) : (
-				<div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-100 via-teal-50 to-slate-100">
-					<div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-300 bg-white text-emerald-700 shadow-sm">
-						<IconBuildingFarm size={25} />
+				<div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-100 via-teal-50 to-slate-100 dark:from-emerald-950/60 dark:via-slate-900 dark:to-slate-950">
+					<div className="flex flex-col items-center gap-2 text-center text-emerald-800 dark:text-emerald-300">
+						<div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-300/80 bg-white/80 shadow-sm dark:border-emerald-700/60 dark:bg-slate-900/70">
+							<IconBuildingFarm size={25} />
+						</div>
+						<span className="text-[11px] font-bold uppercase tracking-[0.12em] opacity-75">Sin imagen disponible</span>
 					</div>
 				</div>
 			)}

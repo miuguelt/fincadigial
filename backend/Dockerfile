@@ -30,7 +30,8 @@ FROM python:3.11-slim AS production
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
-    FLASK_ENV=production
+    FLASK_ENV=production \
+    TZ=America/Bogota
 
 WORKDIR /app
 
@@ -38,6 +39,9 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     curl \
+    tzdata \
+    && ln -snf /usr/share/zoneinfo/America/Bogota /etc/localtime \
+    && echo "America/Bogota" > /etc/timezone \
     && rm -rf /var/lib/apt/lists/*
 
 # Copiar site-packages del builder

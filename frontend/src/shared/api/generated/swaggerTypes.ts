@@ -125,6 +125,13 @@ export interface AnimalInput {
   sale_date?: string;
   exit_date?: string;
   exit_reason?: string;
+  /** Código privado recibido del vendedor para solicitar asociación de historial. */
+  claim_code?: string;
+  /** Activa la búsqueda segura de transferencias antes de crear un duplicado. */
+  request_history?: boolean;
+  nfc_uid?: string;
+  lf_tag_code?: string;
+  official_code?: string;
 }
 
 export interface AnimalResponse {
@@ -159,6 +166,9 @@ export interface AnimalResponse {
   pending_alerts_count?: number;
   created_at?: string;
   updated_at?: string;
+  animal_uid?: string;
+  official_identity_status?: string;
+  identification_due_at?: string;
 }
 
 // =============================================
@@ -310,6 +320,8 @@ export interface AnimalDiseaseInput {
   instructor_id: number;
   diagnosis_date: string;
   status?: string;
+  severity?: 'Leve' | 'Moderada' | 'Severa' | 'Crítica' | string;
+  recovery_date?: string;
   notes?: string;
 }
 
@@ -320,10 +332,35 @@ export interface AnimalDiseaseResponse {
   instructor_id: number;
   diagnosis_date: string;
   status?: string;
+  severity?: 'Leve' | 'Moderada' | 'Severa' | 'Crítica' | string;
+  recovery_date?: string | null;
   notes?: string;
   animal_record?: string;
   disease_name?: string;
   instructor_name?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface AnimalDiseaseProgressInput {
+  animal_disease_id: number;
+  progress_date: string;
+  weight?: number | null;
+  temperature?: number | null;
+  status?: string;
+  observation?: string;
+  performed_by?: number | null;
+}
+
+export interface AnimalDiseaseProgressResponse {
+  id: number;
+  animal_disease_id: number;
+  progress_date: string;
+  weight?: number | null;
+  temperature?: number | null;
+  status?: string | null;
+  observation?: string | null;
+  performed_by?: number | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -414,6 +451,7 @@ export interface VaccineResponse {
 
 export interface TreatmentInput {
   animal_id: number;
+  animal_disease_id?: number | null;
   description: string;
   treatment_date: string;
   frequency?: string;
@@ -432,6 +470,7 @@ export interface TreatmentInput {
 export interface TreatmentResponse {
   id: number;
   animal_id: number;
+  animal_disease_id?: number | null;
   description: string;
   treatment_date: string;
   frequency?: string;
@@ -443,6 +482,11 @@ export interface TreatmentResponse {
   withdrawal_end_date?: string;
   control_id?: number;
   performed_by?: number;
+  animal_disease?: {
+    id: number;
+    disease_id?: number;
+    status?: string;
+  } | null;
   animal?: AnimalResponse;
   created_at?: string;
   updated_at?: string;
@@ -617,6 +661,21 @@ export interface HealthStatistics {
   };
   treatments_by_month?: Array<{ period: string; count: number }>;
   vaccinations_by_month?: Array<{ period: string; count: number }>;
+  disease_episodes?: {
+    total: number;
+    active: number;
+    resolved: number;
+    recovery_rate: number | null;
+    avg_duration_days: number | null;
+    by_month?: Array<{ period: string; count: number }>;
+    by_status?: Record<string, number>;
+    by_severity?: Record<string, number>;
+    avg_duration_by_disease?: Array<{
+      disease: string;
+      avg_days: number;
+      cases: number;
+    }>;
+  };
 }
 
 export interface ProductionStatistics {
@@ -815,6 +874,7 @@ export type EntityInput =
   | GeneticImprovementInput
   | FoodTypeInput
   | AnimalDiseaseInput
+  | AnimalDiseaseProgressInput
   | AnimalFieldInput
   | MedicationInput
   | VaccineInput
@@ -838,6 +898,7 @@ export type EntityResponse =
   | GeneticImprovementResponse
   | FoodTypeResponse
   | AnimalDiseaseResponse
+  | AnimalDiseaseProgressResponse
   | AnimalFieldResponse
   | MedicationResponse
   | VaccineResponse

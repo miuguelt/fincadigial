@@ -159,7 +159,8 @@ with app.app_context():
         # La reconciliación tenant no debe quedar anulada por un error puntual
         # del seed histórico de usuarios/catálogos globales.
         try:
-            initialize_all_finca_defaults()
+            force_seed = (os.getenv("FORCE_DB_SEED") or "").lower() == "true"
+            initialize_all_finca_defaults(force=force_seed)
         except Exception as e:
             logging.error(f"Error durante la reconciliación de defaults por finca: {e}")
 

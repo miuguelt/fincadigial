@@ -2,6 +2,13 @@ import { AxiosResponse } from 'axios';
 import { getCookie } from '@/shared/utils/cookieUtils';
 import { isValidTokenFormat } from '@/shared/utils/jwtUtils';
 import { emitDataRefresh } from '@/shared/utils/dataRefresh';
+import {
+  extractIdsFromResponse,
+  forgetRecentChange,
+  isNonEntityPath,
+  markRecentChange,
+  rootResourceOfPath,
+} from '@/shared/utils/recentChanges';
 import { normalizePath } from './authGate';
 import { invalidateHttpCache } from './httpCache';
 import { api } from './instances';
@@ -36,6 +43,32 @@ function logPwaHeaders(response: AxiosResponse): void {
   }
 }
 
+/**
+ * Captura el id (o ids) de una escritura exitosa para resaltar la fila en las
+ * listas montadas. Sin esto, el registro guardado sí queda en pantalla pero
+ * nada señala cuál acaba de cambiar.
+ */
+function markRecentChangeFromResponse(
+  method: string,
+  path: string,
+  response: AxiosResponse,
+): void {
+  if (isNonEntityPath(path)) return;
+  const root = rootResourceOfPath(path);
+
+  if (method === 'DELETE') {
+    // DELETE no siempre trae el id en el body: se toma de la URL (/root/123).
+    const urlSegment = path.replace(/\/$/, '').split('/').filter(Boolean).pop() ?? '';
+    const urlId = /^\d+$/.test(urlSegment) ? urlSegment : null;
+    if (urlId) forgetRecentChange(root, urlId);
+    return;
+  }
+
+  const ids = extractIdsFromResponse(response?.data);
+  const action = method === 'POST' ? 'created' : 'updated';
+  ids.forEach((id) => markRecentChange(root, id, action));
+}
+
 function onFulfilled(response: AxiosResponse): AxiosResponse {
   const method = String(response.config?.method || '').toUpperCase();
   const path = normalizePath(response.config?.url as any);
@@ -43,6 +76,7 @@ function onFulfilled(response: AxiosResponse): AxiosResponse {
   // Toda escritura exitosa invalida el cache HTTP y notifica a las dos
   // capas de UI, incluso cuando el módulo llamó a `api` directamente.
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    markRecentChangeFromResponse(method, path, response);
     void invalidateHttpCache().finally(() => {
       emitDataRefresh(path || undefined);
     });

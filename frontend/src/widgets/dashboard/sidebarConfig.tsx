@@ -14,6 +14,9 @@ import {
   IconUserCircle,
   IconClipboardList,
   IconBuildingStore,
+  IconCloudRain,
+  IconBook,
+  IconPlant2,
   IconLifebuoy,
   IconUserCheck,
   IconSettings2,
@@ -37,6 +40,7 @@ export type Role =
 
 export interface SidebarItemConfig {
   title: string;
+  subtitle?: string;
   icon: ReactNode;
   path?: string;
   roles: Role[];
@@ -44,7 +48,7 @@ export interface SidebarItemConfig {
   badge?: string;
   activePaths?: string[];
   requiresOnline?: boolean;
-  isBottom?: boolean; // Para identificar items que van al fondo
+  isBottom?: boolean;
   systemAdminOnly?: boolean;
   permission?: {
     entity: string;
@@ -57,7 +61,7 @@ const AdminRoles: Role[] = ["Administrador", "Propietario", "Capataz", "Instruct
 const TechnicalRoles: Role[] = ["Administrador", "Propietario", "Capataz", "Instructor", "Veterinario"];
 // Solo Administrador/Propietario: la matriz RBAC del backend deniega /users al resto.
 const UserManagerRoles: Role[] = ["Administrador", "Propietario"];
-// Ajustes de datos de la finca: requieren lectura de inventario/operación (no la tiene Instructor).
+// Ajustes de datos de la finca: requieren lectura de inventario/operacion (no la tiene Instructor).
 const FarmDataRoles: Role[] = ["Administrador", "Propietario", "Capataz"];
 
 export const sidebarItems: SidebarItemConfig[] = [
@@ -68,6 +72,7 @@ export const sidebarItems: SidebarItemConfig[] = [
     children: [
       {
         title: "Potreros",
+        subtitle: "Rotacion de potreros, aforos y descanso del pasto",
         icon: <IconFence size={20} />,
         path: "fields",
         activePaths: ["fields"],
@@ -76,6 +81,7 @@ export const sidebarItems: SidebarItemConfig[] = [
       },
       {
         title: "Ganado",
+        subtitle: "Inventario de animales por chapeta, lote y pesajes",
         icon: <IconCow size={20} />,
         path: "animals",
         activePaths: ["animals", "fields", "animal-fields"],
@@ -84,6 +90,7 @@ export const sidebarItems: SidebarItemConfig[] = [
       },
       {
         title: "Trabajo de hoy",
+        subtitle: "Ordeño, pesajes de manga y novedades del dia",
         icon: <IconClipboardCheck size={20} />,
         path: "controls",
         activePaths: ["milk-production", "growth", "animal-fields"],
@@ -92,6 +99,7 @@ export const sidebarItems: SidebarItemConfig[] = [
       },
       {
         title: "Cría y reproducción",
+        subtitle: "Celos, montas, preñeces confirmadas y destetes",
         icon: <IconCalf size={20} />,
         path: "reproduction",
         activePaths: ["reproduction/fertility", "reproduction/sire-performance", "genetic-improvements"],
@@ -100,6 +108,7 @@ export const sidebarItems: SidebarItemConfig[] = [
       },
       {
         title: "Alimentación y forrajes",
+        subtitle: "Pastos de corte, ensilajes, sales y raciones",
         icon: <IconGrain size={20} />,
         path: "food-types",
         roles: AllRoles,
@@ -114,6 +123,7 @@ export const sidebarItems: SidebarItemConfig[] = [
     children: [
       {
         title: "Enfermedades y alertas",
+        subtitle: "Sintomas, diagnosticos y animales aislados",
         icon: <IconVirus size={20} />,
         path: "disease-animals",
         activePaths: ["diseases", "alerts"],
@@ -122,9 +132,10 @@ export const sidebarItems: SidebarItemConfig[] = [
       },
       {
         title: "Tratamientos e insumos",
+        subtitle: "Vacunaciones, botiquin y dias de retiro",
         icon: <IconFirstAidKit size={20} />,
         path: "treatments",
-        activePaths: ["treatments/analytics", "treatment_medications", "treatment_vaccines", "vaccinations", "inventory", "medications", "vaccines", "route_administration"],
+        activePaths: ["treatments/analytics", "treatment_medications", "treatment_vaccines", "treatment-protocols", "treatment_protocols", "vaccinations", "inventory", "medications", "vaccines", "route_administration"],
         roles: TechnicalRoles,
         permission: { entity: "treatments" },
       },
@@ -136,9 +147,8 @@ export const sidebarItems: SidebarItemConfig[] = [
     roles: TechnicalRoles,
     children: [
       {
-        // El mismo nombre que el título de la pantalla: si el menú dice una cosa
-        // y el encabezado otra, no se sabe si se llegó adonde se hizo clic.
         title: "Mis fincas",
+        subtitle: "Consolidado de las fincas y predios",
         icon: <IconWorld size={20} />,
         path: "analytics/multi-finca",
         activePaths: ["analytics/multi-finca"],
@@ -147,6 +157,7 @@ export const sidebarItems: SidebarItemConfig[] = [
       },
       {
         title: "Indicadores de la finca",
+        subtitle: "Litros de leche, engorde diario (ADG) y balance",
         icon: <IconChartHistogram size={20} />,
         path: "analytics/executive",
         activePaths: ["financial"],
@@ -155,6 +166,7 @@ export const sidebarItems: SidebarItemConfig[] = [
       },
       {
         title: "Informes y exportación",
+        subtitle: "Borrador de guia ICA y reportes oficiales",
         icon: <IconFileText size={20} />,
         path: "reports",
         activePaths: ["regulatory-reports", "analytics/reports", "analytics/ica-compliance"],
@@ -170,20 +182,41 @@ export const sidebarItems: SidebarItemConfig[] = [
     children: [
       {
         title: "Mi panel",
+        subtitle: "Resumen de la jornada, semaforo del ganado y tareas",
         icon: <IconUserCircle size={20} />,
         path: "/campesino",
         roles: AllRoles,
       },
       {
         title: "Mi registro diario",
+        subtitle: "Ordeño, pesajes de corral y traslados sin señal",
         icon: <IconClipboardList size={20} />,
         path: "/campesino/registro-operativo",
-        activePaths: ["/campesino/crop-plots", "/campesino/water-sources", "/campesino/ganaderia", "/campesino/health"],
+        activePaths: ["/campesino/registro-operativo"],
+        requiresOnline: false,
+        roles: AllRoles,
+      },
+      {
+        title: "Cultivos y agua",
+        subtitle: "Lotes de cultivo, labores y fuentes de agua",
+        icon: <IconPlant2 size={20} />,
+        path: "/campesino/crop-plots",
+        activePaths: ["/campesino/crop-activities", "/campesino/water-sources"],
+        requiresOnline: false,
+        roles: AllRoles,
+      },
+      {
+        title: "Clima y alertas",
+        subtitle: "Pronostico de lluvias, heladas y estacion",
+        icon: <IconCloudRain size={20} />,
+        path: "/campesino/weather",
+        activePaths: ["/campesino/climate-alerts"],
         requiresOnline: false,
         roles: AllRoles,
       },
       {
         title: "Mercado campesino",
+        subtitle: "Compra y venta de cosechas, insumos o animales",
         icon: <IconBuildingStore size={20} />,
         path: "/campesino/market-offers",
         requiresOnline: true,
@@ -191,14 +224,23 @@ export const sidebarItems: SidebarItemConfig[] = [
       },
       {
         title: "Asistencia técnica",
+        subtitle: "Consultas y apoyo con el veterinario o agronomo",
         icon: <IconLifebuoy size={20} />,
         path: "/campesino/technical-assistance",
-        activePaths: ["/campesino/weather", "/campesino/climate-alerts"],
         requiresOnline: true,
         roles: ["Administrador", "Propietario", "Capataz", "Instructor", "Aprendiz", "Operario"],
       },
       {
+        title: "Aprender sin conexión",
+        subtitle: "Cartillas practicas y manuales para el campo",
+        icon: <IconBook size={20} />,
+        path: "/campesino/aprender",
+        requiresOnline: false,
+        roles: AllRoles,
+      },
+      {
         title: "Solicitudes de asistencia",
+        subtitle: "Casos clinicos asignados al veterinario",
         icon: <IconStethoscope size={20} />,
         path: "/veterinario/dashboard?focus=assistance",
         activePaths: ["/veterinario/dashboard"],
@@ -209,6 +251,7 @@ export const sidebarItems: SidebarItemConfig[] = [
   },
   {
     title: "Solicitudes de ingreso",
+    subtitle: "Aprobacion de nuevos trabajadores o miembros",
     icon: <IconUserCheck size={24} />,
     path: "user-approval",
     roles: UserManagerRoles,
@@ -222,6 +265,7 @@ export const sidebarItems: SidebarItemConfig[] = [
     children: [
       {
         title: "Usuarios del sistema",
+        subtitle: "Cuentas y usuarios en todo el sistema",
         icon: <IconUsersGroup size={20} />,
         path: "users/global",
         roles: ["Administrador"],
@@ -229,6 +273,7 @@ export const sidebarItems: SidebarItemConfig[] = [
       },
       {
         title: "Todas las fincas",
+        subtitle: "Listado de todas las fincas registradas",
         icon: <IconBuilding size={20} />,
         path: "fincas",
         roles: ["Administrador"],
@@ -244,6 +289,7 @@ export const sidebarItems: SidebarItemConfig[] = [
     children: [
       {
         title: "Personal de la finca",
+        subtitle: "Trabajadores, capataces y permisos de la finca",
         icon: <IconUsersGroup size={20} />,
         path: "users",
         roles: UserManagerRoles,
@@ -251,6 +297,7 @@ export const sidebarItems: SidebarItemConfig[] = [
       },
       {
         title: "Finca y permisos",
+        subtitle: "Datos de la finca, linderos y membresia",
         icon: <IconShieldLock size={20} />,
         path: "membership",
         roles: UserManagerRoles,
@@ -258,6 +305,7 @@ export const sidebarItems: SidebarItemConfig[] = [
       },
       {
         title: "Herramientas",
+        subtitle: "Calculadoras de racion, peso y tareas",
         icon: <IconTool size={20} />,
         path: "tasks",
         activePaths: ["scanner", "chat", "tools/frame-calculator", "tools/ration-calculator", "alerts/configs"],
@@ -266,6 +314,7 @@ export const sidebarItems: SidebarItemConfig[] = [
       },
       {
         title: "Ajustes del sistema",
+        subtitle: "Parametros de operacion, razas y especies",
         icon: <IconAdjustmentsHorizontal size={20} />,
         path: "data-overview",
         activePaths: ["operational", "activity-log", "diagnostics", "base_model", "breeds", "species"],
@@ -275,10 +324,6 @@ export const sidebarItems: SidebarItemConfig[] = [
   },
 ];
 
-/**
- * Filtra el árbol de navegación con la misma matriz RBAC que usa el frontend
- * para las rutas. El backend continúa siendo la autoridad final.
- */
 export function filterSidebarItemsByRole(
   items: SidebarItemConfig[],
   userRole: Role,

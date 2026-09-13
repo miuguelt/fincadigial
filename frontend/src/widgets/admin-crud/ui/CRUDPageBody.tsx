@@ -4,6 +4,7 @@ import { EmptyState } from '@/widgets/feedback/EmptyState';
 import { FloatingScrollArea } from '@/shared/ui/FloatingScrollArea';
 import { CRUDTable } from './CRUDTable';
 import { CRUDCardGrid } from './CRUDCardGrid';
+import type { RecentChangeAction } from '@/shared/utils/recentChanges';
 
 interface CRUDPageBodyProps<T extends { id: number }> {
   config: any;
@@ -14,6 +15,8 @@ interface CRUDPageBodyProps<T extends { id: number }> {
   usesScrollableHeader: boolean;
   isCardsView: boolean;
   pagination: React.ReactNode;
+  /** id → acción de registros recién creados/editados, para resaltado sutil. */
+  recentFlags?: Record<string, RecentChangeAction>;
 
   canCreate: boolean;
   canUpdate: boolean;
@@ -56,6 +59,7 @@ export function CRUDPageBody<T extends { id: number }>({
   config, t, items, empty, usesScrollableHeader, isCardsView, pagination,
   canCreate, canUpdate, canDelete, openCreate, openEdit, openDetail, openDeleteConfirm,
   selectedIds, onToggleSelect, onToggleSelectAll, onUpdateCell, enhancedHover, refreshing,
+  recentFlags,
 }: CRUDPageBodyProps<T>) {
   if (empty) {
     return <BodyEmptyState config={config} t={t} canCreate={canCreate} openCreate={openCreate} />;
@@ -81,6 +85,7 @@ export function CRUDPageBody<T extends { id: number }>({
               selectedIds={selectedIds}
               onToggleSelect={onToggleSelect}
               onOpenDetail={openDetail}
+              recentFlags={recentFlags}
             />
           </FloatingScrollArea>
         )}
@@ -96,13 +101,14 @@ export function CRUDPageBody<T extends { id: number }>({
           headerSlot={usesScrollableHeader ? config.customHeader : undefined}
           items={items}
           columns={config.columns}
+          recentFlags={recentFlags}
           config={{
             ...config,
             customActions: config.customActions
               ? (item: T) => config.customActions!(item, { openCreate })
               : undefined,
           }}
-          onOpenDetail={config.enableDetailModal !== false ? openDetail : undefined}
+          onOpenDetail={openDetail}
           onOpenEdit={canUpdate ? openEdit : undefined}
           onOpenDelete={canDelete ? openDeleteConfirm : undefined}
           enhancedHover={enhancedHover}

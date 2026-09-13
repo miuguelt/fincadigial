@@ -2,10 +2,13 @@ import type { ReactNode } from 'react';
 import {
   Activity,
   Calendar,
+  ClipboardList,
+  FlaskConical,
   HeartPulse,
   Layers,
   Pill,
   ShieldAlert,
+  Stethoscope,
   Syringe,
   TrendingUp,
 } from 'lucide-react';
@@ -50,6 +53,14 @@ export const SANIDAD_TAB_GROUPS: Record<string, TabGroup> = {
         path: '/admin/diseases',
         icon: <HeartPulse className="h-4 w-4" />,
       },
+      {
+        id: 'plans',
+        label: 'Planes de manejo',
+        shortLabel: 'Planes',
+        emoji: '🧭',
+        path: '/admin/plans',
+        icon: <ClipboardList className="h-4 w-4" />,
+      },
     ],
   },
   treatments: {
@@ -90,6 +101,14 @@ export const SANIDAD_TAB_GROUPS: Record<string, TabGroup> = {
         icon: <Syringe className="h-4 w-4" />,
       },
       {
+        id: 'recommendations',
+        label: 'Recomendaciones',
+        shortLabel: 'Recomendaciones',
+        emoji: '🗒️',
+        path: '/admin/treatment_recommendations',
+        icon: <Stethoscope className="h-4 w-4" />,
+      },
+      {
         id: 'analytics',
         label: 'Análisis y reportes',
         shortLabel: 'Análisis',
@@ -127,6 +146,21 @@ export const SANIDAD_TAB_GROUPS: Record<string, TabGroup> = {
         emoji: '📦',
         path: '/admin/inventory',
         icon: <Layers className="h-4 w-4" />,
+      },
+    ],
+  },
+  knowledge: {
+    title: 'Protocolos y conocimiento',
+    shortTitle: 'Protocolos',
+    emoji: '🧪',
+    items: [
+      {
+        id: 'treatment-protocols',
+        label: 'Protocolos de tratamiento',
+        shortLabel: 'Protocolos',
+        emoji: '🧪',
+        path: '/admin/treatment-protocols',
+        icon: <FlaskConical className="h-4 w-4" />,
       },
     ],
   },

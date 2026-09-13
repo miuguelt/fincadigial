@@ -41,6 +41,7 @@ import { Button } from '@/shared/ui/button';
 
 // Utilidades
 import { addTombstone, getTombstoneIds, clearExpired } from '@/shared/api/cache/tombstones';
+import { buildRecentFlags } from '@/shared/utils/recentChanges';
 import { validateFormSections, type FieldErrors } from '@/shared/utils/formValidation';
 import { formatValidationToastMessage, mapBackendFieldErrorsToLabels, buildConflictMessage } from '@/shared/utils/validationMessages';
 
@@ -204,6 +205,13 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
 
   const formSections = useMemo(() => config.formSections || [], [config.formSections]);
 
+  // Refrescos disparados por otras pantallas (misma señal que AdminCRUDPage).
+  useEffect(() => {
+    const handleRefetch = () => { void refetch(undefined, { force: true }); };
+    window.addEventListener('crud:refetch', handleRefetch);
+    return () => window.removeEventListener('crud:refetch', handleRefetch);
+  }, [refetch]);
+
   // Paginación
   const pageFromURL = parseInt((searchParams.get('page') || '').toString(), 10);
   const currentPage = Number.isFinite(pageFromURL) && pageFromURL > 0 ? pageFromURL : (meta?.page || 1);
@@ -219,6 +227,17 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
       return !tombstoneIds.has(idStr);
     });
   }, [items, entityKey]);
+
+  // Registros creados/editados hace poco (incluso desde otra pantalla): la
+  // lista los resalta sutilmente para que el usuario confirme su cambio.
+  const resourceSlug = useMemo(
+    () => String((service as any)?.endpoint || '').split('/').filter(Boolean).pop()?.toLowerCase() ?? '',
+    [service],
+  );
+  const recentFlags = useMemo(
+    () => buildRecentFlags(resourceSlug, (filteredItems ?? []).map((item: any) => item.id)),
+    [resourceSlug, filteredItems],
+  );
 
   // Handlers
   const openCreate = useCallback(() => {
@@ -565,6 +584,8 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
     }
   }, [searchParams, config.enableEditModal, isModalOpen, editingItem, service, openEdit, showToast, t, setSearchParams]);
 
+  const isRowToolbar = config.toolbarPlacement === 'row';
+
   // Header con búsqueda y botones
   const header = (
     <PageHeader
@@ -578,11 +599,13 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
           setSearchQuery={setSearchQuery}
           searchPlaceholder={config.searchPlaceholder}
           onOpenCreate={config.enableCreateModal !== false ? openCreate : undefined} createLabel={`${t('common.create', 'Crear')} ${config.entityName.toLowerCase()}`}
-          customToolbar={config.customToolbar}
+          customToolbar={isRowToolbar ? undefined : config.customToolbar}
+          toolbarPlacement={config.toolbarPlacement}
           onToggleFullScreen={() => setIsFullScreen((prev) => !prev)}
           isFullScreen={isFullScreen}
         />
       }
+      bottomBar={isRowToolbar ? config.customToolbar : undefined}
     />
   );
 
@@ -665,6 +688,7 @@ export function OptimizedAdminCRUDPage<T extends { id: number }, TInput extends 
               selectedIds={selectedIds}
               onToggleSelect={toggleSelect}
               onUpdateCell={handleUpdateCell}
+              recentFlags={recentFlags}
             />
           </div>
 

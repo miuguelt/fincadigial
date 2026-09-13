@@ -26,6 +26,7 @@ from sqlalchemy import or_
 from app.utils.token_blocklist import mark_token_revoked
 from app.utils.validators import validate_password, ValidationError as ValidatorError
 from app.utils.email_service import build_password_reset_link, send_email
+from app.utils.auth_response import sanitize_auth_response_data
 from datetime import timedelta
 import logging
 
@@ -410,12 +411,12 @@ class LoginResource(Resource):
                 else None
             )
 
-            response_data = {
+            response_data = sanitize_auth_response_data({
                 "user": user_dict,
                 "access_token": access_token,
                 "token_type": "Bearer",
                 "expires_in": expires_in,
-            }
+            })
 
             # Usar APIResponse para una estructura consistente
             # El método success devuelve una tupla (dict, status_code)
@@ -520,7 +521,7 @@ class RefreshTokenResource(Resource):
                 "REFRESHED", user.id, {"new_access_token_created": True}
             )
 
-            response_data = {
+            response_data = sanitize_auth_response_data({
                 "access_token": new_access_token,
                 "token_type": "Bearer",
                 "expires_in": int(
@@ -528,7 +529,7 @@ class RefreshTokenResource(Resource):
                         "JWT_ACCESS_TOKEN_EXPIRES", timedelta(hours=1)
                     ).total_seconds()
                 ),
-            }
+            })
 
             api_response_dict, status_code = APIResponse.success(
                 message="Token renovado exitosamente", data=response_data

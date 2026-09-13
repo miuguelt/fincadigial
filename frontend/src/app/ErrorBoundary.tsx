@@ -1,5 +1,6 @@
 import  { Component, ErrorInfo, ReactNode } from 'react';
 import { reportError } from '@/shared/lib/errorReporter';
+import { isChunkLoadError, recoverFromChunkFailure } from '@/app/bootstrap/chunkRecovery';
 
 interface Props {
   children: ReactNode;
@@ -24,6 +25,12 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
+    // Un chunk huérfano (deploy nuevo sobre build vieja en tab abierta) no se
+    // reporta como error: se recupera limpiando cachés y recargando una vez.
+    if (isChunkLoadError(error)) {
+      void recoverFromChunkFailure();
+      return;
+    }
     reportError(error.message, 'react', { componentStack: info.componentStack }, error);
   }
 

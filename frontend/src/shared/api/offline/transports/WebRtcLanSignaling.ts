@@ -17,6 +17,7 @@
  */
 
 import { API_CONFIG } from "@/shared/api/config";
+import { USE_BEARER_AUTH } from "@/shared/api/client/settings";
 import { FieldNodeService } from "../FieldNodeService";
 
 export interface LanPeer {
@@ -46,6 +47,7 @@ export class WebRtcLanSignaling {
 	}
 
 	private authHeaders(): Record<string, string> {
+		if (!USE_BEARER_AUTH) return {};
 		try {
 			const token = localStorage.getItem(API_CONFIG.authStorageKey)
 				|| localStorage.getItem("access_token");

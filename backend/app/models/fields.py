@@ -213,25 +213,30 @@ class Fields(BaseModel):
         """Validación estándar del modelo."""
         errors = []
 
-        if not data.get("name", "").strip():
+        if "name" in data and not str(data.get("name") or "").strip():
             errors.append("El nombre es obligatorio")
 
-        if not data.get("area", "").strip():
+        if "area" in data and not str(data.get("area") or "").strip():
             errors.append("El área es obligatoria")
 
         capacity = data.get("capacity")
-        if capacity and capacity.strip():
+        if capacity is not None and str(capacity).strip():
             try:
-                cap = int(capacity)
+                cap = int(float(capacity))
                 if cap <= 0:
                     errors.append("La capacidad debe ser mayor a 0")
             except ValueError:
                 errors.append("La capacidad debe ser un número entero válido")
 
         state = data.get("state")
-        if state and state not in [e.value for e in LandStatus]:
+        # BaseModel normaliza los enums antes de llegar a este hook, por lo
+        # que aquí puede recibirse LandStatus.Activo en lugar de "Activo".
+        # Comparar ambos contra los valores persistidos evita rechazar payloads
+        # válidos de la API y de los factories de integración.
+        state_value = getattr(state, "value", state)
+        if state_value and state_value not in [e.value for e in LandStatus]:
             errors.append(
-                f"Estado inválido: {state}. Opciones: {', '.join(e.value for e in LandStatus)}"
+                f"Estado inválido: {state_value}. Opciones: {', '.join(e.value for e in LandStatus)}"
             )
 
         if errors:

@@ -135,5 +135,71 @@ class AnimalMovement(BaseModel):
     _required_fields = ["animal_id", "tipo_movimiento", "fecha_movimiento"]
     _enum_fields = {"tipo_movimiento": MovementType}
 
+    @classmethod
+    def create(cls, commit=True, **kwargs):
+        """Crea el movimiento y lo espeja en la bitácora unificada."""
+        instance = super().create(commit=False, **kwargs)
+        instance._mirror_to_health_history()
+        if commit:
+            db.session.commit()
+            db.session.refresh(instance)
+        return instance
+
+    def update(self, commit=True, **kwargs):
+        """Actualiza el movimiento y su espejo en la bitácora."""
+        result = super().update(commit=False, **kwargs)
+        self._mirror_to_health_history()
+        if commit:
+            db.session.commit()
+            db.session.refresh(self)
+        return result
+
+    def delete(self, commit=True, hard_delete=False):
+        """Retira el espejo de la bitácora."""
+        self._remove_health_history_mirror()
+        return super().delete(commit=commit, hard_delete=hard_delete)
+
+    def restore(self, commit=True):
+        """Recrea el espejo de la bitácora."""
+        result = super().restore(commit=commit)
+        self._mirror_to_health_history()
+        if commit:
+            db.session.commit()
+        return result
+
+    def _mirror_to_health_history(self):
+        """Espeja el movimiento ICA en la bitácora unificada del animal."""
+        from app.models.animal_health_history import HealthEventType
+        from app.services.health_history_timeline import upsert_event
+
+        movement = self.tipo_movimiento.value if self.tipo_movimiento else "Movimiento"
+        destino = "finca externa"
+        if self.finca_destino_externa:
+            destino = self.finca_destino_externa
+        elif self.finca_destino:
+            destino = self.finca_destino.name
+        detail = f"{movement} → {destino}"
+        if self.fecha_movimiento:
+            detail = f"{detail} | Fecha: {self.fecha_movimiento}"
+        if self.notes:
+            detail = f"{detail} | {self.notes}"
+
+        upsert_event(
+            event_type=HealthEventType.Movement,
+            reference_kind="animal_movement",
+            reference_id=self.id,
+            animal_id=self.animal_id,
+            finca_id=self.finca_origen_id,
+            event_date=self.fecha_movimiento,
+            description=detail,
+        )
+
+    def _remove_health_history_mirror(self):
+        """Retira el espejo de la bitácora."""
+        from app.models.animal_health_history import HealthEventType
+        from app.services.health_history_timeline import drop_event
+
+        drop_event(HealthEventType.Movement, "animal_movement", self.id)
+
     def __repr__(self) -> str:
         return f"<AnimalMovement {self.tipo_movimiento.value} - Animal {self.animal_id} - Date {self.fecha_movimiento}>"

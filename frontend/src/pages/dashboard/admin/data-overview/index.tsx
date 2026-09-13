@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Card, CardContent } from '@/shared/ui/card';
 import { Badge } from '@/shared/ui/badge';
 import { Skeleton } from '@/shared/ui/skeleton';
 import {
@@ -12,9 +12,10 @@ import {
   Radar,
   ScatterChart,
   Flame,
-  Database,
-  CheckCircle2
+  CheckCircle2,
+  Database
 } from 'lucide-react';
+import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
 import { useMilkProduction } from '@/entities/milk/hooks';
 import { useFinancial } from '@/entities/financial/hooks';
 import { useReproductionStats } from '@/entities/reproduction/hooks';
@@ -31,6 +32,8 @@ import {
 import { useAnimals } from '@/entities/animal/model/useAnimals';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { useAnalytics } from '@/features/reporting/model/useAnalytics';
+import { DatabaseSchemaExplorer } from '@/features/data-overview/ui/DatabaseSchemaExplorer';
+import { isTodayColombia } from '@/shared/utils/dateUtils';
 
 
 // Tipos para datos adicionales
@@ -110,7 +113,7 @@ export default function DataOverviewDashboard() {
             totalRecords: productions.length,
             totalLiters: milkSummary?.totalLiters || 0,
             todayLiters: productions
-              .filter(p => p.date === new Date().toISOString().split('T')[0])
+              .filter(p => p.date && isTodayColombia(p.date))
               .reduce((sum, p) => sum + p.liters, 0),
           },
           financial: {
@@ -145,70 +148,19 @@ export default function DataOverviewDashboard() {
 
   const isLoading = milkLoading || financialLoading || reproLoading || animalsLoading || loading;
 
-  // Definir las tablas para el resumen de poblamiento dinámico
-  const dbTables = [
-    { key: 'animales_registrados', name: 'Animales' },
-    { key: 'usuarios_registrados', name: 'Usuarios' },
-    { key: 'tratamientos_totales', name: 'Tratamientos Clínicos' },
-    { key: 'vacunas_aplicadas', name: 'Vacunaciones' },
-    { key: 'controles_realizados', name: 'Controles Veterinarios' },
-    { key: 'campos_registrados', name: 'Potreros/Lotes' },
-    { key: 'tareas_pendientes', name: 'Tareas Pendientes' },
-    { key: 'produccion_leche_total', name: 'Ordeños Lácteos' },
-    { key: 'catalogo_vacunas', name: 'Catálogo de Vacunas' },
-    { key: 'catalogo_medicamentos', name: 'Catálogo de Medicamentos' },
-    { key: 'catalogo_enfermedades', name: 'Catálogo de Enfermedades' },
-    { key: 'catalogo_especies', name: 'Catálogo de Especies' },
-    { key: 'catalogo_razas', name: 'Catálogo de Razas' },
-    { key: 'catalogo_tipos_alimento', name: 'Catálogo de Alimentos' },
-    { key: 'animales_por_campo', name: 'Historial de Pasturas' },
-    { key: 'animales_por_enfermedad', name: 'Registros de Patologías' },
-    { key: 'mejoras_geneticas', name: 'Mejoras Genéticas' },
-    { key: 'tratamientos_medicamentos', name: 'Medicinas de Tratamientos' },
-    { key: 'tratamientos_vacunas', name: 'Vacunas de Tratamientos' },
-    { key: 'alertas_sistema', name: 'Alertas Operativas' },
-  ];
-
-  const totalTablesCount = dbTables.length;
-
-  const populatedTablesCount = dashboardData
-    ? dbTables.filter(t => {
-        const val = dashboardData[t.key]?.valor;
-        return typeof val === 'number' && val > 0;
-      }).length
-    : 0;
-
-  const totalRecordsCount = dashboardData
-    ? dbTables.reduce((sum, t) => {
-        const val = dashboardData[t.key]?.valor;
-        return sum + (typeof val === 'number' ? val : 0);
-      }, 0)
-    : 0;
-
-  // Registros de actividad operativa reciente (tratamientos + vacunas aplicadas + controles realizados + tareas pendientes)
-  const addedRecordsCount = dashboardData
-    ? (
-        (dashboardData.tratamientos_totales?.valor || 0) +
-        (dashboardData.vacunas_aplicadas?.valor || 0) +
-        (dashboardData.controles_realizados?.valor || 0) +
-        (dashboardData.tareas_pendientes?.valor || 0)
-      )
-    : 0;
-
-
   return (
-    <div className="w-full min-h-full p-4 sm:p-6 lg:p-8 space-y-6 overflow-x-hidden">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Vista General de Datos</h1>
-          <p className="text-muted-foreground mt-1">
-            Resumen de todos los datos poblados en la base de datos
-          </p>
-        </div>
-        <Badge variant="outline" className="text-sm">
-          Finca ID: {fincaId}
-        </Badge>
-      </div>
+    <div className="min-h-full space-y-6 overflow-x-hidden p-4 sm:p-6 lg:p-8 animate-fade-in">
+      <DataScreenHeader
+        icon={<Database className="h-5 w-5 text-white" />}
+        iconClassName="from-emerald-600 to-teal-700 shadow-emerald-600/20"
+        title={<>Vista General de <span className="text-primary">Datos</span></>}
+        description="Resumen global de los registros y telemetría de la finca activa"
+        actions={
+          <Badge variant="outline" className="px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-card/60">
+            Finca activa: {fincaId ?? '—'}
+          </Badge>
+        }
+      />
 
       {/* Sección: Producción Láctea */}
       <section>
@@ -525,111 +477,16 @@ export default function DataOverviewDashboard() {
         />
       </section>
 
-      {/* Resumen de Tablas y Poblamiento Dinámico */}
+      {/* La cobertura de la base ya no se infiere de una lista manual: se lee del esquema real. */}
       <section className="mt-8">
-        <Card className="border-primary/20 bg-card/40 backdrop-blur-md overflow-hidden shadow-lg transition-all duration-300">
-          <CardHeader className="pb-3 border-b border-border/40">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <CardTitle className="flex items-center gap-2 text-xl font-bold tracking-tight">
-                <Database className="h-5 w-5 text-primary animate-pulse" />
-                Resumen de Poblamiento de Base de Datos (Tiempo Real)
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-success animate-ping" />
-                <span className="text-xs font-semibold text-success flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  Estado: 100% Poblada y Sincronizada
-                </span>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-6 space-y-6">
-            {/* Tarjetas de Resumen General */}
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="p-4 rounded-lg bg-primary/5 border border-primary/10 flex flex-col justify-between">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tablas de Negocio</span>
-                <div className="flex items-baseline gap-2 mt-2">
-                  <span className="text-2xl font-black text-primary">
-                    {dashboardStatsLoading ? <Skeleton className="h-8 w-16" /> : populatedTablesCount}
-                  </span>
-                  <span className="text-sm text-muted-foreground">de {totalTablesCount}</span>
-                </div>
-                <span className="text-[11px] text-muted-foreground mt-2">Tablas con datos activos en la finca</span>
-              </div>
-
-              <div className="p-4 rounded-lg bg-success/5 border border-success/10 flex flex-col justify-between">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Cobertura de Módulos</span>
-                <div className="flex items-baseline gap-2 mt-2">
-                  <span className="text-2xl font-black text-success">
-                    {dashboardStatsLoading ? (
-                      <Skeleton className="h-8 w-16" />
-                    ) : (
-                      `${((populatedTablesCount / totalTablesCount) * 100).toFixed(0)}%`
-                    )}
-                  </span>
-                </div>
-                <span className="text-[11px] text-muted-foreground mt-2">Capacidad operativa cubierta</span>
-              </div>
-
-              <div className="p-4 rounded-lg bg-info/5 border border-info/10 flex flex-col justify-between">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Registros Totales</span>
-                <div className="flex items-baseline gap-2 mt-2">
-                  <span className="text-2xl font-black text-info">
-                    {dashboardStatsLoading ? <Skeleton className="h-8 w-24" /> : totalRecordsCount.toLocaleString('es-CO')}
-                  </span>
-                </div>
-                <span className="text-[11px] text-muted-foreground mt-2">Registros reales de esta finca en BD</span>
-              </div>
-
-              <div className="p-4 rounded-lg bg-purple-500/5 border border-purple-500/10 flex flex-col justify-between">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actividad Operativa Reciente</span>
-                <div className="flex items-baseline gap-2 mt-2">
-                  <span className="text-2xl font-black text-purple-500">
-                    {dashboardStatsLoading ? <Skeleton className="h-8 w-20" /> : `+${addedRecordsCount.toLocaleString('es-CO')}`}
-                  </span>
-                </div>
-                <span className="text-[11px] text-muted-foreground mt-2">Suma de tratamientos, vacunas, controles y tareas</span>
-              </div>
-            </div>
-
-            {/* Desglose Tabla por Tabla con chips visuales interactivos */}
-            <div>
-              <h3 className="text-sm font-semibold text-muted-foreground mb-3">Detalle de Registros por Tabla de Negocio:</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                {dbTables.map(t => {
-                  const val = dashboardData ? dashboardData[t.key]?.valor : 0;
-                  const isPopulated = typeof val === 'number' && val > 0;
-                  return (
-                    <div
-                      key={t.key}
-                      className={`flex flex-col p-3 rounded-xl border transition-all duration-300 ${
-                        isPopulated
-                          ? 'bg-card border-border/80 hover:border-primary/40 hover:shadow-sm'
-                          : 'bg-muted/30 border-dashed border-border/40 opacity-60'
-                      }`}
-                    >
-                      <span className="text-[11px] text-muted-foreground fit-clamp" title={t.name}>
-                        {t.name}
-                      </span>
-                      <div className="flex items-center justify-between mt-1.5">
-                        <span className={`text-base font-bold ${isPopulated ? 'text-foreground' : 'text-muted-foreground'}`}>
-                          {dashboardStatsLoading ? (
-                            <Skeleton className="h-5 w-12" />
-                          ) : (
-                            (val || 0).toLocaleString('es-CO')
-                          )}
-                        </span>
-                        {isPopulated && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-success" />
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <DatabaseSchemaExplorer
+          counts={Object.fromEntries(
+            Object.entries(dashboardData ?? {}).map(([key, value]) => {
+              const metricValue = (value as { valor?: unknown } | undefined)?.valor;
+              return [key, typeof metricValue === 'number' ? metricValue : undefined];
+            })
+          )}
+        />
       </section>
     </div>
   );

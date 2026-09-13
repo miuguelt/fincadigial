@@ -15,7 +15,7 @@ export const API_CONFIG = {
   refreshTimeout: Number(envStr('VITE_REFRESH_TIMEOUT', '15000')),
   debugMode: envStr('VITE_DEBUG_MODE', '').toLowerCase() === 'true',
   authStorageKey: envStr('VITE_AUTH_STORAGE_KEY', AUTH_STORAGE_KEY),
-  useBearerAuth: envStr('VITE_USE_BEARER_AUTH', 'true').toLowerCase() === 'true',
+  useBearerAuth: envStr('VITE_USE_BEARER_AUTH', 'false').toLowerCase() === 'true',
   httpCacheTTL: Number(envStr('VITE_HTTP_CACHE_TTL', '20000')),
   loginPath: envStr('VITE_LOGIN_PATH', '/login'),
   toastDedupMs: Number(envStr('VITE_TOAST_DEDUP_MS', String(DEFAULT_TOAST_DEDUP_MS))),

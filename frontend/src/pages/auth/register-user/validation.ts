@@ -7,6 +7,8 @@ export interface SignUpFormData {
   identification_number: string;
   role: string;
   address?: string;
+  privacy_notice_accepted: boolean;
+  terms_accepted: boolean;
 }
 
 export interface FormErrors {
@@ -18,6 +20,8 @@ export interface FormErrors {
   identification_number?: string;
   address?: string;
   general?: string;
+  'consent.privacy_notice_accepted'?: string;
+  'consent.terms_accepted'?: string;
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -68,6 +72,13 @@ export function buildValidationErrors(values: SignUpFormData): FormErrors {
 
   if (values.password !== values.confirmPassword) {
     errors.confirmPassword = 'Las contraseñas no coinciden';
+  }
+
+  if (!values.privacy_notice_accepted) {
+    errors['consent.privacy_notice_accepted'] = 'Debe aceptar el aviso de privacidad';
+  }
+  if (!values.terms_accepted) {
+    errors['consent.terms_accepted'] = 'Debe aceptar los términos de uso';
   }
 
   return errors;

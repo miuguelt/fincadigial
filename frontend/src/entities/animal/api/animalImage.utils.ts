@@ -77,16 +77,16 @@ const addVersionParam = (url: string, updatedAt?: string): string => {
   }
 };
 
-const buildStaticAssetUrl = (path: string, updatedAt?: string) => {
+const buildStaticAssetUrl = (path: string, updatedAt?: string, existingSearch = '') => {
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   const backendBase = getBackendBaseURL().replace(/\/$/, '');
   const apiBaseURL = getApiBaseURL();
 
   if (isDevelopment()) {
     if (typeof window !== 'undefined') {
-      if (cleanPath.startsWith('/public/images')) return addVersionParam(`/api/v1${cleanPath}`, updatedAt);
+      if (cleanPath.startsWith('/public/images')) return addVersionParam(`/api/v1${cleanPath}${existingSearch}`, updatedAt);
       if (cleanPath.startsWith('/static/uploads/')) {
-        return addVersionParam(`/api/v1/public/images/${cleanPath.slice('/static/uploads/'.length)}`, updatedAt);
+        return addVersionParam(`/api/v1/public/images/${cleanPath.slice('/static/uploads/'.length)}${existingSearch}`, updatedAt);
       }
       return addVersionParam(cleanPath, updatedAt);
     }
@@ -94,14 +94,16 @@ const buildStaticAssetUrl = (path: string, updatedAt?: string) => {
       return addVersionParam(`${apiBaseURL.replace(/\/$/, '')}${cleanPath}`, updatedAt);
     }
   }
-  return addVersionParam(`${backendBase}${cleanPath}`, updatedAt);
+  return addVersionParam(`${backendBase}${cleanPath}${existingSearch}`, updatedAt);
 };
 
 const normalizeAbsoluteImageUrl = (image: AnimalImage): AnimalImage => {
   try {
     const parsedUrl = new URL(image.url);
     const isStaticAsset = parsedUrl.pathname.startsWith('/public/images') || parsedUrl.pathname.startsWith('/static/uploads/');
-    const url = isStaticAsset ? buildStaticAssetUrl(parsedUrl.pathname, image.updated_at) : addVersionParam(image.url, image.updated_at);
+    const url = isStaticAsset
+      ? buildStaticAssetUrl(parsedUrl.pathname, image.updated_at, parsedUrl.search)
+      : addVersionParam(image.url, image.updated_at);
     return { ...image, url };
   } catch {
     return { ...image, url: addVersionParam(image.url, image.updated_at) };

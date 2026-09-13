@@ -4,7 +4,6 @@ from app.models.campesino import (
     WaterSource,
     WaterMeasurement,
     ClimateRiskAlert,
-    MarketOffer,
     TechnicalAssistanceRequest,
     OfflineLearningMaterial,
 )
@@ -20,6 +19,7 @@ from app.services.technical_assistance_service import (
 from app.utils.namespace_helpers import create_optimized_namespace
 from app.utils.response_handler import APIResponse
 from app.utils.tenant_context import get_current_finca_id
+from app.marketplace.routes import market_offers_ns
 
 
 crop_plots_ns = create_optimized_namespace(
@@ -50,12 +50,6 @@ climate_risks_ns = create_optimized_namespace(
     "climate-risks",
     "Alertas locales de clima y riesgo",
     ClimateRiskAlert,
-)
-
-market_offers_ns = create_optimized_namespace(
-    "market-offers",
-    "Mercado campesino local",
-    MarketOffer,
 )
 
 technical_assistance_ns = create_optimized_namespace(

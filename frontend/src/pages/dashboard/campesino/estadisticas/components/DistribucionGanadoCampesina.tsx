@@ -1,11 +1,11 @@
 import { Users } from 'lucide-react';
 import type { CampesinoDemographics } from '../hooks/useCampesinoEstadisticas';
 
-interface DistribucionHatoCampesinaProps {
+interface DistribucionGanadoCampesinaProps {
   demographics: CampesinoDemographics;
 }
 
-export const DistribucionHatoCampesina: React.FC<DistribucionHatoCampesinaProps> = ({
+export const DistribucionGanadoCampesina: React.FC<DistribucionGanadoCampesinaProps> = ({
   demographics,
 }) => {
   const { totalAlive, males, females, calves, young, adults, mature } = demographics;

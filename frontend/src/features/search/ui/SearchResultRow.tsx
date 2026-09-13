@@ -6,9 +6,9 @@ import { Clock } from 'lucide-react';
 import { Badge } from '@/shared/ui/badge';
 import { cn } from '@/shared/ui/cn';
 import type { SearchResult } from '@/features/search/api/semanticSearch.service';
-import { normalizeColombianLivestockText } from '@/shared/utils/colombiaLanguage';
 import { FALLBACK_TYPE_STYLE, TYPE_CONFIG } from '../model/searchCatalog';
 import { HighlightMatch } from './HighlightMatch';
+import { normalizeColombianLivestockText } from '@/shared/utils/colombiaLanguage';
 
 interface Props {
   result: SearchResult;

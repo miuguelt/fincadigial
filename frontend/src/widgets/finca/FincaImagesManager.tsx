@@ -28,6 +28,10 @@ import { Progress } from "@/shared/ui/progress";
 interface FincaImagesManagerProps {
 	fincaId: number;
 	fincaName: string;
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
+	trigger?: React.ReactNode;
+	onImagesChange?: (images: FincaImage[]) => void;
 }
 
 function ImageThumbnail({
@@ -172,6 +176,10 @@ function ImageGrid({
 export function FincaImagesManager({
 	fincaId,
 	fincaName,
+	open,
+	onOpenChange,
+	trigger,
+	onImagesChange,
 }: FincaImagesManagerProps) {
 	const [images, setImages] = useState<FincaImage[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -180,20 +188,30 @@ export function FincaImagesManager({
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState<string | null>(null);
 	const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-	const [dialogOpen, setDialogOpen] = useState(false);
+	const [internalOpen, setInternalOpen] = useState(false);
+
+	const isControlled = open !== undefined;
+	const dialogOpen = isControlled ? open : internalOpen;
+	const setDialogOpen = (nextOpen: boolean) => {
+		if (onOpenChange) onOpenChange(nextOpen);
+		if (!isControlled) setInternalOpen(nextOpen);
+	};
 
 	const loadImages = useCallback(async () => {
 		setLoading(true);
 		setError(null);
 		try {
 			const response = await fincaImageService.getFincaImages(fincaId);
-			if (response?.data?.images) setImages(response.data.images);
+			if (response?.data?.images) {
+				setImages(response.data.images);
+				onImagesChange?.(response.data.images);
+			}
 		} catch {
 			setError("Error al cargar las imágenes");
 		} finally {
 			setLoading(false);
 		}
-	}, [fincaId]);
+	}, [fincaId, onImagesChange]);
 
 	useEffect(() => {
 		if (fincaId && dialogOpen) loadImages();
@@ -230,7 +248,11 @@ export function FincaImagesManager({
 	const handleDelete = async (imageId: number) => {
 		try {
 			await fincaImageService.deleteImage(imageId);
-			setImages((prev) => prev.filter((img) => img.id !== imageId));
+			setImages((prev) => {
+				const next = prev.filter((img) => img.id !== imageId);
+				onImagesChange?.(next);
+				return next;
+			});
 		} catch (err: any) {
 			setError(err?.message || "Error al eliminar imagen");
 		}
@@ -239,9 +261,11 @@ export function FincaImagesManager({
 	const handleSetPrimary = async (imageId: number) => {
 		try {
 			await fincaImageService.setPrimaryImage(imageId);
-			setImages((prev) =>
-				prev.map((img) => ({ ...img, is_primary: img.id === imageId })),
-			);
+			setImages((prev) => {
+				const next = prev.map((img) => ({ ...img, is_primary: img.id === imageId }));
+				onImagesChange?.(next);
+				return next;
+			});
 		} catch (err: any) {
 			setError(err?.message || "Error al establecer imagen principal");
 		}
@@ -250,12 +274,16 @@ export function FincaImagesManager({
 	return (
 		<>
 		<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-			<DialogTrigger asChild>
-				<Button variant="outline" size="sm" className="flex items-center gap-2">
-					<ImageIcon className="h-4 w-4" /> Fotos (
-					{loading ? "..." : images.length})
-				</Button>
-			</DialogTrigger>
+			{trigger !== undefined ? (
+				trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null
+			) : !isControlled ? (
+				<DialogTrigger asChild>
+					<Button variant="outline" size="sm" className="flex items-center gap-2">
+						<ImageIcon className="h-4 w-4" /> Fotos (
+						{loading ? "..." : images.length})
+					</Button>
+				</DialogTrigger>
+			) : null}
 			<DialogContent
 				fullWidth
 				className="max-h-[92dvh] overflow-y-auto sm:h-[92dvh]"

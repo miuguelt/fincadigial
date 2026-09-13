@@ -25,30 +25,51 @@ def _build_bulk_health_pdf(animal_ids):
 
     class PDF(FPDF):
         def header(self):
-            # Título principal solo en la primera página o cabecera reducida
+            self.set_fill_color(22, 78, 38)
+            self.rect(0, 0, 210, 28, style="F")
+            self.set_fill_color(46, 125, 50)
+            self.rect(0, 28, 210, 2, style="F")
+
+            self.set_xy(14, 6)
             self.set_font("Helvetica", "B", 15)
-            self.set_text_color(31, 107, 53)
-            self.cell(
-                0, 10, "FINCA VILLA LUZ - REPORTE DE LOTE SANITARIO", ln=True, align="C"
-            )
-            self.set_font("Helvetica", "I", 10)
-            self.set_text_color(100)
-            self.cell(
-                0,
-                8,
-                f"Generado el: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
-                ln=True,
-                align="C",
-            )
-            self.ln(5)
+            self.set_text_color(255, 255, 255)
+            self.cell(100, 6, "HACIENDA VILLA LUZ", new_x="RIGHT", new_y="TOP")
+
+            self.set_xy(14, 14)
+            self.set_font("Helvetica", "B", 8)
+            self.set_text_color(200, 230, 201)
+            self.cell(100, 5, "REPORTE CONSOLIDADO DE LOTE SANITARIO", new_x="RIGHT", new_y="TOP")
+
+            self.set_xy(115, 6)
+            self.set_font("Helvetica", "B", 9)
+            self.set_text_color(255, 255, 255)
+            self.cell(81, 6, "CONTROL VETERINARIO", align="R", new_x="LEFT", new_y="NEXT")
+
+            self.set_x(115)
+            self.set_font("Helvetica", "", 7.5)
+            self.set_text_color(200, 230, 201)
+            self.cell(81, 5, f"Emisión: {datetime.now().strftime('%d/%m/%Y %H:%M')}", align="R", new_x="LEFT", new_y="NEXT")
+
+            self.set_x(115)
+            self.set_font("Helvetica", "I", 7)
+            self.set_text_color(220, 240, 220)
+            self.cell(81, 4, f"Lote: {len(animal_ids)} animales evaluados", align="R")
+
+            self.set_y(34)
 
         def footer(self):
-            self.set_y(-15)
-            self.set_font("Helvetica", "I", 8)
-            self.set_text_color(150)
-            self.cell(0, 10, f"Página {self.page_no()}", align="C")
+            self.set_y(-16)
+            self.set_font("Helvetica", "I", 7.5)
+            self.set_text_color(128, 128, 128)
+            self.set_draw_color(224, 224, 224)
+            self.set_line_width(0.3)
+            self.line(14, self.get_y(), 196, self.get_y())
+            self.ln(2)
+            self.cell(110, 5, "Hacienda Villa Luz · Control de Sanidad e Historial Clínico", align="L")
+            self.cell(0, 5, f"Página {self.page_no()} de {self.alias_nb_pages() or '{nb}'}", align="R")
 
     pdf = PDF()
+    pdf.alias_nb_pages()
     pdf.set_auto_page_break(auto=True, margin=20)
 
     for a_id in animal_ids:
@@ -57,6 +78,7 @@ def _build_bulk_health_pdf(animal_ids):
             continue
 
         pdf.add_page()
+        pdf.set_y(34)
 
         controls = (
             Control.query.filter_by(animal_id=a_id)
@@ -83,46 +105,67 @@ def _build_bulk_health_pdf(animal_ids):
             .all()
         )
 
-        # Separador Animal
-        pdf.set_font("Helvetica", "B", 14)
-        pdf.set_fill_color(240, 245, 240)
-        pdf.set_text_color(0)
-        pdf.cell(0, 12, f" Ficha Sanitaria: {animal.record}", fill=True, ln=True)
-        pdf.ln(2)
+        # Tarjeta Animal
+        start_y = pdf.get_y()
+        pdf.set_fill_color(248, 251, 248)
+        pdf.set_draw_color(200, 220, 200)
+        pdf.set_line_width(0.3)
+        pdf.rect(14, start_y, 182, 22, "DF")
 
-        # Grid de Info básica
-        pdf.set_font("Helvetica", "B", 10)
-        pdf.cell(30, 7, "Raza:")
-        pdf.set_font("Helvetica", "", 10)
-        pdf.cell(60, 7, animal.breed.name if animal.breed else "N/A")
+        pdf.set_xy(18, start_y + 3)
+        pdf.set_font("Helvetica", "B", 11)
+        pdf.set_text_color(22, 78, 38)
+        pdf.cell(85, 5, f"FICHA SANITARIA: {animal.record or f'ID-{animal.id}'}")
 
-        pdf.set_font("Helvetica", "B", 10)
-        pdf.cell(30, 7, "Sexo:")
-        pdf.set_font("Helvetica", "", 10)
-        pdf.cell(60, 7, animal.sex.value)
-        pdf.ln()
+        pdf.set_font("Helvetica", "B", 8.5)
+        pdf.set_text_color(71, 85, 105)
+        pdf.cell(20, 5, "Estado:")
+        pdf.set_font("Helvetica", "B", 8.5)
+        pdf.set_text_color(22, 101, 52 if animal.status and animal.status.value == "Vivo" else 185, 28, 28)
+        pdf.cell(60, 5, animal.status.value if animal.status else "Vivo", ln=True)
 
-        pdf.set_font("Helvetica", "B", 10)
-        pdf.cell(30, 7, "Peso:")
-        pdf.set_font("Helvetica", "", 10)
-        pdf.cell(60, 7, f"{animal.weight:.1f} kg" if animal.weight is not None else "-")
+        y = start_y + 9
+        pdf.set_xy(18, y)
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(71, 85, 105)
+        pdf.cell(16, 5, "Raza:")
+        pdf.set_font("Helvetica", "", 8)
+        pdf.set_text_color(15, 23, 42)
+        pdf.cell(40, 5, str(animal.breed.name if animal.breed else "N/A"))
 
-        pdf.set_font("Helvetica", "B", 10)
-        pdf.cell(30, 7, "Edad:")
-        pdf.set_font("Helvetica", "", 10)
-        pdf.cell(60, 7, f"{animal.age_in_months} meses")
-        pdf.ln(10)
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(71, 85, 105)
+        pdf.cell(14, 5, "Sexo:")
+        pdf.set_font("Helvetica", "", 8)
+        pdf.set_text_color(15, 23, 42)
+        pdf.cell(30, 5, animal.sex.value if animal.sex else "N/A")
+
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(71, 85, 105)
+        pdf.cell(14, 5, "Peso:")
+        pdf.set_font("Helvetica", "", 8)
+        pdf.set_text_color(15, 23, 42)
+        pdf.cell(26, 5, f"{animal.weight:.1f} kg" if animal.weight is not None else "-")
+
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(71, 85, 105)
+        pdf.cell(14, 5, "Edad:")
+        pdf.set_font("Helvetica", "", 8)
+        pdf.set_text_color(15, 23, 42)
+        pdf.cell(20, 5, f"{animal.age_in_months} meses" if animal.age_in_months else "-", ln=True)
+
+        pdf.set_y(start_y + 26)
 
         # Tablas
         if controls:
             _add_compact_table(
                 pdf,
-                "Últimos Controles de Salud",
-                ["Fecha", "Estado", "Peso"],
+                "Últimos Controles de Salud y Pesaje",
+                ["Fecha", "Estado de Salud", "Peso Corporal"],
                 [
                     [
-                        c.checkup_date.isoformat(),
-                        c.health_status.value,
+                        _fmt_date(c.checkup_date),
+                        _fmt_enum(c.health_status),
                         f"{c.weight:.1f} kg" if c.weight is not None else "-",
                     ]
                     for c in controls
@@ -133,12 +176,12 @@ def _build_bulk_health_pdf(animal_ids):
             _add_compact_table(
                 pdf,
                 "Historial de Vacunación",
-                ["Fecha", "Vacuna", "Dosis"],
+                ["Fecha", "Vacuna Aplicada", "Dosis Administrada"],
                 [
                     [
-                        v.vaccination_date.isoformat(),
-                        v.vaccine.name if v.vaccine else "N/A",
-                        v.dose,
+                        _fmt_date(v.vaccination_date),
+                        v.vaccines.name if v.vaccines else "N/A",
+                        str(v.dose or "-"),
                     ]
                     for v in vaccinations
                 ],
@@ -147,13 +190,13 @@ def _build_bulk_health_pdf(animal_ids):
         if treatments:
             _add_compact_table(
                 pdf,
-                "Tratamientos Médicos",
-                ["Fecha", "Medicina", "Dosis"],
+                "Tratamientos Médicos y Medicación",
+                ["Fecha", "Medicamento / Principio", "Dosis"],
                 [
                     [
-                        t.treatment_date.isoformat(),
+                        _fmt_date(t.treatment_date),
                         t.medication.name if t.medication else "N/A",
-                        t.dose,
+                        str(t.dose or "-"),
                     ]
                     for t in treatments
                 ],
@@ -163,28 +206,55 @@ def _build_bulk_health_pdf(animal_ids):
 
 
 def _add_compact_table(pdf, title, headers, rows):
-    pdf.set_font("Helvetica", "B", 11)
-    pdf.set_text_color(31, 107, 53)
-    pdf.cell(0, 8, title, ln=True)
+    if pdf.get_y() > 240:
+        pdf.add_page()
+        pdf.set_y(34)
 
-    pdf.set_font("Helvetica", "B", 9)
-    pdf.set_fill_color(220, 230, 220)
-    pdf.set_text_color(0)
-    col_width = (pdf.w - 30) / len(headers)
+    pdf.set_font("Helvetica", "B", 9.5)
+    pdf.set_text_color(22, 78, 38)
+    pdf.cell(0, 6.5, title, ln=True)
+
+    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_fill_color(22, 78, 38)
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_draw_color(22, 78, 38)
+    pdf.set_line_width(0.2)
+    col_width = (pdf.w - 28) / len(headers)
 
     for h in headers:
-        pdf.cell(col_width, 7, h, border=1, fill=True, align="C")
+        pdf.cell(col_width, 6.5, h, border=1, fill=True, align="C")
     pdf.ln()
 
-    pdf.set_font("Helvetica", "", 9)
+    pdf.set_font("Helvetica", "", 8)
+    pdf.set_draw_color(226, 232, 240)
+    fill = False
     for row in rows:
+        if pdf.get_y() > 265:
+            pdf.add_page()
+            pdf.set_y(34)
+            pdf.set_font("Helvetica", "B", 8)
+            pdf.set_fill_color(22, 78, 38)
+            pdf.set_text_color(255, 255, 255)
+            for h in headers:
+                pdf.cell(col_width, 6.5, h, border=1, fill=True, align="C")
+            pdf.ln()
+            pdf.set_font("Helvetica", "", 8)
+
+        pdf.set_fill_color(248, 252, 248) if fill else pdf.set_fill_color(255, 255, 255)
+        pdf.set_text_color(35, 35, 35)
+
         for val in row:
-            pdf.cell(col_width, 6, str(val), border=1)
+            text = str(val)
+            align = "C" if "/" in text or "-" in text and len(text) == 10 else "R" if "kg" in text or "$" in text else "L"
+            pdf.cell(col_width, 6, text, border="B", fill=True, align=align)
         pdf.ln()
-    pdf.ln(4)
+        fill = not fill
+    pdf.ln(3)
 
 
-def _build_health_pdf(animal, controls, vaccinations, treatments, diseases):
+def _build_health_pdf(
+    animal, controls, vaccinations, treatments, diseases, progress=None
+):
     import os
     import tempfile
     import flask
@@ -662,6 +732,34 @@ def _build_health_pdf(animal, controls, vaccinations, treatments, diseases):
         [22, 53, 30, 30, 45],
     )
 
+    # ---- Seguimiento clínico (avances del episodio de enfermedad) ----
+    if progress:
+        rows = []
+        for p in progress:
+            disease_name = (
+                p.episode.disease.name if p.episode and p.episode.disease else "-"
+            )
+            observation = p.observation or ""
+            if observation and disease_name != "-":
+                observation = f"{disease_name}: {observation}"
+            elif observation:
+                observation = observation
+            rows.append(
+                [
+                    _fmt_date(p.progress_date),
+                    f"{p.weight} kg" if p.weight is not None else "-",
+                    f"{p.temperature} °C" if p.temperature is not None else "-",
+                    p.status or "-",
+                    observation,
+                ]
+            )
+        section(
+            "Seguimiento Clínico del Caso (Avances)",
+            rows,
+            ["Fecha", "Peso", "Temp", "Estado", "Observación"],
+            [25, 22, 22, 32, 79],
+        )
+
     # ---- Diseases ----
     section(
         "Historial de Diagnósticos / Enfermedades",
@@ -670,12 +768,21 @@ def _build_health_pdf(animal, controls, vaccinations, treatments, diseases):
                 _fmt_date(d.diagnosis_date),
                 d.disease.name if d.disease else "-",
                 d.status or "-",
+                d.severity or "-",
+                _fmt_date(d.recovery_date) if d.recovery_date else "En curso",
                 d.notes or "-",
             ]
             for d in diseases
         ],
-        ["Fecha", "Diagnóstico / Enfermedad", "Estado actual", "Notas Veterinarias"],
-        [25, 55, 30, 70],
+        [
+            "Fecha",
+            "Diagnóstico / Enfermedad",
+            "Estado actual",
+            "Gravedad",
+            "Alta",
+            "Notas Veterinarias",
+        ],
+        [24, 48, 26, 20, 20, 42],
     )
 
     return bytes(pdf.output())
@@ -688,66 +795,189 @@ def _build_health_pdf(animal, controls, vaccinations, treatments, diseases):
 
 def _build_financial_pdf(finca, txs, total_income, total_expenses):
     from fpdf import FPDF
+    from datetime import datetime
 
     class PDF(FPDF):
         def header(self):
-            self.set_font("Helvetica", "B", 16)
-            self.set_text_color(31, 107, 53)
-            self.cell(
-                0, 10, f"REPORTE FINANCIERO - {finca.name.upper()}", ln=True, align="C"
-            )
-            self.set_font("Helvetica", "I", 10)
-            self.set_text_color(100)
-            self.cell(
-                0,
-                8,
-                f"Generado el: {datetime.now().strftime('%d/%m/%Y %H:%M')}",
-                ln=True,
-                align="C",
-            )
-            self.ln(10)
+            # Franja institucional verde bosque profundo (#164e26)
+            self.set_fill_color(22, 78, 38)
+            self.rect(0, 0, 210, 32, "F")
+            self.set_fill_color(46, 125, 50)
+            self.rect(0, 32, 210, 2.5, "F")
+
+            self.set_xy(14, 7)
+            self.set_font("Helvetica", "B", 18)
+            self.set_text_color(255, 255, 255)
+            self.cell(100, 8, "HACIENDA VILLA LUZ", new_x="RIGHT", new_y="TOP")
+
+            self.set_xy(14, 16)
+            self.set_font("Helvetica", "B", 8)
+            self.set_text_color(200, 230, 201)
+            self.cell(100, 5, "SISTEMA DE GESTION GANADERA INTELIGENTE", new_x="RIGHT", new_y="TOP")
+
+            self.set_xy(14, 22)
+            self.set_font("Helvetica", "", 7.5)
+            self.set_text_color(220, 240, 220)
+            self.cell(100, 5, f"Predio: {finca.name.upper()} | Registro Contable Oficial", new_x="RIGHT", new_y="TOP")
+
+            self.set_xy(115, 7)
+            self.set_font("Helvetica", "B", 11)
+            self.set_text_color(255, 255, 255)
+            self.cell(81, 7, "ESTADO FINANCIERO CONSOLIDADO", align="R", new_x="LEFT", new_y="NEXT")
+
+            now_str = datetime.now().strftime("%d/%m/%Y %H:%M")
+            self.set_x(115)
+            self.set_font("Helvetica", "", 8)
+            self.set_text_color(200, 230, 201)
+            self.cell(81, 5, f"Emisión: {now_str}", align="R", new_x="LEFT", new_y="NEXT")
+
+            self.set_x(115)
+            self.set_font("Helvetica", "I", 7.5)
+            self.set_text_color(220, 240, 220)
+            self.cell(81, 5, "Documento Contable y Operativo", align="R")
+
+            self.set_y(40)
+
+        def footer(self):
+            self.set_y(-18)
+            self.set_font("Helvetica", "I", 7.5)
+            self.set_text_color(120, 120, 120)
+            self.set_draw_color(210, 215, 220)
+            self.set_line_width(0.3)
+            self.line(14, self.get_y(), 196, self.get_y())
+            self.ln(2.5)
+            self.cell(110, 4.5, f"Hacienda Villa Luz · Finca: {finca.name} · Libro Oficial de Ingresos y Egresos", align="L")
+            self.cell(0, 4.5, f"Página {self.page_no()} de {self.alias_nb_pages() or '{nb}'}", align="R", ln=True)
 
     pdf = PDF()
+    pdf.alias_nb_pages()
+    pdf.set_auto_page_break(auto=True, margin=22)
     pdf.add_page()
 
-    # Resumen Ejecutivo
-    pdf.set_font("Helvetica", "B", 14)
-    pdf.cell(0, 10, "Resumen de Balance", ln=True)
-    pdf.set_font("Helvetica", "", 12)
+    # Resumen Ejecutivo Financiero
+    pdf.set_font("Helvetica", "B", 13)
+    pdf.set_text_color(22, 78, 38)
+    pdf.cell(0, 7, "RESUMEN DE BALANCE Y LIQUIDEZ OPERATIVA", ln=True)
 
-    pdf.set_text_color(0, 100, 0)
-    pdf.cell(100, 8, f"Total Ingresos: ${total_income:,.2f}")
-    pdf.ln()
-    pdf.set_text_color(150, 0, 0)
-    pdf.cell(100, 8, f"Total Gastos: ${total_expenses:,.2f}")
-    pdf.ln()
-    pdf.set_font("Helvetica", "B", 12)
+    start_y = pdf.get_y() + 2
     balance = total_income - total_expenses
-    pdf.set_text_color(0 if balance >= 0 else 150, 0, 0)
-    pdf.cell(100, 10, f"BALANCE NETO: ${balance:,.2f}", border="T")
-    pdf.ln(15)
+
+    # Tarjeta Saldo Neto
+    pdf.set_fill_color(22, 78, 38) if balance >= 0 else pdf.set_fill_color(185, 28, 28)
+    pdf.rect(14, start_y, 88, 25, "F")
+    pdf.set_xy(18, start_y + 4)
+    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_text_color(200, 230, 201)
+    pdf.cell(80, 4, "BALANCE NETO DISPONIBLE:")
+    pdf.set_xy(18, start_y + 11)
+    pdf.set_font("Helvetica", "B", 15)
+    pdf.set_text_color(255, 255, 255)
+    pdf.cell(80, 8, _fmt_money_co(balance))
+
+    # Tarjetas Ingresos y Gastos
+    pdf.set_fill_color(248, 251, 248)
+    pdf.set_draw_color(200, 220, 200)
+    pdf.rect(106, start_y, 90, 25, "DF")
+
+    pdf.set_xy(110, start_y + 3)
+    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_text_color(22, 101, 52)
+    pdf.cell(42, 5, "Total Ingresos:")
+    pdf.set_font("Helvetica", "B", 9)
+    pdf.cell(40, 5, _fmt_money_co(total_income), align="R", ln=True)
+
+    pdf.set_xy(110, start_y + 11)
+    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_text_color(185, 28, 28)
+    pdf.cell(42, 5, "Total Egresos:")
+    pdf.set_font("Helvetica", "B", 9)
+    pdf.cell(40, 5, _fmt_money_co(total_expenses), align="R", ln=True)
+
+    pdf.set_xy(110, start_y + 18)
+    pdf.set_font("Helvetica", "", 7)
+    pdf.set_text_color(100, 116, 139)
+    pdf.cell(82, 4, f"Transacciones en periodo: {len(txs)} movimientos", align="R")
+
+    pdf.set_y(start_y + 32)
 
     # Tabla de Transacciones
-    pdf.set_text_color(0)
-    pdf.set_font("Helvetica", "B", 12)
-    pdf.cell(0, 10, "Detalle de Movimientos", ln=True)
+    pdf.set_font("Helvetica", "B", 11)
+    pdf.set_text_color(22, 78, 38)
+    pdf.cell(0, 7, "DETALLE CRONOLOGICO DE TRANSACCIONES", ln=True)
 
-    headers = ["Fecha", "Tipo", "Categoría", "Monto"]
-    col_widths = [30, 30, 70, 60]
+    headers = ["Fecha", "Tipo", "Categoría", "Monto", "Descripción"]
+    col_widths = [26, 24, 42, 34, 56]
 
-    pdf.set_font("Helvetica", "B", 10)
-    pdf.set_fill_color(220, 240, 220)
+    pdf.set_font("Helvetica", "B", 8.5)
+    pdf.set_fill_color(22, 78, 38)
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_draw_color(22, 78, 38)
     for h, w in zip(headers, col_widths):
         pdf.cell(w, 8, h, border=1, fill=True, align="C")
     pdf.ln()
 
-    pdf.set_font("Helvetica", "", 9)
+    pdf.set_font("Helvetica", "", 8)
+    pdf.set_draw_color(226, 232, 240)
+    fill = False
+
     for t in txs:
-        pdf.cell(30, 7, _fmt_date(t.date), border=1)
-        pdf.cell(30, 7, _fmt_enum(t.transaction_type), border=1)
-        pdf.cell(70, 7, _fmt_enum(t.category), border=1)
-        pdf.cell(60, 7, f"${t.amount:,.2f}", border=1, align="R")
+        if pdf.get_y() > 255:
+            pdf.add_page()
+            pdf.set_font("Helvetica", "B", 8.5)
+            pdf.set_fill_color(22, 78, 38)
+            pdf.set_text_color(255, 255, 255)
+            for h, w in zip(headers, col_widths):
+                pdf.cell(w, 8, h, border=1, fill=True, align="C")
+            pdf.ln()
+            pdf.set_font("Helvetica", "", 8)
+
+        pdf.set_fill_color(248, 252, 248) if fill else pdf.set_fill_color(255, 255, 255)
+        pdf.set_text_color(35, 35, 35)
+
+        tx_type_str = _fmt_enum(t.transaction_type)
+        is_inc = "ingreso" in tx_type_str.lower()
+        desc = getattr(t, "description", None) or "-"
+        if len(desc) > 35:
+            desc = desc[:32] + "..."
+
+        pdf.cell(26, 7, _fmt_date(t.date), border="B", fill=True, align="C")
+
+        # Tipo con color
+        if is_inc:
+            pdf.set_text_color(22, 101, 52)
+            pdf.set_font("Helvetica", "B", 8)
+        else:
+            pdf.set_text_color(185, 28, 28)
+            pdf.set_font("Helvetica", "B", 8)
+        pdf.cell(24, 7, tx_type_str, border="B", fill=True, align="C")
+
+        pdf.set_font("Helvetica", "", 8)
+        pdf.set_text_color(35, 35, 35)
+        pdf.cell(42, 7, _fmt_enum(t.category), border="B", fill=True)
+        pdf.cell(34, 7, _fmt_money_co(t.amount), border="B", fill=True, align="R")
+        pdf.cell(56, 7, desc, border="B", fill=True)
         pdf.ln()
+        fill = not fill
+
+    # Firmas
+    y = pdf.get_y() + 10
+    if y > 240:
+        pdf.add_page()
+        y = 50
+
+    pdf.set_draw_color(100, 116, 139)
+    pdf.set_line_width(0.4)
+    pdf.line(25, y, 90, y)
+    pdf.set_xy(25, y + 2)
+    pdf.set_font("Helvetica", "B", 8.5)
+    pdf.set_text_color(30, 41, 59)
+    pdf.cell(65, 4.5, "Firma Administrador / Contador", align="C", ln=True)
+
+    pdf.line(120, y, 185, y)
+    pdf.set_xy(120, y + 2)
+    pdf.set_font("Helvetica", "B", 8.5)
+    pdf.set_text_color(30, 41, 59)
+    pdf.cell(65, 4.5, "Firma Propietario / Gerente", align="C", ln=True)
 
     return bytes(pdf.output())
 

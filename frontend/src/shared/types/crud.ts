@@ -43,15 +43,21 @@ export interface CRUDFormField<T = any> {
   };
   colSpan?: number;
   helperText?: string;
+  /** Sugerencias rápidas (chips táctiles) para autocompletar con 1 toque */
+  suggestions?: Array<string | { label: string; value: any }>;
   /**
-   * Campo del que depende éste; se reevalúa `showIf` cuando cambia.
-   * NOTA: declarativo — ningún renderer lo consume todavía.
+   * Campo del que depende éste: su valor alimenta `showIf` y `optionsFilter`.
    */
   dependsOn?: keyof T | string;
   /** Devuelve un parche del formulario cuando cambia el valor del campo. */
   onChange?: (value: any, data: T) => Partial<T> | void;
   /** Oculta el campo cuando devuelve false. */
   showIf?: (data: T) => boolean;
+  /**
+   * Filtra las opciones de un select según el valor del campo `dependsOn`
+   * (p. ej. un selector de tipo que restringe la lista de un combobox).
+   */
+  optionsFilter?: (dependValue: any, options: CRUDFieldOption[]) => CRUDFieldOption[];
   /** Carga las opciones de forma asíncrona (selects dependientes). */
   loadOptions?: () => Promise<CRUDFieldOption[]>;
 }
@@ -96,6 +102,8 @@ export interface CRUDConfig<T = any, TInput = any> {
   enableCreateModal?: boolean;
   enableEditModal?: boolean;
   enableDelete?: boolean;
+  /** Manejador personalizado para abrir el modal de creación (ej. formularios especializados). */
+  onOpenCreate?: () => void;
   /** Consulta el endpoint genérico de dependencias antes de eliminar. */
   checkDependencies?: boolean;
   customHeader?: ReactNode;
@@ -106,6 +114,11 @@ export interface CRUDConfig<T = any, TInput = any> {
    * para bloques anchos como una barra de chips.
    */
   toolbarPlacement?: 'inline' | 'row';
+  /**
+   * La búsqueda arranca compacta y se expande al recibir foco, dejando todo
+   * el toolbar en una sola fila.
+   */
+  expandableSearch?: boolean;
   customActions?: (
     item: T,
     options?: { openCreate?: (prefill?: any) => void; openEdit?: (item: T) => void },
@@ -116,6 +129,13 @@ export interface CRUDConfig<T = any, TInput = any> {
     handlers: { openCreate?: (prefill?: any) => void; close?: () => void },
   ) => ReactNode;
   viewMode?: 'table' | 'cards';
+  /**
+   * Jerarquía de las tarjetas CRUD en pantallas pequeñas. Las claves deben
+   * coincidir con las columnas configuradas.
+   */
+  mobileTitleColumn?: string;
+  mobileHighlightColumn?: string;
+  mobileColumns?: string[];
   autoHeight?: boolean;
   /** `openDetail` abre el modal de detalle; útil para tarjetas personalizadas. */
   renderCard?: (item: T, openDetail?: (item: T) => void) => ReactNode;
@@ -139,6 +159,8 @@ export interface CRUDConfig<T = any, TInput = any> {
   additionalFilters?: Record<string, any>;
   showEditTimestamps?: boolean;
   showIdInDetailTitle?: boolean;
+  /** Título contextual para la ficha de detalle de un registro. */
+  detailTitle?: string | ((item: T) => ReactNode);
   showDetailTimestamps?: boolean;
   confirmDeleteTitle?: string;
   confirmDeleteDescription?: string;

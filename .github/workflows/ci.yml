@@ -50,10 +50,7 @@ jobs:
           DB_ENGINE: sqlite
           REDIS_URL: ""
           CELERY_BROKER_URL: ""
-        run: |
-          python -m pytest tests/ -v --tb=short -x \
-            --ignore=tests/integration 2>&1 || true
-          echo "Backend tests completed"
+        run: python -m pytest tests/ -v --tb=short -x --ignore=tests/integration
 
   # ── Frontend: TypeScript + Build ──────────────────────────────────────
   frontend:

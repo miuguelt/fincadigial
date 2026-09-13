@@ -12,9 +12,11 @@ import {
   Syringe,
   Pill,
   TrendingUp,
+  Plus,
 } from 'lucide-react';
 import { cn } from '@/shared/ui/cn';
 import { Badge } from '@/shared/ui/badge';
+import { AnimalMetricsCharts } from '../AnimalMetricsCharts';
 import { CollapsibleCard } from '@/shared/ui/common/CollapsibleCard';
 import { LivestockTagWidget } from '../LivestockTagWidget';
 import { AlertsSection } from '../AlertsSection';
@@ -49,12 +51,14 @@ function HeroKpiCard({
   sub,
   icon,
   accent = 'emerald',
+  action,
 }: {
   label: string;
   value: React.ReactNode;
   sub?: React.ReactNode;
   icon: React.ReactNode;
   accent?: 'emerald' | 'blue' | 'amber' | 'purple';
+  action?: React.ReactNode;
 }) {
   const accentStyles: Record<string, { bg: string; ring: string }> = {
     emerald: {
@@ -87,8 +91,11 @@ function HeroKpiCard({
         <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
           {label}
         </span>
-        <div className={cn('h-7 w-7 rounded-lg flex items-center justify-center shrink-0', cfg.bg)}>
-          {icon}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {action}
+          <div className={cn('h-7 w-7 rounded-lg flex items-center justify-center shrink-0', cfg.bg)}>
+            {icon}
+          </div>
         </div>
       </div>
       <div className="mt-1 text-lg font-black text-foreground tabular-nums tracking-tight fit-clamp" title={String(value ?? '')}>
@@ -353,7 +360,43 @@ function QuickStatsGrid({
   );
 }
 
-export interface AnimalOverviewTabProps {
+export function WeightCurveCard({ controls }: { controls: any[] }) {
+  const [open, setOpen] = React.useState(false);
+  const sorted = React.useMemo(
+    () =>
+      [...controls]
+        .filter((c) => c.weight && c.checkup_date)
+        .sort((a, b) => new Date(a.checkup_date).getTime() - new Date(b.checkup_date).getTime()),
+    [controls]
+  );
+  if (sorted.length === 0) return null;
+
+  return (
+    <div className="rounded-xl border border-border/60 bg-card/40 p-3.5">
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground inline-flex items-center gap-1.5">
+          <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+          Curva de peso · {sorted.length} registro{sorted.length > 1 ? 's' : ''}
+        </div>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="inline-flex items-center gap-1 h-8 px-3 rounded-lg border border-border/50 hover:bg-muted/40 text-xs font-bold transition-all active:scale-95"
+          aria-expanded={open}
+        >
+          {open ? 'Ocultar' : 'Ver curva'}
+        </button>
+      </div>
+      {open && (
+        <div className="mt-3">
+          <AnimalMetricsCharts controls={controls} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface AnimalOverviewTabProps {
   animal: any;
   breedLabel: string;
   fatherLabel: string;
@@ -372,6 +415,8 @@ export interface AnimalOverviewTabProps {
   onFatherClick?: (id: number) => void;
   onMotherClick?: (id: number) => void;
   formatDate: (dateStr: string) => string;
+  /** Acceso rápido para registrar un nuevo control de peso desde el resumen. */
+  onRegisterWeight?: () => void;
 }
 
 export const AnimalOverviewTab: React.FC<AnimalOverviewTabProps> = ({
@@ -393,6 +438,7 @@ export const AnimalOverviewTab: React.FC<AnimalOverviewTabProps> = ({
   onFatherClick,
   onMotherClick,
   formatDate,
+  onRegisterWeight,
 }) => {
   const gender = animal.sex || animal.gender;
   const status = animal.status || 'Vivo';
@@ -410,6 +456,20 @@ export const AnimalOverviewTab: React.FC<AnimalOverviewTabProps> = ({
     return sorted.length > 0 ? formatDate(sorted[0].checkup_date) : '-';
   }, [controls, formatDate]);
 
+  // Variación de peso entre los dos últimos controles (útil para seguir el avance)
+  const lastWeightDelta = React.useMemo(() => {
+    const sorted = [...controls]
+      .filter((c) => c.weight && c.checkup_date)
+      .sort((a, b) => new Date(b.checkup_date).getTime() - new Date(a.checkup_date).getTime());
+    if (sorted.length >= 2) {
+      const delta = Number(sorted[0].weight) - Number(sorted[1].weight);
+      if (delta !== 0) {
+        return `${delta > 0 ? '+' : ''}${delta.toFixed(1)} kg`;
+      }
+    }
+    return null;
+  }, [controls]);
+
   return (
     <div className="space-y-4">
       {/* 4 KPIs Bento Principales */}
@@ -417,9 +477,35 @@ export const AnimalOverviewTab: React.FC<AnimalOverviewTabProps> = ({
         <HeroKpiCard
           label="Peso Actual"
           value={displayWeight}
-          sub={latestControlDate !== '-' ? `Reg. ${latestControlDate}` : 'Sin pesaje'}
+          sub={
+            <span>
+              {latestControlDate !== '-' ? `Reg. ${latestControlDate}` : 'Sin pesaje'}
+              {lastWeightDelta && (
+                <span className={lastWeightDelta.startsWith('+')
+                  ? 'text-emerald-600 dark:text-emerald-400 font-bold ml-1'
+                  : 'text-amber-600 dark:text-amber-400 font-bold ml-1'}
+                >
+                  · {lastWeightDelta}
+                </span>
+              )}
+            </span>
+          }
           icon={<Scale className="h-4 w-4" />}
           accent="emerald"
+          action={
+            onRegisterWeight ? (
+              <button
+                type="button"
+                onClick={onRegisterWeight}
+                title="Registrar nuevo control de peso"
+                className="inline-flex items-center gap-1 h-7 px-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 text-[11px] font-bold transition-all duration-150 active:scale-95"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Registrar peso</span>
+                <span className="sm:hidden">Peso</span>
+              </button>
+            ) : undefined
+          }
         />
         <HeroKpiCard
           label="Edad"
@@ -443,6 +529,11 @@ export const AnimalOverviewTab: React.FC<AnimalOverviewTabProps> = ({
           accent="purple"
         />
       </div>
+
+      {/* Curva de peso compacta en el resumen */}
+      {controls.some((c: any) => c.weight) && (
+        <WeightCurveCard controls={controls} />
+      )}
 
       {/* Ubicación y Genealogía Rápida */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

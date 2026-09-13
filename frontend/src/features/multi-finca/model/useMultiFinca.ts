@@ -4,6 +4,7 @@ import { useAuth } from '@/features/auth/model/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/app/providers/ToastContext';
 import { clearAllIndexedDBCache } from '@/shared/api/cache/indexedDBCache';
+import { USE_BEARER_AUTH } from '@/shared/api/client/settings';
 
 export const useMultiFinca = () => {
   const { refreshUserData } = useAuth();
@@ -16,11 +17,10 @@ export const useMultiFinca = () => {
     try {
       const resp = await apiClient.post(`/api/v1/multi-finca/switch`, { finca_id: fincaId });
 
-      // Persistir token de forma explícita si se recibió en la respuesta
-      const token = resp.data?.data?.access_token || resp.data?.access_token;
-      if (token) {
-        localStorage.setItem('finca_access_token', token);
-        sessionStorage.setItem('finca_access_token', token);
+      // Cookie-only es el modo predeterminado para la aplicación web.
+      if (USE_BEARER_AUTH) {
+        const token = resp.data?.data?.access_token || resp.data?.access_token;
+        if (token) sessionStorage.setItem('finca_access_token', token);
       }
 
       // Limpiar caché local offline para evitar datos residuales de la finca anterior

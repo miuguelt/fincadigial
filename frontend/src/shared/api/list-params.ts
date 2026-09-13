@@ -32,15 +32,21 @@ export function buildListParams(opts: Record<string, any> = {}): Record<string, 
     }
   } catch { /* Browser capability detection falls back to the default limit. */ }
 
+  const formattedFields = Array.isArray(fields)
+    ? fields.map((f) => String(f).trim()).filter(Boolean).join(',')
+    : fields;
+  const searchValue = search ?? q;
+
   return {
     page: page ?? rest.page ?? 1,
     limit: limit ?? per_page ?? rest.limit ?? defaultLimit,
-    search: search ?? q,
+    search: searchValue,
+    q: searchValue,
     sort_by: sort_by ?? sortBy,
     sort_order: sort_order ?? order,
     include_relations,
     cache_bust,
-    fields,
+    fields: formattedFields,
     export: exportFlag,
     ...rest,
   };

@@ -10,13 +10,15 @@ import {
   Target,
   Sparkles,
   Award,
-  ListFilter
+  ListFilter,
+  Eye,
+  Plus,
 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/shared/ui/dialog';
 import { AdminCRUDPage } from '@/widgets/admin-crud';
 import { reproductionService, ReproductionSummary } from '@/entities/reproduction/api/reproduction.service';
 import { animalService } from '@/entities/animal/api/animal.service';
@@ -27,6 +29,7 @@ import { getAutoStatusClass } from '@/shared/utils/badgeStyles';
 import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
 import { AnimalDetailModal } from '@/widgets/dashboard/animals/AnimalDetailModal';
 import { ReproductionBatchModal } from '@/widgets/reproduction/ReproductionBatchModal';
+import { ReproductiveEventQuickModal, type EventTypeOption } from '@/widgets/reproduction/ReproductiveEventQuickModal';
 import { OffspringManagementTab } from '@/widgets/reproduction/OffspringManagementTab';
 import AssistedCalvingForm from '@/widgets/reproduction/AssistedCalvingForm';
 import ReproductionCalendar from '@/widgets/reproduction/ReproductionCalendar';
@@ -35,20 +38,24 @@ import HerdKpisPage from './HerdKpis';
 import FertilityDashboard from './FertilityDashboard';
 import SirePerformance from './SirePerformance';
 import { useToast } from '@/app/providers/ToastContext';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 
 /** Etiqueta del selector: el registro manda, la raza desambigua. */
 const animalLabel = (animal: { record: string; breed?: { name?: string } | null }) =>
   animal.breed?.name ? `${animal.record} · ${animal.breed.name}` : animal.record;
 
 const TAB_TRIGGER_CLASS =
-  'min-h-12 min-w-0 gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:text-sm transition-all cursor-pointer';
+  'min-h-11 min-w-0 gap-1.5 rounded-xl px-2 py-2 text-[11px] font-bold text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:px-3 sm:text-sm transition-all cursor-pointer';
 
 export default function ReproductionHub() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const initialTab = searchParams.get('tab') || 'eventos';
   const [activeTab, setActiveTab] = useState(initialTab);
   const { showToast } = useToast();
+
+  const urlAnimalId = searchParams.get('animal_id');
+  const filterAnimalId = urlAnimalId ? Number(urlAnimalId) : null;
 
   const [summary, setSummary] = useState<ReproductionSummary | null>(null);
   const [loadingSummary, setLoadingSummary] = useState(true);
@@ -59,8 +66,26 @@ export default function ReproductionHub() {
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // Modal rápido de novedad reproductiva (campo/potrero)
+  const [isQuickEventModalOpen, setIsQuickEventModalOpen] = useState(false);
+  const [quickEventAnimalId, setQuickEventAnimalId] = useState<number | null>(filterAnimalId);
+  const [quickEventAnimalRecord, setQuickEventAnimalRecord] = useState<string | null>(null);
+  const [quickEventDefaultType, setQuickEventDefaultType] = useState<EventTypeOption>('Celo');
+
   // Sub-tab para Fertilidad vs Toros
   const [fertilitySubTab, setFertilitySubTab] = useState<'fertility' | 'sires'>('fertility');
+
+  // Precarga automática desde navegación externa (ej. HeatAlertsWidget o links con state)
+  useEffect(() => {
+    const routeState = location.state as { preselectAnimal?: number; animalRecord?: string; eventType?: EventTypeOption } | null;
+    if (routeState?.preselectAnimal) {
+      setQuickEventAnimalId(routeState.preselectAnimal);
+      if (routeState.animalRecord) setQuickEventAnimalRecord(routeState.animalRecord);
+      if (routeState.eventType) setQuickEventDefaultType(routeState.eventType);
+      setIsQuickEventModalOpen(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const loadSummaryData = useCallback(async () => {
     setLoadingSummary(true);
@@ -394,7 +419,7 @@ export default function ReproductionHub() {
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-background via-background to-muted/20 p-4 sm:p-6 lg:p-8 space-y-6 overflow-x-hidden">
+    <div className="min-h-full bg-gradient-to-br from-background via-background to-muted/20 p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 overflow-x-hidden">
       {/* Header Principal con Acciones Rápidas */}
       <DataScreenHeader
         icon={<Heart className="h-5 w-5 text-white" />}
@@ -404,22 +429,39 @@ export default function ReproductionHub() {
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Button
+              size="sm"
+              onClick={() => {
+                setQuickEventAnimalId(filterAnimalId);
+                setQuickEventAnimalRecord(null);
+                setQuickEventDefaultType('Celo');
+                setIsQuickEventModalOpen(true);
+              }}
+              className="h-9 w-full gap-2 rounded-lg font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-md shadow-purple-600/20 sm:w-auto"
+            >
+              <Plus className="h-4 w-4" />
+              <span className="sm:hidden">Nueva Novedad</span>
+              <span className="hidden sm:inline">+ Novedad Reproductiva</span>
+            </Button>
+
+            <Button
               variant="outline"
               size="sm"
               onClick={() => setIsBatchModalOpen(true)}
-              className="h-9 gap-2 rounded-lg font-bold border-purple-500/30 text-purple-700 dark:text-purple-300 hover:bg-purple-500/10"
+              className="h-9 w-full gap-2 rounded-lg font-bold border-purple-500/30 text-purple-700 dark:text-purple-300 hover:bg-purple-500/10 sm:w-auto"
             >
               <Users className="h-4 w-4 text-purple-600" />
-              Jornada por Lote
+              <span className="sm:hidden">Jornada por lote</span>
+              <span className="hidden sm:inline">Jornada por Lote</span>
             </Button>
 
             <Button
               size="sm"
               onClick={() => setIsCalvingModalOpen(true)}
-              className="h-9 gap-2 rounded-lg font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-md shadow-emerald-600/20"
+              className="h-9 w-full gap-2 rounded-lg font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-md shadow-emerald-600/20 sm:w-auto"
             >
               <Baby className="h-4 w-4" />
-              Parto Asistido & Cría
+              <span className="sm:hidden">Registrar parto</span>
+              <span className="hidden sm:inline">Parto Asistido & Cría</span>
             </Button>
 
             <Button
@@ -436,10 +478,10 @@ export default function ReproductionHub() {
       />
 
       {/* KPI Cards Bento (Métricas Clave de Reproducción) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
         {/* Preñeces Activas */}
         <Card className="border-border/50 border-l-4 border-l-purple-500 bg-card/50 backdrop-blur-sm shadow-sm rounded-xl overflow-hidden">
-          <CardHeader className="pb-1 flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-row items-center justify-between p-3 pb-1 sm:p-5 sm:pb-1">
             <CardDescription className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Preñeces Activas
             </CardDescription>
@@ -447,7 +489,7 @@ export default function ReproductionHub() {
               <Heart className="h-4 w-4" />
             </div>
           </CardHeader>
-          <CardContent className="pb-4">
+          <CardContent className="p-3 pt-0 sm:p-5 sm:pt-0">
             <CardTitle className="text-2xl sm:text-3xl font-black text-foreground">
               {loadingSummary ? '...' : summary?.active_pregnancies ?? 0}
             </CardTitle>
@@ -461,7 +503,7 @@ export default function ReproductionHub() {
         <Card className={`border-border/50 border-l-4 ${
           (summary?.overdue_births ?? 0) > 0 ? 'border-l-rose-500' : 'border-l-blue-500'
         } bg-card/50 backdrop-blur-sm shadow-sm rounded-xl overflow-hidden`}>
-          <CardHeader className="pb-1 flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-row items-center justify-between p-3 pb-1 sm:p-5 sm:pb-1">
             <CardDescription className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Partos Próximos (30d)
             </CardDescription>
@@ -471,7 +513,7 @@ export default function ReproductionHub() {
               <Calendar className="h-4 w-4" />
             </div>
           </CardHeader>
-          <CardContent className="pb-4">
+          <CardContent className="p-3 pt-0 sm:p-5 sm:pt-0">
             <div className="flex items-baseline gap-2">
               <CardTitle className="text-2xl sm:text-3xl font-black text-foreground">
                 {loadingSummary ? '...' : summary?.births_next_30_days ?? 0}
@@ -490,7 +532,7 @@ export default function ReproductionHub() {
 
         {/* Tasa de Concepción */}
         <Card className="border-border/50 border-l-4 border-l-emerald-500 bg-card/50 backdrop-blur-sm shadow-sm rounded-xl overflow-hidden">
-          <CardHeader className="pb-1 flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-row items-center justify-between p-3 pb-1 sm:p-5 sm:pb-1">
             <CardDescription className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Tasa de Concepción
             </CardDescription>
@@ -498,7 +540,7 @@ export default function ReproductionHub() {
               <TrendingUp className="h-4 w-4" />
             </div>
           </CardHeader>
-          <CardContent className="pb-4">
+          <CardContent className="p-3 pt-0 sm:p-5 sm:pt-0">
             <CardTitle className="text-2xl sm:text-3xl font-black text-foreground">
               {loadingSummary ? '...' : `${summary?.conception_rate_pct ?? 0}%`}
             </CardTitle>
@@ -510,7 +552,7 @@ export default function ReproductionHub() {
 
         {/* Crías Nacidas */}
         <Card className="border-border/50 border-l-4 border-l-teal-500 bg-card/50 backdrop-blur-sm shadow-sm rounded-xl overflow-hidden">
-          <CardHeader className="pb-1 flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-row items-center justify-between p-3 pb-1 sm:p-5 sm:pb-1">
             <CardDescription className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Nacimientos del Ganado
             </CardDescription>
@@ -518,7 +560,7 @@ export default function ReproductionHub() {
               <Baby className="h-4 w-4" />
             </div>
           </CardHeader>
-          <CardContent className="pb-4">
+          <CardContent className="p-3 pt-0 sm:p-5 sm:pt-0">
             <div className="flex items-baseline gap-2">
               <CardTitle className="text-2xl sm:text-3xl font-black text-foreground">
                 {loadingSummary ? '...' : summary?.total_alive_offspring ?? 0}
@@ -534,7 +576,7 @@ export default function ReproductionHub() {
 
       {/* Navegación por Pestañas del Hub Reproductivo */}
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="mb-6 grid h-auto w-full grid-cols-2 gap-1 rounded-2xl border border-border bg-muted/60 p-1.5 md:grid-cols-6">
+        <TabsList className="mb-4 grid h-auto w-full grid-cols-2 gap-1 rounded-2xl border border-border bg-muted/60 p-1 sm:mb-6 sm:grid-cols-3 lg:grid-cols-6">
           <TabsTrigger value="eventos" className={TAB_TRIGGER_CLASS}>
             <ListFilter className="h-4 w-4 text-purple-600" />
             Eventos
@@ -562,7 +604,43 @@ export default function ReproductionHub() {
         </TabsList>
 
         {/* PESTAÑA 1: Eventos Reproductivos CRUD */}
-        <TabsContent value="eventos" className="mt-0">
+        <TabsContent value="eventos" className="mt-0 space-y-3">
+          {filterAnimalId && (
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-foreground">
+              <div className="flex items-center gap-2.5">
+                <Badge variant="outline" className="bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-500/30 font-black">
+                  Filtro por Animal
+                </Badge>
+                <span className="text-xs sm:text-sm font-bold">
+                  Historial reproductivo del animal Arete #{filterAnimalId}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setSelectedAnimalId(filterAnimalId)}
+                  className="h-8 text-xs font-bold gap-1 rounded-xl"
+                >
+                  <Eye className="h-3.5 w-3.5 text-purple-600" />
+                  Ver Ficha Animal
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    const newParams = new URLSearchParams(searchParams);
+                    newParams.delete('animal_id');
+                    setSearchParams(newParams);
+                  }}
+                  className="h-8 text-xs font-bold text-muted-foreground hover:text-foreground rounded-xl"
+                >
+                  Quitar filtro (Ver todo el ganado)
+                </Button>
+              </div>
+            </div>
+          )}
+
           <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
             <AdminCRUDPage
               config={crudConfig}
@@ -570,6 +648,7 @@ export default function ReproductionHub() {
               initialFormData={initialFormData}
               mapResponseToForm={mapResponseToForm}
               validateForm={validateForm}
+              filters={filterAnimalId ? { animal_id: filterAnimalId } : undefined}
             />
           </div>
         </TabsContent>
@@ -583,7 +662,14 @@ export default function ReproductionHub() {
         <TabsContent value="alertas" className="mt-0 space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1">
-              <HeatAlertsWidget />
+              <HeatAlertsWidget
+                onRegisterHeat={(animalId, record) => {
+                  setQuickEventAnimalId(animalId);
+                  setQuickEventAnimalRecord(record || null);
+                  setQuickEventDefaultType('Celo');
+                  setIsQuickEventModalOpen(true);
+                }}
+              />
             </div>
             <div className="lg:col-span-2">
               <Card className="border-border/60 rounded-2xl bg-card/60 backdrop-blur-sm">
@@ -627,12 +713,12 @@ export default function ReproductionHub() {
 
         {/* PESTAÑA 5: Fertilidad y Toros */}
         <TabsContent value="fertilidad" className="mt-0 space-y-4">
-          <div className="flex items-center gap-2 border-b border-border pb-3">
+          <div className="grid grid-cols-2 gap-2 border-b border-border pb-3 sm:flex sm:items-center">
             <Button
               variant={fertilitySubTab === 'fertility' ? 'primary' : 'outline'}
               size="sm"
               onClick={() => setFertilitySubTab('fertility')}
-              className="h-9 gap-2 font-bold rounded-lg"
+              className="h-10 min-w-0 gap-1.5 rounded-lg px-2 text-xs font-bold sm:h-9 sm:gap-2 sm:px-3 sm:text-sm"
             >
               <Heart className="h-4 w-4" />
               Auditoría de Fertilidad
@@ -641,7 +727,7 @@ export default function ReproductionHub() {
               variant={fertilitySubTab === 'sires' ? 'primary' : 'outline'}
               size="sm"
               onClick={() => setFertilitySubTab('sires')}
-              className="h-9 gap-2 font-bold rounded-lg"
+              className="h-10 min-w-0 gap-1.5 rounded-lg px-2 text-xs font-bold sm:h-9 sm:gap-2 sm:px-3 sm:text-sm"
             >
               <Award className="h-4 w-4" />
               Desempeño de Toros (Sires)
@@ -663,19 +749,27 @@ export default function ReproductionHub() {
 
       {/* Modal: Parto Asistido */}
       <Dialog open={isCalvingModalOpen} onOpenChange={setIsCalvingModalOpen}>
-        <DialogContent className="max-w-4xl p-0 overflow-hidden max-h-[90vh] overflow-y-auto rounded-2xl border border-border shadow-2xl">
-          <DialogHeader className="p-6 pb-3 border-b bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <Baby className="h-5 w-5" />
+        <DialogContent
+          fullWidth
+          className="assisted-calving-dialog flex max-h-[calc(100dvh-0.75rem)] w-[calc(100vw-0.75rem)] max-w-[1180px] flex-col gap-0 overflow-hidden rounded-2xl border border-border p-0 shadow-2xl sm:max-h-[calc(100dvh-2rem)] sm:w-[calc(100vw-2rem)]"
+          closeButtonClassName="bg-black/10 text-white hover:bg-black/20 hover:text-white"
+        >
+          <DialogHeader className="shrink-0 border-b bg-gradient-to-r from-emerald-600 to-teal-600 p-4 pb-3 pr-14 text-left text-white sm:p-5 sm:pr-16 lg:px-6 lg:py-5">
+            <DialogTitle className="flex items-start gap-2 text-lg font-bold leading-tight sm:items-center sm:text-xl">
+              <Baby className="mt-0.5 h-5 w-5 shrink-0 sm:mt-0" />
               Registrar Parto Asistido & Cría
             </DialogTitle>
+            <DialogDescription className="mt-1 text-xs font-medium leading-relaxed text-emerald-100/90">
+              Protocolo veterinario post-parto, atención del neonato y alta en inventario
+            </DialogDescription>
           </DialogHeader>
-          <div className="p-6">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-5 lg:p-6">
             <AssistedCalvingForm
               onComplete={() => {
                 setIsCalvingModalOpen(false);
                 handleDataRefresh();
               }}
+              onCancel={() => setIsCalvingModalOpen(false)}
             />
           </div>
         </DialogContent>
@@ -685,6 +779,16 @@ export default function ReproductionHub() {
       <ReproductionBatchModal
         isOpen={isBatchModalOpen}
         onOpenChange={setIsBatchModalOpen}
+        onSuccess={() => handleDataRefresh()}
+      />
+
+      {/* Modal Rápido de Novedad Reproductiva */}
+      <ReproductiveEventQuickModal
+        isOpen={isQuickEventModalOpen}
+        onOpenChange={setIsQuickEventModalOpen}
+        defaultAnimalId={quickEventAnimalId}
+        defaultAnimalRecord={quickEventAnimalRecord}
+        defaultEventType={quickEventDefaultType}
         onSuccess={() => handleDataRefresh()}
       />
 

@@ -83,6 +83,20 @@ class AttachmentCompleteResource(Resource):
         if digest.hexdigest() != sha256:
             return APIResponse.error("Hash sha256 no coincide", status_code=409)
 
+        total_size = os.path.getsize(part_path)
+        content_type = str(payload.get("content_type") or "").lower()
+        if payload.get("entity_type") == "technical_assistance":
+            if not (content_type.startswith("image/") or content_type.startswith("audio/")):
+                return APIResponse.error(
+                    "La asistencia técnica solo admite fotos o audios",
+                    status_code=422,
+                )
+            if total_size > 15 * 1024 * 1024:
+                return APIResponse.error(
+                    "El adjunto de asistencia no puede superar 15 MB",
+                    status_code=413,
+                )
+
         final_path = os.path.join(base, filename)
         os.replace(part_path, final_path)
         size = os.path.getsize(final_path)
@@ -105,7 +119,7 @@ class AttachmentCompleteResource(Resource):
             if payload.get("entity_id") is not None
             else None
         )
-        blob.content_type = payload.get("content_type")
+        blob.content_type = content_type or payload.get("content_type")
         blob.total_size = size
         blob.received_size = size
         blob.storage_path = final_path.replace("\\", "/")
@@ -114,6 +128,7 @@ class AttachmentCompleteResource(Resource):
 
         return APIResponse.success(
             {
+                "id": blob.id,
                 "attachment_id": blob.attachment_id,
                 "filename": blob.filename,
                 "sha256": blob.sha256,

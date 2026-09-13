@@ -47,7 +47,13 @@ class TreatmentRecommendationControlService:
             recommendation_id,
             control_id,
         )
-        allowed = {"completed", "control_date", "observation"}
+        allowed = {
+            "completed",
+            "control_date",
+            "observation",
+            "fulfilled_kind",
+            "fulfilled_ref_id",
+        }
         payload = {key: value for key, value in data.items() if key in allowed}
         if not payload:
             raise ValidationError(
@@ -55,6 +61,9 @@ class TreatmentRecommendationControlService:
             )
         if payload.get("completed") is False and "control_date" not in payload:
             payload["control_date"] = None
+            # Al abrir un control de nuevo, el acto vinculado pierde validez.
+            payload.setdefault("fulfilled_kind", None)
+            payload.setdefault("fulfilled_ref_id", None)
         if payload.get("completed"):
             payload["recorded_by"] = user_id
         try:

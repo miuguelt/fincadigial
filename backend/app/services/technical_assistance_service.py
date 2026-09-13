@@ -14,10 +14,12 @@ from sqlalchemy import case, or_
 
 from app import db
 from app.models.campesino import AssistanceStatus, TechnicalAssistanceRequest
+from app.models.sync import AttachmentBlob
 from app.models.user import Role, User
 from app.models.user_finca import UserFinca
 from app.services.event_service import EventService
 from app.services.push_notification_service import PushNotificationService
+from app.utils.file_storage import get_public_url
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +94,18 @@ class TechnicalAssistanceService:
     @staticmethod
     def _serialize(item: TechnicalAssistanceRequest) -> dict:
         data = item.to_namespace_dict(include_relations=True)
+        attachment = getattr(item, "attachment_blob", None)
+        data["attachment"] = (
+            {
+                "id": attachment.id,
+                "filename": attachment.filename,
+                "content_type": attachment.content_type,
+                "total_size": attachment.total_size,
+                "url": get_public_url(attachment.storage_path),
+            }
+            if attachment and attachment.is_complete and attachment.storage_path
+            else None
+        )
         credential = (
             getattr(item.assignee, "professional_credential", None)
             if item.assignee
@@ -126,6 +140,7 @@ class TechnicalAssistanceService:
         category = str(payload.get("category") or "").strip()
         description = str(payload.get("description") or "").strip()
         priority = str(payload.get("priority") or "medium").strip().lower()
+        attachment_blob_id = payload.get("attachment_blob_id")
 
         errors = {}
         if len(title) < 4:
@@ -136,6 +151,21 @@ class TechnicalAssistanceService:
             errors["description"] = "Describe el problema con al menos 10 caracteres."
         if priority not in VALID_PRIORITIES:
             errors["priority"] = "La prioridad indicada no es válida."
+        attachment = None
+        if attachment_blob_id is not None:
+            try:
+                attachment_id = int(attachment_blob_id)
+            except (TypeError, ValueError):
+                attachment_id = 0
+            attachment = AttachmentBlob.query.filter_by(
+                id=attachment_id,
+                finca_id=finca_id,
+                is_complete=True,
+            ).first()
+            if not attachment:
+                errors["attachment_blob_id"] = "El adjunto no está disponible para esta finca."
+            elif not (attachment.content_type or "").startswith(("image/", "audio/")):
+                errors["attachment_blob_id"] = "La asistencia solo admite fotos o audios."
         if errors:
             raise TechnicalAssistanceError(
                 "Revisa los datos de la solicitud.",
@@ -150,9 +180,15 @@ class TechnicalAssistanceService:
             category=category,
             description=description,
             priority=priority,
+            attachment_blob_id=attachment.id if attachment else None,
             status=AssistanceStatus.OPEN,
             requested_at=datetime.now(UTC),
         )
+
+        if attachment:
+            attachment.entity_type = "technical_assistance"
+            attachment.entity_id = str(item.id)
+            db.session.commit()
 
         notification = cls._notify_veterinarians(item)
         return {
@@ -225,14 +261,10 @@ class TechnicalAssistanceService:
     ) -> dict:
         query = TechnicalAssistanceRequest.query.filter_by(finca_id=finca_id)
         if role not in MANAGER_ROLES:
-            # Legacy rows did not record their requester. They remain visible to
-            # members of the same farm until each case is closed or assigned.
-            query = query.filter(
-                or_(
-                    TechnicalAssistanceRequest.requester_user_id == user_id,
-                    TechnicalAssistanceRequest.requester_user_id.is_(None),
-                )
-            )
+            # A missing requester is legacy data, not permission to show the
+            # case to every worker. Owners and administrators retain the farm-
+            # wide view so they can recover or close those historical cases.
+            query = query.filter(TechnicalAssistanceRequest.requester_user_id == user_id)
 
         total = query.count()
         items = (

@@ -1,4 +1,4 @@
-"""Rutas de descendencia: crías del parto y su alta como animal del hato.
+"""Rutas de descendencia: crías del parto y su alta como animal del ganado.
 
 Separadas del CRUD de eventos porque la cría tiene su propio ciclo: primero
 existe como fila de `offspring` con los conteos del parto, y solo entra al
@@ -97,7 +97,7 @@ class CalfRegistration(Resource):
     @reproduction_ns.expect(calf_input_model)
     @reproduction_ns.doc("register_calf")
     def post(self, offspring_id):
-        """Dar de alta la cría como animal del hato.
+        """Dar de alta la cría como animal del ganado.
 
         Deriva del parto la fecha de nacimiento, la madre, el padre del servicio
         que la engendró, la raza y los abuelos conocidos; el operario solo aporta

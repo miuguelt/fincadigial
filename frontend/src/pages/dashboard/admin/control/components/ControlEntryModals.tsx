@@ -11,7 +11,7 @@ interface ControlEntryModalsProps {
   /** Animal preseleccionado cuando la revisión se abrió desde una alerta. */
   healthAnimalId?: number;
   onClose: () => void;
-  onMilkSaved: () => void;
+  onMilkSaved: (record?: { date: string }) => void;
   onControlSaved: () => void;
 }
 

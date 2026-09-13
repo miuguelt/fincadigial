@@ -253,7 +253,7 @@ def run_core_initialization():
         raise e
 
 
-def initialize_finca_defaults(finca_id: int):
+def initialize_finca_defaults(finca_id: int, force: bool = False):
     """
     Asegura que una finca tenga alertas y catálogos base tenant-scoped.
     """
@@ -261,18 +261,33 @@ def initialize_finca_defaults(finca_id: int):
         seed_default_configs_for_finca(finca_id)
         from app.services.catalog_initializer import seed_catalogs_for_finca
 
-        seed_catalogs_for_finca(finca_id)
+        seed_catalogs_for_finca(finca_id, force=force)
         logger.info(
-            f"Configuraciones y catálogos predeterminados aplicados a finca {finca_id}"
+            f"Configuraciones y catálogos predeterminados verificados para finca {finca_id}"
         )
     except Exception as e:
         logger.error(f"Error al inicializar defaults para finca {finca_id}: {e}")
 
 
-def initialize_all_finca_defaults():
-    """Reconcile idempotently the baseline for every existing finca."""
+def initialize_all_finca_defaults(force: bool = False):
+    """Reconcile idempotently the baseline for fincas that need initialization."""
     try:
+        from app.models.foodTypes import FoodTypes
+
+        # Consulta rápida en un solo query para saber qué fincas ya tienen catálogos
+        seeded_finca_ids = set()
+        if not force:
+            try:
+                seeded_finca_ids = {
+                    row[0]
+                    for row in db.session.query(FoodTypes.finca_id).distinct().all()
+                    if row[0] is not None
+                }
+            except Exception as ex:
+                logger.warning(f"No se pudo consultar FoodTypes para optimización: {ex}")
+
         for finca in Finca.query.order_by(Finca.id).all():
-            initialize_finca_defaults(finca.id)
+            if force or finca.id not in seeded_finca_ids:
+                initialize_finca_defaults(finca.id, force=force)
     except Exception as e:
         logger.error(f"Error al inicializar defaults de todas las fincas: {e}")

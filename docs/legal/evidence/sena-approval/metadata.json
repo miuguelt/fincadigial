@@ -1,0 +1,11 @@
+{
+  "document_type": "<ACTA_O_ACTO_INSTITUCIONAL>",
+  "document_number": "<NUMERO_ACTA_O_ACTO>",
+  "approval_date": "<FECHA_ISO>",
+  "approval_body": "<DIRECTIVA_COMITE_U_ORGANO>",
+  "scope": "producto técnico-pedagógico; alcance de producción pendiente",
+  "redacted_file": "ACTA_APROBACION_SENA_REDACTADA.pdf",
+  "sha256": "<HASH_SHA256_DE_LA_COPIA_REDACTADA>",
+  "original_location": "<UBICACION_INSTITUCIONAL_RESTRINGIDA>",
+  "access_restriction": "Original bajo custodia institucional; copia pública redactada"
+}

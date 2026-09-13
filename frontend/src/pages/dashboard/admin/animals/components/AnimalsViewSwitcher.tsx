@@ -29,10 +29,10 @@ export function AnimalsViewSwitcher() {
     'h-9 flex-1 sm:flex-none justify-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 sm:px-3 text-xs font-bold';
 
   return (
-    <div className="flex w-full flex-col gap-2 lg:flex-row lg:items-center lg:justify-between lg:gap-3">
+    <div className="flex min-w-0 flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full">
       {/* Conmutador de vista: iconos en móvil, etiquetas desde sm */}
       <div
-        className="flex items-center gap-1 rounded-xl border border-border/50 bg-card/60 p-1 shadow-sm w-full lg:w-auto lg:shrink-0"
+        className="flex items-center gap-1 rounded-xl border border-border/50 bg-card/60 p-1 shadow-sm w-full sm:w-auto sm:shrink-0"
         role="group"
         aria-label="Cambiar vista del inventario"
       >
@@ -74,8 +74,14 @@ export function AnimalsViewSwitcher() {
         </Button>
       </div>
 
-      {/* Filtros inteligentes: chips inline (md+) o botón + hoja inferior */}
-      {!isPotreros && <SmartFiltersToolbar />}
+      {/* Filtros inteligentes: chips inline (md+) o botón + hoja inferior.
+          `flex-1` a partir de sm: ocupan el resto de la fila y los chips
+          envuelven dentro de su propio bloque, sin empujar el conmutador. */}
+      {!isPotreros && (
+        <div className="w-full min-w-0 sm:flex-1">
+          <SmartFiltersToolbar />
+        </div>
+      )}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import {
   RefreshCw,
   Copy,
   FileText,
+  Download,
   Heart,
   Shield,
   Milk,
@@ -126,6 +127,7 @@ export function AnimalModalContent({
   const [_dataRefreshTrigger, setDataRefreshTrigger] = useState(0);
   const [hasRecentTreatments, setHasRecentTreatments] = useState<boolean | null>(null);
   const [isDownloadingReport, setIsDownloadingReport] = useState(false);
+  const [isDownloadingSeries, setIsDownloadingSeries] = useState(false);
 
   // Opciones de catálogos
   const [diseaseOptions, setDiseaseOptions] = useState<Record<number, string>>({});
@@ -466,6 +468,35 @@ export function AnimalModalContent({
     }
   };
 
+  // Serie peso/temperatura del historial (controles + avances) en CSV
+  const handleDownloadSeries = async () => {
+    if (!animal.id || isDownloadingSeries) return;
+
+    setIsDownloadingSeries(true);
+    try {
+      const response = await apiClient.get(`/exports/animal/${animal.id}/health-dataseries.csv`, {
+        responseType: 'blob',
+      } as any);
+      const blob = (response as any).data;
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const record = animal.record || `animal_${animal.id}`;
+      const date = new Date().toISOString().split('T')[0];
+      link.setAttribute('download', `historial_${record}_${date}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      showToast('Serie de peso y temperatura descargada', 'success');
+    } catch (err) {
+      console.error('Error descargando serie CSV del animal:', err);
+      showToast('No se pudo descargar la serie', 'error');
+    } finally {
+      setIsDownloadingSeries(false);
+    }
+  };
+
   // Eliminación de registros con confirmación
   const handleDeleteRecord = async (
     type: 'vaccination' | 'treatment' | 'animal_disease' | 'animal_field' | 'control' | 'genetic_improvement',
@@ -734,6 +765,23 @@ export function AnimalModalContent({
                   <Button
                     variant="outline"
                     size="sm"
+                    className="h-8.5 px-2.5 rounded-lg text-xs gap-1.5 hover:bg-muted font-medium shadow-sm"
+                    onClick={handleDownloadSeries}
+                    disabled={isDownloadingSeries}
+                    title="Descargar serie de peso y temperatura (CSV)"
+                  >
+                    {isDownloadingSeries ? (
+                      <span className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                    ) : (
+                      <>
+                        <Download className="h-3.5 w-3.5" />
+                        <span className="hidden md:inline">CSV</span>
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="h-8.5 w-8.5 p-0 rounded-lg hover:bg-muted shadow-sm"
                     onClick={() => {
                       setIsManualRefreshing(true);
@@ -746,6 +794,7 @@ export function AnimalModalContent({
                   </Button>
                   <AnimalActionsMenu
                     animal={animal as AnimalResponse}
+                    breedLabel={breedLabel}
                     currentUserId={currentUserId}
                     onOpenHistory={onOpenHistory}
                     onOpenAncestorsTree={onOpenAncestorsTree}
@@ -820,7 +869,7 @@ export function AnimalModalContent({
                 <Heart className="h-3.5 w-3.5 text-pink-500" />
                 <span>Reproducción & Genética</span>
                 <span className="ml-1 px-1.5 py-0.2 rounded-full text-[11px] bg-pink-500/10 text-pink-600 dark:text-pink-400 font-extrabold">
-                  {geneticImprovements.length}
+                  {(reproductionHistory?.events?.length || 0) + (geneticImprovements.length || 0)}
                 </span>
               </TabsTrigger>
 
@@ -893,6 +942,7 @@ export function AnimalModalContent({
               curedDiseasesCount={curedDiseasesCount}
               onFatherClick={onFatherClick}
               onMotherClick={onMotherClick}
+              onRegisterWeight={() => openCreateModal('control')}
               formatDate={formatDate}
             />
           </TabsContent>
@@ -927,6 +977,7 @@ export function AnimalModalContent({
               onEditRecord={(type, item) => openEditModal(type, item)}
               onDeleteRecord={(type, item) => handleDeleteRecord(type, item)}
               onOpenSuppliesModal={(treatment) => setSuppliesTreatment(treatment)}
+              onRefreshData={handleRefresh}
               confirmingDeleteId={confirmingDeleteId}
               deletingItemId={deletingItemId}
             />
@@ -951,6 +1002,8 @@ export function AnimalModalContent({
               onDeleteGeneticImprovement={(item) => handleDeleteRecord('genetic_improvement', item)}
               confirmingDeleteId={confirmingDeleteId}
               deletingItemId={deletingItemId}
+              onRefreshHistory={() => handleRefresh('reproduction')}
+              onOpenAnimal={onFatherClick}
             />
           </TabsContent>
 

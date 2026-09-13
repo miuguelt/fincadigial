@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useCampesinoEstadisticas } from '../estadisticas/hooks/useCampesinoEstadisticas';
 
-export const TermometroHatoSection: React.FC = () => {
+export const TermometroGanadoSection: React.FC = () => {
   const navigate = useNavigate();
   const {
     isLoading,
@@ -31,7 +31,7 @@ export const TermometroHatoSection: React.FC = () => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1, duration: 0.4 }}
-      className="rounded-3xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50/80 via-card to-teal-50/30 p-5 sm:p-6 shadow-md dark:border-emerald-900/30 dark:from-emerald-950/20 dark:via-card dark:to-teal-950/10 space-y-4"
+      className="space-y-4 rounded-2xl border border-emerald-200/70 bg-card p-4 shadow-sm dark:border-emerald-900/30 sm:p-5"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -59,11 +59,12 @@ export const TermometroHatoSection: React.FC = () => {
       </div>
 
       {/* Main KPI Bar & Oscillators Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-1">
+      <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-4 sm:gap-3">
         {/* Termómetro General */}
-        <div
+        <button
+          type="button"
           onClick={() => navigate('/campesino/estadisticas?tab=termometro')}
-          className="p-3.5 rounded-2xl bg-card border border-border/60 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all cursor-pointer shadow-xs flex flex-col justify-between"
+          className="flex min-h-[112px] flex-col justify-between rounded-xl border border-border/60 bg-background p-3.5 text-left shadow-xs transition-all hover:border-emerald-300 dark:hover:border-emerald-700"
         >
           <div className="flex items-center justify-between mb-1">
             <span className="text-[11px] font-bold text-muted-foreground uppercase">Salud del ganado</span>
@@ -80,12 +81,13 @@ export const TermometroHatoSection: React.FC = () => {
           <p className="text-[11px] font-bold text-foreground mt-2 fit-clamp">
             {healthGauge.statusLabel}
           </p>
-        </div>
+        </button>
 
         {/* Oscilador Engorde */}
-        <div
+        <button
+          type="button"
           onClick={() => navigate('/campesino/estadisticas?tab=engorde_leche')}
-          className="p-3.5 rounded-2xl bg-card border border-border/60 hover:border-lime-300 dark:hover:border-lime-700 transition-all cursor-pointer shadow-xs flex flex-col justify-between"
+          className="flex min-h-[112px] flex-col justify-between rounded-xl border border-border/60 bg-background p-3.5 text-left shadow-xs transition-all hover:border-lime-300 dark:hover:border-lime-700"
         >
           <div className="flex items-center justify-between mb-1">
             <span className="text-[11px] font-bold text-muted-foreground uppercase">Engorde (ADG)</span>
@@ -102,12 +104,13 @@ export const TermometroHatoSection: React.FC = () => {
               ? '🟡 Moderado'
               : '🔴 Lento'}
           </p>
-        </div>
+        </button>
 
         {/* Oscilador Pastos */}
-        <div
+        <button
+          type="button"
           onClick={() => navigate('/campesino/estadisticas?tab=potreros')}
-          className="p-3.5 rounded-2xl bg-card border border-border/60 hover:border-green-300 dark:hover:border-green-700 transition-all cursor-pointer shadow-xs flex flex-col justify-between"
+          className="flex min-h-[112px] flex-col justify-between rounded-xl border border-border/60 bg-background p-3.5 text-left shadow-xs transition-all hover:border-green-300 dark:hover:border-green-700"
         >
           <div className="flex items-center justify-between mb-1">
             <span className="text-[11px] font-bold text-muted-foreground uppercase">Pastoreo</span>
@@ -120,12 +123,13 @@ export const TermometroHatoSection: React.FC = () => {
           <p className="text-[11px] font-bold text-muted-foreground mt-1 fit-clamp">
             {fieldStats.restingFields} potreros descansando
           </p>
-        </div>
+        </button>
 
         {/* Oscilador Leche */}
-        <div
+        <button
+          type="button"
           onClick={() => navigate('/campesino/estadisticas?tab=engorde_leche')}
-          className="p-3.5 rounded-2xl bg-card border border-border/60 hover:border-amber-300 dark:hover:border-amber-700 transition-all cursor-pointer shadow-xs flex flex-col justify-between"
+          className="flex min-h-[112px] flex-col justify-between rounded-xl border border-border/60 bg-background p-3.5 text-left shadow-xs transition-all hover:border-amber-300 dark:hover:border-amber-700"
         >
           <div className="flex items-center justify-between mb-1">
             <span className="text-[11px] font-bold text-muted-foreground uppercase">Leche Promedio</span>
@@ -138,7 +142,7 @@ export const TermometroHatoSection: React.FC = () => {
           <p className="text-[11px] font-bold text-amber-700 dark:text-amber-300 mt-1 fit-clamp">
             {milkStats.trendLabel}
           </p>
-        </div>
+        </button>
       </div>
     </motion.section>
   );

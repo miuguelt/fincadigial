@@ -112,10 +112,6 @@ export const GenericModal: React.FC<GenericModalProps> = ({
     "backdrop-blur-[12px] motion-safe:transition-opacity motion-safe:duration-300 motion-safe:ease-out motion-reduce:transition-none"
   );
 
-  // IDs estables para accesibilidad
-  const titleId = React.useId();
-  const descriptionId = React.useId();
-
   // Estados para drag & drop
   const [position, setPosition] = React.useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = React.useState(false);
@@ -261,8 +257,6 @@ export const GenericModal: React.FC<GenericModalProps> = ({
         className={cn(modalClasses)}
         overlayClassName={overlayClasses}
         closeButtonClassName="bg-white/10 text-white hover:bg-white/20 focus:ring-white/50 rounded-full transition-all duration-200"
-        aria-labelledby={titleId}
-        aria-describedby={description ? descriptionId : undefined}
         style={{
           cursor: isDragging ? "grabbing" : "default",
           ...(draggable && { transform: `translate(${position.x}px, ${position.y}px)` }),
@@ -290,7 +284,6 @@ export const GenericModal: React.FC<GenericModalProps> = ({
             {title ? (
               <div className="min-w-0 flex-1 text-left">
                 <DialogTitle
-                  id={titleId}
                   className="break-words pr-1 text-base font-bold leading-tight text-white drop-shadow-md sm:text-lg"
                 >
                   {title}
@@ -302,7 +295,7 @@ export const GenericModal: React.FC<GenericModalProps> = ({
                 )}
               </div>
             ) : (
-              <DialogTitle id={titleId} className="sr-only">
+              <DialogTitle className="sr-only">
                 Modal
               </DialogTitle>
             )}
@@ -331,7 +324,7 @@ export const GenericModal: React.FC<GenericModalProps> = ({
             </div>
           </div>
 
-          <DialogDescription id={descriptionId} className="sr-only">
+          <DialogDescription className="sr-only">
             {description || "Contenido del diálogo"}
           </DialogDescription>
         </DialogHeader>
@@ -346,7 +339,7 @@ export const GenericModal: React.FC<GenericModalProps> = ({
           tabIndex={0}
           className={bodyClassName !== undefined ? bodyClassName : cn(
             "overflow-x-hidden overflow-y-auto overscroll-contain focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 flex-1 min-h-0",
-            variant === "compact" ? "px-2 sm:px-3 py-2" : "px-3 sm:px-4 py-2.5",
+            variant === "compact" ? "px-4 sm:px-5 py-3 sm:py-3.5" : "px-5 sm:px-6 py-4",
             variant === "compact" && "max-[360px]:text-xs"
           )}>
           {children}

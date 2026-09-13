@@ -215,7 +215,7 @@ export const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps>
         animal_field: { ...base, field_id: undefined, assignment_date: today, removal_date: undefined, notes: "" },
         vaccination: { ...base, vaccine_id: undefined, vaccination_date: today, instructor_id: currentUserId, apprentice_id: undefined },
         treatment: { ...base, treatment_date: today, description: "", dosis: "", frequency: "", observations: "" },
-        control: { ...base, checkup_date: today, weight: undefined, height: undefined, health_status: "Sano", description: "" },
+        control: { ...base, checkup_date: today, weight: undefined, height: undefined, temperature: undefined, health_status: "Sano", description: "" },
         milk_production: { ...base, date: today, liters: undefined, milking_session: "AM", fat_percentage: undefined, protein_percentage: undefined, notes: "" },
         reproduction_event: { ...base, event_date: today, event_type: "insemination", technique: "", sire_id: undefined, notes: "" },
         alert: { ...base, alert_type: "manual", severity: "media", message: "", created_at: today },

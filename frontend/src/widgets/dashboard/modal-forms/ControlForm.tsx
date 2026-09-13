@@ -39,7 +39,7 @@ export const ControlForm: React.FC<Props> = ({ formData, setFormData, idPrefix, 
           </select>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <div>
           <label htmlFor={`${idPrefix}-weight`} className={labelClass}>Peso (kg)</label>
           <input id={`${idPrefix}-weight`} type="number" step="0.1" value={formData.weight || ""} onChange={(e) => setFormData({ ...formData, weight: parseFloat(e.target.value) })} className={inputClass} />
@@ -47,6 +47,10 @@ export const ControlForm: React.FC<Props> = ({ formData, setFormData, idPrefix, 
         <div>
           <label htmlFor={`${idPrefix}-height`} className={labelClass}>Altura (m)</label>
           <input id={`${idPrefix}-height`} type="number" step="0.01" value={formData.height || ""} onChange={(e) => setFormData({ ...formData, height: parseFloat(e.target.value) })} className={inputClass} />
+        </div>
+        <div>
+          <label htmlFor={`${idPrefix}-temperature`} className={labelClass}>Temperatura (°C)</label>
+          <input id={`${idPrefix}-temperature`} type="number" step="0.1" min="30" max="45" placeholder="Ej: 38.9" value={formData.temperature || ""} onChange={(e) => setFormData({ ...formData, temperature: parseFloat(e.target.value) })} className={inputClass} />
         </div>
       </div>
       <div>
@@ -64,7 +68,7 @@ export const ControlForm: React.FC<Props> = ({ formData, setFormData, idPrefix, 
               if (!formData.checkup_date || !formData.health_status) { setError("Complete fecha y estado de salud para añadir a la lista"); return; }
               setPendingBulkItems([...pendingBulkItems, { ...formData }]);
               const prevDate = formData.checkup_date;
-              setFormData({ animal_id: animal.id, checkup_date: prevDate, health_status: "Sano", weight: "", height: "", description: "" });
+              setFormData({ animal_id: animal.id, checkup_date: prevDate, health_status: "Sano", weight: "", height: "", temperature: "", description: "" });
               setError(null);
             }} className="h-8 text-xs font-bold px-3 rounded-lg border-2 border-dashed border-emerald-500/50 text-emerald-600 hover:bg-emerald-500/5">
               + Añadir otro control

@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent } from '@/shared/ui/dialog';
 import { Button } from '@/shared/ui/button';
 import { CATEGORIES, PRIORITY_OPTIONS } from './assistance.constants';
-import { BellRing, Camera, Send, ChevronLeft } from 'lucide-react';
+import { AudioLines, BellRing, Camera, ChevronLeft, Mic, Send, Square } from 'lucide-react';
 
 type FormData = {
   title: string;
@@ -11,17 +11,18 @@ type FormData = {
   priority: string;
   photo: File | null;
   photoPreview: string | null;
+  audio: File | null;
 };
 
 const INITIAL: FormData = {
   title: '', category: '', description: '', priority: 'medium',
-  photo: null, photoPreview: null,
+  photo: null, photoPreview: null, audio: null,
 };
 
 interface NewAssistanceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (data: { title: string; category: string; description: string; priority: string }) => Promise<void>;
+  onSave: (data: { title: string; category: string; description: string; priority: string; attachment?: File }) => Promise<void>;
   recipientCount?: number;
 }
 
@@ -29,9 +30,47 @@ export const NewAssistanceDialog = React.memo<NewAssistanceDialogProps>(({ open,
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormData>(INITIAL);
   const [saving, setSaving] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [audioPreview, setAudioPreview] = useState<string | null>(null);
+  const [mediaError, setMediaError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const audioFileRef = useRef<HTMLInputElement>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const discardRecordingRef = useRef(false);
 
-  const reset = () => { setStep(1); setForm(INITIAL); };
+  const releaseAudioStream = () => {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+    recorderRef.current = null;
+    setRecording(false);
+  };
+
+  const reset = () => {
+    discardRecordingRef.current = true;
+    if (recorderRef.current?.state !== 'inactive') recorderRef.current?.stop();
+    releaseAudioStream();
+    setStep(1);
+    setForm(INITIAL);
+    setMediaError(null);
+  };
+
+  useEffect(() => {
+    if (!form.audio) {
+      setAudioPreview(null);
+      return undefined;
+    }
+    const previewUrl = URL.createObjectURL(form.audio);
+    setAudioPreview(previewUrl);
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [form.audio]);
+
+  useEffect(() => () => {
+    discardRecordingRef.current = true;
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    if (recorderRef.current?.state !== 'inactive') recorderRef.current?.stop();
+  }, []);
 
   const handleClose = (open: boolean) => {
     if (!open) { reset(); }
@@ -47,9 +86,10 @@ export const NewAssistanceDialog = React.memo<NewAssistanceDialogProps>(({ open,
   const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setMediaError(null);
     const reader = new FileReader();
     reader.onloadend = () => {
-      setForm(prev => ({ ...prev, photo: file, photoPreview: reader.result as string }));
+      setForm(prev => ({ ...prev, photo: file, photoPreview: reader.result as string, audio: null }));
     };
     reader.readAsDataURL(file);
   };
@@ -59,18 +99,72 @@ export const NewAssistanceDialog = React.memo<NewAssistanceDialogProps>(({ open,
     if (fileRef.current) fileRef.current.value = '';
   };
 
+  const handleAudioFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setMediaError(null);
+    setForm(prev => ({ ...prev, audio: file, photo: null, photoPreview: null }));
+  };
+
+  const removeAudio = () => {
+    setForm(prev => ({ ...prev, audio: null }));
+    if (audioFileRef.current) audioFileRef.current.value = '';
+  };
+
+  const stopRecording = () => {
+    if (recorderRef.current?.state !== 'inactive') recorderRef.current?.stop();
+  };
+
+  const startRecording = async () => {
+    setMediaError(null);
+    discardRecordingRef.current = false;
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+      audioFileRef.current?.click();
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const preferredMime = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm']
+        .find((mime) => typeof MediaRecorder.isTypeSupported !== 'function' || MediaRecorder.isTypeSupported(mime));
+      const recorder = new MediaRecorder(stream, preferredMime ? { mimeType: preferredMime } : undefined);
+      streamRef.current = stream;
+      recorderRef.current = recorder;
+      audioChunksRef.current = [];
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunksRef.current.push(event.data);
+      };
+      recorder.onerror = () => {
+        setMediaError('No fue posible grabar el audio. Puede elegir un archivo de audio.');
+        releaseAudioStream();
+      };
+      recorder.onstop = () => {
+        const type = recorder.mimeType || preferredMime || 'audio/webm';
+        const extension = type.includes('mp4') ? 'm4a' : type.includes('ogg') ? 'ogg' : 'webm';
+        const audio = new File(audioChunksRef.current, `audio-asistencia-${Date.now()}.${extension}`, { type });
+        if (!discardRecordingRef.current) {
+          setForm(prev => ({ ...prev, audio, photo: null, photoPreview: null }));
+        }
+        discardRecordingRef.current = false;
+        releaseAudioStream();
+      };
+      recorder.start();
+      setRecording(true);
+    } catch {
+      setMediaError('No se pudo acceder al micrófono. Revise el permiso o elija un audio guardado.');
+      audioFileRef.current?.click();
+    }
+  };
+
   const handleSubmit = async () => {
     setSaving(true);
     try {
-      let desc = form.description;
-      if (form.photo && form.photoPreview) {
-        desc += `\n\n[Foto adjunta: ${form.photo.name}]`;
-      }
       await onSave({
         title: form.title || `Solicitud de ${CATEGORIES.find(c => c.value === form.category)?.label || 'ayuda'}`,
         category: form.category,
-        description: desc,
+        description: form.description,
         priority: form.priority,
+        attachment: form.photo || form.audio || undefined,
       });
       reset();
       onOpenChange(false);
@@ -113,12 +207,12 @@ export const NewAssistanceDialog = React.memo<NewAssistanceDialogProps>(({ open,
 
           {step === 2 && (
             <div className="space-y-5">
-              <button onClick={() => setStep(1)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+              <button type="button" onClick={() => setStep(1)} className="flex min-h-11 items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
                 <ChevronLeft className="w-4 h-4" /> Volver
               </button>
               <div className="space-y-1">
                 <h2 className="text-lg font-semibold text-foreground">Cuéntanos qué está pasando</h2>
-                <p className="text-sm text-muted-foreground">Describí el problema con tus propias palabras</p>
+                <p className="text-sm text-muted-foreground">Describa el problema con sus propias palabras</p>
               </div>
               <textarea
                 value={form.description}
@@ -127,7 +221,7 @@ export const NewAssistanceDialog = React.memo<NewAssistanceDialogProps>(({ open,
                 className="w-full min-h-[140px] p-4 rounded-xl border border-border/50 bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                 style={{ fontSize: '16px' }}
               />
-              <div className="flex items-center gap-3">
+              <div className="grid gap-2 sm:flex sm:flex-wrap sm:items-center">
                 <input
                   ref={fileRef}
                   type="file"
@@ -137,22 +231,37 @@ export const NewAssistanceDialog = React.memo<NewAssistanceDialogProps>(({ open,
                   className="hidden"
                   id="photo-input"
                 />
-                <label
-                  htmlFor="photo-input"
-                  className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground cursor-pointer px-4 py-2.5 rounded-xl border border-border/50 hover:border-primary/30 transition-colors"
-                >
-                  <Camera className="w-4 h-4" />
-                  Agregar foto del problema
-                </label>
+                <input ref={audioFileRef} type="file" accept="audio/*" capture className="hidden" id="audio-input" onChange={handleAudioFile} />
+                <Button type="button" variant="outline" className="min-h-11 justify-start" onClick={() => fileRef.current?.click()}>
+                  <Camera className="h-4 w-4" aria-hidden />
+                  {form.photo ? 'Cambiar foto' : 'Agregar foto'}
+                </Button>
+                <Button type="button" variant={recording ? 'destructive' : 'outline'} className="min-h-11 justify-start" onClick={recording ? stopRecording : startRecording}>
+                  {recording ? <Square className="h-4 w-4" aria-hidden /> : <Mic className="h-4 w-4" aria-hidden />}
+                  {recording ? 'Detener audio' : 'Grabar audio'}
+                </Button>
                 {form.photoPreview && (
-                  <div className="relative">
-                    <img src={form.photoPreview} alt="Preview" className="w-14 h-14 rounded-lg object-cover border border-border/50" />
-                    <button onClick={removePhoto} className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">×</button>
+                  <div className="flex min-w-0 items-center gap-2 rounded-xl border border-border/50 p-2">
+                    <img src={form.photoPreview} alt="Vista previa de la foto" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
+                    <span className="min-w-0 flex-1 break-words text-xs text-muted-foreground">{form.photo?.name}</span>
+                    <button type="button" onClick={removePhoto} className="min-h-11 shrink-0 rounded-lg px-3 text-sm font-semibold text-destructive hover:bg-destructive/10">Quitar</button>
+                  </div>
+                )}
+                {form.audio && audioPreview && (
+                  <div className="w-full min-w-0 rounded-xl border border-border/50 p-3">
+                    <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
+                      <AudioLines className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+                      <span className="min-w-0 flex-1 break-words">{form.audio.name}</span>
+                      <button type="button" onClick={removeAudio} className="min-h-11 rounded-lg px-3 text-sm font-semibold text-destructive hover:bg-destructive/10">Quitar</button>
+                    </div>
+                    <audio controls src={audioPreview} className="h-10 w-full" aria-label="Reproducir audio del problema" />
                   </div>
                 )}
               </div>
+              <p className="text-xs text-muted-foreground">Adjunte una foto o grabe un audio corto para que el veterinario entienda mejor el problema.</p>
+              {mediaError && <p role="alert" className="text-sm font-semibold text-destructive">{mediaError}</p>}
               <div className="flex justify-end">
-                <Button onClick={() => setStep(3)} disabled={!isStep2Valid} size="lg">
+                <Button type="button" onClick={() => setStep(3)} disabled={!isStep2Valid} size="lg" className="min-h-11 w-full sm:w-auto">
                   Continuar
                 </Button>
               </div>
@@ -161,12 +270,12 @@ export const NewAssistanceDialog = React.memo<NewAssistanceDialogProps>(({ open,
 
           {step === 3 && (
             <div className="space-y-5">
-              <button onClick={() => setStep(2)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+              <button type="button" onClick={() => setStep(2)} className="flex min-h-11 items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
                 <ChevronLeft className="w-4 h-4" /> Volver
               </button>
               <div className="space-y-1">
                 <h2 className="text-lg font-semibold text-foreground">¿Qué tan urgente es?</h2>
-                <p className="text-sm text-muted-foreground">Esto nos ayuda a priorizar tu solicitud</p>
+                <p className="text-sm text-muted-foreground">Esto nos ayuda a priorizar su solicitud</p>
               </div>
               <div className="space-y-2">
                 {PRIORITY_OPTIONS.map(opt => (
@@ -193,7 +302,7 @@ export const NewAssistanceDialog = React.memo<NewAssistanceDialogProps>(({ open,
                 </span>
               </div>
               <div className="flex justify-end pt-2">
-                <Button onClick={handleSubmit} loading={saving} size="lg">
+                <Button type="button" onClick={handleSubmit} loading={saving} size="lg" className="min-h-11 w-full sm:w-auto">
                   <Send className="w-4 h-4 mr-2" />
                   Enviar solicitud
                 </Button>

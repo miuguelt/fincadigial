@@ -7,6 +7,7 @@ import {
 import { useState } from "react";
 import { useToast } from "@/app/providers/ToastContext";
 import type {
+	RecommendationFulfillmentKind,
 	TreatmentRecommendation,
 	TreatmentRecommendationControl,
 } from "@/entities/treatment-recommendation/model/types";
@@ -39,13 +40,32 @@ type ControlDraft = {
 	completed: boolean;
 	control_date: string;
 	observation: string;
+	fulfilled_kind: "" | RecommendationFulfillmentKind;
+	fulfilled_ref_id: string;
 };
 
-const draftFor = (control: TreatmentRecommendationControl): ControlDraft => ({
+const draftFor = (
+	control: TreatmentRecommendationControl,
+): ControlDraft => ({
 	completed: control.completed,
 	control_date: control.control_date?.slice(0, 10) || "",
 	observation: control.observation || "",
+	fulfilled_kind: control.fulfilled_kind || "",
+	fulfilled_ref_id: control.fulfilled_ref_id
+		? String(control.fulfilled_ref_id)
+		: "",
 });
+
+const fulfillmentOptions: Array<{
+	value: "" | RecommendationFulfillmentKind;
+	label: string;
+}> = [
+	{ value: "", label: "Sin vincular acto" },
+	{ value: "observation", label: "Observación manual" },
+	{ value: "control", label: "Control (pesaje/revisión)" },
+	{ value: "vaccination", label: "Vacunación" },
+	{ value: "treatment", label: "Tratamiento" },
+];
 
 export function RecommendationDetail({
 	item,
@@ -76,11 +96,23 @@ export function RecommendationDetail({
 			showToast("Indica la fecha en que se realizó el control.", "error");
 			return;
 		}
+		const needsRef =
+			draft.fulfilled_kind !== "" &&
+			draft.fulfilled_kind !== "observation" &&
+			!draft.fulfilled_ref_id;
+		if (needsRef) {
+			showToast("Indica el identificador del registro que materializa el acto.", "error");
+			return;
+		}
 		try {
 			await updateControl(control.id, {
 				completed: draft.completed,
 				control_date: draft.completed ? draft.control_date : null,
 				observation: draft.observation,
+				fulfilled_kind: draft.fulfilled_kind || null,
+				fulfilled_ref_id: draft.fulfilled_ref_id
+					? Number(draft.fulfilled_ref_id)
+					: null,
 			});
 			showToast("Control de seguimiento actualizado.", "success");
 		} catch {
@@ -229,6 +261,66 @@ export function RecommendationDetail({
 												/>
 											</div>
 										</div>
+										<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+											<div className="text-sm font-medium">
+												<label htmlFor={`control-fulfilled-${control.id}`}>
+													Acto que materializa el control
+												</label>
+												<select
+													id={`control-fulfilled-${control.id}`}
+													value={draft.fulfilled_kind}
+													onChange={(event) =>
+														setDraft(control.id, {
+															fulfilled_kind: event.target
+																.value as ControlDraft["fulfilled_kind"],
+															fulfilled_ref_id: "",
+														})
+													}
+													className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+												>
+													{fulfillmentOptions.map((option) => (
+														<option key={option.value} value={option.value}>
+															{option.label}
+														</option>
+													))}
+												</select>
+											</div>
+											{draft.fulfilled_kind !== "" &&
+												draft.fulfilled_kind !== "observation" && (
+													<div className="text-sm font-medium">
+														<label
+															htmlFor={`control-fulfilled-ref-${control.id}`}
+														>
+															Identificador del registro
+														</label>
+														<input
+															id={`control-fulfilled-ref-${control.id}`}
+															type="number"
+															min={1}
+															value={draft.fulfilled_ref_id}
+															placeholder="Ej: 42"
+															onChange={(event) =>
+																setDraft(control.id, {
+																	fulfilled_ref_id: event.target.value,
+																})
+															}
+															className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+														/>
+													</div>
+												)}
+										</div>
+										{control.completed && control.fulfilled_kind && (
+											<p className="text-xs font-semibold text-emerald-700">
+												Vinculado:{" "}
+												{
+													fulfillmentOptions.find(
+														(option) =>
+															option.value === control.fulfilled_kind,
+													)?.label
+												}{" "}
+												#{control.fulfilled_ref_id}
+											</p>
+										)}
 										<div className="flex flex-wrap items-center justify-between gap-3">
 											<label className="flex min-h-10 items-center gap-2 text-sm">
 												<input

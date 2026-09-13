@@ -150,6 +150,113 @@ def evaluate_health_rules(animal, finca_id, trig, today, age_months) -> int:
     # ── 14. MASTITIS ──────────────────────────────────────────────────
     _check_mastitis(animal, today, age_months, trig)
 
+    # ── 15. FIEBRE (temperatura registrada en controles o avances) ────
+    _check_temperature(animal, trig)
+
+    # ── 16. SEGUIMIENTO DEL EPISODIO SIN AVANCES RECIENTES ────────────
+    _check_disease_followup(animal, today, trig)
+
+
+def _latest_temperature(animal):
+    """Última temperatura registrada (control veterinario o avance del caso)."""
+    from app.models.animalDiseaseProgress import AnimalDiseaseProgress
+    from app.models.animalDiseases import AnimalDiseases
+
+    control = (
+        animal.controls.filter(Control.temperature.isnot(None))
+        .order_by(Control.checkup_date.desc())
+        .first()
+    )
+    progress = (
+        AnimalDiseaseProgress.query.join(
+            AnimalDiseases, AnimalDiseases.id == AnimalDiseaseProgress.animal_disease_id
+        )
+        .filter(
+            AnimalDiseases.animal_id == animal.id,
+            AnimalDiseaseProgress.is_deleted == False,  # noqa: E712
+            AnimalDiseaseProgress.temperature.isnot(None),
+        )
+        .order_by(
+            AnimalDiseaseProgress.progress_date.desc(),
+            AnimalDiseaseProgress.id.desc(),
+        )
+        .first()
+    )
+    best = None
+    if control and (best is None or control.checkup_date >= best[0]):
+        best = (control.checkup_date, control.temperature)
+    if progress and (best is None or progress.progress_date >= best[0]):
+        best = (progress.progress_date, progress.temperature)
+    return best
+
+
+def _check_temperature(animal, trig):
+    """Fiebre bovina: alerta alta ≥39.8 °C y crítica ≥41 °C (parametrizable)."""
+    latest = _latest_temperature(animal)
+    if not latest:
+        return
+    temperature = latest[1]
+    fever = AlertEngine._get_param("temperature_fever_c") or 39.8
+    critical = AlertEngine._get_param("temperature_critical_c") or 41.0
+    if temperature >= critical:
+        trig(
+            AlertType.HEALTH,
+            f" FIEBRE CRÍTICA: {temperature} °C registrada. Revisar urgente con el veterinario.",
+            AlertPriority.CRITICAL,
+        )
+    elif temperature >= fever:
+        trig(
+            AlertType.HEALTH,
+            f" Fiebre detectada: {temperature} °C. Vigilar evolución y considerar tratamiento.",
+            AlertPriority.HIGH,
+        )
+
+
+def _check_disease_followup(animal, today, trig):
+    """Episodio abierto sin avance clínico reciente (parametrizable)."""
+    from app.models.animalDiseaseProgress import AnimalDiseaseProgress
+    from app.models.animalDiseases import AnimalDiseases
+
+    open_statuses = ("Activo", "En tratamiento", "En Tratamiento", "Observación")
+    episodes = (
+        animal.diseases.filter(
+            AnimalDiseases.is_deleted == False,  # noqa: E712
+            AnimalDiseases.status.in_(open_statuses),
+        )
+        .order_by(AnimalDiseases.diagnosis_date.desc())
+        .all()
+    )
+    critical_days = AlertEngine._get_param_int("disease_followup_days_critical") or 14
+    high_days = AlertEngine._get_param_int("disease_followup_days_high") or 7
+
+    for episode in episodes:
+        disease_name = episode.disease.name if episode.disease else "enfermedad"
+        last = (
+            AnimalDiseaseProgress.query.filter_by(
+                animal_disease_id=episode.id,
+                is_deleted=False,
+            )
+            .order_by(
+                AnimalDiseaseProgress.progress_date.desc(),
+                AnimalDiseaseProgress.id.desc(),
+            )
+            .first()
+        )
+        base_date = last.progress_date if last else episode.diagnosis_date
+        days = (today - base_date).days if base_date else 9999
+        if days > critical_days:
+            trig(
+                AlertType.HEALTH,
+                f" Seguimiento CRÍTICO: '{disease_name}' activa sin avance clínico hace {days} días.",
+                AlertPriority.CRITICAL,
+            )
+        elif days > high_days:
+            trig(
+                AlertType.HEALTH,
+                f" Seguimiento pendiente: '{disease_name}' activa sin avance clínico hace {days} días.",
+                AlertPriority.HIGH,
+            )
+
 
 def _check_vaccine_ica(animal, today, age_months, trig):
     last_ica = (

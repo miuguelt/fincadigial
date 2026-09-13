@@ -3,6 +3,7 @@ Tests para la configuración de verificación de nuevos usuarios y auto-activaci
 """
 
 import random
+from app.legal.consent import CURRENT_PRIVACY_NOTICE_VERSION, CURRENT_TERMS_VERSION
 from app.models.user import User, Role, ApprovalStatus
 from app.models.join_request import JoinRequest, JoinRequestStatus, JoinRequestType
 from app.models.finca import Finca
@@ -12,6 +13,15 @@ from app.services.user_verification_service import (
 )
 
 BASE = "/api/v1"
+
+
+def _consent_payload():
+    return {
+        "privacy_notice_version": CURRENT_PRIVACY_NOTICE_VERSION,
+        "privacy_notice_accepted": True,
+        "terms_version": CURRENT_TERMS_VERSION,
+        "terms_accepted": True,
+    }
 
 
 def test_verification_config_default_is_false(app, client, token_for):
@@ -76,6 +86,7 @@ def test_public_registration_auto_approved_when_verification_disabled(app, clien
         "password": "Password123!",
         "password_confirmation": "Password123!",
         "role": "Operario",
+        "consent": _consent_payload(),
     }
 
     resp = client.post(
@@ -106,6 +117,7 @@ def test_public_registration_pending_when_verification_enabled(app, client, toke
         "password": "Password123!",
         "password_confirmation": "Password123!",
         "role": "Operario",
+        "consent": _consent_payload(),
     }
 
     try:

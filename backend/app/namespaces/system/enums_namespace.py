@@ -39,13 +39,13 @@ class SystemEnums(Resource):
             ],
             "animal_disease_statuses": [
                 "Activo",
-                "En Tratamiento",
+                "En tratamiento",
                 "Recuperado",
+                "Tratado",
+                "Observación",
                 "Crónico",
-                "Controlado",
-                "Susceptible",
             ],
-            "animal_disease_severities": ["Leve", "Moderado", "Severo", "Crítico"],
+            "animal_disease_severities": ["Leve", "Moderada", "Severa", "Crítica"],
             "administration_routes": [
                 "Oral",
                 "Inyectable IM",

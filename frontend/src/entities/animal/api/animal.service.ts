@@ -5,6 +5,7 @@ import { BulkResponse } from '@/shared/types/common.types';
 import analyticsService from '@/features/reporting/api/analytics.service';
 import { checkAnimalDependencies, clearAnimalDependencyCache } from '@/features/diagnostics/api/dependencyCheck.service';
 import type { AnimalTreeGraph, TreeQueryParams } from '@/entities/animal/model/tree.types';
+import { animalTransferService } from './animalTransfer.service';
 
 interface AnimalStatusStats {
   by_status: Record<string, number>;
@@ -31,34 +32,16 @@ class AnimalsService extends BaseService<AnimalResponse> {
     return undefined;
   }
 
-  // Detecta si el término de búsqueda parece una fecha o año (para habilitar búsqueda por columnas de fecha)
-  private isDateLike(term: any): boolean {
-    if (term === null || term === undefined) return false;
-    const s = String(term).trim();
-    if (!s) return false;
-    // Año (YYYY)
-    if (/^\d{4}$/.test(s)) return true;
-    // Formatos comunes de fecha: YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY, YYYY/MM/DD, YYYY-MM-DD
-    if (/^\d{4}[-/]\d{1,2}[-/]\d{1,2}$/.test(s)) return true;
-    if (/^\d{1,2}[-/]\d{1,2}[-/]\d{2,4}$/.test(s)) return true;
-    return false;
-  }
 
-  // Enriquece parámetros para que el backend busque también en columnas de fecha cuando el término es un año/fecha
+  // Enriquece parámetros para asegurar compatibilidad de búsqueda
   private enrichParamsForDateSearch(params: Record<string, any> = {}): Record<string, any> {
     const searchTerm = params.search ?? params.q;
-    if (!this.isDateLike(searchTerm)) return params;
-
-    const extraDateFields = ['birth_date', 'created_at', 'updated_at'];
-    const existingFields = (params.fields ? String(params.fields) : '').split(',').map(f => f.trim()).filter(Boolean);
-    const merged = Array.from(new Set([...existingFields, ...extraDateFields]));
+    if (!searchTerm) return params;
 
     return {
       ...params,
-      // Forzar que ambos parámetros se envíen por compatibilidad y que fields incluya columnas de fecha
       search: searchTerm,
       q: searchTerm,
-      fields: merged.join(','),
     };
   }
 
@@ -161,6 +144,11 @@ class AnimalsService extends BaseService<AnimalResponse> {
       sale_date: this.parseDate(data.sale_date),
       exit_date: this.parseDate(data.exit_date),
       exit_reason: data.exit_reason,
+      claim_code: (data as any).claim_code,
+      request_history: (data as any).request_history,
+      nfc_uid: (data as any).nfc_uid,
+      lf_tag_code: (data as any).lf_tag_code,
+      official_code: (data as any).official_code,
     };
 
     // Eliminar claves con undefined/null/0 inválidos (pero mantener weight=0 como válido)
@@ -258,25 +246,22 @@ class AnimalsService extends BaseService<AnimalResponse> {
   }
 
   async getAnimalsPaginated(params?: Record<string, any>): Promise<PaginatedResponse<AnimalResponse>> {
-    // Enriquecer parámetros con ordenamiento por defecto si no se especifica
-    const enrichedParams = this.enrichParamsForDateSearch(params || {});
-
-    // Si no hay ordenamiento explícito, ordenar por fecha de creación descendente (más recientes primero)
-    // Esto asegura que los registros recién creados aparezcan al inicio de la lista en página 1
-    if (!enrichedParams.sort && !enrichedParams.order && !enrichedParams.orderBy) {
-      enrichedParams.sort = 'created_at';
-      enrichedParams.order = 'desc';
-    }
-
-    const pag = await this.getPaginated(enrichedParams);
-    return { ...pag, data: (pag.data || []).map((it: any) => this.normalizeAnimal(it)) } as PaginatedResponse<AnimalResponse>;
+    return this.getPaginated(params);
   }
 
-  // Sobrescribe getPaginated para inyectar fields cuando el término de búsqueda es un año/fecha
+  // Sobrescribe getPaginated para asegurar normalización de campos y compatibilidad
   async getPaginated(params?: Record<string, any>): Promise<PaginatedResponse<AnimalResponse>> {
     const enriched = this.enrichParamsForDateSearch(params || {});
+    if (!enriched.sort && !enriched.order && !enriched.orderBy && !enriched.sort_by) {
+      enriched.sort = 'created_at';
+      enriched.order = 'desc';
+    }
     const pag = await super.getPaginated(enriched);
-    return pag as PaginatedResponse<AnimalResponse>;
+    const rawList = Array.isArray(pag.data) ? pag.data : [];
+    return {
+      ...pag,
+      data: rawList.map((it: any) => this.normalizeAnimal(it)),
+    } as PaginatedResponse<AnimalResponse>;
   }
 
   async getAnimalById(id: number): Promise<AnimalResponse> {
@@ -288,6 +273,16 @@ class AnimalsService extends BaseService<AnimalResponse> {
   // Esto asegura que useResource y otros hooks usen la transformación correcta
   async create(data: any): Promise<any> {
     const payload = this.buildApiPayload(data);
+    // Solo se activa el flujo de reclamación cuando el usuario lo solicita o
+    // aporta el código privado. El CRUD tradicional conserva su contrato para
+    // instalaciones antiguas y para el modo offline.
+    if (Boolean((data as any)?.request_history || (data as any)?.claim_code || (data as any)?.official_code)) {
+      const result = await animalTransferService.registerOrClaim(payload);
+      if (result.registration_status === 'CREATED_LOCAL' && result.animal) {
+        return { ...result.animal, identity: result.identity, registration_status: result.registration_status };
+      }
+      return result;
+    }
     return super.create(payload);
   }
 

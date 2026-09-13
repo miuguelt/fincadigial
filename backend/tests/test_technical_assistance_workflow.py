@@ -1,10 +1,16 @@
 """End-to-end API tests for farmer-to-veterinarian technical assistance."""
 
 import base64
+import hashlib
 import json
+import os
+import uuid
+from datetime import datetime
+from urllib.parse import urlparse
 
 from app.api.sse import _event_visible_to_user
 from app.services.push_notification_service import PushNotificationService
+from app.models.campesino import AssistanceStatus, TechnicalAssistanceRequest
 
 
 BASE = "/api/v1/technical-assistance"
@@ -136,3 +142,95 @@ def test_non_urgent_request_uses_in_app_channel_without_push(
     assert response.status_code == 201, response.get_data(as_text=True)
     assert response.get_json()["data"]["notification"]["push_policy"] == "urgent_only"
     assert push_calls == []
+
+
+def test_request_links_a_completed_photo_attachment(client, token_for):
+    farmer_headers = token_for("Operario", finca_type="Tradicional")
+    content = b"fake-jpeg-content-for-assistance"
+    attachment_id = f"test-assistance-{uuid.uuid4()}"
+    sha256 = hashlib.sha256(content).hexdigest()
+
+    chunk_response = client.post(
+        "/api/v1/attachments/chunk",
+        headers=farmer_headers,
+        json={
+            "attachment_id": attachment_id,
+            "chunk": base64.b64encode(content).decode("ascii"),
+        },
+    )
+    assert chunk_response.status_code == 202, chunk_response.get_data(as_text=True)
+
+    complete_response = client.post(
+        "/api/v1/attachments/complete",
+        headers=farmer_headers,
+        json={
+            "attachment_id": attachment_id,
+            "sha256": sha256,
+            "filename": "problema.jpg",
+            "content_type": "image/jpeg",
+            "entity_type": "technical_assistance",
+        },
+    )
+    assert complete_response.status_code == 201, complete_response.get_data(as_text=True)
+    attachment = complete_response.get_json()["data"]
+    assert attachment["id"]
+
+    request_response = client.post(
+        f"{BASE}/request",
+        headers=farmer_headers,
+        json={
+            "title": "Mancha en las hojas",
+            "category": "agricola",
+            "description": "Las hojas presentan manchas y necesito orientación.",
+            "priority": "medium",
+            "attachment_blob_id": attachment["id"],
+        },
+    )
+    assert request_response.status_code == 201, request_response.get_data(as_text=True)
+    request_item = request_response.get_json()["data"]["request"]
+    assert request_item["attachment_blob_id"] == attachment["id"]
+    assert request_item["attachment"]["content_type"] == "image/jpeg"
+    attachment_url = urlparse(request_item["attachment"]["url"])
+    assert attachment_url.path.endswith("/problema.jpg")
+    assert "sig" in attachment_url.query
+
+    storage_path = attachment.get("storage_path")
+    if storage_path:
+        try:
+            os.remove(storage_path)
+        except FileNotFoundError:
+            pass
+
+
+def test_legacy_request_without_requester_is_not_visible_to_other_workers(
+    client, token_for, app
+):
+    worker_headers = token_for("Operario", finca_type="Tradicional")
+    other_worker_headers = token_for("Operario", finca_type="Tradicional")
+    owner_headers = token_for("Propietario", finca_type="Tradicional")
+
+    with app.app_context():
+        from app import db
+        from app.models import Finca
+
+        finca = Finca.query.first()
+        legacy_item = TechnicalAssistanceRequest(
+            finca_id=finca.id,
+            title="Solicitud histórica",
+            category="otro",
+            description="Caso antiguo sin solicitante registrado.",
+            priority="medium",
+            status=AssistanceStatus.OPEN,
+            requested_at=datetime.utcnow(),
+        )
+        db.session.add(legacy_item)
+        db.session.commit()
+        legacy_id = legacy_item.id
+
+    worker_items = client.get(
+        f"{BASE}/mine", headers=other_worker_headers
+    ).get_json()["data"]["items"]
+    assert legacy_id not in [item["id"] for item in worker_items]
+
+    owner_items = client.get(f"{BASE}/mine", headers=owner_headers).get_json()["data"]["items"]
+    assert legacy_id in [item["id"] for item in owner_items]

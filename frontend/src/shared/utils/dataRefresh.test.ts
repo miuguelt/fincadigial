@@ -26,4 +26,20 @@ describe('emitDataRefresh', () => {
     window.removeEventListener('crud:refetch', crudListener);
     window.removeEventListener('server-resource-changed', resourceListener);
   });
+
+  it('does not drop a different resource notification in the debounce window', async () => {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const resources: unknown[] = [];
+    const listener = (event: Event) => {
+      resources.push((event as CustomEvent).detail?.resource);
+    };
+    window.addEventListener('crud:refetch', listener);
+
+    emitDataRefresh('control');
+    emitDataRefresh('milk-production');
+
+    expect(resources).toEqual(['control', 'milk-production']);
+    window.removeEventListener('crud:refetch', listener);
+  });
 });

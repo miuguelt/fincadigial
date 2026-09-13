@@ -10,11 +10,18 @@ from app.models.foodTypes import FoodTypes
 logger = logging.getLogger(__name__)
 
 
-def seed_catalogs_for_finca(finca_id: int):
+def seed_catalogs_for_finca(finca_id: int, force: bool = False):
     """
     Puebla los catálogos base (Rutas, Enfermedades, Vacunas, Medicamentos, Tipos de Alimento/Pastos)
     con información técnica y real para la ganadería en Colombia para una finca específica.
     """
+    if not force:
+        has_food = FoodTypes.query.filter_by(finca_id=finca_id).first() is not None
+        has_routes = RouteAdministration.query.filter_by(finca_id=finca_id).first() is not None
+        if has_food and has_routes:
+            logger.debug(f"Catálogos ya poblados para finca {finca_id}, omitiendo.")
+            return
+
     logger.info(f"Poblando catálogos exhaustivos para la finca ID: {finca_id}...")
 
     # 1. ---- Rutas de Administración ----

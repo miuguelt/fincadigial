@@ -9,7 +9,7 @@ WORKDIR /app
 ARG VITE_RUNTIME_ENV=production
 ARG VITE_API_BASE_URL=/api/v1
 ARG VITE_FRONTEND_URL
-ARG VITE_USE_BEARER_AUTH=true
+ARG VITE_USE_BEARER_AUTH=false
 
 ENV VITE_RUNTIME_ENV=${VITE_RUNTIME_ENV:-production} \
     NODE_ENV=production \
@@ -26,8 +26,12 @@ RUN npm run build
 # ── Stage 2: Production with Nginx ────────────────────────────────────
 FROM nginx:1.27-alpine
 
-# Instalar curl para healthcheck confiable
-RUN apk add --no-cache curl
+ENV TZ=America/Bogota
+
+# Instalar curl para healthcheck confiable + zona horaria de Colombia
+RUN apk add --no-cache curl tzdata \
+    && ln -snf /usr/share/zoneinfo/America/Bogota /etc/localtime \
+    && echo "America/Bogota" > /etc/timezone
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf

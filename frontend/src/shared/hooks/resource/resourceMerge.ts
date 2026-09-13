@@ -11,6 +11,9 @@ export interface MergeRecentArgs<T> {
   currentData: T[];
   recentlyCreatedIds: Set<string>;
   recentlyCreatedItems: Map<string, T>;
+  /** Cambios locales confirmados que pueden tardar en aparecer en una lectura. */
+  recentlyUpdatedIds?: Set<string>;
+  recentlyUpdatedItems?: Map<string, Partial<T>>;
 }
 
 /**
@@ -24,6 +27,8 @@ export function mergeRecentItems<T>({
   currentData,
   recentlyCreatedIds,
   recentlyCreatedItems,
+  recentlyUpdatedIds = new Set<string>(),
+  recentlyUpdatedItems = new Map<string, Partial<T>>(),
 }: MergeRecentArgs<T>): { merged: T[]; missing: T[] } {
   const serverIds = new Set(serverList.map(idOf));
   const missing: T[] = [];
@@ -34,7 +39,20 @@ export function mergeRecentItems<T>({
     if (localItem) missing.push(localItem);
   }
 
-  return { merged: missing.length > 0 ? [...missing, ...serverList] : serverList, missing };
+  // Una réplica de lectura o una caché HTTP puede devolver la versión anterior
+  // justo después del PUT/PATCH. Aplicar aquí el parche reciente evita que la
+  // UI retroceda después de haber mostrado correctamente el cambio.
+  const reconciledServerList = serverList.map((serverItem) => {
+    const id = idOf(serverItem);
+    if (!recentlyUpdatedIds.has(id)) return serverItem;
+    const localUpdate = recentlyUpdatedItems.get(id) ?? currentData.find((item) => idOf(item) === id);
+    return localUpdate ? ({ ...(serverItem as any), ...(localUpdate as any) } as T) : serverItem;
+  });
+
+  return {
+    merged: missing.length > 0 ? [...missing, ...reconciledServerList] : reconciledServerList,
+    missing,
+  };
 }
 
 /** Recorta al limite de pagina sin perder los recien creados, que van primero. */

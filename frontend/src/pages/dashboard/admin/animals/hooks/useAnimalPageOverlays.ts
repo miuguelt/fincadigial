@@ -27,8 +27,10 @@ export function buildAnimalPageOverlays(runtime: AnimalPageRuntime): AnimalPageO
       onOpenChange: (open: boolean) => {
         details.setIsOpen(open);
         if (!open && typeof window !== 'undefined') {
-          if (window.location.pathname.startsWith('/admin/animals/') && !window.location.pathname.endsWith('/admin/animals')) {
-            navigate('/admin/animals', { replace: true });
+          const pathname = window.location.pathname;
+          if (/\/\d+$/.test(pathname)) {
+            const basePath = pathname.replace(/\/\d+$/, '');
+            navigate(basePath + (window.location.search || ''), { replace: true });
           }
         }
       },

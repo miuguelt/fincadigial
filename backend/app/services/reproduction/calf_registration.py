@@ -1,4 +1,4 @@
-"""Alta de la cría como animal del hato, con su genealogía resuelta.
+"""Alta de la cría como animal del ganado, con su genealogía resuelta.
 
 El parto deja filas en `offspring`, pero la cría no entra al inventario hasta
 que alguien le asigna un arete. Este módulo hace ese paso explícito: el operario
@@ -8,9 +8,12 @@ es justo lo que se capturaba mal cuando el ternero se creaba a mano.
 """
 
 from app import db
+from flask import current_app
+from datetime import timedelta
 from app.models.animals import Animals, AnimalStatus, Sex
 from app.models.base_model import ValidationError
 from app.models.reproduction import Offspring
+from app.services.animal_transfer_service import AnimalTransferService
 
 from .cycle_rules import load_rules
 from .pregnancy_resolver import load_timelines, resolve_timeline
@@ -26,7 +29,7 @@ def register_calf(offspring_id: int, finca_id: int, data: dict) -> Animals:
         raise ValidationError("La cría indicada no existe en esta finca.", field="id")
     if calf_row.animal_id:
         raise ValidationError(
-            "Esta cría ya está registrada como animal del hato.", field="id"
+            "Esta cría ya está registrada como animal del ganado.", field="id"
         )
     if not calf_row.alive:
         raise ValidationError(
@@ -66,6 +69,17 @@ def register_calf(offspring_id: int, finca_id: int, data: dict) -> Animals:
     _inherit_grandparents(calf, dam, sire_id)
     db.session.add(calf)
     db.session.flush()
+
+    # La cría queda operativa desde el nacimiento, pero con identidad
+    # provisional. El plazo es configurable por despliegue porque la norma
+    # vigente usa un cronograma de implementación y no un único número nacional
+    # contado desde el parto.
+    provisional_days = int(current_app.config.get("ANIMAL_PROVISIONAL_DAYS", 365))
+    AnimalTransferService.ensure_identity(
+        calf,
+        origin_type="BORN_ON_FARM",
+        due_at=birth.event_date + timedelta(days=max(1, provisional_days)),
+    )
 
     calf_row.animal_id = calf.id
     if calf_row.sex is None:
@@ -107,7 +121,7 @@ def _sire_for_birth(birth, finca_id: int) -> int | None:
 
 
 def _inherit_grandparents(calf: Animals, dam: Animals, sire_id: int | None) -> None:
-    """Copia los abuelos que ya conoce el hato, sin inventar los que faltan."""
+    """Copia los abuelos que ya conoce el ganado, sin inventar los que faltan."""
     calf.idMotherMother = dam.idMother
     calf.idMotherFather = dam.idFather
     if sire_id is None:

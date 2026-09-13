@@ -12,6 +12,7 @@ import { Button } from '@/shared/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/ui/card';
 import { ChevronLeft, ChevronRight, Edit, Calendar, Info } from 'lucide-react';
 import { useT } from '@/shared/i18n';
+import { buildDetailTabs, resolveDetailTab } from '../model/detailTabs';
 
 // Interfaces
 import { CRUDConfig } from '@/shared/types/crud';
@@ -94,6 +95,17 @@ function DetailModalComponent<T extends { id: number }>({
   setDetailItem: (item: T | null) => void;
 }) {
   const t = useT();
+  const detailTabs = React.useMemo(
+    () => buildDetailTabs<T>(config.detailTabs ?? []),
+    [config.detailTabs],
+  );
+  const [activeDetailTabId, setActiveDetailTabId] = React.useState('overview');
+
+  React.useEffect(() => {
+    setActiveDetailTabId('overview');
+  }, [item?.id]);
+
+  const activeDetailTab = resolveDetailTab(detailTabs, activeDetailTabId);
 
   // Manejar navegación entre elementos
   const handleNextDetail = useCallback(() => {
@@ -109,6 +121,19 @@ function DetailModalComponent<T extends { id: number }>({
     setDetailIndex(prevIndex);
     setDetailItem(items[prevIndex]);
   }, [items, detailIndex, setDetailIndex, setDetailItem]);
+
+  const navigateToDetailItem = useCallback((newItem: T) => {
+    const idx = items.findIndex((currentItem) => currentItem.id === newItem.id);
+    if (idx >= 0) {
+      setDetailIndex(idx);
+      setDetailItem(newItem);
+    }
+  }, [items, setDetailIndex, setDetailItem]);
+
+  const closeDetail = useCallback(() => {
+    onOpenChange(false);
+    setDetailIndex(null);
+  }, [onOpenChange, setDetailIndex]);
 
   // Mapa de etiquetas para llaves foráneas
   const fkLabelMap = React.useMemo(() => {
@@ -164,7 +189,7 @@ function DetailModalComponent<T extends { id: number }>({
             variant="outline"
             size="sm"
             type="button"
-            onClick={() => { onOpenChange(false); setDetailIndex(null); }}
+            onClick={closeDetail}
             className="flex-1 sm:flex-initial transition-all duration-300 font-semibold border-border/60 hover:bg-muted/50 shadow-sm"
           >
             {t('modal.close', 'Cerrar')}
@@ -207,16 +232,44 @@ function DetailModalComponent<T extends { id: number }>({
       themeColor={theme}
     >
       {item && (
-        customDetailContent ? (
-          customDetailContent(item, (newItem) => {
-            const idx = items.findIndex((i) => i.id === newItem.id);
-            if (idx >= 0) {
-              setDetailIndex(idx);
-              setDetailItem(newItem);
-            }
-          })
-        ) : (
-          <div className="grid grid-cols-1 gap-5 p-1">
+        <div className="space-y-4">
+          {detailTabs.length > 1 && (
+            <div
+              className="flex gap-2 overflow-x-auto border-b border-border/50 pb-1"
+              role="tablist"
+              aria-label="Secciones del detalle"
+            >
+              {detailTabs.map((tab) => {
+                const isActive = tab.id === activeDetailTabId;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setActiveDetailTabId(tab.id)}
+                    className={`inline-flex min-h-[42px] shrink-0 items-center gap-2 rounded-t-lg border-b-2 px-3 text-sm font-semibold transition-colors ${
+                      isActive
+                        ? 'border-primary text-primary'
+                        : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'
+                    }`}
+                  >
+                    {tab.icon && <span aria-hidden="true">{tab.icon}</span>}
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {activeDetailTab?.id !== 'overview' && activeDetailTab ? (
+            <div className="min-w-0">
+              {activeDetailTab.render(item, { close: closeDetail, navigateToItem: navigateToDetailItem })}
+            </div>
+          ) : customDetailContent ? (
+            customDetailContent(item, navigateToDetailItem)
+          ) : (
+            <div className="grid grid-cols-1 gap-5 p-1">
             <Card className={`shadow-xl hover:shadow-2xl transition-all duration-300 border rounded-lg overflow-hidden ${primaryStyle.card} bg-card/40 backdrop-blur-sm border-border/50`}>
               <CardHeader className={`pb-4 ${primaryStyle.header} bg-muted/10 backdrop-blur-md border-b border-border/40`}>
                 <div className="flex items-center gap-2.5">
@@ -294,8 +347,9 @@ function DetailModalComponent<T extends { id: number }>({
                 </dl>
               </CardContent>
             </Card>
-          </div>
-        )
+            </div>
+          )}
+        </div>
       )}
     </GenericModal>
   );

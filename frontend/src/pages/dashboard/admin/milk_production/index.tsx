@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { MilkDashboard } from '@/widgets/milk';
 import { AdminCRUDPage } from '@/widgets/admin-crud';
 import { milkService, MilkProduction } from '@/entities/milk/api/milk.service';
@@ -48,13 +48,22 @@ function getDateRange(filter: DateFilter): { date_from?: string; date_to?: strin
   return { date_from: today, date_to: today };
 }
 
-const MilkProductionPage = () => {
+interface MilkProductionPageProps {
+  /** Pestaña con la que abre el panel del dashboard. */
+  initialTab?: 'overview' | 'table';
+  /** Fecha del último registo guardado; ajusta el filtro inicial para que sea visible. */
+  focusDate?: string | null;
+}
+
+const MilkProductionPage = ({ initialTab = 'overview', focusDate = null }: MilkProductionPageProps = {}) => {
   const { role: userRole, user } = useAuth() as any;
   const isCampesino = userRole === 'Operario' || userRole === 'Aprendiz';
   const [viewMode] = useGlobalViewMode();
   const [animals, setAnimals] = useState<{label: string, value: any}[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dateFilter, setDateFilter] = useState<DateFilter>('today');
+  const [dateFilter, setDateFilter] = useState<DateFilter>(
+    focusDate && focusDate !== getTodayColombia() ? 'all' : 'today',
+  );
 
   const fincaId = user?.finca_id;
 
@@ -76,6 +85,20 @@ const MilkProductionPage = () => {
   }, []);
 
   const dateFilters = useMemo(() => getDateRange(dateFilter), [dateFilter]);
+
+  /**
+   * Si el registro recién guardado cae fuera del rango actual de fechas,
+   * amplía el filtro a "Todos" para que el usuario lo vea de inmediato.
+   */
+  const handleRecordSaved = useCallback((record?: { date: string }) => {
+    const saved = record?.date;
+    if (!saved) return;
+    const range = getDateRange(dateFilter);
+    const visibleFrom = !range.date_from || saved >= range.date_from;
+    const visibleTo = !range.date_to || saved <= range.date_to;
+    if (visibleFrom && visibleTo) return;
+    setDateFilter('all');
+  }, [dateFilter]);
 
   const initialFormData: Partial<MilkProduction> = {
     date: getTodayColombia(),
@@ -209,9 +232,37 @@ const MilkProductionPage = () => {
     }
   ];
 
+  const customToolbar = (
+    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 w-full">
+      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mr-1 shrink-0">Filtrar por:</span>
+      {FILTER_OPTIONS.map((opt) => (
+        <button
+          key={opt.value}
+          onClick={() => setDateFilter(opt.value)}
+          className={cn(
+            "px-3 py-1 text-xs font-bold rounded-full border transition-all shrink-0",
+            dateFilter === opt.value
+              ? "bg-primary text-primary-foreground border-primary shadow-xs"
+              : "bg-card/70 text-muted-foreground border-border/50 hover:bg-card hover:text-foreground"
+          )}
+        >
+          {opt.label}
+        </button>
+      ))}
+      {dateFilter !== 'today' && (
+        <button
+          onClick={() => setDateFilter('today')}
+          className="px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full transition-colors shrink-0"
+        >
+          ✕ Limpiar
+        </button>
+      )}
+    </div>
+  );
+
   const config = {
     entityName: 'Registro de Leche',
-    title: 'Registros',
+    title: 'Registros de Ordeño',
     searchPlaceholder: 'Buscar por animal...',
     columns,
     formSections,
@@ -221,50 +272,28 @@ const MilkProductionPage = () => {
     enableDetailModal: true,
     enableSelection: !isCampesino,
     viewMode,
-    customToolbar: isCampesino ? null : undefined,
+    toolbarPlacement: 'row',
+    customToolbar: isCampesino ? null : customToolbar,
   } as any;
 
   const tableComponent = (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      {/* Date filter chips */}
-      <div className="flex items-center gap-2 px-4 pt-4 pb-2 border-b border-gray-100">
-        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider mr-1">Filtrar por:</span>
-        {FILTER_OPTIONS.map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => setDateFilter(opt.value)}
-            className={cn(
-              "px-3 py-1.5 text-xs font-bold rounded-full border transition-all active:scale-95",
-              dateFilter === opt.value
-                ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-                : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
-            )}
-          >
-            {opt.label}
-          </button>
-        ))}
-        {dateFilter !== 'today' && (
-          <button
-            onClick={() => setDateFilter('today')}
-            className="px-2 py-1.5 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            ✕ Limpiar
-          </button>
-        )}
-      </div>
-      <AdminCRUDPage
-        config={config}
-        service={milkService}
-        initialFormData={initialFormData}
-        filters={dateFilters}
-        realtime={true}
-      />
-    </div>
+    <AdminCRUDPage
+      config={config}
+      service={milkService}
+      initialFormData={initialFormData}
+      filters={dateFilters}
+      realtime={true}
+    />
   );
 
   return (
     <div className="space-y-4">
-      <MilkDashboard fincaId={fincaId} tableComponent={tableComponent} />
+      <MilkDashboard
+        fincaId={fincaId}
+        tableComponent={tableComponent}
+        initialTab={initialTab}
+        onRecordSaved={handleRecordSaved}
+      />
     </div>
   );
 };

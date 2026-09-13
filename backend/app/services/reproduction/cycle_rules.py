@@ -39,7 +39,7 @@ class CycleRules:
         return self.gestation_days - self.dry_off_days_before_birth
 
 
-#: Metas de referencia del hato. Se exponen junto a cada indicador para que
+#: Metas de referencia del ganado. Se exponen junto a cada indicador para que
 #: la interfaz pueda semaforizar sin duplicar el criterio.
 TARGETS = {
     "calving_interval_days": {"target": 400, "warn": 430, "direction": "lower"},

@@ -4,6 +4,7 @@ import { apiFetch } from '@/shared/api/apiFetch';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
 
 interface HealthCheck {
   status?: string;
@@ -71,19 +72,25 @@ export default function DiagnosticsPage() {
   }, [loadHealth]);
 
   return (
-    <div className="space-y-6 pb-10">
-      <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Diagnóstico del Sistema</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Estado en vivo de los servicios que sostienen la aplicación.
-          </p>
-        </div>
-        <Button type="button" variant="outline" onClick={() => void loadHealth()} disabled={loading}>
-          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
-          {loading ? 'Comprobando…' : 'Actualizar'}
-        </Button>
-      </header>
+    <div className="min-h-full space-y-6 overflow-x-hidden p-4 sm:p-6 lg:p-8 animate-fade-in">
+      <DataScreenHeader
+        icon={<ServerCog className="h-5 w-5 text-white" />}
+        iconClassName="from-slate-700 to-slate-900 shadow-slate-700/20"
+        title={<>Diagnóstico del <span className="text-primary">Sistema</span></>}
+        description="Estado en vivo de los servicios que sostienen la infraestructura"
+        actions={
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => void loadHealth()}
+            disabled={loading}
+            className="rounded-xl h-9 gap-2 text-xs font-semibold shadow-sm"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
+            {loading ? 'Comprobando…' : 'Actualizar'}
+          </Button>
+        }
+      />
 
       {error && (
         <Card className="border-destructive/40">

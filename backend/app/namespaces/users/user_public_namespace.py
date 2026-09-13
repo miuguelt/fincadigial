@@ -8,7 +8,10 @@ from sqlalchemy.exc import IntegrityError
 from app import db
 from app.models.base_model import ValidationError
 from app.models.user import User
+from app.models import UserConsent
+from app.legal import build_registration_consent_records, validate_registration_consent
 from app.utils.response_handler import APIResponse
+from app.legal.release_guard import data_collection_allowed
 from .users_namespace import users_ns
 
 logger = logging.getLogger(__name__)
@@ -22,6 +25,19 @@ class UserPublicCreate(Resource):
     )
     def post(self):
         try:
+            if not flask.current_app.config.get("PUBLIC_USER_CREATION_ENABLED", True):
+                return APIResponse.error(
+                    "El registro público de usuarios está deshabilitado.",
+                    status_code=403,
+                    error_code="PUBLIC_USER_CREATION_DISABLED",
+                )
+            if not data_collection_allowed(flask.current_app.config):
+                return APIResponse.error(
+                    "La captación de datos está deshabilitada hasta completar la autorización institucional.",
+                    status_code=503,
+                    error_code="DATA_COLLECTION_DISABLED",
+                )
+
             data = flask.request.get_json() or {}
             required_fields = [
                 "identification",
@@ -35,6 +51,11 @@ class UserPublicCreate(Resource):
             if missing:
                 return APIResponse.validation_error({field: "Requerido" for field in missing})
 
+            consent_errors = validate_registration_consent(data.get("consent"))
+            if consent_errors:
+                return APIResponse.validation_error({"consent": consent_errors})
+
+            consent_payload = data.pop("consent", None)
             data["finca_id"] = None
             password_raw = data.pop("password")
             password_confirmation = data.pop("password_confirmation", None)
@@ -54,7 +75,13 @@ class UserPublicCreate(Resource):
                 data["approval_status"] = ApprovalStatus.Pending
                 data["status"] = True
             data["password"] = password_raw
-            user = User.create(commit=True, **data)
+            user = User.create(commit=False, **data)
+            for consent in build_registration_consent_records(
+                consent_payload,
+                source="public_user_registration",
+            ):
+                db.session.add(UserConsent(user_id=user.id, **consent))
+            db.session.commit()
             logger.info("Usuario público creado: %s (Sin finca asociada)", user.email)
             self._notify_global_administrators(user)
             return APIResponse.created(

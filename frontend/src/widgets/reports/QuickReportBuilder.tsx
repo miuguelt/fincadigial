@@ -49,7 +49,7 @@ export function QuickReportBuilder() {
         </div>
 
         <div className="p-5 pt-0 bg-background/50">
-          <Button onClick={() => goTo('/admin/analytics/reports')} className="gap-2 shadow-sm transition-all hover:shadow-md">
+          <Button onClick={() => goTo('/admin/reports?tab=personalizados')} className="gap-2 shadow-xs transition-all hover:shadow-md">
             <BarChart3 className="h-4 w-4" />
             Ir al constructor de reportes
             <ArrowRight className="h-4 w-4" />

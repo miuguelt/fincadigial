@@ -82,13 +82,13 @@ def init_security_middlewares(app):
             response.headers.pop("ETag", None)
             return response
 
-        # ── Imágenes WebP: caché agresivo 30 días (inmutables por hash de nombre) ──
+        # ── Archivos de usuario: son portadores de una firma temporal ──
         if (
             path.startswith("/api/v1/public/images/")
-            or response.content_type == "image/webp"
+            or path.startswith("/static/uploads/")
         ):
-            response.headers["Cache-Control"] = "public, max-age=2592000, immutable"
-            response.headers["Vary"] = "Accept-Encoding"
+            response.headers["Cache-Control"] = "private, no-store"
+            response.headers["Vary"] = "Accept-Encoding, Cookie, Authorization"
 
         # ── Catálogos maestros: caché 24h (breeds, species, vaccines, medications) ──
         elif any(

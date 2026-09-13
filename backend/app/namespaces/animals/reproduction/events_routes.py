@@ -6,14 +6,14 @@ derivado del animal.
 """
 
 import logging
-from datetime import date
+from datetime import date, timedelta
 
 import flask
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from flask_restx import Resource
 
 from app import db
-from app.models.animals import Animals
+from app.models.animals import Animals, Sex
 from app.models.base_model import ValidationError
 from app.models.reproduction import (
     DiagnosisResult,
@@ -238,87 +238,158 @@ class EventDetail(Resource):
 class AnimalReproductiveHistory(Resource):
     @jwt_required()
     def get(self, animal_id):
-        """Historial reproductivo completo de una hembra."""
+        """Historial reproductivo completo de un animal (hembra o reproductor macho)."""
         animal = Animals.get_by_id(animal_id)
         if not animal:
             return APIResponse.error("Animal no encontrado", status_code=404)
 
-        events = (
-            apply_tenant_filter(ReproductiveEvent.query, ReproductiveEvent)
-            .filter_by(animal_id=animal_id)
-            .order_by(ReproductiveEvent.event_date.desc())
-            .all()
+        is_male = (
+            animal.sex == Sex.Macho
+            if isinstance(animal.sex, Sex)
+            else str(getattr(animal, "sex", "")).lower() == "macho"
         )
 
-        data = [e.to_namespace_dict(include_relations=True) for e in events]
+        if is_male:
+            # Para un toro, sus eventos reproductivos son donde actúa como reproductor (sire_id)
+            events = (
+                apply_tenant_filter(ReproductiveEvent.query, ReproductiveEvent)
+                .filter_by(sire_id=animal_id)
+                .order_by(ReproductiveEvent.event_date.desc())
+                .all()
+            )
+        else:
+            events = (
+                apply_tenant_filter(ReproductiveEvent.query, ReproductiveEvent)
+                .filter_by(animal_id=animal_id)
+                .order_by(ReproductiveEvent.event_date.desc())
+                .all()
+            )
+
+        data = []
+        for e in events:
+            item_data = e.to_namespace_dict(include_relations=True)
+            if e.event_type == EventType.Parto:
+                item_data["offspring_list"] = [
+                    o.to_namespace_dict(include_relations=True) for o in e.offspring.all()
+                ]
+            data.append(item_data)
 
         # Métricas
         inseminations = [e for e in events if e.event_type == EventType.Inseminacion]
-        positive_diags = [
-            e
-            for e in events
-            if e.event_type == EventType.Diagnostico
-            and e.diagnosis_result == DiagnosisResult.Positivo
-        ]
         partos = [e for e in events if e.event_type == EventType.Parto]
         total_alive = sum(e.alive_count or 0 for e in partos)
         total_dead = sum(e.dead_count or 0 for e in partos)
 
-        conception_rate = (
-            round(len(positive_diags) / len(inseminations) * 100, 1)
-            if inseminations
-            else None
-        )
-
-        last_insem = next((e for e in inseminations), None)
         active_pregnancy = None
-        if last_insem and last_insem.expected_birth_date:
-            # Verificar si esta inseminación ya está resuelta por algún parto o diagnóstico negativo posterior
-            subsequent_event = next(
-                (
-                    e
-                    for e in events
-                    if e.event_date >= last_insem.event_date
-                    and e.id != last_insem.id
-                    and (
-                        (
-                            e.event_type == EventType.Diagnostico
-                            and e.diagnosis_result == DiagnosisResult.Negativo
-                        )
-                        or (e.event_type == EventType.Parto)
+        iep_days = None
+        days_open = None
+
+        if is_male:
+            # Toros: diagnósticos positivos de hembras servidas por este semental
+            insem_ids = [e.id for e in inseminations]
+            female_ids = list({e.animal_id for e in inseminations})
+            positive_count = 0
+            if insem_ids and female_ids:
+                # Buscar diagnósticos positivos en esas hembras
+                diag_events = (
+                    apply_tenant_filter(ReproductiveEvent.query, ReproductiveEvent)
+                    .filter(
+                        ReproductiveEvent.animal_id.in_(female_ids),
+                        ReproductiveEvent.event_type == EventType.Diagnostico,
+                        ReproductiveEvent.diagnosis_result == DiagnosisResult.Positivo,
                     )
-                ),
-                None,
+                    .all()
+                )
+                positive_count = len(diag_events)
+
+            conception_rate = (
+                round(positive_count / len(inseminations) * 100, 1)
+                if inseminations
+                else None
+            )
+            positive_diagnoses_len = positive_count
+        else:
+            # Hembras
+            positive_diags = [
+                e
+                for e in events
+                if e.event_type == EventType.Diagnostico
+                and e.diagnosis_result == DiagnosisResult.Positivo
+            ]
+            positive_diagnoses_len = len(positive_diags)
+            conception_rate = (
+                round(positive_diagnoses_len / len(inseminations) * 100, 1)
+                if inseminations
+                else None
             )
 
-            if not subsequent_event:
-                from datetime import timedelta
+            # Cálculo de Intervalo Entre Partos (IEP)
+            parto_dates = sorted([e.event_date for e in partos if e.event_date])
+            if len(parto_dates) >= 2:
+                intervals = [
+                    (parto_dates[i] - parto_dates[i - 1]).days
+                    for i in range(1, len(parto_dates))
+                ]
+                iep_days = round(sum(intervals) / len(intervals)) if intervals else None
 
-                today = date.today()
-                if last_insem.expected_birth_date >= today or (
-                    today - last_insem.expected_birth_date < timedelta(days=45)
-                ):
-                    active_pregnancy = {
-                        "insemination_date": str(last_insem.event_date),
-                        "expected_birth_date": str(last_insem.expected_birth_date),
-                        "days_remaining": (last_insem.expected_birth_date - today).days,
-                        "technique": last_insem.technique.value
-                        if last_insem.technique
-                        else None,
-                    }
+            # Gestación activa
+            last_insem = next((e for e in inseminations), None)
+            if last_insem and last_insem.expected_birth_date:
+                subsequent_event = next(
+                    (
+                        e
+                        for e in events
+                        if e.event_date >= last_insem.event_date
+                        and e.id != last_insem.id
+                        and (
+                            (
+                                e.event_type == EventType.Diagnostico
+                                and e.diagnosis_result == DiagnosisResult.Negativo
+                            )
+                            or (e.event_type == EventType.Parto)
+                        )
+                    ),
+                    None,
+                )
+
+                if not subsequent_event:
+                    today = date.today()
+                    if last_insem.expected_birth_date >= today or (
+                        today - last_insem.expected_birth_date < timedelta(days=45)
+                    ):
+                        active_pregnancy = {
+                            "insemination_date": str(last_insem.event_date),
+                            "expected_birth_date": str(last_insem.expected_birth_date),
+                            "days_remaining": (last_insem.expected_birth_date - today).days,
+                            "technique": last_insem.technique.value
+                            if last_insem.technique
+                            else None,
+                        }
+
+            # Días abiertos post-parto
+            if partos:
+                last_parto = max(partos, key=lambda e: e.event_date)
+                if last_parto and last_parto.event_date:
+                    if active_pregnancy and last_insem and last_insem.event_date > last_parto.event_date:
+                        days_open = max(0, (last_insem.event_date - last_parto.event_date).days)
+                    else:
+                        days_open = max(0, (date.today() - last_parto.event_date).days)
 
         return APIResponse.success(
             data={
                 "animal_id": animal_id,
                 "animal_record": animal.record,
+                "is_male": is_male,
                 "events": data,
                 "metrics": {
                     "total_inseminations": len(inseminations),
-                    "positive_diagnoses": len(positive_diags),
+                    "positive_diagnoses": positive_diagnoses_len,
                     "total_births": len(partos),
                     "total_alive_offspring": total_alive,
                     "total_dead_offspring": total_dead,
                     "conception_rate_pct": conception_rate,
+                    "iep_days": iep_days,
+                    "days_open": days_open,
                 },
                 "active_pregnancy": active_pregnancy,
             }

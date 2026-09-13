@@ -45,10 +45,11 @@ export const FIELD_STATE_VALUES = (): string[] => FIELD_STATES.map(s => s.value)
 export const ANIMAL_DISEASE_STATUSES: readonly EnumEntry[] = [
   { value: 'Activo', label: 'Activo' },
   { value: 'En tratamiento', label: 'En tratamiento' },
-  { value: 'Recuperado', label: 'Recuperado' },
-  { value: 'Tratado', label: 'Tratado' },
   { value: 'Observación', label: 'Observación' },
   { value: 'Crónico', label: 'Crónico' },
+  { value: 'Recuperado', label: 'Recuperado' },
+  { value: 'Tratado', label: 'Tratado' },
+  { value: 'Curado', label: 'Curado' },
 ];
 
 export const ANIMAL_DISEASE_STATUS_VALUES = (): string[] => ANIMAL_DISEASE_STATUSES.map(s => s.value);

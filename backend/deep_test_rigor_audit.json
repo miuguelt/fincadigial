@@ -1,0 +1,1555 @@
+{
+  "activity_daily_agg": {
+    "models": [
+      "ActivityDailyAgg"
+    ],
+    "real_tests": [
+      "test_tenant_isolation.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "activity_log": {
+    "models": [
+      "ActivityLog"
+    ],
+    "real_tests": [
+      "test_activity_service.py",
+      "test_tenant_isolation.py",
+      "test_users_service.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "animal_alert_configs": {
+    "models": [
+      "AnimalAlertConfig"
+    ],
+    "real_tests": [
+      "test_tenant_isolation.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "animal_alerts": {
+    "models": [
+      "AnimalAlert"
+    ],
+    "real_tests": [
+      "test_alerts_bulk_read.py",
+      "test_alert_deduplication.py",
+      "test_calendar_endpoint.py",
+      "test_tenant_isolation.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "animal_care_plan_stages": {
+    "models": [
+      "AnimalCarePlanStage"
+    ],
+    "real_tests": [
+      "test_animal_care_plans.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "animal_care_plans": {
+    "models": [
+      "AnimalCarePlan"
+    ],
+    "real_tests": [
+      "test_animal_care_plans.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "animal_disease_progress": {
+    "models": [
+      "AnimalDiseaseProgress"
+    ],
+    "real_tests": [
+      "test_disease_followup.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "animal_diseases": {
+    "models": [
+      "AnimalDiseases"
+    ],
+    "real_tests": [
+      "test_tenant_isolation.py",
+      "test_treatment_protocols.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "animal_fields": {
+    "models": [
+      "AnimalFields"
+    ],
+    "real_tests": [
+      "test_animal_fields_transfer.py",
+      "test_deletion_integrity.py",
+      "test_field_occupancy_sync.py",
+      "test_tenant_isolation.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "animal_group_membership": {
+    "models": [
+      "AnimalGroupMembership"
+    ],
+    "real_tests": [
+      "test_operational_and_rural_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "animal_groups": {
+    "models": [
+      "AnimalGroup"
+    ],
+    "real_tests": [
+      "test_operational_and_rural_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "animal_health_history": {
+    "models": [
+      "AnimalHealthHistory"
+    ],
+    "real_tests": [
+      "test_control_persistence.py",
+      "test_disease_followup.py",
+      "test_unified_health_history.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "animal_images": {
+    "models": [
+      "AnimalImages"
+    ],
+    "real_tests": [
+      "test_database_bootstrap.py",
+      "test_tenant_isolation.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "animal_movements": {
+    "models": [
+      "AnimalMovement"
+    ],
+    "real_tests": [
+      "test_animal_movements.py",
+      "test_unified_health_history.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "animal_production_metrics": {
+    "models": [
+      "AnimalProductionMetrics"
+    ],
+    "real_tests": [
+      "test_production_and_finance_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "animals": {
+    "models": [
+      "Animals"
+    ],
+    "real_tests": [
+      "test_analytics_endpoints.py",
+      "test_animal_care_plans.py",
+      "test_animal_disease_case_options.py",
+      "test_animal_fields_transfer.py",
+      "test_animal_movements.py",
+      "test_animal_nfc_binding.py",
+      "test_animal_search_query.py",
+      "test_animal_smart_filters.py",
+      "test_batch_weight.py",
+      "test_cache_and_milk_sync.py",
+      "test_calendar_endpoint.py",
+      "test_concurrent_admins.py",
+      "test_control_persistence.py",
+      "test_crud_endpoints.py",
+      "test_crud_full.py",
+      "test_deletion_integrity.py",
+      "test_disease_followup.py",
+      "test_fertility_dashboard.py",
+      "test_field_occupancy_sync.py",
+      "test_finca_baseline_and_scope.py",
+      "test_integrity_checker.py",
+      "test_inventory_ledger.py",
+      "test_medical_history_timeline.py",
+      "test_middleware.py",
+      "test_multi_tenant_rbac.py",
+      "test_offline_sync_and_mesh_models.py",
+      "test_operational_and_rural_models.py",
+      "test_production_and_finance_models.py",
+      "test_public_finca_detail.py",
+      "test_rbac_middleware.py",
+      "test_redis_bus_resilience.py",
+      "test_regulatory_reports.py",
+      "test_report_services.py",
+      "test_semantic_search.py",
+      "test_tenant_isolation.py",
+      "test_treatment_protocols.py",
+      "test_treatment_recommendations.py",
+      "test_unified_health_history.py",
+      "test_user_and_farm_membership_models.py",
+      "test_weather_and_kb_rules_models.py",
+      "reproduction/test_calf.py",
+      "reproduction/test_endpoints.py",
+      "reproduction/test_kpis.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "attachment_blobs": {
+    "models": [
+      "AttachmentBlob"
+    ],
+    "real_tests": [
+      "test_offline_sync_and_mesh_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "body_condition_scores": {
+    "models": [
+      "BodyConditionScore"
+    ],
+    "real_tests": [
+      "test_unified_health_history.py",
+      "reproduction/test_kpis.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "breed_growth_standards": {
+    "models": [
+      "BreedGrowthStandard"
+    ],
+    "real_tests": [
+      "test_animal_smart_filters.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "breeds": {
+    "models": [
+      "Breeds"
+    ],
+    "real_tests": [
+      "test_animal_care_plans.py",
+      "test_animal_disease_case_options.py",
+      "test_animal_fields_transfer.py",
+      "test_animal_movements.py",
+      "test_animal_nfc_binding.py",
+      "test_animal_search_query.py",
+      "test_animal_smart_filters.py",
+      "test_batch_weight.py",
+      "test_calendar_endpoint.py",
+      "test_control_persistence.py",
+      "test_crud_endpoints.py",
+      "test_crud_full.py",
+      "test_disease_followup.py",
+      "test_fertility_dashboard.py",
+      "test_field_occupancy_sync.py",
+      "test_finca_baseline_and_scope.py",
+      "test_inventory_ledger.py",
+      "test_medical_history_timeline.py",
+      "test_operational_and_rural_models.py",
+      "test_production_and_finance_models.py",
+      "test_public_finca_detail.py",
+      "test_semantic_search.py",
+      "test_tenant_isolation.py",
+      "test_treatment_protocols.py",
+      "test_treatment_recommendations.py",
+      "test_unified_health_history.py",
+      "test_user_and_farm_membership_models.py",
+      "test_weather_and_kb_rules_models.py",
+      "reproduction/test_endpoints.py",
+      "reproduction/test_kpis.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "chat_messages": {
+    "models": [
+      "ChatMessage"
+    ],
+    "real_tests": [
+      "test_chat_location_and_user_approval_sync.py",
+      "test_chat_realtime.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "climate_risk_alerts": {
+    "models": [
+      "ClimateRiskAlert"
+    ],
+    "real_tests": [
+      "test_campesino_and_water_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "community_nodes": {
+    "models": [
+      "CommunityNode"
+    ],
+    "real_tests": [
+      "test_offline_sync_and_mesh_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "control": {
+    "models": [
+      "Control"
+    ],
+    "real_tests": [
+      "test_batch_weight.py",
+      "test_cache_and_milk_sync.py",
+      "test_campesino_and_water_models.py",
+      "test_control_persistence.py",
+      "test_crud_endpoints.py",
+      "test_crud_full.py",
+      "test_deletion_integrity.py",
+      "test_disease_followup.py",
+      "test_health_check.py",
+      "test_integrity_checker.py",
+      "test_jwt_blocklist.py",
+      "test_private_file_urls.py",
+      "test_semantic_search.py",
+      "test_tenant_isolation.py",
+      "test_treatment_recommendations.py",
+      "test_unified_health_history.py",
+      "test_validators.py",
+      "test_weather_and_kb_rules_models.py",
+      "contract/test_api_contract.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "crop_activities": {
+    "models": [
+      "CropActivity"
+    ],
+    "real_tests": [
+      "test_campesino_and_water_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "crop_plots": {
+    "models": [
+      "CropPlot"
+    ],
+    "real_tests": [
+      "test_campesino_and_water_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "devices": {
+    "models": [
+      "Device"
+    ],
+    "real_tests": [
+      "test_offline_sync_and_mesh_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "diseases": {
+    "models": [
+      "Diseases"
+    ],
+    "real_tests": [
+      "test_animal_disease_case_options.py",
+      "test_bootstrap_and_seeds.py",
+      "test_calendar_endpoint.py",
+      "test_crud_endpoints.py",
+      "test_crud_full.py",
+      "test_disease_followup.py",
+      "test_finca_baseline_and_scope.py",
+      "test_multi_tenant_rbac.py",
+      "test_operational_and_rural_models.py",
+      "test_rbac_middleware.py",
+      "test_semantic_search.py",
+      "test_treatment_protocols.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "farm_entity_alert_configs": {
+    "models": [
+      "FarmEntityAlertConfig"
+    ],
+    "real_tests": [
+      "test_alert_runtime.py",
+      "test_database_bootstrap.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "farm_entity_alerts": {
+    "models": [
+      "FarmEntityAlert"
+    ],
+    "real_tests": [
+      "test_alert_runtime.py",
+      "test_database_bootstrap.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "farm_expenses": {
+    "models": [
+      "FarmExpenses"
+    ],
+    "real_tests": [
+      "test_production_and_finance_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "fields": {
+    "models": [
+      "Fields"
+    ],
+    "real_tests": [
+      "test_animal_fields_transfer.py",
+      "test_bootstrap_and_seeds.py",
+      "test_campesino_and_water_models.py",
+      "test_concurrent_admins.py",
+      "test_crud_endpoints.py",
+      "test_crud_full.py",
+      "test_deletion_integrity.py",
+      "test_field_occupancy_sync.py",
+      "test_multi_tenant_rbac.py",
+      "test_operational_and_rural_models.py",
+      "test_rbac_middleware.py",
+      "test_semantic_search.py",
+      "test_tenant_isolation.py",
+      "contract/test_api_contract.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "financial_summary": {
+    "models": [
+      "FinancialSummary"
+    ],
+    "real_tests": [
+      "test_production_and_finance_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "finca": {
+    "models": [
+      "Finca"
+    ],
+    "real_tests": [
+      "test_alerts_bulk_read.py",
+      "test_alert_deduplication.py",
+      "test_analytics_endpoints.py",
+      "test_animal_disease_case_options.py",
+      "test_animal_movements.py",
+      "test_animal_nfc_binding.py",
+      "test_animal_search_query.py",
+      "test_animal_smart_filters.py",
+      "test_audit_fixes.py",
+      "test_batch_weight.py",
+      "test_bootstrap_and_seeds.py",
+      "test_campesino_and_water_models.py",
+      "test_chat_location_and_user_approval_sync.py",
+      "test_chat_realtime.py",
+      "test_cleanup_simulated_data.py",
+      "test_client_errors_endpoint.py",
+      "test_concurrent_admins.py",
+      "test_control_persistence.py",
+      "test_crud_endpoints.py",
+      "test_crud_full.py",
+      "test_database_bootstrap.py",
+      "test_deletion_integrity.py",
+      "test_fertility_dashboard.py",
+      "test_field_occupancy_sync.py",
+      "test_finca_baseline_and_scope.py",
+      "test_finca_images.py",
+      "test_finca_registration_e2e.py",
+      "test_integrity_checker.py",
+      "test_inventory_ledger.py",
+      "test_marketplace_models.py",
+      "test_medical_history_timeline.py",
+      "test_multi_finca.py",
+      "test_multi_tenant_rbac.py",
+      "test_offline_sync_and_mesh_models.py",
+      "test_operational_and_rural_models.py",
+      "test_production_and_finance_models.py",
+      "test_professional_credentials.py",
+      "test_public_finca_detail.py",
+      "test_public_registration_consent.py",
+      "test_push_notifications.py",
+      "test_regulatory_reports.py",
+      "test_report_services.py",
+      "test_role_dashboards_smoke.py",
+      "test_semantic_search.py",
+      "test_support_scripts_alignment.py",
+      "test_technical_assistance_workflow.py",
+      "test_tenant_isolation.py",
+      "test_treatment_protocols.py",
+      "test_user_and_farm_membership_models.py",
+      "test_user_approval_pending.py",
+      "test_user_farm_scope.py",
+      "test_user_verification_config.py",
+      "test_weather_and_kb_rules_models.py",
+      "test_weather_namespace_auth.py",
+      "test_weather_service.py",
+      "contract/test_api_contract.py",
+      "reproduction/test_endpoints.py",
+      "reproduction/test_kpis.py",
+      "reproduction/test_state_sync.py",
+      "reproduction/test_validators.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "finca_images": {
+    "models": [
+      "FincaImages"
+    ],
+    "real_tests": [
+      "test_finca_images.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "food_types": {
+    "models": [
+      "FoodTypes"
+    ],
+    "real_tests": [
+      "test_animal_fields_transfer.py",
+      "test_bootstrap_and_seeds.py",
+      "test_crud_endpoints.py",
+      "test_crud_full.py",
+      "test_field_occupancy_sync.py",
+      "test_finca_baseline_and_scope.py",
+      "test_middleware.py",
+      "test_tenant_isolation.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "genetic_improvements": {
+    "models": [
+      "GeneticImprovements"
+    ],
+    "real_tests": [
+      "test_medical_history_timeline.py",
+      "test_tenant_isolation.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "infrastructure": {
+    "models": [
+      "Infrastructure"
+    ],
+    "real_tests": [
+      "test_operational_and_rural_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "inventory_lots": {
+    "models": [
+      "InventoryLot"
+    ],
+    "real_tests": [
+      "test_inventory_ledger.py",
+      "test_tenant_isolation.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "inventory_movements": {
+    "models": [
+      "InventoryMovement"
+    ],
+    "real_tests": [
+      "test_inventory_ledger.py",
+      "test_tenant_isolation.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "join_requests": {
+    "models": [
+      "JoinRequest"
+    ],
+    "real_tests": [
+      "test_chat_location_and_user_approval_sync.py",
+      "test_user_verification_config.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "kb_calendario": {
+    "models": [
+      "KBCalendario"
+    ],
+    "real_tests": [
+      "test_bootstrap_and_seeds.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "kb_recomendaciones": {
+    "models": [
+      "KBRecomendacion"
+    ],
+    "real_tests": [
+      "test_bootstrap_and_seeds.py",
+      "test_weather_and_kb_rules_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "kb_reglas": {
+    "models": [
+      "KBRegla"
+    ],
+    "real_tests": [
+      "test_weather_and_kb_rules_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "lactation_cycles": {
+    "models": [
+      "LactationCycle"
+    ],
+    "real_tests": [
+      "test_database_bootstrap.py",
+      "reproduction/test_calf.py",
+      "reproduction/test_state_sync.py",
+      "reproduction/test_validators.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "livestock_summary": {
+    "models": [
+      "LivestockSummary"
+    ],
+    "real_tests": [
+      "test_animal_movements.py",
+      "test_public_finca_detail.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "management_plans": {
+    "models": [
+      "ManagementPlan"
+    ],
+    "real_tests": [
+      "test_operational_and_rural_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "market_blocks": {
+    "models": [
+      "MarketBlock"
+    ],
+    "real_tests": [
+      "test_marketplace_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "market_conversations": {
+    "models": [
+      "MarketConversation"
+    ],
+    "real_tests": [
+      "test_marketplace_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "market_events": {
+    "models": [
+      "MarketEvent"
+    ],
+    "real_tests": [
+      "test_marketplace_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "market_offers": {
+    "models": [
+      "MarketOffer"
+    ],
+    "real_tests": [
+      "test_marketplace_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "market_reports": {
+    "models": [
+      "MarketReport"
+    ],
+    "real_tests": [
+      "test_marketplace_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "medications": {
+    "models": [
+      "Medications"
+    ],
+    "real_tests": [
+      "test_crud_endpoints.py",
+      "test_crud_full.py",
+      "test_disease_followup.py",
+      "test_finca_baseline_and_scope.py",
+      "test_inventory_ledger.py",
+      "test_operational_and_rural_models.py",
+      "test_semantic_search.py",
+      "test_treatment_protocols.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "membership_request": {
+    "models": [
+      "MembershipRequest"
+    ],
+    "real_tests": [
+      "test_user_and_farm_membership_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "milk_production": {
+    "models": [
+      "MilkProduction"
+    ],
+    "real_tests": [
+      "test_deletion_integrity.py",
+      "test_production_and_finance_models.py",
+      "test_unified_health_history.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "milk_summary": {
+    "models": [
+      "MilkSummary"
+    ],
+    "real_tests": [
+      "test_production_and_finance_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "node_messages": {
+    "models": [
+      "NodeMessage"
+    ],
+    "real_tests": [
+      "test_offline_sync_and_mesh_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "offline_learning_materials": {
+    "models": [
+      "OfflineLearningMaterial"
+    ],
+    "real_tests": [
+      "test_campesino_and_water_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "offspring": {
+    "models": [
+      "Offspring"
+    ],
+    "real_tests": [
+      "test_tenant_isolation.py",
+      "reproduction/test_calf.py",
+      "reproduction/test_endpoints.py",
+      "reproduction/test_state_sync.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "operational_costs": {
+    "models": [
+      "OperationalCost"
+    ],
+    "real_tests": [
+      "test_production_and_finance_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "pasture_aforos": {
+    "models": [
+      "PastureAforo"
+    ],
+    "real_tests": [
+      "test_operational_and_rural_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "producer_profiles": {
+    "models": [
+      "ProducerProfile"
+    ],
+    "real_tests": [
+      "test_user_and_farm_membership_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "production_targets": {
+    "models": [
+      "ProductionTarget"
+    ],
+    "real_tests": [
+      "test_database_bootstrap.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "professional_credentials": {
+    "models": [
+      "ProfessionalCredential"
+    ],
+    "real_tests": [
+      "test_professional_credentials.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "push_subscription": {
+    "models": [
+      "PushSubscription"
+    ],
+    "real_tests": [
+      "test_push_notifications.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "reproductive_events": {
+    "models": [
+      "ReproductiveEvent"
+    ],
+    "real_tests": [
+      "test_fertility_dashboard.py",
+      "test_tenant_isolation.py",
+      "test_unified_health_history.py",
+      "reproduction/test_endpoints.py",
+      "reproduction/test_kpis.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "route_administrations": {
+    "models": [
+      "RouteAdministration"
+    ],
+    "real_tests": [
+      "test_animal_disease_case_options.py",
+      "test_bootstrap_and_seeds.py",
+      "test_calendar_endpoint.py",
+      "test_database_bootstrap.py",
+      "test_disease_followup.py",
+      "test_finca_baseline_and_scope.py",
+      "test_inventory_ledger.py",
+      "test_operational_and_rural_models.py",
+      "test_semantic_search.py",
+      "test_treatment_protocols.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "seasonal_adjustments": {
+    "models": [
+      "SeasonalAdjustment"
+    ],
+    "real_tests": [
+      "test_database_bootstrap.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "sinigan_registrations": {
+    "models": [
+      "SiniganRegistrations"
+    ],
+    "real_tests": [
+      "test_user_and_farm_membership_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "species": {
+    "models": [
+      "Species"
+    ],
+    "real_tests": [
+      "test_animal_care_plans.py",
+      "test_animal_disease_case_options.py",
+      "test_animal_fields_transfer.py",
+      "test_animal_movements.py",
+      "test_animal_nfc_binding.py",
+      "test_animal_search_query.py",
+      "test_animal_smart_filters.py",
+      "test_audit_fixes.py",
+      "test_batch_weight.py",
+      "test_calendar_endpoint.py",
+      "test_control_persistence.py",
+      "test_crud_endpoints.py",
+      "test_crud_full.py",
+      "test_database_bootstrap.py",
+      "test_deletion_integrity.py",
+      "test_disease_followup.py",
+      "test_fertility_dashboard.py",
+      "test_field_occupancy_sync.py",
+      "test_finca_baseline_and_scope.py",
+      "test_integrity_checker.py",
+      "test_inventory_ledger.py",
+      "test_medical_history_timeline.py",
+      "test_operational_and_rural_models.py",
+      "test_production_and_finance_models.py",
+      "test_public_finca_detail.py",
+      "test_regulatory_reports.py",
+      "test_report_services.py",
+      "test_semantic_search.py",
+      "test_tenant_isolation.py",
+      "test_treatment_protocols.py",
+      "test_treatment_recommendations.py",
+      "test_unified_health_history.py",
+      "test_user_and_farm_membership_models.py",
+      "test_weather_and_kb_rules_models.py",
+      "contract/test_api_contract.py",
+      "reproduction/test_endpoints.py",
+      "reproduction/test_kpis.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "sync_conflicts": {
+    "models": [
+      "SyncConflict"
+    ],
+    "real_tests": [
+      "test_offline_sync_and_mesh_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "sync_operation_receipts": {
+    "models": [
+      "SyncOperationReceipt"
+    ],
+    "real_tests": [
+      "test_offline_sync_and_mesh_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "sync_operations": {
+    "models": [
+      "SyncOperation"
+    ],
+    "real_tests": [
+      "test_offline_sync_and_mesh_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "sync_sessions": {
+    "models": [
+      "SyncSession"
+    ],
+    "real_tests": [
+      "test_offline_sync_and_mesh_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "system_contents": {
+    "models": [
+      "SystemContent"
+    ],
+    "real_tests": [
+      "test_public_finca_detail.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "tasks": {
+    "models": [
+      "Tasks"
+    ],
+    "real_tests": [
+      "test_alert_deduplication.py",
+      "test_calendar_endpoint.py",
+      "test_crud_full.py",
+      "test_intelligence_endpoints.py",
+      "test_semantic_search.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "technical_assistance_requests": {
+    "models": [
+      "TechnicalAssistanceRequest"
+    ],
+    "real_tests": [
+      "test_technical_assistance_workflow.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "territories": {
+    "models": [
+      "Territory"
+    ],
+    "real_tests": [
+      "test_bootstrap_and_seeds.py",
+      "test_campesino_and_water_models.py",
+      "test_offline_sync_and_mesh_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "transactions": {
+    "models": [
+      "Transaction"
+    ],
+    "real_tests": [
+      "test_analytics_endpoints.py",
+      "test_animal_movements.py",
+      "test_campesino_and_water_models.py",
+      "test_crud_full.py",
+      "test_deletion_integrity.py",
+      "test_production_and_finance_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "treatment_medications": {
+    "models": [
+      "TreatmentMedications"
+    ],
+    "real_tests": [
+      "test_finca_baseline_and_scope.py",
+      "test_inventory_ledger.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "treatment_protocol_insumos": {
+    "models": [
+      "TreatmentProtocolInsumo"
+    ],
+    "real_tests": [
+      "test_operational_and_rural_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "treatment_protocols": {
+    "models": [
+      "TreatmentProtocol"
+    ],
+    "real_tests": [
+      "test_operational_and_rural_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "treatment_recommendation_controls": {
+    "models": [
+      "TreatmentRecommendationControls"
+    ],
+    "real_tests": [
+      "test_weather_and_kb_rules_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "treatment_recommendations": {
+    "models": [
+      "TreatmentRecommendations"
+    ],
+    "real_tests": [
+      "test_weather_and_kb_rules_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "treatment_vaccines": {
+    "models": [
+      "TreatmentVaccines"
+    ],
+    "real_tests": [
+      "test_finca_baseline_and_scope.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "treatments": {
+    "models": [
+      "Treatments"
+    ],
+    "real_tests": [
+      "test_animal_disease_case_options.py",
+      "test_calendar_endpoint.py",
+      "test_crud_endpoints.py",
+      "test_crud_full.py",
+      "test_disease_followup.py",
+      "test_finca_baseline_and_scope.py",
+      "test_inventory_ledger.py",
+      "test_multi_tenant_rbac.py",
+      "test_rbac_middleware.py",
+      "test_tenant_isolation.py",
+      "test_treatment_protocols.py",
+      "test_unified_health_history.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "user": {
+    "models": [
+      "User"
+    ],
+    "real_tests": [
+      "test_animal_disease_case_options.py",
+      "test_animal_smart_filters.py",
+      "test_bootstrap_and_seeds.py",
+      "test_campesino_and_water_models.py",
+      "test_chat_location_and_user_approval_sync.py",
+      "test_chat_realtime.py",
+      "test_cleanup_simulated_data.py",
+      "test_concurrent_admins.py",
+      "test_database_bootstrap.py",
+      "test_disease_followup.py",
+      "test_finca_images.py",
+      "test_finca_registration_e2e.py",
+      "test_marketplace.py",
+      "test_marketplace_models.py",
+      "test_multi_finca.py",
+      "test_multi_tenant_rbac.py",
+      "test_offline_sync_and_mesh_models.py",
+      "test_operational_and_rural_models.py",
+      "test_professional_credentials.py",
+      "test_public_registration_consent.py",
+      "test_push_notifications.py",
+      "test_regulatory_reports.py",
+      "test_role_dashboards_smoke.py",
+      "test_seed_identities.py",
+      "test_seed_master_alignment.py",
+      "test_support_scripts_alignment.py",
+      "test_tenant_isolation.py",
+      "test_treatment_protocols.py",
+      "test_users_service.py",
+      "test_user_and_farm_membership_models.py",
+      "test_user_approval_pending.py",
+      "test_user_farm_scope.py",
+      "test_user_verification_config.py",
+      "test_validators.py",
+      "test_weather_and_kb_rules_models.py",
+      "test_weather_namespace_auth.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "user_consents": {
+    "models": [
+      "UserConsent"
+    ],
+    "real_tests": [
+      "test_finca_registration_e2e.py",
+      "test_public_registration_consent.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "user_favorites": {
+    "models": [
+      "UserFavorite"
+    ],
+    "real_tests": [
+      "test_user_and_farm_membership_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "user_finca": {
+    "models": [
+      "UserFinca"
+    ],
+    "real_tests": [
+      "test_chat_location_and_user_approval_sync.py",
+      "test_chat_realtime.py",
+      "test_database_bootstrap.py",
+      "test_marketplace.py",
+      "test_multi_finca.py",
+      "test_user_farm_scope.py",
+      "test_weather_namespace_auth.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "user_locations": {
+    "models": [
+      "UserLocation"
+    ],
+    "real_tests": [
+      "test_chat_location_and_user_approval_sync.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "vaccinations": {
+    "models": [
+      "Vaccinations"
+    ],
+    "real_tests": [
+      "test_animal_disease_case_options.py",
+      "test_calendar_endpoint.py",
+      "test_crud_endpoints.py",
+      "test_crud_full.py",
+      "test_disease_followup.py",
+      "test_multi_tenant_rbac.py",
+      "test_rbac_middleware.py",
+      "test_regulatory_reports.py",
+      "test_tenant_isolation.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "vaccines": {
+    "models": [
+      "Vaccines"
+    ],
+    "real_tests": [
+      "test_animal_disease_case_options.py",
+      "test_bootstrap_and_seeds.py",
+      "test_calendar_endpoint.py",
+      "test_crud_endpoints.py",
+      "test_crud_full.py",
+      "test_disease_followup.py",
+      "test_finca_baseline_and_scope.py",
+      "test_semantic_search.py",
+      "test_treatment_protocols.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "water_measurements": {
+    "models": [
+      "WaterMeasurement"
+    ],
+    "real_tests": [
+      "test_campesino_and_water_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "water_sources": {
+    "models": [
+      "WaterSource"
+    ],
+    "real_tests": [
+      "test_campesino_and_water_models.py"
+    ],
+    "smoke_only": [
+      "test_model_registry_integrity.py"
+    ],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "weather_alerts": {
+    "models": [
+      "WeatherAlert"
+    ],
+    "real_tests": [
+      "test_weather_and_kb_rules_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  },
+  "weather_records": {
+    "models": [
+      "WeatherRecord"
+    ],
+    "real_tests": [
+      "test_weather_and_kb_rules_models.py"
+    ],
+    "smoke_only": [],
+    "has_real_test": true,
+    "only_smoke": false,
+    "completely_untested": false
+  }
+}

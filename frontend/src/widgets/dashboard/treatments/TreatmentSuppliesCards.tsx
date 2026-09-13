@@ -70,10 +70,10 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
     }
 
     return (
-        <div className={`grid grid-cols-1 lg:grid-cols-2 gap-4 relative ${className}`}>
+        <div className={`grid grid-cols-1 xl:grid-cols-2 items-start gap-4 relative ${className}`}>
 
             {/* Vacunas */}
-            <div className="rounded-xl border border-cyan-200/60 dark:border-cyan-800/60 bg-card p-4 shadow-md hover:shadow-lg transition-all duration-300 relative overflow-hidden flex flex-col justify-between">
+            <section className="relative min-w-0 overflow-hidden rounded-xl border border-cyan-200/70 bg-card p-4 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-cyan-800/60">
                 {(loading || loadingVaccines) && (
                     <div className="absolute inset-0 z-10 bg-background/50 backdrop-blur-[1px] flex items-center justify-center transition-all duration-300">
                         <div className="bg-background/80 px-3 py-1.5 rounded-full shadow-md border border-border flex items-center gap-2">
@@ -83,26 +83,41 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                     </div>
                 )}
                 <div>
-                    <h3 className="font-semibold mb-4 flex items-center gap-2 text-cyan-800 dark:text-cyan-300 border-b border-cyan-100 dark:border-cyan-800/50 pb-2">
+                    <div className="mb-3 flex items-start gap-3 border-b border-cyan-100 pb-3 dark:border-cyan-800/50">
                         <div className="p-1.5 rounded-full bg-cyan-50 dark:bg-cyan-900/40">
                             <Syringe className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                         </div>
-                        Vacunas
-                        <Badge variant="secondary" className="ml-auto bg-cyan-100 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-300">
+                        <div className="min-w-0 flex-1">
+                            <h3 className="font-semibold text-cyan-800 dark:text-cyan-300">Vacunas</h3>
+                            <p className="mt-0.5 text-xs text-muted-foreground">Biológicos asociados al tratamiento</p>
+                        </div>
+                        <Badge variant="secondary" className="shrink-0 bg-cyan-100 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-300">
                             {vaccines.length}
                         </Badge>
-                    </h3>
-                    <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                    </div>
+                    <div className="space-y-3 max-h-[22rem] overflow-y-auto pr-1 sm:max-h-[25rem]">
                         {vaccines.length === 0 ? (
-                            <p className="text-sm text-muted-foreground py-8 text-center italic opacity-60">No hay vacunas asociadas.</p>
+                            <div className="flex min-h-[9rem] flex-col items-center justify-center rounded-lg border border-dashed border-cyan-200 bg-cyan-50/30 px-4 py-6 text-center dark:border-cyan-800/60 dark:bg-cyan-950/10">
+                                <Syringe className="mb-2 h-7 w-7 text-cyan-500/70" aria-hidden="true" />
+                                <p className="text-sm font-semibold text-foreground">No hay vacunas asociadas</p>
+                                <p className="mt-1 text-xs text-muted-foreground">Usa “Añadir vacuna” para vincular un biológico.</p>
+                            </div>
                         ) : (
                             vaccines.map(v => {
                                 const fullVacc = v.vaccine_id ? vaccineFullMap[Number(v.vaccine_id)] : null;
                                 return (
                                     <div
                                         key={v.id}
-                                        className="border border-border/60 bg-background/50 hover:bg-cyan-50/40 dark:hover:bg-cyan-900/20 rounded-lg p-3 text-sm flex flex-col gap-2.5 cursor-pointer hover:border-cyan-200 dark:hover:border-cyan-800 transition-all group"
+                                        className="group flex cursor-pointer flex-col gap-2.5 rounded-lg border border-border/60 bg-background/50 p-3 text-left text-sm transition-all hover:border-cyan-200 hover:bg-cyan-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 dark:hover:border-cyan-800 dark:hover:bg-cyan-900/20"
+                                        role="button"
+                                        tabIndex={onViewVaccine ? 0 : undefined}
                                         onClick={() => onViewVaccine?.(Number(v.vaccine_id))}
+                                        onKeyDown={(event) => {
+                                            if (onViewVaccine && (event.key === 'Enter' || event.key === ' ')) {
+                                                event.preventDefault();
+                                                onViewVaccine(Number(v.vaccine_id));
+                                            }
+                                        }}
                                     >
                                         {/* Cabecera del item: Nombre, ID y botón de eliminar */}
                                         <div className="flex items-start justify-between gap-2">
@@ -130,12 +145,13 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                                                 <Button
                                                     size="icon"
                                                     variant="ghost"
-                                                    className={`h-7 w-7 transition-all duration-200 rounded-full flex-shrink-0 ${confirmingDeleteId === v.id
+                                                    className={`h-9 w-9 transition-all duration-200 rounded-lg flex-shrink-0 sm:opacity-0 sm:group-hover:opacity-100 ${confirmingDeleteId === v.id
                                                         ? 'bg-destructive text-white shadow-lg shadow-red-500/50 animate-pulse scale-110 opacity-100'
-                                                        : 'opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive'
+                                                        : 'sm:opacity-0 sm:group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive'
                                                         }`}
                                                     onClick={(e) => { e.stopPropagation(); onDeleteVaccine(v); }}
                                                     disabled={deleteLoadingId?.type === 'vaccine' && deleteLoadingId?.id === v.id}
+                                                    aria-label={confirmingDeleteId === v.id ? "Confirmar desvinculación de vacuna" : "Desvincular vacuna"}
                                                     title={confirmingDeleteId === v.id ? "¡Confirmar!" : "Desvincular"}
                                                 >
                                                     {deleteLoadingId?.type === 'vaccine' && deleteLoadingId?.id === v.id ? (
@@ -150,7 +166,7 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                                         </div>
 
                                         {/* Grilla técnica inferior de ancho completo */}
-                                        <div className="grid grid-cols-3 gap-2 text-[11px] text-muted-foreground bg-cyan-50/30 dark:bg-cyan-950/10 rounded-md p-2 border border-cyan-100/40 dark:border-cyan-900/10">
+                                        <div className="grid grid-cols-1 min-[360px]:grid-cols-3 gap-2 text-[11px] text-muted-foreground bg-cyan-50/30 dark:bg-cyan-950/10 rounded-md p-2 border border-cyan-100/40 dark:border-cyan-900/10">
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-[11px] uppercase opacity-60 font-bold tracking-wider text-cyan-800 dark:text-cyan-400 mb-0.5">Dosis</span>
                                                 <span className="font-semibold text-foreground fit-clamp" title={v.dose || '-'}>{v.dose || '-'}</span>
@@ -174,10 +190,10 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                         )}
                     </div>
                 </div>
-            </div>
+            </section>
 
             {/* Medicamentos */}
-            <div className="rounded-xl border border-purple-200/60 dark:border-purple-800/60 bg-card p-4 shadow-md hover:shadow-lg transition-all duration-300 relative overflow-hidden flex flex-col justify-between">
+            <section className="relative min-w-0 overflow-hidden rounded-xl border border-purple-200/70 bg-card p-4 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-purple-800/60">
                 {(loading || loadingMedications) && (
                     <div className="absolute inset-0 z-10 bg-background/50 backdrop-blur-[1px] flex items-center justify-center transition-all duration-300">
                         <div className="bg-background/80 px-3 py-1.5 rounded-full shadow-md border border-border flex items-center gap-2">
@@ -187,26 +203,41 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                     </div>
                 )}
                 <div>
-                    <h3 className="font-semibold mb-4 flex items-center gap-2 text-purple-800 dark:text-purple-300 border-b border-purple-100 dark:border-purple-800/50 pb-2">
+                    <div className="mb-3 flex items-start gap-3 border-b border-purple-100 pb-3 dark:border-purple-800/50">
                         <div className="p-1.5 rounded-full bg-purple-50 dark:bg-purple-900/40">
                             <Pill className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                         </div>
-                        Medicamentos
-                        <Badge variant="secondary" className="ml-auto bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300">
+                        <div className="min-w-0 flex-1">
+                            <h3 className="font-semibold text-purple-800 dark:text-purple-300">Medicamentos</h3>
+                            <p className="mt-0.5 text-xs text-muted-foreground">Fármacos asociados al tratamiento</p>
+                        </div>
+                        <Badge variant="secondary" className="shrink-0 bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300">
                             {medications.length}
                         </Badge>
-                    </h3>
-                    <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                    </div>
+                    <div className="space-y-3 max-h-[22rem] overflow-y-auto pr-1 sm:max-h-[25rem]">
                         {medications.length === 0 ? (
-                            <p className="text-sm text-muted-foreground py-8 text-center italic opacity-60">No hay medicamentos asociados.</p>
+                            <div className="flex min-h-[9rem] flex-col items-center justify-center rounded-lg border border-dashed border-purple-200 bg-purple-50/30 px-4 py-6 text-center dark:border-purple-800/60 dark:bg-purple-950/10">
+                                <Pill className="mb-2 h-7 w-7 text-purple-500/70" aria-hidden="true" />
+                                <p className="text-sm font-semibold text-foreground">No hay medicamentos asociados</p>
+                                <p className="mt-1 text-xs text-muted-foreground">Usa “Añadir medicamento” para vincular un fármaco.</p>
+                            </div>
                         ) : (
                             medications.map(m => {
                                 const fullMed = m.medication_id ? medicationFullMap[Number(m.medication_id)] : null;
                                 return (
                                     <div
                                         key={m.id}
-                                        className="border border-border/60 bg-background/50 hover:bg-purple-50/40 dark:hover:bg-purple-900/20 rounded-lg p-3 text-sm flex flex-col gap-2.5 cursor-pointer hover:border-purple-200 dark:hover:border-purple-800 transition-all group"
+                                        className="group flex cursor-pointer flex-col gap-2.5 rounded-lg border border-border/60 bg-background/50 p-3 text-left text-sm transition-all hover:border-purple-200 hover:bg-purple-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/50 dark:hover:border-purple-800 dark:hover:bg-purple-900/20"
+                                        role="button"
+                                        tabIndex={onViewMedication ? 0 : undefined}
                                         onClick={() => onViewMedication?.(Number(m.medication_id))}
+                                        onKeyDown={(event) => {
+                                            if (onViewMedication && (event.key === 'Enter' || event.key === ' ')) {
+                                                event.preventDefault();
+                                                onViewMedication(Number(m.medication_id));
+                                            }
+                                        }}
                                     >
                                         {/* Cabecera del item: Nombre, ID y botón de eliminar */}
                                         <div className="flex items-start justify-between gap-2">
@@ -234,12 +265,13 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                                                 <Button
                                                     size="icon"
                                                     variant="ghost"
-                                                    className={`h-7 w-7 transition-all duration-200 rounded-full flex-shrink-0 ${confirmingDeleteId === m.id
+                                                    className={`h-9 w-9 transition-all duration-200 rounded-lg flex-shrink-0 sm:opacity-0 sm:group-hover:opacity-100 ${confirmingDeleteId === m.id
                                                         ? 'bg-destructive text-white shadow-lg shadow-red-500/50 animate-pulse scale-110 opacity-100'
-                                                        : 'opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive'
+                                                        : 'sm:opacity-0 sm:group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive'
                                                         }`}
                                                     onClick={(e) => { e.stopPropagation(); onDeleteMedication(m); }}
                                                     disabled={deleteLoadingId?.type === 'medication' && deleteLoadingId?.id === m.id}
+                                                    aria-label={confirmingDeleteId === m.id ? "Confirmar desvinculación de medicamento" : "Desvincular medicamento"}
                                                     title={confirmingDeleteId === m.id ? "¡Confirmar!" : "Desvincular"}
                                                 >
                                                     {deleteLoadingId?.type === 'medication' && deleteLoadingId?.id === m.id ? (
@@ -254,7 +286,7 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                                         </div>
 
                                         {/* Grilla técnica inferior de ancho completo */}
-                                        <div className="grid grid-cols-3 gap-2 text-[11px] text-muted-foreground bg-purple-50/30 dark:bg-purple-950/10 rounded-md p-2 border border-purple-100/40 dark:border-purple-900/10">
+                                        <div className="grid grid-cols-1 min-[360px]:grid-cols-3 gap-2 text-[11px] text-muted-foreground bg-purple-50/30 dark:bg-purple-950/10 rounded-md p-2 border border-purple-100/40 dark:border-purple-900/10">
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-[11px] uppercase opacity-60 font-bold tracking-wider text-purple-800 dark:text-purple-400 mb-0.5">Dosis</span>
                                                 <span className="font-semibold text-foreground fit-clamp" title={m.dosage || m.dose || '-'}>{m.dosage || m.dose || '-'}</span>
@@ -276,7 +308,7 @@ export const TreatmentSuppliesCards: React.FC<TreatmentSuppliesCardsProps> = ({
                         )}
                     </div>
                 </div>
-            </div>
+            </section>
         </div>
     );
 };

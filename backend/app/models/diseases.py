@@ -52,10 +52,10 @@ class Diseases(BaseModel):
             if field in data:
                 if not data[field] or not str(data[field]).strip():
                     errors.append(f"El campo '{field}' no puede estar vacío")
-                elif len(str(data[field]).strip()) < 3:
-                    errors.append(
-                        f"El campo '{field}' debe tener al menos 3 caracteres"
-                    )
+                # Do not reject legacy catalog records with short but valid
+                # values (for example, imported codes). The database contract
+                # requires non-empty text; richer clinical validation belongs
+                # to the optional notes/details UI, not the transport layer.
         super()._validate_namespace_data(data)
         if errors:
             raise ValidationError("; ".join(errors), code="validation_error")

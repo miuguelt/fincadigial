@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import api from '@/shared/api/client';
 import { useAuth } from '@/features/auth/model/useAuth';
+import { useOnlineStatus } from '@/shared/hooks/useOnlineStatus';
 import {
-  OFFLINE_STORAGE_KEY,
   TOOL_GROUPS,
   TIPS_FALLBACK,
   type DashboardTip,
@@ -13,17 +13,6 @@ interface TipResponse {
   icon?: string;
   text?: string;
 }
-
-const readPendingCount = (): number => {
-  try {
-    const stored = localStorage.getItem(OFFLINE_STORAGE_KEY);
-    if (!stored) return 0;
-    const items: unknown = JSON.parse(stored);
-    return Array.isArray(items) ? items.length : 0;
-  } catch {
-    return 0;
-  }
-};
 
 const isDashboardTip = (value: TipResponse): value is DashboardTip => (
   typeof value.text === 'string' && value.text.length > 0
@@ -58,33 +47,17 @@ const filterToolGroups = (groups: ToolGroup[], searchTerm: string): ToolGroup[] 
 
 export function useCampesinoDashboardState() {
   const { user } = useAuth();
-  const [isOnline, setIsOnline] = useState(() => (
-    typeof navigator === 'undefined' || navigator.onLine
-  ));
-  const [pendingCount, setPendingCount] = useState(0);
+  const { isOnline, totalOperations: pendingCount } = useOnlineStatus();
   const [tips, setTips] = useState<DashboardTip[]>(TIPS_FALLBACK);
   const [tipIndex, setTipIndex] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    const updateOnline = () => setIsOnline(navigator.onLine);
-    window.addEventListener('online', updateOnline);
-    window.addEventListener('offline', updateOnline);
-
     void readTips().then((nextTips) => {
       if (nextTips.length === 0) return;
       setTips(nextTips);
       setTipIndex(Math.floor(Math.random() * nextTips.length));
     }).catch(() => undefined);
-
-    return () => {
-      window.removeEventListener('online', updateOnline);
-      window.removeEventListener('offline', updateOnline);
-    };
-  }, []);
-
-  useEffect(() => {
-    setPendingCount(readPendingCount());
   }, []);
 
   const filteredGroups = useMemo(

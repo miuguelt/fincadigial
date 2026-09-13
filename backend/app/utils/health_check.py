@@ -24,7 +24,12 @@ health_ns = Namespace("health", description="Health checks del sistema")
 # stats() at 3s each made GET /api/v1/health cost a fixed ~6s, and the telemetry
 # widget polls it every few seconds — hence the stream of
 # "Slow flask.request ...ms GET /api/v1/health" warnings in the log.
-_CELERY_INSPECT_TIMEOUT = float(os.getenv("CELERY_INSPECT_TIMEOUT", "1.0"))
+#
+# The probe is one broadcast only: stats() is the census (it carries every
+# worker name).  A second ping() after an EMPTY stats reply re-burns the full
+# timeout on the no-worker path (the common state of an API-only deployment),
+# which added ~1.5s to every probe and pushed /health over 4s.
+_CELERY_INSPECT_TIMEOUT = float(os.getenv("CELERY_INSPECT_TIMEOUT", "0.8"))
 _CELERY_STATUS_TTL_SECONDS = float(os.getenv("CELERY_STATUS_TTL_SECONDS", "30"))
 # Workers expected to be alive.  Used as the broadcast ``limit`` so the probe
 # returns as soon as they all answer; raise it when scaling out or the census
@@ -33,6 +38,90 @@ _CELERY_EXPECTED_WORKERS = int(os.getenv("CELERY_EXPECTED_WORKERS", "1"))
 
 _celery_probe_lock = threading.Lock()
 _celery_status_cache = {"value": None, "expires_at": 0.0}
+
+# ── Redis probe tuning ─────────────────────────────────────────────────────
+# Every `/health` used to build a brand-new ``Redis.from_url(...)`` client with
+# a 3s connect timeout, so a broker that was unreachable (black-holed, firewall)
+# or slow cost a fixed ~3s per poll and nothing else in the same request.  The
+# result is now cached for a short TTL and shared across requests.
+_REDIS_PROBE_TTL_SECONDS = float(os.getenv("REDIS_PROBE_TTL_SECONDS", "5"))
+_REDIS_PROBE_TIMEOUT_SECONDS = float(os.getenv("REDIS_PROBE_TIMEOUT_SECONDS", "1.5"))
+_redis_probe_lock = threading.Lock()
+_redis_probe_cache = {"url": None, "value": None, "expires_at": 0.0}
+_redis_probe_client = None
+_redis_probe_client_url = None
+
+
+def _redis_probe_client_for(url: str):
+    """Un único cliente compartido para los sondeos de salud (no pool por llamada)."""
+    global _redis_probe_client, _redis_probe_client_url
+    if _redis_probe_client is None or _redis_probe_client_url != url:
+        from redis import Redis
+
+        _redis_probe_client = Redis.from_url(
+            url,
+            socket_connect_timeout=_REDIS_PROBE_TIMEOUT_SECONDS,
+            socket_timeout=_REDIS_PROBE_TIMEOUT_SECONDS,
+        )
+        _redis_probe_client_url = url
+    return _redis_probe_client
+
+
+def _probe_redis_with_ttl(redis_url: str) -> dict:
+    """Ping de Redis acotado a ``1.5s`` y cacheado ``5s`` (TTL por defecto).
+
+    Obtener siempre un resultado fresco en /health degeneraba en miles de
+    socket_connect_timeout de 3s por el piso de telemetría; solo el primer
+    sondeo de cada ventana paga el ping real.
+    """
+    now = time.time()
+    if (
+        _redis_probe_cache["value"] is not None
+        and _redis_probe_cache["url"] == redis_url
+        and now < _redis_probe_cache["expires_at"]
+    ):
+        return _redis_probe_cache["value"]
+
+    if not _redis_probe_lock.acquire(blocking=False):
+        return _redis_probe_cache["value"] or {
+            "status": "unhealthy",
+            "error": "Sondeo Redis en curso",
+            "timestamp": datetime.now(UTC).isoformat(),
+        }
+
+    try:
+        # Revisar de nuevo tras adquirir el lock (espera mínima).
+        if (
+            _redis_probe_cache["value"] is not None
+            and _redis_probe_cache["url"] == redis_url
+            and time.time() < _redis_probe_cache["expires_at"]
+        ):
+            return _redis_probe_cache["value"]
+
+        try:
+            client = _redis_probe_client_for(redis_url)
+            pong = client.ping()
+            result = {
+                "status": "healthy" if pong else "unhealthy",
+                "response_time_ms": 0.0,
+                "timestamp": datetime.now(UTC).isoformat(),
+            }
+            if not pong:
+                result["error"] = "Redis ping returned falsy"
+        except Exception as e:
+            logger.error(f"Redis health check failed: {str(e)}")
+            result = {
+                "status": "unhealthy",
+                "error": str(e),
+                "timestamp": datetime.now(UTC).isoformat(),
+            }
+
+        _redis_probe_cache["url"] = redis_url
+        _redis_probe_cache["value"] = result
+        _redis_probe_cache["expires_at"] = time.time() + _REDIS_PROBE_TTL_SECONDS
+        return result
+    finally:
+        _redis_probe_lock.release()
 
 
 def _celery_setting(key: str, default):
@@ -107,38 +196,11 @@ class HealthChecker:
                 redis_url = flask.current_app.config.get("REDIS_URL")
             redis_url = redis_url or os.getenv("REDIS_URL")
             if redis_url:
-                try:
-                    client = None
-                    if flask.has_app_context():
-                        client = flask.current_app.extensions.get("redis")
-                    from redis import Redis
-
-                    if client is None:
-                        client = Redis.from_url(
-                            redis_url, socket_connect_timeout=3, socket_timeout=3
-                        )
-                    pong = client.ping()
-                    if pong:
-                        return {
-                            "status": "healthy",
-                            "response_time_ms": 0.0,
-                            "timestamp": datetime.now(UTC).isoformat(),
-                        }
-                    return {
-                        "status": "unhealthy",
-                        "error": "Redis ping returned falsy",
-                        "timestamp": datetime.now(UTC).isoformat(),
-                    }
-                except Exception as e:
-                    logger.error(f"Redis health check failed: {str(e)}")
-                    return {
-                        "status": "unhealthy",
-                        "error": str(e),
-                        "timestamp": datetime.now(UTC).isoformat(),
-                    }
+                return _probe_redis_with_ttl(redis_url)
 
             # Sin REDIS_URL: consultar el objeto de cache (dev sin redis).
             if self.cache:
+                start_time = time.perf_counter()
                 test_key = "health_check_test"
                 test_value = str(time.time())
 
@@ -150,7 +212,9 @@ class HealthChecker:
                 if retrieved == test_value:
                     return {
                         "status": "healthy",
-                        "response_time_ms": round(time.time() - time.time(), 2),
+                        "response_time_ms": round(
+                            (time.perf_counter() - start_time) * 1000, 2
+                        ),
                         "timestamp": datetime.now(UTC).isoformat(),
                     }
                 else:
@@ -305,23 +369,16 @@ class HealthChecker:
             inspector = celery_app.control.inspect(timeout=timeout, limit=limit)
 
             # stats() already carries every worker name, so it doubles as the
-            # census; ping() only runs when stats comes back empty.  That keeps
-            # the healthy path at a single broadcast instead of two.
-            stats_failed = False
+            # census.  An empty reply is authoritative (broker responded yet no
+            # worker did): a second ping() would burn the whole broadcast
+            # timeout again on the no-worker path for zero new information.
             try:
                 stats_res = inspector.stats() or {}
             except Exception as exc:
                 logger.warning(f"Celery stats falló de forma transitoria: {exc}")
                 stats_res = {}
-                stats_failed = True
 
             worker_names = list(stats_res)
-            # Solo intentar ping si stats() no falló por excepción y no devolvió workers
-            if not worker_names and not stats_failed:
-                try:
-                    worker_names = list(inspector.ping() or {})
-                except Exception as exc:
-                    logger.warning(f"Celery ping falló de forma transitoria: {exc}")
 
             self_hostname = _current_worker_hostname()
             if self_hostname and self_hostname not in worker_names:

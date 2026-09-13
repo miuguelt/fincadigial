@@ -2,8 +2,10 @@ import type { MouseEvent, ReactNode } from 'react';
 import { Edit, Eye, Trash2 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Checkbox } from '@/shared/ui/checkbox';
+import { cn } from '@/shared/ui/cn';
 import type { CRUDColumn, CRUDConfig } from '@/shared/types/crud';
 import { getCrudItemTitle, mapCrudValue, type ForeignKeyLabelMap } from './crudTable.helpers';
+import type { RecentChangeAction } from '@/shared/utils/recentChanges';
 
 interface CRUDTableCardViewProps<T extends { id: number }> {
   items: T[];
@@ -15,6 +17,7 @@ interface CRUDTableCardViewProps<T extends { id: number }> {
   onOpenDetail?: (item: T) => void;
   onOpenEdit?: (item: T) => void;
   onOpenDelete?: (id: number) => void;
+  recentFlags?: Record<string, RecentChangeAction>;
 }
 
 export function CRUDTableCardView<T extends { id: number }>(props: CRUDTableCardViewProps<T>) {
@@ -25,10 +28,18 @@ export function CRUDTableCardView<T extends { id: number }>(props: CRUDTableCard
   );
 }
 
-function CRUDTableCard<T extends { id: number }>({ item, columns, config, labels, selectedIds, onToggleSelect, onOpenDetail, onOpenEdit, onOpenDelete }: CRUDTableCardViewProps<T> & { item: T }) {
+function CRUDTableCard<T extends { id: number }>({ item, columns, config, labels, selectedIds, onToggleSelect, onOpenDetail, onOpenEdit, onOpenDelete, recentFlags }: CRUDTableCardViewProps<T> & { item: T }) {
+  const recent = recentFlags?.[String(item.id)];
   return (
     <div
-      className="bg-card border border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer relative focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      id={`crud-item-${item.id}`}
+      data-crud-id={item.id}
+      className={cn(
+        "bg-card border border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer relative focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        recent && (recent === 'created'
+          ? 'crud-highlight-created ring-4 ring-emerald-500/50 border-emerald-500 shadow-xl shadow-emerald-500/20'
+          : 'crud-highlight-updated ring-2 ring-blue-500/40 border-blue-500'),
+      )}
       onClick={() => onOpenDetail?.(item)}
       role="button"
       tabIndex={0}
@@ -68,6 +79,12 @@ function CRUDTableCard<T extends { id: number }>({ item, columns, config, labels
       }}
     >
       {config.enableSelection && onToggleSelect && <CardSelection config={config} item={item} selected={selectedIds?.includes(item.id) || false} onToggle={onToggleSelect} />}
+      {recent === 'created' && (
+        <div className="mb-2 flex items-center gap-1.5 w-fit rounded-full bg-emerald-600 dark:bg-emerald-500 px-2 py-0.5 text-[10px] font-extrabold text-white shadow-sm animate-pulse">
+          <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping" />
+          ✨ Nuevo
+        </div>
+      )}
       <h3 className="font-medium text-sm mb-2 fit-clamp">{getCrudItemTitle(item, config, labels)}</h3>
       <CardFields item={item} columns={columns} labels={labels} />
       <CardActions item={item} config={config} onOpenDetail={onOpenDetail} onOpenEdit={onOpenEdit} onOpenDelete={onOpenDelete} />

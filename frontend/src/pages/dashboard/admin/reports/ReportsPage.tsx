@@ -1,111 +1,95 @@
-import { useState, lazy, Suspense } from 'react';
+import { lazy, Suspense } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
-import { FileText, ShieldCheck, Download, BarChart3, DollarSign, Heart } from 'lucide-react';
+import { FileText, ShieldCheck, Download, BarChart3 } from 'lucide-react';
 import { ExportCenterTab } from '@/widgets/reports/ExportCenterTab';
 import { TabSkeleton } from '@/widgets/reports/ReportsSkeleton';
-import { Button } from '@/shared/ui/button';
+import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
+import { Badge } from '@/shared/ui/badge';
+import { RegulatoryReportsDashboard } from '@/features/regulatory-reports/components/RegulatoryReportsDashboard';
 
-const RegulatoryReportsTab = lazy(() => import('./RegulatoryReportsTab'));
 const CustomReports = lazy(() => import('@/pages/dashboard/admin/analytics/CustomReports'));
 const ICADashboard = lazy(() => import('@/pages/dashboard/admin/analytics/ICADashboard'));
-const FinancialDashboard = lazy(() => import('@/pages/dashboard/admin/financial/index'));
-const FertilityDashboard = lazy(() => import('@/pages/dashboard/admin/reproduction/FertilityDashboard'));
-const SirePerformance = lazy(() => import('@/pages/dashboard/admin/reproduction/SirePerformance'));
 
-const tabs = [
-  { id: 'personalizados', label: 'Personalizados', icon: BarChart3 },
-  { id: 'regulatorios', label: 'Regulatorios (ICA)', icon: FileText },
-  { id: 'ica', label: 'Cumplimiento ICA', icon: ShieldCheck },
-  { id: 'finanzas', label: 'Financieros', icon: DollarSign },
-  { id: 'reproduccion', label: 'Reproductivos', icon: Heart },
-  { id: 'exportaciones', label: 'Exportaciones', icon: Download },
+const TABS = [
+  { id: 'regulatorios', label: 'Reportes Oficiales (ICA)', shortLabel: 'Oficiales ICA', icon: FileText },
+  { id: 'exportaciones', label: 'Centro de Descargas', shortLabel: 'Descargas', icon: Download },
+  { id: 'ica', label: 'Cumplimiento ICA', shortLabel: 'Auditoría ICA', icon: ShieldCheck },
+  { id: 'personalizados', label: 'Reportes a Medida', shortLabel: 'Personalizados', icon: BarChart3 },
 ];
 
-function ReproductionTabContent() {
-  const [subTab, setSubTab] = useState<'fertility' | 'sires'>('fertility');
-  return (
-    <div className="space-y-6">
-      <div className="flex gap-2 border-b border-border pb-3">
-        <Button
-          variant={subTab === 'fertility' ? undefined : 'ghost'}
-          onClick={() => setSubTab('fertility')}
-          className="rounded-lg font-bold h-10 px-4"
-        >
-          Fertilidad del Ganado
-        </Button>
-        <Button
-          variant={subTab === 'sires' ? undefined : 'ghost'}
-          onClick={() => setSubTab('sires')}
-          className="rounded-lg font-bold h-10 px-4"
-        >
-          Desempeño de Toros
-        </Button>
-      </div>
-      <Suspense fallback={<TabSkeleton />}>
-        {subTab === 'fertility' ? <FertilityDashboard /> : <SirePerformance />}
-      </Suspense>
-    </div>
-  );
-}
+const VALID_TAB_IDS = new Set(TABS.map((t) => t.id));
 
 export function ReportsPage() {
-  const [activeTab, setActiveTab] = useState('personalizados');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const rawTab = searchParams.get('tab') || 'regulatorios';
+  const activeTab = VALID_TAB_IDS.has(rawTab) ? rawTab : 'regulatorios';
+
+  const handleTabChange = (val: string) => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set('tab', val);
+        return next;
+      },
+      { replace: true }
+    );
+  };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8 space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Reportes</h1>
-          <p className="text-muted-foreground mt-1">
-            Centraliza y genera todos los reportes de tu finca desde un solo lugar
-          </p>
-        </div>
-      </div>
+    <div className="min-h-full space-y-6 overflow-x-hidden p-4 sm:p-6 lg:p-8 animate-fade-in">
+      <DataScreenHeader
+        icon={<FileText className="h-5 w-5 text-white" />}
+        iconClassName="from-emerald-600 to-teal-700 shadow-emerald-600/20"
+        title={<>Centro de <span className="text-primary">Informes y Reportes</span></>}
+        description="Generación oficial para ICA/SENA, descargas en Excel/PDF y auditoría sanitaria"
+        actions={
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-card/60">
+              Gestión Oficial Finca
+            </Badge>
+          </div>
+        }
+      />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="w-full sm:w-auto grid grid-cols-3 sm:flex gap-1 h-auto p-1.5 bg-muted rounded-lg">
-          {tabs.map((tab) => {
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
+        <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:flex gap-1.5 h-auto p-1.5 bg-muted/60 rounded-2xl border border-border/50">
+          {TABS.map((tab) => {
             const Icon = tab.icon;
             return (
-              <TabsTrigger key={tab.id} value={tab.id} className="gap-2 rounded-xl py-2 px-3">
-                <Icon className="h-4 w-4" />
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className="gap-2 rounded-xl py-2.5 px-3.5 text-xs sm:text-sm font-semibold data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all"
+              >
+                <Icon className="h-4 w-4 shrink-0" />
                 <span className="hidden md:inline">{tab.label}</span>
-                <span className="md:hidden">{tab.label.replace(/\(.*\)/, '').trim()}</span>
+                <span className="md:hidden">{tab.shortLabel}</span>
               </TabsTrigger>
             );
           })}
         </TabsList>
 
-        <TabsContent value="personalizados" className="mt-0">
+        <TabsContent value="regulatorios" className="mt-0 focus-visible:outline-none">
           <Suspense fallback={<TabSkeleton />}>
-            <CustomReports />
+            <RegulatoryReportsDashboard embedded={true} />
           </Suspense>
         </TabsContent>
 
-        <TabsContent value="regulatorios" className="mt-0">
-          <Suspense fallback={<TabSkeleton />}>
-            <RegulatoryReportsTab />
-          </Suspense>
-        </TabsContent>
-
-        <TabsContent value="ica" className="mt-0">
-          <Suspense fallback={<TabSkeleton />}>
-            <ICADashboard />
-          </Suspense>
-        </TabsContent>
-
-        <TabsContent value="finanzas" className="mt-0">
-          <Suspense fallback={<TabSkeleton />}>
-            <FinancialDashboard />
-          </Suspense>
-        </TabsContent>
-
-        <TabsContent value="reproduccion" className="mt-0">
-          <ReproductionTabContent />
-        </TabsContent>
-
-        <TabsContent value="exportaciones" className="mt-0">
+        <TabsContent value="exportaciones" className="mt-0 focus-visible:outline-none">
           <ExportCenterTab />
+        </TabsContent>
+
+        <TabsContent value="ica" className="mt-0 focus-visible:outline-none">
+          <Suspense fallback={<TabSkeleton />}>
+            <ICADashboard embedded={true} />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="personalizados" className="mt-0 focus-visible:outline-none">
+          <Suspense fallback={<TabSkeleton />}>
+            <CustomReports embedded={true} />
+          </Suspense>
         </TabsContent>
       </Tabs>
     </div>

@@ -4,5 +4,8 @@ export { AssistanceDetailDialog } from './AssistanceDetailDialog';
 export { VeterinarianAssistancePanel } from './VeterinarianAssistancePanel';
 export { VeterinarianNetworkBanner } from './VeterinarianNetworkBanner';
 export { VeterinarianResponseDialog } from './VeterinarianResponseDialog';
+export { AssistanceGuidance, AssistanceLoadError } from './AssistanceGuidance';
+export { AssistanceEmptyState } from './AssistanceEmptyState';
+export { AssistanceSearchField } from './AssistanceSearchField';
 export * from './assistance.constants';
 export { timeAgo, isOverdue, formatDateLong } from './timeUtils';

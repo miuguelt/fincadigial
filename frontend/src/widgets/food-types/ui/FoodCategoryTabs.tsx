@@ -28,7 +28,7 @@ export const FoodCategoryTabs: React.FC<FoodCategoryTabsProps> = ({
   ];
 
   return (
-    <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 pt-0.5 scrollbar-none no-scrollbar">
+    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 no-scrollbar no-native-scrollbar">
       {categoriesList.map((cat) => {
         const count = counts[cat.id] || 0;
         const isActive = activeCategory === cat.id;

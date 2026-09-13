@@ -1,6 +1,6 @@
 from app import db
 from datetime import datetime, UTC
-from sqlalchemy import inspect, or_, and_, desc, asc
+from sqlalchemy import inspect, or_, and_, desc, asc, cast as sa_cast, String as sa_String
 from sqlalchemy.orm import selectinload
 import logging
 import enum as _enum
@@ -95,7 +95,10 @@ class BaseModel(db.Model):
         system-wide events that belong to no finca (self-healing, schedulers).
         Subclasses opt in by overriding this hook for those rows only.
         """
-        return False
+    @classmethod
+    def _validate_namespace_data(cls, data):
+        """Hook opcional para que los modelos hijos realicen validaciones adicionales."""
+        pass
 
     @classmethod
     def _validate_and_normalize(cls, data, is_update=False, instance_id=None):
@@ -329,6 +332,9 @@ class BaseModel(db.Model):
             raise ValidationError(
                 "; ".join(errors), code="validation_error", errors=errors
             )
+
+        # 5. Hook de validación específica de modelos hijos
+        cls._validate_namespace_data(data)
 
         return data
 
@@ -630,14 +636,25 @@ class BaseModel(db.Model):
 
         # Aplicar búsqueda
         if search:
-            search_conditions = []
-            # Búsqueda por texto en campos configurados
-            for field in cls._searchable_fields:
-                if hasattr(cls, field):
-                    search_conditions.append(getattr(cls, field).ilike(f"%{search}%"))
+            search_str = str(search).strip()
+            if search_str:
+                search_conditions = []
+                # Soporte para búsqueda por ID numérico (#12 o 12)
+                clean_num = search_str.lstrip("#").strip()
+                if clean_num.isdigit() and hasattr(cls, "id"):
+                    try:
+                        search_conditions.append(cls.id == int(clean_num))
+                    except Exception:
+                        pass
 
-            if search_conditions:
-                query = query.filter(or_(*search_conditions))
+                # Búsqueda por texto en campos configurados
+                for field in cls._searchable_fields:
+                    if hasattr(cls, field):
+                        col = getattr(cls, field)
+                        search_conditions.append(sa_cast(col, sa_String).ilike(f"%{search_str}%"))
+
+                if search_conditions:
+                    query = query.filter(or_(*search_conditions))
 
         # Aplicar ordenamiento
         if sort_by and sort_by in cls._sortable_fields and hasattr(cls, sort_by):

@@ -30,7 +30,6 @@ import {
 import { animalDiseasesService } from '@/entities/animal-disease/api/animalDiseases.service';
 import { vaccinesService } from '@/entities/vaccine/api/vaccines.service';
 import type { DiseaseResponse, AnimalDiseaseResponse, VaccineResponse } from '@/shared/api/generated/swaggerTypes';
-import { normalizeColombianLivestockText } from '@/shared/utils/colombiaLanguage';
 import { AnimalLink } from '@/entities/animal/ui';
 import { UserLink } from '@/entities/user/ui';
 import { Badge } from '@/shared/ui/badge';
@@ -64,12 +63,9 @@ export function DiseaseDetailModalContent({ disease }: DiseaseDetailModalContent
 
   const diseaseId = disease.id;
   const diseaseName = (disease as any).name || (disease as any).disease || 'Enfermedad';
-  const diseaseSymptoms = normalizeColombianLivestockText(
-    disease.symptoms || (disease as any).description || 'No especificados',
-  );
-  const diseaseDetails = normalizeColombianLivestockText(
-    (disease as any).details || (disease as any).description || '',
-  );
+  const diseaseSymptoms =
+    disease.symptoms || (disease as any).description || 'No especificados';
+  const diseaseDetails = (disease as any).details || (disease as any).description || '';
 
   // Cargar registros de animales y vacunas asociadas
   const loadData = useCallback(async () => {

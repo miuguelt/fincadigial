@@ -146,6 +146,19 @@ Medición a 1440×700 tras aplicar el estándar (`/admin/tasks`, `/vaccinations`
 `/treatments`): 9 px por debajo del área de datos —el canalón de página y el
 borde—, frente a 49 px antes.
 
+### 1.6 Jerarquía de 2 Filas en el Encabezado (Fila 1 vs Fila 2)
+
+Queda **estrictamente prohibido** apiñar filtros, conmutadores de vista y calculadoras en la misma línea del título (`inline`), ya que estrangula el texto del encabezado y rompe en pantallas menores a 1440px.
+
+Toda pantalla con conmutadores de vista, chips de filtro o calculadoras secundarias **DEBE** declarar `toolbarPlacement: 'row'`:
+
+- **Fila 1 (Nivel Navegación & Identidad):**
+  - **Izquierda:** Título semántico limpio (h1 con `FitText`).
+  - **Derecha:** Entrada de búsqueda (`CRUDToolbar`) y botón principal de creación (`+ Nuevo [Registro]`). Vistas con modales especializados delegan este botón con `onOpenCreate`.
+- **Fila 2 (Nivel Control de Datos - `bottomBar`):**
+  - **Izquierda:** Conmutador de vistas (`[Tabla | Tarjetas | Tablero]`) + separador + chips de estado/categorías (con `.no-scrollbar`).
+  - **Derecha:** Acciones secundarias o utilidades de cálculo (`ZootecnicToolsDropdown` con herramientas como `Aforo`, `Semáforo`, `Raciones`).
+
 ---
 
 ## 2. Dónde está implementado

@@ -49,6 +49,11 @@ export const mapResponseToForm = (item: AnimalResponse & { [key: string]: any })
   sale_date: item.sale_date,
   exit_date: item.exit_date,
   exit_reason: item.exit_reason || '',
+  official_code: item.official_code || '',
+  nfc_uid: item.nfc_uid || '',
+  lf_tag_code: item.lf_tag_code || '',
+  claim_code: '',
+  request_history: true,
 });
 
 const validateBasicAnimal = (formData: Partial<AnimalInput>): string | null => {
@@ -85,6 +90,7 @@ export const validateForm = (formData: Partial<AnimalInput>): string | null => (
 export const initialFormData: Partial<AnimalInput> = {
   record: '', birth_date: getTodayColombia(), weight: undefined, breeds_id: undefined as any,
   sex: 'Macho', status: 'Vivo' as any, idFather: undefined, idMother: undefined, notes: '',
+  claim_code: '', request_history: true, official_code: '',
 };
 
 export const animalFields = ['id', 'record', 'name', 'birth_date', 'weight', 'breeds_id', 'sex', 'status', 'idFather', 'idMother', 'age_in_months', 'is_adult', 'current_field_id', 'current_field_name', 'pending_alerts_count', 'created_at'];

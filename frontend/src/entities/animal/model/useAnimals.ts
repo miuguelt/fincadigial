@@ -85,7 +85,9 @@ export function useAnimals(params?: Record<string, any>): UseAnimalsResult {
   }, []);
 
   useEffect(() => {
-    void resource.refetch().catch(() => {});
+    // useResource ya ejecuta el fetch inicial cuando autoFetch=true. Repetirlo
+    // aquí duplicaba la coordinación de caché y podía disparar una segunda
+    // lectura al cambiar de vista.
     fetchAnimalStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

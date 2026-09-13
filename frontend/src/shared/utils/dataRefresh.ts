@@ -7,16 +7,20 @@ export interface DataRefreshDetail {
   local: true;
 }
 
-let lastDataRefreshAt = 0;
+const lastDataRefreshAtByResource = new Map<string, number>();
 
 /** Notify mounted data views that a mutation completed without a route change. */
 export function emitDataRefresh(resource?: string): void {
   if (typeof window === 'undefined') return;
   const now = Date.now();
   // Una escritura puede notificar desde el interceptor y luego desde el
-  // formulario. El segundo evento no debe lanzar otro ciclo de peticiones.
-  if (now - lastDataRefreshAt < 75) return;
-  lastDataRefreshAt = now;
+  // formulario. El segundo evento del mismo recurso no debe lanzar otro ciclo
+  // de peticiones, pero nunca se debe descartar el aviso de otro recurso.
+  const rootResource = resource ? resource.replace(/^\/+/, '').split('/')[0].split('?')[0].toLowerCase() : undefined;
+  const refreshKey = rootResource || '*';
+  const lastRefreshAt = lastDataRefreshAtByResource.get(refreshKey) || 0;
+  if (now - lastRefreshAt < 75) return;
+  lastDataRefreshAtByResource.set(refreshKey, now);
 
   // La precarga inicial tiene una caché separada de React Query y del CRUD.
   // Invalidarla aquí evita que el dashboard vuelva a pintar un snapshot viejo.
@@ -25,7 +29,6 @@ export function emitDataRefresh(resource?: string): void {
   }
 
   // Vaciar cachés en memoria y persistentes de los servicios correspondientes
-  const rootResource = resource ? resource.replace(/^\/+/, '').split('/')[0].split('?')[0].toLowerCase() : undefined;
   if (rootResource) {
     void clearServiceCaches(rootResource);
     if (rootResource === 'animals') {

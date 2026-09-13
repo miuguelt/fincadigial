@@ -4,6 +4,7 @@ import { Button } from '@/shared/ui/button';
 import { ModalWrapper } from '@/widgets/registro-operativo/modals/ModalWrapper';
 import { AnimalSelect } from '@/widgets/registro-operativo/components/AnimalSelect';
 import { animalsService } from '@/entities/animal/api/animal.service';
+import { animalTransferService } from '@/entities/animal/api/animalTransfer.service';
 import { financialService } from '@/entities/financial/api/financial.service';
 import { useToast } from '@/app/providers/ToastContext';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
@@ -124,13 +125,24 @@ export const AnimalExitModal: React.FC<AnimalExitModalProps> = ({
         financialDesc = `Venta de descarte animal ${currentAnimal.record || currentAnimal.id} - ${discardReason}`;
       }
 
-      // 1. Actualizar el estado del animal en DB
-      await animalsService.update(currentAnimal.id, {
-        status: statusToSet,
-        exit_date: date,
-        sale_date: statusToSet === 'Vendido' ? date : undefined,
-        exit_reason: exitReason,
-      });
+      // 1. Las ventas pasan por la operación transaccional de transferencia.
+      // Muerte/descarte conservan el CRUD histórico porque no cambian de dueño.
+      let saleTransfer: any = null;
+      if (exitType === 'sale') {
+        saleTransfer = await animalTransferService.markSold({
+          animal_id: currentAnimal.id,
+          sale_date: date,
+          buyer_name: buyer || undefined,
+          notes: exitReason,
+        });
+      } else {
+        await animalsService.update(currentAnimal.id, {
+          status: statusToSet,
+          exit_date: date,
+          sale_date: statusToSet === 'Vendido' ? date : undefined,
+          exit_reason: exitReason,
+        });
+      }
 
       // 2. Si es venta y se solicitó registrar ingreso financiero
       if (statusToSet === 'Vendido' && createFinancial && financialAmount > 0) {
@@ -146,7 +158,7 @@ export const AnimalExitModal: React.FC<AnimalExitModalProps> = ({
 
       showToast(
         exitType === 'sale'
-          ? `🎉 Venta registrada: ${currentAnimal.record || currentAnimal.id} por $${calculatedSaleTotal.toLocaleString('es-CO')} COP`
+          ? `🎉 Venta registrada: ${currentAnimal.record || currentAnimal.id} por $${calculatedSaleTotal.toLocaleString('es-CO')} COP. Código para el comprador: ${saleTransfer?.claim_code || 'use los datos del animal'}`
           : exitType === 'death'
           ? `🕊️ Muerte registrada: ${currentAnimal.record || currentAnimal.id} (${deathCause})`
           : `⚠️ Descarte registrado: ${currentAnimal.record || currentAnimal.id}`,

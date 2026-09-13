@@ -33,11 +33,11 @@ export function useKnowledgeBase() {
     }
   }, []);
 
-  const fetchHatoCalendar = useCallback(async () => {
+  const fetchGanadoCalendar = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await kbService.getHatoCalendar();
+      const data = await kbService.getGanadoCalendar();
       setCalendar(data);
     } catch (err: any) {
       setError(err.message || 'Error al cargar calendario del ganado');
@@ -53,6 +53,6 @@ export function useKnowledgeBase() {
     error,
     fetchAnimalRecommendations,
     fetchAnimalCalendar,
-    fetchHatoCalendar,
+    fetchGanadoCalendar,
   };
 }

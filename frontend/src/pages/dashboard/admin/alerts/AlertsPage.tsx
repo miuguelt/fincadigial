@@ -7,6 +7,7 @@ import { AlertNotificationCard } from '@/shared/components/notifications/compone
 import { AlertStatsCards } from '@/widgets/alerts/AlertStatsCards';
 import { AlertFilterBar, type PriorityFilter, type TypeFilter, type ReadFilter } from '@/widgets/alerts/AlertFilterBar';
 import { useToast } from '@/app/providers/ToastContext';
+import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
 
 /** Tope de la API para una sola página; el resto se refleja en los contadores del servidor. */
 const PAGE_SIZE = 200;
@@ -123,66 +124,60 @@ export function AlertsPage() {
   const truncated = totalOnServer > alerts.length;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8 space-y-6 animate-fade-in">
-      {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className={cn(
-            'p-2.5 rounded-xl shadow-sm shrink-0 mt-0.5',
-            criticalCount > 0
-              ? 'bg-gradient-to-br from-red-500 to-rose-600'
-              : unreadCount > 0
-                ? 'bg-gradient-to-br from-amber-500 to-orange-600'
-                : 'bg-gradient-to-br from-primary to-green-600'
-          )}>
-            <Bell className="h-5 w-5 text-white" />
+    <div className="min-h-full space-y-6 overflow-x-hidden p-4 sm:p-6 lg:p-8 animate-fade-in">
+      <DataScreenHeader
+        icon={<Bell className="h-5 w-5 text-white" />}
+        iconClassName={cn(
+          criticalCount > 0
+            ? 'from-red-500 to-rose-600 shadow-red-500/20'
+            : unreadCount > 0
+              ? 'from-amber-500 to-orange-600 shadow-amber-500/20'
+              : 'from-emerald-600 to-teal-700 shadow-emerald-600/20'
+        )}
+        title={
+          <div className="flex items-center gap-2">
+            <span>Centro de <span className="text-primary">Alertas</span></span>
+            {criticalCount > 0 && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-destructive/10 text-destructive dark:bg-red-950/60 dark:text-red-300 border border-destructive/30 dark:border-red-800 animate-pulse">
+                <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
+                {criticalCount} crítica{criticalCount > 1 ? 's' : ''}
+              </span>
+            )}
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight">Centro de Alertas</h1>
-              {criticalCount > 0 && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-destructive/10 text-destructive dark:bg-red-950/60 dark:text-red-300 border border-destructive/30 dark:border-red-800 animate-pulse">
-                  <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
-                  {criticalCount} crítica{criticalCount > 1 ? 's' : ''}
-                </span>
-              )}
-            </div>
-            <p className="text-muted-foreground mt-0.5 text-sm">
-              Monitoreo inteligente del ganado
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleEvaluate}
-            disabled={evaluating}
-            className="gap-2 rounded-xl"
-          >
-            {evaluating
-              ? <RefreshCw className="h-4 w-4 animate-spin" />
-              : <Zap className="h-4 w-4" />
-            }
-            Evaluar Ahora
-          </Button>
-          {unreadCount > 0 && (
+        }
+        description="Monitoreo inteligente del ganado y novedades sanitarias de la finca"
+        actions={
+          <div className="flex items-center gap-2">
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               size="sm"
-              onClick={handleMarkAllAsRead}
-              className="gap-2 rounded-xl"
+              onClick={handleEvaluate}
+              disabled={evaluating}
+              className="gap-2 rounded-xl text-xs font-semibold h-9 shadow-sm"
             >
-              <CheckCheck className="h-4 w-4" />
-              <span className="hidden sm:inline">Marcar todas leídas</span>
-              <span className="sm:hidden">Todas leídas</span>
+              {evaluating
+                ? <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                : <Zap className="h-3.5 w-3.5" />
+              }
+              Evaluar Ahora
             </Button>
-          )}
-        </div>
-      </div>
+            {unreadCount > 0 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleMarkAllAsRead}
+                className="gap-2 rounded-xl text-xs text-muted-foreground hover:text-foreground h-9"
+              >
+                <CheckCheck className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Marcar todas leídas</span>
+                <span className="sm:hidden">Todas leídas</span>
+              </Button>
+            )}
+          </div>
+        }
+      />
 
       {/* ── Stats ──────────────────────────────────────────────────────────*/}
       <AlertStatsCards

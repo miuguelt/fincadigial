@@ -15,7 +15,7 @@ Esta guía proporciona **ejemplos de código completos y listos para usar** para
 6. [Tendencia de Crecimiento (Line Chart)](#6-tendencia-de-crecimiento-line-chart)
 
 ### Analytics de Salud
-7. [Estado de Salud del Hato (Radial Bar)](#7-estado-de-salud-del-hato-radial-bar)
+7. [Estado de Salud del Ganado (Radial Bar)](#7-estado-de-salud-del-ganado-radial-bar)
 8. [Tratamientos por Mes (Area Chart)](#8-tratamientos-por-mes-area-chart)
 9. [Vacunaciones por Mes (Line Chart)](#9-vacunaciones-por-mes-line-chart)
 10. [Enfermedades Comunes (Bar Chart)](#10-enfermedades-comunes-bar-chart)
@@ -432,7 +432,7 @@ export const WeightDistributionChart = () => {
             <div className="text-sm text-gray-600">{item.range}</div>
             <div className="text-xl font-bold">{item.count}</div>
             <div className="text-xs text-gray-500">
-              {total > 0 ? ((item.count / total) * 100).toFixed(1) : 0}% del hato
+              {total > 0 ? ((item.count / total) * 100).toFixed(1) : 0}% del ganado
             </div>
           </div>
         ))}
@@ -479,7 +479,7 @@ export const GrowthTrendChart = () => {
         <div>
           <h3 className="text-xl font-bold">Tendencia de Peso Promedio</h3>
           <p className="text-sm text-gray-600 mt-1">
-            Evolución del peso promedio del hato en el tiempo
+            Evolución del peso promedio del ganado en el tiempo
           </p>
         </div>
 
@@ -574,7 +574,7 @@ export const GrowthTrendChart = () => {
 
 ---
 
-## 7. Estado de Salud del Hato (Radial Bar)
+## 7. Estado de Salud del Ganado (Radial Bar)
 
 **Endpoint**: `/analytics/dashboard/complete` → `distribucion_salud`
 
@@ -608,7 +608,7 @@ export const HealthStatusRadialChart = () => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg">
-      <h3 className="text-xl font-bold mb-4">Estado de Salud del Hato</h3>
+      <h3 className="text-xl font-bold mb-4">Estado de Salud del Ganado</h3>
 
       <ResponsiveContainer width="100%" height={350}>
         <RadialBarChart

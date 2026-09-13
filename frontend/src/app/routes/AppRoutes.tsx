@@ -10,6 +10,7 @@ const LandingPage = lazy(() => import('@/pages/landing/index'));
 const LoginPage = lazy(() => import('@/pages/auth/login/index.tsx'));
 const RegisterPage = lazy(() => import('@/pages/auth/register/index.tsx'));
 const RegisterUserPage = lazy(() => import('@/pages/auth/register-user/index.tsx'));
+const LegalDocumentsPage = lazy(() => import('@/pages/legal/LegalDocumentsPage'));
 const FincasPublicasPage = lazy(() => import('@/pages/auth/register-user/fincas-publicas.tsx'));
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/forgot-password/index.tsx'));
 const ResetPasswordPage = lazy(() => import('@/pages/auth/reset-password/index.tsx'));
@@ -32,6 +33,7 @@ const FincasAdminPage = lazy(() => import('@/pages/dashboard/admin/fincas/Fincas
 const JoinFincaPage = lazy(() => import('@/features/multi-finca/ui/JoinFincaPage.tsx'));
 
 const AdminDiseasesPage = lazy(() => import('@/pages/dashboard/admin/diseases/index.tsx'));
+const AdminTreatmentProtocolsPage = lazy(() => import('@/pages/dashboard/admin/treatmentProtocols/index.tsx'));
 const AdminMedicationsPage = lazy(() => import('@/pages/dashboard/admin/medications/index.tsx'));
 const AdminGeneticImprovementsPage = lazy(() => import('@/pages/dashboard/admin/genetic_improvements/index.tsx'));
 const AdminRouteAdministrationPage = lazy(() => import('@/pages/dashboard/admin/route_administration/index.tsx'));
@@ -49,6 +51,7 @@ const AdminTreatmentVaccinesPage = lazy(() => import('@/pages/dashboard/admin/tr
 const AdminTreatmentVaccinesFormPage = lazy(() => import('@/pages/dashboard/admin/treatment_vaccines/form.tsx'));
 const AdminTreatmentVaccinesDetailPage = lazy(() => import('@/pages/dashboard/admin/treatment_vaccines/detail.tsx'));
 const AdminAnimalDiseasesPage = lazy(() => import('@/pages/dashboard/admin/animalDiseases/index.tsx'));
+const AdminCarePlansPage = lazy(() => import('@/pages/dashboard/admin/plans/index.tsx'));
 const AdminAnimalFieldsPage = lazy(() => import('@/pages/dashboard/admin/animalFields/index.tsx'));
 const AdminBaseModelPage = lazy(() => import('@/pages/dashboard/admin/base_model/index.tsx'));
 const AdminControlPage = lazy(() => import('@/pages/dashboard/admin/control/index.tsx'));
@@ -57,6 +60,7 @@ const AdminBreedsPage = lazy(() => import('@/pages/dashboard/admin/breeds/index.
 const AdminTreatmentsPage = lazy(() => import('@/pages/dashboard/admin/treatments/index.tsx'));
 const AdminTreatmentFormPage = lazy(() => import('@/pages/dashboard/admin/treatments/form.tsx'));
 const AdminTreatmentDetailPage = lazy(() => import('@/pages/dashboard/admin/treatments/detail.tsx'));
+const AdminTreatmentRecommendationsPage = lazy(() => import('@/pages/dashboard/admin/treatment_recommendations/index.tsx'));
 import { reproductionRoutes } from './reproductionRoutes';
 
 const AdminTreatmentAnalyticsPage = lazy(() => import('@/pages/dashboard/admin/treatments/analytics.tsx'));
@@ -90,6 +94,7 @@ const WeatherDashboardPage = lazy(() => import('@/pages/dashboard/campesino/Weat
 const MarketOffersPage = lazy(() => import('@/pages/dashboard/campesino/MarketOffersPage'));
 const TechnicalAssistancePage = lazy(() => import('@/pages/dashboard/campesino/TechnicalAssistancePage'));
 const CampesinoEstadisticasPage = lazy(() => import('@/pages/dashboard/campesino/estadisticas/CampesinoEstadisticasPage'));
+const OfflineLearningView = lazy(() => import('@/pages/learning/OfflineLearningView'));
 
 // Calculadoras y herramientas
 const FrameScoreCalculator = lazy(() => import('@/features/cattle/ui/FrameScoreCalculator'));
@@ -158,6 +163,10 @@ const renderRoleRoutes = (prefix: string) => (
     <Route element={<PermissionRoute entity="diseases" />}>
       <Route path={`${prefix}/diseases`} element={<AdminDiseasesPage />} />
     </Route>
+    <Route element={<PermissionRoute entity="treatment-protocols" />}>
+      <Route path={`${prefix}/treatment-protocols`} element={<AdminTreatmentProtocolsPage />} />
+      <Route path={`${prefix}/treatment_protocols`} element={<Navigate to={`${prefix}/treatment-protocols`} replace />} />
+    </Route>
     <Route element={<PermissionRoute entity="treatment-medications" />}>
       <Route path={`${prefix}/treatment_medications`} element={<AdminTreatmentMedicationsPage />} />
       <Route path={`${prefix}/treatment_medications/form`} element={<AdminTreatmentMedicationsFormPage />} />
@@ -169,6 +178,9 @@ const renderRoleRoutes = (prefix: string) => (
       <Route path={`${prefix}/treatment_vaccines/form`} element={<AdminTreatmentVaccinesFormPage />} />
       <Route path={`${prefix}/treatment_vaccines/form/:id`} element={<AdminTreatmentVaccinesFormPage />} />
       <Route path={`${prefix}/treatment_vaccines/detail/:id`} element={<AdminTreatmentVaccinesDetailPage />} />
+    </Route>
+    <Route element={<PermissionRoute entity="treatment-recommendations" />}>
+      <Route path={`${prefix}/treatment_recommendations`} element={<AdminTreatmentRecommendationsPage />} />
     </Route>
     <Route element={<PermissionRoute entity="treatments" />}>
       <Route path={`${prefix}/treatments/analytics`} element={<AdminTreatmentAnalyticsPage />} />
@@ -247,6 +259,7 @@ const AppRoutes = () => {
         <Route path="/register" element={<Navigate to="/register/finca" replace />} />
         <Route path="/register/finca" element={<RegisterPage />} />
         <Route path="/register/user" element={<RegisterUserPage />} />
+        <Route path="/legal/:document" element={<LegalDocumentsPage />} />
         <Route path="/fincas-disponibles" element={<FincasPublicasPage />} />
         {/* Legacy redirects */}
         <Route path="/signup" element={<Navigate to="/register/user" replace />} />
@@ -310,7 +323,9 @@ const AppRoutes = () => {
             <Route path="/admin/treatment_vaccines/form" element={<AdminTreatmentVaccinesFormPage />} />
             <Route path="/admin/treatment_vaccines/form/:id" element={<AdminTreatmentVaccinesFormPage />} />
             <Route path="/admin/treatment_vaccines/detail/:id" element={<AdminTreatmentVaccinesDetailPage />} />
+            <Route path="/admin/treatment_recommendations" element={<AdminTreatmentRecommendationsPage />} />
             <Route path="/admin/disease-animals" element={<AdminAnimalDiseasesPage />} />
+            <Route path="/admin/plans" element={<AdminCarePlansPage />} />
             <Route path="/admin/animal-fields" element={<AdminAnimalFieldsPage />} />
             <Route path="/admin/animalDiseases" element={<Navigate to="/admin/disease-animals" replace />} />
             <Route path="/admin/animalFields" element={<Navigate to="/admin/fields" replace />} />
@@ -325,6 +340,10 @@ const AppRoutes = () => {
             <Route path="/admin/diseases" element={<AdminDiseasesPage />} />
             <Route element={<PermissionRoute entity="medications" />}>
               <Route path="/admin/medications" element={<AdminMedicationsPage />} />
+            </Route>
+            <Route element={<PermissionRoute entity="treatment-protocols" />}>
+              <Route path="/admin/treatment-protocols" element={<AdminTreatmentProtocolsPage />} />
+              <Route path="/admin/treatment_protocols" element={<Navigate to="/admin/treatment-protocols" replace />} />
             </Route>
             <Route path="/admin/food-types" element={<AdminFoodTypesPage />} />
             <Route path="/admin/food-types/create" element={<FoodTypesCreatePage />} />
@@ -369,6 +388,7 @@ const AppRoutes = () => {
             <Route path="/quick/treatment" element={<Navigate to="/dashboard?quick=treatment" replace />} />
             <Route path="/quick/milk" element={<Navigate to="/dashboard?quick=milk" replace />} />
             <Route path="/quick/water" element={<Navigate to="/dashboard?quick=water" replace />} />
+            <Route path="/quick/care" element={<Navigate to="/dashboard?quick=care" replace />} />
           </Route>
           <Route element={<ProtectedRoute allowedRoles={['Instructor', 'Veterinario', 'Administrador']} />}>
             <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
@@ -397,6 +417,7 @@ const AppRoutes = () => {
             <Route path="/campesino/market-offers" element={<MarketOffersPage />} />
             <Route path="/campesino/technical-assistance" element={<TechnicalAssistancePage />} />
             <Route path="/campesino/estadisticas" element={<CampesinoEstadisticasPage />} />
+            <Route path="/campesino/aprender" element={<OfflineLearningView />} />
             </Route>
           </Route>
         </Route>

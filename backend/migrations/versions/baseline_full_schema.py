@@ -1480,6 +1480,7 @@ def upgrade():
             sa.Column('requested_at', sa.DateTime(), ),
             sa.Column('resolved_at', sa.DateTime(), ),
             sa.Column('resolution_notes', sa.Text(), ),
+            sa.Column('attachment_blob_id', sa.Integer(), ),
             sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('now()'), ),
             sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.text('now()'), ),
             sa.Column('version_id', sa.Integer(), nullable=False, server_default=sa.text('1'), ),
@@ -2015,6 +2016,7 @@ def upgrade():
     op.create_foreign_key('_fk_market_offers_territory_id', 'market_offers', 'territories', ['territory_id'], ['id'], )
     op.create_foreign_key('_fk_market_offers_finca_id', 'market_offers', 'finca', ['finca_id'], ['id'], )
     op.create_foreign_key('_fk_technical_assistance_requests_assigned_user_id', 'technical_assistance_requests', 'user', ['assigned_user_id'], ['id'], )
+    op.create_foreign_key('_fk_technical_assistance_requests_attachment_blob_id', 'technical_assistance_requests', 'attachment_blobs', ['attachment_blob_id'], ['id'], )
     op.create_foreign_key('_fk_technical_assistance_requests_requester_user_id', 'technical_assistance_requests', 'user', ['requester_user_id'], ['id'], )
     op.create_foreign_key('_fk_technical_assistance_requests_territory_id', 'technical_assistance_requests', 'territories', ['territory_id'], ['id'], )
     op.create_foreign_key('_fk_technical_assistance_requests_finca_id', 'technical_assistance_requests', 'finca', ['finca_id'], ['id'], )

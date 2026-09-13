@@ -25,6 +25,7 @@ export interface ModalState {
 
 export interface AnimalActionsMenuProps {
   animal: AnimalResponse;
+  breedLabel?: string;
   currentUserId?: number;
   onOpenHistory?: () => void;
   onOpenAncestorsTree?: () => void;

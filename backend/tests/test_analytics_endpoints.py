@@ -85,8 +85,8 @@ class TestAnimalAnalytics:
         # Puede ser 200 con datos vacíos o 404; lo importante es que no es 500
         assert resp.status_code in (200, 404)
 
-    def test_ica_compliance_report_hato(self, client, token_for):
-        """Reporte ICA del hato devuelve 200."""
+    def test_ica_compliance_report_ganado(self, client, token_for):
+        """Reporte ICA del ganado devuelve 200."""
         resp = client.get(
             f"{BASE}/analytics/animals/ica-compliance-report",
             headers=token_for("Administrador"),

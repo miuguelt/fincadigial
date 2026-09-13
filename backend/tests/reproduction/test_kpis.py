@@ -1,4 +1,4 @@
-"""Tests del motor de KPIs reproductivos de hato.
+"""Tests del motor de KPIs reproductivos de ganado.
 
 Verifica el emparejamiento servicio↔diagnóstico↔parto (unidad de servicio) y
 los indicadores derivados que usa una finca real: intervalo entre partos,

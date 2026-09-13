@@ -1,7 +1,7 @@
-"""Tasa de detección de celo y tasa de preñez del hato.
+"""Tasa de detección de celo y tasa de preñez del ganado.
 
 La detección de celo no se puede contar directamente: hay que compararla con
-las oportunidades que el hato ofreció. Una hembra elegible (en edad, no
+las oportunidades que el ganado ofreció. Una hembra elegible (en edad, no
 preñada y pasado el período de espera voluntario) presenta un celo cada ciclo
 estral, así que las oportunidades son los días elegibles divididos por la
 duración del ciclo.
@@ -43,7 +43,7 @@ def heat_detection_rate(
 
 
 def pregnancy_rate(detection_pct: float | None, conception_pct: float | None) -> float | None:
-    """Tasa de preñez = detección × concepción, la identidad estándar del hato."""
+    """Tasa de preñez = detección × concepción, la identidad estándar del ganado."""
     if detection_pct is None or conception_pct is None:
         return None
     return round(detection_pct * conception_pct / 100, 1)

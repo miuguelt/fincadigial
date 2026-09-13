@@ -44,7 +44,8 @@ const FormField = memo<{
   error?: string;
   saving: boolean;
   editingItem?: any;
-}>(({ field, value, onChange, error, saving, editingItem: _editingItem }) => {
+  dependValue?: any;
+}>(({ field, value, onChange, error, saving, editingItem: _editingItem, dependValue }) => {
   const t = useT();
   const [asyncOptions, setAsyncOptions] = useState(field.options);
   const [loadingOptions, setLoadingOptions] = useState(false);
@@ -84,12 +85,41 @@ const FormField = memo<{
     onChange(newValue);
   }, [onChange]);
 
+  // Opciones filtradas por el campo del que depende el select (tipo de caso, etc.).
+  const resolvedOptions = useMemo(() => {
+    let opts = asyncOptions || [];
+    if (field.optionsFilter && field.dependsOn) {
+      opts = field.optionsFilter(dependValue, opts);
+    }
+    // Preservar la opción seleccionada aunque el filtro la excluya (p. ej. al
+    // editar un registro cuyo caso no coincide con el tipo elegido).
+    if (value !== undefined && value !== null && value !== "") {
+      const selected = (asyncOptions || []).find(
+        (o) => String(o.value) === String(value)
+      );
+      if (selected && !opts.some((o) => String(o.value) === String(value))) {
+        opts = [selected, ...opts];
+      }
+    }
+    return opts;
+  }, [asyncOptions, dependValue, value, field]);
+
+  // Determinar si el campo está en espera de que se elija el campo padre del que depende
+  const isDependentWaiting = Boolean(
+    field.dependsOn && (dependValue === undefined || dependValue === null || dependValue === "")
+  );
+
+  // Determinar si el campo está deshabilitado
+  const isFieldDisabled = Boolean(
+    saving || loadingOptions || field.disabled || isDependentWaiting
+  );
+
   const formattedOptions = useMemo(() => {
-    return (asyncOptions || []).map((o) => ({
+    return resolvedOptions.map((o) => ({
       label: o.label,
       value: String(o.value),
     }));
-  }, [asyncOptions]);
+  }, [resolvedOptions]);
 
   // Renderizar campo según tipo
   const renderField = () => {
@@ -102,7 +132,7 @@ const FormField = memo<{
             onChange={(e) => handleChange(e.target.value)}
             placeholder={field.placeholder}
             rows={3}
-            disabled={saving}
+            disabled={isFieldDisabled}
             aria-invalid={showWarning}
             aria-required={isRequired}
             className={cn(
@@ -111,13 +141,20 @@ const FormField = memo<{
                 ? "border-destructive focus:border-destructive ring-1 ring-destructive/30 bg-destructive/[0.03]"
                 : "border-border/50 focus:border-primary/50",
               isRequired && "border-l-4 border-l-destructive/40",
+              isFieldDisabled && "opacity-60 cursor-not-allowed bg-muted/40",
               "bg-background/50 focus:bg-background/80",
               "transition-all duration-300 backdrop-blur-sm"
             )}
           />
         );
 
-      case "select":
+      case "select": {
+        const selectPlaceholder = isDependentWaiting
+          ? (field.placeholder || "Primero selecciona el campo anterior...")
+          : (field.dependsOn && resolvedOptions.length === 0)
+          ? (field.emptyMessage || "Sin opciones disponibles")
+          : (field.placeholder || t("common.selectOption", "Seleccionar opción"));
+
         return (
           <div className="relative">
             <select
@@ -128,7 +165,7 @@ const FormField = memo<{
                 const original = (asyncOptions || []).find((o) => String(o.value) === val);
                 handleChange(original ? original.value : (val === "" ? null : val));
               }}
-              disabled={saving || loadingOptions}
+              disabled={isFieldDisabled}
               aria-invalid={showWarning}
               aria-required={isRequired}
               className={cn(
@@ -137,12 +174,13 @@ const FormField = memo<{
                   ? "border-destructive focus:border-destructive ring-1 ring-destructive/30 bg-destructive/[0.03]"
                   : "border-border/50 focus:border-primary/50",
                 isRequired && "border-l-4 border-l-destructive/40",
+                isFieldDisabled && "opacity-60 cursor-not-allowed bg-muted/40",
                 "bg-background/50 focus:bg-background/80",
                 "transition-all duration-300 backdrop-blur-sm"
               )}
             >
-              <option value="">{field.placeholder || t("common.selectOption", "Seleccionar opción")}</option>
-              {(asyncOptions || []).map((opt) => (
+              <option value="">{selectPlaceholder}</option>
+              {resolvedOptions.map((opt) => (
                 <option key={opt.value} value={String(opt.value)}>
                   {opt.label}
                 </option>
@@ -155,8 +193,15 @@ const FormField = memo<{
             )}
           </div>
         );
+      }
 
-      case "searchable-select":
+      case "searchable-select": {
+        const comboboxPlaceholder = isDependentWaiting
+          ? (field.placeholder || "Primero selecciona el campo anterior...")
+          : (field.dependsOn && resolvedOptions.length === 0)
+          ? (field.emptyMessage ? "Sin registros asociados (opcional)" : (field.placeholder || "Seleccionar opción"))
+          : (field.placeholder || t("common.selectOption", "Seleccionar opción"));
+
         return (
           <div className="relative">
             <Combobox
@@ -166,15 +211,16 @@ const FormField = memo<{
                 const original = (asyncOptions || []).find((o) => String(o.value) === val);
                 handleChange(original ? original.value : val);
               }}
-              placeholder={field.placeholder || t("common.selectOption", "Seleccionar opción")}
-              emptyMessage={t("common.noOptions", "No hay opciones disponibles")}
-              disabled={saving || loadingOptions}
+              placeholder={comboboxPlaceholder}
+              emptyMessage={field.emptyMessage || t("common.noOptions", "No hay opciones disponibles")}
+              disabled={isFieldDisabled}
               className={cn(
                 "w-full min-h-[44px] text-sm",
                 showWarning
                   ? "border-destructive focus:border-destructive ring-1 ring-destructive/30 bg-destructive/[0.03]"
                   : "border-border/50 focus:border-primary/50",
                 isRequired && "border-l-4 border-l-destructive/40",
+                isFieldDisabled && "opacity-60 cursor-not-allowed",
                 "bg-background/50 focus:bg-background/80",
                 "transition-all duration-300 backdrop-blur-sm"
               )}
@@ -186,6 +232,7 @@ const FormField = memo<{
             )}
           </div>
         );
+      }
 
       case "checkbox":
         return (
@@ -195,7 +242,7 @@ const FormField = memo<{
               type="checkbox"
               checked={Boolean(value)}
               onChange={(e) => handleChange(e.target.checked)}
-              disabled={saving}
+              disabled={isFieldDisabled}
               className={cn(
                 "h-4 w-4 rounded border-border text-primary",
                 "focus:ring-2 focus:ring-primary/20 transition-all",
@@ -225,7 +272,7 @@ const FormField = memo<{
             min={field.validation?.min}
             max={field.validation?.max}
             step={field.validation?.step}
-            disabled={saving}
+            disabled={isFieldDisabled}
             aria-invalid={showWarning}
             aria-required={isRequired}
             className={cn(
@@ -234,6 +281,7 @@ const FormField = memo<{
                 ? "border-destructive focus:border-destructive ring-1 ring-destructive/30 bg-destructive/[0.03]"
                 : "border-border/50 focus:border-primary/50",
               isRequired && "border-l-4 border-l-destructive/40",
+              isFieldDisabled && "opacity-60 cursor-not-allowed bg-muted/40",
               "bg-background/50 focus:bg-background/80",
               "transition-all duration-300 backdrop-blur-sm"
             )}
@@ -251,7 +299,7 @@ const FormField = memo<{
               max={maxDate}
               value={value || ""}
               onChange={(e) => handleChange(e.target.value)}
-              disabled={saving}
+              disabled={isFieldDisabled}
               aria-invalid={showWarning}
               aria-required={isRequired}
               className={cn(
@@ -260,6 +308,7 @@ const FormField = memo<{
                   ? "border-destructive focus:border-destructive ring-1 ring-destructive/30 bg-destructive/[0.03]"
                   : "border-border/50 focus:border-primary/50",
                 isRequired && "border-l-4 border-l-destructive/40",
+                isFieldDisabled && "opacity-60 cursor-not-allowed bg-muted/40",
                 "bg-background/50 focus:bg-background/80",
                 "transition-all duration-300 backdrop-blur-sm"
               )}
@@ -276,7 +325,7 @@ const FormField = memo<{
             value={value || ""}
             onChange={(e) => handleChange(e.target.value)}
             placeholder={field.placeholder}
-            disabled={saving}
+            disabled={isFieldDisabled}
             aria-invalid={showWarning}
             aria-required={isRequired}
             className={cn(
@@ -285,6 +334,7 @@ const FormField = memo<{
                 ? "border-destructive focus:border-destructive ring-1 ring-destructive/30 bg-destructive/[0.03]"
                 : "border-border/50 focus:border-primary/50",
               isRequired && "border-l-4 border-l-destructive/40",
+              isFieldDisabled && "opacity-60 cursor-not-allowed bg-muted/40",
               "bg-background/50 focus:bg-background/80",
               "transition-all duration-300 backdrop-blur-sm"
             )}
@@ -315,6 +365,34 @@ const FormField = memo<{
         {/* Decorative focus ring/border effect */}
         <div className="absolute inset-0 rounded-xl border-2 border-primary/0 pointer-events-none group-focus-within/input:border-primary/20 transition-all duration-300 -m-[1px]" />
       </div>
+
+      {field.suggestions && field.suggestions.length > 0 && !isFieldDisabled && (
+        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+          <span className="text-[10px] uppercase font-bold text-muted-foreground/70 tracking-wider">
+            Sugerencias:
+          </span>
+          {field.suggestions.map((suggestion) => {
+            const label = typeof suggestion === "string" ? suggestion : suggestion.label;
+            const sugValue = typeof suggestion === "string" ? suggestion : suggestion.value;
+            const isSelected = String(value) === String(sugValue);
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => handleChange(sugValue)}
+                className={cn(
+                  "min-h-[30px] px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border",
+                  isSelected
+                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                    : "bg-muted/40 hover:bg-muted text-foreground/80 border-border/50 hover:border-primary/40 active:scale-95"
+                )}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       <div className="min-h-[16px] flex flex-col gap-1 overflow-hidden">
         {showWarning && field.type !== "checkbox" && (
@@ -380,18 +458,22 @@ export function CRUDForm<T extends { id?: number }>({
 
   // Manejar cambio de un campo específico
   const handleFieldChange = useCallback((fieldName: string, value: any) => {
-    if (onFieldValueChange) {
-      const field = formSections.flatMap((section) => section.fields).find((item) => String(item.name) === fieldName);
-      if (field) {
-        onFieldValueChange(field, value);
-        return;
-      }
+    const field = formSections
+      .flatMap((section) => section.fields)
+      .find((item) => String(item.name) === fieldName);
+    // Parche declarado por el campo (ej. limpiar un FK excluido al cambiar tipo).
+    const patch = field?.onChange ? (field.onChange(value, formData) as Partial<any> | void) : undefined;
+    if (onFieldValueChange && field) {
+      onFieldValueChange(field, value);
+      if (patch) setFormData((prev) => ({ ...prev, ...patch }));
+      return;
     }
     setFormData((prev) => ({
       ...prev,
       [fieldName]: value,
+      ...(patch || {}),
     }));
-  }, [setFormData, onFieldValueChange, formSections]);
+  }, [setFormData, onFieldValueChange, formSections, formData]);
 
   // Renderizar secciones del formulario
   const renderFormSections = useMemo(() => {
@@ -428,6 +510,7 @@ export function CRUDForm<T extends { id?: number }>({
                 error={fieldErrors?.[String(field.name)]}
                 saving={saving}
                 editingItem={editingItem}
+                dependValue={field.dependsOn ? formData[String(field.dependsOn)] : undefined}
               />
             ))}
           </div>

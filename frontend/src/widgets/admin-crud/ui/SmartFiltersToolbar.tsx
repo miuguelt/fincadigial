@@ -13,7 +13,7 @@ export interface SmartFiltersToolbarProps {
 }
 
 const chipBase =
-  'h-8 shrink-0 snap-start rounded-full border px-3 text-xs font-semibold gap-1.5 transition-all duration-200 active:scale-95 whitespace-nowrap shadow-none';
+  'h-9 shrink-0 snap-start rounded-full border px-3 text-xs font-semibold gap-1.5 transition-all duration-200 active:scale-95 whitespace-nowrap shadow-none';
 
 export function SmartFiltersToolbar({
   activeFilters: propActiveFilters,
@@ -100,7 +100,7 @@ export function SmartFiltersToolbar({
             )}
           </div>
 
-          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
             {SMART_FILTERS.map((filter) => {
               const isActive = activeFilters[filter.queryParam] === filter.value;
               const Icon = filter.icon;
@@ -196,6 +196,7 @@ export function SmartFiltersToolbar({
           aria-label="Filtros del inventario"
           className={cn(
             // Móvil: hoja anclada al borde inferior, ancho completo
+            'p-0 overflow-hidden',
             'bottom-0 left-0 right-0 top-auto translate-x-0 translate-y-0',
             'w-full max-w-full rounded-none rounded-t-3xl',
             'data-[state=open]:slide-in-from-left-0',

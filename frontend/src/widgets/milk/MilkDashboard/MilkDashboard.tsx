@@ -16,16 +16,20 @@ import { RefreshCw, TrendingUp, Table2, Upload, Bell, Plus, MoreVertical } from 
 interface MilkDashboardProps {
   fincaId: number;
   tableComponent?: ReactNode;
+  /** Pestaña con la que arranca el panel (permite abrirlo directo en los registros). */
+  initialTab?: 'overview' | 'table';
+  /** Notifica la fecha de un registro recién guardado para ajustar filtros. */
+  onRecordSaved?: (record?: { date: string }) => void;
 }
 
-export function MilkDashboard({ fincaId, tableComponent }: MilkDashboardProps) {
+export function MilkDashboard({ fincaId, tableComponent, initialTab = 'overview', onRecordSaved }: MilkDashboardProps) {
   const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [dailyData, setDailyData] = useState<any>(null);
   const [weeklyData, setWeeklyData] = useState<any>(null);
   const [trendData, setTrendData] = useState<any[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -144,7 +148,7 @@ export function MilkDashboard({ fincaId, tableComponent }: MilkDashboardProps) {
       />
 
       {/* Tabs: overview chart / table / alerts */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-4">
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'overview' | 'table')} className="w-full mt-4">
         <TabsList className="flex w-full sm:w-auto overflow-x-auto justify-start border-b border-border bg-transparent h-auto p-0 rounded-none pb-px mb-6 scrollbar-none">
           <TabsTrigger
             value="overview"
@@ -202,10 +206,12 @@ export function MilkDashboard({ fincaId, tableComponent }: MilkDashboardProps) {
       >
         <div className="p-4 sm:p-6 bg-card rounded-b-2xl">
           <MilkEntryFormWidget
-            onSuccess={() => {
+            onSuccess={(record) => {
               setIsEntryModalOpen(false);
               loadData();
               emitDataRefresh('milk-production');
+              onRecordSaved?.(record);
+              if (tableComponent) setActiveTab('table');
             }}
             onCancel={() => setIsEntryModalOpen(false)}
           />
@@ -226,6 +232,7 @@ export function MilkDashboard({ fincaId, tableComponent }: MilkDashboardProps) {
               setIsImportModalOpen(false);
               loadData();
               emitDataRefresh('milk-production');
+              if (tableComponent) setActiveTab('table');
             }}
           />
         </div>

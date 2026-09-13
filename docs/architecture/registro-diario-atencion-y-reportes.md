@@ -38,7 +38,7 @@ index.tsx  (composición: pestañas, modales, estado de UI)
 └── reports/ReportsTab
        ├── reportPeriod.ts    (puro)  rango del periodo
        ├── milkReport.ts      (puro)  desglose diario → serie + máximos
-       ├── controlReport.ts   (puro)  estado del hato, pesajes, olvidados
+       ├── controlReport.ts   (puro)  estado del ganado, pesajes, olvidados
        ├── reportExport.ts    (puro)  texto plano y CSV
        ├── useMilkPeriodReport (I/O)  única petición nueva de la pestaña
        └── components/*       (presentación)

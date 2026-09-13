@@ -19,6 +19,18 @@ repos:
         entry: npm run modularity:changed
         pass_filenames: false
         always_run: true
+      - id: colombia-legal-compliance
+        name: Colombia legal compliance release gate
+        language: system
+        entry: pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Test-ColombiaLegalCompliance.ps1 -Mode Release
+        pass_filenames: false
+        always_run: true
+      - id: devbrain-legal-lifecycle
+        name: DevBrain legal lifecycle gate
+        language: system
+        entry: pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Test-DevBrainLegalLifecycle.ps1 -Mode Release
+        pass_filenames: false
+        always_run: true
 
   # Python (backend)
   - repo: https://github.com/astral-sh/ruff-pre-commit

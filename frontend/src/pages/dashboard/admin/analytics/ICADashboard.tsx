@@ -24,7 +24,11 @@ import { AnimalDetailModal } from '@/widgets/dashboard/animals/AnimalDetailModal
 import { getICAStatusBadge, getICAStatusIcon } from './components/ICAStatus';
 import { exportICACompliancePdf } from './components/icaReportPdf';
 
-export default function ICADashboard() {
+export interface ICADashboardProps {
+  embedded?: boolean;
+}
+
+export default function ICADashboard({ embedded = false }: ICADashboardProps) {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
@@ -94,38 +98,74 @@ export default function ICADashboard() {
   }
 
   return (
-    <div className="min-h-full bg-background/50 p-4 sm:p-6 lg:p-8 space-y-8 overflow-x-hidden">
-      <DataScreenHeader
-        icon={<ShieldCheck className="h-5 w-5 text-white" />}
-        iconClassName="from-primary to-primary/80 shadow-primary/20"
-        title={<>Cumplimiento Sanitario <span className="text-primary">(ICA)</span></>}
-        description="Auditoría de salud y requisitos legales del ganado"
-        actions={data && (
-          <>
+    <div className={embedded ? "space-y-6 animate-fade-in" : "min-h-full bg-background/50 p-4 sm:p-6 lg:p-8 space-y-8 overflow-x-hidden animate-fade-in"}>
+      {!embedded && (
+        <DataScreenHeader
+          icon={<ShieldCheck className="h-5 w-5 text-white" />}
+          iconClassName="from-primary to-primary/80 shadow-primary/20"
+          title={<>Cumplimiento Sanitario <span className="text-primary">(ICA)</span></>}
+          description="Auditoría de salud y requisitos legales del ganado"
+          actions={data && (
+            <>
+              <CSVLink data={csvData} filename={`reporte-ica-${new Date().toISOString().split('T')[0]}.csv`}>
+                <Button variant="outline" className="rounded-xl h-9 gap-2 border-dashed hover:border-solid transition-all">
+                  <Download className="h-4 w-4" />
+                  <span className="hidden sm:inline">CSV</span>
+                </Button>
+              </CSVLink>
+              <Button
+                onClick={exportToPDF}
+                disabled={isExporting}
+                className="rounded-xl h-9 gap-2 bg-foreground text-background hover:bg-foreground/90 transition-all shadow-sm"
+              >
+                {isExporting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                <span className="hidden sm:inline">Reporte PDF</span>
+              </Button>
+              <Button
+                onClick={() => setShowGSMIModal(true)}
+                className="rounded-xl h-9 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold transition-all shadow-sm"
+              >
+                <Truck className="h-4 w-4" />
+                <span className="hidden sm:inline">Guía GSMI</span>
+              </Button>
+            </>
+          )}
+        />
+      )}
+
+      {embedded && data && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/50">
+          <div>
+            <h3 className="text-base font-bold text-foreground">Auditoría Sanitaria Oficial</h3>
+            <p className="text-xs text-muted-foreground">Estado de vacunaciones reglamentarias y semáforo por animal</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
             <CSVLink data={csvData} filename={`reporte-ica-${new Date().toISOString().split('T')[0]}.csv`}>
-              <Button variant="outline" className="rounded-lg h-9 gap-2 border-dashed hover:border-solid transition-all">
-                <Download className="h-4 w-4" />
-                <span className="hidden sm:inline">CSV</span>
+              <Button variant="outline" size="sm" className="rounded-xl h-9 gap-2 text-xs">
+                <Download className="h-3.5 w-3.5" />
+                <span>CSV</span>
               </Button>
             </CSVLink>
             <Button
               onClick={exportToPDF}
               disabled={isExporting}
-              className="rounded-lg h-9 gap-2 bg-foreground text-background hover:bg-foreground/90 transition-all shadow-lg shadow-black/10"
+              size="sm"
+              className="rounded-xl h-9 gap-2 bg-foreground text-background hover:bg-foreground/90 text-xs shadow-sm"
             >
-              {isExporting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
-              <span className="hidden sm:inline">Reporte PDF</span>
+              {isExporting ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5" />}
+              <span>Reporte PDF</span>
             </Button>
             <Button
               onClick={() => setShowGSMIModal(true)}
-              className="rounded-lg h-9 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-lg shadow-emerald-600/20"
+              size="sm"
+              className="rounded-xl h-9 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-sm"
             >
-              <Truck className="h-4 w-4" />
-              <span className="hidden sm:inline">Guía GSMI</span>
+              <Truck className="h-3.5 w-3.5" />
+              <span>Guía GSMI</span>
             </Button>
-          </>
-        )}
-      />
+          </div>
+        </div>
+      )}
 
       {/* Stats Cards Premium */}
       {data && (

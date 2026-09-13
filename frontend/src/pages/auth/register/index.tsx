@@ -16,6 +16,11 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/app/providers/ToastContext';
 import { apiClient } from '@/shared/api/client';
+import {
+  CURRENT_PRIVACY_NOTICE_VERSION,
+  CURRENT_TERMS_VERSION,
+  emptyRegistrationConsent,
+} from '@/legal/consent';
 
 interface FormData {
   finca: {
@@ -33,6 +38,7 @@ interface FormData {
     password: string;
     confirmPassword: string;
   };
+  consent: ReturnType<typeof emptyRegistrationConsent>;
 }
 
 export default function RegisterPage() {
@@ -58,6 +64,7 @@ export default function RegisterPage() {
       password: '',
       confirmPassword: '',
     },
+    consent: emptyRegistrationConsent(),
   });
 
   const validateStep = (currentStep: number): boolean => {
@@ -98,6 +105,12 @@ export default function RegisterPage() {
       if (formData.owner.password !== formData.owner.confirmPassword) {
         newErrors['owner.confirmPassword'] = 'Las contraseñas no coinciden';
       }
+      if (!formData.consent.privacy_notice_accepted) {
+        newErrors['consent.privacy_notice_accepted'] = 'Debe aceptar el aviso de privacidad';
+      }
+      if (!formData.consent.terms_accepted) {
+        newErrors['consent.terms_accepted'] = 'Debe aceptar los términos de uso';
+      }
     }
 
     setErrors(newErrors);
@@ -134,6 +147,11 @@ export default function RegisterPage() {
           phone: formData.owner.phone,
           password: formData.owner.password,
         },
+        consent: {
+          ...formData.consent,
+          privacy_notice_version: CURRENT_PRIVACY_NOTICE_VERSION,
+          terms_version: CURRENT_TERMS_VERSION,
+        },
       };
 
       const response = await apiClient.post('/api/v1/public/register', payload);
@@ -141,14 +159,8 @@ export default function RegisterPage() {
       if (response.data?.success) {
         showToast('¡Finca registrada exitosamente! Redirigiendo...', 'success');
 
-        // Guardar tokens si vienen en la respuesta
-        const { access_token, refresh_token } = response.data.data || {};
-        if (access_token) {
-          localStorage.setItem('access_token', access_token);
-          if (refresh_token) {
-            localStorage.setItem('refresh_token', refresh_token);
-          }
-        }
+        // La sesión web se establece mediante cookies HttpOnly del backend.
+        // Nunca persistir access/refresh JWT en localStorage.
 
         // Redirigir al dashboard después de 2 segundos
         setTimeout(() => {
@@ -445,6 +457,60 @@ export default function RegisterPage() {
                       </ul>
                     </div>
                   </div>
+                </div>
+
+                <div className="space-y-3 rounded-lg border bg-muted/30 p-4 text-sm">
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={formData.consent.privacy_notice_accepted}
+                      onChange={(event) => setFormData((current) => ({
+                        ...current,
+                        consent: {
+                          ...current.consent,
+                          privacy_notice_accepted: event.target.checked,
+                        },
+                      }))}
+                      aria-describedby="privacy-consent-error"
+                    />
+                    <span>
+                      He leído y acepto el{' '}
+                      <Link className="text-primary underline" to="/legal/privacidad" target="_blank">
+                        aviso de privacidad
+                      </Link>.
+                    </span>
+                  </label>
+                  {errors['consent.privacy_notice_accepted'] && (
+                    <p id="privacy-consent-error" className="text-destructive">
+                      {errors['consent.privacy_notice_accepted']}
+                    </p>
+                  )}
+
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={formData.consent.terms_accepted}
+                      onChange={(event) => setFormData((current) => ({
+                        ...current,
+                        consent: {
+                          ...current.consent,
+                          terms_accepted: event.target.checked,
+                        },
+                      }))}
+                      aria-describedby="terms-consent-error"
+                    />
+                    <span>
+                      He leído y acepto los{' '}
+                      <Link className="text-primary underline" to="/legal/terminos" target="_blank">
+                        términos de uso
+                      </Link>.
+                    </span>
+                  </label>
+                  {errors['consent.terms_accepted'] && (
+                    <p id="terms-consent-error" className="text-destructive">
+                      {errors['consent.terms_accepted']}
+                    </p>
+                  )}
                 </div>
               </div>
             )}

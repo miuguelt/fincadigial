@@ -65,7 +65,7 @@ def _search_treatments(
                 "date": row.treatment_date.isoformat() if row.treatment_date else None,
                 "score": round(score, 3),
                 "type": "treatment",
-                "url": f"/admin/treatments/{row.id}",
+                "url": f"/admin/treatments/detail/{row.id}",
             }
         )
     return results
@@ -118,7 +118,7 @@ def _search_vaccinations(
                 else None,
                 "score": round(score, 3),
                 "type": "vaccination",
-                "url": f"/admin/vaccinations/{row.id}",
+                "url": f"/admin/vaccinations?edit={row.id}",
             }
         )
     return results
@@ -171,7 +171,7 @@ def _search_controls(
                 "date": row.checkup_date.isoformat() if row.checkup_date else None,
                 "score": round(score, 3),
                 "type": "control",
-                "url": "/admin/control",
+                "url": "/admin/controls",
             }
         )
     return results

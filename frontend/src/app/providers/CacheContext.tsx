@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { getApiBaseURL } from '@/shared/utils/envConfig';
 // import { hasSessionCookies } from '@/shared/utils/cookieUtils';
 // import { speciesService } from '@/entities/species/api/species.service';
@@ -243,6 +243,24 @@ export const CacheProvider: React.FC<CacheProviderProps> = ({
     }
   }, []);
 
+  // Las mutaciones que ocurren en formularios rápidos pueden desmontar la
+  // pestaña del listado. Invalidar también esta caché compartida garantiza que
+  // al volver a montar la lista no se pinte un snapshot anterior.
+  useEffect(() => {
+    const handleDataRefresh = (event: Event) => {
+      const detail = (event as CustomEvent).detail || {};
+      const resource = String(detail?.resource || detail?.endpoint || '').replace(/^\/+/, '').split('/')[0].split('?')[0];
+      if (resource) invalidateByEndpoint(resource);
+      else clearCache();
+    };
+    if (typeof window === 'undefined') return () => {};
+    const events = ['crud:refetch', 'server-resource-changed', 'animal-fields:updated'];
+    events.forEach((eventName) => window.addEventListener(eventName, handleDataRefresh));
+    return () => {
+      events.forEach((eventName) => window.removeEventListener(eventName, handleDataRefresh));
+    };
+  }, [clearCache, invalidateByEndpoint]);
+
   // Estrategia de precarga inteligente
   const preloadData = useCallback(async (key: string, fetchFn: () => Promise<any>, ttl?: number) => {
     // Verificar si ya está en caché y es válido
@@ -291,7 +309,6 @@ export const CacheProvider: React.FC<CacheProviderProps> = ({
 
 // Utilidades para invalidación de cache
 export const CacheUtils = {
-  // Patrones comunes para invalidación
   patterns: {
     animals: 'api:animals',
     users: 'api:users',
@@ -303,7 +320,9 @@ export const CacheUtils = {
     species: 'api:species',
     breeds: 'api:breeds',
     vaccines: 'api:vaccines',
-    vaccinations: 'api:vaccinations'
+    vaccinations: 'api:vaccinations',
+    animalDiseases: 'api:animalDiseases',
+    animalDiseaseProgress: 'api:animalDiseaseProgress'
   },
 
   // Generar claves relacionadas para invalidación en cascada
@@ -327,6 +346,12 @@ export const CacheUtils = {
         break;
       case 'treatments':
         keys.push('api:treatmentMedications');
+        break;
+      case 'animalDiseases':
+        keys.push('api:animalDiseaseProgress');
+        break;
+      case 'animalDiseaseProgress':
+        keys.push('api:animalDiseases');
         break;
     }
 

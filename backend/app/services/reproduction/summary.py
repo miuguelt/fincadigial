@@ -20,7 +20,7 @@ UPCOMING_DAYS = 30
 
 
 def build_summary(finca_id: int) -> dict:
-    """Cifras de cabecera del estado reproductivo del hato."""
+    """Cifras de cabecera del estado reproductivo del ganado."""
     today = date.today()
     rules = load_rules(finca_id)
     timelines = load_timelines(finca_id)

@@ -35,6 +35,11 @@ class TreatmentRecommendationControls(BaseModel):
     observation = db.Column(db.Text, nullable=True)
     completed = db.Column(db.Boolean, nullable=False, default=False)
     recorded_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    # Acto que materializa el control: control (pesaje), vaccination,
+    # treatment u observation. Con fulfilled_ref_id cierra el ciclo
+    # recomendación → acción registrada.
+    fulfilled_kind = db.Column(db.String(30), nullable=True)
+    fulfilled_ref_id = db.Column(db.Integer, nullable=True)
 
     _namespace_fields = [
         "id",
@@ -44,6 +49,8 @@ class TreatmentRecommendationControls(BaseModel):
         "observation",
         "completed",
         "recorded_by",
+        "fulfilled_kind",
+        "fulfilled_ref_id",
         "created_at",
         "updated_at",
     ]
@@ -61,9 +68,13 @@ class TreatmentRecommendationControls(BaseModel):
         "control_date",
         "completed",
         "recorded_by",
+        "fulfilled_kind",
+        "fulfilled_ref_id",
     ]
     _sortable_fields = ["id", "scheduled_date", "control_date", "created_at"]
     _required_fields = ["treatment_recommendation_id", "scheduled_date"]
+
+    FULFILLMENT_KINDS = ("control", "vaccination", "treatment", "observation")
 
     treatment_recommendation = db.relationship(
         "TreatmentRecommendations",
@@ -91,6 +102,18 @@ class TreatmentRecommendationControls(BaseModel):
                 "La fecha del control no puede ser futura",
                 code="validation_error",
             )
+        fulfilled_kind = normalized.get("fulfilled_kind")
+        if fulfilled_kind and fulfilled_kind not in cls.FULFILLMENT_KINDS:
+            raise ValidationError(
+                "El tipo de acto debe ser control, vaccination, treatment u observation",
+                code="validation_error",
+            )
+        if fulfilled_kind and fulfilled_kind != "observation":
+            if not normalized.get("fulfilled_ref_id"):
+                raise ValidationError(
+                    "Un acto vinculado requiere su identificador de registro",
+                    code="validation_error",
+                )
         return normalized
 
     def __repr__(self) -> str:

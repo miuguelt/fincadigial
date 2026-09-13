@@ -147,6 +147,12 @@ class Animals(BaseModel, ElectronicIdMixin):
         "sale_date",
         "exit_date",
         "exit_reason",
+        # Identidad/estado de verificación (la identidad oficial puede llegar
+        # después; mientras tanto se expone el UID QR local).
+        "animal_uid",
+        "official_code",
+        "official_identity_status",
+        "identification_due_at",
         "pending_alerts_count",
         "current_field_id",
         "current_field_name",
@@ -166,7 +172,13 @@ class Animals(BaseModel, ElectronicIdMixin):
         "controls": {"fields": ["id", "checkup_date", "weight", "height"], "depth": 1},
         "images": {"fields": ["id", "filename", "filepath", "is_primary"], "depth": 1},
     }
-    _searchable_fields = ["record"]
+    _searchable_fields = [
+        "record",
+        "qr_code",
+        "nfc_uid",
+        "lf_tag_code",
+        "exit_reason",
+    ]
     _filterable_fields = [
         "id",
         "sex",
@@ -177,6 +189,10 @@ class Animals(BaseModel, ElectronicIdMixin):
         "created_at",
         "idFather",
         "idMother",
+        "is_pregnant",
+        "is_lactating",
+        "destetar",
+        "bajo_peso",
     ]
     _sortable_fields = [
         "id",
@@ -276,6 +292,35 @@ class Animals(BaseModel, ElectronicIdMixin):
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
+    identity = db.relationship(
+        "AnimalIdentity",
+        back_populates="animal",
+        uselist=False,
+        lazy="selectin",
+        passive_deletes=True,
+    )
+
+    @property
+    def animal_uid(self):
+        """Identificador estable para QR/NFC y futura integración ICA."""
+        identity = getattr(self, "identity", None)
+        return (identity.official_code if identity and identity.official_code else self.qr_code)
+
+    @property
+    def official_code(self):
+        identity = getattr(self, "identity", None)
+        return identity.official_code if identity else None
+
+    @property
+    def official_identity_status(self):
+        identity = getattr(self, "identity", None)
+        status = getattr(identity, "status", None) if identity else None
+        return getattr(status, "value", status)
+
+    @property
+    def identification_due_at(self):
+        identity = getattr(self, "identity", None)
+        return identity.identification_due_at if identity else None
 
     @classmethod
     def generate_qr_code(cls) -> str:
@@ -297,6 +342,21 @@ class Animals(BaseModel, ElectronicIdMixin):
             kwargs["qr_code"] = cls.generate_qr_code()
 
         instance = super().create(commit=commit, **kwargs)
+        # Toda alta de animal debe tener una identidad local auditable, incluso
+        # cuando llega por el CRUD legado. La verificación oficial (ICA/SINIGAN)
+        # se completa después mediante el flujo de transferencias; las crías
+        # reciben además su plazo operativo desde calf_registration.
+        try:
+            from app.services.animal_transfer_service import AnimalTransferService
+
+            AnimalTransferService.ensure_identity(instance, origin_type="LOCAL")
+            if commit:
+                db.session.commit()
+        except Exception:
+            # No ocultar un animal ya creado por un fallo accesorio de identidad;
+            # el proceso de reconciliación podrá completar la fila posteriormente.
+            db.session.rollback()
+            logger.exception("No se pudo crear la identidad local del animal %s", instance.id)
         if instance and instance.finca_id:
             from app.models.livestock_summary import LivestockSummary
 
@@ -647,7 +707,10 @@ class Animals(BaseModel, ElectronicIdMixin):
             hs = getattr(
                 last_control.health_status, "value", last_control.health_status
             )
-            if hs == "Enfermo":
+            # El enum HealthStatus de Control no tiene "Enfermo": los estados
+            # críticos se expresan como Malo/Regular. Antes el semáforo nunca
+            # se encendía en rojo porque comparaba contra "Enfermo".
+            if hs in ("Malo", "Regular"):
                 return "critical"
 
         # Vacunación vencida (> 6 meses)
@@ -840,9 +903,11 @@ class Animals(BaseModel, ElectronicIdMixin):
                 if k in filters:
                     custom_filters[k] = filters.pop(k)
 
+        search_str = str(search).strip() if search else ""
+
         query = super().get_namespace_query(
             filters,
-            search,
+            None,  # Manejado custom abajo para búsquedas multi-tabla y multi-token
             search_type,
             sort_by,
             sort_order,
@@ -852,6 +917,47 @@ class Animals(BaseModel, ElectronicIdMixin):
         )
 
         query = cls._apply_smart_filters(query, custom_filters)
+
+        if search_str:
+            from app.models.breeds import Breeds
+            from app.models.species import Species
+            from sqlalchemy import cast as sa_cast, String as sa_String, or_, and_
+
+            query = query.outerjoin(Breeds, cls.breeds_id == Breeds.id).outerjoin(
+                Species, Breeds.species_id == Species.id
+            )
+
+            tokens = [t.strip() for t in search_str.split() if t.strip()]
+            token_conditions = []
+
+            for token in tokens:
+                per_token_or = [
+                    cls.record.ilike(f"%{token}%"),
+                    sa_cast(cls.sex, sa_String).ilike(f"%{token}%"),
+                    sa_cast(cls.status, sa_String).ilike(f"%{token}%"),
+                    sa_cast(cls.birth_date, sa_String).ilike(f"%{token}%"),
+                    Breeds.name.ilike(f"%{token}%"),
+                    Species.name.ilike(f"%{token}%"),
+                ]
+                if hasattr(cls, "qr_code") and cls.qr_code is not None:
+                    per_token_or.append(cls.qr_code.ilike(f"%{token}%"))
+                if hasattr(cls, "nfc_uid") and cls.nfc_uid is not None:
+                    per_token_or.append(cls.nfc_uid.ilike(f"%{token}%"))
+                if hasattr(cls, "lf_tag_code") and cls.lf_tag_code is not None:
+                    per_token_or.append(cls.lf_tag_code.ilike(f"%{token}%"))
+                if hasattr(cls, "exit_reason") and cls.exit_reason is not None:
+                    per_token_or.append(cls.exit_reason.ilike(f"%{token}%"))
+
+                clean_num = token.lstrip("#").strip()
+                if clean_num.isdigit():
+                    try:
+                        per_token_or.append(cls.id == int(clean_num))
+                    except Exception:
+                        pass
+                token_conditions.append(or_(*per_token_or))
+
+            if token_conditions:
+                query = query.filter(and_(*token_conditions))
 
         if page and per_page:
             query = query.paginate(page=page, per_page=per_page, error_out=False)
@@ -899,16 +1005,35 @@ class Animals(BaseModel, ElectronicIdMixin):
             alert_counts = {}
             alerts_map = {}
 
-            # 1. Controles de salud más recientes
+            def _latest_related_records(model_class, date_column):
+                """Fetch one related row per animal instead of whole histories."""
+                ranked = (
+                    select(
+                        model_class.id.label("related_id"),
+                        func.row_number()
+                        .over(
+                            partition_by=model_class.animal_id,
+                            order_by=(date_column.desc(), model_class.id.desc()),
+                        )
+                        .label("row_number"),
+                    )
+                    .where(model_class.animal_id.in_(animal_ids))
+                    .subquery()
+                )
+                return (
+                    db.session.query(model_class)
+                    .join(ranked, model_class.id == ranked.c.related_id)
+                    .filter(ranked.c.row_number == 1)
+                    .all()
+                )
+
+            # 1. Controles de salud más recientes. La consulta anterior traía
+            # todo el historial de cada animal de la página y luego descartaba
+            # casi todas las filas en Python.
             if needs_controls:
                 from app.models.control import Control
 
-                controls = (
-                    db.session.query(Control)
-                    .filter(Control.animal_id.in_(animal_ids))
-                    .order_by(Control.animal_id, Control.checkup_date.desc())
-                    .all()
-                )
+                controls = _latest_related_records(Control, Control.checkup_date)
 
                 for c in controls:
                     if c.animal_id not in latest_controls:
@@ -918,13 +1043,8 @@ class Animals(BaseModel, ElectronicIdMixin):
             if needs_vaccinations:
                 from app.models.vaccinations import Vaccinations
 
-                vaccs = (
-                    db.session.query(Vaccinations)
-                    .filter(Vaccinations.animal_id.in_(animal_ids))
-                    .order_by(
-                        Vaccinations.animal_id, Vaccinations.vaccination_date.desc()
-                    )
-                    .all()
+                vaccs = _latest_related_records(
+                    Vaccinations, Vaccinations.vaccination_date
                 )
 
                 for v in vaccs:
@@ -955,25 +1075,21 @@ class Animals(BaseModel, ElectronicIdMixin):
             # of alert objects when the UI only requested the counter.
             from app.models.alerts import AnimalAlert
 
-            if needs_alert_priority:
-                unread_alerts = (
-                    db.session.query(AnimalAlert)
-                    .filter(
-                        AnimalAlert.animal_id.in_(animal_ids),
-                        AnimalAlert.is_read.is_(False),
-                        AnimalAlert.superseded_by_id.is_(None),
-                    )
-                    .all()
+            if needs_alert_count or needs_alert_priority:
+                # El listado solo necesita el contador y/o la prioridad máxima;
+                # no materializar todas las alertas pendientes en memoria.
+                from app.models.alerts import AlertPriority
+
+                priority_weight = db.case(
+                    {"Crítica": 4, "Alta": 3, "Media": 2, "Baja": 1},
+                    value=AnimalAlert.priority,
+                    else_=0,
                 )
-                for alert in unread_alerts:
-                    alerts_map.setdefault(alert.animal_id, []).append(alert)
-                    alert_counts[alert.animal_id] = (
-                        alert_counts.get(alert.animal_id, 0) + 1
-                    )
-            elif needs_alert_count:
-                count_rows = (
+                alert_rows = (
                     db.session.query(
-                        AnimalAlert.animal_id, db.func.count(AnimalAlert.id)
+                        AnimalAlert.animal_id,
+                        db.func.count(AnimalAlert.id),
+                        db.func.max(priority_weight),
                     )
                     .filter(
                         AnimalAlert.animal_id.in_(animal_ids),
@@ -983,7 +1099,16 @@ class Animals(BaseModel, ElectronicIdMixin):
                     .group_by(AnimalAlert.animal_id)
                     .all()
                 )
-                alert_counts = {animal_id: count for animal_id, count in count_rows}
+                weight_to_priority = {
+                    4: AlertPriority.CRITICAL.value,
+                    3: AlertPriority.HIGH.value,
+                    2: AlertPriority.MEDIUM.value,
+                    1: AlertPriority.LOW.value,
+                }
+                for animal_id, count, max_weight in alert_rows:
+                    alert_counts[animal_id] = int(count or 0)
+                    if needs_alert_priority:
+                        alerts_map[animal_id] = weight_to_priority.get(max_weight)
 
             # Asignar los datos pre-recuperados a las instancias como atributos privados
             for a in animals:
@@ -996,7 +1121,7 @@ class Animals(BaseModel, ElectronicIdMixin):
                 if needs_alert_count:
                     a._prefetched_alert_count = alert_counts.get(a.id, 0)
                 if needs_alert_priority:
-                    a._prefetched_alerts = alerts_map.get(a.id, [])
+                    a._prefetched_max_priority = alerts_map.get(a.id)
 
         serialized = [
             animal.to_namespace_dict(

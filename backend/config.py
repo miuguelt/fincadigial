@@ -133,9 +133,35 @@ def _env_bool(name: str, default: bool = False) -> bool:
     return raw.strip().lower() in {"1", "true", "yes", "y", "on"}
 
 
+def _env_int(name: str, default: int, *, minimum: int = 0) -> int:
+    """Read a bounded integer setting without letting a bad env break startup."""
+    raw = os.getenv(name)
+    try:
+        value = int(raw) if raw is not None else default
+    except (TypeError, ValueError):
+        value = default
+    return max(minimum, value)
+
+
 class Config:
     API_MAX_PAGE_SIZE = int(os.getenv("API_MAX_PAGE_SIZE", "500"))
     """Configuración base de la aplicación. Aplica a todos los entornos."""
+
+    # Institutional deployment guard. Keep provisional mode for synthetic-data
+    # testing; production/contracted SENA mode requires explicit approval.
+    SENA_INSTITUTIONAL_MODE = os.getenv(
+        "SENA_INSTITUTIONAL_MODE", "provisional_not_authorized"
+    )
+    LEGAL_RELEASE_APPROVED = _env_bool("LEGAL_RELEASE_APPROVED", default=False)
+    # Browser deployments should keep JWTs in HttpOnly cookies. Bearer tokens
+    # remain available only when an API/mobile client explicitly opts in.
+    AUTH_COOKIE_ONLY = _env_bool("AUTH_COOKIE_ONLY", default=False)
+    # Safety switch: a provisional deployment must not collect real records.
+    DATA_COLLECTION_ENABLED = _env_bool("DATA_COLLECTION_ENABLED", default=True)
+    # Plazo operativo configurable para crías sin DIN. No sustituye el
+    # cronograma normativo del ICA; producción debe ajustarlo a la regla vigente
+    # y a las condiciones regionales antes de bloquear movilizaciones.
+    ANIMAL_PROVISIONAL_DAYS = _env_int("ANIMAL_PROVISIONAL_DAYS", 365, minimum=1)
 
     # -----------------------
     # Base de Datos (SSoT: DATABASE_URL contiene host, puerto, user, pass y db)
@@ -178,15 +204,22 @@ class Config:
         DB_ENGINE = "postgresql+psycopg2"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # Optimizaciones Pro para PostgreSQL 18 y alta concurrencia
+    # Pool por proceso. Los valores son deliberadamente conservadores: con
+    # varios workers, un pool 20/40 por worker agota PostgreSQL muy rápido
+    # antes de que la aplicación llegue a miles de usuarios. Se pueden subir
+    # desde el entorno después de medir la capacidad real de la base de datos.
     SQLALCHEMY_ENGINE_OPTIONS: dict[str, Any] = {
-        "pool_size": int(os.getenv("DB_POOL_SIZE", "20")),
-        "max_overflow": int(os.getenv("DB_MAX_OVERFLOW", "40")),
-        "pool_timeout": 30,
-        "pool_recycle": 1800,
+        "pool_size": _env_int("DB_POOL_SIZE", 10, minimum=1),
+        "max_overflow": _env_int("DB_MAX_OVERFLOW", 20),
+        "pool_timeout": _env_int("DB_POOL_TIMEOUT", 10, minimum=1),
+        "pool_recycle": _env_int("DB_POOL_RECYCLE", 1800),
         "pool_pre_ping": True,
+        "pool_use_lifo": True,
         "echo": False,
-        "pool_reset_on_return": "commit",
+        # Nunca confirmar una transacción al devolver una conexión: un error
+        # de aplicación no debe convertir un trabajo parcial en una escritura
+        # persistida. SQLAlchemy ya hace rollback explícito al cerrar la sesión.
+        "pool_reset_on_return": "rollback",
     }
 
     # Serializador JSON de alto rendimiento si está disponible
@@ -208,7 +241,9 @@ class Config:
 
     # Configurar connect_args dinámicamente según el motor
     _connect_args: dict[str, Any] = {
-        "connect_timeout": 60,
+        # Fallar rápido libera workers y conexiones cuando la BD está caída;
+        # los reintentos de arranque viven en entrypoint.sh.
+        "connect_timeout": _env_int("DB_CONNECT_TIMEOUT", 5, minimum=1),
     }
 
     if SQLALCHEMY_DATABASE_URI and "mysql" in SQLALCHEMY_DATABASE_URI:
@@ -394,7 +429,9 @@ class Config:
     # Health-check probe. ``control.inspect()`` is a broker broadcast that burns
     # its full timeout unless ``limit`` is reached first, so keep the expected
     # worker count in sync with the deployment or /health slows down again.
-    CELERY_INSPECT_TIMEOUT = float(os.getenv("CELERY_INSPECT_TIMEOUT", "1.5"))
+    # The probe is a single stats() broadcast: an empty reply is authoritative
+    # and no second ping() is issued, so this timeout bounds the whole probe.
+    CELERY_INSPECT_TIMEOUT = float(os.getenv("CELERY_INSPECT_TIMEOUT", "0.8"))
     CELERY_STATUS_TTL_SECONDS = float(os.getenv("CELERY_STATUS_TTL_SECONDS", "30"))
     CELERY_EXPECTED_WORKERS = int(os.getenv("CELERY_EXPECTED_WORKERS", "1"))
 
@@ -546,6 +583,11 @@ class ProductionConfig(Config):
     JWT_COOKIE_CSRF_PROTECT = (
         True  # Proteger cookies JWT con CSRF (recomendado en producción)
     )
+    AUTH_COOKIE_ONLY = _env_bool("AUTH_COOKIE_ONLY", default=True)
+    DATA_COLLECTION_ENABLED = _env_bool("DATA_COLLECTION_ENABLED", default=False)
+    PUBLIC_USER_CREATION_ENABLED = _env_bool(
+        "PUBLIC_USER_CREATION_ENABLED", default=False
+    )
 
     # CORS - Desde variable o derivado automáticamente de DOMAIN
     _raw_cors = _parse_cors_origins_env()
@@ -558,11 +600,13 @@ class ProductionConfig(Config):
     # The Coolify profile uses two gevent workers and a small PostgreSQL
     # max_connections budget. Keep headroom for migrations, backups and jobs.
     SQLALCHEMY_ENGINE_OPTIONS = {
-        "pool_size": int(os.getenv("DB_POOL_SIZE", "4")),
-        "max_overflow": int(os.getenv("DB_MAX_OVERFLOW", "1")),
-        "pool_timeout": int(os.getenv("DB_POOL_TIMEOUT", "20")),
-        "pool_recycle": 900,
+        "pool_size": _env_int("DB_POOL_SIZE", 4, minimum=1),
+        "max_overflow": _env_int("DB_MAX_OVERFLOW", 1),
+        "pool_timeout": _env_int("DB_POOL_TIMEOUT", 20, minimum=1),
+        "pool_recycle": _env_int("DB_POOL_RECYCLE", 900),
         "pool_pre_ping": True,
+        "pool_use_lifo": True,
+        "pool_reset_on_return": "rollback",
     }
 
     @classmethod

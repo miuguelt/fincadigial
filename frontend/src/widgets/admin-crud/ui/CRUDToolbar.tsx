@@ -26,6 +26,13 @@ interface CRUDToolbarProps {
    * del viewport ni robarle ancho al título.
    */
   toolbarPlacement?: 'inline' | 'row';
+  /**
+   * La búsqueda arranca compacta y se expande al recibir foco. Sirve para
+   * mantener todo el toolbar en una sola fila: el espacio que gana el campo
+   * al enfocarlo se lo quita al slot personalizado, que envuelve sus chips
+   * dentro de su bloque.
+   */
+  expandableSearch?: boolean;
   saving?: boolean;
   onToggleFullScreen?: () => void;
   isFullScreen?: boolean;
@@ -39,6 +46,7 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
   createLabel = 'Crear nuevo registro',
   customToolbar,
   toolbarPlacement = 'inline',
+  expandableSearch = false,
   saving = false,
   onToggleFullScreen,
   isFullScreen = false,
@@ -57,7 +65,14 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
   return (
     <div className="flex w-full min-w-0 flex-col gap-2">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full min-w-0">
-        <div className="relative group flex-1 min-w-0">
+        <div
+          className={cn(
+            'relative group min-w-0',
+            expandableSearch
+              ? 'w-full sm:w-52 md:w-64 lg:w-72 xl:w-80 focus-within:w-full transition-all duration-300 ease-out'
+              : 'flex-1 w-full sm:w-60 md:w-72 lg:w-80 sm:max-w-xs md:max-w-sm sm:flex-none',
+          )}
+        >
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors h-4 w-4" />
           <Input
             placeholder={searchPlaceholder || 'Buscar...'}
@@ -84,7 +99,7 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           {onToggleFullScreen && (
             <Button
               type="button"

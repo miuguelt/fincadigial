@@ -50,8 +50,9 @@ export async function loginAs(page: Page, role: E2ERole = 'admin'): Promise<void
   await page.fill('[name=password]', creds.password);
   await page.click('button[type=submit]');
 
-  // Esperar la redirección al dashboard
-  await page.waitForURL('**/dashboard', { timeout: 15_000 });
+  // Esperar la redirección fuera del login (la app lleva al dashboard o a la
+  // última vista del rol; no atarse a "/dashboard").
+  await page.waitForURL((url) => url.pathname !== '/login', { timeout: 20_000 });
 }
 
 /**

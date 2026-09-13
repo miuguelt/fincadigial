@@ -142,19 +142,25 @@ class KBRegla(db.Model):
     El campo `campo_condicion` debe coincidir con un atributo/propiedad del modelo Animals
     o un valor derivado calculado por el motor.
 
-    Campos calculados soportados:
-      - age_in_days           → Edad del animal en días
-      - age_in_months         → Edad en meses
+    Campos calculados soportados (los construye el motor en tiempo real):
+      - age_in_days           → Edad del animal en días (desde birth_date)
+      - age_in_months         → Edad en meses (desde birth_date)
       - weight                → Peso actual (kg)
+      - disease_active        → Tiene un episodio de enfermedad abierto (bool)
+      - enfermedades_activas  → Número de episodios abiertos (animal_diseases)
       - dias_desde_parto      → Días transcurridos desde último parto
       - dias_abiertos         → Días sin preñez después del parto
-      - dias_desde_vacuna     → Días desde la última vacuna (por tipo)
+      - dias_desde_desparasitacion → Días desde la última aplicación
+                                      antiparasitaria registrada
+      - dias_desde_vacuna_aftosa   → Días desde la última vacuna de aftosa
       - dias_desde_control    → Días desde el último control de peso
       - is_pregnant           → Está preñada (boolean)
       - is_lactating          → Está en lactancia (boolean)
-      - bcs_estimado          → Body Condition Score estimado por peso/raza
       - pending_alerts_count  → Número de alertas activas
       - leche_promedio_7d     → Litros/día promedio últimos 7 días
+
+    Reglas con campos que el motor no construye se ignoran en silencio: no
+    inventar condiciones sobre atributos del modelo Animals que no figuren aquí.
     """
 
     __tablename__ = "kb_reglas"

@@ -6,6 +6,14 @@ export type MarketOfferType = 'sale' | 'purchase' | 'exchange';
 export type AssistanceStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
 export type LearningContentType = 'text' | 'audio' | 'video' | 'pdf' | 'image';
 
+export interface AssistanceAttachment {
+  id: number;
+  filename: string;
+  content_type?: string | null;
+  total_size?: number | null;
+  url: string;
+}
+
 export interface CropPlot {
   id?: number;
   finca_id?: number;
@@ -121,6 +129,8 @@ export interface TechnicalAssistanceRequest {
   requested_at?: string | null;
   resolved_at?: string | null;
   resolution_notes?: string | null;
+  attachment_blob_id?: number | null;
+  attachment?: AssistanceAttachment | null;
   requester?: { id: number; fullname: string } | null;
   assignee?: { id: number; fullname: string } | null;
   assignee_credential?: AssistanceCredentialSummary | null;

@@ -4,6 +4,7 @@ import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { getCategoryConfig, PRIORITY_CONFIG } from './assistance.constants';
 import { timeAgo } from './timeUtils';
+import { AssistanceAttachmentPreview } from './AssistanceAttachmentPreview';
 
 interface Props {
   item: TechnicalAssistanceRequest;
@@ -75,6 +76,9 @@ export function VeterinarianAssistanceCard(props: Props) {
       <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">
         {props.item.description || 'La solicitud no incluye una descripción.'}
       </p>
+      <div className="mt-3">
+        <AssistanceAttachmentPreview attachment={props.item.attachment} />
+      </div>
       <CardAction {...props} />
     </article>
   );

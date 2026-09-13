@@ -55,10 +55,19 @@ export function PotrerosBoardPage({ viewSwitcher }: PotrerosBoardPageProps) {
   const [moveOpen, setMoveOpen] = useState(false);
   const [showSemaforo, setShowSemaforo] = useState(false);
 
-  const term = query.trim().toLowerCase();
+  const cleanTerm = query.trim().toLowerCase();
+  const term = cleanTerm;
+  const cleanId = cleanTerm.startsWith('#') ? cleanTerm.slice(1).trim() : cleanTerm;
   const matches = useCallback(
-    (animal: BoardAnimal) => !term || animal.record.toLowerCase().includes(term),
-    [term],
+    (animal: BoardAnimal) => {
+      if (!cleanTerm) return true;
+      if (animal.record.toLowerCase().includes(cleanTerm)) return true;
+      if (String(animal.id) === cleanId) return true;
+      if (animal.sex && animal.sex.toLowerCase().includes(cleanTerm)) return true;
+      if (animal.fieldName && animal.fieldName.toLowerCase().includes(cleanTerm)) return true;
+      return false;
+    },
+    [cleanTerm, cleanId],
   );
 
   const visibleUnassigned = useMemo(() => grouped.unassigned.filter(matches), [grouped.unassigned, matches]);

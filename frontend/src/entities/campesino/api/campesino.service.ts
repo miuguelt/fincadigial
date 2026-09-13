@@ -57,7 +57,7 @@ class TechnicalAssistanceService extends RuralCrudService<TechnicalAssistanceReq
     });
   }
 
-  createRequest(data: Pick<TechnicalAssistanceRequest, 'title' | 'category' | 'description' | 'priority'>): Promise<AssistanceCreateResult> {
+  createRequest(data: Pick<TechnicalAssistanceRequest, 'title' | 'category' | 'description' | 'priority' | 'attachment_blob_id'>): Promise<AssistanceCreateResult> {
     return this.customRequest<AssistanceCreateResult>('request', 'POST', data);
   }
 
