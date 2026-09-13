@@ -174,11 +174,44 @@ export function buildCrudConfig(
       title: 'Estado del animal', gridCols: 2,
       fields: [
         { name: 'health_status', label: 'Estado de salud', type: 'select', required: true, options: STATUS_OPTIONS, placeholder: 'Selecciona el estado' },
-        { name: 'weight', label: 'Peso en kg (opcional)', type: 'number', validation: { min: 0 } },
-        { name: 'height', label: 'Alzada en cm (opcional)', type: 'number', validation: { min: 0 }, placeholder: 'Ej: 135' },
+        {
+          name: 'weight',
+          label: 'Peso en kg (opcional)',
+          type: 'number',
+          validation: { min: 0 },
+          placeholder: 'Ej: 350',
+          suggestions: [40, 150, 220, 320, 420, 480, 520],
+        },
+        {
+          name: 'height',
+          label: 'Alzada en cm (opcional)',
+          type: 'number',
+          validation: { min: 0 },
+          placeholder: 'Ej: 135',
+          suggestions: [95, 110, 125, 135, 145, 155],
+        },
       ],
     },
-    { title: 'Observación', fields: [{ name: 'description', label: '¿Qué observaste?', type: 'textarea', colSpan: 2, placeholder: 'Ej: no come, cojea o tiene una herida.' }] },
+    {
+      title: 'Observación',
+      fields: [
+        {
+          name: 'description',
+          label: '¿Qué observaste?',
+          type: 'textarea',
+          colSpan: 2,
+          placeholder: 'Ej: no come, cojea o tiene una herida.',
+          suggestions: [
+            'Sin novedades, animal activo y comiendo bien',
+            'Presenta leve cojera en extremidad posterior',
+            'Se observa decaimiento y poco apetito',
+            'Herida superficial en tratamiento',
+            'Condición corporal óptima (3.5 - 4.0)',
+            'Pelaje opaco y baja condición corporal',
+          ],
+        },
+      ],
+    },
   ];
 
   return {

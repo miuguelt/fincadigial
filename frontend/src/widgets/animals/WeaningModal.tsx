@@ -8,6 +8,7 @@ import { animalFieldsService } from '@/entities/animal-field/api/animalFields.se
 import { animalsService } from '@/entities/animal/api/animal.service';
 import { useToast } from '@/app/providers/ToastContext';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
+import { SuggestionChips } from '@/shared/ui/SuggestionChips';
 
 interface WeaningModalProps {
   open: boolean;
@@ -357,6 +358,17 @@ export const WeaningModal: React.FC<WeaningModalProps> = ({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Ej: Ternero vigoroso, buen lomo y desarrollo muscular"
               className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs"
+            />
+            <SuggestionChips
+              suggestions={[
+                'Ternero vigoroso, excelente condición corporal',
+                'Destete precoz por baja producción láctea de la madre',
+                'Separado a lote de terneros con suplemento concentrado',
+                'Destete tradicional a los 7-8 meses',
+              ]}
+              value={notes}
+              onSelect={(v) => setNotes(String(v))}
+              className="mt-1"
             />
           </div>
         </div>

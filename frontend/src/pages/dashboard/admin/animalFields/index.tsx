@@ -123,7 +123,13 @@ function AdminAnimalFieldsPage() {
           label: 'Notas',
           type: 'textarea',
           placeholder: 'Observaciones adicionales (opcional)',
-          colSpan: 2
+          colSpan: 2,
+          suggestions: [
+            'Rotación rutinaria según calendario de aforo',
+            'Traslado a potrero de enfermería por tratamiento',
+            'Ingreso al lote de ceba intensiva',
+            'Separación preventiva de terneros para destete',
+          ],
         },
       ],
     },

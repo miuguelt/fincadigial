@@ -187,6 +187,7 @@ const MilkProductionPage = ({ initialTab = 'overview', focusDate = null }: MilkP
           type: 'number',
           required: true,
           validation: { min: 0, step: 0.1 },
+          suggestions: [4, 6, 8, 10, 12, 15, 18, 22, 26],
         },
         {
           name: 'milking_session',
@@ -209,24 +210,34 @@ const MilkProductionPage = ({ initialTab = 'overview', focusDate = null }: MilkP
           label: '% Grasa',
           type: 'number',
           validation: { min: 0, step: 0.01 },
+          suggestions: [3.2, 3.5, 3.8, 4.0, 4.2],
         },
         {
           name: 'protein_percentage',
           label: '% Proteína',
           type: 'number',
           validation: { min: 0, step: 0.01 },
+          suggestions: [2.9, 3.1, 3.3, 3.5],
         },
         {
           name: 'somatic_cells',
           label: 'Células Somáticas',
           type: 'number',
           validation: { min: 0 },
+          suggestions: [100000, 200000, 300000, 400000],
         },
         {
           name: 'notes',
           label: 'Observaciones',
           type: 'textarea',
           placeholder: 'Cualquier detalle sobre el ordeño...',
+          suggestions: [
+            'Ordeño normal sin novedades',
+            'Leche limpia, excelente flujo y bajada rápida',
+            'Vaca inquieta durante la rutina de ordeño',
+            'Ubre con ligera congestión; aplicar masaje',
+            'Primer tercio de lactancia con alta producción',
+          ],
         },
       ]
     }

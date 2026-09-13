@@ -62,6 +62,14 @@ const OperationalCostsPage: React.FC = () => {
           type: 'text',
           required: true,
           placeholder: 'Ej: Compra de concentrado',
+          suggestions: [
+            'Compra de sal mineralizada',
+            'Mantenimiento de cercas y motobomba',
+            'Jornal de guadaña y plateo',
+            'Compra de concentrado lechero',
+            'Servicio de asistencia veterinaria',
+            'Transporte de ganado',
+          ],
         },
         {
           name: 'amount',
@@ -69,6 +77,7 @@ const OperationalCostsPage: React.FC = () => {
           type: 'number',
           required: true,
           validation: { min: 0 },
+          suggestions: [50000, 120000, 250000, 500000, 1000000, 2500000],
         },
         {
           name: 'date',
@@ -95,6 +104,11 @@ const OperationalCostsPage: React.FC = () => {
           label: 'Observaciones',
           type: 'textarea',
           placeholder: 'Detalles adicionales del gasto...',
+          suggestions: [
+            'Pago realizado en efectivo con recibo de caja',
+            'Factura electrónica radicada para contabilidad',
+            'Gasto no programado por contingencia en potrero',
+          ],
         },
       ]
     }

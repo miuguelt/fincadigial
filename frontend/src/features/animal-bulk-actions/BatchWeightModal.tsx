@@ -11,6 +11,7 @@ import {
 import { Button } from "@/shared/ui/button";
 import { Label } from "@/shared/ui/label";
 import { Input } from "@/shared/ui/input";
+import { SuggestionChips } from "@/shared/ui/SuggestionChips";
 import {
   IconLoader2,
   IconMeat,
@@ -146,6 +147,12 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
                       </span>{" "}
                     </div>{" "}
                   </div>{" "}
+                  <SuggestionChips
+                    suggestions={['180', '250', '320', '380', '420', '480', '520']}
+                    value={weight}
+                    onSelect={(v) => setWeight(String(v))}
+                    className="mt-2"
+                  />
                 </div>{" "}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {" "}
@@ -172,6 +179,17 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
                       onChange={(e) => setNotes(e.target.value)}
                       className="h-12 rounded-xl bg-muted/40 border-border font-bold text-sm text-foreground placeholder:text-muted-foreground/20 focus:border-primary focus:bg-background transition-all px-4 shadow-sm"
                     />{" "}
+                    <SuggestionChips
+                      suggestions={[
+                        'Control mensual de biomasa',
+                        'Pesaje al destete',
+                        'Control de ganancia en ceba intensiva',
+                        'Pesaje previo a venta / embarque',
+                      ]}
+                      value={notes}
+                      onSelect={(v) => setNotes(String(v))}
+                      className="mt-1"
+                    />
                   </div>{" "}
                 </div>{" "}
               </div>{" "}

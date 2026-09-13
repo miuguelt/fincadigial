@@ -44,7 +44,7 @@ export interface CRUDFormField<T = any> {
   colSpan?: number;
   helperText?: string;
   /** Sugerencias rápidas (chips táctiles) para autocompletar con 1 toque */
-  suggestions?: Array<string | { label: string; value: any }>;
+  suggestions?: Array<string | number | { label: string; value: any }>;
   /**
    * Campo del que depende éste: su valor alimenta `showIf` y `optionsFilter`.
    */

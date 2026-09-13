@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { fincaFormDefaults, fincasConfig } from './FincasAdminPage';
+import { fincaFormDefaults as extractedFincaFormDefaults } from './fincaFormDefaults';
+import { fincasConfig as extractedFincasConfig } from './fincasConfig';
+import { fincasAdminService } from './fincasService';
 
 describe('FincasAdminPage contract', () => {
+  it('mantiene la configuración y el servicio en seams dedicados', () => {
+    expect(fincasConfig).toBe(extractedFincasConfig);
+    expect(fincaFormDefaults).toBe(extractedFincaFormDefaults);
+    expect(fincasAdminService).toBeDefined();
+  });
+
   it('uses the real Finca API fields and includes every required field', () => {
     const columnKeys = fincasConfig.columns.map((column) => column.key);
     const fieldNames = fincasConfig.formSections

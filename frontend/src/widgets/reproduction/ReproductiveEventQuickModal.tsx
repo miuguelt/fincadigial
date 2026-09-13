@@ -12,6 +12,7 @@ import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Badge } from '@/shared/ui/badge';
 import { Textarea } from '@/shared/ui/textarea';
+import { SuggestionChips } from '@/shared/ui/SuggestionChips';
 import {
   Select,
   SelectContent,
@@ -476,6 +477,12 @@ export function ReproductiveEventQuickModal({
                     onChange={(e) => setAliveCount(Math.max(0, parseInt(e.target.value) || 0))}
                     className="h-9.5 rounded-xl font-black text-center"
                   />
+                  <SuggestionChips
+                    suggestions={[1, 2, 0]}
+                    value={aliveCount}
+                    onSelect={(val) => setAliveCount(Number(val))}
+                    className="mt-1"
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold text-rose-700 dark:text-rose-400">
@@ -488,6 +495,12 @@ export function ReproductiveEventQuickModal({
                     value={deadCount}
                     onChange={(e) => setDeadCount(Math.max(0, parseInt(e.target.value) || 0))}
                     className="h-9.5 rounded-xl font-black text-center"
+                  />
+                  <SuggestionChips
+                    suggestions={[0, 1]}
+                    value={deadCount}
+                    onSelect={(val) => setDeadCount(Number(val))}
+                    className="mt-1"
                   />
                 </div>
               </div>
@@ -531,6 +544,19 @@ export function ReproductiveEventQuickModal({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="rounded-xl text-xs resize-none"
+            />
+            <SuggestionChips
+              suggestions={[
+                'Celo franco con moco cristalino abundante',
+                'Inseminación artificial con semen congelado certificado',
+                'Diagnóstico de preñez positivo (aprox. 60 días)',
+                'Parto normal eutócico sin asistencia',
+                'Parto distócico asistido con éxito; ternero vigoroso',
+                'Vaca secada con terapia intramamaria de secado',
+              ]}
+              value={notes}
+              onSelect={(val) => setNotes(String(val))}
+              className="mt-1"
             />
           </div>
 

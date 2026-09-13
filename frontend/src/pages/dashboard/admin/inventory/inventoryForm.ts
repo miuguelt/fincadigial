@@ -106,6 +106,7 @@ export const inventoryFormSections: CRUDFormSection<InventoryLotInput>[] = [
 				type: "number",
 				required: true,
 				validation: { min: 0 },
+				suggestions: [5, 10, 20, 50, 100, 250, 500],
 			},
 			{
 				name: "unit",
@@ -113,6 +114,7 @@ export const inventoryFormSections: CRUDFormSection<InventoryLotInput>[] = [
 				type: "text",
 				required: true,
 				placeholder: "ml, mg, dosis...",
+				suggestions: ["ml", "dosis", "frasco", "ampolla", "tabletas", "kg", "bulto", "litro"],
 			},
 			{
 				name: "expiry_date",
@@ -125,21 +127,45 @@ export const inventoryFormSections: CRUDFormSection<InventoryLotInput>[] = [
 				label: "Stock Mínimo (Alerta)",
 				type: "number",
 				validation: { min: 0 },
+				suggestions: [2, 5, 10, 20, 50],
 			},
 		],
 	},
 	{
 		title: "Compra y Proveedor",
 		fields: [
-			{ name: "supplier", label: "Proveedor", type: "text" },
+			{
+				name: "supplier",
+				label: "Proveedor",
+				type: "text",
+				suggestions: [
+					"Veterinaria La Hacienda",
+					"Agropecuaria El Ganadero",
+					"Coopganadera Regional",
+					"Laboratorios Vecol",
+					"Zoetis Colombia",
+					"Distribuidores del Campo",
+				],
+			},
 			{
 				name: "unit_cost",
 				label: "Costo Unitario",
 				type: "number",
 				validation: { min: 0 },
+				suggestions: [15000, 35000, 60000, 120000, 250000],
 			},
 			{ name: "entry_date", label: "Fecha de Ingreso", type: "date" },
-			{ name: "notes", label: "Observaciones", type: "textarea" },
+			{
+				name: "notes",
+				label: "Observaciones",
+				type: "textarea",
+				suggestions: [
+					"Lote sellado con cadena de frío verificada",
+					"Adquisición para jornada sanitaria semestral",
+					"Compra con factura y registro ICA vigente",
+					"Donación o convenio institucional",
+				],
+			},
 		],
 	},
 ];

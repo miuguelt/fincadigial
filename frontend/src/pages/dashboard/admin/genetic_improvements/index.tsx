@@ -36,6 +36,13 @@ const formSections: CRUDFormSection<AdminGeneticImprovementInput>[] = [
         type: 'text' as const,
         required: true,
         placeholder: 'Técnica utilizada',
+        suggestions: [
+          'Inseminación Artificial (IA)',
+          'Transferencia de Embriones (TE)',
+          'Fertilización In Vitro (FIV)',
+          'Monta Natural Controlada',
+          'Selección Genómica',
+        ],
       },
       {
         name: 'details',
@@ -44,6 +51,11 @@ const formSections: CRUDFormSection<AdminGeneticImprovementInput>[] = [
         required: true,
         placeholder: 'Detalles de la mejora genética',
         colSpan: 2,
+        suggestions: [
+          'Pajilla de toro importado con alto mérito genético en leche y carne.',
+          'Embrion vitrificado de donadora sobresaliente con toro probado.',
+          'Protocolo de superovulación y colecta de embriones con éxito.',
+        ],
       },
       {
         name: 'results',
@@ -52,6 +64,12 @@ const formSections: CRUDFormSection<AdminGeneticImprovementInput>[] = [
         required: true,
         placeholder: 'Resultados obtenidos',
         colSpan: 2,
+        suggestions: [
+          'Preñez confirmada a los 60 días',
+          'Preñez confirmada a los 90 días',
+          'No preñada, reevaluar para siguiente ciclo',
+          'Gestación a término, cría sana nacida',
+        ],
       },
     ],
   },

@@ -32,13 +32,14 @@ $rootFiles = @(
     'ARCHITECTURE.md', 'CHANGELOG.md', 'CLAUDE.md', 'CODING_RULES.md', 'DEV_CREDENTIALS.md',
     'ECOSYSTEM.md', 'GEMINI.md', 'LICENSE', 'PROJECT_GENOME.md', 'WEB-DESIGN-LEARNING.md',
     'README.md', 'codecov.yml', 'ecosystem.config.cjs', 'opencode.json', 'package.json', 'package-lock.json', 'playwright.config.ts',
-    'pytest.ini', 'rules.md', 'ruff.toml', 'skills.json', 'start-windows.ps1', 'workflows.md'
+    'pytest.ini', 'rules.md', 'ruff.toml', 'skills.json', 'start-windows.ps1', 'workflows.md',
+    'docker-compose.yaml', 'CONTRIBUTING.md'
 )
-$rootPatterns = @('^docker-compose.*\.ya?ml$', '^\.env(\..+)?$')
+$rootPatterns = @('^docker-compose\.override\.ya?ml$', '^\.env(\..+)?$')
 
 Get-ChildItem -LiteralPath $projectRoot -File -Force | ForEach-Object {
     if (-not (Test-AllowedName $_.Name $rootFiles $rootPatterns)) {
-        Add-Violation "Archivo suelto en la raíz: $($_.Name). Mover a scripts/, docs/, maintenance/ o _archive/."
+        Add-Violation "Archivo suelto no autorizado en la raíz: $($_.Name). En monorepo, Dockerfiles pertenecen a backend/ o frontend/, y docker-compose.yaml es el SSoT único."
     }
 }
 
@@ -59,9 +60,10 @@ $backendRoot = Join-Path $projectRoot 'backend'
 $backendFiles = @(
     '.dockerignore', '.env', '.env.production.template', '.gitattributes', '.gitignore',
     'Dockerfile', 'LICENSE', 'Procfile', 'README.md', 'celery_worker.py', 'config.py',
-    'docker-entrypoint.sh', 'docker-compose.yaml', 'entrypoint.sh', 'mypy.ini', 'pyproject.toml',
+    'docker-entrypoint.sh', 'entrypoint.sh', 'mypy.ini', 'pyproject.toml',
     'pytest.ini', 'requirements-dev.txt', 'requirements-prod.txt', 'requirements.txt',
-    'ruff.toml', 'run.py', 'wsgi.py'
+    'ruff.toml', 'run.py', 'wsgi.py',
+    'deep_test_rigor_audit.json', 'detailed_table_audit.json', 'table_coverage_audit.json'
 )
 $backendPatterns = @('^\.env(\..+)?$', '^requirements.*\.txt$')
 if (Test-Path -LiteralPath $backendRoot) {
@@ -78,7 +80,7 @@ $frontendRoot = Join-Path $projectRoot 'frontend'
 $frontendFiles = @(
     '.critical-manifest.json', '.dockerignore', '.env', '.env.development', '.env.production',
     '.env.production.template', '.gitattributes', '.gitignore', 'Dockerfile', 'LICENSE',
-    'README.md', 'biome.json', 'docker-compose.yml', 'eslint-plugin-devbrain.js',
+    'README.md', 'biome.json', 'eslint-plugin-devbrain.js',
     'eslint.architecture.config.js', 'eslint.config.js', 'index.html', 'jest.config.mjs',
     'jest.transform.cjs', 'nginx.conf', 'package.json', 'package-lock.json',
     'playwright.config.ts', 'tailwind.config.js', 'tsconfig.app.json', 'tsconfig.jest.json',

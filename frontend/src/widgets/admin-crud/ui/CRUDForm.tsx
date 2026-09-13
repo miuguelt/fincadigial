@@ -11,6 +11,7 @@ import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
 import { Combobox } from "@/shared/ui/combobox";
+import { SuggestionChips } from "@/shared/ui/SuggestionChips";
 import { cn } from "@/shared/ui/cn";
 import { Loader2, ChevronRight } from "lucide-react";
 import { useT } from "@/shared/i18n";
@@ -367,31 +368,11 @@ const FormField = memo<{
       </div>
 
       {field.suggestions && field.suggestions.length > 0 && !isFieldDisabled && (
-        <div className="flex flex-wrap items-center gap-1.5 pt-1">
-          <span className="text-[10px] uppercase font-bold text-muted-foreground/70 tracking-wider">
-            Sugerencias:
-          </span>
-          {field.suggestions.map((suggestion) => {
-            const label = typeof suggestion === "string" ? suggestion : suggestion.label;
-            const sugValue = typeof suggestion === "string" ? suggestion : suggestion.value;
-            const isSelected = String(value) === String(sugValue);
-            return (
-              <button
-                key={label}
-                type="button"
-                onClick={() => handleChange(sugValue)}
-                className={cn(
-                  "min-h-[30px] px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border",
-                  isSelected
-                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                    : "bg-muted/40 hover:bg-muted text-foreground/80 border-border/50 hover:border-primary/40 active:scale-95"
-                )}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
+        <SuggestionChips
+          suggestions={field.suggestions}
+          value={value}
+          onSelect={(sugValue) => handleChange(sugValue)}
+        />
       )}
 
       <div className="min-h-[16px] flex flex-col gap-1 overflow-hidden">

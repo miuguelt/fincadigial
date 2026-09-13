@@ -33,3 +33,4 @@ export * from "./toast";
 export * from "./toaster";
 export * from "./tooltip";
 export * from "./switch";
+export * from "./SuggestionChips";

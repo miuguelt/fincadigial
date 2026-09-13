@@ -10,6 +10,7 @@ import { X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
+import { SuggestionChips } from '@/shared/ui/SuggestionChips';
 import type { NewTransaction } from '../model/useFinancialDashboard';
 
 const CATEGORIES: Record<string, string[]> = {
@@ -123,6 +124,12 @@ export function NewTransactionModal({ onClose, onSubmit, submitting }: Props) {
                 onChange={(event) => update({ amount: event.target.value })}
               />
             </div>
+            <SuggestionChips
+              suggestions={['50000', '100000', '250000', '500000', '1000000', '2500000']}
+              value={form.amount}
+              onSelect={(v) => update({ amount: String(v) })}
+              className="mt-1"
+            />
           </div>
 
           <div className="space-y-1.5">
@@ -146,6 +153,28 @@ export function NewTransactionModal({ onClose, onSubmit, submitting }: Props) {
               className="h-11 rounded-xl border-border/50 bg-background/50"
               value={form.description}
               onChange={(event) => update({ description: event.target.value })}
+            />
+            <SuggestionChips
+              suggestions={
+                form.transaction_type === 'Ingreso'
+                  ? [
+                      'Venta de leche quincenal',
+                      'Venta de novillos cebados',
+                      'Venta de terneros de destete',
+                      'Venta de queso o subproductos',
+                      'Ingreso por servicios de monta',
+                    ]
+                  : [
+                      'Compra de concentrado y sales',
+                      'Pago de jornales y vaquería',
+                      'Mantenimiento de cercas y potreros',
+                      'Medicamentos y vacunas del lote',
+                      'Combustible y transporte',
+                    ]
+              }
+              value={form.description}
+              onSelect={(v) => update({ description: String(v) })}
+              className="mt-1"
             />
           </div>
 

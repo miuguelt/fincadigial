@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/shared/ui/dialog';
 import { Button } from '@/shared/ui/button';
+import { SuggestionChips } from '@/shared/ui/SuggestionChips';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
@@ -305,6 +306,17 @@ export function ReproductionBatchModal({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="h-10 rounded-lg text-sm"
+            />
+            <SuggestionChips
+              suggestions={[
+                'Inseminación masiva con pajilla certificada',
+                'Diagnóstico de preñez / Palpación rectal grupal',
+                'Sincronización de celos con protocolo de progesterona',
+                'Secado simultáneo por fin de campaña lechera',
+              ]}
+              value={notes}
+              onSelect={(val) => setNotes(String(val))}
+              className="mt-1"
             />
           </div>
 

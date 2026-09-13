@@ -28,7 +28,14 @@ const formSections: CRUDFormSection<SpeciesInput>[] = [
     title: 'Información Básica',
     gridCols: 2,
     fields: [
-      { name: 'name', label: 'Nombre', type: 'text', required: true, placeholder: 'Ej: Bovino' },
+      {
+        name: 'name',
+        label: 'Nombre',
+        type: 'text',
+        required: true,
+        placeholder: 'Ej: Bovino',
+        suggestions: ['Bovino', 'Equino', 'Porcino', 'Ovino', 'Caprino', 'Bufalino', 'Aviar'],
+      },
     ],
   },
 ];

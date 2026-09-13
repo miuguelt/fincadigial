@@ -95,6 +95,13 @@ export const recommendationFormSections = (
 				type: "text",
 				required: true,
 				placeholder: "Ej: Reposo por cojera",
+				suggestions: [
+					"Reposo por cojera en mano izquierda",
+					"Aislamiento preventivo por sospecha respiratoria",
+					"Monitoreo diario de ubre post-tratamiento",
+					"Dieta reforzada con concentrado y sales mineralizadas",
+					"Curación tópica de herida podal",
+				],
 			},
 			{
 				name: "recommendation",
@@ -103,12 +110,23 @@ export const recommendationFormSections = (
 				required: true,
 				placeholder: "Escribe la indicación completa del veterinario",
 				colSpan: 2,
+				suggestions: [
+					"Mantener en corral limpio y seco; aplicar desinfectante y vendaje diario.",
+					"Suministrar agua fresca y pasto picado a voluntad sin desplazar el animal.",
+					"Chequeo de temperatura matutina y reporte inmediato si supera 39.5°C.",
+				],
 			},
 			{
 				name: "responsible",
 				label: "Responsable",
 				type: "text",
 				placeholder: "Nombre de quien indicó el manejo",
+				suggestions: [
+					"Dr. Gómez (Veterinario)",
+					"Carlos Duque (Capataz)",
+					"Operario de Turno",
+					"Equipo Sanitario",
+				],
 			},
 			{
 				name: "status",
@@ -135,6 +153,7 @@ export const recommendationFormSections = (
 				type: "number",
 				placeholder: "Ej: 14",
 				helperText: "Se calcula automáticamente si defines el fin.",
+				suggestions: [3, 5, 7, 10, 14, 21, 30],
 			},
 			{
 				name: "control_interval_days",
@@ -142,6 +161,7 @@ export const recommendationFormSections = (
 				type: "number",
 				required: true,
 				placeholder: "Ej: 3",
+				suggestions: [1, 2, 3, 5, 7, 15],
 			},
 			{
 				name: "final_notes",
@@ -149,6 +169,11 @@ export const recommendationFormSections = (
 				type: "textarea",
 				placeholder: "Registra observaciones al cerrar el manejo.",
 				colSpan: 2,
+				suggestions: [
+					"Animal recuperado totalmente; reintegrado al lote general.",
+					"Alta médica veterinaria confirmada.",
+					"Requiere seguimiento en el próximo aforo o pesaje.",
+				],
 			},
 		],
 	},

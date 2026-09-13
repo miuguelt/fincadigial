@@ -42,7 +42,19 @@ export const formSections: CRUDFormSection<UserFormInput>[] = [
     gridCols: 2,
     fields: [
       { name: 'phone', label: 'Número de teléfono', type: 'text', required: true, placeholder: 'Ej: 300 123 4567' },
-      { name: 'address', label: 'Vereda / Dirección', type: 'text', placeholder: 'Ej: Vereda El Centro' },
+      {
+        name: 'address',
+        label: 'Vereda / Dirección',
+        type: 'text',
+        placeholder: 'Ej: Vereda El Centro',
+        suggestions: [
+          'Vereda El Rosario',
+          'Vereda La Cabaña',
+          'Sector Principal',
+          'Campamento Finca',
+          'Casco Urbano',
+        ],
+      },
     ],
   },
 ];

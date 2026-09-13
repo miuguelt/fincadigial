@@ -217,6 +217,13 @@ export default function ProjectsPage() {
 					type: "text",
 					required: true,
 					placeholder: "Ej: Plan Sanitario Anual 2026",
+					suggestions: [
+						"Plan Sanitario Anual 2026",
+						"Programa de Sincronización IATF Lote 1",
+						"Rotación y Fertilización de Potreros Invierno",
+						"Plan de Suplementación Estratégica en Verano",
+						"Proyecto de Práctica Ganadera Sostenible",
+					],
 				},
 				{
 					name: "plan_type",
@@ -265,12 +272,22 @@ export default function ProjectsPage() {
 					label: "Descripción del Proyecto",
 					type: "textarea",
 					placeholder: "Detalla los objetivos, actividades y metas del plan...",
+					suggestions: [
+						"Ejecución de calendario vacunal oficial (Aftosa/Brucelosis) y desparasitación estratégica.",
+						"Mejoramiento genético por inseminación artificial a tiempo fijo para sincronizar pariciones.",
+						"Recuperación de praderas, aforo periódico y control ecológico de malezas.",
+					],
 				},
 				{
 					name: "notes",
 					label: "Notas Adicionales",
 					type: "textarea",
 					placeholder: "Observaciones extras, recomendaciones ICA, etc...",
+					suggestions: [
+						"Cumple directrices y fechas oficiales fijadas por el ICA.",
+						"Requiere seguimiento semanal del capataz y registro de aforos.",
+						"Auditoría de cumplimiento a los 60 días de inicio.",
+					],
 				},
 			],
 		},

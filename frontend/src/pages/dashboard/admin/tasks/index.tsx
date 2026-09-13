@@ -390,6 +390,12 @@ const TasksPage: React.FC = () => {
             label: 'Instrucciones u observaciones de campo',
             type: 'textarea',
             placeholder: 'Escribe detalles para el vaquero u operario...',
+            suggestions: [
+              'Realizar a primera hora de la mañana. Verificar que todos los animales queden con agua fresca.',
+              'Revisar condición de cada animal al paso por la manga.',
+              'Anotar cualquier novedad o síntoma en la libreta de campo.',
+              'Utilizar equipo de protección y desinfectar implementos al terminar.',
+            ],
           },
           {
             name: 'priority',

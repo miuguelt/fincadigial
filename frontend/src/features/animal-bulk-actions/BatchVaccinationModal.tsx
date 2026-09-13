@@ -12,6 +12,7 @@ import { Button } from "@/shared/ui/button";
 import { Label } from "@/shared/ui/label";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
+import { SuggestionChips } from "@/shared/ui/SuggestionChips";
 import {
   IconLoader2,
   IconCircleCheck,
@@ -354,6 +355,12 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
                           onChange={(e) => setDosis(e.target.value)}
                           className="h-10 rounded-lg bg-muted/40 border-border text-sm text-center focus:border-primary"
                         />{" "}
+                        <SuggestionChips
+                          suggestions={['2 ml', '5 ml', '10 ml', '1 ml', '3 ml']}
+                          value={dosis}
+                          onSelect={(v) => setDosis(String(v))}
+                          className="mt-1"
+                        />
                       </div>{" "}
                       <div className="space-y-2">
                         {" "}
@@ -366,6 +373,12 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
                           onChange={(e) => setBatchNumber(e.target.value)}
                           className="h-10 rounded-lg bg-muted/40 border-border text-sm text-center focus:border-primary"
                         />{" "}
+                        <SuggestionChips
+                          suggestions={['LOT-2026-A', 'LOT-2026-B', 'VEC-441', 'ZTS-902']}
+                          value={batchNumber}
+                          onSelect={(v) => setBatchNumber(String(v))}
+                          className="mt-1"
+                        />
                       </div>{" "}
                     </div>{" "}
                     <div className="space-y-2">
@@ -379,6 +392,17 @@ export const BatchVaccinationModal: React.FC<BatchVaccinationModalProps> = ({
                         onChange={(e) => setNotes(e.target.value)}
                         className="min-h-[80px] rounded-lg bg-muted/40 border-border p-4 text-sm resize-none focus:bg-background focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                       />{" "}
+                      <SuggestionChips
+                        suggestions={[
+                          'Jornada oficial de vacunación ICA',
+                          'Aplicación vía subcutánea en la tabla del cuello',
+                          'Sin reacciones adversas inmediatas observadas',
+                          'Animales desparasitados y vitaminizados',
+                        ]}
+                        value={notes}
+                        onSelect={(v) => setNotes(String(v))}
+                        className="mt-1"
+                      />
                     </div>{" "}
                   </div>{" "}
                 </section>{" "}

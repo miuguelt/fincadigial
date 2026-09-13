@@ -24,6 +24,7 @@ import {
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Textarea } from "@/shared/ui/textarea";
+import { SuggestionChips } from "@/shared/ui/SuggestionChips";
 
 interface InventoryRestockModalProps {
 	lot: InventoryLotResponse | null;
@@ -249,6 +250,17 @@ export function InventoryRestockModal({
 								onChange={(e) => setNotes(e.target.value)}
 								rows={2}
 								className="resize-none text-xs"
+							/>
+							<SuggestionChips
+								suggestions={[
+									"Factura de compra con lote verificado",
+									"Reposición de stock para jornada sanitaria",
+									"Ajuste de inventario físico",
+									"Donación o traslado entre sedes",
+								]}
+								value={notes}
+								onSelect={(v) => setNotes(String(v))}
+								className="mt-1"
 							/>
 						</div>
 

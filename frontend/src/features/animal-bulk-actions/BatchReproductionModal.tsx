@@ -12,6 +12,7 @@ import { Button } from "@/shared/ui/button";
 import { Label } from "@/shared/ui/label";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
+import { SuggestionChips } from "@/shared/ui/SuggestionChips";
 import {
   IconLoader2,
   IconCircleCheck,
@@ -454,6 +455,12 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
                               onChange={(e) => setAliveCount(Math.max(0, parseInt(e.target.value) || 0))}
                               className="h-10 rounded-lg bg-muted/40 border-border text-sm focus:bg-background focus:ring-primary/20 focus:border-primary px-3 font-semibold text-center"
                             />
+                            <SuggestionChips
+                              suggestions={[1, 2, 0]}
+                              value={aliveCount}
+                              onSelect={(v) => setAliveCount(Number(v))}
+                              className="mt-1"
+                            />
                           </div>
                           <div className="space-y-2">
                             <Label className="text-[11px] font-bold uppercase text-muted-foreground/40 tracking-wider">
@@ -465,6 +472,12 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
                               value={deadCount}
                               onChange={(e) => setDeadCount(Math.max(0, parseInt(e.target.value) || 0))}
                               className="h-10 rounded-lg bg-muted/40 border-border text-sm focus:bg-background focus:ring-primary/20 focus:border-primary px-3 font-semibold text-center"
+                            />
+                            <SuggestionChips
+                              suggestions={[0, 1]}
+                              value={deadCount}
+                              onSelect={(v) => setDeadCount(Number(v))}
+                              className="mt-1"
                             />
                           </div>
                         </div>
@@ -496,6 +509,18 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         className="min-h-[80px] rounded-lg bg-muted/40 border-border p-4 text-sm resize-none focus:bg-background focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                      />
+                      <SuggestionChips
+                        suggestions={[
+                          'Lote sincronizado con dispositivo intravaginal',
+                          'Inseminación a tiempo fijo (IATF) completada',
+                          'Diagnóstico de preñez por ecografía',
+                          'Crías nacidas vigorosas en pradera de maternidad',
+                          'Secado de vacas al séptimo mes de gestación',
+                        ]}
+                        value={notes}
+                        onSelect={(v) => setNotes(String(v))}
+                        className="mt-1"
                       />
                     </div>
                   </div>

@@ -8,6 +8,7 @@ import { animalTransferService } from '@/entities/animal/api/animalTransfer.serv
 import { financialService } from '@/entities/financial/api/financial.service';
 import { useToast } from '@/app/providers/ToastContext';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
+import { SuggestionChips } from '@/shared/ui/SuggestionChips';
 
 export type ExitType = 'sale' | 'death' | 'discard';
 
@@ -298,6 +299,12 @@ export const AnimalExitModal: React.FC<AnimalExitModalProps> = ({
                       placeholder="Ej: 450"
                       required
                     />
+                    <SuggestionChips
+                      suggestions={['380', '420', '450', '480', '520', '560']}
+                      value={weightKg}
+                      onSelect={(v) => setWeightKg(String(v))}
+                      className="mt-1"
+                    />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-foreground mb-1">Precio / Kilo ($ COP)</label>
@@ -340,6 +347,12 @@ export const AnimalExitModal: React.FC<AnimalExitModalProps> = ({
                   placeholder="Ej: 3500000"
                   required
                 />
+                <SuggestionChips
+                  suggestions={['2500000', '3200000', '3800000', '4500000', '5200000']}
+                  value={totalPriceHead}
+                  onSelect={(v) => setTotalPriceHead(String(v))}
+                  className="mt-1"
+                />
               </div>
             )}
 
@@ -361,6 +374,18 @@ export const AnimalExitModal: React.FC<AnimalExitModalProps> = ({
                 onChange={(e) => setBuyer(e.target.value)}
                 placeholder="Ej: Frigorífico Guadalupe, Subasta San Pedro, Don Carlos"
                 className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm"
+              />
+              <SuggestionChips
+                suggestions={[
+                  'Frigorífico Guadalupe',
+                  'Subasta Ganadera Regional',
+                  'Comercializadora del Valle',
+                  'Don Carlos (Intermediario)',
+                  'Carnicería La Central',
+                ]}
+                value={buyer}
+                onSelect={(v) => setBuyer(String(v))}
+                className="mt-1"
               />
             </div>
 
@@ -430,6 +455,16 @@ export const AnimalExitModal: React.FC<AnimalExitModalProps> = ({
                 placeholder="Ej: Se encontró postrado en la cañada del potrero 3..."
                 className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs resize-none"
               />
+              <SuggestionChips
+                suggestions={[
+                  'Hallado sin signos vitales en horas de la mañana',
+                  'Tratamiento veterinario previo sin respuesta favorable',
+                  'Muerte fulminante por sospecha de timpanismo o planta tóxica',
+                ]}
+                value={deathNotes}
+                onSelect={(v) => setDeathNotes(String(v))}
+                className="mt-1"
+              />
             </div>
           </div>
         )}
@@ -472,6 +507,12 @@ export const AnimalExitModal: React.FC<AnimalExitModalProps> = ({
                   value={discardPrice}
                   onChange={(e) => setDiscardPrice(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs font-black"
+                />
+                <SuggestionChips
+                  suggestions={['1500000', '1800000', '2200000', '2800000']}
+                  value={discardPrice}
+                  onSelect={(v) => setDiscardPrice(String(v))}
+                  className="mt-1"
                 />
               </div>
             </div>

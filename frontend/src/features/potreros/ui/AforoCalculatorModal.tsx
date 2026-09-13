@@ -10,6 +10,7 @@ import {
   Beef 
 } from 'lucide-react';
 import { GenericModal } from '@/shared/ui/common/GenericModal';
+import { SuggestionChips } from '@/shared/ui/SuggestionChips';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
@@ -422,6 +423,12 @@ export const AforoCalculatorModal: React.FC<AforoCalculatorModalProps> = ({
                 onChange={(e) => setAnimalCount(Math.max(1, parseInt(e.target.value) || 1))}
                 className="h-10 font-bold"
               />
+              <SuggestionChips
+                suggestions={[15, 25, 40, 60, 100]}
+                value={animalCount}
+                onSelect={(v) => setAnimalCount(Number(v))}
+                className="mt-1"
+              />
             </div>
 
             <div className="space-y-1.5">
@@ -436,6 +443,12 @@ export const AforoCalculatorModal: React.FC<AforoCalculatorModalProps> = ({
                 value={animalWeightKg}
                 onChange={(e) => setAnimalWeightKg(Math.max(50, parseInt(e.target.value) || 450))}
                 className="h-10 font-bold"
+              />
+              <SuggestionChips
+                suggestions={[250, 350, 420, 480, 520]}
+                value={animalWeightKg}
+                onSelect={(v) => setAnimalWeightKg(Number(v))}
+                className="mt-1"
               />
               <span className="text-[11px] text-muted-foreground block">
                 Consumo: {dailyIntakePct}% PV = {calculations.dailyIntakePerAnimalKg} kg FV/día
@@ -453,6 +466,12 @@ export const AforoCalculatorModal: React.FC<AforoCalculatorModalProps> = ({
                 value={desiredGrazingDays}
                 onChange={(e) => setDesiredGrazingDays(Math.max(1, parseInt(e.target.value) || 1))}
                 className="h-10 font-bold"
+              />
+              <SuggestionChips
+                suggestions={[1, 2, 3, 5, 7]}
+                value={desiredGrazingDays}
+                onSelect={(v) => setDesiredGrazingDays(Number(v))}
+                className="mt-1"
               />
               <span className="text-[11px] text-muted-foreground block">
                 Recomendado en pastoreo rotacional: 1 a 3 días

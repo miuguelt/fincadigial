@@ -8,6 +8,7 @@ import {
   Leaf,
 } from 'lucide-react';
 import { GenericModal } from '@/shared/ui/common/GenericModal';
+import { SuggestionChips } from '@/shared/ui/SuggestionChips';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
@@ -178,6 +179,24 @@ export const FoodTypeFormModal: React.FC<FoodTypeFormModalProps> = ({
             required
           />
           {errors.food_type && <p className="text-xs text-destructive font-medium">{errors.food_type}</p>}
+          <SuggestionChips
+            suggestions={[
+              'Pasto Kikuyo (Pennisetum clandestinum)',
+              'Brachiaria Decumbens',
+              'Brachiaria Brizantha (Toledo)',
+              'Pasto Guinea (Mombaza)',
+              'Pasto Estrella Africana',
+              'Botón de Oro (Tithonia diversifolia)',
+              'Silo de Maíz',
+              'Sal Mineralizada 8%',
+            ]}
+            value={formData.food_type}
+            onSelect={(v) => {
+              setFormData((prev) => ({ ...prev, food_type: String(v) }));
+              if (errors.food_type) setErrors((prev) => ({ ...prev, food_type: '' }));
+            }}
+            className="mt-1"
+          />
         </div>
 
         {/* Parámetros de Extensión y Fechas */}
@@ -199,6 +218,15 @@ export const FoodTypeFormModal: React.FC<FoodTypeFormModalProps> = ({
               className="h-9 text-sm"
             />
             {errors.area && <p className="text-xs text-destructive font-medium">{errors.area}</p>}
+            <SuggestionChips
+              suggestions={[0.5, 1.0, 2.5, 5.0, 10.0, 20.0]}
+              value={formData.area}
+              onSelect={(v) => {
+                setFormData((prev) => ({ ...prev, area: Number(v) }));
+                if (errors.area) setErrors((prev) => ({ ...prev, area: '' }));
+              }}
+              className="mt-1"
+            />
           </div>
 
           <div className="space-y-1.5">
@@ -241,6 +269,16 @@ export const FoodTypeFormModal: React.FC<FoodTypeFormModalProps> = ({
             rows={2}
             className="text-xs leading-relaxed"
           />
+          <SuggestionChips
+            suggestions={[
+              'Periodo de descanso de 30 a 35 días; fertilización post-pastoreo.',
+              'Corte a 10 cm del suelo cada 45 días; suministro fresco picado.',
+              'Rotación en franjas diarias con cerca eléctrica y agua en parcela.',
+            ]}
+            value={formData.handlings}
+            onSelect={(v) => setFormData((prev) => ({ ...prev, handlings: String(v) }))}
+            className="mt-1"
+          />
         </div>
 
         {/* Aforo y mediciones */}
@@ -255,6 +293,16 @@ export const FoodTypeFormModal: React.FC<FoodTypeFormModalProps> = ({
             placeholder="Aforo esperado (kg/m²), porcentaje de proteína bruta (% PB), materia seca (% MS)..."
             rows={2}
             className="text-xs leading-relaxed"
+          />
+          <SuggestionChips
+            suggestions={[
+              'Aforo promedio 2.5 kg/m² verde; materia seca estimada 20%.',
+              'Aforo alto 3.8 kg/m²; excelente contenido de proteína cruda (14-16%).',
+              'Aforo moderado 1.8 kg/m²; requerimiento de descanso zootécnico.',
+            ]}
+            value={formData.gauges}
+            onSelect={(v) => setFormData((prev) => ({ ...prev, gauges: String(v) }))}
+            className="mt-1"
           />
         </div>
 
