@@ -51,7 +51,7 @@ export const FincaSelector: React.FC = () => {
             disabled={switching}
             data-testid="finca-selector"
             className={cn(
-              'flex items-center gap-2 rounded-full border border-primary/20 bg-card/80 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm backdrop-blur-md transition-all duration-200 sm:px-3.5 sm:py-1.5 sm:text-sm',
+              'flex items-center gap-1.5 sm:gap-2 rounded-full border border-primary/20 bg-card/80 px-2 py-1 text-xs font-semibold text-foreground shadow-sm backdrop-blur-md transition-all duration-200 sm:px-3.5 sm:py-1.5 sm:text-sm',
               'hover:border-primary/40 hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-primary/20',
               'disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98]',
             )}
@@ -60,7 +60,7 @@ export const FincaSelector: React.FC = () => {
             <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <MapPin className="h-3.5 w-3.5" />
             </div>
-            <span className="max-w-[90px] fit-clamp font-medium sm:max-w-[130px]">{activeFincaName}</span>
+            <span className="max-w-[70px] xs:max-w-[90px] fit-clamp font-medium sm:max-w-[130px]">{activeFincaName}</span>
             {switching ? (
               <RefreshCw className="h-3.5 w-3.5 shrink-0 animate-spin text-primary" />
             ) : (

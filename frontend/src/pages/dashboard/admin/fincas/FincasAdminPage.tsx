@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import type { FincaImage } from '@/entities/finca/api/fincaImage.service';
 import { useQuery } from '@tanstack/react-query';
 import { AdminCRUDPage } from '@/widgets/admin-crud';
 import { apiFetch } from '@/shared/api/apiFetch';
@@ -53,6 +54,28 @@ const FincasAdminPage: React.FC = () => {
   const handleOpenImages = (finca: FarmAdminRecord) => {
     setImageManagerFinca(finca);
   };
+
+  const handleImagesChange = useCallback(
+    (newImages: FincaImage[]) => {
+      if (!imageManagerFinca) return;
+      const targetId = imageManagerFinca.id;
+      setItems((prev) =>
+        prev.map((f) =>
+          f.id === targetId
+            ? {
+                ...f,
+                images: newImages,
+                primary_image_url:
+                  newImages.find((img) => img.is_primary)?.url ||
+                  newImages[0]?.url ||
+                  f.logo_url,
+              }
+            : f
+        )
+      );
+    },
+    [imageManagerFinca]
+  );
 
   return (
     <div className="space-y-4 h-full flex flex-col min-w-0">
@@ -198,22 +221,7 @@ const FincasAdminPage: React.FC = () => {
           }}
           fincaId={imageManagerFinca.id}
           fincaName={imageManagerFinca.name}
-          onImagesChange={(newImages) => {
-            setItems((prev) =>
-              prev.map((f) =>
-                f.id === imageManagerFinca.id
-                  ? {
-                      ...f,
-                      images: newImages,
-                      primary_image_url:
-                        newImages.find((img) => img.is_primary)?.url ||
-                        newImages[0]?.url ||
-                        f.logo_url,
-                    }
-                  : f
-              )
-            );
-          }}
+          onImagesChange={handleImagesChange}
         />
       )}
     </div>

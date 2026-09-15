@@ -175,6 +175,7 @@ TENANT_MODELS = {
     "MilkProduction",
     "OperationalCost",
     "Tasks",
+    "TaskCompletionRecord",
     "AnimalGroup",
     "PastureAforo",
     "Infrastructure",

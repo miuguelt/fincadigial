@@ -47,7 +47,7 @@ const UserDetail = () => {
   const isActive = typeof user.status === 'boolean' ? user.status : user.status === 1;
 
   return (
-    <div className="p-6 max-w-5xl mx-auto animate-fade-in">
+    <div className="w-full p-6 animate-fade-in">
       <div className="mb-6 flex justify-between items-center">
         <Button
           variant="outline"

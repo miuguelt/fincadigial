@@ -29,6 +29,7 @@ import { TaskQuickFilters } from './components/TaskQuickFilters';
 import { TaskTemplatesModal } from './components/TaskTemplatesModal';
 import { CampesinoTaskCard } from './components/CampesinoTaskCard';
 import { TaskDetailContent } from './components/TaskDetailContent';
+import { TaskCompletionBadge } from './components/TaskCompletionBadge';
 import { TaskFilterKey, TaskMetrics, TaskTemplate } from './tasks.types';
 
 const TasksPage: React.FC = () => {
@@ -182,11 +183,13 @@ const TasksPage: React.FC = () => {
     async (task: Task, newStatus: Task['status']) => {
       setLoadingStatusId(task.id);
       try {
-        await taskService.updateStatus(task.id, newStatus);
+        const result = await taskService.updateStatus(task.id, newStatus);
         window.dispatchEvent(new CustomEvent('crud:refetch'));
         showToast(
           newStatus === 'Completada'
-            ? '¡Labor cumplida con éxito!'
+            ? result?.id
+              ? `¡Labor cumplida! Se guardó el registro #${result.id}.`
+              : '¡Labor cumplida con éxito!'
             : `Labor marcada como "${newStatus}"`,
           'success'
         );
@@ -260,7 +263,7 @@ const TasksPage: React.FC = () => {
         label: 'Labor y Descripción',
         render: (val: string, item: Task) => (
           <div className="flex flex-col min-w-0 py-1">
-            <span className="font-bold text-foreground truncate">{val}</span>
+            <span className="font-bold text-foreground fit-clamp">{val}</span>
             <span className="text-xs text-muted-foreground line-clamp-1">
               {item.description || 'Sin notas de faena'}
             </span>
@@ -302,6 +305,11 @@ const TasksPage: React.FC = () => {
         },
       },
       {
+        key: 'completion_record_id',
+        label: 'Registro',
+        render: (_val: number | null, item: Task) => <TaskCompletionBadge task={item} compact />,
+      },
+      {
         key: 'due_date',
         label: 'Fecha Vencimiento',
         render: (val: string, item: Task) => {
@@ -321,8 +329,8 @@ const TasksPage: React.FC = () => {
             >
               {isOverdue ? <IconAlertTriangle size="sm" /> : <IconCalendar size="sm" />}
               <span>{formatDateColombia(val)}</span>
-              {isToday && <Badge variant="success" className="text-[10px] py-0 px-1">Hoy</Badge>}
-              {isOverdue && <Badge variant="destructive" className="text-[10px] py-0 px-1">Atrasada</Badge>}
+              {isToday && <Badge variant="success" className="text-[11px] py-0 px-1">Hoy</Badge>}
+              {isOverdue && <Badge variant="destructive" className="text-[11px] py-0 px-1">Atrasada</Badge>}
             </div>
           );
         },
@@ -335,7 +343,7 @@ const TasksPage: React.FC = () => {
           return name ? (
             <div className="flex items-center gap-1 text-xs text-foreground font-medium">
               <IconMapPin size="sm" className="text-emerald-600 flex-shrink-0" />
-              <span className="truncate">{name}</span>
+              <span className="fit-clamp">{name}</span>
             </div>
           ) : (
             <span className="text-xs text-muted-foreground">-</span>
@@ -350,7 +358,7 @@ const TasksPage: React.FC = () => {
           return name ? (
             <div className="flex items-center gap-1 text-xs text-foreground font-medium">
               <IconPaw size="sm" className="text-amber-600 flex-shrink-0" />
-              <span className="truncate">{name}</span>
+              <span className="fit-clamp">{name}</span>
             </div>
           ) : (
             <span className="text-xs text-muted-foreground">-</span>
@@ -551,6 +559,7 @@ const TasksPage: React.FC = () => {
     () => ({
       entityName: 'Labor de Finca',
       title: 'Cuaderno de Labores y Faenas',
+      headerDescription: 'Organiza labores, responsables, fechas y seguimiento diario',
       searchPlaceholder: 'Buscar labores, potreros, tareas...',
       columns,
       formSections,

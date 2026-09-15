@@ -52,7 +52,7 @@ export function CropPlotFormModal({
 		<CampesinoModal
 			open={open}
 			onClose={onClose}
-			title={editId ? "✏️ Editar Parcela" : "🌱 Nueva Parcela"}
+			title={editId ? "Editar Parcela de Cultivo" : "Nueva Parcela de Cultivo"}
 		>
 			<div className="flex gap-1 px-5 pt-4">
 				{[1, 2, 3].map((s) => (

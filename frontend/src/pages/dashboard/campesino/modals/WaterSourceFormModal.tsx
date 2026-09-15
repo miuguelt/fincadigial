@@ -40,7 +40,7 @@ export function WaterSourceFormModal({
 		<CampesinoModal
 			open={open}
 			onClose={onClose}
-			title={editId ? "✏️ Editar Fuente" : "💧 Nueva Fuente de Agua"}
+			title={editId ? "Editar Fuente de Agua" : "Nueva Fuente de Agua"}
 		>
 			<div className="p-5 space-y-4">
 				<div>

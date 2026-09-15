@@ -35,7 +35,7 @@ export interface AuthContextType {
   user: User | null;
   role: string | null;
   name: string | null;
-  login: (user: User, token?: string) => void;
+  login: (user: User, token?: string, destination?: string) => void;
   logout: () => void;
   impersonateRole?: (role: role) => void;
   isAuthenticated: boolean;

@@ -73,6 +73,7 @@ export function registerChunkRecovery(): void {
   if (Date.now() - lastRecovery < RECOVERY_INTERVAL_MS) return;
 
   window.addEventListener('unhandledrejection', (event) => {
+    if (event.defaultPrevented) return;
     if (isChunkLoadError(event.reason)) {
       event.preventDefault();
       void recoverFromChunkFailure();
@@ -99,10 +100,25 @@ export function registerChunkRecovery(): void {
       return;
     }
 
-    reportError(event.message, 'onerror', {
-      filename: event.filename,
-      lineno: event.lineno,
-      colno: event.colno,
-    });
+    // Si el evento viene de un elemento del DOM (img, link, audio, video, etc.) distinto a SCRIPT,
+    // es un error de recurso estático y no un fallo de ejecución de JS; ignorar.
+    if (target && target !== (window as any)) {
+      return;
+    }
+
+    if (!event.message && !event.error) {
+      return;
+    }
+
+    reportError(
+      event.message || 'Script error',
+      'onerror',
+      {
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+      },
+      event.error instanceof Error ? event.error : undefined,
+    );
   }, true);
 }

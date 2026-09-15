@@ -1,4 +1,3 @@
-// import { toast } from 'react-toastify'; // Asumiendo que se usa para notificaciones
 import { animalFieldsService } from '@/entities/animal-field/api/animalFields.service';
 
 export interface FincaGeofence {

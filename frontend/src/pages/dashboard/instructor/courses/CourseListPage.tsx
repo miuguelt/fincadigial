@@ -10,7 +10,7 @@ const CourseListPage: React.FC = () => {
 
   return (
     <div className="bg-background px-4 pt-4 pb-6 sm:pb-8">
-      <div className="w-full max-w-7xl mx-auto space-y-6">
+      <div className="w-full space-y-6">
         <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="min-w-0">
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight break-words">

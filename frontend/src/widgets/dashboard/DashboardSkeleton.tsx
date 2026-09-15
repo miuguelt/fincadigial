@@ -118,7 +118,7 @@ export const TableSkeleton: React.FC<{ rows?: number; columns?: number }> = ({
  */
 export const DashboardSkeleton: React.FC = () => {
   return (
-    <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+    <div className="w-full p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Header skeleton */}
       <div className="mb-8">
         <Skeleton className="h-8 w-64 bg-muted mb-2" />
@@ -180,7 +180,7 @@ export const InitialLoadingSkeleton: React.FC<{ message?: string }> = ({
 }) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-primary/5 to-info/5 p-8">
-      <div className="w-full max-w-4xl space-y-8">
+      <div className="w-full space-y-8">
         {/* Logo o icono */}
         <div className="flex justify-center">
           <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center">

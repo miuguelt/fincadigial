@@ -80,7 +80,7 @@ function CRUDTableCard<T extends { id: number }>({ item, columns, config, labels
     >
       {config.enableSelection && onToggleSelect && <CardSelection config={config} item={item} selected={selectedIds?.includes(item.id) || false} onToggle={onToggleSelect} />}
       {recent === 'created' && (
-        <div className="mb-2 flex items-center gap-1.5 w-fit rounded-full bg-emerald-600 dark:bg-emerald-500 px-2 py-0.5 text-[10px] font-extrabold text-white shadow-sm animate-pulse">
+        <div className="mb-2 flex items-center gap-1.5 w-fit rounded-full bg-emerald-600 dark:bg-emerald-500 px-2 py-0.5 text-[11px] font-extrabold text-white shadow-sm animate-pulse">
           <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping" />
           ✨ Nuevo
         </div>

@@ -2,6 +2,7 @@ from flask_restx import Namespace, Resource
 import flask
 from flask_jwt_extended import jwt_required
 from datetime import datetime
+import re
 
 from app.utils.response_handler import APIResponse
 from app.utils.tenant_context import apply_tenant_filter
@@ -13,6 +14,18 @@ alerts_analytics_ns = Namespace(
 
 def _tf(query, model_class):
     return apply_tenant_filter(query, model_class)
+
+
+def _display_alert_message(raw_message) -> str:
+    """Evita exponer sentinelas internos en alertas históricas ya almacenadas."""
+    message = str(raw_message or "")
+    message = re.sub(
+        r"9999\s+días\s+sin\s+revisión(?:\s+médica(?:\s+veterinaria)?)?",
+        "sin historia clínica registrada",
+        message,
+        flags=re.IGNORECASE,
+    )
+    return re.sub(r"\b9999\s+días\b", "sin registro reciente", message, flags=re.IGNORECASE)
 
 
 @alerts_analytics_ns.route("/")
@@ -116,7 +129,7 @@ class SystemAlerts(Resource):
                     if hasattr(a.priority, "value")
                     else str(a.priority).lower(),
                     "title": f"{a.alert_type.value if hasattr(a.alert_type, 'value') else str(a.alert_type)} - {a.animal.record if a.animal else 'Animal Desconocido'}",
-                    "message": a.message,
+                    "message": _display_alert_message(a.message),
                     "animal_id": a.animal_id,
                     "animal_record": a.animal.record if a.animal else "N/A",
                     "is_read": a.is_read,

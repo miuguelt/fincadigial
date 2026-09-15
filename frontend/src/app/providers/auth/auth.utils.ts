@@ -101,29 +101,7 @@ export const readPersistedUser = (): User | null => {
   return parsed?.user || null
 }
 
-export const prefetchRoleRoutes = (role?: string | Role | null) => {
-  if (
-    typeof (globalThis as any).process !== 'undefined' &&
-    (!!(((globalThis as any).process as any).env?.JEST_WORKER_ID) ||
-      !!(((globalThis as any).process as any).env?.VITEST))
-  ) {
-    return
-  }
-  try {
-    void import("@/widgets/dashboard-layout/DashboardLayout")
-    switch (role) {
-      case Role.Administrador:
-        void import("@/pages/dashboard/admin/AdminDashboard")
-        break
-      case Role.Instructor:
-        void import("@/pages/dashboard/instructor/InstructorDashboard")
-        break
-      case Role.Aprendiz:
-        void import("@/pages/dashboard/apprentice/ApprenticeDashboard")
-        break
-    }
-  } catch { /* ignore */ }
-}
+export { prefetchRoleRoutes } from './prefetchRoutes'
 
 export const canAccessUsersModule = (): boolean => {
   try {

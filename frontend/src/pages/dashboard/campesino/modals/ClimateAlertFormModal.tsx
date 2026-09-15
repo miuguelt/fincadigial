@@ -40,7 +40,7 @@ export function ClimateAlertFormModal({
 		<CampesinoModal
 			open={open}
 			onClose={onClose}
-			title={editId ? "✏️ Editar Alerta" : "⛈️ Nueva Alerta"}
+			title={editId ? "Editar Alerta Climática" : "Nueva Alerta Climática"}
 		>
 			<div className="p-5 space-y-4">
 				<div>

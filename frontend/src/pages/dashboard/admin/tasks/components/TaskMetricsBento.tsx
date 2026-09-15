@@ -84,11 +84,11 @@ export const TaskMetricsBento: React.FC<TaskMetricsBentoProps> = ({
             <CardContent className="p-3 sm:p-4 flex items-center justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-xs sm:text-sm font-semibold text-foreground truncate">
+                  <span className="text-xs sm:text-sm font-semibold text-foreground fit-clamp">
                     {c.title}
                   </span>
                 </div>
-                <p className="text-[11px] sm:text-xs text-muted-foreground truncate hidden sm:block">
+                <p className="text-[11px] sm:text-xs text-muted-foreground fit-clamp hidden sm:block">
                   {c.subtitle}
                 </p>
                 <div className="mt-1 flex items-baseline gap-2">
@@ -100,7 +100,7 @@ export const TaskMetricsBento: React.FC<TaskMetricsBentoProps> = ({
                   >
                     {c.value}
                   </span>
-                  <span className="text-[10px] text-muted-foreground font-medium uppercase">
+                  <span className="text-[11px] text-muted-foreground font-medium uppercase">
                     {c.value === 1 ? 'Labor' : 'Labores'}
                   </span>
                 </div>

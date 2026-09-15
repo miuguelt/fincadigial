@@ -20,7 +20,7 @@ export const OsciladorGananciaPeso: React.FC<OsciladorGananciaPesoProps> = ({ st
   const { adgGrams, adgStatusLabel, adgStatusColor, bestPerformer, trends } = stats;
 
   // Percentage on 0 - 1000g bar
-  const percentOnScale = Math.min(100, Math.max(0, (adgGrams / 1000) * 100));
+  const percentOnScale = adgGrams === null ? 0 : Math.min(100, Math.max(0, (adgGrams / 1000) * 100));
 
   return (
     <div className="rounded-3xl border border-lime-200/80 bg-gradient-to-br from-lime-50/70 via-background to-emerald-50/30 p-5 sm:p-6 shadow-md dark:border-lime-900/40 dark:from-lime-950/20 dark:via-background dark:to-emerald-950/10 space-y-6">
@@ -50,7 +50,7 @@ export const OsciladorGananciaPeso: React.FC<OsciladorGananciaPesoProps> = ({ st
         <div className="flex items-center justify-between text-xs font-bold text-muted-foreground">
           <span>0 g/día (Perdiendo)</span>
           <span className="text-foreground text-sm font-black">
-            {adgGrams > 0 ? `+${adgGrams} g/día` : `${adgGrams} g/día`}
+            {adgGrams !== null ? (adgGrams > 0 ? `+${adgGrams} g/día` : `${adgGrams} g/día`) : 'Sin datos'}
           </span>
           <span>1.000 g/día (Excelente)</span>
         </div>
@@ -73,7 +73,7 @@ export const OsciladorGananciaPeso: React.FC<OsciladorGananciaPesoProps> = ({ st
 
         {/* Animated Pointer / Marker */}
         <div className="relative w-full h-4">
-          <motion.div
+          {adgGrams !== null && <motion.div
             initial={{ left: '0%' }}
             animate={{ left: `${percentOnScale}%` }}
             transition={{ type: 'spring', stiffness: 70, damping: 14 }}
@@ -81,9 +81,9 @@ export const OsciladorGananciaPeso: React.FC<OsciladorGananciaPesoProps> = ({ st
           >
             <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[8px] border-b-foreground" />
             <span className="text-[11px] font-extrabold text-foreground px-1.5 py-0.5 rounded bg-background border border-border shadow-xs mt-0.5 whitespace-nowrap">
-              Tu ganado: {adgGrams}g
+              Tu ganado: {adgGrams !== null ? `${adgGrams}g` : '--'}
             </span>
-          </motion.div>
+          </motion.div>}
         </div>
       </div>
 

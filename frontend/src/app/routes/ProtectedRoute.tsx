@@ -21,8 +21,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // 2.5) Si está autenticado pero no tiene finca_id y no está en /select-finca o /profile, redirigir a /select-finca
-  if (!user?.finca_id && location.pathname !== '/select-finca' && location.pathname !== '/profile') {
+  // 2.5) Si está autenticado pero no tiene finca_id, verificar si la ruta requiere finca obligatoria
+  const isGlobalAllowedPath = ['/select-finca', '/profile', '/fincas-disponibles', '/register/finca'].includes(location.pathname);
+  const isAdmin = user?.role === 'Administrador' || Boolean(user?.is_system_admin);
+  const isAdminGlobalPath = isAdmin && (
+    location.pathname.startsWith('/admin/fincas') ||
+    location.pathname.startsWith('/admin/users/global')
+  );
+
+  if (!user?.finca_id && !isGlobalAllowedPath && !isAdminGlobalPath) {
     return <Navigate to="/select-finca" replace />;
   }
 

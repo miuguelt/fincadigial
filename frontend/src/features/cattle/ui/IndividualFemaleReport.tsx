@@ -36,7 +36,7 @@ const IndividualFemaleReport: React.FC<FemaleReportProps> = ({
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-4 md:p-8 bg-card min-h-screen">
+    <div className="w-full p-4 md:p-8 bg-card min-h-screen">
       {/* Navigation & Actions */}
       <div className="flex justify-between items-center mb-8 no-print">
         <button

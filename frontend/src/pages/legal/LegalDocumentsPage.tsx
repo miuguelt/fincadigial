@@ -14,7 +14,7 @@ const LegalDocumentsPage: React.FC = () => {
 
   return (
     <main className="min-h-screen bg-background px-4 py-10 text-foreground">
-      <article className="mx-auto max-w-3xl space-y-6 rounded-xl border bg-card p-6 shadow-sm">
+      <article className="w-full space-y-6 rounded-xl border bg-card p-6 shadow-sm">
         <header className="space-y-2 border-b pb-4">
           <p className="text-sm text-muted-foreground">VillaLuz · versión {VERSION} · Ley 1581 de 2012 (Colombia)</p>
           <h1 className="text-2xl font-bold">

@@ -27,7 +27,7 @@ const DashboardStatsCardComponent: React.FC<DashboardStatsCardProps> = ({
   const statObj = typeof stat === "object" ? stat : undefined;
   const value = useMemo(() => {
     if (typeof stat === "number") return stat;
-    return statObj?.valor ?? 0;
+    return statObj?.valor ?? null;
   }, [stat, statObj]);
 
   const change = useMemo(() => statObj?.cambio_porcentual, [statObj]);
@@ -107,7 +107,7 @@ const DashboardStatsCardComponent: React.FC<DashboardStatsCardProps> = ({
         <div className="space-y-2.5">
           {/* Valor principal — grande y nítido */}
           <div className="text-4xl font-black tracking-tighter text-foreground tabular-nums leading-none">
-            {valueFormatter(value)}
+            {value === null ? '—' : valueFormatter(value)}
           </div>
 
           {description && (

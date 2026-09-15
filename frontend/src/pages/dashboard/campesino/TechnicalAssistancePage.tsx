@@ -1,22 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { campesinoServices, TechnicalAssistanceRequest, type AssistanceNetwork } from '@/entities/campesino';
-import {
-  AssistanceCard,
-  NewAssistanceDialog,
-  AssistanceDetailDialog,
-  AssistanceEmptyState,
-  AssistanceGuidance,
-  AssistanceLoadError,
-  AssistanceSearchField,
-  VeterinarianNetworkBanner,
-} from '@/widgets/assistance';
-import { AppLayout } from '@/widgets/layout/AppLayout';
-import { PageHeader } from '@/widgets/layout/PageHeader';
-import { LifeBuoy, RefreshCw } from 'lucide-react';
 import { useToast } from '@/app/providers/ToastContext';
 import { subscribeSSE } from '@/lib/events';
 import { useSearchParams } from 'react-router-dom';
 import { uploadAssistanceAttachment } from '@/entities/campesino/api/assistanceAttachment.service';
+import { TechnicalAssistanceContent, type FilterTab } from './TechnicalAssistanceContent';
 
 const TechnicalAssistancePage: React.FC = () => {
   const { showToast } = useToast();
@@ -28,7 +16,8 @@ const TechnicalAssistancePage: React.FC = () => {
   const [networkError, setNetworkError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [total, setTotal] = useState(0);
+  const [activeTab, setActiveTab] = useState<FilterTab>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [detailItem, setDetailItem] = useState<TechnicalAssistanceRequest | null>(null);
   const [showDetail, setShowDetail] = useState(false);
@@ -45,7 +34,6 @@ const TechnicalAssistancePage: React.FC = () => {
     try {
       const res = await campesinoServices.technicalAssistance.getMine(100);
       setItems(res.items || []);
-      setTotal(res.total || 0);
       setLoadError(null);
     } catch {
       setLoadError('Conserve su información y vuelva a intentarlo. Si el problema continúa, revise la conexión de la finca.');
@@ -98,15 +86,71 @@ const TechnicalAssistancePage: React.FC = () => {
       .finally(() => setNetworkLoading(false));
   }, []);
 
+  // Métricas y contadores de estado para navegación rápida
+  const counts = useMemo(() => {
+    let waiting = 0;
+    let inProgress = 0;
+    let answered = 0;
+    let resolved = 0;
+
+    for (const item of items) {
+      const hasAnswer = Boolean(item.resolution_notes && item.resolution_notes.trim().length > 0);
+      if (hasAnswer) {
+        answered++;
+      }
+      if (item.status === 'resolved') {
+        resolved++;
+      } else if (item.status === 'in_progress' && item.assigned_user_id && !hasAnswer) {
+        inProgress++;
+      } else if (item.status === 'open' || (!item.assigned_user_id && item.status === 'in_progress')) {
+        waiting++;
+      }
+    }
+
+    return { all: items.length, waiting, inProgress, answered, resolved };
+  }, [items]);
+
+  // Filtrado compuesto: Tab + Categoría + Búsqueda de texto
   const visibleItems = useMemo(() => {
+    let result = items;
+
+    // 1. Filtro por pestaña de estado
+    if (activeTab === 'waiting') {
+      result = result.filter(
+        (item) =>
+          (item.status === 'open' || (!item.assigned_user_id && item.status === 'in_progress')) &&
+          (!item.resolution_notes || !item.resolution_notes.trim())
+      );
+    } else if (activeTab === 'in_progress') {
+      result = result.filter(
+        (item) =>
+          item.status === 'in_progress' &&
+          Boolean(item.assigned_user_id) &&
+          (!item.resolution_notes || !item.resolution_notes.trim())
+      );
+    } else if (activeTab === 'answered') {
+      result = result.filter((item) => Boolean(item.resolution_notes && item.resolution_notes.trim().length > 0));
+    } else if (activeTab === 'resolved') {
+      result = result.filter((item) => item.status === 'resolved');
+    }
+
+    // 2. Filtro por categoría seleccionada
+    if (selectedCategory !== 'all') {
+      result = result.filter((item) => item.category === selectedCategory);
+    }
+
+    // 3. Filtro por término de búsqueda
     const term = search.trim().toLocaleLowerCase('es-CO');
-    if (!term) return items;
-    return items.filter((item) =>
-      [item.title, item.category, item.description, item.assignee?.fullname]
-        .filter(Boolean)
-        .some((value) => String(value).toLocaleLowerCase('es-CO').includes(term))
-    );
-  }, [items, search]);
+    if (term) {
+      result = result.filter((item) =>
+        [item.title, item.category, item.description, item.assignee?.fullname, item.resolution_notes]
+          .filter(Boolean)
+          .some((value) => String(value).toLocaleLowerCase('es-CO').includes(term))
+      );
+    }
+
+    return result;
+  }, [items, activeTab, selectedCategory, search]);
 
   const handleCreate = useCallback(async (data: { title: string; category: string; description: string; priority: string; attachment?: File }) => {
     try {
@@ -131,6 +175,8 @@ const TechnicalAssistancePage: React.FC = () => {
         recipients > 0 ? 'success' : 'warning',
       );
       setSearch('');
+      setActiveTab('all');
+      setSelectedCategory('all');
       load();
     } catch (error) {
       const message = error instanceof Error && error.message
@@ -158,86 +204,33 @@ const TechnicalAssistancePage: React.FC = () => {
   }, [showToast, load]);
 
   return (
-    <AppLayout
-      header={
-        <PageHeader
-          title="Asistencia Técnica"
-          description="Solicitudes de ayuda para tu finca"
-          dense
-          className="mb-0 p-0"
-          titleClassName="text-base sm:text-lg lg:text-xl"
-        />
-      }
-      className="px-2 sm:px-3 pt-0 pb-0 max-w-full"
-      contentClassName="space-y-0"
-    >
-      <div className="flex flex-col flex-1 min-h-0 mt-1">
-        <div className="overflow-y-auto flex-1 p-2 sm:p-3 lg:p-4 pb-28">
-          <div className="flex flex-col gap-3 sm:gap-4 mb-4">
-            <VeterinarianNetworkBanner network={network} loading={networkLoading} error={networkError} onRetry={loadNetwork} />
-            <AssistanceGuidance />
-            <AssistanceSearchField value={search} onChange={setSearch} />
-          </div>
-
-          {loadError && !loading ? (
-            <AssistanceLoadError message={loadError} onRetry={() => void load()} />
-          ) : loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-              {[1,2,3,4,5,6].map(i => (
-                <div key={i} className="h-64 rounded-xl bg-muted/50 animate-pulse border border-border/30" />
-              ))}
-            </div>
-          ) : visibleItems.length === 0 ? (
-            <AssistanceEmptyState onCreate={() => setShowNewDialog(true)} />
-          ) : (
-            <>
-              <p className="text-xs text-muted-foreground mb-3">
-                {search ? `${visibleItems.length} de ${total}` : total} solicitud{total !== 1 ? 'es' : ''}
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-                {visibleItems.map((item) => (
-                  <AssistanceCard
-                    key={item.id}
-                    item={item}
-                    onDetail={handleOpenDetail}
-                    onCancel={handleCancel}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-
-          {!loading && items.length > 0 && (
-            <button onClick={() => load()} className="w-full flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors mt-2">
-              <RefreshCw className="w-4 h-4" /> Actualizar
-            </button>
-          )}
-        </div>
-      </div>
-
-      <NewAssistanceDialog
-        open={showNewDialog}
-        onOpenChange={setShowNewDialog}
-        onSave={handleCreate}
-        recipientCount={network?.total || 0}
-      />
-      <AssistanceDetailDialog
-        item={detailItem}
-        open={showDetail}
-        onOpenChange={(o) => { setShowDetail(o); if (!o) setDetailItem(null); }}
-      />
-
-      {items.length > 0 && <button
-        onClick={() => setShowNewDialog(true)}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 h-14 px-6 bg-primary text-primary-foreground rounded-full shadow-xl hover:shadow-2xl hover:-translate-y-0.5 active:translate-y-0 transition-all font-semibold text-sm sm:text-base"
-        style={{ fontSize: '16px' }}
-        aria-label="Pedir ayuda técnica"
-      >
-        <LifeBuoy className="w-5 h-5 shrink-0" />
-        <span className="hidden sm:inline">Pedir ayuda técnica</span>
-        <span className="sm:hidden">Ayuda</span>
-      </button>}
-    </AppLayout>
+    <TechnicalAssistanceContent
+      network={network}
+      networkLoading={networkLoading}
+      networkError={networkError}
+      loadNetwork={loadNetwork}
+      items={items}
+      counts={counts}
+      activeTab={activeTab}
+      setActiveTab={setActiveTab}
+      search={search}
+      setSearch={setSearch}
+      selectedCategory={selectedCategory}
+      setSelectedCategory={setSelectedCategory}
+      loading={loading}
+      loadError={loadError}
+      visibleItems={visibleItems}
+      load={load}
+      showNewDialog={showNewDialog}
+      setShowNewDialog={setShowNewDialog}
+      handleCreate={handleCreate}
+      detailItem={detailItem}
+      showDetail={showDetail}
+      setShowDetail={setShowDetail}
+      setDetailItem={setDetailItem}
+      handleOpenDetail={handleOpenDetail}
+      handleCancel={handleCancel}
+    />
   );
 };
 

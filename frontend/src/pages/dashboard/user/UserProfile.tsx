@@ -1174,14 +1174,14 @@ const UserProfile = () => {
 
     if (!user) {
         return (
-            <div className="p-4 md:p-8 max-w-3xl mx-auto">
+            <div className="w-full p-4 md:p-8">
                 <p className="text-sm text-muted-foreground">No se pudo cargar el perfil.</p>
             </div>
         );
     }
 
     return (
-        <div className="min-h-full p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8 overflow-x-hidden animate-in fade-in duration-500" tabIndex={0}>
+        <div className="min-h-full w-full p-4 sm:p-6 lg:p-8 space-y-8 overflow-x-hidden animate-in fade-in duration-500" tabIndex={0}>
             <header className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-success/10 rounded-full">

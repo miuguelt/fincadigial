@@ -3,48 +3,17 @@ import { AuthContext } from "./AuthContext"
 export { AuthContext }
 import { useNavigate } from "react-router-dom"
 import { User, AuthContextType, Role, role as RoleType } from "@/entities/user/model/types"
-import { getUserProfile, normalizeRole, authServiceLogout } from "@/features/auth/api/auth.service"
+import { getUserProfile, normalizeRole, authServiceLogout, refreshToken } from "@/features/auth/api/auth.service"
 import { locationService } from "@/entities/user/api/location.service"
 import { geofenceService } from "@/shared/api/offline/GeofenceService"
 import sse from "@/lib/events"
 import { isDevelopment } from "@/shared/utils/envConfig"
 import { roleCanPermission } from "@/shared/lib/rbac"
+import { markAuthGateReady, markAuthGateUnauthenticated } from "@/shared/api/client/authGate"
 
 // AuthContext imported from separate file
 
-// Avoid dynamic imports during Jest tests to prevent ESM/vite-specific syntax from breaking
-const isTestEnv = typeof (globalThis as any).process !== 'undefined' && (!!(((globalThis as any).process as any).env?.JEST_WORKER_ID) || !!(((globalThis as any).process as any).env?.VITEST))
-
-const prefetchRoleRoutes = (role?: string | Role | null) => {
-  if (isTestEnv) return
-  try {
-    // Prefetch layout común
-    void import("@/widgets/dashboard-layout/DashboardLayout.tsx")
-    switch (role) {
-      case Role.Administrador:
-      case 'Admin':
-      case 'Administrador':
-        void import("@/pages/dashboard/admin/AdminDashboard.tsx")
-        break
-      case Role.Instructor:
-      case 'Instructor':
-        void import("@/pages/dashboard/instructor/InstructorDashboard.tsx")
-        break
-      case Role.Aprendiz:
-      case 'Apprentice':
-      case 'Aprendiz':
-        void import("@/pages/dashboard/apprentice/ApprenticeDashboard.tsx")
-        break
-      default:
-        // Prefetch mínimos para rutas públicas
-        void import("@/pages/landing/index")
-        void import("@/pages/auth/login/index.tsx")
-        break
-    }
-  } catch {
-    // Ignorar fallos de prefetch en entornos sin soporte dinámico
-  }
-}
+import { prefetchRoleRoutes } from "@/app/providers/auth/prefetchRoutes"
 
 // Persistencia ligera de usuario autenticado (sin tokens) en sessionStorage (se borra al cerrar el navegador)
 const LS_AUTH_USER_KEY = 'auth:user'
@@ -147,6 +116,7 @@ const persistUser = (u: User | null) => {
       ssRemove(LS_AUTH_RECENT_TS)
       ssRemove(AUTH_SESSION_ACTIVE_KEY)
       invalidateUserCache()
+      markAuthGateUnauthenticated()
       return
     }
     const payload = { user: u, ts: Date.now() }
@@ -156,12 +126,13 @@ const persistUser = (u: User | null) => {
     ssSet(AUTH_SESSION_ACTIVE_KEY, '1')
     // También cachear por 1 hora
     setCachedUser(u)
+    markAuthGateReady()
   } catch { /* noop */ }
 }
 
 const readPersistedUser = (): User | null => {
   try {
-    const parsed = safeJsonParse<{ user?: User; ts?: number }>(ssGet(LS_AUTH_USER_KEY))
+    const parsed = safeJsonParse<{ user?: User; data?: User; ts?: number }>(ssGet(LS_AUTH_USER_KEY))
     if (!parsed) return null
     const ts = Number(parsed?.ts || 0)
     if (!ts || (Date.now() - ts) > LS_AUTH_TTL) {
@@ -169,7 +140,7 @@ const readPersistedUser = (): User | null => {
       ssRemove(LS_AUTH_USER_KEY)
       return null
     }
-    return parsed?.user || null
+    return parsed?.user || parsed?.data || null
   } catch {
     return null
   }
@@ -324,13 +295,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (status === 401) {
           // No cerrar sesión de forma agresiva si existe un usuario persistido (p.ej., cookies no disponibles temporalmente o desajuste de origen)
           const persisted = readPersistedUser()
-          if (persisted) {
+          if (persisted && opts?.background) {
             if (isDevelopment()) {
-              console.warn('[Auth] 401 en /auth/me, manteniendo estado persistido y revalidando en background.')
+              console.warn('[Auth] 401 en /auth/me en background. Intentando refrescar token antes de cerrar sesión.')
             }
-            // Mantener estado actual; el interceptor intentará refresh si procede y se revalidará en próximos intentos
-            // Opcional: notificar a otras pestañas del fallo suave
-            clearAuthState()
+            try {
+              await refreshToken()
+              const retryProfile = await getUserProfile({ forceRefresh: true })
+              const retryUser = (retryProfile as any)?.user ?? (retryProfile as any)?.data?.user
+              if (retryUser) {
+                const backendRole = retryUser.role
+                const canonRole = normalizeRole(backendRole) || (typeof backendRole === "string" ? backendRole : null)
+                const normalizedUser = { ...retryUser, role: canonRole } as User
+                setUser(normalizedUser)
+                setRole(canonRole)
+                setName(normalizedUser.fullname)
+                setIsAuthenticated(true)
+                persistUser(normalizedUser)
+                clearAutoLoginBlock()
+                prefetchRoleRoutes(canonRole)
+                postBC('me:success', { user: normalizedUser })
+                return
+              }
+            } catch (refreshErr) {
+              if (isDevelopment()) {
+                console.warn('[Auth] Falló reintento con refreshToken:', refreshErr)
+              }
+              clearAuthState()
+            }
           } else {
             clearAuthState()
           }
@@ -406,25 +398,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     safeJsonParse(ssGet(DEV_USER_SESSION_KEY)) // limpia sin usar
 
     const isSessionActive = ssGet(AUTH_SESSION_ACTIVE_KEY) === '1'
-    if (!isSessionActive) {
-      clearAuthState()
-      setLoading(false)
-      return
-    }
-
     const persisted = readPersistedUser()
-    if (persisted) {
+    const hasPotentialCookie = typeof document !== 'undefined' && (
+      document.cookie.includes('csrf_access_token') ||
+      document.cookie.includes('csrf_refresh_token') ||
+      document.cookie.includes('access_token')
+    )
+
+    if (isSessionActive && persisted) {
       setUser(persisted)
       setRole(persisted.role)
       setName(persisted.fullname)
       setIsAuthenticated(true)
       setLoading(false) // evitar pantalla de carga si tenemos datos locales
       prefetchRoleRoutes(persisted.role)
-      // Revalidar en background para actualizar o limpiar si expiró sesión
-      checkAuthStatus({ background: true, force: true })
-    } else {
-      // Sin datos locales: llamar /auth/me para validar sesión basada en cookie HttpOnly si existe
+      markAuthGateReady()
+      // Revalidar en background respetando el caché de 1h para no saturar /auth/me
+      checkAuthStatus({ background: true, force: false })
+      return
+    }
+
+    if (!isAutoLoginBlocked() && (isSessionActive || hasPotentialCookie || persisted)) {
       checkAuthStatus()
+    } else {
+      clearAuthState()
+      setLoading(false)
     }
     return () => {
       if (meAbortRef.current) {
@@ -575,7 +573,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [clearAuthState, navigate])
 
   // Login inmediato y redirección a rutas existentes según rol
-  const login = useCallback((userData?: User, _token?: string) => {
+  const login = useCallback((userData?: User, _token?: string, destination?: string) => {
     // Establecer estado inmediatamente con los datos proporcionados
     if (userData) {
       // Normalizar rol; si el backend retorna un rol desconocido (p. ej. "guest"), no lo forzamos a un rol válido
@@ -587,6 +585,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsAuthenticated(true)
       persistUser(normalized)
       clearAutoLoginBlock()
+      markAuthGateReady()
 
       // Elegir destino por rol usando rutas que existen en AppRoutes.
       // Los roles de la finca aterrizan en Animales: es la vista de arranque
@@ -602,8 +601,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       // Prefetch oportunista antes de navegar (no bloquea)
       prefetchRoleRoutes(normalized.role)
-      const dest = roleToPath[normalized.role as Role]
-      if (dest) navigate(dest)
+      const defaultDest = roleToPath[normalized.role as Role] || '/admin/animals'
+      const dest = (destination && destination !== '/' && destination !== '/login') ? destination : defaultDest
+      navigate(dest)
     } else {
       clearAuthState()
       navigate('/')
@@ -627,9 +627,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       [Role.Propietario]: '/admin/animals',
       [Role.Capataz]: '/admin/animals',
       [Role.Instructor]: '/instructor/dashboard',
-      [Role.Veterinario]: '/instructor/dashboard',
+      [Role.Veterinario]: '/veterinario/dashboard',
       [Role.Aprendiz]: '/apprentice/dashboard',
-      [Role.Operario]: '/apprentice/dashboard',
+      [Role.Operario]: '/operario/dashboard',
     }
     const nextPath = roleToPath[newUser.role as Role] || '/admin/animals'
     navigate(nextPath, { replace: true })

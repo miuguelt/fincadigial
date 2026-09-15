@@ -109,7 +109,7 @@ export default function HeatAlertsWidget({ onRegisterHeat }: HeatAlertsWidgetPro
                     <div className="min-w-0">
                       <p
                         onClick={() => setSelectedAnimalId(alert.animal_id)}
-                        className="font-bold text-sm text-foreground hover:text-primary hover:underline cursor-pointer truncate"
+                        className="font-bold text-sm text-foreground hover:text-primary hover:underline cursor-pointer fit-clamp"
                       >
                         {alert.record}
                       </p>

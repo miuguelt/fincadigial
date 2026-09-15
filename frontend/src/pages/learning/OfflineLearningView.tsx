@@ -23,6 +23,7 @@ import { useOnlineStatus } from '@/shared/hooks/useOnlineStatus';
 import { MaterialUploadDialog } from './components/MaterialUploadDialog';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { cacheLearningMaterial, isLearningMaterialCached } from './learningCache';
+import { CampesinoViewShell } from '@/widgets/layout/CampesinoViewShell';
 
 const getCategory = (material: OfflineLearningMaterial) => material.category || 'General';
 
@@ -165,40 +166,28 @@ export default function OfflineLearningView() {
   };
 
   return (
-    <main className="min-h-full bg-background px-3 py-4 sm:px-6 sm:py-6">
-      <div className="mx-auto w-full max-w-6xl space-y-4 sm:space-y-6">
-        <section className="rounded-2xl bg-emerald-950 p-4 text-white shadow-sm sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 text-emerald-200">
-                <IconBook className="h-5 w-5 shrink-0" aria-hidden={true} />
-                <span className="text-xs font-bold uppercase tracking-wide">Aprendizaje práctico</span>
-              </div>
-              <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl">Aprender sin conexión</h1>
-              <p className="mt-2 text-sm leading-relaxed text-emerald-100 sm:text-base">
-                Guarde guías y materiales cuando tenga Wi‑Fi para consultarlos después en la finca.
-              </p>
-            </div>
-            {isAdmin && (
-              <Button
-                variant="secondary"
-                className="min-h-11 w-full shrink-0 border-0 bg-white text-emerald-950 hover:bg-emerald-50 sm:w-auto"
-                onClick={() => setIsUploadOpen(true)}
-              >
-                <IconPlus size="sm" aria-hidden={true} />
-                Subir material
-              </Button>
-            )}
-          </div>
-
-          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold text-emerald-100" aria-live="polite">
-            <span className="inline-flex items-center gap-1.5">
-              {isOnline ? <IconWifi className="h-4 w-4" aria-hidden={true} /> : <IconWifiOff className="h-4 w-4" aria-hidden={true} />}
-              {isOnline ? 'Con señal: puede guardar materiales' : 'Sin señal: abra lo que ya guardó'}
-            </span>
-            <span>{Object.values(cachedMap).filter(Boolean).length} guardado{Object.values(cachedMap).filter(Boolean).length === 1 ? '' : 's'}</span>
-          </div>
-        </section>
+    <CampesinoViewShell
+      title="Aprender sin conexión"
+      description="Guarda guías y materiales cuando tengas Wi‑Fi para consultarlos después en la finca."
+      icon={<IconBook className="h-5 w-5 text-white" aria-hidden={true} />}
+      actions={isAdmin ? (
+        <Button
+          variant="secondary"
+          className="min-h-11 w-full shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
+          onClick={() => setIsUploadOpen(true)}
+        >
+          <IconPlus size="sm" aria-hidden={true} />
+          Subir material
+        </Button>
+      ) : undefined}
+    >
+      <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold text-muted-foreground" aria-live="polite">
+        <span className="inline-flex items-center gap-1.5">
+          {isOnline ? <IconWifi className="h-4 w-4" aria-hidden={true} /> : <IconWifiOff className="h-4 w-4" aria-hidden={true} />}
+          {isOnline ? 'Con señal: puede guardar materiales' : 'Sin señal: abra lo que ya guardó'}
+        </span>
+        <span>{Object.values(cachedMap).filter(Boolean).length} guardado{Object.values(cachedMap).filter(Boolean).length === 1 ? '' : 's'}</span>
+      </div>
 
         <MaterialUploadDialog
           isOpen={isUploadOpen}
@@ -325,7 +314,6 @@ export default function OfflineLearningView() {
             )}
           </>
         )}
-      </div>
-    </main>
+    </CampesinoViewShell>
   );
 }

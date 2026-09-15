@@ -8,7 +8,7 @@ import {
 // import { motion } from "framer-motion";
 const SanitaryActivityForm: React.FC = () => {
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-card min-h-screen">
+    <div className="w-full p-6 bg-card min-h-screen">
       {" "}
       {/* Form Header (Digital Replica of Image) */}{" "}
       <div className="border-4 border-slate-900 p-2 mb-8">

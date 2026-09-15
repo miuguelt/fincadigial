@@ -135,6 +135,7 @@ const GrowthPage: React.FC = () => {
   const crudConfig: CRUDConfig<AnimalResponse, any> = {
     entityName: 'Crecimiento de Animal',
     title: 'Análisis de Crecimiento',
+    headerDescription: 'Consulta la evolución de peso y desarrollo por animal',
     searchPlaceholder: 'Buscar por registro...',
     columns: [
       {

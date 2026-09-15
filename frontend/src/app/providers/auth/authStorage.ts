@@ -54,7 +54,7 @@ export function readPersistedUser(): any | null {
 			sessionStorage.removeItem(LS_AUTH_USER_KEY);
 			return null;
 		}
-		return parsed.data;
+		return parsed.user ?? parsed.data ?? parsed;
 	} catch {
 		return null;
 	}
@@ -118,7 +118,7 @@ export function getUserCache(): any | null {
 			sessionStorage.removeItem(LS_USER_CACHE_KEY);
 			return null;
 		}
-		return parsed.data;
+		return parsed.user ?? parsed.data ?? parsed;
 	} catch {
 		return null;
 	}

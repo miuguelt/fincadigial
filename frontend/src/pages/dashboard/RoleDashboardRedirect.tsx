@@ -5,11 +5,11 @@ import { useAuth } from '@/features/auth/model/useAuth';
 import { Role } from '@/entities/user/model/types';
 
 const roleDestinations: Record<string, string> = {
-  // Vista de arranque: la gestión del ganado (Animales) precede al panel,
-  // para que el primer clic del campesino sea registrar su ganado o revisarlo.
-  Administrador: '/admin/animals',
-  Propietario: '/admin/animals',
-  Capataz: '/admin/animals',
+  // El destino inicial debe ser el resumen que corresponde al rol. Desde
+  // allí cada persona puede saltar a registrar animales o atender pendientes.
+  Administrador: '/admin/dashboard',
+  Propietario: '/admin/dashboard',
+  Capataz: '/admin/dashboard',
   Instructor: '/instructor/dashboard',
   Veterinario: '/veterinario/dashboard',
   Aprendiz: '/apprentice/dashboard',

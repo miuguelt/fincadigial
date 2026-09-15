@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { getPdfEngine } from '@/shared/utils/pdfExport';
 import { ModalWrapper } from '@/widgets/registro-operativo/modals/ModalWrapper';
 import { animalsService } from '@/entities/animal/api/animal.service';
 import { treatmentsService } from '@/entities/treatment/api/treatments.service';
@@ -201,8 +200,9 @@ export const GSMIAssistantModal: React.FC<GSMIAssistantModalProps> = ({
     showToast(`📋 ${selectedAnimals.length} chapetas copiadas al portapapeles`, 'success');
   };
 
-  const handleGeneratePDF = () => {
+  const handleGeneratePDF = async () => {
     try {
+      const { jsPDF, autoTable } = await getPdfEngine();
       const doc = new jsPDF() as any;
       doc.setFillColor(22, 101, 52);
       doc.rect(0, 0, 210, 32, 'F');

@@ -75,12 +75,13 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
         >
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors h-4 w-4" />
           <Input
+            type="search"
             placeholder={searchPlaceholder || 'Buscar...'}
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
             className={cn(
-              "pl-9 w-full h-10 text-sm rounded-xl border-border/50 bg-background/50 focus:bg-background transition-all shadow-sm",
-              searchQuery && "pr-8"
+              "pl-9 w-full h-11 text-sm rounded-xl border-border/50 bg-background/50 focus:bg-background transition-all shadow-sm",
+              searchQuery && "pr-11"
             )}
             aria-label="Buscar registros"
             data-tour="entity-search"
@@ -91,7 +92,7 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
             <button
               type="button"
               onClick={handleClear}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="absolute right-0 top-0 flex h-11 w-11 items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               aria-label="Limpiar búsqueda"
             >
               <X className="h-3.5 w-3.5" />
@@ -107,7 +108,7 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
               size="sm"
               onClick={onToggleFullScreen}
               className={cn(
-                "h-10 px-3 rounded-xl border-border/60 font-semibold text-xs gap-1.5 transition-all shadow-sm",
+                "h-11 min-h-[44px] px-3 rounded-xl border-border/60 font-semibold text-xs gap-1.5 transition-all shadow-sm",
                 isFullScreen
                   ? "bg-primary text-primary-foreground hover:bg-primary/90 border-primary"
                   : "bg-background/80 text-foreground hover:bg-muted"
@@ -131,7 +132,7 @@ export const CRUDToolbar = memo<CRUDToolbarProps>(({
 
           {onOpenCreate && (
             <Button size="sm"
-              className="h-11 w-11 sm:h-10 sm:w-auto min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:px-4 rounded-xl shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20 transition-all"
+              className="h-11 w-11 sm:w-auto min-h-[44px] min-w-[44px] sm:px-4 rounded-xl shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20 transition-all"
               onClick={onOpenCreate}
               disabled={saving}
               aria-label={createLabel}

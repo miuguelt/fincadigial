@@ -105,6 +105,7 @@ const renderSpeciesDetail = (item: SpeciesResponse & { [k: string]: any }) => {
 // Configuración CRUD
 const crudConfig = {
   title: 'Especies',
+  headerDescription: 'Define las especies que hacen parte del inventario ganadero',
   entityName: 'Especie',
   columns,
   formSections,

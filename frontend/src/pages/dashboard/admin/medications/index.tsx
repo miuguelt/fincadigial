@@ -169,6 +169,7 @@ function AdminMedicationsPage() {
   // Configuración CRUD
   const crudConfig: CRUDConfig<MedicationResponse & { [k: string]: any }, MedicationInput> = {
     title: 'Medicamentos',
+    headerDescription: 'Administra el catálogo de medicamentos para la atención veterinaria',
     entityName: 'Medicamento',
     columns,
     formSections,

@@ -40,7 +40,7 @@ const filterToolGroups = (groups: ToolGroup[], searchTerm: string): ToolGroup[] 
     tools: group.tools.filter((tool) => (
       tool.title.toLowerCase().includes(term)
       || tool.description.toLowerCase().includes(term)
-      || tool.emoji.includes(term)
+      || (tool.emoji ? tool.emoji.includes(term) : false)
     )),
   })).filter((group) => group.tools.length > 0);
 };

@@ -113,6 +113,7 @@ function AdminTreatmentMedicationsPage() {
 
   const crudConfig: CRUDConfig<TreatmentMedicationResponse & { [k: string]: any }, TreatmentMedicationInput & { [k: string]: any }> = {
     title: 'Medicamentos de Tratamiento',
+    headerDescription: 'Relaciona medicamentos, dosis y tratamientos aplicados',
     entityName: 'Medicamento de tratamiento',
     columns,
     formSections,

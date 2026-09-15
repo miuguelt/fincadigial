@@ -66,7 +66,7 @@ export const ZootecnicToolsDropdown: React.FC<ZootecnicToolsDropdownProps> = ({
           {tool.icon}
           <span>{tool.shortLabel || tool.label}</span>
           {tool.badge && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold ml-0.5">
+            <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold ml-0.5">
               {tool.badge}
             </span>
           )}
@@ -112,14 +112,14 @@ export const ZootecnicToolsDropdown: React.FC<ZootecnicToolsDropdownProps> = ({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-1.5">
-                    <span className="text-xs font-bold text-foreground truncate">
+                    <span className="text-xs font-bold text-foreground fit-clamp">
                       {tool.label}
                     </span>
                     {tool.badge && (
                       <Badge
                         variant={tool.badgeVariant || 'outline'}
                         size="sm"
-                        className="text-[10px] px-1.5 py-0 font-bold"
+                        className="text-[11px] px-1.5 py-0 font-bold"
                       >
                         {tool.badge}
                       </Badge>

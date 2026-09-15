@@ -1,5 +1,4 @@
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+import { getPdfEngine } from "@/shared/utils/pdfExport";
 import { devLogger } from "@/shared/utils/devLogger";
 import type { UnifiedRecord } from "../types";
 
@@ -64,7 +63,7 @@ export const exportGanaderiaToCSV = (
 	showToast("Reporte CSV descargado con éxito", "success");
 };
 
-export const exportGanaderiaToPDF = (
+export const exportGanaderiaToPDF = async (
 	filteredRecords: UnifiedRecord[],
 	stats: Stats,
 	showToast: (msg: string, type: "success" | "error" | "warning") => void,
@@ -75,6 +74,7 @@ export const exportGanaderiaToPDF = (
 		return;
 	}
 
+	const { jsPDF, autoTable } = await getPdfEngine();
 	const doc = new jsPDF({
 		orientation: "portrait",
 		unit: "mm",

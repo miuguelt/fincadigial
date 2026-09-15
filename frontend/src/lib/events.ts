@@ -210,6 +210,9 @@ const createEventSource = () => {
   }
 
   if (isConnecting) return source;
+  if (source && (source.readyState === EventSource.OPEN || source.readyState === EventSource.CONNECTING)) {
+    return source;
+  }
 
   // Don't attempt connection if rate limited
   if (isRateLimited && Date.now() < rateLimitExpiry) {

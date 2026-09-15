@@ -12,6 +12,7 @@ import { Loader } from "@/shared/ui/Loader";
 import { normalizeRole } from "@/features/auth/api/auth.service";
 import { subscribeSSE } from "@/lib/events";
 import { useNotifications } from "@/shared/hooks/useNotifications";
+import { prefetchRouteByPath } from "@/app/providers/auth/prefetchRoutes";
 
 const getRolePrefix = (r: string): string => {
   switch (r) {
@@ -332,6 +333,8 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                     key={category.title}
                     to={fullPath}
                     onClick={handleItemClick}
+                    onMouseEnter={() => prefetchRouteByPath(fullPath)}
+                    onTouchStart={() => prefetchRouteByPath(fullPath)}
                     className={cn(
                       "flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors border group min-h-[44px]",
                       isActive
@@ -464,6 +467,8 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                                         key={`${category.title}-${child.title}-${subChild.title}-${subChild.path}`}
                                         to={subPath}
                                         onClick={handleItemClick}
+                                        onMouseEnter={() => prefetchRouteByPath(subPath)}
+                                        onTouchStart={() => prefetchRouteByPath(subPath)}
                                         aria-current={isSubActive ? "page" : undefined}
                                         className={cn(
                                           "flex items-center py-2 px-3 rounded-lg transition-colors duration-200 group relative min-h-[44px]",
@@ -499,6 +504,8 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                             to={fullPath}
                             onClick={handleItemClick}
                             data-tour={`menu-item-${child.title}`}
+                            onMouseEnter={() => prefetchRouteByPath(fullPath)}
+                            onTouchStart={() => prefetchRouteByPath(fullPath)}
                             aria-current={isActive ? "page" : undefined}
                             className={cn(
                               "flex items-center py-2 px-3 rounded-lg transition-colors duration-200 group relative min-h-[44px]",
@@ -571,7 +578,9 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                             key={child.title}
                             to={fullPath}
                             onClick={handleItemClick}
-                             className={cn(
+                            onMouseEnter={() => prefetchRouteByPath(fullPath)}
+                            onTouchStart={() => prefetchRouteByPath(fullPath)}
+                            className={cn(
                               "flex items-center py-2 px-3 rounded-lg text-sm transition-colors min-h-[44px] group",
                               isActive ? "bg-primary/10 text-primary font-bold" : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
                              )}

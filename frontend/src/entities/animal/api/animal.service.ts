@@ -276,7 +276,7 @@ class AnimalsService extends BaseService<AnimalResponse> {
     // Solo se activa el flujo de reclamación cuando el usuario lo solicita o
     // aporta el código privado. El CRUD tradicional conserva su contrato para
     // instalaciones antiguas y para el modo offline.
-    if (Boolean((data as any)?.request_history || (data as any)?.claim_code || (data as any)?.official_code)) {
+    if ((data as any)?.request_history || (data as any)?.claim_code || (data as any)?.official_code) {
       const result = await animalTransferService.registerOrClaim(payload);
       if (result.registration_status === 'CREATED_LOCAL' && result.animal) {
         return { ...result.animal, identity: result.identity, registration_status: result.registration_status };

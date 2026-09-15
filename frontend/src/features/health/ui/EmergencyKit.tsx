@@ -61,7 +61,7 @@ export const EmergencyKit: React.FC = () => {
       {/* Header de Emergencia */}{" "}
       <header className="sticky top-0 z-50 bg-destructive text-white p-4 shadow-sm">
         {" "}
-        <div className="flex items-center gap-4 max-w-lg mx-auto">
+        <div className="flex w-full items-center gap-4">
           {" "}
           <Button
             variant="ghost"
@@ -92,7 +92,7 @@ export const EmergencyKit: React.FC = () => {
           </div>{" "}
         </div>{" "}
       </header>{" "}
-      <main className="p-4 max-w-lg mx-auto space-y-6 mt-4">
+      <main className="w-full p-4 space-y-6 mt-4">
         {" "}
         <AnimatePresence mode="wait">
           {" "}

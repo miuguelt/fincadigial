@@ -14,6 +14,9 @@ interface MenuItem {
 export default function NavBar() {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [activeSection, setActiveSection] = useState<string>("");
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== "undefined" && window.matchMedia("(min-width: 640px)").matches
+  );
   const navigate = useNavigate();
 
   const auth = useContext(AuthContext);
@@ -30,6 +33,14 @@ export default function NavBar() {
   const dashboardRoute = isAuthenticated && authReady
     ? preferredDashboardRoute || '/dashboard'
     : null;
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 640px)");
+    const handleMediaChange = () => setIsDesktop(mediaQuery.matches);
+    handleMediaChange();
+    mediaQuery.addEventListener("change", handleMediaChange);
+    return () => mediaQuery.removeEventListener("change", handleMediaChange);
+  }, []);
 
   const handleGoToPanel = () => {
     if (isAuthenticated && dashboardRoute) {
@@ -119,10 +130,10 @@ export default function NavBar() {
         </div>
 
         {/* Desktop auth actions */}
-        <div className="hidden sm:flex items-center gap-2">
+        {isDesktop && <div className="hidden sm:flex items-center gap-2">
           {!isAuthenticated ? (
             <Button
-              className="bg-success text-success-foreground font-semibold"
+              className="bg-success-700 text-white font-semibold hover:bg-success-800 focus:outline-2 focus:outline-offset-2 focus:outline-primary focus:ring-2 focus:ring-primary focus:ring-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               onClick={() => navigate("/login")}
               aria-label="Iniciar sesión"
             >
@@ -130,19 +141,20 @@ export default function NavBar() {
             </Button>
           ) : (
             <Button
-              className="bg-destructive text-destructive-foreground font-semibold"
+              className="bg-destructive text-destructive-foreground font-semibold focus:outline-2 focus:outline-offset-2 focus:outline-primary focus:ring-2 focus:ring-primary focus:ring-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               onClick={auth?.logout}
               aria-label="Cerrar sesión"
             >
               <LogOut className="h-4 w-4" />
             </Button>
           )}
-        </div>
+        </div>}
 
         {/* Mobile toggle */}
-        <button
-          className="sm:hidden inline-flex items-center justify-center rounded-md p-2 text-foreground hover:bg-ghost-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+        {!isDesktop && <button
+          className="sm:hidden inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md p-2 text-foreground hover:bg-ghost-primary focus:outline-2 focus:outline-offset-2 focus:outline-primary focus:ring-2 focus:ring-primary focus:ring-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
+          type="button"
           onClick={() => setIsMenuOpen((v) => !v)}
         >
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,7 +164,7 @@ export default function NavBar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             )}
           </svg>
-        </button>
+        </button>}
       </div>
 
       {/* Mobile menu */}
@@ -184,7 +196,7 @@ export default function NavBar() {
           )}
           {!isAuthenticated ? (
             <Button
-              className="w-full bg-success text-success-foreground font-semibold"
+              className="w-full bg-success-700 text-white font-semibold hover:bg-success-800"
               onClick={() => {
                 setIsMenuOpen(false);
                 navigate('/login');

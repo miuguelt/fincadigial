@@ -34,3 +34,5 @@ export * from "./toaster";
 export * from "./tooltip";
 export * from "./switch";
 export * from "./SuggestionChips";
+export * from "./KPICard";
+export * from "./SectionHeader";

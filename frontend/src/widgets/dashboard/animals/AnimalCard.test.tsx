@@ -97,4 +97,28 @@ describe('AnimalCard', () => {
     fireEvent.click(fatherButton);
     expect(onFatherClick).toHaveBeenCalledWith(10);
   });
+
+  it('conserva etiquetas completas y una acción táctil de 44 px', () => {
+    const longField = 'Potrero de reproducción central';
+    const longBreed = 'Tilapia negra nilótica';
+    render(
+      <AnimalCard
+        animal={{ ...mockAnimal, current_field_name: longField } as any}
+        breedLabel={longBreed}
+        fatherLabel="N/A"
+        motherLabel="N/A"
+      />
+    );
+
+    const fieldLabel = screen.getByText(longField);
+    const breed = screen.getByText(longBreed);
+    const detailAction = screen
+      .getAllByRole('button', { name: 'Abrir ficha de Lola-001' })
+      .find((element) => element.tagName === 'BUTTON');
+
+    expect(fieldLabel.className).not.toContain('fit-clamp');
+    expect(breed.className).not.toContain('fit-clamp');
+    expect(detailAction).toBeDefined();
+    expect(detailAction?.className).toContain('h-11');
+  });
 });

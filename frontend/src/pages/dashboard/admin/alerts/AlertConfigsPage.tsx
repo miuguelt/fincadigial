@@ -11,6 +11,7 @@ import { useToast } from '@/app/providers/ToastContext';
 const AlertConfigsPage: React.FC = () => {
   const { showToast } = useToast();
   const [refreshKey, setRefreshKey] = useState(0);
+
   const columns: CRUDColumn<AlertConfig>[] = [
     {
       key: 'alert_type',
@@ -69,11 +70,11 @@ const AlertConfigsPage: React.FC = () => {
           type: 'select',
           required: true,
           options: [
-            { value: 'Salud', label: '🩺 Salud / Sanidad' },
-            { value: 'Crecimiento', label: '📈 Crecimiento / Peso' },
-            { value: 'Producción', label: '🥛 Producción / Leche' },
-            { value: 'Reproducción', label: '🧬 Reproducción' },
-            { value: 'Personalizada', label: '⚙️ Personalizada' }
+            { value: 'Salud', label: 'Salud / Sanidad' },
+            { value: 'Crecimiento', label: 'Crecimiento / Peso' },
+            { value: 'Producción', label: 'Producción / Leche' },
+            { value: 'Reproducción', label: 'Reproducción' },
+            { value: 'Personalizada', label: 'Personalizada' }
           ]
         },
         {
@@ -127,6 +128,7 @@ const AlertConfigsPage: React.FC = () => {
 
   const config: CRUDConfig<AlertConfig> = {
     title: 'Configuración de Alertas Personalizadas',
+    headerDescription: 'Define avisos para anticipar riesgos y tareas pendientes',
     entityName: 'Regla de Alerta',
     columns,
     formSections,
@@ -166,7 +168,7 @@ const AlertConfigsPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8 space-y-6 animate-fade-in">
+    <div className="w-full px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8 space-y-6 animate-fade-in">
       <div className="bg-warning/5 border border-amber-200 p-4 rounded-lg flex items-start gap-3">
         <AlertTriangle className="h-5 w-5 text-warning mt-1" />
         <div className="flex-1">

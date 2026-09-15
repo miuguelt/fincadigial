@@ -1,5 +1,4 @@
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+import { getPdfEngine } from "@/shared/utils/pdfExport";
 
 interface AnimalReportData {
   id: number;
@@ -55,9 +54,10 @@ export const animalReportService = {
   /**
    * Genera y descarga un reporte PDF premium optimizado para el campesino / operador.
    */
-  exportToPDF(animals: AnimalReportData[], breedOptions: Option[]) {
+  async exportToPDF(animals: AnimalReportData[], breedOptions: Option[]) {
     if (!animals || animals.length === 0) return;
 
+    const { jsPDF, autoTable } = await getPdfEngine();
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",

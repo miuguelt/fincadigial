@@ -75,7 +75,7 @@ export const JoinFincaPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-muted/50 /50">
       {" "}
-      <div className="p-6 sm:p-10 space-y-12 max-w-7xl mx-auto pb-32">
+      <div className="w-full p-6 sm:p-10 space-y-12 pb-32">
         {" "}
         {/* HEADER CRYSTAL */}
         <header className="relative flex flex-col md:flex-row items-center justify-between gap-6 py-8 px-6 sm:px-8 rounded-[2rem] bg-surface-raised border border-border shadow-sm overflow-hidden h-auto md:h-[120px]">

@@ -85,6 +85,7 @@ case 'error': return <Badge variant="destructive" className="flex gap-1"><IconAl
   const config: CRUDConfig<ActivityLog, any> = {
     entityName: 'Actividad',
     title: 'Bitácora de Operaciones',
+    headerDescription: 'Consulta trazabilidad, cambios y acciones realizadas en la finca',
     searchPlaceholder: 'Buscar registros...',
     columns,
     formSections: [], // Read-only

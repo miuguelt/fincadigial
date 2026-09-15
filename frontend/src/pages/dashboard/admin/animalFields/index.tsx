@@ -137,6 +137,7 @@ function AdminAnimalFieldsPage() {
 
   const crudConfig: CRUDConfig<AnimalFieldResponse & { [k: string]: any }, AnimalFieldInput & { [k: string]: any }> = {
     title: 'Asignación de Animales a Potreros',
+    headerDescription: 'Relaciona animales con potreros y consulta su ocupación',
     entityName: 'Asignación de animal',
     columns,
     formSections,

@@ -13,7 +13,6 @@ import { FieldDetailsModal } from '@/widgets/analytics/FieldDetailsModal';
 import { FoodTypeLink } from '@/entities/food-type/ui';
 import { MapPin, PawPrint, Map as MapIcon, Activity, LayoutDashboard, Info, Scale, Sprout, Clock } from 'lucide-react';
 import KPICard from '@/widgets/analytics/KPICard';
-import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
 import { cn } from '@/shared/ui/cn';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { Card, CardContent, CardFooter } from '@/shared/ui/card';
@@ -216,7 +215,7 @@ const PotreroCard: React.FC<PotreroCardProps> = ({
 
   if (actual > 0) {
     restStatus = {
-      label: `En pastoreo (${actual} cab)`,
+      label: 'En pastoreo',
       badge: 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20',
       icon: PawPrint,
     };
@@ -378,6 +377,93 @@ const PotreroCard: React.FC<PotreroCardProps> = ({
     </Card>
   );
 };
+const FieldsStatusHeading: React.FC = () => (
+  <div className="flex min-w-0 items-center gap-3">
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-success-500 to-success-600 shadow-lg shadow-success-500/20">
+      <MapIcon className="h-5 w-5 text-white" />
+    </div>
+    <div className="min-w-0">
+      <h1 className="fit-clamp text-lg font-black tracking-tight text-foreground">
+        Estado de <span className="text-success-500">los potreros</span>
+      </h1>
+      <p className="fit-clamp text-xs font-medium text-muted-foreground">
+        Revisa capacidad, ocupación y disponibilidad actuales
+      </p>
+    </div>
+  </div>
+);
+
+const FieldsCapacityNotes: React.FC<{
+  overCapacityCount: number;
+  hasEstimatedCapacity: boolean;
+  compact?: boolean;
+}> = ({ overCapacityCount, hasEstimatedCapacity, compact = false }) => {
+  if (overCapacityCount === 0 && !hasEstimatedCapacity) return null;
+
+  return (
+    <div className={cn(
+      'flex flex-wrap gap-2 font-semibold text-muted-foreground',
+      compact ? 'border-t border-border/30 pt-2.5 text-[11px]' : 'text-xs',
+    )}>
+      {overCapacityCount > 0 && (
+        <span className={cn(
+          'rounded-full border border-rose-300/70 bg-rose-50 text-rose-800 dark:border-rose-800/70 dark:bg-rose-950/30 dark:text-rose-200',
+          compact ? 'px-2.5 py-1' : 'px-3 py-1.5',
+        )}>
+          {overCapacityCount} {overCapacityCount === 1 ? 'potrero requiere' : 'potreros requieren'} atención por sobrecarga
+        </span>
+      )}
+      {hasEstimatedCapacity && (
+        <span className={cn(
+          'rounded-full border border-border/60 bg-background/50',
+          compact ? 'px-2.5 py-1' : 'px-3 py-1.5',
+        )}>
+          Capacidad estimada cuando falta el dato del potrero
+        </span>
+      )}
+    </div>
+  );
+};
+
+const FieldsMetrics: React.FC<{
+  totalFields: number;
+  totalAnimals: number;
+  averageOccupation: number;
+  availableSpots: number;
+  compact?: boolean;
+}> = ({ totalFields, totalAnimals, averageOccupation, availableSpots, compact = false }) => {
+  if (compact) {
+    const compactKpis = [
+      { label: 'Potreros visibles', value: totalFields },
+      { label: 'Animales ubicados', value: totalAnimals },
+      { label: 'Ocupación promedio', value: `${averageOccupation}%` },
+      { label: 'Espacios disponibles', value: availableSpots },
+    ];
+
+    return (
+      <div className="grid w-full grid-cols-1 gap-x-5 gap-y-2 min-[460px]:grid-cols-2 sm:flex sm:w-auto sm:flex-wrap sm:items-baseline sm:gap-x-5 sm:gap-y-2">
+        {compactKpis.map((kpi) => (
+          <div key={kpi.label} className="flex min-w-0 items-baseline gap-1.5 whitespace-nowrap">
+            <span className="fit-clamp text-[11px] font-black uppercase tracking-wider text-muted-foreground/70">
+              {kpi.label}
+            </span>
+            <span className="text-sm font-black tabular-nums text-foreground">{kpi.value}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+      <KPICard compact title="Potreros Visibles" value={totalFields} icon="🌿" />
+      <KPICard compact title="Animales Ubicados" value={totalAnimals} icon="🐄" />
+      <KPICard compact title="Ocupación Promedio" value={`${averageOccupation}%`} icon="📈" />
+      <KPICard compact title="Espacios Disponibles" value={availableSpots} icon="✅" />
+    </div>
+  );
+};
+
 // ─── Componente PremiumHeader ────────────────────────────────────────────────
 const PremiumFieldsHeader: React.FC<{
   items: Array<FieldResponse & { [k: string]: any }>;
@@ -434,51 +520,47 @@ const PremiumFieldsHeader: React.FC<{
       distribution,
       totalFields: validFields.length,
       overCapacityCount: distribution.filter(d => d.overCapacity).length,
+      hasEstimatedCapacity: distribution.some(d => d.isEstimated),
     };
   }, [items]);
 
   if (compact) {
     return (
-      <div className="mb-2 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-2xl border border-border/50 bg-card/40 px-4 py-2.5 backdrop-blur-xl">
-        <div className="flex items-center gap-2.5 mr-auto">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-success-500 to-success-600 shadow-md shadow-success-500/20">
-            <MapIcon className="h-4 w-4 text-white" />
-          </div>
-          <h1 className="text-base font-black tracking-tight text-foreground whitespace-nowrap">
-            Gestión de <span className="text-success-500">Potreros</span>
-          </h1>
+      <section
+        aria-label="Indicadores de la vista"
+        className="mb-2 rounded-2xl border border-border/50 bg-card/40 px-4 py-3 backdrop-blur-xl"
+      >
+        <FieldsMetrics
+          totalFields={metrics.totalFields}
+          totalAnimals={metrics.totalAnimals}
+          averageOccupation={metrics.averageOccupation}
+          availableSpots={metrics.availableSpots}
+          compact
+        />
+        <div className="mt-3">
+          <FieldsCapacityNotes
+            overCapacityCount={metrics.overCapacityCount}
+            hasEstimatedCapacity={metrics.hasEstimatedCapacity}
+            compact
+          />
         </div>
-        {[
-          { label: 'Potreros', value: metrics.totalFields },
-          { label: 'Capacidad', value: metrics.totalCapacity },
-          { label: 'Animales', value: metrics.totalAnimals },
-          { label: 'Ocupación', value: `${metrics.averageOccupation}%` },
-          { label: 'Disponibles', value: metrics.availableSpots },
-        ].map((kpi) => (
-          <div key={kpi.label} className="flex items-baseline gap-1.5 whitespace-nowrap">
-            <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground/70">{kpi.label}</span>
-            <span className="text-sm font-black tabular-nums text-foreground">{kpi.value}</span>
-          </div>
-        ))}
-      </div>
+      </section>
     );
   }
 
   return (
-    <DataScreenHeader
-      icon={<MapIcon className="h-5 w-5 text-white" />}
-      iconClassName="from-success-500 to-success-600 shadow-success-500/20"
-      title={<>Gestión de <span className="text-success-500">Potreros</span></>}
-      description="Administra y monitorea la ocupación de tus campos (Offline-Ready)"
-      metrics={
-        <>
-          <KPICard compact title="Capacidad Total" value={metrics.totalCapacity} icon="📊" />
-          <KPICard compact title="Animales Ubicados" value={metrics.totalAnimals} icon="🐄" />
-          <KPICard compact title="Ocupación Promedio" value={`${metrics.averageOccupation}%`} icon="📈" />
-          <KPICard compact title="Espacios Disponibles" value={metrics.availableSpots} icon="✅" />
-        </>
-      }
-    />
+    <section aria-label="Indicadores de la vista" className="mb-3 space-y-2.5">
+      <FieldsMetrics
+        totalFields={metrics.totalFields}
+        totalAnimals={metrics.totalAnimals}
+        averageOccupation={metrics.averageOccupation}
+        availableSpots={metrics.availableSpots}
+      />
+      <FieldsCapacityNotes
+        overCapacityCount={metrics.overCapacityCount}
+        hasEstimatedCapacity={metrics.hasEstimatedCapacity}
+      />
+    </section>
   );
 };
 
@@ -539,53 +621,84 @@ const FieldsViewSwitcher: React.FC<FieldsViewSwitcherProps> = ({
       : []),
   ], [onOpenAforo, onOpenRestModal]);
 
+  const highlightedTools = potreroTools.filter((tool) => tool.highlight);
+  const secondaryTools = potreroTools.filter((tool) => !tool.highlight);
+
   return (
     <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 w-full">
       {/* Selector de vistas */}
-      <div className="flex items-center gap-1 bg-card/60 p-0.5 rounded-xl border border-border/50 shrink-0 shadow-2xs">
+      <div
+        className="flex items-center gap-1 rounded-xl border border-border/50 bg-card/60 p-0.5 shadow-2xs shrink-0"
+        role="tablist"
+        aria-label="Cambiar vista de potreros"
+      >
         <Button
           variant={!isRotationView && viewMode === 'table' ? 'primary' : 'ghost'}
           size="sm"
-          className="h-8 px-3 text-xs font-bold"
+          className="h-10 min-h-[42px] px-3 text-xs font-bold"
           onClick={() => goToCrudView('table')}
           aria-label="Vista en tabla"
+          aria-selected={!isRotationView && viewMode === 'table'}
+          role="tab"
         >
           Tabla
         </Button>
         <Button
           variant={!isRotationView && viewMode === 'cards' ? 'primary' : 'ghost'}
           size="sm"
-          className="h-8 px-3 text-xs font-bold"
+          className="h-10 min-h-[42px] px-3 text-xs font-bold"
           onClick={() => goToCrudView('cards')}
           aria-label="Vista en tarjetas"
+          aria-selected={!isRotationView && viewMode === 'cards'}
+          role="tab"
         >
           Tarjetas
         </Button>
         <Button
           variant={isRotationView ? 'primary' : 'ghost'}
           size="sm"
-          className="h-8 gap-1.5 px-3 text-xs font-bold"
+          className="h-10 min-h-[42px] gap-1.5 px-3 text-xs font-bold"
           onClick={() => {
             const params = new URLSearchParams(searchParams);
             params.set('view', 'rotation');
             navigate(`?${params.toString()}`);
           }}
-          aria-label="Vista Rotación"
+          aria-label="Vista de rotación"
+          aria-selected={isRotationView}
+          role="tab"
         >
           <LayoutDashboard size={14} />
           Rotación
         </Button>
       </div>
 
-      {/* Herramientas zootécnicas para el campo */}
+      {/* Acciones frecuentes visibles; las secundarias quedan en un único menú. */}
       {potreroTools.length > 0 && (
-        <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
-          <ZootecnicToolsDropdown
-            tools={potreroTools}
-            label="Herramientas"
-            align="end"
-            showHighlightedDirectly={true}
-          />
+        <div
+          className="flex min-w-0 flex-wrap items-center justify-end gap-1.5 self-end sm:self-auto"
+          role="group"
+          aria-label="Acciones de campo"
+        >
+          {highlightedTools.map((tool) => (
+            <Button
+              key={tool.id}
+              variant="outline"
+              size="sm"
+              onClick={tool.onClick}
+              className="h-10 min-h-[42px] gap-1.5 rounded-xl border-border/60 px-3 text-xs font-bold shadow-2xs hover:bg-muted/80"
+              title={tool.description || tool.label}
+            >
+              {tool.icon}
+              <span>{tool.shortLabel || tool.label}</span>
+            </Button>
+          ))}
+          {secondaryTools.length > 0 && (
+            <ZootecnicToolsDropdown
+              tools={secondaryTools}
+              label="Más herramientas"
+              align="end"
+            />
+          )}
         </div>
       )}
     </div>
@@ -766,12 +879,14 @@ function FieldsCrudPage({ viewSwitcher, onOpenAforo }: FieldsCrudPageProps) {
 
   const crudConfig: CRUDConfig<FieldResponse & { [k: string]: any }, FieldFormInput> = {
     title: 'Potreros',
+    hideTitle: true,
+    headerLeading: <FieldsStatusHeading />,
     entityName: 'Campo',
     columns,
     formSections: [],
-    searchPlaceholder: 'Buscar Potreros...',
+    searchPlaceholder: 'Buscar por nombre o ubicación',
     emptyStateMessage: 'No hay potreros creados',
-    emptyStateDescription: 'Dibuje los potreros de su finca para organizar el ganado.',
+    emptyStateDescription: 'Crea el primer potrero para registrar su capacidad, ubicación y manejo.',
     emptyStateIcon: 'IconMap2',
     enableDetailModal: false,
     enableCreateModal: !isCampesino,
@@ -1033,4 +1148,3 @@ function AdminFieldsPage() {
 }
 
 export default AdminFieldsPage;
-

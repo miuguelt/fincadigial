@@ -53,6 +53,7 @@ export function useInventoryCrudConfig({
 		() => ({
 			entityName: "Lote de Insumo",
 			title: "Inventario de Insumos y Medicamentos",
+			headerDescription: "Controla existencias, lotes, vencimientos y reposiciones",
 			searchPlaceholder: "Buscar por lote o proveedor, insumo o notas...",
 			// Sin modal de edición — los lotes no se editan directamente, se crean movimientos para auditoría
 			enableEditModal: false,

@@ -1,12 +1,22 @@
-import { motion } from "framer-motion";
 import {
+	AlertCircle,
 	AlertTriangle,
-	CheckCircle,
+	CalendarCheck2,
+	CheckCircle2,
 	ChevronRight,
-	XCircle,
+	ClipboardList,
+	CloudSun,
+	Headset,
+	Milk,
+	Stethoscope,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAnalytics } from "@/features/reporting/model/useAnalytics";
+import { Card, CardHeader, CardContent, CardFooter } from "@/shared/ui/card";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { getStatusBadgeClass } from "@/shared/utils/badgeStyles";
+import { ModuleHeading } from "@/widgets/layout/ModuleHeading";
 
 const actionRoutes: Record<string, string> = {
 	Salud: "/campesino/health",
@@ -20,32 +30,13 @@ const actionRoutes: Record<string, string> = {
 function getPriorityIcon(priority: string) {
 	const p = priority?.toLowerCase();
 	if (p === "crítica")
-		return <XCircle className="w-5 h-5 text-destructive flex-shrink-0" />;
+		return <AlertCircle className="w-4 h-4 text-destructive shrink-0" />;
 	if (p === "alta")
-		return <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0" />;
-	return <CheckCircle className="w-5 h-5 text-warning flex-shrink-0" />;
+		return <AlertTriangle className="w-4 h-4 text-warning shrink-0" />;
+	return <CheckCircle2 className="w-4 h-4 text-info shrink-0" />;
 }
 
-function getPriorityBg(priority: string): string {
-	const p = priority?.toLowerCase();
-	if (p === "crítica")
-		return "border-l-red-500 bg-red-50/50 dark:bg-red-950/20";
-	if (p === "alta")
-		return "border-l-orange-500 bg-orange-50/50 dark:bg-orange-950/20";
-	if (p === "media")
-		return "border-l-yellow-500 bg-yellow-50/50 dark:bg-yellow-950/20";
-	return "border-l-blue-400 bg-blue-50/50 dark:bg-blue-950/20";
-}
-
-/**
- * Una jornada no cabe en cuatro cifras. Pasado el tope se muestra "99+" y el
- * número exacto queda en el `title`: un contador de 3.506 no dice qué hacer
- * hoy, sólo enseña a ignorar la sección.
- */
 const ALERT_BADGE_CAP = 99;
-
-/** Por encima de este atraso la lista deja de ser una jornada y hay que decirlo. */
-const BACKLOG_THRESHOLD = 20;
 
 function alertBadge(count: number): string {
 	return count > ALERT_BADGE_CAP ? `${ALERT_BADGE_CAP}+` : String(count);
@@ -78,68 +69,60 @@ export const MiJornadaSection: React.FC = () => {
 	const totalUrgent = criticalCount + highCount;
 
 	return (
-		<motion.section
-			initial={{ opacity: 0, y: 10 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ delay: 0.15, duration: 0.4 }}
-			className="rounded-2xl border border-amber-200/70 bg-amber-50/70 p-4 shadow-sm dark:border-amber-800/30 dark:bg-amber-950/20 sm:p-5"
-		>
-			<div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-				<div className="flex items-center gap-3">
-					<div className="bg-amber-100 dark:bg-amber-900/50 p-2 rounded-xl">
-						<span className="text-2xl">🌅</span>
-					</div>
-					<div>
-						<h2 className="text-lg md:text-xl font-black text-foreground tracking-tight">
-							Mi Jornada de Hoy
-						</h2>
-						<p className="text-xs text-muted-foreground">
-							Acciones prioritarias para hoy
-						</p>
-					</div>
-				</div>
+		<Card className="border-border/70 shadow-sm" premium hoverable={false}>
+			<CardHeader className="flex flex-row items-center justify-between pb-3 space-y-0">
+				<ModuleHeading
+					title="Mi Jornada de Hoy"
+					description="Alertas sanitarias y acciones operativas prioritarias para el día"
+					icon={<CalendarCheck2 className="h-5 w-5 text-white" />}
+					headingLevel="h2"
+					titleClassName="text-base sm:text-lg"
+				/>
+
 				{!isLoading && totalUrgent > 0 && (
 					<div className="flex gap-2">
 						{criticalCount > 0 && (
-							<span
-								title={`${formatCount(criticalCount)} alertas críticas acumuladas`}
-								className="px-2.5 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs font-bold rounded-full"
+							<Badge
+								title={`${formatCount(criticalCount)} alertas críticas`}
+								className={getStatusBadgeClass('danger')}
 							>
 								{alertBadge(criticalCount)} críticas
-							</span>
+							</Badge>
 						)}
 						{highCount > 0 && (
-							<span
-								title={`${formatCount(highCount)} alertas altas acumuladas`}
-								className="px-2.5 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-bold rounded-full"
+							<Badge
+								title={`${formatCount(highCount)} alertas altas`}
+								className={getStatusBadgeClass('warning')}
 							>
 								{alertBadge(highCount)} altas
-							</span>
+							</Badge>
 						)}
 					</div>
 				)}
-			</div>
+			</CardHeader>
 
-			<div className="space-y-2">
+			<CardContent className="pt-2 space-y-2">
 				{isLoading ? (
 					<div className="space-y-2">
 						{[1, 2, 3].map((i) => (
 							<div
 								key={i}
-								className="h-14 bg-muted/30 rounded-xl animate-pulse"
+								className="h-14 bg-muted/40 rounded-xl animate-pulse"
 							/>
 						))}
 					</div>
 				) : topAlerts.length === 0 ? (
 					<div className="text-center py-8">
-						<p className="text-4xl mb-2">✅</p>
-						<p className="font-bold text-foreground">¡Todo en orden hoy!</p>
-						<p className="text-sm text-muted-foreground mt-1">
-							No hay acciones urgentes pendientes.
+						<div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-success/10 text-success">
+							<CheckCircle2 className="h-6 w-6" />
+						</div>
+						<p className="font-bold text-foreground">Sin novedades urgentes</p>
+						<p className="text-sm text-muted-foreground mt-0.5">
+							El ganado se encuentra al día en los controles sanitarios prioritarios.
 						</p>
 					</div>
 				) : (
-					<>
+					<div className="space-y-2">
 						{topAlerts.map((alert: any, idx: number) => (
 							<button
 								type="button"
@@ -147,64 +130,76 @@ export const MiJornadaSection: React.FC = () => {
 								onClick={() =>
 									navigate(actionRoutes[alert.type] || "/campesino/ganaderia")
 								}
-								className={`flex min-h-14 w-full items-center gap-3 rounded-xl border-l-4 px-3 py-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-md sm:px-4 ${getPriorityBg(alert.priority)}`}
+								className="flex min-h-14 w-full items-center gap-3 rounded-xl border border-border/70 bg-background/60 px-4 py-3 text-left transition-all hover:border-primary/50 hover:bg-muted/30 focus-visible:ring-2 focus-visible:ring-primary shadow-2xs"
 							>
 								{getPriorityIcon(alert.priority)}
 								<div className="flex-1 min-w-0">
-									<p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-										{alert.type} · {alert.animal_record || "Finca"}
-									</p>
+									<div className="flex items-center gap-2">
+										<span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+											{alert.type} · {alert.animal_record || "Finca"}
+										</span>
+										{alert.priority && (
+											<Badge
+															className={`text-[11px] px-1.5 py-0 ${
+													alert.priority.toLowerCase() === 'crítica'
+														? getStatusBadgeClass('danger')
+														: getStatusBadgeClass('warning')
+												}`}
+											>
+												{alert.priority}
+											</Badge>
+										)}
+									</div>
 									<p className="text-sm font-medium text-foreground fit-clamp mt-0.5">
 										{alert.message}
 									</p>
 								</div>
-								<ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0 opacity-60" />
+								<ChevronRight className="w-4 h-4 text-muted-foreground/70 shrink-0" />
 							</button>
 						))}
 
-						{/* El atraso no se esconde, pero tampoco se disfraza de plan del
-						    día: se nombra como lo que es y se dice por dónde empezar. */}
-						{totalUrgent > BACKLOG_THRESHOLD && (
-							<p className="px-1 pt-1 text-xs text-muted-foreground">
-								Hay {formatCount(totalUrgent)} alertas acumuladas, más de las que caben en un
-								día. Empieza por las críticas de arriba.
-							</p>
-						)}
-
 						{totalUrgent > topAlerts.length && (
-							<button
-								type="button"
-								onClick={() => navigate("/campesino/health")}
-								className="min-h-11 w-full rounded-xl py-2 text-center text-sm font-semibold text-primary transition-colors hover:bg-primary/5"
-							>
-								Ver todas las alertas →
-							</button>
+							<div className="flex items-center justify-between pt-2 px-1">
+								<p className="text-xs text-muted-foreground">
+									{formatCount(totalUrgent)} alertas registradas en el sistema. Mostrando las acciones prioritarias.
+								</p>
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={() => navigate("/campesino/health")}
+									className="text-xs text-primary font-bold hover:underline"
+								>
+									Ver todas las alertas →
+								</Button>
+							</div>
 						)}
-					</>
+					</div>
 				)}
-			</div>
+			</CardContent>
 
-			<div className="mt-4 flex flex-wrap gap-2 border-t border-amber-200/50 pt-4 dark:border-amber-800/30">
+			<CardFooter className="flex flex-wrap gap-2 border-t border-border/60 pt-3 pb-3">
 				{[
-					{
-						label: "🥛 Ordeño",
-						path: "/campesino/registro-operativo?modal=milk",
-					},
-					{ label: "⚕️ Salud", path: "/campesino/health" },
-					{ label: "🌤️ Clima", path: "/campesino/weather" },
-					{ label: "📋 Registro diario", path: "/campesino/registro-operativo" },
-					{ label: "🧑‍🌾 Ayuda técnica", path: "/campesino/technical-assistance" },
-				].map((link) => (
-					<button
-						type="button"
-						key={link.path}
-						onClick={() => navigate(link.path)}
-						className="min-h-10 rounded-lg border border-amber-200/50 bg-white/60 px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-amber-100/50 dark:border-amber-800/30 dark:bg-black/20 dark:hover:bg-amber-900/20"
-					>
-						{link.label}
-					</button>
-				))}
-			</div>
-		</motion.section>
+					{ label: "Ordeño", icon: Milk, path: "/campesino/registro-operativo?modal=milk" },
+					{ label: "Salud Animal", icon: Stethoscope, path: "/campesino/health" },
+					{ label: "Estación Clima", icon: CloudSun, path: "/campesino/weather" },
+					{ label: "Registro Diario", icon: ClipboardList, path: "/campesino/registro-operativo" },
+					{ label: "Asistencia Técnica", icon: Headset, path: "/campesino/technical-assistance" },
+				].map((link) => {
+					const Icon = link.icon;
+					return (
+						<Button
+							key={link.path}
+							variant="secondary"
+							size="sm"
+							onClick={() => navigate(link.path)}
+							className="gap-1.5 text-xs rounded-lg"
+						>
+							<Icon className="w-3.5 h-3.5 text-muted-foreground" />
+							<span>{link.label}</span>
+						</Button>
+					);
+				})}
+			</CardFooter>
+		</Card>
 	);
 };

@@ -13,7 +13,7 @@ export interface SmartFiltersToolbarProps {
 }
 
 const chipBase =
-  'h-9 shrink-0 snap-start rounded-full border px-3 text-xs font-semibold gap-1.5 transition-all duration-200 active:scale-95 whitespace-nowrap shadow-none';
+  'h-11 min-h-[44px] shrink-0 snap-start rounded-full border px-3 text-xs font-semibold gap-1.5 transition-all duration-200 active:scale-95 whitespace-nowrap shadow-none';
 
 export function SmartFiltersToolbar({
   activeFilters: propActiveFilters,
@@ -158,7 +158,7 @@ export function SmartFiltersToolbar({
             aria-haspopup="dialog"
             aria-expanded={sheetOpen}
             className={cn(
-              'h-9 flex-1 justify-between rounded-xl border-border/60 bg-card/60 px-3 text-xs font-bold shadow-sm',
+              'h-11 min-h-[44px] flex-1 justify-between rounded-xl border-border/60 bg-card/60 px-3 text-xs font-bold shadow-sm',
               hasActive && 'border-primary/50'
             )}
           >
@@ -180,7 +180,7 @@ export function SmartFiltersToolbar({
               variant="ghost"
               size="sm"
               onClick={clearFilters}
-              className="h-9 shrink-0 rounded-xl px-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/60"
+              className="h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 rounded-xl p-0 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/60"
               title="Quitar todos los filtros"
               aria-label="Quitar todos los filtros"
             >
@@ -288,7 +288,7 @@ export function SmartFiltersToolbar({
                   variant="ghost"
                   size="sm"
                   onClick={clearFilters}
-                  className="h-10 shrink-0 rounded-xl px-3 text-xs font-bold text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                  className="h-11 min-h-[44px] shrink-0 rounded-xl px-3 text-xs font-bold text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
                   Limpiar todo
@@ -296,7 +296,7 @@ export function SmartFiltersToolbar({
               )}
               <Button
                 size="sm"
-                className="h-10 flex-1 rounded-xl text-xs font-bold"
+                className="h-11 min-h-[44px] flex-1 rounded-xl text-xs font-bold"
                 onClick={() => setSheetOpen(false)}
               >
                 {hasActive ? (

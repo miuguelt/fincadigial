@@ -3,6 +3,7 @@ import flask
 from flask_jwt_extended import jwt_required
 from datetime import datetime, UTC
 import logging
+import re
 
 from app.models.system_content import SystemContent
 from app.utils.response_handler import APIResponse
@@ -14,6 +15,12 @@ ai_ns = Namespace(
     description="🤖 Analytics - Insights del sistema (desde BD)",
     path="/analytics/ai-insights",
 )
+
+
+def _display_insight_content(raw_content) -> str:
+    """Quita una marca interna que no pertenece al contenido del usuario."""
+    content = str(raw_content or "").strip()
+    return re.sub(r"\s+db$", "", content, flags=re.IGNORECASE)
 
 
 @ai_ns.route("")
@@ -55,7 +62,7 @@ class AIInsights(Resource):
             if entry:
                 return APIResponse.success(
                     {
-                        "insight": entry.content,
+                        "insight": _display_insight_content(entry.content),
                         "model": "db",
                         "generated_at": datetime.now(UTC).isoformat(),
                         "title": entry.title,

@@ -44,7 +44,7 @@ describe('CRUDToolbar: ubicación del slot personalizado', () => {
   it('con "expandableSearch" la búsqueda arranca compacta y crece al enfocarse', () => {
     render(<CRUDToolbar {...baseProps} expandableSearch />)
 
-    const search = screen.getByRole('textbox', { name: /buscar/i })
+    const search = screen.getByRole('searchbox', { name: /buscar/i })
     const wrapper = search.parentElement as HTMLElement
 
     expect(wrapper.className).toContain('sm:w-52')
@@ -55,9 +55,22 @@ describe('CRUDToolbar: ubicación del slot personalizado', () => {
   it('sin "expandableSearch" la búsqueda ocupa el espacio libre', () => {
     render(<CRUDToolbar {...baseProps} />)
 
-    const search = screen.getByRole('textbox', { name: /buscar/i })
+    const search = screen.getByRole('searchbox', { name: /buscar/i })
     const wrapper = search.parentElement as HTMLElement
 
     expect(wrapper.className).toContain('flex-1')
+  })
+
+  it('ofrece búsqueda móvil y creación con objetivos táctiles de 44 px', () => {
+    render(<CRUDToolbar {...baseProps} />)
+
+    const search = screen.getByRole('searchbox', { name: /buscar/i })
+    const create = screen.getByRole('button', { name: /crear/i })
+
+    expect(search).toHaveAttribute('type', 'search')
+    expect(search.className).toContain('h-11')
+    expect(create.className).toContain('h-11')
+    expect(create.className).not.toContain('sm:h-10')
+    expect(create.className).not.toContain('sm:min-h-0')
   })
 })

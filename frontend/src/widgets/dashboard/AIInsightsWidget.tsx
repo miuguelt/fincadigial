@@ -129,7 +129,7 @@ export function AIInsightsWidget() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-700">
               <IconRobot size="md" />
             </div>
-            Asistente IA Ganadero
+            Recomendación técnica
           </CardTitle>
 
           <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center lg:w-auto">
@@ -206,14 +206,6 @@ export function AIInsightsWidget() {
 
             {/* Metadatos */}
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge
-                variant="default"
-                className="text-[11px] gap-1 bg-primary/80"
-              >
-                <IconRobot size="sm" />
-                {data.model}
-              </Badge>
-
               {data.cached && (
                 <Badge
                   variant="outline"
@@ -224,11 +216,6 @@ export function AIInsightsWidget() {
                 </Badge>
               )}
 
-              {data.usage?.output_tokens && (
-                <span className="text-[11px] text-muted-foreground ml-auto">
-                  {data.usage.output_tokens} tokens
-                </span>
-              )}
             </div>
           </div>
         )}

@@ -15,6 +15,7 @@ import {
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { cn } from '@/shared/lib/utils';
 import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
 import type { KpiCardSummary } from '@/features/dashboard/model/useCompleteDashboardStats';
 import KPICard from '@/widgets/analytics/KPICard';
 import SectionHeading from './SectionHeading';
@@ -45,7 +46,7 @@ const KPI_ICONS: Record<string, React.ReactNode> = {
 
 const renderKpi = (card: KpiCardSummary) => {
   const unit = card.unidad || undefined;
-  const value = typeof card.valor === 'number' && unit === '%' ? card.valor.toFixed(1) : card.valor;
+  const value = typeof card.valor === 'number' && unit === '%' ? card.valor.toFixed(1) : (card.valor ?? '—');
 
   return (
     <KPICard
@@ -64,8 +65,9 @@ const renderKpi = (card: KpiCardSummary) => {
 export interface HerdHealthSectionProps {
   cards: KpiCardSummary[];
   ventanaDias?: number;
-  trend: Array<{ name: string; value: number }>;
+  trend: Array<{ name: string; value: number | null }>;
   onOpenAnalytics: () => void;
+  onRegisterControls?: () => void;
 }
 
 /**
@@ -73,7 +75,7 @@ export interface HerdHealthSectionProps {
  * curva de salud del último mes. Los indicadores secundarios quedan plegados
  * para no saturar la vista de entrada.
  */
-export function HerdHealthSection({ cards, ventanaDias, trend, onOpenAnalytics }: HerdHealthSectionProps) {
+export function HerdHealthSection({ cards, ventanaDias, trend, onOpenAnalytics, onRegisterControls }: HerdHealthSectionProps) {
   const [showMore, setShowMore] = useState(false);
 
   const { primary, secondary } = useMemo(() => {
@@ -87,12 +89,17 @@ export function HerdHealthSection({ cards, ventanaDias, trend, onOpenAnalytics }
     };
   }, [cards]);
 
+  const evidencedTrend = useMemo(
+    () => trend.filter((point): point is { name: string; value: number } => typeof point.value === 'number' && Number.isFinite(point.value)),
+    [trend],
+  );
+
   const trendChange = useMemo(() => {
-    if (trend.length < 2) return null;
-    const first = trend[0]?.value ?? 0;
-    const last = trend[trend.length - 1]?.value ?? 0;
+    if (evidencedTrend.length < 2) return null;
+    const first = evidencedTrend[0].value;
+    const last = evidencedTrend[evidencedTrend.length - 1].value;
     return Math.round((last - first) * 10) / 10;
-  }, [trend]);
+  }, [evidencedTrend]);
 
   if (!primary.length && !secondary.length && !trend.length) return null;
 
@@ -119,7 +126,9 @@ export function HerdHealthSection({ cards, ventanaDias, trend, onOpenAnalytics }
           <div className="mb-2 flex items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-bold text-foreground">Tendencia del índice de salud</h3>
-              <p className="text-xs text-muted-foreground">Evolución de los últimos 30 días</p>
+              <p className="text-xs text-muted-foreground">
+                {ventanaDias ? `Evolución de los últimos ${ventanaDias} días` : 'Evolución del periodo registrado'}
+              </p>
             </div>
             {trendChange !== null && (
               <Badge
@@ -136,38 +145,53 @@ export function HerdHealthSection({ cards, ventanaDias, trend, onOpenAnalytics }
               </Badge>
             )}
           </div>
-          <div className="h-[200px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trend} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="herdHealthTrend" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={11} stroke="var(--muted-foreground)" />
-                <YAxis tickLine={false} axisLine={false} fontSize={11} width={40} stroke="var(--muted-foreground)" />
-                <Tooltip
-                  contentStyle={{
-                    background: 'var(--card)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '0.5rem',
-                    fontSize: '12px',
-                  }}
-                  formatter={(value: number) => [`${value}`, 'Índice de salud']}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  stroke="var(--primary)"
-                  strokeWidth={2.5}
-                  fillOpacity={1}
-                  fill="url(#herdHealthTrend)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+          {evidencedTrend.length >= 2 ? (
+            <div className="h-[200px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={evidencedTrend} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="herdHealthTrend" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                  <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={11} stroke="var(--muted-foreground)" />
+                  <YAxis tickLine={false} axisLine={false} fontSize={11} width={40} stroke="var(--muted-foreground)" />
+                  <Tooltip
+                    contentStyle={{
+                      background: 'var(--card)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '0.5rem',
+                      fontSize: '12px',
+                    }}
+                    formatter={(value: number) => [`${value}`, 'Índice de salud']}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke="var(--primary)"
+                    strokeWidth={2.5}
+                    fillOpacity={1}
+                    fill="url(#herdHealthTrend)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="flex min-h-[160px] flex-col items-center justify-center gap-2 rounded-lg bg-muted/25 px-4 py-6 text-center">
+              <ClipboardCheck className="h-7 w-7 text-muted-foreground/60" aria-hidden="true" />
+              <p className="text-sm font-semibold text-foreground">
+                Aún no hay controles suficientes para mostrar una tendencia.
+              </p>
+              <p className="max-w-md text-xs text-muted-foreground">
+                Registra controles para comenzar a comparar la salud del ganado por semana.
+              </p>
+              <Button type="button" variant="outline" size="sm" onClick={onRegisterControls ?? onOpenAnalytics} className="mt-1 h-9">
+                Registra controles
+              </Button>
+            </div>
+          )}
         </div>
       )}
 

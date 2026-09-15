@@ -1,6 +1,5 @@
-import React, { useMemo } from 'react';
-import { Menu, Plus } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Menu } from 'lucide-react';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { cn } from '@/shared/ui/cn';
 import { SyncStatus } from '@/widgets/dashboard/SyncStatus';
@@ -16,25 +15,9 @@ interface HeaderProps {
   onToggleSidebar?: () => void;
 }
 
-const NEW_ACTION_BY_SECTION: Array<[string, string]> = [
-  ['/animals', '+ Registrar Animal'],
-  ['/fields', '+ Agregar Potrero'],
-  ['/tasks', '+ Crear Tarea'],
-];
-
 const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar }) => {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
   const hasFinca = !!user?.finca_id;
-
-  // Botón "Nuevo" contextual según la sección abierta.
-  const contextualNewAction = useMemo(() => {
-    const path = location.pathname;
-    const match = NEW_ACTION_BY_SECTION.find(([section]) => path.includes(section));
-    if (!match) return null;
-    return { label: match[1], action: () => navigate(`${path}?create=true`) };
-  }, [location.pathname, navigate]);
 
   return (
     <header
@@ -68,17 +51,6 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar }) => {
         {hasFinca && <HeaderSearch />}
 
         <div className="ml-auto flex flex-shrink-0 items-center gap-1">
-          {contextualNewAction && (
-            <button
-              type="button"
-              onClick={contextualNewAction.action}
-              className="mr-1 hidden h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 active:scale-95 xl:inline-flex"
-            >
-              <Plus size={16} />
-              {contextualNewAction.label}
-            </button>
-          )}
-
           {hasFinca && (
             <>
               <div className="mr-2 hidden xl:block">
@@ -92,7 +64,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar }) => {
           <div className="mx-1 h-5 w-[1px] bg-border" />
 
           {/* Finca Activa: selector visible permanentemente */}
-          <div className="hidden sm:block mr-1">
+          <div className="mr-0.5 sm:mr-1">
             <FincaSelector />
           </div>
 

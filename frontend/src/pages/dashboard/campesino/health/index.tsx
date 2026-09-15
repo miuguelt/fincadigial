@@ -20,6 +20,7 @@ import { AnimalLink } from '@/entities/animal/ui';
 import { HealthInterventionWizard } from '@/widgets/dashboard/treatments/HealthInterventionWizard';
 import { Button } from '@/shared/ui/button';
 import { useToast } from '@/app/providers/ToastContext';
+import { CampesinoViewShell } from '@/widgets/layout/CampesinoViewShell';
 
 type HealthAction = {
   label: string;
@@ -148,24 +149,17 @@ const CampesinoHealthDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-full bg-background px-4 py-5 sm:px-6 sm:py-7">
-      <div className="mx-auto max-w-5xl space-y-6">
-        <header className="flex flex-col gap-4 border-b border-border pb-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="mb-1 text-sm font-semibold text-primary">Mi finca / Salud animal</p>
-            <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground sm:text-3xl">
-              <HeartPulse className="h-7 w-7 text-primary" aria-hidden="true" />
-              Salud animal
-            </h1>
-            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-              Registre lo que observó o hizo. Los detalles técnicos pueden completarse después.
-            </p>
-          </div>
-          <Button type="button" variant="outline" onClick={loadData} loading={loading}>
-            <RefreshCw className="h-4 w-4" aria-hidden="true" />
-            Actualizar
-          </Button>
-        </header>
+    <CampesinoViewShell
+      title="Salud animal"
+      description="Registra lo que observaste o hiciste. Los detalles técnicos pueden completarse después."
+      icon={<HeartPulse className="h-5 w-5 text-white" aria-hidden="true" />}
+      actions={(
+        <Button type="button" variant="outline" onClick={loadData} loading={loading} className="h-11 w-full rounded-xl sm:w-auto">
+          <RefreshCw className="h-4 w-4" aria-hidden="true" />
+          Actualizar
+        </Button>
+      )}
+    >
 
         <section aria-labelledby="health-actions-title">
           <div className="mb-3 flex items-end justify-between gap-3">
@@ -303,14 +297,12 @@ const CampesinoHealthDashboard: React.FC = () => {
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
-      </div>
-
       <HealthInterventionWizard
         isOpen={isWizardOpen}
         onClose={() => setIsWizardOpen(false)}
         onSuccess={loadData}
       />
-    </div>
+    </CampesinoViewShell>
   );
 };
 

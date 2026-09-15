@@ -57,7 +57,7 @@ export const RationCalculator: React.FC = () => {
       {/* Header Compacto */}{" "}
       <header className="sticky top-0 z-50 bg-card/80 dark:bg-black/80 backdrop-blur-xl border-b border-border/40 p-4">
         {" "}
-        <div className="flex items-center gap-4 max-w-lg mx-auto">
+        <div className="flex w-full items-center gap-4">
           {" "}
           <Button
             variant="ghost"
@@ -86,7 +86,7 @@ export const RationCalculator: React.FC = () => {
           </div>{" "}
         </div>{" "}
       </header>{" "}
-      <main className="p-4 max-w-lg mx-auto space-y-6 mt-4">
+      <main className="w-full p-4 space-y-6 mt-4">
         {" "}
         {/* Selector de Modo */}{" "}
         <div className="flex gap-2 p-1 bg-muted/50 rounded-lg border border-border">

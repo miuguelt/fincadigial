@@ -9,8 +9,7 @@ import {
 } from 'lucide-react';
 import { unwrapApi } from '@/shared/api/client';
 import { apiFetch } from '@/shared/api/apiFetch';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { getPdfEngine } from '@/shared/utils/pdfExport';
 import {
   ResponsiveContainer,
   PieChart,
@@ -114,13 +113,14 @@ const CustomReports: React.FC<CustomReportsProps> = ({ embedded = false }) => {
     URL.revokeObjectURL(url);
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     if (!generateReport.data) return;
     const report = (generateReport.data as any).report || {};
     const summary = report.summary || {};
     const details = report.details || {};
     const metadata = (generateReport.data as any).metadata || {};
 
+    const { jsPDF, autoTable } = await getPdfEngine();
     const doc = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',

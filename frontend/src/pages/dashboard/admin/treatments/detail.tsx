@@ -78,7 +78,7 @@ export default function TreatmentDetailPage() {
   );
 
   return (
-    <AppLayout header={header} className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6">
+    <AppLayout header={header} className="w-full p-4 sm:p-6 space-y-6">
       <div className="bg-card/90 backdrop-blur-md rounded-2xl border border-border/60 p-5 sm:p-7 shadow-xl">
         <TreatmentDetailModalContent treatment={treatment} animal={animal} />
       </div>

@@ -171,6 +171,7 @@ export const SanidadTreatmentsView: React.FC<SanidadTreatmentsViewProps> = ({
 
   const crudConfig: CRUDConfig<TreatmentRow, any> = {
     title: 'Tratamientos',
+    headerDescription: 'Aplicación, retiros e inversión de la atención sanitaria',
     entityName: 'Tratamiento',
     mobileTitleColumn: 'diagnosis',
     mobileHighlightColumn: 'animal_id',

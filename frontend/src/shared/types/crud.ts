@@ -88,6 +88,10 @@ export interface CRUDFormSection<T = any> {
 
 export interface CRUDConfig<T = any, TInput = any> {
   title: string;
+  /** Descripción breve que acompaña al título en la fila superior del CRUD. */
+  headerDescription?: string;
+  /** Oculta el título compacto cuando `customHeader` aporta el encabezado principal. */
+  hideTitle?: boolean;
   entityName: string;
   /** Entidad RBAC; si se omite se resuelve desde `entityName`. */
   permissionEntity?: string;
@@ -107,6 +111,8 @@ export interface CRUDConfig<T = any, TInput = any> {
   /** Consulta el endpoint genérico de dependencias antes de eliminar. */
   checkDependencies?: boolean;
   customHeader?: ReactNode;
+  /** Encabezado contextual que se alinea con el buscador de la página. */
+  headerLeading?: ReactNode;
   customToolbar?: ReactNode;
   /**
    * Dónde se pinta `customToolbar`: `inline` (por defecto) junto al botón de

@@ -211,6 +211,7 @@ function AdminVaccinationsPage() {
 
   const crudConfig: CRUDConfig<VaccinationResponse & { [k: string]: any }, VaccinationInput & { [k: string]: any }> = {
     title: 'Vacunaciones',
+    headerDescription: 'Consulta el historial y cumplimiento de vacunación por animal',
     entityName: 'Vacunación',
     columns,
     formSections,

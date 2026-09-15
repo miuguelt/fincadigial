@@ -78,7 +78,7 @@ const LandingPage = () => {
       <section id="caracteristicas" className="bg-card py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <p className="text-success font-semibold uppercase tracking-wide">Plataforma integral</p>
+            <p className="text-success-700 dark:text-success-300 font-semibold uppercase tracking-wide">Plataforma integral</p>
             <h2 className="text-3xl font-bold text-foreground mt-2">Todo lo que necesitas para administrar la finca</h2>
             <p className="mt-4 text-muted-foreground max-w-3xl mx-auto">
               Construimos cada módulo a partir de las operaciones reales de Villa Luz. Estos son los beneficios que ya están funcionando en el campo.
@@ -108,7 +108,7 @@ const LandingPage = () => {
               Accede con tu usuario SENA para gestionar animales, tratamientos y reportes.
             </p>
             <Button
-              className="mt-6 w-full bg-card text-success hover:bg-success/5"
+              className="mt-6 w-full bg-card text-success-800 dark:text-success-300 hover:bg-success-50 dark:hover:bg-success-900/30"
               onClick={() => navigate('/login')}
             >
               Ir al inicio de sesión

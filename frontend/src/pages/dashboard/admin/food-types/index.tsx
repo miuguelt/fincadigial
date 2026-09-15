@@ -398,6 +398,7 @@ export const AdminFoodTypesPage: React.FC = () => {
   const crudConfig: CRUDConfig<FoodTypeResponse & { [k: string]: any }, any> = useMemo(
     () => ({
       title: 'Alimentación y Forrajes',
+      headerDescription: 'Catálogo agronómico y seguimiento de la nutrición bovina',
       entityName: 'Tipo de Alimento',
       columns,
       customHeader: <FoodTypesHeader items={currentItems} fields={fields} />,
@@ -445,7 +446,7 @@ export const AdminFoodTypesPage: React.FC = () => {
           gauges: '',
         }}
         filterItems={filterItemsByCategory}
-        onItemsChange={setCurrentItems}
+        onAllItemsChange={setCurrentItems}
         onOpenDetail={handleOpenDetail}
         onOpenCreate={handleOpenCreate}
         realtime={true}

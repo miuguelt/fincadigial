@@ -8,7 +8,7 @@ import {
 	Upload,
 } from "lucide-react";
 import type React from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	type FincaImage,
 	fincaImageService,
@@ -197,24 +197,33 @@ export function FincaImagesManager({
 		if (!isControlled) setInternalOpen(nextOpen);
 	};
 
-	const loadImages = useCallback(async () => {
+	const onImagesChangeRef = useRef(onImagesChange);
+	useEffect(() => {
+		onImagesChangeRef.current = onImagesChange;
+	}, [onImagesChange]);
+
+	const loadImages = useCallback(async (notifyParent = false) => {
 		setLoading(true);
 		setError(null);
 		try {
 			const response = await fincaImageService.getFincaImages(fincaId);
 			if (response?.data?.images) {
 				setImages(response.data.images);
-				onImagesChange?.(response.data.images);
+				if (notifyParent) {
+					onImagesChangeRef.current?.(response.data.images);
+				}
 			}
 		} catch {
 			setError("Error al cargar las imágenes");
 		} finally {
 			setLoading(false);
 		}
-	}, [fincaId, onImagesChange]);
+	}, [fincaId]);
 
 	useEffect(() => {
-		if (fincaId && dialogOpen) loadImages();
+		if (fincaId && dialogOpen) {
+			loadImages(false);
+		}
 	}, [fincaId, dialogOpen, loadImages]);
 
 	const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -232,7 +241,7 @@ export function FincaImagesManager({
 			);
 			if (response.success) {
 				setSuccess(response.message || "Imágenes subidas exitosamente");
-				await loadImages();
+				await loadImages(true);
 			} else {
 				setError(response.message || "Error al subir imágenes");
 			}
@@ -250,7 +259,7 @@ export function FincaImagesManager({
 			await fincaImageService.deleteImage(imageId);
 			setImages((prev) => {
 				const next = prev.filter((img) => img.id !== imageId);
-				onImagesChange?.(next);
+				onImagesChangeRef.current?.(next);
 				return next;
 			});
 		} catch (err: any) {
@@ -263,7 +272,7 @@ export function FincaImagesManager({
 			await fincaImageService.setPrimaryImage(imageId);
 			setImages((prev) => {
 				const next = prev.map((img) => ({ ...img, is_primary: img.id === imageId }));
-				onImagesChange?.(next);
+				onImagesChangeRef.current?.(next);
 				return next;
 			});
 		} catch (err: any) {

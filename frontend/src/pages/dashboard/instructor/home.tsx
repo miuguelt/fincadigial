@@ -27,7 +27,7 @@ const InstructorHome = () => {
   const COLORS = ["#0088FE", "#FF8042", "#00C49F"];
   return (
     <div className="bg-background px-4 pt-0 pb-6 sm:pb-8">
-      <div className="w-full max-w-6xl mx-auto">
+      <div className="w-full">
         <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-8">
           <div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Bienvenido(a), {name}</h1>

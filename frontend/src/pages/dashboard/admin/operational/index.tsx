@@ -117,6 +117,7 @@ const OperationalCostsPage: React.FC = () => {
   const config = {
     entityName: 'Gasto Operativo',
     title: 'Gastos Operativos de la Finca',
+    headerDescription: 'Registra y consulta los gastos asociados a la operación',
     searchPlaceholder: 'Buscar por concepto...',
     columns,
     formSections,

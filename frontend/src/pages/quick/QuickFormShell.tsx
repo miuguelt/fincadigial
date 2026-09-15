@@ -43,7 +43,7 @@ export function QuickFormShell({
             Volver
           </button>
 
-          <div className="flex items-center gap-4 max-w-lg mx-auto">
+          <div className="flex w-full items-center gap-4">
             {Icon && (
               <div className="p-4 rounded-lg bg-card/20 backdrop-blur-md border border-white/20 shadow-sm">
                 <Icon className="w-10 h-10 text-white stroke-[2.5]" />
@@ -67,7 +67,7 @@ export function QuickFormShell({
 
           {/* Cola offline */}
           {totalOperations > 0 && (
-            <div className="mt-6 max-w-lg mx-auto rounded-[var(--radius-md)] bg-black/20 backdrop-blur-md px-5 py-3 text-[11px] font-black text-white/90 border border-white/5 uppercase tracking-widest">
+            <div className="mt-6 w-full rounded-[var(--radius-md)] bg-black/20 backdrop-blur-md px-5 py-3 text-[11px] font-black text-white/90 border border-white/5 uppercase tracking-widest">
               <IconRefresh className="w-3 h-3 inline mr-2 animate-spin" />
               {totalOperations} registros pendientes de envío
             </div>
@@ -76,7 +76,7 @@ export function QuickFormShell({
       )}
 
       {/* ── CUERPO ──────────────────────────────────────────────── */}
-      <main className={`mx-auto max-w-lg px-4 ${isModal ? "pt-6 pb-6" : "-mt-6"}`}>
+      <main className={`w-full px-4 ${isModal ? "pt-6 pb-6" : "-mt-6"}`}>
         {isModal && (
           <div className="flex items-center gap-3 mb-6">
             {Icon && (

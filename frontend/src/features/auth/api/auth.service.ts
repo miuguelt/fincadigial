@@ -1,4 +1,5 @@
 import '@/shared/api/client';
+import { markAuthGateReady, markAuthGateUnauthenticated } from '@/shared/api/client/authGate';
 import { apiFetch } from '@/shared/api/apiFetch';
 import { readStandardErrorPayload } from '@/shared/api/error-parser';
 import { getCookie } from '@/shared/utils/cookieUtils';
@@ -345,6 +346,18 @@ class AuthService {
         }
       }
 
+      if (finalUser) {
+        meCache = {
+          ts: Date.now(),
+          data: {
+            message: normalizedMessage || 'Perfil obtenido',
+            user: finalUser,
+            status: 200,
+          },
+        };
+      }
+      markAuthGateReady();
+
       return {
         access_token: finalAccessToken,
         message: normalizedMessage,
@@ -440,6 +453,8 @@ class AuthService {
     } catch (error) {
       logAuthWarning('clearAuthData:cookie', error);
     }
+    meCache = { ts: 0, data: null };
+    markAuthGateUnauthenticated();
   }
 
   /**

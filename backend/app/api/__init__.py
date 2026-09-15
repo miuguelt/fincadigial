@@ -136,16 +136,19 @@ def register_api(app, limiter=None):
             if not file_path.exists() or not str(file_path).startswith(
                 str(allowed_base)
             ):
-                return flask.jsonify({"error": "No encontrado"}), 404
+                resp = flask.make_response(b"", 404)
+                resp.mimetype = "image/jpeg"
+                return resp
             return flask.send_file(str(file_path))
         except Exception:
-            return flask.jsonify({"error": "Error interno"}), 500
+            resp = flask.make_response(b"", 500)
+            resp.mimetype = "image/jpeg"
+            return resp
 
     # Ruta puente para requests directos a /static/uploads/ reenviados por Nginx
     @app.route("/static/uploads/<path:filename>", methods=["GET"])
     def serve_static_uploads_alias(filename):
         return serve_chat_file(filename)
-
     @api_bp.route("/", methods=["GET", "OPTIONS"])
     def api_root_confirm():
         return APIResponse.success(message="Bienvenido a la API Villa Luz")

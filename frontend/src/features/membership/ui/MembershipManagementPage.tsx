@@ -21,7 +21,7 @@ export const MembershipManagementPage = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 p-4">
+    <div className="w-full space-y-6 p-4">
       <h1 className="text-2xl font-bold">Gestión de Equipo</h1>
 
       <Tabs defaultValue="invite" className="w-full">

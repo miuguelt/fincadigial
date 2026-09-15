@@ -167,6 +167,7 @@ function AdminVaccinesPage() {
 
   const crudConfig: CRUDConfig<VaccineResponse & { [k: string]: any }, VaccineInput & { [k: string]: any }> = {
     title: 'Vacunas',
+    headerDescription: 'Administra el catálogo de vacunas y sus indicaciones',
     entityName: 'Vacuna',
     columns,
     formSections,

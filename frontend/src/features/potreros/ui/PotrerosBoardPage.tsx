@@ -340,7 +340,7 @@ export function PotrerosBoardPage({ viewSwitcher }: PotrerosBoardPageProps) {
 
       {canMove && selectedCount > 0 && (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-border bg-card p-3 shadow-2xl">
-          <div className="mx-auto flex max-w-5xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-base font-bold text-foreground">
               {selectedCount} {selectedCount === 1 ? 'animal elegido' : 'animales elegidos'}
             </p>

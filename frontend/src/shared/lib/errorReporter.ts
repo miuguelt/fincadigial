@@ -54,16 +54,24 @@ export function reportError(
 
 export function initGlobalErrorReporting() {
   window.addEventListener('unhandledrejection', (event) => {
+    if (event.defaultPrevented) return;
     const msg = event.reason?.message || event.reason?.toString() || 'Unhandled Rejection';
     reportError(msg, 'unhandledrejection', {}, event.reason instanceof Error ? event.reason : undefined);
   });
 
   window.addEventListener('error', (event) => {
-    if (event.target && (event.target as HTMLElement).tagName === 'IMG') return;
-    reportError(event.message || 'Script error', 'onerror', {
-      filename: event.filename,
-      lineno: event.lineno,
-      colno: event.colno,
-    });
+    // Ignorar errores de carga de recursos del DOM (img, script, link, etc.)
+    if (event.target && event.target !== window) return;
+    if (!event.message && !event.error) return;
+    reportError(
+      event.message || 'Script error',
+      'onerror',
+      {
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+      },
+      event.error instanceof Error ? event.error : undefined,
+    );
   });
 }

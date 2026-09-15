@@ -274,6 +274,7 @@ const MilkProductionPage = ({ initialTab = 'overview', focusDate = null }: MilkP
   const config = {
     entityName: 'Registro de Leche',
     title: 'Registros de Ordeño',
+    headerDescription: 'Registra producción, calidad y novedades de cada ordeño',
     searchPlaceholder: 'Buscar por animal...',
     columns,
     formSections,

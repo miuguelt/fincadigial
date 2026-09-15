@@ -213,6 +213,7 @@ function AdminTreatmentProtocolsPage() {
     }));
     return {
       title: 'Protocolos de tratamiento',
+      headerDescription: 'Consulta y aplica protocolos veterinarios de la finca',
       entityName: 'Protocolo',
       columns,
       formSections: sections,

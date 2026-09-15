@@ -25,6 +25,7 @@ from collections.abc import Callable
 from app import db
 from app.utils.response_handler import APIResponse
 from app.models.base_model import ValidationError
+from app.services.task_completion_service import TaskCompletionNotAllowed
 from app.utils.activity_logger import log_activity_event, build_relations_from_instance
 from app.utils.rbac import require_permission
 from sqlalchemy import text
@@ -1653,6 +1654,9 @@ def create_optimized_namespace(
                     f"Validation error updating {model_class.__name__} id={record_id}: {ve.message}"
                 )
                 return APIResponse.validation_error(_format_validation_errors(ve))
+            except TaskCompletionNotAllowed as exc:
+                db.session.rollback()
+                return APIResponse.conflict(str(exc))
             except IntegrityError as ie:
                 return _handle_integrity_error(ie, "update", record_id)
             except Exception as e:
@@ -1835,6 +1839,9 @@ def create_optimized_namespace(
                         f"Validation error patching {model_class.__name__} id={record_id}: {ve.message}"
                     )
                     return APIResponse.validation_error(_format_validation_errors(ve))
+                except TaskCompletionNotAllowed as exc:
+                    db.session.rollback()
+                    return APIResponse.conflict(str(exc))
                 except IntegrityError as ie:
                     return _handle_integrity_error(ie, "patch", record_id)
                 except Exception as e:

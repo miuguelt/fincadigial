@@ -15,6 +15,7 @@ import {
 import { cn } from '@/shared/ui/cn';
 import { formatDateColombia, getTodayColombia } from '@/shared/utils/dateUtils';
 import { useToast } from '@/app/providers/ToastContext';
+import { TaskCompletionRecordPanel } from './TaskCompletionRecordPanel';
 
 interface TaskDetailContentProps {
   task: Task;
@@ -39,13 +40,15 @@ export const TaskDetailContent: React.FC<TaskDetailContentProps> = ({
   const handleStatusChange = async (newStatus: Task['status']) => {
     setUpdating(true);
     try {
-      await taskService.updateStatus(task.id, newStatus);
+      const result = await taskService.updateStatus(task.id, newStatus);
       setCurrentStatus(newStatus);
       onStatusChanged?.(newStatus);
       window.dispatchEvent(new CustomEvent('crud:refetch'));
       showToast(
         newStatus === 'Completada'
-          ? '¡Labor completada con éxito en la finca!'
+          ? result?.id
+            ? `¡Labor completada! Se guardó el registro #${result.id}.`
+            : '¡Labor completada con éxito en la finca!'
           : `Estado actualizado a "${newStatus}"`,
         'success'
       );
@@ -155,7 +158,7 @@ export const TaskDetailContent: React.FC<TaskDetailContentProps> = ({
           </div>
           <div className="min-w-0">
             <span className="text-[11px] font-semibold text-muted-foreground uppercase block">Potrero</span>
-            <span className="text-sm font-bold text-foreground truncate block">
+            <span className="text-sm font-bold text-foreground fit-clamp block">
               {fieldName || 'No especificado'}
             </span>
           </div>
@@ -167,7 +170,7 @@ export const TaskDetailContent: React.FC<TaskDetailContentProps> = ({
           </div>
           <div className="min-w-0">
             <span className="text-[11px] font-semibold text-muted-foreground uppercase block">Animal / Lote</span>
-            <span className="text-sm font-bold text-foreground truncate block">
+            <span className="text-sm font-bold text-foreground fit-clamp block">
               {animalName || 'Toda la finca / Sin animal'}
             </span>
           </div>
@@ -179,12 +182,14 @@ export const TaskDetailContent: React.FC<TaskDetailContentProps> = ({
           </div>
           <div className="min-w-0">
             <span className="text-[11px] font-semibold text-muted-foreground uppercase block">Vaquero / Encargado</span>
-            <span className="text-sm font-bold text-foreground truncate block">
+            <span className="text-sm font-bold text-foreground fit-clamp block">
               {assigneeName || 'Sin asignar'}
             </span>
           </div>
         </div>
       </div>
+
+      <TaskCompletionRecordPanel task={{ ...task, status: currentStatus }} usersMap={usersMap} />
 
       {/* Botones de acción rápida */}
       <div className="pt-3 border-t border-border/60 space-y-2">

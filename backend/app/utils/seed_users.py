@@ -26,11 +26,12 @@ def ensure_test_users():
         admin_password = (
             os.getenv("ADMIN_PASSWORD")
             or os.getenv("TEST_USER_PASSWORD")
-            or secrets.token_urlsafe(24)
+            or os.getenv("DEV_SEED_PASSWORD")
+            or "DevMiguel2024!"
         )
-        if not os.getenv("ADMIN_PASSWORD") and not os.getenv("TEST_USER_PASSWORD"):
+        if not os.getenv("ADMIN_PASSWORD") and not os.getenv("TEST_USER_PASSWORD") and not os.getenv("DEV_SEED_PASSWORD"):
             logger.warning(
-                "Usuarios de prueba creados con contraseña efímera; define ADMIN_PASSWORD para acceso manual."
+                "Usuarios de prueba creados con contraseña por defecto; define ADMIN_PASSWORD para acceso manual."
             )
         # Identidades tomadas de la tabla canónica compartida con los scripts de apoyo.
         target_creds = [

@@ -31,7 +31,7 @@ const IndexSection = () => {
         <p className="text-xl mb-8 text-zinc-100">
           Optimizando la administración y producción agrícola
         </p>
-        <Button className="bg-success text-lg hover:bg-green-700" onClick={() => navigate("/login")}>
+        <Button className="bg-success-700 text-white text-lg hover:bg-success-800" onClick={() => navigate("/login")}>
           Ingresar al Sistema <ChevronRight className="ml-2" />
         </Button>
       </div>

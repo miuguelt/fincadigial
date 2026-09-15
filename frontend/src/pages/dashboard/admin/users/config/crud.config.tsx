@@ -61,6 +61,7 @@ export const formSections: CRUDFormSection<UserFormInput>[] = [
 
 export const crudConfig: CRUDConfig<UserRecord, UserFormInput> = {
   title: 'Personas de la Finca',
+  headerDescription: 'Control de acceso, roles y actividad del equipo',
   entityName: 'Persona',
   columns,
   formSections,

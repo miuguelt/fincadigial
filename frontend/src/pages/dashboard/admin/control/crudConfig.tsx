@@ -216,6 +216,7 @@ export function buildCrudConfig(
 
   return {
     title: 'Revisiones de salud',
+    headerDescription: 'Registra controles operativos y novedades del ganado',
     entityName: 'Revisión',
     columns,
     formSections,

@@ -8,7 +8,6 @@ import {
 import type React from "react";
 import { useMemo } from "react";
 import { useUnreadMessages } from "@/features/chat/hooks/useUnreadMessages";
-import { Badge } from "@/shared/ui/badge";
 import KPICard from "@/widgets/analytics/KPICard";
 import { DataScreenHeader } from "@/widgets/layout/DataScreenHeader";
 
@@ -54,27 +53,10 @@ export const UsersBentoHeader: React.FC<{ items: any[] }> = ({ items }) => {
 		<DataScreenHeader
 			icon={<UsersGroupIcon className="h-5 w-5 text-white" />}
 			iconClassName="from-info to-sky-600 shadow-info/20"
+			showTitle={false}
 			title={<>Gestión de <span className="text-info">Personal</span></>}
 			description="Control de acceso, roles y actividad del equipo"
 			metricsColumns={5}
-			actions={
-				<>
-					<Badge
-						variant="outline"
-						className="bg-info/5 text-info border-info/20 px-3 py-1 rounded-full font-bold"
-					>
-						{metrics.total} Usuarios
-					</Badge>
-					{metrics.pending > 0 && (
-						<Badge
-							variant="outline"
-							className="bg-amber-500/5 text-amber-600 border-amber-500/20 px-3 py-1 rounded-full font-bold animate-pulse"
-						>
-							{metrics.pending} Pendientes
-						</Badge>
-					)}
-				</>
-			}
 			metrics={
 				<>
 					<KPICard

@@ -199,6 +199,7 @@ function AdminBreedsPage() {
 
   const crudConfigLocal = {
     title: 'Razas',
+    headerDescription: 'Organiza las razas disponibles y su especie asociada',
     entityName: 'Raza',
     columns,
     formSections: formSectionsLocal,

@@ -44,6 +44,7 @@ def log_activity_event(
     relations=None,
     actor_id=None,
     animal_id=None,
+    finca_id=None,
 ):
     if not entity or entity in ("activity_log", "activitylog", "ActivityLog"):
         return
@@ -60,6 +61,8 @@ def log_activity_event(
     actor_id = _safe_actor_id(actor_id)
     if animal_id is None and relations:
         animal_id = relations.get("animal_id")
+    if finca_id is None and relations:
+        finca_id = relations.get("finca_id")
 
     try:
         log_entry = ActivityLog(
@@ -72,6 +75,7 @@ def log_activity_event(
             actor_id=actor_id,
             animal_id=animal_id,
             relations=relations or None,
+            finca_id=finca_id,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )

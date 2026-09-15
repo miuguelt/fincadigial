@@ -1,4 +1,5 @@
-import { Calendar, ChevronRight, Milk, Scale, Sparkles, Stethoscope } from 'lucide-react';
+import { Calendar, ChevronRight, ClipboardList, Milk, Scale, Stethoscope } from 'lucide-react';
+import { ModuleHeading } from '@/widgets/layout/ModuleHeading';
 
 interface DailyWorkSectionProps {
   /** Fecha de hoy ya formateada en es-CO. */
@@ -28,27 +29,17 @@ export function DailyWorkSection({
 
       <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-500/15 dark:text-emerald-300">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
-            </span>
-            <Sparkles className="h-3 w-3 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-            <span>Trabajo de hoy</span>
-          </div>
-
-          <h1 id="registro-diario-title" className="mt-2 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
-            Registro diario
-          </h1>
+          <ModuleHeading
+            title={<span id="registro-diario-title">Registro diario</span>}
+            description="Elige una tarea para registrar rápidamente desde el potrero o la sala de ordeño."
+            icon={<ClipboardList className="h-5 w-5 text-white" />}
+          />
 
           <div className="mt-1.5 flex items-center gap-2 text-xs font-medium text-muted-foreground sm:text-sm">
             <Calendar className="h-4 w-4 text-primary/70" aria-hidden="true" />
             <span className="first-letter:uppercase">{todayFormatted}</span>
           </div>
 
-          <p className="mt-2 max-w-2xl text-xs leading-relaxed text-muted-foreground sm:text-sm">
-            Elige una tarea para registrar rápidamente desde el potrero o la sala de ordeño.
-          </p>
         </div>
       </div>
 

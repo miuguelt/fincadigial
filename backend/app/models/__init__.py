@@ -76,6 +76,7 @@ from .chat_message import ChatMessage
 from .user_location import UserLocation
 from .financial import Transaction, TransactionType, TransactionCategory
 from .tasks import Tasks, TaskStatus, TaskPriority
+from .task_completion import TaskCompletionRecord
 from .livestock_summary import LivestockSummary
 from .extended_summaries import FinancialSummary, MilkSummary
 from .operational_costs import OperationalCost, OperationalCategory
@@ -244,6 +245,7 @@ __all__ = [
     "Tasks",
     "TaskStatus",
     "TaskPriority",
+    "TaskCompletionRecord",
     "LivestockSummary",
     "FinancialSummary",
     "MilkSummary",

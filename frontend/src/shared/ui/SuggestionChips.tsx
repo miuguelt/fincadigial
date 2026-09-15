@@ -25,7 +25,7 @@ export const SuggestionChips: React.FC<SuggestionChipsProps> = ({
   return (
     <div className={cn('flex flex-wrap items-center gap-1.5 pt-1 select-none', className)}>
       {label && (
-        <span className="text-[10px] uppercase font-bold text-muted-foreground/70 tracking-wider">
+        <span className="text-[11px] uppercase font-bold text-muted-foreground/70 tracking-wider">
           {label}
         </span>
       )}

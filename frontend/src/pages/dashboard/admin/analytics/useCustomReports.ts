@@ -1,6 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+import { getPdfEngine } from "@/shared/utils/pdfExport";
 import { useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/shared/api/apiFetch";
 import { unwrapApi } from "@/shared/api/client";
@@ -147,13 +146,14 @@ export const useCustomReports = () => {
 		URL.revokeObjectURL(url);
 	};
 
-	const handleDownloadPDF = () => {
+	const handleDownloadPDF = async () => {
 		if (!generateReport.data) return;
 		const report = (generateReport.data as any).report || {};
 		const summary = report.summary || {};
 		const details = report.details || {};
 		const metadata = (generateReport.data as any).metadata || {};
 
+		const { jsPDF, autoTable } = await getPdfEngine();
 		const doc = new jsPDF();
 		const runAutoTable = (docObj: any, options: any) => {
 			try {

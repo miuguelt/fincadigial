@@ -429,6 +429,8 @@ export const FloatingQuickActions: React.FC = () => {
       if (sheetRef.current && !sheetRef.current.contains(e.target as Node)) {
         const fab = document.getElementById('fqa-fab');
         if (fab && fab.contains(e.target as Node)) return;
+        const mobileBtn = document.getElementById('mobile-bottom-nav-actions');
+        if (mobileBtn && mobileBtn.contains(e.target as Node)) return;
         close();
       }
     };
@@ -437,6 +439,10 @@ export const FloatingQuickActions: React.FC = () => {
   }, [isOpen, close]);
 
   const refreshBadges = useCallback(async () => {
+    // Ahorro de batería y datos móviles: no consultar alertas si la pantalla o pestaña está oculta
+    if (typeof document !== 'undefined' && document.hidden) {
+      return;
+    }
     const nextMap: Record<string, number> = {};
 
     // 1. Mensajes no leídos de chat
@@ -498,12 +504,25 @@ export const FloatingQuickActions: React.FC = () => {
       refreshBadges();
     };
 
+    const handleVisibilityChange = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        void refreshBadges();
+      }
+    };
+
+    const handleToggleQuickActions = () => {
+      setIsOpen((prev) => !prev);
+      setEditMode(false);
+    };
+
     window.addEventListener('chat-unread-count-updated', handleChatUnread as EventListener);
     window.addEventListener('offline-queue-synced', handleOfflineSynced);
     window.addEventListener('alerts-updated', refreshBadges);
     window.addEventListener('alert-marked-read', refreshBadges);
     window.addEventListener('online', refreshBadges);
     window.addEventListener('offline', refreshBadges);
+    window.addEventListener('toggle-quick-actions', handleToggleQuickActions);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     const interval = setInterval(refreshBadges, 15000);
 
@@ -514,6 +533,8 @@ export const FloatingQuickActions: React.FC = () => {
       window.removeEventListener('alert-marked-read', refreshBadges);
       window.removeEventListener('online', refreshBadges);
       window.removeEventListener('offline', refreshBadges);
+      window.removeEventListener('toggle-quick-actions', handleToggleQuickActions);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       clearInterval(interval);
     };
   }, [refreshBadges]);
@@ -521,6 +542,14 @@ export const FloatingQuickActions: React.FC = () => {
   const totalBadgeCount = useMemo(() => {
     return Object.values(badgesMap).reduce((acc, count) => acc + (count || 0), 0);
   }, [badgesMap]);
+
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent('quick-actions-badge-updated', {
+        detail: { count: totalBadgeCount },
+      })
+    );
+  }, [totalBadgeCount]);
 
   const go = useCallback(
     (path: string) => {
@@ -602,7 +631,7 @@ export const FloatingQuickActions: React.FC = () => {
         whileHover={{ scale: 1.08 }}
         onClick={() => { setIsOpen((v) => !v); setEditMode(false); }}
         className={cn(
-          "fixed bottom-3 right-3 sm:bottom-4 sm:right-4",
+          "hidden md:flex fixed bottom-3 right-3 sm:bottom-4 sm:right-4",
           isOpen ? "z-[9999]" : "z-40 sm:z-[9999]",
           "h-11 w-11 sm:h-12 sm:w-12 rounded-full",
           "flex items-center justify-center backdrop-blur-md",

@@ -360,7 +360,7 @@ export function AnimalCard({
           {/* Badge de Potrero */}
           {showField && (
             <div
-              className="flex min-w-0 items-center gap-1 rounded-full border border-white/30 px-2.5 py-1 shadow-md backdrop-blur-md"
+              className="flex min-w-0 max-w-[70%] items-center justify-end gap-1 rounded-xl border border-white/30 px-2.5 py-1 shadow-md backdrop-blur-md"
               style={{
                 backgroundColor: potreroColor,
                 borderColor: potreroColor,
@@ -369,7 +369,7 @@ export function AnimalCard({
               title={field ?? undefined}
             >
               <IconMapPin size={11} className="shrink-0" />
-              <span className="fit-clamp text-[11px] font-black uppercase tracking-tight">
+              <span className="min-w-0 whitespace-normal text-right text-[11px] font-black uppercase leading-tight tracking-tight [overflow-wrap:normal] [word-break:normal]">
                 {field}
               </span>
             </div>
@@ -409,15 +409,15 @@ export function AnimalCard({
 
             {/* Badge de Raza con micro-cápsula de color */}
             <div
-              className="mt-1.5 flex min-w-0 items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider w-fit"
+              className="mt-1.5 flex w-fit max-w-full min-w-0 items-start gap-1.5 rounded-md border px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider"
               style={{
                 backgroundColor: `${breedColor}15`,
                 borderColor: `${breedColor}40`,
                 color: breedColor,
               }}
             >
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: breedColor }} />
-              <span className="fit-clamp">{breed}</span>
+              <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: breedColor }} />
+              <span className="min-w-0 whitespace-normal leading-tight [overflow-wrap:normal] [word-break:normal]">{breed}</span>
             </div>
           </div>
 
@@ -466,7 +466,7 @@ export function AnimalCard({
             type="button"
             variant="outline"
             size="sm"
-            className="group/btn h-9 w-full justify-center gap-2 rounded-xl border-2 border-primary/40 bg-primary/5 text-xs font-bold text-primary shadow-2xs transition-all duration-200 hover:border-primary hover:bg-primary hover:text-primary-foreground"
+            className="group/btn h-11 min-h-[44px] w-full justify-center gap-2 rounded-xl border-2 border-primary/40 bg-primary/5 text-xs font-bold text-primary shadow-2xs transition-all duration-200 hover:border-primary hover:bg-primary hover:text-primary-foreground"
             onClick={(event) => {
               event.stopPropagation();
               handleCardClick();

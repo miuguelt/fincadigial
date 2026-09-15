@@ -15,7 +15,7 @@ export interface KpiTrend {
 export interface KpiCardSummary {
   id: string;
   titulo: string;
-  valor: number;
+  valor: number | null;
   unidad?: string;
   cambio?: number;
   tendencia?: KpiTrend;
@@ -30,14 +30,14 @@ export interface KpiResumen {
 }
 
 export interface DashboardStat {
-  valor: number;
+  valor: number | null;
   /**
    * Desglose de altas recientes para el periodo actual (últimos 30 días)
    * y el periodo inmediatamente anterior (30-60 días).
    * Campo opcional: no todas las métricas lo incluyen.
    */
   tendencia?: StatTrend;
-  cambio_porcentual?: number;
+  cambio_porcentual?: number | null;
   desglose?: Record<string, any>;
 }
 
@@ -82,7 +82,7 @@ export interface CompleteDashboardStats {
 
   // KPIs agregados (ventana móvil)
   kpi_resumen?: KpiResumen;
-  health_trend?: Array<{ name: string; value: number }>;
+  health_trend?: Array<{ name: string; value: number | null }>;
 }
 
 interface UseCompleteDashboardStatsResult {

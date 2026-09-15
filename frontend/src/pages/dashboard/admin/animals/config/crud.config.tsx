@@ -1,5 +1,6 @@
 import type { AnimalInput, AnimalResponse } from '@/shared/api/generated/swaggerTypes';
 import type { CRUDConfig } from '@/shared/types/crud';
+import { AnimalsStatusHeading } from '../components/AnimalsStatusHeading';
 
 export type AnimalRecord = AnimalResponse & { [key: string]: any };
 export type AnimalCrudConfig = CRUDConfig<AnimalRecord, Partial<AnimalInput>>;
@@ -7,6 +8,8 @@ export type AnimalCrudOverrides = Pick<AnimalCrudConfig, 'viewMode' | 'columns' 
 
 export const buildAnimalCrudConfig = (overrides: AnimalCrudOverrides): AnimalCrudConfig => ({
   title: 'Animales',
+  hideTitle: true,
+  headerLeading: <AnimalsStatusHeading />,
   entityName: 'Animal',
   searchPlaceholder: 'Buscar animales...',
   emptyStateMessage: 'Aún no hay animales en tu finca',

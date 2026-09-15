@@ -118,6 +118,7 @@ const AdminTreatmentVaccinesPage: React.FC = () => {
 
   const crudConfigLocal: CRUDConfig<TreatmentVaccineResponse & { [k: string]: any }, TreatmentVaccineInput & { [k: string]: any }> = {
     title: 'Vacunas de Tratamiento',
+    headerDescription: 'Relaciona vacunas con tratamientos y protocolos sanitarios',
     entityName: 'Vacuna de tratamiento',
     columns,
     formSections: formSectionsLocal,

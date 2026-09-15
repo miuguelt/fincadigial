@@ -10,6 +10,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { useToast } from '@/app/providers/ToastContext';
+import { CampesinoViewShell } from '@/widgets/layout/CampesinoViewShell';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -157,23 +158,16 @@ const CropPlotsPage: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50/50 to-background dark:from-emerald-950/10 dark:to-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 space-y-8 md:space-y-12">
-
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-              🌱 Parcelas y Cultivos
-            </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {plots.length} parcela{plots.length !== 1 ? 's' : ''} registrada{plots.length !== 1 ? 's' : ''}
-            </p>
-          </div>
-          <Button onClick={openNew} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-1.5 shadow-md shadow-emerald-200 dark:shadow-emerald-950">
-            <Plus className="w-4 h-4" /> Nueva
-          </Button>
-        </div>
+    <CampesinoViewShell
+      title="Parcelas y cultivos"
+      description={`${plots.length} parcela${plots.length !== 1 ? 's' : ''} registrada${plots.length !== 1 ? 's' : ''}`}
+      icon={<Sprout className="h-5 w-5 text-white" aria-hidden="true" />}
+      actions={(
+        <Button onClick={openNew} className="h-11 w-full gap-1.5 rounded-xl font-bold sm:w-auto">
+          <Plus className="h-4 w-4" /> Nueva
+        </Button>
+      )}
+    >
 
         {/* Búsqueda */}
         <div className="relative">
@@ -299,8 +293,6 @@ const CropPlotsPage: React.FC = () => {
             <RefreshCw className="w-4 h-4" /> Actualizar lista
           </button>
         )}
-      </div>
-
       {/* ── MODAL: Formulario de parcela ──────────────────────── */}
       <AnimatePresence>
         {showForm && (
@@ -498,7 +490,7 @@ const CropPlotsPage: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </CampesinoViewShell>
   );
 };
 

@@ -9,7 +9,7 @@ import { ctaLabel } from '@/features/academy/ui/courseVisuals';
 
 const CourseNotFound: React.FC = () => (
   <div className="bg-background px-4 pt-4 pb-6">
-    <div className="mx-auto w-full max-w-3xl py-16 text-center">
+    <div className="w-full py-16 text-center">
       <BookOpen className="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
       <h1 className="mb-2 text-xl font-semibold">Curso no encontrado</h1>
       <p className="mb-5 text-sm text-muted-foreground">
@@ -34,7 +34,7 @@ const CourseDetailPage: React.FC = () => {
 
   return (
     <div className="bg-background px-4 pt-4 pb-10 sm:pb-12">
-      <div className="mx-auto w-full max-w-3xl space-y-5 sm:space-y-6">
+      <div className="w-full space-y-5 sm:space-y-6">
         <CourseDetailHeader course={course} />
 
         <section className="space-y-3">

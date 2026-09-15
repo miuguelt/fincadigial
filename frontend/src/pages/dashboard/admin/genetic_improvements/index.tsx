@@ -78,6 +78,7 @@ const formSections: CRUDFormSection<AdminGeneticImprovementInput>[] = [
 // Configuración completa del CRUD (sin columns, se pasa dinámicamente)
 const crudConfigBase = {
   title: 'Mejoras Genéticas',
+  headerDescription: 'Registra avances genéticos, cruces y decisiones de selección',
   entityName: 'Mejora Genética',
   formSections,
   searchPlaceholder: 'Buscar mejoras genéticas...',

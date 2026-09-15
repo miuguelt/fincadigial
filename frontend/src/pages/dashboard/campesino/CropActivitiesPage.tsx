@@ -10,6 +10,7 @@ import {
   Droplets, Sprout, Wheat, Bug, FileText, ChevronDown,
 } from 'lucide-react';
 import { useToast } from '@/app/providers/ToastContext';
+import { CampesinoViewShell } from '@/widgets/layout/CampesinoViewShell';
 
 // ── Config de tipos de actividad ────────────────────────────────────────────
 
@@ -159,21 +160,16 @@ const CropActivitiesPage: React.FC = () => {
   const dateKeys = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50/40 to-background dark:from-blue-950/10 dark:to-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 space-y-8 md:space-y-12">
-
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-              📋 Bitácora de Labores
-            </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">{activities.length} registro{activities.length !== 1 ? 's' : ''}</p>
-          </div>
-          <Button onClick={() => openQuick('note')} className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl gap-1.5 shadow-md shadow-blue-200 dark:shadow-blue-950">
-            <Plus className="w-4 h-4" /> Registrar
-          </Button>
-        </div>
+    <CampesinoViewShell
+      title="Bitácora de labores"
+      description={`${activities.length} registro${activities.length !== 1 ? 's' : ''}`}
+      icon={<FileText className="h-5 w-5 text-white" aria-hidden="true" />}
+      actions={(
+        <Button onClick={() => openQuick('note')} className="h-11 w-full gap-1.5 rounded-xl font-bold sm:w-auto">
+          <Plus className="h-4 w-4" /> Registrar
+        </Button>
+      )}
+    >
 
         {/* ── REGISTRO RÁPIDO ─────────────────────────────────── */}
         <div className="space-y-2">
@@ -314,8 +310,6 @@ const CropActivitiesPage: React.FC = () => {
             <RefreshCw className="w-4 h-4" /> Actualizar
           </button>
         )}
-      </div>
-
       {/* ── MODAL: Registrar labor ─────────────────────────────── */}
       <GenericModal
         isOpen={showForm}
@@ -452,7 +446,7 @@ const CropActivitiesPage: React.FC = () => {
           </div>
         </div>
       </GenericModal>
-    </div>
+    </CampesinoViewShell>
   );
 };
 

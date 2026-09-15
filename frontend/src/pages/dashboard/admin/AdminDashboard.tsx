@@ -101,9 +101,9 @@ const AdminDashboard: React.FC = () => {
     return trend
       .map((point, index) => ({
         name: String(point?.name || `Sem ${index + 1}`),
-        value: Number(point?.value ?? 0),
+        value: typeof point?.value === 'number' && Number.isFinite(point.value) ? point.value : null,
       }))
-      .filter((point) => Number.isFinite(point.value));
+      .filter((point) => point.value === null || Number.isFinite(point.value));
   }, [stats?.health_trend]);
 
   const totals = useMemo(
@@ -166,7 +166,7 @@ const AdminDashboard: React.FC = () => {
             onClick={() => navigate('/admin/animals')}
           />
           <PulseTile
-            label="Alertas"
+            label="Alertas sin leer"
             value={totals.alertas}
             hint={totals.alertas > 0 ? 'Requieren revisión' : 'Todo en orden'}
             icon={AlertTriangle}
@@ -249,6 +249,7 @@ const AdminDashboard: React.FC = () => {
         ventanaDias={stats?.kpi_resumen?.ventana_dias}
         trend={healthTrend}
         onOpenAnalytics={() => navigate('/admin/analytics/executive')}
+        onRegisterControls={() => navigate('/admin/control')}
       />
 
 
@@ -297,7 +298,7 @@ const AdminDashboard: React.FC = () => {
   );
 
   return (
-    <div className="mx-auto max-w-[1600px] min-h-full space-y-6 px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8 w-full overflow-x-hidden">
+    <div className="w-full min-h-full space-y-6 px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8 overflow-x-hidden">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="h-auto w-full justify-start gap-2 overflow-x-auto rounded-xl border border-border bg-card p-1.5 shadow-sm [scrollbar-width:none] [-webkit-overflow-scrolling:touch]">
           <TabsTrigger

@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IconTrash, IconEdit, IconX, IconSquareCheck, IconDownload, IconPrinter } from '@/shared/ui/icons';
 import { Button } from '@/shared/ui/button';
@@ -38,7 +38,7 @@ export const FloatingSelectionBar: React.FC<FloatingSelectionBarProps> = ({
         animate={{ y: 0, x: '-50%', opacity: 1 }}
         exit={{ y: 100, x: '-50%', opacity: 0 }}
         transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-        className="fixed bottom-6 left-1/2 z-[110] w-max max-w-[95vw]"
+        className="fixed bottom-20 md:bottom-6 left-1/2 z-[1050] w-max max-w-[95vw]"
       >
         <div className={cn(
           "flex items-center gap-2 sm:gap-6 px-4 py-3 sm:px-8 sm:py-4 rounded-[2.5rem]",

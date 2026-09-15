@@ -130,6 +130,7 @@ export const SanidadCasesView: React.FC<SanidadCasesViewProps> = ({
 
   const crudConfig: CRUDConfig<CaseRow, any> = {
     title: 'Casos clínicos',
+    headerDescription: 'Seguimiento clínico y recuperación de los animales',
     entityName: 'Caso clínico',
     mobileTitleColumn: 'animal_id',
     mobileHighlightColumn: 'disease_id',

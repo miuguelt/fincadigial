@@ -331,10 +331,13 @@ function Invoke-VillaluzLogRotation {
         $sessionName = '{0}-{1}' -f (Get-Date -Format 'yyyyMMdd-HHmmss-fff'), ([guid]::NewGuid().ToString('N').Substring(0, 8))
         $sessionDir = Join-Path $archiveRootFull $sessionName
         New-Item -ItemType Directory -Path $sessionDir -Force | Out-Null
-
         try {
             foreach ($file in @($candidates | Sort-Object FullName -Unique)) {
-                $relativePath = [IO.Path]::GetRelativePath($resolvedLogDir, $file.FullName)
+                $relativePath = if ($file.FullName.StartsWith($resolvedLogDir, [StringComparison]::OrdinalIgnoreCase)) {
+                    $file.FullName.Substring($resolvedLogDir.Length).TrimStart('\', '/')
+                } else {
+                    $file.Name
+                }
                 if ($relativePath.StartsWith('..')) {
                     throw "El log administrado salió del directorio permitido: $($file.FullName)"
                 }
@@ -343,8 +346,12 @@ function Invoke-VillaluzLogRotation {
                 if (-not (Test-Path -LiteralPath $destinationParent)) {
                     New-Item -ItemType Directory -Path $destinationParent -Force | Out-Null
                 }
-                Move-Item -LiteralPath $file.FullName -Destination $destination -Force -ErrorAction Stop
-                $moved.Add($relativePath)
+                try {
+                    Move-Item -LiteralPath $file.FullName -Destination $destination -Force -ErrorAction Stop
+                    $moved.Add($relativePath)
+                } catch {
+                    Write-Warning "No se pudo rotar el log en uso '$($file.FullName)': $($_.Exception.Message). Se omite este archivo de la rotación."
+                }
             }
         } catch {
             if ($moved.Count -eq 0 -and (Test-Path -LiteralPath $sessionDir)) {
@@ -353,14 +360,21 @@ function Invoke-VillaluzLogRotation {
             throw
         }
 
-        $manifest = [ordered]@{
-            schema_version = 1
-            archived_at = [DateTimeOffset]::Now.ToString('o')
-            files = @($moved)
+        if ($moved.Count -gt 0) {
+            $manifest = [ordered]@{
+                schema_version = 1
+                archived_at = [DateTimeOffset]::Now.ToString('o')
+                files = @($moved)
+            }
+            $manifest | ConvertTo-Json -Depth 4 | Set-Content `
+                -LiteralPath (Join-Path $sessionDir 'archive.json') `
+                -Encoding utf8
+        } else {
+            if (Test-Path -LiteralPath $sessionDir) {
+                Remove-Item -LiteralPath $sessionDir -Recurse -Force -ErrorAction SilentlyContinue
+            }
+            $sessionDir = $null
         }
-        $manifest | ConvertTo-Json -Depth 4 | Set-Content `
-            -LiteralPath (Join-Path $sessionDir 'archive.json') `
-            -Encoding utf8
     }
 
     $cutoff = (Get-Date).AddDays(-[Math]::Max(1, $RetentionDays))
@@ -377,8 +391,12 @@ function Invoke-VillaluzLogRotation {
         if (-not $archiveFull.StartsWith($requiredPrefix, [StringComparison]::OrdinalIgnoreCase)) {
             throw "Se rechazó eliminar una ruta fuera del archivo de logs: $archiveFull"
         }
-        Remove-Item -LiteralPath $archiveFull -Recurse -Force
-        $removed.Add($archive.Name)
+        try {
+            Remove-Item -LiteralPath $archiveFull -Recurse -Force -ErrorAction Stop
+            $removed.Add($archive.Name)
+        } catch {
+            Write-Warning "No se pudo eliminar el archivo de logs antiguo '$archiveFull': $($_.Exception.Message)"
+        }
     }
 
     return [pscustomobject]@{

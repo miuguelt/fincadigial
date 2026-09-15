@@ -47,6 +47,14 @@ class Tasks(BaseModel):
         foreign_keys=[assigned_to],
         backref=db.backref("assigned_tasks", lazy="dynamic"),
     )
+    completion_record = db.relationship(
+        "TaskCompletionRecord",
+        back_populates="task",
+        uselist=False,
+        lazy="selectin",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
     _namespace_fields = [
         "id",
@@ -59,6 +67,7 @@ class Tasks(BaseModel):
         "field_id",
         "assigned_to",
         "finca_id",
+        "completion_record_id",
         "created_at",
     ]
     _enum_fields = {"status": TaskStatus, "priority": TaskPriority}
@@ -83,3 +92,76 @@ class Tasks(BaseModel):
             from app.models.base_model import ValidationError
 
             raise ValidationError("; ".join(errors), code="security_violation")
+
+    @property
+    def completion_record_id(self):
+        """ID del registro vigente; no expone evidencia mientras la tarea esté abierta."""
+        if self.status != TaskStatus.COMPLETED:
+            return None
+        record = self.completion_record
+        if record is None or getattr(record, "is_deleted", False):
+            return None
+        return record.id
+
+    @classmethod
+    def create(cls, commit=True, **kwargs):
+        """Cubre también las tareas que nacen ya marcadas como completadas."""
+        completion_notes = kwargs.pop("completion_notes", None)
+        instance = super().create(commit=False, **kwargs)
+        completion = None
+
+        if instance.status == TaskStatus.COMPLETED:
+            from app.services.task_completion_service import ensure_task_completion
+
+            completion = ensure_task_completion(instance, notes=completion_notes)
+
+        if commit:
+            db.session.commit()
+            db.session.refresh(instance)
+            if completion is not None:
+                db.session.refresh(completion)
+                from app.services.task_completion_service import log_task_completion
+
+                log_task_completion(instance, completion)
+
+        return instance
+
+    def update(self, commit=True, **kwargs):
+        """Actualiza la tarea y crea su evidencia en la misma transacción."""
+        completion_notes = kwargs.pop("completion_notes", None)
+        previous_status = self.status
+        updated = super().update(commit=False, **kwargs)
+
+        completion = None
+        if (
+            previous_status == TaskStatus.CANCELLED
+            and self.status == TaskStatus.COMPLETED
+        ):
+            from app.services.task_completion_service import TaskCompletionNotAllowed
+
+            raise TaskCompletionNotAllowed(
+                "Una tarea cancelada no puede marcarse como completada."
+            )
+        if self.status == TaskStatus.COMPLETED:
+            from app.services.task_completion_service import ensure_task_completion
+
+            completion = ensure_task_completion(
+                self,
+                notes=completion_notes,
+            )
+
+        if commit:
+            self.save(commit=False)
+            db.session.commit()
+            db.session.refresh(self)
+            if completion is not None:
+                db.session.refresh(completion)
+
+                if previous_status != TaskStatus.COMPLETED:
+                    from app.services.task_completion_service import (
+                        log_task_completion,
+                    )
+
+                    log_task_completion(self, completion)
+
+        return updated

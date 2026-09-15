@@ -24,13 +24,26 @@ const CampesinoDashboard = () => {
 
   return (
     <div className="min-h-full bg-background pb-20">
-      <div className="mx-auto w-full max-w-6xl space-y-5 px-3 py-4 sm:space-y-8 sm:px-6 sm:py-7 lg:px-8">
+      <div className="w-full space-y-6 px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
+        {/* Cabecera institucional y resumen de finca/clima */}
         <DashboardHero fincaName={fincaName} isOnline={isOnline} pendingCount={pendingCount} />
-        {!hasSearch && <MiJornadaSection />}
-        {!hasSearch && <QuickActionsSection onNavigate={goTo} />}
+
+        {/* Jerarquía de Información (GEMINI.md): KPIs en primer viewport */}
         {!hasSearch && <TermometroGanadoSection />}
+
+        {/* Acciones operativas frecuentes en campo */}
+        {!hasSearch && <QuickActionsSection onNavigate={goTo} />}
+
+        {/* Jornada diaria y alertas sanitarias prioritarias */}
+        {!hasSearch && <MiJornadaSection />}
+
+        {/* Buscador de herramientas */}
         <DashboardSearch value={searchTerm} onChange={setSearchTerm} />
+
+        {/* Directorio de herramientas y módulos */}
         <ToolGroupsSection groups={filteredGroups} onClearSearch={() => setSearchTerm('')} onNavigate={goTo} />
+
+        {/* Recomendación operativa contextual */}
         <DashboardTip tip={tip} />
       </div>
     </div>

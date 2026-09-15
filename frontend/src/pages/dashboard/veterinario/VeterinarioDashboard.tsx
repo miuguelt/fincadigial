@@ -126,7 +126,7 @@ export default function VeterinarioDashboard() {
   };
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8 space-y-6">
+    <div className="w-full px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8 space-y-6">
       <FincaHeroBanner />
 
       {/* Header */}

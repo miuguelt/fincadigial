@@ -180,7 +180,7 @@ function MobileCardComponent<T extends { id: number }>(props: MobileCardProps<T>
             {titleColumn ? getCellValue(titleColumn) : titleText}
           </h3>
           {highlight === 'created' && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 dark:bg-emerald-500 px-2 py-0.5 text-[10px] font-extrabold text-white shadow-sm animate-pulse shrink-0">
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 dark:bg-emerald-500 px-2 py-0.5 text-[11px] font-extrabold text-white shadow-sm animate-pulse shrink-0">
               <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping" />
               ✨ Nuevo
             </span>
@@ -488,7 +488,7 @@ function TableRowComponent<T extends { id: number }>(props: TableRowProps<T>) {
         >
           {colIdx === 0 && highlight === 'created' ? (
             <div className="flex items-center gap-2">
-              <span className="truncate">
+              <span className="fit-clamp">
                 {col.editable && onUpdateCell
                   ? (
                     <InlineEditCell
@@ -514,7 +514,7 @@ function TableRowComponent<T extends { id: number }>(props: TableRowProps<T>) {
                         return mapCrudValue(raw, String(col.key), item, fkLabelMap);
                       })()}
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 dark:bg-emerald-500 px-2 py-0.5 text-[10px] font-extrabold text-white shadow-sm animate-pulse shrink-0">
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 dark:bg-emerald-500 px-2 py-0.5 text-[11px] font-extrabold text-white shadow-sm animate-pulse shrink-0">
                 <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping" />
                 ✨ Nuevo
               </span>

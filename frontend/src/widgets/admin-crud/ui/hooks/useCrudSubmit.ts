@@ -217,7 +217,7 @@ export function useCrudSubmit<T extends { id: number }, TInput extends Record<st
   }, [
     canCreate, canUpdate, config, validateForm, formData, editingItem, updateItem, createItem,
     setPage, meta, onSuccess, refetch, service, showToast, setFormErrors,
-    setFormErrorMessages, describeFailure,
+    setFormErrorMessages, describeFailure, onItemCreated,
   ]);
 
   return { saving, handleSubmit };

@@ -96,6 +96,7 @@ const AdminCarePlansPage: React.FC = () => {
 	>(
 		() => ({
 			title: "Planes de manejo por animal",
+			headerDescription: "Articula sanidad, reproducción y nutrición en cada seguimiento",
 			entityName: "Plan de manejo",
 			columns: buildCarePlanColumns(animalMap),
 			formSections: carePlanFormSections(animalOptions || []),

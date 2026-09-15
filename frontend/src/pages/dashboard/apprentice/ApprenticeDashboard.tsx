@@ -1,15 +1,12 @@
 import React, { useMemo, forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardStatsCard, DashboardStatsGrid } from '@/widgets/dashboard/DashboardStatsCard';
-import { useCompleteDashboardStats, getStatValue, KpiCardSummary } from '@/features/dashboard/model/useCompleteDashboardStats';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
+import { useCompleteDashboardStats, KpiCardSummary } from '@/features/dashboard/model/useCompleteDashboardStats';
 import { Button } from '@/shared/ui/button';
-import { Badge } from '@/shared/ui/badge';
 import { Alert, AlertDescription } from '@/shared/ui/alert';
 import { SkeletonCard } from '@/shared/ui/skeleton';
 import { FincaHeroBanner } from '@/widgets/finca/hero';
 import {
-  Users,
   Heart,
   Activity,
   Syringe,
@@ -77,7 +74,7 @@ const ApprenticeDashboard: React.FC = () => {
   if (error) {
     return (
       <div className="bg-background px-4 pt-4 pb-6 sm:pb-8">
-        <div className="w-full max-w-7xl mx-auto">
+        <div className="w-full">
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
@@ -94,7 +91,7 @@ const ApprenticeDashboard: React.FC = () => {
 
   return (
     <div className="bg-background px-4 pt-0 pb-6 sm:pb-8">
-      <div className="w-full max-w-7xl mx-auto space-y-6">
+      <div className="w-full space-y-6">
         <FincaHeroBanner />
         {/* Header */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
@@ -132,7 +129,7 @@ const ApprenticeDashboard: React.FC = () => {
                 const value =
                   typeof card.valor === 'number' && unit === '%'
                     ? card.valor.toFixed(1)
-                    : card.valor;
+                    : (card.valor ?? '—');
                 const iconNode =
                   kpiIconMap[card.id] ||
                   (card.icono ? <span className="text-lg">{card.icono}</span> : null);
@@ -324,12 +321,6 @@ const ApprenticeDashboard: React.FC = () => {
                 onClick={() => navigate('/apprentice/fields')}
               />
               <DashboardStatsCard
-                title="Usuarios Activos"
-                icon={Users}
-                stat={stats?.usuarios_activos}
-                description="Personal activo"
-              />
-              <DashboardStatsCard
                 title="Alertas del Sistema"
                 icon={AlertTriangle}
                 stat={stats?.alertas_sistema}
@@ -339,29 +330,6 @@ const ApprenticeDashboard: React.FC = () => {
           )}
         </div>
 
-        {/* Card de Información */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Información del Sistema</CardTitle>
-            <CardDescription>
-              Las estadísticas se actualizan automáticamente cada 2 minutos
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="bg-success/5">
-                <span className="w-2 h-2 bg-success rounded-full mr-2"></span>
-                Sistema Activo
-              </Badge>
-              <Badge variant="outline">
-                Optimizado con caché de 2 minutos
-              </Badge>
-              <Badge variant="outline">
-                {getStatValue(stats?.animales_registrados)} animales monitoreados
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

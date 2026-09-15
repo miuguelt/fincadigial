@@ -370,9 +370,13 @@ function Stop-Villaluz {
             -PidDir (Join-Path $LogDir 'pids'))
         Stop-Containers
 
-        $rotation = Invoke-VillaluzLogRotation -LogDir $LogDir
-        if ($rotation.MovedCount -gt 0) {
-            Write-Log "Logs de la sesión archivados: $($rotation.MovedCount) archivo(s)." "Green"
+        try {
+            $rotation = Invoke-VillaluzLogRotation -LogDir $LogDir
+            if ($rotation.MovedCount -gt 0) {
+                Write-Log "Logs de la sesión archivados: $($rotation.MovedCount) archivo(s)." "Green"
+            }
+        } catch {
+            Write-Log "Aviso: no se completó la rotación de logs: $($_.Exception.Message)" "Yellow"
         }
 
         Set-Content -LiteralPath $LifecycleMarker `
@@ -638,9 +642,13 @@ try {
                 -PythonExe $PythonExe `
                 -PidDir (Join-Path $LogDir 'pids'))
         }
-        $rotation = Invoke-VillaluzLogRotation -LogDir $LogDir
-        if ($rotation.MovedCount -gt 0) {
-            Write-Log "Sesión anterior archivada: $($rotation.MovedCount) archivo(s)." "Green"
+        try {
+            $rotation = Invoke-VillaluzLogRotation -LogDir $LogDir
+            if ($rotation.MovedCount -gt 0) {
+                Write-Log "Sesión anterior archivada: $($rotation.MovedCount) archivo(s)." "Green"
+            }
+        } catch {
+            Write-Log "Aviso: no se completó la rotación de logs: $($_.Exception.Message)" "Yellow"
         }
     }
 

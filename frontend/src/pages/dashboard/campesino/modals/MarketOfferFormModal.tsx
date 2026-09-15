@@ -41,7 +41,7 @@ export function MarketOfferFormModal({
 		<CampesinoModal
 			open={open}
 			onClose={onClose}
-			title={editId ? "✏️ Editar Oferta" : "🏪 Nueva Oferta"}
+			title={editId ? "Editar Oferta" : "Nueva Oferta de Mercado"}
 		>
 			<div className="p-5 space-y-4">
 				<div>

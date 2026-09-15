@@ -6,10 +6,9 @@ import { useState, useEffect, useRef } from "react";
 import { loginUser, normalizeRole } from '@/features/auth/api/auth.service';
 import { formatMessageFromCode } from "@/shared/api/error-parser";
 import { FaUser, FaLock, FaCheckCircle, FaHourglassHalf } from "react-icons/fa";
-import { LogIn } from 'lucide-react';
-import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { LogIn, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/shared/hooks/use-toast";
-import { ClimbingBoxLoader } from "react-spinners";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 
 const LoginForm = () => {
@@ -19,12 +18,14 @@ const LoginForm = () => {
     : '';
   const [identification, setIdentification] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isPendingApproval, setIsPendingApproval] = useState<boolean>(false);
   const [errors, setErrors] = useState<{ identification?: string; password?: string; general?: string }>({});
-  const { login } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const successTimerRef = useRef<number | null>(null);
@@ -87,14 +88,25 @@ const LoginForm = () => {
     };
   }, []);
 
+  // Redirigir si el usuario ya cuenta con sesión activa
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const fromPath = (location.state as any)?.from?.pathname || '/dashboard';
+      navigate(fromPath, { replace: true });
+    }
+  }, [isAuthenticated, user, location.state, navigate]);
+
   const validateForm = (idValue = identification, passwordValue = password) => {
     const newErrors: { identification?: string; password?: string } = {};
     const normalizedIdentification = idValue.trim();
 
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedIdentification);
+    const isNumericDoc = /^\d{4,15}$/.test(normalizedIdentification);
+
     if (!normalizedIdentification) {
-      newErrors.identification = 'El número de documento es obligatorio';
-    } else if (!/^\d{4,15}$/.test(normalizedIdentification)) {
-      newErrors.identification = 'El documento debe contener entre 4 y 15 dígitos numéricos';
+      newErrors.identification = 'El documento o correo electrónico es obligatorio';
+    } else if (!isEmail && !isNumericDoc) {
+      newErrors.identification = 'Ingresa un número de documento válido (4 a 15 dígitos) o un correo electrónico';
     }
 
     if (!passwordValue) {
@@ -194,7 +206,8 @@ const LoginForm = () => {
             return;
           }
 
-          login(finalUserData, token);
+          const fromPath = (location.state as any)?.from?.pathname;
+          login(finalUserData, token, fromPath);
           const sessionVia = isCookieOnlySession || !token ? 'cookie-only' : 'token/cookie';
           console.log(`✅ Session established successfully (via ${sessionVia})`);
           setSuccessMessage(isCookieOnlySession || !token ? 'Inicio de sesión exitoso. Sesión validada mediante cookie segura.' : 'Inicio de sesión exitoso.');
@@ -250,23 +263,25 @@ const LoginForm = () => {
       }
 
       if (status === 401) {
-        setErrors({ general: serverMsg || 'Credenciales incorrectas. Verifique su documento y contraseña.' });
+        setErrors({ general: serverMsg || 'Credenciales incorrectas. Verifica tu número de documento o correo y contraseña.' });
+      } else if (status === 403) {
+        setErrors({ general: serverMsg || 'Tu cuenta se encuentra inactiva o no autorizada. Contacta al administrador de la finca.' });
+      } else if (status === 429) {
+        setErrors({ general: 'Demasiados intentos seguidos. Por seguridad, espera un momento antes de reintentar.' });
       } else if (status === 503) {
         setErrors({ general: backendUnavailableMessage(serverMsg) });
       } else if (status === 400 || status === 422) {
         setErrors({ general: serverMsg || 'Datos de inicio de sesión inválidos.' });
       } else if (status === 404) {
-        setErrors({ general: serverMsg || 'Usuario no encontrado.' });
+        setErrors({ general: serverMsg || 'Usuario no encontrado en el sistema.' });
       } else if (status === 0 && messageLower.includes('timeout')) {
-        setErrors({ general: 'El servidor tardó demasiado en responder. Inténtelo nuevamente.' });
+        setErrors({ general: 'El servidor tardó demasiado en responder. Inténtalo nuevamente.' });
       } else if (status === 0 && (error?.request || responseError)) {
-        setErrors({ general: 'Error de conexión. Verifique su conexión a Internet y que el servidor esté en ejecución.' });
+        setErrors({ general: 'No se pudo conectar con el servidor. Verifica tu conexión a Internet o el estado del sistema.' });
       } else if (status >= 500) {
-        setErrors({ general: serverMsg || 'Error del servidor. Por favor, inténtelo más tarde.' });
-      } else if (error?.request) {
-        setErrors({ general: 'Error de conexión. Verifique su conexión a Internet y que el servidor esté en ejecución.' });
+        setErrors({ general: serverMsg || 'Error interno del servidor. Por favor, inténtalo más tarde.' });
       } else {
-        setErrors({ general: error?.message || 'Ocurrió un error inesperado.' });
+        setErrors({ general: error?.message || 'Ocurrió un error inesperado al iniciar sesión.' });
       }
     } finally {
       setLoading(false);
@@ -312,40 +327,42 @@ const LoginForm = () => {
           </Alert>
         </div>
       )}
-      {loading ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
-          <ClimbingBoxLoader color="#10B981" loading={loading} size={15} />
-        </div>
-      ) : (
-        <div className="w-full max-w-md p-8 space-y-8 bg-card rounded-xl shadow-2xl">
-          <h2 className="text-3xl font-bold text-center text-success">
-            Iniciar sesión
-          </h2>
+      <div className="relative w-full max-w-md p-8 space-y-8 bg-card rounded-xl shadow-2xl overflow-hidden">
+        {loading && (
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-card/85 backdrop-blur-xs">
+            <Loader2 className="h-10 w-10 animate-spin text-success" />
+            <span className="mt-3 text-sm font-medium text-foreground">Iniciando sesión...</span>
+          </div>
+        )}
 
-          {isPendingApproval ? (
-            <div className="space-y-6 animate-fade-in">
-              <Alert className="bg-warning/5 border-amber-200">
-                <FaHourglassHalf className="h-5 w-5 text-warning" />
-                <AlertTitle className="text-warning font-bold">Registro en Revisión</AlertTitle>
-                <AlertDescription className="text-warning mt-2">
-                  Tu cuenta ha sido creada exitosamente, pero un administrador debe aprobar tu acceso antes de que puedas entrar al sistema.
-                  <br /><br />
-                  Este proceso suele tardar menos de 24 horas. Recibirás una notificación cuando seas aprobado.
-                </AlertDescription>
-              </Alert>
-              <Button
-                onClick={() => setIsPendingApproval(false)}
-                variant="outline"
-                className="w-full border-amber-200 text-warning hover:bg-warning/10"
-              >
-                Volver al inicio de sesión
-              </Button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} noValidate className="space-y-6">
+        <h2 className="text-3xl font-bold text-center text-success">
+          Iniciar sesión
+        </h2>
+
+        {isPendingApproval ? (
+          <div className="space-y-6 animate-fade-in">
+            <Alert className="bg-warning/5 border-amber-200">
+              <FaHourglassHalf className="h-5 w-5 text-warning" />
+              <AlertTitle className="text-warning font-bold">Registro en Revisión</AlertTitle>
+              <AlertDescription className="text-warning mt-2">
+                Tu cuenta ha sido creada exitosamente, pero un administrador debe aprobar tu acceso antes de que puedas entrar al sistema.
+                <br /><br />
+                Este proceso suele tardar menos de 24 horas. Recibirás una notificación cuando seas aprobado.
+              </AlertDescription>
+            </Alert>
+            <Button
+              onClick={() => setIsPendingApproval(false)}
+              variant="outline"
+              className="w-full border-amber-200 text-warning hover:bg-warning/10"
+            >
+              Volver al inicio de sesión
+            </Button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} noValidate className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="documento" className="text-success">
-                Número de identificación
+                Número de identificación o correo
               </Label>
               <div className="relative">
                 <span className="absolute text-muted-foreground inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -356,18 +373,13 @@ const LoginForm = () => {
                   name="identifier"
                   autoComplete="username"
                   type="text"
-                  inputMode="numeric"
-                  maxLength={15}
-                  placeholder="Ingresa tu número de identificación"
+                  maxLength={100}
+                  placeholder="Ingresa tu cédula o correo"
                   value={identification}
+                  disabled={loading}
                   onChange={(e) => {
                     setIdentification(e.target.value);
                     setErrors((prev) => ({ ...prev, identification: undefined }));
-                  }}
-                  onKeyPress={(e) => {
-                    if (!/\d/.test(e.key)) {
-                      e.preventDefault();
-                    }
                   }}
                   className={`w-full px-10 py-2 border ${errors.identification ? 'border-red-400 focus:ring-red-400' : 'border-success/40 focus:ring-green-500'} rounded-md focus:outline-none focus:ring-1`}
                   aria-invalid={!!errors.identification}
@@ -392,18 +404,32 @@ const LoginForm = () => {
                   id="password"
                   name="password"
                   autoComplete="current-password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Escribe tu contraseña"
                   ref={passwordInputRef}
                   value={password}
+                  disabled={loading}
                   onChange={(e) => {
                     setPassword(e.target.value);
                     setErrors((prev) => ({ ...prev, password: undefined }));
                   }}
-                  className={`w-full px-10 py-2 border ${errors.password ? 'border-red-400 focus:ring-red-400' : 'border-success/40 focus:ring-green-500'} rounded-md focus:outline-none focus:ring-1`}
+                  className={`w-full pl-10 pr-10 py-2 border ${errors.password ? 'border-red-400 focus:ring-red-400' : 'border-success/40 focus:ring-green-500'} rounded-md focus:outline-none focus:ring-1`}
                   aria-invalid={!!errors.password}
                   aria-describedby={errors.password ? 'password-error' : undefined}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground focus:outline-none"
+                  aria-label={showPassword ? "Ocultar clave" : "Mostrar clave"}
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
               </div>
               {errors.password && (
                 <p id="password-error" className="mt-1 text-sm text-destructive">
@@ -428,18 +454,18 @@ const LoginForm = () => {
             >
               {loading ? (
                 <>
-                  <LogIn className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   Iniciando sesión...
                 </>
               ) : (
                 <>
-                  <LogIn className="h-4 w-4" />
+                  <LogIn className="h-4 w-4 mr-2" />
                   Iniciar sesión
                 </>
               )}
             </Button>
           </form>
-          )}
+        )}
           {errors.general && (
             <Alert variant="destructive" className="p-3 mb-4" aria-live="assertive">
               <AlertTitle>No se pudo iniciar sesión</AlertTitle>
@@ -532,9 +558,8 @@ const LoginForm = () => {
             </p>
           </div>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    );
 };
 
 export default LoginForm;

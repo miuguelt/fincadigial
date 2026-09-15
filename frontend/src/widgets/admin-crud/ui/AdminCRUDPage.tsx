@@ -66,6 +66,8 @@ export interface AdminCRUDPageProps<T extends { id: number }, TInput extends Rec
   // Contenido adicional para el formulario
   additionalFormContent?: (formData: TInput, editingItem: T | null) => React.ReactNode;
   onItemsChange?: (items: T[]) => void;
+  /** Notifica la lista base antes de aplicar filtros locales de la pantalla. */
+  onAllItemsChange?: (items: T[]) => void;
   onOpenDetail?: (item: T) => void;
   onOpenCreate?: () => void;
   /**
@@ -98,6 +100,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   enhancedHover = true,
   additionalFormContent,
   onItemsChange,
+  onAllItemsChange,
   onOpenDetail: externalOnOpenDetail,
   onOpenCreate: externalOnOpenCreate,
   filters,
@@ -172,10 +175,14 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   });
 
   // Lo eliminado hace poco se oculta aunque el backend siga devolviéndolo.
+  const baseItems = useMemo(
+    () => withoutTombstones(items || [], getTombstoneIds(entityKey)),
+    [items, entityKey]
+  );
+
   const filteredItems = useMemo(() => {
-    const base = withoutTombstones(items || [], getTombstoneIds(entityKey));
-    return filterItems ? filterItems(base) : base;
-  }, [items, entityKey, filterItems]);
+    return filterItems ? filterItems(baseItems) : baseItems;
+  }, [baseItems, filterItems]);
 
   // Registros creados/editados hace poco (incluso desde otra pantalla): la
   // lista los resalta sutilmente para que el usuario confirme su cambio.
@@ -191,7 +198,8 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
 
   useEffect(() => {
     onItemsChange?.(filteredItems);
-  }, [filteredItems, onItemsChange]);
+    onAllItemsChange?.(baseItems);
+  }, [baseItems, filteredItems, onAllItemsChange, onItemsChange]);
 
   const openCreate = useCallback((prefill?: Partial<TInput>) => {
     if (!canCreate) return;
@@ -367,8 +375,11 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
   const header = (
     <PageHeader
       title={config.title}
-      dense
-      className="mb-0 p-0"
+      description={config.headerDescription}
+      leading={config.headerLeading}
+      hideTitle={config.hideTitle}
+      standardized
+      className="mb-0"
       titleClassName="text-base sm:text-lg lg:text-xl"
       actions={
         <CRUDToolbar
@@ -390,7 +401,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     return (
       <AppLayout
         header={header}
-        className="px-2 sm:px-3 pt-0 sm:pt-1 pb-0 max-w-full min-h-0"
+        className="px-2 sm:px-3 pt-0 sm:pt-1 pb-0 min-h-0"
         contentClassName="space-y-0"
       >
         <CRUDLoadingState config={config} />
@@ -403,7 +414,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     return (
       <AppLayout
         header={header}
-        className="px-2 sm:px-3 pt-1 sm:pt-2 pb-0 max-w-full min-h-0"
+        className="px-2 sm:px-3 pt-1 sm:pt-2 pb-0 min-h-0"
         contentClassName="space-y-0"
       >
         <CRUDErrorState isOffline={isOffline} error={error} onRetry={() => refetch()} />
@@ -442,7 +453,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
     <AppLayout
       header={header}
       className={cn(
-        'px-3.5 sm:px-5 lg:px-7 xl:px-8 pt-3 sm:pt-4 max-w-full min-h-0 flex flex-col',
+        'px-3.5 sm:px-5 lg:px-7 xl:px-8 pt-3 sm:pt-4 min-h-0 flex flex-col',
         autoHeight ? 'h-auto pb-6' : 'h-full pb-0'
       )}
       contentClassName={cn(

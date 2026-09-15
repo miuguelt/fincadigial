@@ -113,7 +113,7 @@ export const TaskTemplatesModal: React.FC<TaskTemplatesModalProps> = ({
                     <span className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">
                       {template.title}
                     </span>
-                    <Badge variant={getPriorityVariant(template.priority) as any} className="text-[10px]">
+                    <Badge variant={getPriorityVariant(template.priority) as any} className="text-[11px]">
                       {template.priority}
                     </Badge>
                   </div>

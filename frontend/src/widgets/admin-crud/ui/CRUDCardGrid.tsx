@@ -62,6 +62,7 @@ export function CRUDCardGrid<T extends { id: number }>({
         const titleText = String(rawTitle ?? `${config.entityName} #${item.id}`);
         const isSelected = selectedIds.includes(item.id);
         const recent = recentFlags?.[String(item.id)];
+        const selectionControlId = `crud-card-select-${item.id}`;
 
         return (
           <Card
@@ -126,17 +127,19 @@ export function CRUDCardGrid<T extends { id: number }>({
             )}
 
             {config.enableSelection && (
-              <div
-                className="absolute right-3 top-3 z-30 rounded-xl border border-border/80 bg-card p-2 shadow-sm"
+              <label
+                htmlFor={selectionControlId}
+                className="absolute right-3 top-3 z-30 flex h-11 w-11 min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-xl border border-border/80 bg-card shadow-sm"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Checkbox
+                  id={selectionControlId}
                   checked={isSelected}
                   onCheckedChange={() => onToggleSelect(item.id)}
                   aria-label={`Seleccionar ${config.entityName} ${item.id}`}
                   title="Seleccionar para acciones de traslado"
                 />
-              </div>
+              </label>
             )}
 
             {!config.renderCard && (

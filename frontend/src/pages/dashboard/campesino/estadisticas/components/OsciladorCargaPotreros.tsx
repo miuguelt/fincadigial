@@ -20,7 +20,8 @@ export const OsciladorCargaPotreros: React.FC<OsciladorCargaPotrerosProps> = ({ 
     advice,
   } = stats;
 
-  const clampUtil = Math.min(100, Math.max(0, utilizationPercent));
+  const hasUtilizationData = utilizationPercent !== null;
+  const clampUtil = utilizationPercent === null ? 0 : Math.min(100, Math.max(0, utilizationPercent));
 
   return (
     <div className="rounded-3xl border border-green-200/80 bg-gradient-to-br from-green-50/70 via-background to-lime-50/30 p-5 sm:p-6 shadow-md dark:border-green-900/40 dark:from-green-950/20 dark:via-background dark:to-lime-950/10 space-y-6">
@@ -54,7 +55,7 @@ export const OsciladorCargaPotreros: React.FC<OsciladorCargaPotrerosProps> = ({ 
         <div className="flex items-center justify-between text-xs font-bold text-muted-foreground">
           <span>0% (Pasto Sobrante)</span>
           <span className="text-foreground text-sm font-black">
-            {Math.round(utilizationPercent)}% Capacidad Usada
+            {utilizationPercent !== null ? `${Math.round(utilizationPercent)}% Capacidad Usada` : 'Sin datos'}
           </span>
           <span>100%+ (Sobrepastoreo)</span>
         </div>
@@ -74,7 +75,7 @@ export const OsciladorCargaPotreros: React.FC<OsciladorCargaPotrerosProps> = ({ 
 
         {/* Animated Needle Marker */}
         <div className="relative w-full h-4">
-          <motion.div
+          {hasUtilizationData && <motion.div
             initial={{ left: '0%' }}
             animate={{ left: `${clampUtil}%` }}
             transition={{ type: 'spring', stiffness: 70, damping: 14 }}
@@ -84,7 +85,7 @@ export const OsciladorCargaPotreros: React.FC<OsciladorCargaPotrerosProps> = ({ 
             <span className="text-[11px] font-extrabold text-foreground px-1.5 py-0.5 rounded bg-background border border-border shadow-xs mt-0.5 whitespace-nowrap">
               Carga: {Math.round(utilizationPercent)}%
             </span>
-          </motion.div>
+          </motion.div>}
         </div>
       </div>
 

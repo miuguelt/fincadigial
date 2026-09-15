@@ -147,7 +147,7 @@ const DashboardExecutive: React.FC = () => {
           kpiCards.slice(0, 4).map((card, index) => {
             const isBadWhenHigher = ['mortality_rate_30d', 'sales_rate_30d', 'alert_pressure', 'task_load_index'].includes(card.id);
             const unit = card.unidad || undefined;
-            const value = typeof card.valor === 'number' && unit === '%' ? card.valor.toFixed(1) : card.valor;
+            const value = typeof card.valor === 'number' && unit === '%' ? card.valor.toFixed(1) : (card.valor ?? '—');
             const iconNode = kpiIconMap[card.id] || (card.icono ? <span>{card.icono}</span> : null);
 
             return (

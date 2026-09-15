@@ -23,7 +23,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ course, lesson }) => {
 
   return (
     <div className="bg-background px-4 pt-4 pb-10 sm:pb-12">
-      <div className="mx-auto w-full max-w-3xl space-y-5 sm:space-y-6">
+      <div className="w-full space-y-5 sm:space-y-6">
         <LessonHeader
           course={course}
           lesson={lesson}

@@ -7,7 +7,7 @@ import { LessonView } from '@/features/academy/ui/LessonView';
 
 const LessonNotFound: React.FC = () => (
   <div className="bg-background px-4 pt-4 pb-6">
-    <div className="mx-auto w-full max-w-3xl py-16 text-center">
+    <div className="w-full py-16 text-center">
       <BookOpen className="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
       <h1 className="mb-2 text-xl font-semibold">Lección no encontrada</h1>
       <p className="mb-5 text-sm text-muted-foreground">

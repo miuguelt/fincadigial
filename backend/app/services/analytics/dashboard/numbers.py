@@ -1,8 +1,9 @@
 """Number shaping shared by the dashboard.
 
 Every figure that reaches the screen passes through here, so a `Decimal` from a
-`Numeric` column, a `None` from an empty aggregate and a division by zero all
-end up as a plain number instead of breaking the serializer.
+`Numeric` column is serialized as a plain number. Unavailable aggregates stay
+as `None` at the API boundary; this lets the interface distinguish “no data”
+from a real zero instead of presenting a fabricated value.
 """
 
 # Tope de variación porcentual: sin él, pasar de 0 a 5 muestra "+500 %" y la
@@ -40,12 +41,12 @@ def percentage_change(current_value, previous_value, cap=DEFAULT_CHANGE_CAP):
 
 def to_stat(value, current_total=None, previous_total=None) -> dict:
     """Envuelve una cifra con su variación y su tendencia, como espera la interfaz."""
-    clean = value if value is not None else 0
+    clean = value
     return {
         "valor": clean,
         "cambio_porcentual": percentage_change(current_total, previous_total)
         if current_total is not None
-        else 0,
+        else None,
         "tendencia": {
             "periodo_actual": current_total if current_total is not None else clean,
             "periodo_anterior": previous_total if previous_total is not None else clean,

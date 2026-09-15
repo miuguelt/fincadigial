@@ -64,7 +64,7 @@ export const OsciladorProduccionLechera: React.FC<OsciladorProduccionLecheraProp
           <div>
             <p className="text-xs font-bold text-muted-foreground uppercase">Promedio por Vaca</p>
             <p className="text-2xl sm:text-3xl font-black text-amber-700 dark:text-amber-300 mt-1">
-              {avgLitersPerCow > 0 ? `${avgLitersPerCow} L/día` : '0 L'}
+            {avgLitersPerCow !== null ? `${avgLitersPerCow} L/día` : '—'}
             </p>
           </div>
           <p className="text-[11px] text-muted-foreground mt-2">Rendimiento por animal ordeñado</p>

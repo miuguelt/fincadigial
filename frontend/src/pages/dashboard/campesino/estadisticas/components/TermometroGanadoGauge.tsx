@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { HeartPulse, ShieldCheck, Stethoscope, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { HeartPulse, ShieldCheck, Stethoscope, AlertTriangle, CheckCircle2, CircleHelp } from 'lucide-react';
 import type { CampesinoKpiGauge } from '../hooks/useCampesinoEstadisticas';
 
 interface TermometroGanadoGaugeProps {
@@ -13,12 +13,14 @@ interface TermometroGanadoGaugeProps {
 
 export const TermometroGanadoGauge: React.FC<TermometroGanadoGaugeProps> = ({
   gauge,
-  vacCoverage = 100,
-  controlComp = 100,
+  vacCoverage,
+  controlComp,
   activeAnimals = 0,
   sickAnimals = 0,
 }) => {
-  const value = Math.max(0, Math.min(100, gauge.value));
+  const hasGaugeData = gauge.value !== null;
+  const safeGaugeVal = gauge.value ?? 0;
+  const value = Math.max(0, Math.min(100, safeGaugeVal));
   // Needle angle: 0% is -90deg (left), 100% is +90deg (right)
   const angle = -90 + (value / 100) * 180;
 
@@ -47,6 +49,7 @@ export const TermometroGanadoGauge: React.FC<TermometroGanadoGaugeProps> = ({
           {gauge.status === 'optimal' && <CheckCircle2 className="w-4 h-4" />}
           {gauge.status === 'warning' && <AlertTriangle className="w-4 h-4" />}
           {gauge.status === 'critical' && <AlertTriangle className="w-4 h-4" />}
+          {gauge.status === 'unavailable' && <CircleHelp className="w-4 h-4" />}
           {gauge.statusLabel}
         </span>
       </div>
@@ -78,20 +81,20 @@ export const TermometroGanadoGauge: React.FC<TermometroGanadoGaugeProps> = ({
               />
 
               {/* Colored active arc */}
-              <path
+              {hasGaugeData && <path
                 d="M 20 100 A 80 80 0 0 1 180 100"
                 fill="none"
                 stroke="url(#gaugeGradient)"
                 strokeWidth="16"
                 strokeLinecap="round"
-              />
+              />}
 
               {/* Center pivot */}
               <circle cx="100" cy="100" r="8" className="fill-foreground" />
             </svg>
 
             {/* Animated Needle */}
-            <motion.div
+            {hasGaugeData && <motion.div
               initial={{ rotate: -90 }}
               animate={{ rotate: angle }}
               transition={{ type: 'spring', stiffness: 60, damping: 15 }}
@@ -99,12 +102,12 @@ export const TermometroGanadoGauge: React.FC<TermometroGanadoGaugeProps> = ({
               className="absolute bottom-0 w-1.5 h-20 bg-foreground rounded-full shadow-lg"
             >
               <div className="w-3 h-3 bg-emerald-500 rounded-full -top-1.5 -left-0.75 absolute border-2 border-background" />
-            </motion.div>
+            </motion.div>}
           </div>
 
           <div className="text-center mt-2">
             <span className="text-4xl sm:text-5xl font-black text-foreground tracking-tight">
-              {value}%
+              {hasGaugeData ? `${value}%` : '—'}
             </span>
             <p className="text-xs font-semibold text-muted-foreground mt-0.5">
               Estado Operativo y Sanitario
@@ -127,7 +130,7 @@ export const TermometroGanadoGauge: React.FC<TermometroGanadoGaugeProps> = ({
               <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mx-auto mb-1" />
               <p className="text-[11px] font-bold text-muted-foreground uppercase">Vacunas</p>
               <p className="text-base sm:text-lg font-black text-emerald-700 dark:text-emerald-300">
-                {Math.round(vacCoverage)}%
+                {typeof vacCoverage === 'number' ? `${Math.round(vacCoverage)}%` : '—'}
               </p>
               <p className="text-[11px] text-muted-foreground">al día</p>
             </div>
@@ -137,7 +140,7 @@ export const TermometroGanadoGauge: React.FC<TermometroGanadoGaugeProps> = ({
               <Stethoscope className="w-5 h-5 text-sky-600 dark:text-sky-400 mx-auto mb-1" />
               <p className="text-[11px] font-bold text-muted-foreground uppercase">Controles</p>
               <p className="text-base sm:text-lg font-black text-sky-700 dark:text-sky-300">
-                {Math.round(controlComp)}%
+                {typeof controlComp === 'number' ? `${Math.round(controlComp)}%` : '—'}
               </p>
               <p className="text-[11px] text-muted-foreground">pesajes al día</p>
             </div>

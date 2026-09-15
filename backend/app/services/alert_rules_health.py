@@ -20,40 +20,46 @@ from sqlalchemy import or_
 logger = logging.getLogger(__name__)
 
 
-def evaluate_health_rules(animal, finca_id, trig, today, age_months) -> int:
-    """Evalúa reglas sanitarias: vacunas, controles, enfermedades, post-parto."""
-    # ── 1. CONTROLES SANITARIOS PERIÓDICOS ────────────────────────────
-    last_ctrl = animal.controls.order_by(Control.checkup_date.desc()).first()
-    days_ctrl = (today - last_ctrl.checkup_date).days if last_ctrl else 9999
+def _evaluate_control_alert(last_ctrl, today, age_months, trig) -> None:
+    """Genera una alerta con la evidencia disponible, sin días sentinela."""
+    if last_ctrl:
+        days_ctrl = (today - last_ctrl.checkup_date).days
+        ctrl_crit = AlertEngine._get_param_int("control_days_critical")
+        ctrl_high = AlertEngine._get_param_int("control_days_high")
+        ctrl_med = AlertEngine._get_param_int("control_days_medium")
+        if ctrl_crit is not None and days_ctrl > ctrl_crit:
+            trig(
+                AlertType.HEALTH,
+                f" Control sanitario CRÍTICO: {days_ctrl} días sin revisión médica veterinaria.",
+                AlertPriority.CRITICAL,
+            )
+        elif ctrl_high is not None and days_ctrl > ctrl_high:
+            trig(
+                AlertType.HEALTH,
+                f" Control sanitario urgente: {days_ctrl} días sin revisión. Programar inmediatamente.",
+                AlertPriority.HIGH,
+            )
+        elif ctrl_med is not None and days_ctrl > ctrl_med:
+            trig(
+                AlertType.HEALTH,
+                f" Control sanitario vencido: {days_ctrl} días sin revisión médica.",
+                AlertPriority.MEDIUM,
+            )
+        return
 
-    ctrl_crit = AlertEngine._get_param_int("control_days_critical")
-    ctrl_high = AlertEngine._get_param_int("control_days_high")
-    ctrl_med = AlertEngine._get_param_int("control_days_medium")
-    if ctrl_crit is not None and days_ctrl > ctrl_crit:
-        trig(
-            AlertType.HEALTH,
-            f" Control sanitario CRÍTICO: {days_ctrl} días sin revisión médica veterinaria.",
-            AlertPriority.CRITICAL,
-        )
-    elif ctrl_high is not None and days_ctrl > ctrl_high:
-        trig(
-            AlertType.HEALTH,
-            f" Control sanitario urgente: {days_ctrl} días sin revisión. Programar inmediatamente.",
-            AlertPriority.HIGH,
-        )
-    elif ctrl_med is not None and days_ctrl > ctrl_med:
-        trig(
-            AlertType.HEALTH,
-            f" Control sanitario vencido: {days_ctrl} días sin revisión médica.",
-            AlertPriority.MEDIUM,
-        )
-
-    if not last_ctrl and age_months >= 3:
+    if age_months >= 3:
         trig(
             AlertType.HEALTH,
             " Sin historia clínica: el animal no tiene ningún control veterinario registrado.",
             AlertPriority.HIGH,
         )
+
+
+def evaluate_health_rules(animal, finca_id, trig, today, age_months) -> int:
+    """Evalúa reglas sanitarias: vacunas, controles, enfermedades, post-parto."""
+    # ── 1. CONTROLES SANITARIOS PERIÓDICOS ────────────────────────────
+    last_ctrl = animal.controls.order_by(Control.checkup_date.desc()).first()
+    _evaluate_control_alert(last_ctrl, today, age_months, trig)
 
     # ── 2. VACUNACIÓN ICA ─────────────────────────────────────────────
     _check_vaccine_ica(animal, today, age_months, trig)

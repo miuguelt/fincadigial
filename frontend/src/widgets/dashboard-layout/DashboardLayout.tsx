@@ -1,18 +1,40 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '@/features/auth/model/useAuth';
 import RoleBasedSideBar from '@/widgets/dashboard/RoleBasedSideBar';
 import Header from './Header';
 import LoadingScreen from '@/shared/ui/common/LoadingScreen';
+import { Skeleton, SkeletonCard, SkeletonTable } from '@/shared/ui/skeleton';
 import { ChatWidget } from '@/widgets/chat/ChatWidget';
 import { FloatingQuickActions } from '@/widgets/dashboard/FloatingQuickActions';
 import { QuickActionsModal } from '@/widgets/dashboard-layout/QuickActionsModal';
 import { CrearFincaPage } from '@/features/multi-finca/ui/CrearFincaPage';
 import { OnboardingTour } from '@/widgets/onboarding/OnboardingTour';
+import { MobileBottomNav } from './MobileBottomNav';
+import { ContentErrorBoundary } from './ContentErrorBoundary';
 import { cn } from '@/shared/lib/utils';
 
 // Ancho reservado por el menú lateral flotante: 280px de panel + 16px de gap izquierdo + 12px margen de respiro.
 const SIDEBAR_INSET = '308px';
+
+const DashboardRouteFallback: React.FC = () => (
+  <div className="w-full flex-1 space-y-6 px-3 py-4 sm:px-6 sm:py-6 lg:px-8 animate-in fade-in duration-200">
+    <div className="flex flex-col gap-2">
+      <Skeleton className="h-8 w-48 rounded-lg" />
+      <Skeleton className="h-4 w-72 rounded-lg" />
+    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <SkeletonCard />
+      <SkeletonCard />
+      <SkeletonCard />
+      <SkeletonCard />
+    </div>
+    <div className="rounded-xl border border-border/60 bg-card p-6 space-y-4">
+      <Skeleton className="h-6 w-36 rounded" />
+      <SkeletonTable rows={4} />
+    </div>
+  </div>
+);
 
 const DashboardLayout: React.FC = () => {
   const { loading, isAuthenticated, user } = useAuth();
@@ -120,17 +142,27 @@ const DashboardLayout: React.FC = () => {
         />
         <main
           className={cn(
-            "flex-1 min-h-0 flex flex-col overflow-y-auto overflow-x-hidden bg-background transition-all duration-500 ease-out w-full max-w-full",
+            "flex-1 min-h-0 flex flex-col overflow-y-auto overflow-x-hidden bg-background transition-[padding-left] duration-300 ease-out w-full max-w-full pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-0",
             // Con el menú abierto reservamos exactamente el ancho del menú + su margen (308px).
             // Las páginas internas (AppLayout, etc) se encargarán de sus propios paddings.
             isSidebarOpen && "lg:pl-[308px]"
           )}
         >
-          <Outlet />
+          <ContentErrorBoundary>
+            <Suspense fallback={<DashboardRouteFallback />}>
+              <Outlet />
+            </Suspense>
+          </ContentErrorBoundary>
         </main>
       </div>
 
       {showSidebar && <FloatingQuickActions />}
+      {showSidebar && (
+        <MobileBottomNav
+          isSidebarOpen={isSidebarOpen}
+          onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
+        />
+      )}
       {showSidebar && <ChatWidget hideToggleButton={true} />}
       {showSidebar && <QuickActionsModal />}
       {showSidebar && <OnboardingTour />}

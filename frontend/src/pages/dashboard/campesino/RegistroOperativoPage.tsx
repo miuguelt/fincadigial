@@ -1,7 +1,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Leaf, ClipboardList, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Leaf, ClipboardList, RefreshCw } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { ConfirmDialog } from '@/shared/ui/common/ConfirmDialog';
@@ -29,6 +29,7 @@ import {
   GSMIAssistantModal,
 } from '@/widgets/registro-operativo';
 import { IconMilk } from '@/shared/icons/cattle';
+import { CampesinoViewShell } from '@/widgets/layout/CampesinoViewShell';
 
 type TabType = 'crop' | 'livestock' | 'history';
 
@@ -114,25 +115,16 @@ const RegistroOperativoPage: React.FC = () => {
   };
 
   return (
-    <div className="vl-page">
-      <div className="vl-page-container space-y-6 md:space-y-8">
-
-        <div className="vl-page-header">
-          <div>
-            <h1 className="vl-page-title flex items-center gap-3">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <ClipboardList className="w-5 h-5" aria-hidden="true" />
-              </span>
-              Mi registro diario
-            </h1>
-            <p className="vl-page-description">
-              Anote lo que hizo hoy para llevar las cuentas, recordar tratamientos y comparar la producción de su finca.
-            </p>
-          </div>
-          <Button type="button" onClick={() => navigate('/campesino')} variant="secondary" className="gap-2">
-            ← Volver a mi panel
-          </Button>
-        </div>
+    <CampesinoViewShell
+      title="Mi registro diario"
+      description="Anota lo que hiciste hoy para llevar las cuentas, recordar tratamientos y comparar la producción de tu finca."
+      icon={<ClipboardList className="h-5 w-5 text-white" aria-hidden="true" />}
+      leading={(
+        <Button type="button" onClick={() => navigate('/campesino')} variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl" aria-label="Volver a mi panel">
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+      )}
+    >
 
         {/* El aviso vale para toda la página: agricultura también encola sin señal. */}
         {!isOnline && (
@@ -220,8 +212,6 @@ const RegistroOperativoPage: React.FC = () => {
             <RegistroOperativoIntro />
           </aside>
         </div>
-      </div>
-
       <ConfirmDialog
         open={pendingDeleteId != null}
         onOpenChange={open => { if (!open) setPendingDeleteId(null); }}
@@ -248,7 +238,7 @@ const RegistroOperativoPage: React.FC = () => {
       <WeaningModal open={activeModal === 'weaning'} onClose={closeModal} animals={animals} fields={fields} onSuccess={loadMasterData} />
       <LiquidacionLecheModal open={activeModal === 'milk-settlement'} onClose={closeModal} onSuccess={loadMasterData} />
       <GSMIAssistantModal open={activeModal === 'gsmi'} onClose={closeModal} animals={animals} />
-    </div>
+    </CampesinoViewShell>
   );
 };
 

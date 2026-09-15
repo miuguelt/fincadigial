@@ -1,7 +1,7 @@
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { getPdfEngine } from '@/shared/utils/pdfExport';
 
-export function exportICACompliancePdf(data: any, filteredAnimals: any[]) {
+export async function exportICACompliancePdf(data: any, filteredAnimals: any[]) {
+  const { jsPDF, autoTable } = await getPdfEngine();
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',

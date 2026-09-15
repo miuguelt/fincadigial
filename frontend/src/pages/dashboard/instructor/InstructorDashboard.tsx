@@ -1,12 +1,9 @@
 import React, { useMemo, forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardStatsCard, DashboardStatsGrid } from '@/widgets/dashboard/DashboardStatsCard';
-import { useCompleteDashboardStats, getStatValue, KpiCardSummary } from '@/features/dashboard/model/useCompleteDashboardStats';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
+import { useCompleteDashboardStats, KpiCardSummary } from '@/features/dashboard/model/useCompleteDashboardStats';
 import { Button } from '@/shared/ui/button';
-import { Badge } from '@/shared/ui/badge';
 import { Alert, AlertDescription } from '@/shared/ui/alert';
-import { getStatusBadgeClass } from '@/shared/utils/badgeStyles';
 import { SkeletonCard } from '@/shared/ui/skeleton';
 import { FincaHeroBanner } from '@/widgets/finca/hero';
 import {
@@ -21,10 +18,7 @@ import {
   Pill,
   Leaf,
   TestTube,
-  Users,
   GraduationCap,
-  BookOpen,
-  Award,
   Calendar
 } from 'lucide-react';
 import KPICard from '@/widgets/analytics/KPICard';
@@ -81,7 +75,7 @@ const InstructorDashboard: React.FC = () => {
   if (error) {
     return (
       <div className="bg-background px-4 pt-4 pb-6 sm:pb-8">
-        <div className="w-full max-w-7xl mx-auto">
+        <div className="w-full">
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
@@ -98,7 +92,7 @@ const InstructorDashboard: React.FC = () => {
 
   return (
     <div className="bg-background px-4 pt-0 pb-6 sm:pb-8">
-      <div className="w-full max-w-7xl mx-auto space-y-6">
+      <div className="w-full space-y-6">
         <FincaHeroBanner />
         {/* Header */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
@@ -121,63 +115,19 @@ const InstructorDashboard: React.FC = () => {
           </Button>
         </div>
 
-        {/* Navbar de Cursos y Capacitación */}
-        <div className="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 border border-indigo-200/50 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <GraduationCap className="h-5 w-5 text-indigo-600" />
-            <h2 className="text-sm font-semibold text-indigo-900">Centro de Capacitación</h2>
-            <Button
-              variant="link"
-              size="sm"
-              className="ml-auto text-xs text-indigo-600"
-              onClick={() => navigate('/instructor/courses')}
-            >
-              Ver todos
-            </Button>
+        {/* Capacitación: el contenido y sus métricas viven en el módulo de cursos. */}
+        <section className="flex flex-col gap-4 rounded-xl border border-indigo-200/50 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
+            <GraduationCap className="h-5 w-5 shrink-0 text-indigo-600" />
+            <div className="min-w-0">
+              <h2 className="text-sm font-semibold text-indigo-900 dark:text-indigo-200">Centro de capacitación</h2>
+              <p className="text-xs text-muted-foreground">Consulta cursos, contenidos y avance publicados para tu finca.</p>
+            </div>
           </div>
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-indigo-200">
-            <button
-              onClick={() => navigate('/instructor/courses/basics')}
-              className="flex items-center gap-2 px-4 py-2 bg-card/80 hover:bg-card rounded-lg border border-indigo-200/50 hover:border-indigo-300 transition-all min-w-fit group"
-            >
-              <BookOpen className="h-4 w-4 text-indigo-500 group-hover:text-indigo-600" />
-              <div className="text-left">
-                <p className="text-xs font-medium text-foreground">Manejo Básico</p>
-                <p className="text-[11px] text-muted-foreground">8 lecciones • 2h</p>
-              </div>
-            </button>
-            <button
-              onClick={() => navigate('/instructor/courses/health')}
-              className="flex items-center gap-2 px-4 py-2 bg-card/80 hover:bg-card rounded-lg border border-indigo-200/50 hover:border-indigo-300 transition-all min-w-fit group"
-            >
-              <Heart className="h-4 w-4 text-destructive group-hover:text-destructive" />
-              <div className="text-left">
-                <p className="text-xs font-medium text-foreground">Sanidad Animal</p>
-                <p className="text-[11px] text-muted-foreground">12 lecciones • 4h</p>
-              </div>
-            </button>
-            <button
-              onClick={() => navigate('/instructor/courses/reproduction')}
-              className="flex items-center gap-2 px-4 py-2 bg-card/80 hover:bg-card rounded-lg border border-indigo-200/50 hover:border-indigo-300 transition-all min-w-fit group"
-            >
-              <Activity className="h-4 w-4 text-emerald-500 group-hover:text-emerald-600" />
-              <div className="text-left">
-                <p className="text-xs font-medium text-foreground">Reproducción</p>
-                <p className="text-[11px] text-muted-foreground">6 lecciones • 2.5h</p>
-              </div>
-            </button>
-            <button
-              onClick={() => navigate('/instructor/courses/records')}
-              className="flex items-center gap-2 px-4 py-2 bg-card/80 hover:bg-card rounded-lg border border-indigo-200/50 hover:border-indigo-300 transition-all min-w-fit group"
-            >
-              <Award className="h-4 w-4 text-warning group-hover:text-warning" />
-              <div className="text-left">
-                <p className="text-xs font-medium text-foreground">Registro ICA</p>
-                <p className="text-[11px] text-muted-foreground">10 lecciones • 3h</p>
-              </div>
-            </button>
-          </div>
-        </div>
+          <Button type="button" variant="outline" size="sm" className="shrink-0 text-indigo-700" onClick={() => navigate('/instructor/courses')}>
+            Abrir cursos
+          </Button>
+        </section>
 
         {/* KPIs clave de salud y operación */}
         {!loading && kpiCards.length > 0 && (
@@ -196,7 +146,7 @@ const InstructorDashboard: React.FC = () => {
                 const value =
                   typeof card.valor === 'number' && unit === '%'
                     ? card.valor.toFixed(1)
-                    : card.valor;
+                    : (card.valor ?? '—');
                 const iconNode =
                   kpiIconMap[card.id] ??
                   (card.icono ? <span className="text-lg">{card.icono}</span> : null);
@@ -388,12 +338,6 @@ const InstructorDashboard: React.FC = () => {
                 onClick={() => navigate('/instructor/fields')}
               />
               <DashboardStatsCard
-                title="Usuarios Activos"
-                icon={Users}
-                stat={stats?.usuarios_activos}
-                description="Personal activo"
-              />
-              <DashboardStatsCard
                 title="Alertas del Sistema"
                 icon={AlertTriangle}
                 stat={stats?.alertas_sistema}
@@ -403,29 +347,6 @@ const InstructorDashboard: React.FC = () => {
           )}
         </div>
 
-        {/* Card de Información */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Información del Sistema</CardTitle>
-            <CardDescription>
-              Las estadísticas se actualizan automáticamente cada 2 minutos
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Badge className={getStatusBadgeClass('success')}>
-                <span className="w-2 h-2 bg-success-500 rounded-full mr-2"></span>
-                Sistema Activo
-              </Badge>
-              <Badge variant="outline">
-                Optimizado con caché de 2 minutos
-              </Badge>
-              <Badge variant="outline">
-                {getStatValue(stats?.animales_registrados)} animales monitoreados
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

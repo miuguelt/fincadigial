@@ -319,6 +319,7 @@ export default function ProjectsPage() {
 	const planCRUDConfig: CRUDConfig<ManagementPlan, Partial<ManagementPlan>> = {
 		entityName: "Plan de Manejo",
 		title: "Planes de Manejo y Proyectos Ganaderos",
+		headerDescription: "Organiza proyectos, actividades y planes de manejo de la finca",
 		searchPlaceholder: "Buscar planes por nombre...",
 		columns: planColumns,
 		formSections: planFormSections,

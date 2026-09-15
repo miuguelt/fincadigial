@@ -28,6 +28,7 @@ export function suppressChromeExtensionErrors() {
 
     if (isExtensionError) {
       event.preventDefault();
+      event.stopImmediatePropagation?.();
       // No loguear para no saturar la consola
       return;
     }

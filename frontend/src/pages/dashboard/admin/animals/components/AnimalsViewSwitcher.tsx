@@ -26,7 +26,7 @@ export function AnimalsViewSwitcher() {
   };
 
   const viewButtonClass =
-    'h-9 flex-1 sm:flex-none justify-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 sm:px-3 text-xs font-bold';
+    'h-11 min-h-[44px] flex-1 sm:flex-none justify-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 sm:px-3 text-xs font-bold';
 
   return (
     <div className="flex min-w-0 flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full">

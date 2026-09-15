@@ -7,7 +7,7 @@ import { cn } from "@/shared/ui/cn";
  *
  * Estructura:
  * <div className="h-full min-h-0 bg-background/95 backdrop-blur-sm">
- *   <main className="container mx-auto px-4 sm:px-6 pt-0 pb-6 sm:pb-8 max-w-screen-xl">
+ *   <main className="w-full px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
  *     {header}
  *     <div className="space-y-4 sm:space-y-6">
  *       {children}
@@ -50,7 +50,7 @@ export function AppLayout({
   className,
   contentClassName,
 }: AppLayoutProps) {
-  const innerStackClasses = contentClassName ?? "space-y-5 sm:space-y-7";
+  const innerStackClasses = contentClassName ?? "space-y-4 sm:space-y-6";
   const isHFull = className?.includes("h-full") || className?.includes("flex-1");
   return (
     <div className={cn(
@@ -59,12 +59,12 @@ export function AppLayout({
     )}>
       <main
         className={cn(
-          "w-full max-w-full mx-auto px-4 sm:px-6 lg:px-7 xl:px-8 pt-4 sm:pt-5",
+          "w-full px-3 py-4 sm:px-6 sm:py-6 lg:px-8",
           // El canalón inferior solo aplica a páginas de alto natural. En una
           // pantalla a pantalla completa `sm:pb-10` sobrevivía al `pb-0` que
           // pasa la página (twMerge no fusiona variantes distintas) y dejaba
           // 40 px muertos bajo la tabla.
-          isHFull ? "flex-1 min-h-0 flex flex-col pb-0" : "pb-8 sm:pb-10",
+          isHFull ? "flex-1 min-h-0 flex flex-col pb-0" : "",
           className
         )}
       >

@@ -47,7 +47,7 @@ export const MultiFincaPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 sm:p-10 space-y-10 max-w-5xl mx-auto">
+    <div className="w-full p-6 sm:p-10 space-y-10">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-4xl font-black tracking-tighter text-foreground uppercase leading-none">

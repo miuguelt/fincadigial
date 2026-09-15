@@ -255,7 +255,10 @@ const SystemTelemetryWidget: React.FC = () => {
     setLoading(true);
     try {
       const res = await apiFetch({ url: "/health", method: "GET" } as any);
-      const data = res?.data ?? res;
+      // apiFetch devuelve AxiosResponse; el backend envuelve el payload en
+      // { success, data }. Leer el nivel correcto evita reportar la API y la
+      // base de datos como caídas cuando el endpoint sí respondió.
+      const data = res?.data?.data ?? res?.data ?? res;
       setHealth({
         status: data?.status ?? "unknown",
         database:

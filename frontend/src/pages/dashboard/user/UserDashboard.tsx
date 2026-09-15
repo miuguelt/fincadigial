@@ -7,7 +7,7 @@ import { FincaHeroBanner } from '@/widgets/finca/hero';
 const UserDashboard: React.FC = () => {
   return (
     <div className="bg-background px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
-      <div className="w-full max-w-6xl mx-auto">
+      <div className="w-full">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
           <div className="flex items-center">

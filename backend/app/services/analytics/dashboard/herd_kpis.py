@@ -17,10 +17,10 @@ TREND_WEEKS = 4
 
 @dataclass(frozen=True)
 class HerdKpis:
-    health_index: float
-    vaccination_coverage: float
-    control_compliance: float
-    herd_growth: float
+    health_index: float | None
+    vaccination_coverage: float | None
+    control_compliance: float | None
+    herd_growth: float | None
 
 
 def herd_kpis(
@@ -33,7 +33,10 @@ def herd_kpis(
     """
     active = summary.active_animals or 0
     if active == 0:
-        return HerdKpis(0.0, 0.0, 0.0, 0.0)
+        # Las tasas no están definidas si no hay animales sobre los cuales
+        # calcularlas. Null permite que la interfaz muestre “—” en vez de
+        # presentar un cero como resultado sanitario.
+        return HerdKpis(None, None, None, None)
 
     return HerdKpis(
         health_index=round(((active - summary.sick_animals) / active) * 100, 1),
@@ -83,7 +86,11 @@ def health_trend(finca_id, has_animals: bool) -> list[dict]:
         if total > 0:
             value = max(0, 100 - ((sick / total) * 100))
         else:
-            # Sin controles esa semana no hay evidencia de enfermedad.
-            value = 100 if has_animals else 0
-        trend.append({"name": f"Sem {index + 1}", "value": round(value, 1)})
+            # La ausencia de controles no es evidencia de salud. El cliente
+            # presenta este punto como desconocido y no lo dibuja como 0/100.
+            value = None
+        trend.append({
+            "name": f"Sem {index + 1}",
+            "value": round(value, 1) if value is not None else None,
+        })
     return trend

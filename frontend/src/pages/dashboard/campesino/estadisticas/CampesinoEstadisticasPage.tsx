@@ -22,6 +22,7 @@ import { CalculadorasCampesinas } from './components/CalculadorasCampesinas';
 import { AlertasReproductivasCampesinas } from './components/AlertasReproductivasCampesinas';
 import { SemaforoPotrerosCard } from '@/features/potreros';
 import { LiquidacionLecheModal } from '@/widgets/milk';
+import { CampesinoViewShell } from '@/widgets/layout/CampesinoViewShell';
 
 type TabType = 'termometro' | 'engorde_leche' | 'potreros' | 'reproduccion' | 'calculadoras';
 
@@ -41,46 +42,28 @@ export const CampesinoEstadisticasPage: React.FC = () => {
     rawDashboard,
   } = useCampesinoEstadisticas();
 
-  const vacCoverage = rawDashboard?.kpi_resumen?.cards?.find((c: any) => c.id === 'vaccination_coverage')?.valor ?? 100;
-  const controlComp = rawDashboard?.kpi_resumen?.cards?.find((c: any) => c.id === 'control_compliance')?.valor ?? 100;
+  const vacCoverage = rawDashboard?.kpi_resumen?.cards?.find((c: any) => c.id === 'vaccination_coverage')?.valor;
+  const controlComp = rawDashboard?.kpi_resumen?.cards?.find((c: any) => c.id === 'control_compliance')?.valor;
   const activeAnimals = rawDashboard?.animales_activos?.valor ?? demographics.totalAlive;
   const sickAnimals = rawDashboard?.animales_enfermos?.valor ?? 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50/40 via-background to-emerald-50/20 pb-16 dark:from-green-950/20 dark:via-background dark:to-emerald-950/10">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/60 pb-5">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="icon"
-              className="rounded-2xl shrink-0"
-              onClick={() => navigate('/campesino')}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                Mi Finca · Herramientas Numéricas
-              </p>
-              <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight flex items-center gap-2">
-                <span>📊</span> Termómetro y estadísticas del ganado
-              </h1>
-            </div>
-          </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={refetchAll}
-            disabled={isLoading}
-            className="rounded-xl self-start sm:self-auto"
-          >
-            <RefreshCw className={`h-4 w-4 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
-            Actualizar Cifras
-          </Button>
-        </div>
+    <CampesinoViewShell
+      title="Termómetro y estadísticas del ganado"
+      description="Herramientas numéricas para revisar salud, crecimiento, pastoreo y producción."
+      icon={<HeartPulse className="h-5 w-5 text-white" aria-hidden="true" />}
+      leading={(
+        <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl" onClick={() => navigate('/campesino')} aria-label="Volver a mi panel">
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+      )}
+      actions={(
+        <Button variant="outline" onClick={refetchAll} disabled={isLoading} className="h-11 w-full rounded-xl sm:w-auto">
+          <RefreshCw className={`mr-1.5 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          Actualizar cifras
+        </Button>
+      )}
+    >
 
         {/* Tab Selector */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
@@ -229,8 +212,7 @@ export const CampesinoEstadisticasPage: React.FC = () => {
           onClose={() => setShowLiquidacion(false)}
           onSuccess={refetchAll}
         />
-      </div>
-    </div>
+    </CampesinoViewShell>
   );
 };
 

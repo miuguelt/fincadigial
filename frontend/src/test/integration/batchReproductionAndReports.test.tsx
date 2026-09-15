@@ -230,8 +230,8 @@ describe("Módulo de Acciones Masivas y Reportes", () => {
       { value: 2, label: "Jersey" },
     ];
 
-    it("genera reporte PDF sin errores", () => {
-      animalReportService.exportToPDF(testAnimals, testBreeds);
+    it("genera reporte PDF sin errores", async () => {
+      await animalReportService.exportToPDF(testAnimals, testBreeds);
       expect(mockSave).toHaveBeenCalledWith(expect.stringContaining("VillaLuz_ReporteGanado_"));
     });
 

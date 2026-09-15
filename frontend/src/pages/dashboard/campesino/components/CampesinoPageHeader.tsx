@@ -41,7 +41,7 @@ export const CampesinoPageHeader: React.FC<CampesinoPageHeaderProps> = ({
 			<div className="absolute right-0 top-0 w-44 h-44 bg-white/5 rounded-full -translate-y-12 translate-x-12" />
 			<div className="absolute right-12 bottom-0 w-28 h-28 bg-white/5 rounded-full translate-y-10" />
 
-			<div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
+			<div className="w-full flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
 				<div className="space-y-2">
 					{showBackButton && (
 						<button

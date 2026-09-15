@@ -5,14 +5,15 @@ import { campesinoServices, WaterSource } from '@/entities/campesino';
 import { Button } from '@/shared/ui/button';
 import { Plus, X, Loader2, RefreshCw, Search, Droplets } from 'lucide-react';
 import { useToast } from '@/app/providers/ToastContext';
+import { CampesinoViewShell } from '@/widgets/layout/CampesinoViewShell';
 
 const SOURCE_TYPES = [
-  { value: 'stream',       label: 'Quebrada/Río', emoji: '🏞️', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', border: 'border-blue-300 dark:border-blue-700' },
-  { value: 'well',         label: 'Pozo',         emoji: '🪣', color: 'bg-stone-100 text-stone-800 dark:bg-stone-900/30 dark:text-stone-300', border: 'border-stone-300 dark:border-stone-600' },
-  { value: 'reservoir',    label: 'Reservorio',   emoji: '💦', color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',   border: 'border-cyan-300 dark:border-cyan-700' },
-  { value: 'rainwater',    label: 'Agua Lluvia',  emoji: '🌧️', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300', border: 'border-indigo-300 dark:border-indigo-700' },
-  { value: 'public_supply',label: 'Acueducto',   emoji: '🚰', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', border: 'border-green-300 dark:border-green-700' },
-  { value: 'other',        label: 'Otro',         emoji: '💧', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',   border: 'border-gray-300 dark:border-gray-700' },
+  { value: 'stream',       label: 'Quebrada/Río', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', border: 'border-blue-300 dark:border-blue-700' },
+  { value: 'well',         label: 'Pozo',         color: 'bg-stone-100 text-stone-800 dark:bg-stone-900/30 dark:text-stone-300', border: 'border-stone-300 dark:border-stone-600' },
+  { value: 'reservoir',    label: 'Reservorio',   color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',   border: 'border-cyan-300 dark:border-cyan-700' },
+  { value: 'rainwater',    label: 'Agua Lluvia',  color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300', border: 'border-indigo-300 dark:border-indigo-700' },
+  { value: 'public_supply',label: 'Acueducto',   color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', border: 'border-green-300 dark:border-green-700' },
+  { value: 'other',        label: 'Otro',         color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',   border: 'border-gray-300 dark:border-gray-700' },
 ];
 
 const RELIABILITY_CFG: Record<string, { label: string; color: string }> = {
@@ -89,18 +90,16 @@ const WaterSourcesPage: React.FC = () => {
   const filtered = sources.filter(s => !search || s.name?.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-cyan-50/40 to-background dark:from-cyan-950/10 dark:to-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 space-y-8 md:space-y-12">
-
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-foreground">💧 Fuentes de Agua</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">{sources.length} fuente{sources.length !== 1 ? 's' : ''} registrada{sources.length !== 1 ? 's' : ''}</p>
-          </div>
-          <Button onClick={openNew} className="bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl gap-1.5 shadow-md shadow-cyan-200 dark:shadow-cyan-950">
-            <Plus className="w-4 h-4" /> Nueva
-          </Button>
-        </div>
+    <CampesinoViewShell
+      title="Fuentes de agua"
+      description={`${sources.length} fuente${sources.length !== 1 ? 's' : ''} registrada${sources.length !== 1 ? 's' : ''}`}
+      icon={<Droplets className="h-5 w-5 text-white" aria-hidden="true" />}
+      actions={(
+        <Button onClick={openNew} className="h-11 w-full gap-1.5 rounded-xl font-bold sm:w-auto">
+          <Plus className="h-4 w-4" /> Nueva
+        </Button>
+      )}
+    >
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -134,8 +133,8 @@ const WaterSourcesPage: React.FC = () => {
                   onClick={() => openEdit(source)}
                 >
                   <div className="flex items-start gap-4">
-                    <div className="w-14 h-14 rounded-xl bg-white/60 dark:bg-white/10 flex items-center justify-center text-3xl shrink-0 shadow-sm">
-                      {cfg.emoji}
+                    <div className="w-14 h-14 rounded-xl bg-white/60 dark:bg-white/10 flex items-center justify-center text-primary shrink-0 shadow-sm">
+                      <Droplets className="w-6 h-6" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
@@ -145,11 +144,10 @@ const WaterSourcesPage: React.FC = () => {
                         </div>
                         <div className="flex flex-col items-end gap-1">
                           <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${s.is_potable ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'}`}>
-                            {s.is_potable ? '✅ Potable' : '⚠️ No potable'}
+                            {s.is_potable ? 'Potable' : 'No potable'}
                           </span>
                           {relCfg && <span className={`text-xs font-semibold ${relCfg.color}`}>Confiabilidad: {relCfg.label}</span>}
-                        </div>
-                      </div>
+                          </div>
 
                       {s.capacity_liters && (
                         <div className="mt-2.5">
@@ -166,6 +164,7 @@ const WaterSourcesPage: React.FC = () => {
                       )}
                       {s.notes && <p className="text-xs opacity-70 mt-2 line-clamp-1">{s.notes}</p>}
                     </div>
+                    </div>
                     <button onClick={e => { e.stopPropagation(); handleDelete(s.id); }}
                       className="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-950/30 text-current hover:text-red-600 opacity-50 hover:opacity-100 transition-all shrink-0">
                       <X className="w-4 h-4" />
@@ -177,13 +176,11 @@ const WaterSourcesPage: React.FC = () => {
           </div>
         )}
         {!loading && <button onClick={load} className="w-full flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors"><RefreshCw className="w-4 h-4" /> Actualizar</button>}
-      </div>
-
       {/* Modal */}
       <GenericModal
         isOpen={showForm}
         onOpenChange={(val) => !val && setShowForm(false)}
-        title={editId ? '✏️ Editar Fuente' : '💧 Nueva Fuente de Agua'}
+        title={editId ? 'Editar Fuente de Agua' : 'Nueva Fuente de Agua'}
         size="md"
         themeColor="cyan"
         enableBackdropBlur
@@ -204,7 +201,8 @@ const WaterSourcesPage: React.FC = () => {
                 <button key={t.value} onClick={() => setForm(f => ({ ...f, source_type: t.value }))}
                   className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 text-xs font-semibold transition-all ${form.source_type === t.value ? `${t.border} ${t.color}` : 'border-border bg-background text-muted-foreground'}`}
                 >
-                  <span className="text-xl">{t.emoji}</span>{t.label}
+                  <Droplets className="w-5 h-5" />
+                  {t.label}
                 </button>
               ))}
             </div>
@@ -259,7 +257,7 @@ const WaterSourcesPage: React.FC = () => {
           </div>
         </div>
       </GenericModal>
-    </div>
+    </CampesinoViewShell>
   );
 };
 

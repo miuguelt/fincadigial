@@ -20,7 +20,6 @@ import {
 } from '@/shared/ui/icons';
 import { useOnlineStatus } from '@/shared/hooks/useOnlineStatus';
 import { LiveStats } from '@/widgets/dashboard/LiveStats';
-import { AIInsightsWidget } from '@/widgets/dashboard/AIInsightsWidget';
 import { FincaHeroBanner } from '@/widgets/finca/hero';
 
 import {
@@ -104,7 +103,7 @@ export default function OperarioDashboard() {
 
   return (
     <div className="h-full w-full overflow-y-auto">
-      <div className="mx-auto w-full max-w-[1600px] space-y-6 px-4 py-5 sm:px-6 sm:py-7 lg:space-y-8 lg:px-8 lg:py-8">
+      <div className="w-full space-y-6 px-4 py-5 sm:px-6 sm:py-7 lg:space-y-8 lg:px-8 lg:py-8">
       {/* Header */}
       <section className="flex flex-col gap-5 rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6 lg:flex-row lg:items-center lg:justify-between lg:p-8">
         <div className="min-w-0">
@@ -147,9 +146,6 @@ export default function OperarioDashboard() {
 
       {/* KPIs en tiempo real */}
       <LiveStats />
-
-      {/* Asistente IA */}
-      <AIInsightsWidget />
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">

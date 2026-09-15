@@ -1,6 +1,7 @@
 import { InternalAxiosRequestConfig } from 'axios';
 import { normalizeApiPath } from '../urlUtils';
 import { refreshClient } from './instances';
+import { hasClientSession } from './session';
 import { DEBUG_LOG } from './settings';
 
 /**
@@ -13,6 +14,25 @@ type AuthGateState = 'unknown' | 'checking' | 'ready' | 'unauthenticated';
 
 let authGateState: AuthGateState = 'unknown';
 let authGatePromise: Promise<void> | null = null;
+
+export function markAuthGateReady(): void {
+  authGateState = 'ready';
+  authGatePromise = null;
+}
+
+export function markAuthGateUnauthenticated(): void {
+  authGateState = 'unauthenticated';
+  authGatePromise = null;
+}
+
+export function resetAuthGate(): void {
+  authGateState = 'unknown';
+  authGatePromise = null;
+}
+
+export function getAuthGateState(): AuthGateState {
+  return authGateState;
+}
 
 /** Normaliza URL relativa y la pasa a minúsculas sin barra inicial. */
 export function normalizePath(url?: string): string {
@@ -51,6 +71,14 @@ export function shouldSkipGate(config: InternalAxiosRequestConfig): boolean {
 /** Asegura que la sesión esté lista llamando a /auth/me una sola vez (single-flight). */
 export async function ensureAuthReady(): Promise<void> {
   if (authGateState === 'ready' || authGateState === 'unauthenticated') return;
+
+  // Si el cliente ya tiene una sesión activa (validada previamente), no bloquear las peticiones:
+  // la sesión está establecida y las credenciales viajan con la solicitud.
+  if (hasClientSession()) {
+    authGateState = 'ready';
+    return;
+  }
+
   if (authGatePromise) return authGatePromise;
 
   authGateState = 'checking';

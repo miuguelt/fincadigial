@@ -14,6 +14,7 @@ import {
 } from '@/shared/ui/icons';
 import { cn } from '@/shared/ui/cn';
 import { formatDateColombia, getTodayColombia } from '@/shared/utils/dateUtils';
+import { TaskCompletionBadge } from './TaskCompletionBadge';
 
 interface CampesinoTaskCardProps {
   task: Task;
@@ -144,7 +145,7 @@ export const CampesinoTaskCard: React.FC<CampesinoTaskCardProps> = ({
 
             <Badge
               variant={priorityVariants[task.priority] || 'secondary'}
-              className="text-[10px] uppercase font-bold tracking-wider rounded-lg"
+              className="text-[11px] uppercase font-bold tracking-wider rounded-lg"
             >
               {task.priority}
             </Badge>
@@ -181,24 +182,30 @@ export const CampesinoTaskCard: React.FC<CampesinoTaskCardProps> = ({
           {fieldName && (
             <div className="flex items-center gap-1.5 text-foreground/80 font-medium">
               <IconMapPin size="sm" className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-              <span className="truncate">Potrero: <strong className="text-foreground">{fieldName}</strong></span>
+              <span className="fit-clamp">Potrero: <strong className="text-foreground">{fieldName}</strong></span>
             </div>
           )}
 
           {animalName && (
             <div className="flex items-center gap-1.5 text-foreground/80 font-medium">
               <IconPaw size="sm" className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
-              <span className="truncate">Animal: <strong className="text-foreground">{animalName}</strong></span>
+              <span className="fit-clamp">Animal: <strong className="text-foreground">{animalName}</strong></span>
             </div>
           )}
 
           {assigneeName && (
             <div className="flex items-center gap-1.5 text-foreground/80 font-medium sm:col-span-2">
               <IconUser size="sm" className="text-sky-600 dark:text-sky-400 flex-shrink-0" />
-              <span className="truncate">Encargado: <strong className="text-foreground">{assigneeName}</strong></span>
+              <span className="fit-clamp">Encargado: <strong className="text-foreground">{assigneeName}</strong></span>
             </div>
           )}
         </div>
+
+        {task.status === 'Completada' && (
+          <div className="mt-3">
+            <TaskCompletionBadge task={task} compact />
+          </div>
+        )}
       </div>
 
       {/* Botones de acción táctiles de 1 Toque (Min 44px de alto) */}
@@ -257,8 +264,7 @@ export const CampesinoTaskCard: React.FC<CampesinoTaskCardProps> = ({
         {task.status === 'Completada' && (
           <div className="w-full flex items-center justify-between gap-2">
             <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
-              <IconCheck size="sm" />
-              Labor realizada con éxito
+              <IconCheck size="sm" /> Labor realizada con éxito
             </span>
 
             <Button

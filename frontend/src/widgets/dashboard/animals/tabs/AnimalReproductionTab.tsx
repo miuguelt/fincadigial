@@ -79,7 +79,8 @@ export const AnimalReproductionTab: React.FC<AnimalReproductionTabProps> = ({
   // Métricas del historial reproductivo
   const repMetrics = reproductionHistory?.metrics || {};
   const activePregnancy = reproductionHistory?.active_pregnancy || null;
-  const events: any[] = reproductionHistory?.events || [];
+  const historyEvents = reproductionHistory?.events;
+  const events: any[] = useMemo(() => historyEvents || [], [historyEvents]);
 
   // Gestación bovina estándar: ~283 días
   const GESTATION_DAYS = 283;
@@ -544,7 +545,7 @@ export const AnimalReproductionTab: React.FC<AnimalReproductionTabProps> = ({
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-black text-foreground truncate">
+                      <span className="text-xs font-black text-foreground fit-clamp">
                         {cria.animal?.record || `Cría #${cria.id}`}
                       </span>
                       <Badge variant="outline" className="text-[11px] px-1 py-0 font-bold">
@@ -676,7 +677,7 @@ export const AnimalReproductionTab: React.FC<AnimalReproductionTabProps> = ({
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-bold text-foreground truncate">
+                        <span className="text-xs font-bold text-foreground fit-clamp">
                           {item.improvement_type ||
                             item.genetic_event_technique ||
                             item.genetic_event_techique ||

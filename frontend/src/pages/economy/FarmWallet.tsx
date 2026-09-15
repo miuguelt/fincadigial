@@ -90,7 +90,7 @@ const FarmWallet: React.FC = () => {
       </header>
 
       {/* Balance Card */}
-      <div className="max-w-2xl mx-auto mb-12">
+      <div className="w-full mb-12">
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -115,7 +115,7 @@ const FarmWallet: React.FC = () => {
       </div>
 
       {/* Quick Action Buttons */}
-      <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto mb-12">
+      <div className="grid grid-cols-2 gap-4 w-full mb-12">
         <button className="bg-card p-6 rounded-[2.5rem] border-2 border-success-500/20 flex flex-col items-center gap-2 shadow-sm hover:bg-success-500/5 transition-all active:scale-95 group">
           <div className="p-4 bg-success-500 rounded-lg text-white shadow-sm group-hover:scale-110 transition-transform">
             <IconPlus className="w-8 h-8" />
@@ -131,7 +131,7 @@ const FarmWallet: React.FC = () => {
       </div>
 
       {/* Transaction List */}
-      <div className="max-w-2xl mx-auto bg-card rounded-[3rem] p-8 shadow-sm border border-slate-100">
+      <div className="w-full bg-card rounded-[3rem] p-8 shadow-sm border border-slate-100">
         <div className="flex justify-between items-center mb-8">
           <h3 className="text-xl font-black text-foreground">Movimientos</h3>
           <div className="flex bg-secondary/50 p-1 rounded-[var(--radius-full)]">

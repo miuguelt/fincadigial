@@ -11,8 +11,7 @@ import {
   Bar,
   Cell,
 } from 'recharts';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { getPdfEngine } from '@/shared/utils/pdfExport';
 import {
   TrendingUp,
   Syringe,
@@ -141,13 +140,14 @@ export const AdminTreatmentAnalyticsPage: React.FC = () => {
   }, [healthStats]);
 
   // 5. Generador de Reporte PDF Clínico
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     if (!healthStats) {
       showToast('No hay datos suficientes para generar el reporte.', 'error');
       return;
     }
 
     try {
+      const { jsPDF, autoTable } = await getPdfEngine();
       const doc = new jsPDF();
 
       const runAutoTable = (docObj: any, options: any) => {

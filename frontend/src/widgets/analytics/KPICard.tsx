@@ -28,6 +28,10 @@ interface KPICardProps {
    * Para encabezados que comparten pantalla con una tabla.
    */
   compact?: boolean;
+  /** Acción al hacer clic en la tarjeta */
+  onClick?: () => void;
+  /** Clases CSS adicionales */
+  className?: string;
 }
 
 /** Con menos de dos puntos no hay línea que trazar, sólo un adorno. */
@@ -116,6 +120,8 @@ const KPICard: React.FC<KPICardProps> = ({
   goodWhenHigher = true,
   compact = false,
   trendData,
+  onClick,
+  className,
 }) => {
   const tone = getKpiTone(change, goodWhenHigher);
   const formattedChange = useMemo(() => formatChangePercentage(change), [change]);
@@ -131,7 +137,20 @@ const KPICard: React.FC<KPICardProps> = ({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 120, damping: 18 }}
-      className="group relative bg-card/50 dark:bg-card/30 backdrop-blur-xl border border-border/50 rounded-lg overflow-hidden shadow-sm hover:shadow-xl hover:shadow-primary/6 hover:-translate-y-0.5 transition-all duration-300"
+      onClick={onClick}
+      onKeyDown={onClick ? (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      } : undefined}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      className={cn(
+        "group relative bg-card/50 dark:bg-card/30 backdrop-blur-xl border border-border/50 rounded-lg overflow-hidden shadow-sm hover:shadow-xl hover:shadow-primary/6 hover:-translate-y-0.5 transition-all duration-300",
+        onClick && "cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+        className
+      )}
     >
       {/* Barra de acento superior */}
       <div className={cn(

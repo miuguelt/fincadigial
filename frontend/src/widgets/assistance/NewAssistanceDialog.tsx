@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Dialog, DialogContent } from '@/shared/ui/dialog';
-import { Button } from '@/shared/ui/button';
-import { CATEGORIES, PRIORITY_OPTIONS } from './assistance.constants';
-import { AudioLines, BellRing, Camera, ChevronLeft, Mic, Send, Square } from 'lucide-react';
+import { CATEGORIES } from './assistance.constants';
+import { NewAssistanceDialogView } from './NewAssistanceDialogView';
 
 type FormData = {
   title: string;
@@ -72,14 +70,14 @@ export const NewAssistanceDialog = React.memo<NewAssistanceDialogProps>(({ open,
     if (recorderRef.current?.state !== 'inactive') recorderRef.current?.stop();
   }, []);
 
-  const handleClose = (open: boolean) => {
-    if (!open) { reset(); }
-    onOpenChange(open);
+  const handleClose = (isOpen: boolean) => {
+    if (!isOpen) { reset(); }
+    onOpenChange(isOpen);
   };
 
   const pickCategory = (value: string) => {
     const cat = CATEGORIES.find(c => c.value === value);
-    setForm(prev => ({ ...prev, category: value, title: cat ? `Problema de ${cat.label.toLowerCase()}` : '' }));
+    setForm(prev => ({ ...prev, category: value, title: cat ? `Problema en ${cat.label.toLowerCase()}` : '' }));
     setStep(2);
   };
 
@@ -176,142 +174,30 @@ export const NewAssistanceDialog = React.memo<NewAssistanceDialogProps>(({ open,
   const isStep2Valid = form.description.trim().length >= 10;
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto p-0">
-        <div className="p-6">
-          {step === 1 && (
-            <div className="space-y-5">
-              <div className="text-center space-y-1">
-                <h2 className="text-lg font-semibold text-foreground">¿Qué tipo de problema tienes?</h2>
-                <p className="text-sm text-muted-foreground">Elige una opción para que podamos ayudarte mejor</p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {CATEGORIES.map(cat => {
-                  const Icon = cat.icon;
-                  return (
-                    <button
-                      key={cat.value}
-                      onClick={() => pickCategory(cat.value)}
-                      className={`flex items-center gap-3 p-4 rounded-xl border-2 border-border/50 hover:border-primary/50 transition-all text-left ${cat.bg} hover:shadow-md`}
-                    >
-                      <div className={`w-10 h-10 rounded-lg ${cat.bg} flex items-center justify-center`}>
-                        <Icon className={`w-5 h-5 ${cat.color}`} />
-                      </div>
-                      <span className="font-medium text-sm text-foreground">{cat.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-5">
-              <button type="button" onClick={() => setStep(1)} className="flex min-h-11 items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-                <ChevronLeft className="w-4 h-4" /> Volver
-              </button>
-              <div className="space-y-1">
-                <h2 className="text-lg font-semibold text-foreground">Cuéntanos qué está pasando</h2>
-                <p className="text-sm text-muted-foreground">Describa el problema con sus propias palabras</p>
-              </div>
-              <textarea
-                value={form.description}
-                onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Ej: Se están poniendo las hojas del maíz amarillas y tienen manchas marrones..."
-                className="w-full min-h-[140px] p-4 rounded-xl border border-border/50 bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                style={{ fontSize: '16px' }}
-              />
-              <div className="grid gap-2 sm:flex sm:flex-wrap sm:items-center">
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  onChange={handlePhoto}
-                  className="hidden"
-                  id="photo-input"
-                />
-                <input ref={audioFileRef} type="file" accept="audio/*" capture className="hidden" id="audio-input" onChange={handleAudioFile} />
-                <Button type="button" variant="outline" className="min-h-11 justify-start" onClick={() => fileRef.current?.click()}>
-                  <Camera className="h-4 w-4" aria-hidden />
-                  {form.photo ? 'Cambiar foto' : 'Agregar foto'}
-                </Button>
-                <Button type="button" variant={recording ? 'destructive' : 'outline'} className="min-h-11 justify-start" onClick={recording ? stopRecording : startRecording}>
-                  {recording ? <Square className="h-4 w-4" aria-hidden /> : <Mic className="h-4 w-4" aria-hidden />}
-                  {recording ? 'Detener audio' : 'Grabar audio'}
-                </Button>
-                {form.photoPreview && (
-                  <div className="flex min-w-0 items-center gap-2 rounded-xl border border-border/50 p-2">
-                    <img src={form.photoPreview} alt="Vista previa de la foto" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
-                    <span className="min-w-0 flex-1 break-words text-xs text-muted-foreground">{form.photo?.name}</span>
-                    <button type="button" onClick={removePhoto} className="min-h-11 shrink-0 rounded-lg px-3 text-sm font-semibold text-destructive hover:bg-destructive/10">Quitar</button>
-                  </div>
-                )}
-                {form.audio && audioPreview && (
-                  <div className="w-full min-w-0 rounded-xl border border-border/50 p-3">
-                    <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
-                      <AudioLines className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-                      <span className="min-w-0 flex-1 break-words">{form.audio.name}</span>
-                      <button type="button" onClick={removeAudio} className="min-h-11 rounded-lg px-3 text-sm font-semibold text-destructive hover:bg-destructive/10">Quitar</button>
-                    </div>
-                    <audio controls src={audioPreview} className="h-10 w-full" aria-label="Reproducir audio del problema" />
-                  </div>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">Adjunte una foto o grabe un audio corto para que el veterinario entienda mejor el problema.</p>
-              {mediaError && <p role="alert" className="text-sm font-semibold text-destructive">{mediaError}</p>}
-              <div className="flex justify-end">
-                <Button type="button" onClick={() => setStep(3)} disabled={!isStep2Valid} size="lg" className="min-h-11 w-full sm:w-auto">
-                  Continuar
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="space-y-5">
-              <button type="button" onClick={() => setStep(2)} className="flex min-h-11 items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-                <ChevronLeft className="w-4 h-4" /> Volver
-              </button>
-              <div className="space-y-1">
-                <h2 className="text-lg font-semibold text-foreground">¿Qué tan urgente es?</h2>
-                <p className="text-sm text-muted-foreground">Esto nos ayuda a priorizar su solicitud</p>
-              </div>
-              <div className="space-y-2">
-                {PRIORITY_OPTIONS.map(opt => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setForm(prev => ({ ...prev, priority: opt.value }))}
-                    className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
-                      form.priority === opt.value
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border/50 hover:border-primary/30'
-                    }`}
-                  >
-                    <span className="text-xl">{opt.icon}</span>
-                    <span className="font-medium text-sm text-foreground">{opt.label}</span>
-                  </button>
-                ))}
-              </div>
-              <div className="flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100">
-                <BellRing className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-                <span>
-                  {recipientCount > 0
-                    ? `Al enviarla avisaremos a ${recipientCount} veterinario${recipientCount === 1 ? '' : 's'} de tu finca.`
-                    : 'La solicitud quedará en la bandeja hasta que la finca vincule un veterinario.'}
-                </span>
-              </div>
-              <div className="flex justify-end pt-2">
-                <Button type="button" onClick={handleSubmit} loading={saving} size="lg" className="min-h-11 w-full sm:w-auto">
-                  <Send className="w-4 h-4 mr-2" />
-                  Enviar solicitud
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+    <NewAssistanceDialogView
+      open={open}
+      step={step}
+      setStep={setStep}
+      form={form}
+      setForm={setForm}
+      saving={saving}
+      recording={recording}
+      audioPreview={audioPreview}
+      mediaError={mediaError}
+      fileRef={fileRef}
+      audioFileRef={audioFileRef}
+      recipientCount={recipientCount}
+      handleClose={handleClose}
+      pickCategory={pickCategory}
+      handlePhoto={handlePhoto}
+      handleAudioFile={handleAudioFile}
+      removePhoto={removePhoto}
+      removeAudio={removeAudio}
+      stopRecording={stopRecording}
+      startRecording={startRecording}
+      handleSubmit={handleSubmit}
+      isStep2Valid={isStep2Valid}
+    />
   );
 });
 

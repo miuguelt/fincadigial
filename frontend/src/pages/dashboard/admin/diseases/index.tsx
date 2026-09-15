@@ -93,6 +93,7 @@ const formSections: CRUDFormSection<DiseaseForm>[] = [
 // Configuración CRUD
 const crudConfig: CRUDConfig<DiseaseResponse & { [k: string]: any }, DiseaseForm> = {
   title: 'Enfermedades',
+  headerDescription: 'Catálogo y seguimiento de enfermedades del ganado',
   entityName: 'Enfermedad',
   columns,
   formSections,

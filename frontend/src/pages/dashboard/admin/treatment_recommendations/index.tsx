@@ -34,6 +34,7 @@ const AdminTreatmentRecommendationsPage: React.FC = () => {
 	>(
 		() => ({
 			title: "Recomendaciones y manejo veterinario",
+			headerDescription: "Centraliza orientaciones para el cuidado y seguimiento animal",
 			entityName: "Recomendación veterinaria",
 			columns: buildRecommendationColumns(animalMap),
 			formSections: recommendationFormSections(animalOptions || []),

@@ -43,10 +43,12 @@ describe('distribución adaptable del registro de parto', () => {
   });
 
   it('abre el diálogo casi a todo el ancho disponible con un límite cómodo en escritorio', () => {
-    const pageSource = readFileSync(
-      resolve(process.cwd(), 'src/pages/dashboard/admin/reproduction/index.tsx'),
-      'utf8'
-    );
+    const pageSource = [
+      'src/pages/dashboard/admin/reproduction/index.tsx',
+      'src/pages/dashboard/admin/reproduction/ReproductionHubModals.tsx',
+    ]
+      .map((path) => readFileSync(resolve(process.cwd(), path), 'utf8'))
+      .join('\n');
 
     expect(pageSource).toMatch(/<DialogContent[\s\S]*?fullWidth[\s\S]*?assisted-calving-dialog/);
     expect(pageSource).toContain('max-w-[1180px]');

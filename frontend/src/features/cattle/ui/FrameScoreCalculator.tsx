@@ -62,7 +62,7 @@ const FrameScoreCalculator: React.FC = () => {
     };
   };
   return (
-    <div className="bg-card rounded-[2.5rem] shadow-md shadow-slate-200/50 border border-border overflow-hidden max-w-md mx-auto">
+    <div className="w-full bg-card rounded-[2.5rem] shadow-md shadow-slate-200/50 border border-border overflow-hidden">
       {" "}
       <div className="bg-emerald-600 p-8 text-white relative">
         {" "}

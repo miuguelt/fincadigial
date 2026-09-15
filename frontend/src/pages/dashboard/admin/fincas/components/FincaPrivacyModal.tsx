@@ -51,7 +51,7 @@ export const FincaPrivacyModal: React.FC<FincaPrivacyModalProps> = ({
           <div>
             <h4 className="font-bold text-foreground mb-2 flex items-center gap-2">
               <span>Niveles de Privacidad por Finca</span>
-              <Badge variant="outline" className="text-[10px] uppercase font-bold">
+              <Badge variant="outline" className="text-[11px] uppercase font-bold">
                 Configurable por Finca
               </Badge>
             </h4>
@@ -68,7 +68,7 @@ export const FincaPrivacyModal: React.FC<FincaPrivacyModalProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-foreground text-xs">Mínima (Recomendada para producción comercial)</span>
-                    <Badge variant="outline" className="text-[10px] border-amber-500/40 text-amber-700 dark:text-amber-300">
+                    <Badge variant="outline" className="text-[11px] border-amber-500/40 text-amber-700 dark:text-amber-300">
                       Protegida
                     </Badge>
                   </div>
@@ -86,7 +86,7 @@ export const FincaPrivacyModal: React.FC<FincaPrivacyModalProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-foreground text-xs">Estándar (Fincas gremiales o asociativas)</span>
-                    <Badge variant="outline" className="text-[10px] border-sky-500/40 text-sky-700 dark:text-sky-300">
+                    <Badge variant="outline" className="text-[11px] border-sky-500/40 text-sky-700 dark:text-sky-300">
                       Intermedia
                     </Badge>
                   </div>
@@ -104,7 +104,7 @@ export const FincaPrivacyModal: React.FC<FincaPrivacyModalProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-foreground text-xs">Completa (Fincas pedagógicas o demostrativas)</span>
-                    <Badge variant="outline" className="text-[10px] border-emerald-500/40 text-emerald-700 dark:text-emerald-300">
+                    <Badge variant="outline" className="text-[11px] border-emerald-500/40 text-emerald-700 dark:text-emerald-300">
                       Pública
                     </Badge>
                   </div>

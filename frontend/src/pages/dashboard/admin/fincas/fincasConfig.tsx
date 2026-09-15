@@ -1,10 +1,31 @@
+import { useState } from 'react';
 import { Building2, Eye, Globe, Lock } from 'lucide-react';
 import { Badge } from '@/shared/ui/badge';
 import type { CRUDConfig } from '../../../../shared/types/crud';
 import type { FarmAdminInput, FarmAdminRecord } from './types';
 
+function FincaThumbnail({ src, name }: { src?: string | null; name: string }) {
+  const [error, setError] = useState(false);
+  if (!src || error) {
+    return (
+      <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+        <Building2 className="h-4 w-4" />
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={name}
+      onError={() => setError(true)}
+      className="h-8 w-8 rounded-lg object-cover border border-border shrink-0"
+    />
+  );
+}
+
 export const fincasConfig: CRUDConfig<FarmAdminRecord, FarmAdminInput> = {
   title: 'Todas las Fincas del Sistema',
+  headerDescription: 'Administra fincas, operación, imágenes y políticas de privacidad',
   entityName: 'Finca',
   columns: [
     { label: 'ID', key: 'id', sortable: true, width: 70 },
@@ -14,17 +35,10 @@ export const fincasConfig: CRUDConfig<FarmAdminRecord, FarmAdminInput> = {
       sortable: true,
       render: (_value, item) => (
         <div className="flex items-center gap-2.5">
-          {item.primary_image_url || (item.images && item.images[0]?.url) ? (
-            <img
-              src={item.primary_image_url || item.images?.[0]?.url}
-              alt={item.name}
-              className="h-8 w-8 rounded-lg object-cover border border-border shrink-0"
-            />
-          ) : (
-            <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-              <Building2 className="h-4 w-4" />
-            </div>
-          )}
+          <FincaThumbnail
+            src={item.primary_image_url || item.images?.[0]?.url}
+            name={item.name}
+          />
           <div className="min-w-0">
             <span className="font-bold text-foreground block fit-clamp">{item.name}</span>
             {item.nit && <span className="text-[11px] text-muted-foreground">NIT: {item.nit}</span>}

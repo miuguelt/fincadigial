@@ -79,30 +79,13 @@ export const FoodTypesHeader: React.FC<FoodTypesHeaderProps> = ({ items, fields 
     <DataScreenHeader
       icon={<Wheat className="h-5 w-5 text-white" />}
       iconClassName="from-emerald-600 to-teal-700 shadow-emerald-600/25"
+      showTitle={false}
       title={
         <>
           Alimentación y <span className="text-emerald-600 dark:text-emerald-400">Forrajes</span>
         </>
       }
       description="Catálogo agronómico, praderas, pastos de corte, bancos proteicos y nutrición bovina"
-      actions={
-        <div className="flex items-center gap-2">
-          <Badge
-            variant="outline"
-            className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 px-3 py-1 rounded-full text-xs font-bold"
-          >
-            {metrics.totalItems} Recursos Registrados
-          </Badge>
-          {metrics.totalPastureArea > 0 && (
-            <Badge
-              variant="outline"
-              className="bg-teal-500/10 text-teal-700 dark:text-teal-300 border-teal-500/20 px-3 py-1 rounded-full text-xs font-bold"
-            >
-              {metrics.totalPastureArea.toLocaleString('es-CO')} ha Totales
-            </Badge>
-          )}
-        </div>
-      }
       metricsColumns={5}
       metrics={
         <>
@@ -142,7 +125,18 @@ export const FoodTypesHeader: React.FC<FoodTypesHeaderProps> = ({ items, fields 
           />
         </>
       }
-    />
+    >
+      {metrics.totalPastureArea > 0 && (
+        <div className="flex justify-end">
+          <Badge
+            variant="outline"
+            className="bg-teal-500/10 text-teal-700 dark:text-teal-300 border-teal-500/20 px-3 py-1 rounded-full text-xs font-bold"
+          >
+            {metrics.totalPastureArea.toLocaleString('es-CO')} ha registradas
+          </Badge>
+        </div>
+      )}
+    </DataScreenHeader>
   );
 };
 export default FoodTypesHeader;
