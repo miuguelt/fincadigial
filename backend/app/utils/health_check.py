@@ -572,6 +572,19 @@ class BasicHealth(Resource):
             )
 
 
+@health_ns.route("/live")
+class LiveHealth(Resource):
+    """Sonda de vida para el orquestador.
+
+    Esta ruta solo confirma que Gunicorn y Flask pueden atender solicitudes.
+    Las dependencias externas se validan en ``/health`` y no deben decidir si
+    el proceso web está vivo para Docker.
+    """
+
+    def get(self):
+        return {"status": "ok", "service": "villaluz-backend"}, 200
+
+
 @health_ns.route("/detailed")
 class DetailedHealth(Resource):
     """Health check detallado."""

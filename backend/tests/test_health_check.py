@@ -10,6 +10,16 @@ def test_basic_health_reports_the_active_flask_environment(client):
     assert response.get_json()["data"]["environment"] == "testing"
 
 
+def test_liveness_health_does_not_require_external_dependencies(client):
+    response = client.get("/api/v1/health/live")
+
+    assert response.status_code == 200
+    assert response.get_json() == {
+        "status": "ok",
+        "service": "villaluz-backend",
+    }
+
+
 class _Inspector:
     def __init__(self, stats_result):
         self.stats_result = stats_result
