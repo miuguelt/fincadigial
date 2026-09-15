@@ -59,7 +59,9 @@ jobs:
           DB_ENGINE: sqlite
           REDIS_URL: ""
           CELERY_BROKER_URL: ""
-        run: python -m pytest tests/test_database_migration_process.py -q
+        run: >-
+          python -m pytest tests/test_database_migration_process.py
+          tests/test_migration_replay.py -q
 
   # ── Frontend: TypeScript + Build ──────────────────────────────────────
   frontend:
