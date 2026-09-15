@@ -6,7 +6,8 @@
 #   1. villaluz-frontend  → Nginx 1.27 Alpine (React SPA + Reverse Proxy en puerto 80)
 #   2. villaluz-backend   → Flask + Gunicorn / Gevent (puerto interno 8081)
 #                           * Incluye entrypoint automático: espera a PostgreSQL,
-#                             aplica migraciones (flask db upgrade) e inicializa
+#                             verifica el árbol de migraciones, aplica solo las
+#                             pendientes e inicializa
 #                             catálogos base colombianos y el admin único.
 #
 # Redes de Infraestructura Oficiales (Coolify + redbd):

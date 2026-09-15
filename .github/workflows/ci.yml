@@ -52,6 +52,15 @@ jobs:
           CELERY_BROKER_URL: ""
         run: python -m pytest tests/ -v --tb=short -x --ignore=tests/integration
 
+      - name: Verify versioned migration process
+        env:
+          FLASK_ENV: testing
+          SQLALCHEMY_DATABASE_URI: "sqlite:///:memory:"
+          DB_ENGINE: sqlite
+          REDIS_URL: ""
+          CELERY_BROKER_URL: ""
+        run: python -m pytest tests/test_database_migration_process.py -q
+
   # ── Frontend: TypeScript + Build ──────────────────────────────────────
   frontend:
     name: Frontend (TypeScript)

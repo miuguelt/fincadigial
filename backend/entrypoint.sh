@@ -104,9 +104,11 @@ if not connected:
     sys.exit(1)
 '
 
-# ── 2. Ejecutar migraciones automáticas ────────────────────────────────
-echo "🔧 Aplicando migraciones de base de datos (Flask-Migrate / Alembic)..."
-flask db upgrade
+# ── 2. Verificar y aplicar migraciones versionadas ─────────────────────
+# El módulo siempre valida el árbol incluido en la imagen. Solo ejecuta
+# upgrade head cuando la revisión instalada no coincide con el head activo.
+echo "Verificando migraciones versionadas (Flask-Migrate / Alembic)..."
+python -m app.services.database_migrations
 
 # ── 3. Inicialización / Bootstrap de catálogos y admin único ──────────
 echo "🌱 Verificando catálogos base colombianos y usuario administrador..."

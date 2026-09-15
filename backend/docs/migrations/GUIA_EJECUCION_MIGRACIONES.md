@@ -13,6 +13,19 @@ Esta guía define un flujo estándar y reproducible para crear, aplicar y verifi
   - Muestra la revisión final aplicada.
   - Re-verifica y confirma 100% de índices presentes.
 
+## Contrato de desarrollo y despliegue
+
+- Las migraciones activas de `migrations/versions/` se versionan junto con el
+  código y se incluyen en cada imagen del backend. El `Dockerfile` falla en la
+  compilación si no encuentra `migrations/alembic.ini`, `migrations/env.py` o
+  archivos de revisión.
+- El arranque valida la revisión instalada y los `head` disponibles. Si ya
+  coinciden, registra que la base está al día y no ejecuta `upgrade`.
+- Si existen revisiones pendientes, el arranque ejecuta `upgrade head` y no
+  inicia Gunicorn hasta confirmar que llegó al `head` esperado.
+- Toda migración activa debe conservar `upgrade()` y `downgrade()` y debe
+  agregarse al repositorio antes de desplegar el cambio de modelos.
+
 ## Objetivo
 - Unificar cómo se crean y ejecutan migraciones.
 - Evitar errores comunes (índices duplicados, `down_revision`, conexiones).

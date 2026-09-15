@@ -50,6 +50,12 @@ COPY --from=builder /install /usr/local
 # Copiar el código fuente
 COPY . .
 
+# Contrato de la imagen: las migraciones activas deben viajar siempre con el
+# backend para que una base nueva o pendiente pueda alcanzar el mismo head.
+RUN test -f migrations/alembic.ini \
+    && test -f migrations/env.py \
+    && find migrations/versions -maxdepth 1 -type f -name '*.py' | grep -q .
+
 # Usuario no-root para seguridad
 RUN useradd --no-create-home --shell /bin/false appuser \
     && mkdir -p /app/static/uploads /app/maintenance /app/logs /app/backups \
