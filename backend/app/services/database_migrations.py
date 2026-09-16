@@ -149,13 +149,16 @@ def run_database_migrations() -> bool:
 
     from app import create_app, db
 
-    app = create_app(os.getenv("FLASK_ENV", "production"))
+    logger.info("Iniciando contexto de aplicación minimal para migraciones...")
+    app = create_app(os.getenv("FLASK_ENV", "production"), minimal=True)
     with app.app_context():
         engine = db.engine
         database_url = engine.url.render_as_string(hide_password=False)
         config = _alembic_config(database_url)
+        logger.info("Verificando capacidad de tabla alembic_version...")
         _ensure_version_table_capacity(engine)
 
+        logger.info("Consultando estado de revisiones en la base de datos...")
         with engine.connect() as connection:
             current_heads, target_heads = _revision_state(connection, config)
 

@@ -16,7 +16,7 @@ from app.utils.request_hooks import register_request_hooks
 from app.legal.release_guard import validate_sena_release_gate
 
 
-def create_app(config_name="development"):
+def create_app(config_name="development", minimal=False):
     # Detectar si estamos en un test de pytest
     try:
         if config_name != "testing" and (
@@ -42,13 +42,23 @@ def create_app(config_name="development"):
     # Configurar el logging
     configure_logging(app)
     logger = logging.getLogger(__name__)
-    logger.info(f"Iniciando App flask.Flask en modo: {config_name}")
+    logger.info(f"Iniciando App flask.Flask en modo: {config_name}{' (minimal)' if minimal else ''}")
 
     # Configurar Encoders JSON y Enums
     from app.utils.enum_registry import EnumJSONEncoder, register_application_enums
 
     register_application_enums()
     app.json_encoder = EnumJSONEncoder
+
+    if minimal:
+        # En modo minimal (migraciones CLI y bootstrap), solo se inicializan
+        # las extensiones esenciales (DB, Migrate) y protecciones de DB.
+        # Se omiten Sentry, Redis, Celery, RateLimiter, CORS, SSE y API RESTX.
+        init_extensions(app, minimal=True)
+        from app.utils.db_protector import init_db_protector
+
+        init_db_protector(app, db)
+        return app
 
     # Inicializar Sentry (solo en producción/staging)
     _init_sentry(app, config_name, logger)

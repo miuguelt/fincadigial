@@ -16,6 +16,7 @@ from redis.exceptions import ConnectionError, TimeoutError, BusyLoadingError
 # if Memurai closes an idle socket or drops the TCP session.
 DEFAULT_OPTIONS = {
     "socket_connect_timeout": 5,
+    "socket_timeout": 5,
     "socket_keepalive": True,
     "retry_on_timeout": True,
     "retry_on_error": [ConnectionError, TimeoutError, BusyLoadingError],

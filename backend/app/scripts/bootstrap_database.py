@@ -11,7 +11,7 @@ from app.services.bootstrap import run_database_bootstrap
 
 def main() -> None:
     config_name = os.getenv("FLASK_CONFIG") or os.getenv("FLASK_ENV") or "production"
-    app = create_app(config_name)
+    app = create_app(config_name, minimal=True)
     with app.app_context():
         result = run_database_bootstrap()
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))

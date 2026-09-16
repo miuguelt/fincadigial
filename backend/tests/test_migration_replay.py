@@ -64,3 +64,24 @@ def test_animal_identity_migration_is_safe_when_tables_already_exist(monkeypatch
         assert inspector.has_table("animal_identities")
         assert inspector.has_table("animal_transfers")
         assert inspector.has_table("animal_transfer_claims")
+
+
+def test_treatment_protocols_migration_is_safe_when_tables_already_exist(monkeypatch):
+    migration = _load_migration("sani008_treatment_protocols.py")
+    engine = sa.create_engine("sqlite:///:memory:")
+    metadata = _base_schema("finca", "diseases", "medications", "vaccines")
+
+    with engine.begin() as connection:
+        metadata.create_all(connection)
+        monkeypatch.setattr(
+            migration,
+            "op",
+            Operations(MigrationContext.configure(connection)),
+        )
+
+        migration.upgrade()
+        migration.upgrade()
+
+        inspector = sa.inspect(connection)
+        assert inspector.has_table("treatment_protocols")
+        assert inspector.has_table("treatment_protocol_insumos")

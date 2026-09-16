@@ -175,3 +175,27 @@ def test_active_migration_tree_is_versioned_reversible_and_has_one_head():
 
     heads = revisions - children
     assert heads == {"task_completion001_records"}
+
+
+def test_create_app_minimal_mode_skips_external_services(monkeypatch):
+    from app import create_app
+
+    monkeypatch.setenv("DOMAIN", "villaluz.example.com")
+    monkeypatch.setenv("DATABASE_URL", "sqlite:///:memory:")
+    monkeypatch.setenv("FLASK_SECRET_KEY", "a" * 64)
+    monkeypatch.setenv("VILLALUZ_ADMIN_EMAIL", "admin@example.com")
+    monkeypatch.setenv("VILLALUZ_ADMIN_PASSWORD", "testpass123")
+    monkeypatch.setenv("REDIS_URL", "redis://unreachable:9999/0")
+
+    app = create_app("testing", minimal=True)
+
+    assert app.extensions.get("redis") is None
+    assert app.extensions.get("redis_pubsub") is None
+    assert app.extensions.get("event_bus") is None
+    assert "migrate" in app.extensions
+    assert "sqlalchemy" in app.extensions
+    # Confirma que la app es completamente utilizable para DB / Migraciones
+    with app.app_context():
+        engine = app.extensions["migrate"].db.engine
+        with engine.connect() as conn:
+            assert conn is not None

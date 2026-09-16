@@ -15,7 +15,7 @@ compress = Compress()
 redis_client = None  # raw client for SSE/RateLimit
 
 
-def init_extensions(app):
+def init_extensions(app, minimal=False):
     logger = logging.getLogger(__name__)
 
     # SQLite compatibility
@@ -27,6 +27,14 @@ def init_extensions(app):
     jwt.init_app(app)
     migrate.init_app(app, db)
     compress.init_app(app)
+
+    if minimal:
+        app.extensions["redis"] = None
+        app.extensions["redis_pubsub"] = None
+        cache.init_app(
+            app, config={"CACHE_TYPE": "simple", "CACHE_DEFAULT_TIMEOUT": 60}
+        )
+        return
 
     # Raw Redis client initialization for app.extensions['redis']
     global redis_client
