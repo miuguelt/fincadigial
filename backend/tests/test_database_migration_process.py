@@ -1,6 +1,14 @@
 import ast
 from pathlib import Path
 
+import pytest
+import sqlalchemy as sa
+from alembic import command
+from alembic.migration import MigrationContext
+from flask import Flask
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
+
 from app.services.database_migrations import (
     _alembic_config,
     _unknown_revisions,
@@ -10,6 +18,59 @@ from app.services.database_migrations import (
 
 
 MIGRATIONS_DIR = Path(__file__).resolve().parents[1] / "migrations" / "versions"
+
+
+@pytest.mark.parametrize("working_directory", ["backend", "external"])
+def test_startup_upgrade_loads_env_independently_of_working_directory(
+    monkeypatch, tmp_path, working_directory
+):
+    """Dada una migración pendiente y el env.py real, al arrancar fuera de
+    migrations, se debe aplicar y poder revertir en una BD aislada.
+    """
+    versions = tmp_path / "versions"
+    versions.mkdir()
+    (versions / "startup_probe.py").write_text(
+        "from alembic import op\n"
+        "import sqlalchemy as sa\n"
+        "revision = 'startup_probe'\n"
+        "down_revision = None\n"
+        "def upgrade():\n"
+        "    op.create_table('startup_probe', sa.Column('id', sa.Integer, primary_key=True))\n"
+        "def downgrade():\n"
+        "    op.drop_table('startup_probe')\n",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(
+        MIGRATIONS_DIR.parents[1] if working_directory == "backend" else tmp_path
+    )
+    config = _alembic_config("sqlite:///:memory:")
+    config.set_main_option("version_locations", str(versions).replace("%", "%%"))
+
+    probe_app = Flask(__name__)
+    probe_app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+    probe_db = SQLAlchemy(probe_app)
+    Migrate(probe_app, probe_db)
+
+    with probe_app.app_context():
+        try:
+            assert _upgrade_if_required(config, set(), {"startup_probe"}) is True
+            with probe_db.engine.connect() as connection:
+                assert sa.inspect(connection).has_table("startup_probe")
+                assert MigrationContext.configure(connection).get_current_heads() == (
+                    "startup_probe",
+                )
+
+            assert (
+                _upgrade_if_required(config, {"startup_probe"}, {"startup_probe"})
+                is False
+            )
+            command.downgrade(config, "base")
+            with probe_db.engine.connect() as connection:
+                assert not sa.inspect(connection).has_table("startup_probe")
+                assert MigrationContext.configure(connection).get_current_heads() == ()
+        finally:
+            probe_db.session.remove()
+            probe_db.engine.dispose()
 
 
 def _migration_metadata(path: Path) -> dict:
