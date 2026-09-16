@@ -18,11 +18,15 @@ from alembic.migration import MigrationContext
 from alembic.script import ScriptDirectory
 from alembic.script.revision import ResolutionError
 from alembic.util.exc import CommandError
+import sqlalchemy as sa
 
 logger = logging.getLogger(__name__)
 
 _BACKEND_ROOT = Path(__file__).resolve().parents[2]
 _ALEMBIC_INI = _BACKEND_ROOT / "migrations" / "alembic.ini"
+_VERSION_TABLE = "alembic_version"
+_VERSION_COLUMN = "version_num"
+_VERSION_COLUMN_LENGTH = 128
 
 
 def migration_required(current_heads: set[str], target_heads: set[str]) -> bool:
@@ -57,6 +61,61 @@ def _alembic_config(database_url: str) -> Config:
     config = Config(str(_ALEMBIC_INI))
     config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
     return config
+
+
+def _ensure_version_table_capacity(engine) -> None:
+    """Garantiza espacio para los IDs de revisión actuales y futuros.
+
+    Alembic crea ``version_num`` como ``VARCHAR(32)`` por defecto, pero el
+    árbol versionado contiene identificadores más largos. Se crea la tabla con
+    una longitud suficiente en una base nueva y se amplía de forma compatible
+    en PostgreSQL/MySQL cuando ya existe.
+    """
+
+    with engine.begin() as connection:
+        inspector = sa.inspect(connection)
+        if not inspector.has_table(_VERSION_TABLE):
+            metadata = sa.MetaData()
+            sa.Table(
+                _VERSION_TABLE,
+                metadata,
+                sa.Column(_VERSION_COLUMN, sa.String(_VERSION_COLUMN_LENGTH), primary_key=True),
+            ).create(connection)
+            return
+
+        version_column = next(
+            (
+                column
+                for column in inspector.get_columns(_VERSION_TABLE)
+                if column["name"] == _VERSION_COLUMN
+            ),
+            None,
+        )
+        current_length = getattr(version_column.get("type"), "length", None) if version_column else None
+        if not current_length or current_length >= _VERSION_COLUMN_LENGTH:
+            return
+
+        if connection.dialect.name == "postgresql":
+            connection.execute(
+                sa.text(
+                    "ALTER TABLE alembic_version "
+                    "ALTER COLUMN version_num TYPE VARCHAR(128)"
+                )
+            )
+        elif connection.dialect.name in {"mysql", "mariadb"}:
+            connection.execute(
+                sa.text(
+                    "ALTER TABLE alembic_version "
+                    "MODIFY COLUMN version_num VARCHAR(128) NOT NULL"
+                )
+            )
+        else:
+            logger.warning(
+                "La tabla alembic_version tiene longitud %s; el motor %s no permite "
+                "ampliarla automáticamente.",
+                current_length,
+                connection.dialect.name,
+            )
 
 
 def _revision_state(connection, config: Config) -> tuple[set[str], set[str]]:
@@ -95,6 +154,7 @@ def run_database_migrations() -> bool:
         engine = db.engine
         database_url = engine.url.render_as_string(hide_password=False)
         config = _alembic_config(database_url)
+        _ensure_version_table_capacity(engine)
 
         with engine.connect() as connection:
             current_heads, target_heads = _revision_state(connection, config)

@@ -11,6 +11,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from app.services.database_migrations import (
     _alembic_config,
+    _ensure_version_table_capacity,
     _unknown_revisions,
     _upgrade_if_required,
     migration_required,
@@ -18,6 +19,22 @@ from app.services.database_migrations import (
 
 
 MIGRATIONS_DIR = Path(__file__).resolve().parents[1] / "migrations" / "versions"
+
+
+def test_startup_creates_version_table_with_capacity_for_long_revision_ids():
+    engine = sa.create_engine("sqlite:///:memory:")
+
+    _ensure_version_table_capacity(engine)
+
+    with engine.connect() as connection:
+        version_column = next(
+            column
+            for column in sa.inspect(connection).get_columns("alembic_version")
+            if column["name"] == "version_num"
+        )
+        assert version_column["type"].length >= 128
+
+    engine.dispose()
 
 
 @pytest.mark.parametrize("working_directory", ["backend", "external"])
