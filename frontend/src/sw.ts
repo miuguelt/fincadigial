@@ -15,15 +15,23 @@ const onlySuccessful = () => new CacheableResponsePlugin({ statuses: [200] });
 // Recursos estáticos que pueden llegar como respuesta opaca (CDN / cross-origin).
 const onlySuccessfulOrOpaque = () => new CacheableResponsePlugin({ statuses: [0, 200] });
 
-// Cachés de versiones anteriores que llegaron a guardar errores HTTP (403/500).
-// Se borran una sola vez al activar el SW nuevo; los nombres vigentes son *-v2.
-const POISONED_CACHES = ['master-data-cache', 'pages'];
+// Cachés de versiones anteriores que deben ser purgados al desplegar nueva versión
+const POISONED_CACHES = ['master-data-cache', 'pages', 'pages-v2', 'static-assets'];
+
+// Forzar activación inmediata del nuevo Service Worker sin esperar cierre de pestañas
+self.addEventListener('install', () => {
+  void self.skipWaiting();
+});
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
+      // Reclamar control de inmediato en todos los clientes abiertos
+      await self.clients.claim();
       const names = await caches.keys();
-      await Promise.all(names.filter((n) => POISONED_CACHES.includes(n)).map((n) => caches.delete(n)));
+      await Promise.all(
+        names.filter((n) => POISONED_CACHES.includes(n)).map((n) => caches.delete(n))
+      );
     })(),
   );
 });

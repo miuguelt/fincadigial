@@ -27,9 +27,14 @@ async function registerServiceWorker(): Promise<void> {
   try {
     const { registerSW } = await import('virtual:pwa-register');
     registerSW({
-      immediate: false,
+      immediate: true,
       onRegistered(registration) {
         if (registration?.active) setTimeout(prefetchCriticalRoutes, 2000);
+        if (registration) {
+          setInterval(() => {
+            void registration.update();
+          }, 10 * 60 * 1000);
+        }
       },
       onRegisterError(error) {
         console.error('[PWA] Error registrando SW', error);
