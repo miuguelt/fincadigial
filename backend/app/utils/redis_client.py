@@ -4,23 +4,18 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from redis.retry import Retry
-from redis.backoff import ExponentialBackoff
 from redis.exceptions import ConnectionError, TimeoutError, BusyLoadingError
 
 # Defaults applied to every client created by this module.
-# health_check_interval revalidates pooled sockets before reuse, so a socket
-# reaped by the server is replaced transparently instead of raising
-# ConnectionError("Connection closed by server") on the next command.
-# retry and retry_on_error automatically reconnect and retry command execution
-# if Memurai closes an idle socket or drops the TCP session.
+# NOTE: A stateful module-level Retry object and retry_on_timeout=True MUST NOT
+# be used under gevent, as failed auth or dropped sockets cause infinite recursion
+# loops (RecursionError: maximum recursion depth exceeded) that freeze Gunicorn
+# workers during startup for minutes.
 DEFAULT_OPTIONS = {
-    "socket_connect_timeout": 5,
+    "socket_connect_timeout": 3,
     "socket_timeout": 5,
     "socket_keepalive": True,
-    "retry_on_timeout": True,
-    "retry_on_error": [ConnectionError, TimeoutError, BusyLoadingError],
-    "retry": Retry(ExponentialBackoff(cap=5, base=1), 3),
+    "retry_on_timeout": False,
     "health_check_interval": 15,
     "max_connections": 20,
 }
@@ -30,11 +25,12 @@ def make_redis_ops_client(url: str, **overrides):
     """Build a Redis client for short-lived operations (not pubsub).
 
     Adds a socket_timeout so callers don't hang indefinitely if the server
-    becomes unresponsive.  Uses ``max_connections=10`` by default since
+    becomes unresponsive. Uses ``max_connections=10`` by default since
     ops clients don't need the same headroom as the main pool.
     """
     ops_defaults = {
-        "socket_timeout": 10,
+        "socket_connect_timeout": 3,
+        "socket_timeout": 5,
         "max_connections": 10,
     }
     merged = {**DEFAULT_OPTIONS, **ops_defaults, **overrides}
@@ -82,10 +78,10 @@ def make_redis_pubsub_client(url: str, **overrides):
 
     pubsub_defaults = {
         "socket_timeout": None,
-        "socket_connect_timeout": 5,
+        "socket_connect_timeout": 3,
         "socket_keepalive": True,
         "health_check_interval": 10,
-        "retry_on_timeout": True,
+        "retry_on_timeout": False,
         "max_connections": 5,
     }
     merged = {**pubsub_defaults, **overrides}
