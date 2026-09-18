@@ -22,6 +22,10 @@ if [ -z "$DOMAIN" ]; then
   fi
 fi
 
+if [ -n "$DOMAIN" ] && [ -z "$JWT_COOKIE_DOMAIN" ]; then
+  export JWT_COOKIE_DOMAIN="$DOMAIN"
+fi
+
 python -c '
 import sys, os
 
@@ -60,7 +64,12 @@ if missing:
 
 secret = (os.getenv("FLASK_SECRET_KEY") or os.getenv("JWT_SECRET_KEY") or "").strip()
 if len(secret) < 64:
-    print(f"⚠️ ADVERTENCIA: FLASK_SECRET_KEY tiene solo {len(secret)} caracteres (se requieren >= 64).", flush=True)
+    print("=" * 65, flush=True)
+    print(f"❌ ERROR CRÍTICO: FLASK_SECRET_KEY tiene solo {len(secret)} caracteres (se requieren >= 64).", flush=True)
+    print("👉 Genere una clave segura en terminal ejecutando:", flush=True)
+    print("   python -c \"import secrets; print(secrets.token_hex(32))\"", flush=True)
+    print("=" * 65, flush=True)
+    sys.exit(1)
 
 print("✅ Variables de entorno requeridas verificadas correctamente.", flush=True)
 '
@@ -87,10 +96,11 @@ elif uri.startswith("mysql://") and not uri.startswith("mysql+"):
     uri = uri.replace("mysql://", "mysql+pymysql://", 1)
 
 db_type = "MySQL" if "mysql" in uri else "PostgreSQL"
+connect_args = {"connect_timeout": 5} if "postgresql" in uri else {}
 connected = False
 for i in range(30):
     try:
-        engine = create_engine(uri, pool_pre_ping=True)
+        engine = create_engine(uri, pool_pre_ping=True, connect_args=connect_args)
         with engine.connect() as conn:
             print(f"✅ Conexión establecida exitosamente con {db_type}")
             connected = True
@@ -101,6 +111,7 @@ for i in range(30):
 
 if not connected:
     print(f"❌ Timeout: No se pudo conectar a la base de datos {db_type} tras 60s")
+    print("👉 Verifique que el host, puerto y credenciales en DATABASE_URL sean accesibles en la red de Coolify.")
     sys.exit(1)
 '
 
@@ -108,7 +119,11 @@ if not connected:
 # El módulo siempre valida el árbol incluido en la imagen. Solo ejecuta
 # upgrade head cuando la revisión instalada no coincide con el head activo.
 echo "Verificando migraciones versionadas (Flask-Migrate / Alembic)..."
-python -m app.services.database_migrations
+if ! python -m app.services.database_migrations; then
+  echo "❌ ERROR CRÍTICO: Falló la verificación o aplicación de migraciones en la base de datos."
+  echo "👉 Revise los mensajes de error de Alembic / SQLAlchemy anteriores."
+  exit 1
+fi
 
 # ── 3. Inicialización / Bootstrap de catálogos y admin único ──────────
 echo "🌱 Verificando catálogos base colombianos y usuario administrador..."

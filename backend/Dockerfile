@@ -69,7 +69,7 @@ EXPOSE 8081
 
 # Healthcheck
 HEALTHCHECK --interval=15s --timeout=10s --start-period=120s --retries=3 \
-  CMD curl -fsS http://localhost:8081/api/v1/health/live || exit 1
+  CMD curl -fsS http://127.0.0.1:8081/api/v1/health/live || exit 1
 
 # Entrypoint que ejecuta migraciones y bootstrap antes de arrancar Gunicorn
 ENTRYPOINT ["/app/entrypoint.sh"]

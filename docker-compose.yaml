@@ -56,7 +56,7 @@ services:
     networks:
       - coolify
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost/ || curl -fsS http://localhost/ || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ || curl -fsS http://127.0.0.1/ || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -130,7 +130,7 @@ services:
       - app_logs:/app/logs
       - backups_data:/app/backups
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8081/api/v1/health/live || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8081/api/v1/health/live || exit 1"]
       interval: 15s
       timeout: 15s
       retries: 3
