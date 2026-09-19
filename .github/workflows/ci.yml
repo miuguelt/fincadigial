@@ -2,16 +2,17 @@ name: CI — Finca Villa Luz
 
 on:
   push:
-    branches: [master]
+    branches: [main, master, develop]
   pull_request:
-    branches: [master]
+    branches: [main, master, develop]
+  workflow_dispatch:
 
 env:
   PYTHON_VERSION: "3.11"
-  NODE_VERSION: "22"
+  NODE_VERSION: "20"
 
 jobs:
-  # ── Backend: Lint + Tests ─────────────────────────────────────────────
+  # ── Backend: Dependencias + Tests + Migraciones ───────────────────────
   backend:
     name: Backend (Python)
     runs-on: ubuntu-latest
@@ -20,16 +21,22 @@ jobs:
         working-directory: ./backend
 
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
 
       - name: Generate ephemeral test secrets
         shell: bash
@@ -43,19 +50,23 @@ jobs:
               env_file.write(f"JWT_SECRET_KEY={secrets.token_hex(32)}\n")
           PY
 
-      - name: Run unit tests
+      - name: Run test suite (pytest)
         env:
           FLASK_ENV: testing
+          FLASK_CONFIG: testing
           SQLALCHEMY_DATABASE_URI: "sqlite:///:memory:"
+          TEST_SQLALCHEMY_DATABASE_URI: "sqlite:///:memory:"
           DB_ENGINE: sqlite
           REDIS_URL: ""
           CELERY_BROKER_URL: ""
-        run: python -m pytest tests/ -v --tb=short -x --ignore=tests/integration
+        run: python -m pytest tests/ -v --tb=short --ignore=tests/manual
 
       - name: Verify versioned migration process
         env:
           FLASK_ENV: testing
+          FLASK_CONFIG: testing
           SQLALCHEMY_DATABASE_URI: "sqlite:///:memory:"
+          TEST_SQLALCHEMY_DATABASE_URI: "sqlite:///:memory:"
           DB_ENGINE: sqlite
           REDIS_URL: ""
           CELERY_BROKER_URL: ""
@@ -63,19 +74,20 @@ jobs:
           python -m pytest tests/test_database_migration_process.py
           tests/test_migration_replay.py -q
 
-  # ── Frontend: TypeScript + Build ──────────────────────────────────────
+  # ── Frontend: Type Check + Tests Vitest + Build ───────────────────────
   frontend:
-    name: Frontend (TypeScript)
+    name: Frontend (TypeScript & React)
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./frontend
 
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -84,35 +96,39 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: TypeScript check
-        run: npx tsc --noEmit
+      - name: TypeScript type-check
+        run: npm run type-check
+
+      - name: Run unit and integration tests (Vitest)
+        run: npm run test:run
 
       - name: Build production bundle
         env:
-          VITE_API_BASE_URL: https://example.com/api/v1
+          VITE_API_BASE_URL: /api/v1
           VITE_FRONTEND_URL: https://example.com
           VITE_RUNTIME_ENV: production
         run: npm run build
 
-  # ── Deploy Check ──────────────────────────────────────────────────────
+  # ── Deploy Check: Pre-deploy & Docker Compose SSoT ────────────────────
   deploy-check:
-    name: Deploy Readiness
+    name: Deploy Readiness & Compose SSoT
     runs-on: ubuntu-latest
     needs: [backend, frontend]
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
 
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v6
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Run deploy check
+      - name: Run deploy check (33/33 checks)
         run: python scripts/deploy_check.py
 
-      - name: Validate Docker Compose syntax
+      - name: Validate Docker Compose SSoT syntax
         run: |
-          docker compose -f docker-compose.coolify.yml config --quiet && \
-          echo "✅ docker-compose.coolify.yml es válido"
+          docker compose -f docker-compose.yaml config --quiet && \
+          echo "✅ docker-compose.yaml es válido y cumple SSoT Coolify"
