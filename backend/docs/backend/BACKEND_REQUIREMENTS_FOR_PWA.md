@@ -143,10 +143,10 @@ mysql --version
 - Timezone: UTC
 - Max connections: 200+ (según carga)
 
-**Permisos requeridos para usuario `fincau`:**
+**Permisos requeridos para usuario de base de datos:**
 ```sql
 GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER
-ON finca.* TO 'fincau'@'%';
+ON <DB_NAME>.* TO '<DB_USER>'@'<HOST_PERMITIDO>';
 FLUSH PRIVILEGES;
 ```
 
