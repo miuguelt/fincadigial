@@ -4,10 +4,10 @@
   "project": "VillaLuz",
   "jurisdiction": "CO",
   "sector_profile": "SENA_PUBLIC_ENTITY",
-  "last_reviewed": "2026-09-10",
+  "last_reviewed": "2026-09-21",
   "audit_trail": {
-    "last_legal_change_reviewed_on": "2026-09-10",
-    "last_legal_change_summary": "Se incorporó el estado de continuidad, clasificación por perfiles, auditoría de ciclo de vida DevBrain y controles de contención para producción provisional. Los bloqueadores institucionales y operativos permanecen abiertos."
+    "last_legal_change_reviewed_on": "2026-09-21",
+    "last_legal_change_summary": "Alineación de perfil de composición Coolify con SSoT docker-compose.yaml y verificación de ciclo de vida. Los bloqueadores institucionales y operativos permanecen abiertos."
   },
   "source_of_truth": [
     "docs/legal/COMPLIANCE_MANIFEST.json",
@@ -94,7 +94,7 @@
       "state": "implemented_partial",
       "summary": "Compose de Coolify con defaults de contención y sin exposición directa de PostgreSQL/Redis.",
       "evidence": [
-        "docker-compose.coolify.yml",
+        "docker-compose.yaml",
         "docs/legal/05_CHECKLIST_COOLIFY_VPS.md",
         "docs/legal/13_GUIA_CICLO_VIDA_LEGAL_DEVBRAIN.md"
       ],

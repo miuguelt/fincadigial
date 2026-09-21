@@ -242,13 +242,23 @@ foreach ($compose in $composeFiles) {
     }
 }
 
-$coolifyComposeText = Get-TextIfExists 'docker-compose.coolify.yml'
-if ($null -eq $coolifyComposeText) {
-    Add-ComplianceCheck -Id 'deploy:coolify-compose' -Status (FindingStatus -Critical $true) -Message 'Falta el perfil de composición declarado para Coolify.' -Evidence 'docker-compose.coolify.yml'
-} elseif ($coolifyComposeText -match '(?m)-\s*["'']?(5432|6379|5433):') {
-    Add-ComplianceCheck -Id 'deploy:coolify-public-infra' -Status (FindingStatus -Critical $true) -Message 'El perfil Coolify publica puertos de infraestructura.' -Evidence 'docker-compose.coolify.yml'
+$coolifyComposeCandidate = if (Test-Path -LiteralPath (Resolve-ProjectPath 'docker-compose.yaml') -PathType Leaf) {
+    'docker-compose.yaml'
+} elseif (Test-Path -LiteralPath (Resolve-ProjectPath 'docker-compose.coolify.yml') -PathType Leaf) {
+    'docker-compose.coolify.yml'
 } else {
-    Add-ComplianceCheck -Id 'deploy:coolify-compose' -Status 'PASS' -Message 'Perfil Coolify presente sin publicación de puertos de base de datos o Redis.' -Evidence 'docker-compose.coolify.yml'
+    $null
+}
+
+if ($null -eq $coolifyComposeCandidate) {
+    Add-ComplianceCheck -Id 'deploy:coolify-compose' -Status (FindingStatus -Critical $true) -Message 'Falta el perfil de composición declarado para Coolify.' -Evidence 'docker-compose.yaml'
+} else {
+    $coolifyComposeText = Get-TextIfExists $coolifyComposeCandidate
+    if ($coolifyComposeText -match '(?m)-\s*["'']?(5432|6379|5433):') {
+        Add-ComplianceCheck -Id 'deploy:coolify-public-infra' -Status (FindingStatus -Critical $true) -Message 'El perfil Coolify publica puertos de infraestructura.' -Evidence $coolifyComposeCandidate
+    } else {
+        Add-ComplianceCheck -Id 'deploy:coolify-compose' -Status 'PASS' -Message 'Perfil Coolify presente sin publicación de puertos de base de datos o Redis.' -Evidence $coolifyComposeCandidate
+    }
 }
 
 $blockers = @($checks | Where-Object Status -eq 'BLOCKER')

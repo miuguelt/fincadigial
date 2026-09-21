@@ -5,21 +5,43 @@ on:
   push:
     branches: [main, master]
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Modo de validación legal (Audit o Release)'
+        required: true
+        default: 'Audit'
+        type: choice
+        options:
+          - Audit
+          - Release
 
 permissions:
   contents: read
 
 jobs:
-  legal-release-gate:
+  legal-compliance-gate:
     runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Determine execution mode
+        id: gate_mode
+        shell: pwsh
+        run: |
+          $mode = if ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch' -and '${{ inputs.mode }}') {
+            '${{ inputs.mode }}'
+          } else {
+            'Audit'
+          }
+          Write-Host "Modo de validación legal seleccionado: $mode"
+          "mode=$mode" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
       - name: Execute legal compliance gate
         shell: pwsh
-        run: ./scripts/Test-ColombiaLegalCompliance.ps1 -Mode Release
+        run: ./scripts/Test-ColombiaLegalCompliance.ps1 -Mode ${{ steps.gate_mode.outputs.mode }}
 
       - name: Execute DevBrain legal lifecycle gate
         shell: pwsh
-        run: ./scripts/Test-DevBrainLegalLifecycle.ps1 -Mode Release
+        run: ./scripts/Test-DevBrainLegalLifecycle.ps1 -Mode ${{ steps.gate_mode.outputs.mode }}
+
