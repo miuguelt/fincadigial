@@ -33,7 +33,7 @@ vi.mock('@/shared/utils/dataRefresh', () => ({
 }));
 vi.mock('@/entities/animal/api/animal.service', () => ({
   animalsService: {
-    getAnimals: vi.fn().mockResolvedValue([{ id: 4, record: 'V-004', breed: { name: 'Holstein' } }]),
+    getAnimals: vi.fn().mockResolvedValue([{ id: 4, record: 'V-004', sex: 'Hembra', is_lactating: true, breed: { name: 'Holstein' } }]),
   },
 }));
 

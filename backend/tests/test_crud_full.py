@@ -127,6 +127,7 @@ def animal_id(client, token_for, breed_id, field_id, finca_id):
             "record": "CRUD-001",
             "breeds_id": breed_id,
             "finca_id": finca_id,
+            "is_lactating": True,
         },
         token_for(ADMIN),
     )
