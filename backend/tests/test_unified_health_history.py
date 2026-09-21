@@ -50,6 +50,7 @@ def _seed_animal(app, auth_headers):
             breeds_id=breed.id,
             finca_id=finca_id,
             status=AnimalStatus.Vivo,
+            is_lactating=True,
         )
         db.session.commit()
         return finca_id, animal.id

@@ -7,6 +7,7 @@ import path from 'path';
 import fs from 'fs';
 import { X509Certificate } from 'crypto';
 import { fileURLToPath } from 'url';
+import { resolveDevelopmentProfilePassword } from './src/shared/config/developmentProfilePassword';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,8 +47,12 @@ function onlyMainBuild(plugin: any) {
 // ===========================================================
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
+  const backendEnv = loadEnv(mode, path.resolve(__dirname, '../backend'), '');
   const runtimeEnv = env.VITE_RUNTIME_ENV || mode;
   const isProd = runtimeEnv === 'production';
+  const developmentProfilePassword = command === 'serve' && !isProd
+    ? resolveDevelopmentProfilePassword(env, backendEnv, process.env)
+    : '';
 
   // ===========================================================
   // BACKEND URL / PROXY TARGET
@@ -153,7 +158,10 @@ export default defineConfig(({ command, mode }) => {
       ],
     },
     define: {
-      __VITE_IMPORT_META_ENV__: 'import.meta.env'
+      __VITE_IMPORT_META_ENV__: 'import.meta.env',
+      // Los perfiles solo existen en desarrollo; nunca inyectar esta variable
+      // en un bundle de producción.
+      'import.meta.env.VITE_DEV_PROFILE_PASSWORD': JSON.stringify(developmentProfilePassword),
     },
     esbuild: {
       target: 'esnext',

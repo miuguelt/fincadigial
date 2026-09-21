@@ -132,9 +132,24 @@ class MilkProduction(BaseModel):
             if data["protein_percentage"] < 0 or data["protein_percentage"] > 100:
                 errors.append("Porcentaje de proteína debe estar entre 0 y 100")
 
+        # Validar que el animal sea hembra y esté en lactancia activa
+        animal_id = data.get("animal_id")
+        if animal_id:
+            from app.models.animals import Animals, Sex
+
+            animal = Animals.query.filter_by(id=int(animal_id)).first()
+            if animal:
+                if animal.sex != Sex.Hembra:
+                    errors.append(
+                        f"El ordeño solo se puede registrar a hembras (vacas); el animal '{animal.record}' es macho"
+                    )
+                elif not animal.is_lactating:
+                    errors.append(
+                        f"La vaca '{animal.record}' no se encuentra en estado de lactancia activo"
+                    )
+
         # Período de retiro: la leche de una res en tratamiento con retiro
         # activo no se registra como producida (debe descartarse).
-        animal_id = data.get("animal_id")
         target_date = data.get("date")
         if animal_id and target_date:
             from app.models.treatments import Treatments

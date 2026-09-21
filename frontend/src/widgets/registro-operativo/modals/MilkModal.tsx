@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Loader2, AlertTriangle, Info } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { useToast } from '@/app/providers/ToastContext';
 import { ModalWrapper } from './ModalWrapper';
@@ -38,6 +38,13 @@ export function MilkModal({
 }: MilkModalProps) {
   const { showToast } = useToast();
   const [confirmRetiro, setConfirmRetiro] = useState(false);
+
+  // Filtrar estrictamente solo vacas en lactancia activa
+  const lactatingAnimals = useMemo(
+    () => animals.filter(a => Boolean(a.is_lactating) && !isMale(a)),
+    [animals]
+  );
+
   const selectedAnimal = form.animalId ? animals.find(a => String(a.id) === String(form.animalId)) : undefined;
   const selectedWithdrawal = form.animalId ? withdrawalAnimals?.[form.animalId] : undefined;
 
@@ -46,9 +53,19 @@ export function MilkModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedAnimal && isMale(selectedAnimal)) {
-      showToast('El ordeño se registra a las vacas. Verifique el animal elegido.', 'error');
+    if (!form.animalId) {
+      showToast('Seleccione la vaca a la cual se le registrará el ordeño.', 'error');
       return;
+    }
+    if (selectedAnimal) {
+      if (isMale(selectedAnimal)) {
+        showToast('El ordeño solo se registra a vacas hembras. Verifique el animal elegido.', 'error');
+        return;
+      }
+      if (!selectedAnimal.is_lactating) {
+        showToast('Solo se puede registrar ordeño a vacas que están en lactancia activa.', 'error');
+        return;
+      }
     }
     if (selectedWithdrawal && !confirmRetiro) {
       showToast('Confirme que la leche de esta vaca no irá al tanque ni a venta.', 'error');
@@ -62,19 +79,31 @@ export function MilkModal({
   return (
     <ModalWrapper open={open} onClose={onClose} title="🥛 Registrar Ordeño">
       <form onSubmit={handleSubmit} className="space-y-4">
+        {lactatingAnimals.length === 0 ? (
+          <div className="rounded-xl border border-amber-300/70 bg-amber-50 p-3.5 text-xs text-amber-900 dark:border-amber-800/40 dark:bg-amber-950/30 dark:text-amber-200 space-y-1.5" role="status">
+            <div className="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-200">
+              <Info className="w-4 h-4 shrink-0 text-amber-600" />
+              <span>No hay vacas en lactancia activa</span>
+            </div>
+            <p className="leading-relaxed text-amber-700 dark:text-amber-300">
+              Para registrar ordeño, primero debe registrar el parto de la vaca en el módulo de reproducción para iniciar su ciclo de lactancia.
+            </p>
+          </div>
+        ) : null}
+
         <AnimalSelect
-          animals={animals}
+          animals={lactatingAnimals}
           value={form.animalId}
           onChange={v => setForm({ ...form, animalId: v })}
           withdrawalAnimals={withdrawalAnimals}
-          label="¿De qué vaca?"
+          label="¿De qué vaca en lactancia?"
           required
           ringClass={RING}
         />
 
-        {selectedAnimal && isMale(selectedAnimal) && (
+        {selectedAnimal && !selectedAnimal.is_lactating && (
           <p className="rounded-xl border border-amber-300/60 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 dark:border-amber-800/40 dark:bg-amber-950/30 dark:text-amber-200" role="alert">
-            Este animal figura como macho. El ordeño solo se registra a las vacas; no se podrá guardar.
+            Este animal no figura en estado de lactancia. El ordeño solo se puede anotar a vacas en producción lechera activa.
           </p>
         )}
 
@@ -130,7 +159,7 @@ export function MilkModal({
             placeholder="Ej: bajó la producción, se le vio la ubre inflamada"
             className={`w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 ${RING} resize-none`} />
         </div>
-        <Button type="submit" disabled={saving} className="w-full h-12 bg-amber-600 hover:bg-amber-700 text-white rounded-xl border-amber-600 hover:border-amber-700 text-base font-bold">
+        <Button type="submit" disabled={saving || lactatingAnimals.length === 0} className="w-full h-12 bg-amber-600 hover:bg-amber-700 text-white rounded-xl border-amber-600 hover:border-amber-700 text-base font-bold">
           {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Guardando...</> : '✅ Guardar Ordeño'}
         </Button>
       </form>

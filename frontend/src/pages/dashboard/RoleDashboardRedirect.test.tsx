@@ -23,7 +23,7 @@ describe('RoleDashboardRedirect', () => {
     } as ReturnType<typeof useAuth>);
   });
 
-  it('lleva a los roles de gestión al resumen del dashboard', async () => {
+  it('lleva a los roles de gestión a la vista de animales', async () => {
     render(
       <MemoryRouter initialEntries={['/dashboard']}>
         <Routes>
@@ -41,7 +41,7 @@ describe('RoleDashboardRedirect', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId('location')).toHaveTextContent('/admin/dashboard');
+      expect(screen.getByTestId('location')).toHaveTextContent('/admin/animals');
     });
   });
 });

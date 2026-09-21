@@ -45,7 +45,10 @@ export function MilkEntryFormWidget({ onSuccess, defaultDate, onCancel }: MilkEn
     limit: 200,
     sex: 'Hembra',
     status: 'Vivo',
+    is_lactating: true,
   });
+
+  const lactatingAnimals = (animals || []).filter((a: any) => Boolean(a.is_lactating));
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -99,17 +102,17 @@ export function MilkEntryFormWidget({ onSuccess, defaultDate, onCancel }: MilkEn
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {/* Animal Selector */}
         <div className="space-y-2">
-          <Label htmlFor="animal_id" className="text-sm font-bold">Animal</Label>
+          <Label htmlFor="animal_id" className="text-sm font-bold">Vaca en lactancia</Label>
           <Select
             value={selectedAnimalId?.toString()}
             onValueChange={(value) => setValue('animal_id', parseInt(value), { shouldValidate: true })}
-            disabled={loadingAnimals}
+            disabled={loadingAnimals || lactatingAnimals.length === 0}
           >
             <SelectTrigger id="animal_id" className="h-12 rounded-xl text-base sm:text-sm" aria-invalid={Boolean(errors.animal_id)}>
-              <SelectValue placeholder={loadingAnimals ? 'Cargando...' : 'Seleccionar animal'} />
+              <SelectValue placeholder={loadingAnimals ? 'Cargando vacas...' : lactatingAnimals.length === 0 ? 'Sin vacas en lactancia' : 'Seleccionar vaca'} />
             </SelectTrigger>
             <SelectContent>
-              {animals?.map((animal: any) => (
+              {lactatingAnimals.map((animal: any) => (
                 <SelectItem key={animal.id} value={animal.id.toString()}>
                   {animal.record} - {animal.alias || animal.breed?.name || ''}
                 </SelectItem>
@@ -119,8 +122,8 @@ export function MilkEntryFormWidget({ onSuccess, defaultDate, onCancel }: MilkEn
           {errors.animal_id && (
             <p className="text-xs text-red-500 font-medium mt-0.5">{errors.animal_id.message}</p>
           )}
-          {!loadingAnimals && (animals?.length ?? 0) === 0 && !errors.animal_id && (
-            <p className="text-sm text-amber-700 dark:text-amber-300" role="status">No hay vacas vivas disponibles.</p>
+          {!loadingAnimals && lactatingAnimals.length === 0 && !errors.animal_id && (
+            <p className="text-sm text-amber-700 dark:text-amber-300" role="status">No hay vacas en lactancia disponibles.</p>
           )}
         </div>
 
@@ -257,7 +260,7 @@ export function MilkEntryFormWidget({ onSuccess, defaultDate, onCancel }: MilkEn
         )}
         <Button
           type="submit"
-          disabled={isSubmitting || loadingAnimals}
+          disabled={isSubmitting || loadingAnimals || lactatingAnimals.length === 0}
           className={`min-h-12 w-full rounded-xl bg-blue-700 text-base font-bold text-white hover:bg-blue-800 active:scale-95 ${onCancel ? '' : 'col-span-2'}`}
         >
           {isSubmitting ? (

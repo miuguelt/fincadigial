@@ -436,6 +436,25 @@ class MilkProductionService:
                     )
                     continue
 
+                from app.models.animals import Sex
+                if animal.sex != Sex.Hembra:
+                    errors.append(
+                        {
+                            "index": i,
+                            "error": f"El animal {animal.record} es macho: el ordeño solo aplica a hembras (vacas)",
+                        }
+                    )
+                    continue
+
+                if not animal.is_lactating:
+                    errors.append(
+                        {
+                            "index": i,
+                            "error": f"La vaca {animal.record} no está en lactancia activa",
+                        }
+                    )
+                    continue
+
                 # Período de retiro por tratamiento: la leche debe descartarse,
                 # no registrarse como producida.
                 from app.models.treatments import Treatments

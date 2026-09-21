@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Plus, Save, PlusCircle, AlertCircle, XCircle, Dna, Activity, Syringe, Pill, MapPin, ClipboardList, Milk, Heart, Bell, CalendarCheck } from "lucide-react";
+import { Plus, Save, PlusCircle, AlertCircle, XCircle, Dna, Activity, Syringe, Pill, MapPin, ClipboardList, Milk, Heart, Bell, CalendarCheck, AlertTriangle } from "lucide-react";
 import { useToast } from "@/app/providers/ToastContext";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
@@ -259,6 +259,17 @@ export const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps>
           if (!dataToSend[f]?.toString().trim()) {
             throw new Error("Complete los campos obligatorios.");
           }
+        }
+      }
+
+      if (type === "milk_production" && !isEditing) {
+        const aAny = animal as any;
+        const sex = String(aAny.sex || aAny.gender || '').toLowerCase();
+        if (['macho', 'male', 'm', '1', '01'].includes(sex)) {
+          throw new Error("El ordeño solo se registra a vacas hembras.");
+        }
+        if (!Boolean(aAny.is_lactating)) {
+          throw new Error("Esta res no figura en estado de lactancia activa. Solo se puede registrar ordeño tras un parto y antes del secado.");
         }
       }
 
@@ -599,6 +610,12 @@ export const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps>
                   </button>
                 </div>
               )}
+              {type === "milk_production" && !editingItem && !(animal as any).is_lactating && (
+                <div className="rounded-xl border border-amber-300/70 bg-amber-50 p-3.5 text-xs text-amber-900 dark:border-amber-800/40 dark:bg-amber-950/30 dark:text-amber-200 flex items-center gap-2" role="alert">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600" />
+                  <span>Esta res no figura en estado de lactancia activa. El ordeño solo se registra a vacas que han tenido parto y no han entrado en periodo de secado.</span>
+                </div>
+              )}
               <div className="py-2">
                 <FormRenderer
                   type={type}
@@ -649,7 +666,7 @@ export const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps>
                 {!editingItem && (
                   <Button
                     onClick={() => handleSubmit(true)}
-                    disabled={loading}
+                    disabled={loading || (type === "milk_production" && !(animal as any).is_lactating)}
                     variant="outline"
                     className="w-full sm:w-auto rounded-xl px-6 border-emerald-500/30 text-emerald-600"
                   >
@@ -658,7 +675,7 @@ export const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps>
                 )}
                 <Button
                   onClick={() => handleSubmit(false)}
-                  disabled={loading}
+                  disabled={loading || (!editingItem && type === "milk_production" && !(animal as any).is_lactating)}
                   className="w-full sm:w-auto rounded-xl px-8 bg-emerald-600 text-white"
                 >
                   <Save className="h-4 w-4 mr-2 sm:hidden" />

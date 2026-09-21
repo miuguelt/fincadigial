@@ -200,15 +200,17 @@ export function QSubmitButton({
   loading,
   children,
   color = "bg-primary",
+  disabled,
 }: {
   loading?: boolean;
   children: React.ReactNode;
   color?: string;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="submit"
-      disabled={loading}
+      disabled={loading || disabled}
       className={`w-full rounded-2xl ${color} py-5 sm:py-6 text-base sm:text-lg font-black uppercase tracking-[0.2em] text-white shadow-lg transition-all
         hover:brightness-110 active:scale-95 disabled:opacity-60 shadow-primary/20`}
     >

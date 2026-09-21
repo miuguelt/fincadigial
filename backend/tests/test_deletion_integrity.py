@@ -47,6 +47,7 @@ def _animal(record: str = "DEL-001") -> Animal:
         record=record,
         breeds_id=breed.id,
         finca_id=finca.id,
+        is_lactating=True,
     )
     db.session.commit()
     return animal

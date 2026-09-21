@@ -10,6 +10,7 @@ import type { Dispatch, SetStateAction } from 'react';
 
 // Normalizer: ensure required fields are present
 const mapAnimalResponseToLocal = (a: Partial<AnimalResponse> & { [key: string]: any }): AnimalResponse => ({
+  ...a,
   id: a.id ?? 0,
   record: a.record ?? '',
   // removed deprecated name field mapping to avoid reliance in UI labels
@@ -24,6 +25,8 @@ const mapAnimalResponseToLocal = (a: Partial<AnimalResponse> & { [key: string]: 
   breed: a.breed,
   father: a.father,
   mother: a.mother,
+  is_pregnant: Boolean(a.is_pregnant),
+  is_lactating: Boolean(a.is_lactating),
   created_at: a.created_at,
   updated_at: a.updated_at,
 } as any);

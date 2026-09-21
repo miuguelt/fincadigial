@@ -49,15 +49,17 @@ export default function QuickMilk() {
         limit: 200,
         sex: 'Hembra',
         status: 'Vivo',
+        is_lactating: true,
         cache_bust: force ? Date.now() : undefined,
       });
       const lista = Array.isArray(resp) ? resp : (resp as any)?.data ?? [];
-      setAnimales(lista.map((a: any) => ({
+      const lactantes = lista.filter((a: any) => Boolean(a.is_lactating));
+      setAnimales(lactantes.map((a: any) => ({
         value: String(a.id),
         label: `${a.record}${a.breed?.name ? ` — ${a.breed.name}` : ''}`,
       })));
     } catch {
-      showToast('No se pudo cargar la lista de animales', 'error');
+      showToast('No se pudo cargar la lista de vacas en lactancia', 'error');
     } finally {
       setCargando(false);
     }
@@ -92,7 +94,7 @@ export default function QuickMilk() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!animalId) { showToast('Selecciona el animal', 'error'); return; }
+    if (!animalId) { showToast('Selecciona una vaca en lactancia', 'error'); return; }
     if (!litros || Number(litros) < 0) { showToast('Ingresa los litros correctamente', 'error'); return; }
 
     setGuardando(true);
@@ -128,6 +130,14 @@ export default function QuickMilk() {
   return (
     <QuickFormShell titulo="Registrar Leche" icon={IconMilk} colorHeader="bg-primary">
       <form onSubmit={handleSubmit} className="space-y-4">
+        {!cargando && animales.length === 0 && (
+          <div className="rounded-2xl border border-amber-300/70 bg-amber-50 p-4 text-xs text-amber-900 dark:border-amber-800/40 dark:bg-amber-950/30 dark:text-amber-200">
+            <p className="font-bold">No hay vacas en lactancia registradas</p>
+            <p className="mt-1 text-amber-800 dark:text-amber-300">
+              Solo se pueden ordeñar vacas que tengan parto registrado y no hayan entrado a periodo de secado.
+            </p>
+          </div>
+        )}
 
         <QCard>
           <QField>
@@ -136,9 +146,9 @@ export default function QuickMilk() {
               id="animal"
               value={animalId}
               onChange={setAnimalId}
-              placeholder={cargando ? 'Cargando vacas...' : '— Selecciona la vaca —'}
+              placeholder={cargando ? 'Cargando vacas en lactancia...' : '— Selecciona la vaca —'}
               options={animales}
-              disabled={cargando}
+              disabled={cargando || animales.length === 0}
             />
           </QField>
         </QCard>
@@ -198,7 +208,7 @@ export default function QuickMilk() {
           </QField>
         </QCard>
 
-        <QSubmitButton loading={guardando} color="bg-primary">
+        <QSubmitButton loading={guardando} color="bg-primary" disabled={cargando || animales.length === 0}>
           Guardar Producción
         </QSubmitButton>
       </form>

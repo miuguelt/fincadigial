@@ -5,11 +5,10 @@ import { useAuth } from '@/features/auth/model/useAuth';
 import { Role } from '@/entities/user/model/types';
 
 const roleDestinations: Record<string, string> = {
-  // El destino inicial debe ser el resumen que corresponde al rol. Desde
-  // allí cada persona puede saltar a registrar animales o atender pendientes.
-  Administrador: '/admin/dashboard',
-  Propietario: '/admin/dashboard',
-  Capataz: '/admin/dashboard',
+  // El destino inicial por defecto al iniciar sesión es el inventario de animales (/admin/animals)
+  Administrador: '/admin/animals',
+  Propietario: '/admin/animals',
+  Capataz: '/admin/animals',
   Instructor: '/instructor/dashboard',
   Veterinario: '/veterinario/dashboard',
   Aprendiz: '/apprentice/dashboard',
