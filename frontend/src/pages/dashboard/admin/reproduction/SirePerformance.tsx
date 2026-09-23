@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/sha
 import { Button } from '@/shared/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { Badge } from '@/shared/ui/badge';
-import { ArrowLeft, Award, Star, Activity } from 'lucide-react';
+import { ArrowLeft, Award, Star, Activity, AlertTriangle } from 'lucide-react';
 import { useRoleNavigation } from '@/features/auth/model/useRoleNavigation';
 import { reproductionService } from '@/entities/reproduction/api/reproduction.service';
 import { useToast } from '@/app/providers/ToastContext';
@@ -107,8 +107,8 @@ export default function SirePerformance({ isEmbedded = false }: SirePerformanceP
           }
           icon={<Award className="h-5 w-5 text-white" />}
           iconClassName="from-indigo-500 to-violet-600 shadow-indigo-500/20"
-          title={<>Análisis de <span className="text-indigo-600">Toros (Sires)</span></>}
-          description="Desempeño reproductivo y calidad genética de reproductores"
+          title={<>Análisis de <span className="text-indigo-600">Toros y Reproductores</span></>}
+          description="Desempeño reproductivo y efectividad de preñez de los machos de la finca"
           actions={
             <Select value={months.toString()} onValueChange={(v) => setMonths(parseInt(v))}>
               <SelectTrigger className="w-full sm:w-[180px] h-9 rounded-lg bg-background/50 border-border/50 font-semibold focus:ring-indigo-500/20">
@@ -154,7 +154,7 @@ export default function SirePerformance({ isEmbedded = false }: SirePerformanceP
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <Card className="border-border/50 shadow-xl shadow-primary/5 bg-card/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
+        <Card className="border-border/50 shadow-xl shadow-primary/5 bg-card/40 backdrop-blur-xl rounded-2xl overflow-hidden">
           <CardHeader className="p-6 pb-2">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
               <Activity className="w-5 h-5 text-indigo-600" />
@@ -179,19 +179,95 @@ export default function SirePerformance({ isEmbedded = false }: SirePerformanceP
         </Card>
       </motion.div>
 
-      {/* Tabla de toros */}
+      {/* Lista de toros: Vista Híbrida Móvil (Cards) y Escritorio (Tabla) */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
       >
-        <Card className="border-border/50 shadow-2xl shadow-primary/5 bg-card/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="p-6 sm:p-8 border-b border-border/30">
-            <CardTitle className="text-xl font-black text-foreground">Ranking y Ficha de Toros</CardTitle>
-            <CardDescription className="font-medium mt-1">Lista ordenada por tasa de preñez obtenida en servicios</CardDescription>
+        <Card className="border-border/50 shadow-xl shadow-primary/5 bg-card/60 backdrop-blur-sm rounded-2xl overflow-hidden">
+          <CardHeader className="p-4 sm:p-6 border-b border-border/30">
+            <CardTitle className="text-lg sm:text-xl font-black text-foreground">Ranking y Ficha de Reproductores</CardTitle>
+            <CardDescription className="text-xs font-medium mt-0.5">
+              Evaluación por tasa de preñez, crías logradas y pesos al nacer
+            </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
+            {/* VISTA MÓVIL (<md): Tarjetas Táctiles */}
+            <div className="md:hidden divide-y divide-border/20 p-3 space-y-3">
+              {data.sires.map((sire, index) => (
+                <div
+                  key={sire.sire_id}
+                  className="p-3.5 rounded-xl border border-border/60 bg-muted/20 space-y-2.5"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Badge variant="outline" className="w-7 h-7 shrink-0 flex items-center justify-center rounded-lg border-indigo-500/20 font-black bg-indigo-500/5 text-indigo-600">
+                        #{index + 1}
+                      </Badge>
+                      <div className="min-w-0">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedAnimalId(sire.sire_id)}
+                          className="font-black text-sm text-foreground hover:text-indigo-600 hover:underline text-left block truncate"
+                        >
+                          {sire.record}
+                        </button>
+                        <span className="text-[11px] text-muted-foreground block truncate">{sire.breed}</span>
+                      </div>
+                    </div>
+                    <Badge className={`${getGradeBadgeClass(sire.grade)} font-black uppercase text-[10px] tracking-wide rounded-lg px-2 py-0.5 shrink-0`}>
+                      CLASE {sire.grade}
+                    </Badge>
+                  </div>
+
+                  {/* Barra de Tasa de Preñez */}
+                  <div className="space-y-1 bg-background/60 p-2.5 rounded-lg border border-border/40">
+                    <div className="flex justify-between text-xs font-semibold">
+                      <span className="text-muted-foreground">Efectividad de Preñez:</span>
+                      <span className={`font-black ${
+                        sire.conception_rate_pct >= 60 ? 'text-emerald-600' : sire.conception_rate_pct >= 50 ? 'text-amber-500' : 'text-rose-600'
+                      }`}>
+                        {sire.conception_rate_pct}% ({sire.positive_diagnoses} de {sire.inseminations} serv.)
+                      </span>
+                    </div>
+                    <div className="h-2 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all ${
+                          sire.conception_rate_pct >= 60 ? 'bg-emerald-500' : sire.conception_rate_pct >= 50 ? 'bg-amber-500' : 'bg-rose-500'
+                        }`}
+                        style={{ width: `${Math.min(sire.conception_rate_pct, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Cuadrícula de Métricas de Campo */}
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="p-2 rounded-lg bg-background/70 border border-border/40">
+                      <span className="text-[10px] text-muted-foreground block font-bold uppercase tracking-wider">Crías Nacidas</span>
+                      <span className="text-sm font-black text-foreground">{sire.total_offspring}</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-background/70 border border-border/40">
+                      <span className="text-[10px] text-muted-foreground block font-bold uppercase tracking-wider">Peso Prom. Crías</span>
+                      <span className="text-sm font-black text-foreground">
+                        {sire.avg_birth_weight_kg > 0 ? `${sire.avg_birth_weight_kg} kg` : '—'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Alerta de Baja Efectividad si aplica */}
+                  {sire.grade === 'D' && sire.inseminations >= 2 && (
+                    <div className="p-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-700 dark:text-rose-300 text-[11px] flex items-center gap-1.5 font-medium">
+                      <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-rose-600" />
+                      <span>Alerta: Tasa baja. Sugerido descanso o examen andrológico.</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* VISTA ESCRITORIO (>=md): Tabla Estructurada */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-muted/30 text-[11px] font-black uppercase tracking-wider text-muted-foreground border-b border-border/20">
@@ -250,8 +326,8 @@ export default function SirePerformance({ isEmbedded = false }: SirePerformanceP
               </table>
             </div>
           </CardContent>
-          <div className="p-4 sm:p-6 bg-muted/20 border-t border-border/30 text-center">
-            <p className="text-[11px] font-black text-muted-foreground/45 uppercase tracking-[0.25em]">VillaLuz Intelligence Reporting System</p>
+          <div className="p-3 sm:p-4 bg-muted/20 border-t border-border/30 text-center">
+            <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em]">VillaLuz Ganadería · Control Reproductivo</p>
           </div>
         </Card>
       </motion.div>

@@ -66,7 +66,17 @@ export const KpiMetricCard: React.FC<KpiMetricCardProps> = ({
   hint,
   icon,
 }) => {
-  const style = status ? STATUS_STYLES[status] : NEUTRAL;
+  const normalizedStatus: KpiStatus | undefined =
+    status === 'ok' || status === 'warn' || status === 'bad'
+      ? status
+      : status === ('success' as any)
+      ? 'ok'
+      : status === ('warning' as any)
+      ? 'warn'
+      : status === ('danger' as any)
+      ? 'bad'
+      : undefined;
+  const style = (normalizedStatus && STATUS_STYLES[normalizedStatus]) || NEUTRAL;
   const hasValue = value !== null && value !== undefined;
 
   return (

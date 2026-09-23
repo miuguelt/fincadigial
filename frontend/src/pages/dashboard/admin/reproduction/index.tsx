@@ -32,8 +32,16 @@ export default function ReproductionHub() {
   const [quickEventAnimalRecord, setQuickEventAnimalRecord] = useState<string | null>(null);
   const [quickEventDefaultType, setQuickEventDefaultType] = useState<EventTypeOption>('Celo');
 
-  // Sub-tab para Fertilidad vs Toros
-  const [fertilitySubTab, setFertilitySubTab] = useState<'fertility' | 'sires'>('fertility');
+  // Sub-tab para Fertilidad vs Toros con sincronización de URL
+  const initialSubTab = searchParams.get('subtab') === 'toros' || searchParams.get('subtab') === 'sires' ? 'sires' : 'fertility';
+  const [fertilitySubTab, setFertilitySubTab] = useState<'fertility' | 'sires'>(initialSubTab);
+
+  const handleOpenQuickEvent = (animalId: number, record?: string, eventType: EventTypeOption = 'Celo') => {
+    setQuickEventAnimalId(animalId);
+    setQuickEventAnimalRecord(record || null);
+    setQuickEventDefaultType(eventType);
+    setIsQuickEventModalOpen(true);
+  };
 
   // Precarga automática desde navegación externa (ej. HeatAlertsWidget o links con state)
   useEffect(() => {
@@ -68,11 +76,32 @@ export default function ReproductionHub() {
     if (tabFromUrl !== activeTab) {
       setActiveTab(tabFromUrl);
     }
-  }, [searchParams, activeTab]);
+    const subtabFromUrl = searchParams.get('subtab');
+    if (subtabFromUrl === 'toros' || subtabFromUrl === 'sires') {
+      if (fertilitySubTab !== 'sires') setFertilitySubTab('sires');
+    } else if (subtabFromUrl === 'fertilidad') {
+      if (fertilitySubTab !== 'fertility') setFertilitySubTab('fertility');
+    }
+  }, [searchParams, activeTab, fertilitySubTab]);
 
   const handleTabChange = (val: string) => {
     setActiveTab(val);
-    setSearchParams({ tab: val });
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('tab', val);
+    if (val === 'fertilidad') {
+      newParams.set('subtab', fertilitySubTab === 'sires' ? 'toros' : 'fertilidad');
+    } else {
+      newParams.delete('subtab');
+    }
+    setSearchParams(newParams);
+  };
+
+  const handleFertilitySubTabChange = (val: 'fertility' | 'sires') => {
+    setFertilitySubTab(val);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('tab', 'fertilidad');
+    newParams.set('subtab', val === 'sires' ? 'toros' : 'fertilidad');
+    setSearchParams(newParams);
   };
 
   const handleDataRefresh = () => {
@@ -130,7 +159,8 @@ export default function ReproductionHub() {
       validateForm={validateForm}
       handleDataRefresh={handleDataRefresh}
       fertilitySubTab={fertilitySubTab}
-      setFertilitySubTab={setFertilitySubTab}
+      setFertilitySubTab={handleFertilitySubTabChange}
+      onOpenQuickEvent={handleOpenQuickEvent}
       isCalvingModalOpen={isCalvingModalOpen}
       setIsCalvingModalOpen={setIsCalvingModalOpen}
       isBatchModalOpen={isBatchModalOpen}

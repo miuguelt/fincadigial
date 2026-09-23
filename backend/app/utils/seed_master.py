@@ -289,34 +289,113 @@ def seed_fincas_and_users():
 
 
 def seed_learning_materials():
-    logger.info("📚 Configurando materiales offline iniciales...")
+    logger.info("📚 Configurando materiales offline iniciales con literatura oficial colombiana...")
     velez = Territory.query.filter_by(municipality="Vélez").first()
-    mats = [
+    territory_id = velez.id if velez else None
+
+    official_materials = [
         {
-            "title": "Manual de Buenas Prácticas Ganaderas (BPG)",
-            "category": "Sanidad Animal",
-            "uri": "",
+            "title": "Guía ICA de Buenas Prácticas Ganaderas (BPG) en Bovinos",
+            "category": "Sanidad y Bioseguridad",
+            "content_type": LearningContentType.PDF,
+            "reading_level": "Técnico y Mayordomos",
+            "summary": "Guía oficial del ICA con los requisitos sanitarios, control de botiquín, registro de medicamentos con tiempos de retiro y bioseguridad para certificación en BPG (Resolución 068167).",
+            "uri": "https://www.ica.gov.co",
         },
         {
-            "title": "Guía de Bienestar Animal ICA",
-            "category": "Sanidad Animal",
-            "uri": "",
+            "title": "Manual de Ganadería Bovina de Doble Propósito: Excelencia Sanitaria (AGROSAVIA)",
+            "category": "Sanidad y Bioseguridad",
+            "content_type": LearningContentType.PDF,
+            "reading_level": "Productores y Mayordomos",
+            "summary": "Publicación técnica de AGROSAVIA orientada a la medicina preventiva en hatos de doble propósito, control integral de parásitos y manejo sanitario del lote.",
+            "uri": "https://repository.agrosavia.co",
+        },
+        {
+            "title": "Cartilla de Aforo de Praderas y Manejo de Pasturas (FEDEGÁN - FNG)",
+            "category": "Pastos y Aforo",
+            "content_type": LearningContentType.PDF,
+            "reading_level": "Práctico de Campo",
+            "summary": "Metodología del marco de 1 metro cuadrado para estimar la oferta de forraje verde, cálculo de capacidad de carga animal y rotación técnica de potreros.",
+            "uri": "https://www.fedegan.org.co",
+        },
+        {
+            "title": "Buenas Prácticas en el Ordeño y Rutina Higiénica de la Leche (SENA - ICA)",
+            "category": "Ordeño y Calidad",
+            "content_type": LearningContentType.PDF,
+            "reading_level": "Operarios y Ordeñadores",
+            "summary": "Paso a paso de la rutina de ordeño limpio: despunte en tazón de fondo negro, prueba de mastitis CMT, lavado y secado con toalla individual y sellado de pezones.",
+            "uri": "https://repositorio.sena.edu.co",
+        },
+        {
+            "title": "Manual de Ensilaje Artesanal y Conservación de Forrajes (FEDEGÁN)",
+            "category": "Nutrición y Forrajes",
+            "content_type": LearningContentType.PDF,
+            "reading_level": "Práctico de Campo",
+            "summary": "Técnicas de picado, compactación anaeróbica y sellado en bolsa plástica o trinchera para conservar pastos de corte, maíz y sorgo forrajero ante sequías.",
+            "uri": "https://www.fedegan.org.co",
+        },
+        {
+            "title": "Establecimiento y Manejo de Sistemas Silvopastoriles Intensivos (CIPAV)",
+            "category": "Sistemas Sostenibles",
+            "content_type": LearningContentType.PDF,
+            "reading_level": "General y Técnico",
+            "summary": "Guía de campo para la siembra de bancos forrajeros con Botón de Oro (Tithonia diversifolia) y Matarratón (Gliricidia sepium), cercas vivas y sombrío en potreros.",
+            "uri": "https://www.cipav.org.co",
+        },
+        {
+            "title": "Guía de Atención del Ternero Neonato y Manejo del Calostro (AGROSAVIA - ICA)",
+            "category": "Cría y Reproducción",
+            "content_type": LearningContentType.PDF,
+            "reading_level": "Mayordomos y Vaqueros",
+            "summary": "Protocolo de desinfección de ombligo con tintura de yodo al 7%, calostrado antes de las primeras 4 horas de vida y prevención de diarreas neonatales.",
+            "uri": "https://repository.agrosavia.co",
+        },
+        {
+            "title": "Protección y Cosecha de Agua en Fincas Ganaderas (CIPAV - FAO)",
+            "category": "Agua y Clima",
+            "content_type": LearningContentType.PDF,
+            "reading_level": "General",
+            "summary": "Manejo y protección de nacimientos de agua, cosecha de lluvia, desinfección de bebederos y acueductos ganaderos para garantizar agua limpia al ganado.",
+            "uri": "https://www.cipav.org.co",
         },
     ]
-    for m in mats:
-        if not OfflineLearningMaterial.query.filter_by(title=m["title"]).first():
+
+    for m in official_materials:
+        existing = OfflineLearningMaterial.query.filter_by(title=m["title"]).first()
+        if not existing:
+            # También verificar por títulos similares heredados
             db.session.add(
                 OfflineLearningMaterial(
-                    territory_id=velez.id if velez else None,
+                    territory_id=territory_id,
                     title=m["title"],
                     category=m["category"],
-                    content_type=LearningContentType.PDF
-                    if hasattr(LearningContentType, "PDF")
-                    else LearningContentType.TEXT,
-                    summary=m["title"],
+                    content_type=m["content_type"],
+                    summary=m["summary"],
                     local_uri=m["uri"],
+                    reading_level=m["reading_level"],
+                    language="es",
+                    is_active=True,
                 )
             )
+        elif not existing.local_uri or existing.local_uri == "":
+            existing.local_uri = m["uri"]
+            existing.summary = m["summary"]
+            existing.reading_level = m["reading_level"]
+            existing.category = m["category"]
+
+    # Limpiar o enriquecer los registros heredados antiguos si existen con URI vacía
+    legacy_bpg = OfflineLearningMaterial.query.filter_by(title="Manual de Buenas Prácticas Ganaderas (BPG)").first()
+    if legacy_bpg and (not legacy_bpg.local_uri or legacy_bpg.local_uri == ""):
+        legacy_bpg.local_uri = "https://www.ica.gov.co"
+        legacy_bpg.summary = "Requisitos oficiales del ICA para la inocuidad en la producción primaria de carne y leche bovina."
+        legacy_bpg.reading_level = "Técnico y Mayordomos"
+
+    legacy_ica = OfflineLearningMaterial.query.filter_by(title="Guía de Bienestar Animal ICA").first()
+    if legacy_ica and (not legacy_ica.local_uri or legacy_ica.local_uri == ""):
+        legacy_ica.local_uri = "https://www.ica.gov.co"
+        legacy_ica.summary = "Pautas oficiales para el trato compasivo, instalaciones seguras, transporte y manejo sin dolor del ganado bovino."
+        legacy_ica.reading_level = "Mayordomos y Vaqueros"
+
     db.session.commit()
 
 

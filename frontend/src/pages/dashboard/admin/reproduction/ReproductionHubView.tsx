@@ -34,6 +34,7 @@ interface ReproductionHubViewProps {
   handleDataRefresh: () => void;
   fertilitySubTab: 'fertility' | 'sires';
   setFertilitySubTab: (value: 'fertility' | 'sires') => void;
+  onOpenQuickEvent?: (animalId: number, record?: string, eventType?: EventTypeOption) => void;
   isCalvingModalOpen: boolean;
   setIsCalvingModalOpen: (open: boolean) => void;
   isBatchModalOpen: boolean;
@@ -54,6 +55,7 @@ const TAB_TRIGGER_CLASS = 'min-h-11 min-w-0 gap-1.5 rounded-xl px-2 py-2 text-[1
 export function ReproductionHubView({
   summary, loadingSummary, activeTab, handleTabChange, filterAnimalId, searchParams, setSearchParams, setSelectedAnimalId,
   crudConfig, initialFormData, mapResponseToForm, validateForm, handleDataRefresh, fertilitySubTab, setFertilitySubTab,
+  onOpenQuickEvent,
   isCalvingModalOpen, setIsCalvingModalOpen, isBatchModalOpen, setIsBatchModalOpen, isQuickEventModalOpen, setIsQuickEventModalOpen,
   quickEventAnimalId, quickEventAnimalRecord, quickEventDefaultType, setQuickEventAnimalId, setQuickEventAnimalRecord, setQuickEventDefaultType, selectedAnimalId,
 }: ReproductionHubViewProps) {
@@ -308,7 +310,7 @@ export function ReproductionHubView({
               className="h-10 min-w-0 gap-1.5 rounded-lg px-2 text-xs font-bold sm:h-9 sm:gap-2 sm:px-3 sm:text-sm"
             >
               <Heart className="h-4 w-4" />
-              Auditoría de Fertilidad
+              Balance de Fertilidad
             </Button>
             <Button
               variant={fertilitySubTab === 'sires' ? 'primary' : 'outline'}
@@ -317,12 +319,24 @@ export function ReproductionHubView({
               className="h-10 min-w-0 gap-1.5 rounded-lg px-2 text-xs font-bold sm:h-9 sm:gap-2 sm:px-3 sm:text-sm"
             >
               <Award className="h-4 w-4" />
-              Desempeño de Toros (Sires)
+              Desempeño de Toros y Reproductores
             </Button>
           </div>
 
           {fertilitySubTab === 'fertility' ? (
-            <FertilityDashboard isEmbedded />
+            <FertilityDashboard
+              isEmbedded
+              onRegisterEvent={(animalId: number, record?: string) => {
+                if (onOpenQuickEvent) {
+                  onOpenQuickEvent(animalId, record, 'Celo');
+                } else {
+                  setQuickEventAnimalId(animalId);
+                  setQuickEventAnimalRecord(record || null);
+                  setQuickEventDefaultType('Celo');
+                  setIsQuickEventModalOpen(true);
+                }
+              }}
+            />
           ) : (
             <SirePerformance isEmbedded />
           )}

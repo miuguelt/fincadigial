@@ -25,7 +25,9 @@ MAX_MONTHS = 60
 
 
 def _months(default: int) -> int:
-    requested = flask.request.args.get("months", default=default, type=int) or default
+    requested = flask.request.args.get("months", default=default, type=int)
+    if requested is None:
+        requested = default
     return min(max(requested, 1), MAX_MONTHS)
 
 
