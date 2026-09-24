@@ -1,10 +1,26 @@
 name: CI — Finca Villa Luz
 
 on:
-  push:
-    branches: [main, master, develop]
   pull_request:
-    branches: [main, master, develop]
+    branches:
+      - main
+      - master
+      - develop
+      - 'release/**'
+      - 'hotfix/**'
+      - 'bugfix/**'
+      - 'support/**'
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
+      - master
+      - develop
+      - 'feature/**'
+      - 'release/**'
+      - 'hotfix/**'
+      - 'bugfix/**'
+      - 'support/**'
   workflow_dispatch:
 
 env:

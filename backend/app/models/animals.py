@@ -65,6 +65,7 @@ class Animals(BaseModel, ElectronicIdMixin):
         db.Index("ix_animals_created_at", "created_at"),
         db.Index("ix_animals_updated_at", "updated_at"),  # Para ?since= y /metadata
         db.Index("ix_animals_finca_id", "finca_id"),  # Índice para filtrado tenant
+        db.Index("ix_animals_finca_status", "finca_id", "status"),  # Acelera filtros y KPIs por estado y finca
         # Índices para la barra de filtros de inventario ("Gestación / Lactancia /
         # Destete / Bajo peso"): ventanas de edad por birth_date, umbral de peso y
         # banderas reproductivas. Los booleans usan índices PARCIALES: solo

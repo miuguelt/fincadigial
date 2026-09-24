@@ -11,6 +11,7 @@ class Vaccinations(BaseModel):
         db.Index("ix_vaccinations_animal_date", "animal_id", "vaccination_date"),
         db.Index("ix_vaccinations_created_at", "created_at"),
         db.Index("ix_vaccinations_finca_id", "finca_id"),
+        db.Index("ix_vaccinations_finca_date", "finca_id", "vaccination_date"),
     )
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)

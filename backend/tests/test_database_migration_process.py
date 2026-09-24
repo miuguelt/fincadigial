@@ -114,7 +114,7 @@ def _migration_metadata(path: Path) -> dict:
 def test_startup_skips_upgrade_when_database_is_at_all_heads():
     assert (
         migration_required(
-            {"task_completion001_records"}, {"task_completion001_records"}
+            {"perf004_core_finca_indexes"}, {"perf004_core_finca_indexes"}
         )
         is False
     )
@@ -122,8 +122,8 @@ def test_startup_skips_upgrade_when_database_is_at_all_heads():
     calls = []
     upgraded = _upgrade_if_required(
         config=object(),
-        current_heads={"task_completion001_records"},
-        target_heads={"task_completion001_records"},
+        current_heads={"perf004_core_finca_indexes"},
+        target_heads={"perf004_core_finca_indexes"},
         upgrade_fn=lambda *_args: calls.append(True),
     )
 
@@ -132,10 +132,10 @@ def test_startup_skips_upgrade_when_database_is_at_all_heads():
 
 
 def test_startup_requires_upgrade_when_database_is_not_at_all_heads():
-    assert migration_required(set(), {"task_completion001_records"}) is True
+    assert migration_required(set(), {"perf004_core_finca_indexes"}) is True
     assert (
         migration_required(
-            {"sani008_treatment_protocols"}, {"task_completion001_records"}
+            {"sani008_treatment_protocols"}, {"perf004_core_finca_indexes"}
         )
         is True
     )
@@ -174,7 +174,7 @@ def test_active_migration_tree_is_versioned_reversible_and_has_one_head():
     assert children <= revisions
 
     heads = revisions - children
-    assert heads == {"task_completion001_records"}
+    assert heads == {"perf004_core_finca_indexes"}
 
 
 def test_create_app_minimal_mode_skips_external_services(monkeypatch):
