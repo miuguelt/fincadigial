@@ -5,14 +5,15 @@ import RoleBasedSideBar from '@/widgets/dashboard/RoleBasedSideBar';
 import Header from './Header';
 import LoadingScreen from '@/shared/ui/common/LoadingScreen';
 import { Skeleton, SkeletonCard, SkeletonTable } from '@/shared/ui/skeleton';
-import { ChatWidget } from '@/widgets/chat/ChatWidget';
 import { FloatingQuickActions } from '@/widgets/dashboard/FloatingQuickActions';
 import { QuickActionsModal } from '@/widgets/dashboard-layout/QuickActionsModal';
 import { CrearFincaPage } from '@/features/multi-finca/ui/CrearFincaPage';
-import { OnboardingTour } from '@/widgets/onboarding/OnboardingTour';
 import { MobileBottomNav } from './MobileBottomNav';
 import { ContentErrorBoundary } from './ContentErrorBoundary';
 import { cn } from '@/shared/lib/utils';
+
+const ChatWidget = React.lazy(() => import('@/widgets/chat/ChatWidget').then((m) => ({ default: m.ChatWidget })));
+const OnboardingTour = React.lazy(() => import('@/widgets/onboarding/OnboardingTour').then((m) => ({ default: m.OnboardingTour })));
 
 // Ancho reservado por el menú lateral flotante: 280px de panel + 16px de gap izquierdo + 12px margen de respiro.
 const SIDEBAR_INSET = '308px';
@@ -163,9 +164,17 @@ const DashboardLayout: React.FC = () => {
           onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
         />
       )}
-      {showSidebar && <ChatWidget hideToggleButton={true} />}
+      {showSidebar && (
+        <Suspense fallback={null}>
+          <ChatWidget hideToggleButton={true} />
+        </Suspense>
+      )}
       {showSidebar && <QuickActionsModal />}
-      {showSidebar && <OnboardingTour />}
+      {showSidebar && (
+        <Suspense fallback={null}>
+          <OnboardingTour />
+        </Suspense>
+      )}
       {isAuthenticated && <CrearFincaPage modal />}
     </div>
   );

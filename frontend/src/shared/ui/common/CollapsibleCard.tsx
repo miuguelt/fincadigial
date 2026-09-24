@@ -13,6 +13,8 @@ interface CollapsibleCardProps {
     badgeCount?: number;
     /** Controles alineados a la derecha de la cabecera (exportar, filtrar…). */
     headerActions?: React.ReactNode;
+    /** Si es true, difiere el montaje de los hijos hasta que se expanda por primera vez */
+    lazy?: boolean;
 }
 
 export function CollapsibleCard({
@@ -22,9 +24,21 @@ export function CollapsibleCard({
     className,
     accent = 'slate',
     badgeCount,
-    headerActions
+    headerActions,
+    lazy = false,
 }: CollapsibleCardProps) {
     const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+    const [hasBeenExpanded, setHasBeenExpanded] = useState(!defaultCollapsed);
+
+    const toggle = () => {
+        setIsCollapsed((prev) => {
+            const next = !prev;
+            if (!next) {
+                setHasBeenExpanded(true);
+            }
+            return next;
+        });
+    };
 
     const accentClasses: Record<string, { text: string; bar: string }> = {
         blue: { text: "text-blue-700 dark:text-blue-300", bar: "bg-blue-500 shadow-blue-500/20" },
@@ -54,11 +68,11 @@ export function CollapsibleCard({
                 role="button"
                 tabIndex={0}
                 aria-expanded={!isCollapsed}
-                onClick={() => setIsCollapsed(!isCollapsed)}
+                onClick={toggle}
                 onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
-                        setIsCollapsed(!isCollapsed);
+                        toggle();
                     }
                 }}
             >
@@ -83,7 +97,7 @@ export function CollapsibleCard({
                         size="sm"
                         tabIndex={-1}
                         aria-hidden={true}
-                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        onClick={toggle}
                         className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
                     >
                         {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
@@ -95,7 +109,7 @@ export function CollapsibleCard({
                 isCollapsed ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[2500px] opacity-100 overflow-visible'
             )}>
                 <div className="p-4 sm:p-5">
-                    {children}
+                    {(!lazy || hasBeenExpanded) ? children : null}
                 </div>
             </div>
         </div>

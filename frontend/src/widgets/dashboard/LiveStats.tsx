@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
 import {
@@ -10,7 +10,8 @@ import {
   IconWifi,
   IconWifiOff,
 } from "@/shared/ui/icons";
-import { getBackendBaseURL } from "@/shared/utils/envConfig";
+import { useCompleteDashboardStats, getStatValue } from "@/features/dashboard/model/useCompleteDashboardStats";
+import { subscribeSSE, getSSEStatus } from "@/lib/events";
 
 interface LiveKPIs {
   total_animals: number;
@@ -22,118 +23,56 @@ interface LiveKPIs {
   controls_7d: number;
 }
 
-interface LiveStatsData {
-  timestamp: string;
-  kpis: LiveKPIs;
-  error?: string;
-}
-
 export function LiveStats() {
-  const [stats, setStats] = useState<LiveStatsData | null>(null);
-  const [connected, setConnected] = useState(false);
-  // BUG FIX: Usar ref en vez de state para el contador de reintentos.
-  // Si se usaba state, cada setRetryCount() recreaba `connect` (por su dep array),
-  // lo que disparaba useEffect([connect]) → nueva conexión → loop infinito.
-  const retryCountRef = useRef(0);
-  const esRef = useRef<EventSource | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const mountedRef = useRef(true);
-
-  const connect = useCallback(() => {
-    // Guardián de montaje
-    if (!mountedRef.current) return;
-
-    // Singleton: no crear otra conexión si ya existe una activa
-    if (esRef.current) {
-      esRef.current.close();
-      esRef.current = null;
-    }
-
-    const maxRetries = 5;
-    if (retryCountRef.current >= maxRetries) {
-      console.warn("[LiveStats] Límite de reconexiones alcanzado. SSE detenido.");
-      return;
-    }
-
-    const baseURL = getBackendBaseURL();
-    const url = baseURL.endsWith('/api/v1')
-      ? `${baseURL}/analytics/live/stream`
-      : `${baseURL}/api/v1/analytics/live/stream`;
-
-    console.log(`[LiveStats] Conectando a SSE (intento ${retryCountRef.current + 1}):`, url);
-
-    const es = new EventSource(url, { withCredentials: true });
-    esRef.current = es;
-
-    es.onopen = () => {
-      if (!mountedRef.current) { es.close(); return; }
-      console.log("[LiveStats] Conexión SSE establecida");
-      setConnected(true);
-      retryCountRef.current = 0; // Reset al conectar exitosamente
-    };
-
-    es.onerror = () => {
-      if (!mountedRef.current) { es.close(); return; }
-      setConnected(false);
-      es.close();
-      esRef.current = null;
-
-      retryCountRef.current += 1;
-      const attempts = retryCountRef.current;
-
-      if (attempts >= maxRetries) {
-        console.warn(`[LiveStats] Sin más reconexiones tras ${maxRetries} intentos.`);
-        return;
-      }
-
-      // Backoff exponencial: 2s, 4s, 8s, 16s, 30s
-      const delay = Math.min(1000 * Math.pow(2, attempts), 30000);
-      console.log(`[LiveStats] Reintentando en ${delay / 1000}s (intento ${attempts + 1}/${maxRetries})`);
-
-      reconnectTimeoutRef.current = setTimeout(connect, delay);
-    };
-
-    es.onmessage = (event) => {
-      if (!mountedRef.current) return;
-      try {
-        const data: LiveStatsData = JSON.parse(event.data);
-        setStats(data);
-      } catch (err) {
-        console.error("[LiveStats] Error parseando datos SSE:", err);
-      }
-    };
-  }, []); // SIN dependencias externas — connect es estable durante todo el ciclo de vida
+  const { stats, loading, error, refetch, lastUpdated } = useCompleteDashboardStats(true);
+  const [sseConnected, setSseConnected] = useState(() => getSSEStatus().connected);
 
   useEffect(() => {
-    mountedRef.current = true;
-    connect();
+    // Sincronizar estado inicial
+    setSseConnected(getSSEStatus().connected);
 
-    // Reconectar cuando la página vuelve a ser visible (tras cambio de tab)
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible" && !esRef.current) {
-        console.log("[LiveStats] Página visible, reconectando...");
-        retryCountRef.current = 0; // Reset al volver de background
-        connect();
-      }
-    };
+    // Suscribirse a los eventos unificados del bus SSE
+    const unsubscribe = subscribeSSE((_eventData) => {
+      setSseConnected(true);
+      // Cuando llega un evento de negocio por SSE, refrescar silenciosamente las métricas
+      refetch().catch(() => {});
+    });
 
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    const statusInterval = setInterval(() => {
+      setSseConnected(getSSEStatus().connected);
+    }, 5000);
 
     return () => {
-      mountedRef.current = false;
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-      if (esRef.current) {
-        esRef.current.close();
-        esRef.current = null;
-      }
+      unsubscribe();
+      clearInterval(statusInterval);
     };
-  }, [connect]);
+  }, [refetch]);
 
   const formatNumber = (num: number) =>
     new Intl.NumberFormat("es-CO").format(num);
+
+  const kpis: LiveKPIs = useMemo(() => {
+    const total_animals = getStatValue(stats?.animales_registrados);
+    const active_animals = getStatValue(stats?.animales_activos);
+    const sick_animals = getStatValue(stats?.animales_por_enfermedad);
+    const health_rate =
+      total_animals > 0
+        ? Math.max(0, Math.min(100, Math.round(((total_animals - sick_animals) / total_animals) * 100)))
+        : 100;
+    const vaccinations_30d = getStatValue(stats?.vacunas_aplicadas);
+    const active_treatments = getStatValue(stats?.tratamientos_activos);
+    const controls_7d = getStatValue(stats?.controles_realizados);
+
+    return {
+      total_animals,
+      active_animals,
+      sick_animals,
+      health_rate,
+      vaccinations_30d,
+      active_treatments,
+      controls_7d,
+    };
+  }, [stats]);
 
   const kpiCards = [
     {
@@ -160,7 +99,7 @@ export function LiveStats() {
     },
     {
       key: "vaccinations_30d",
-      label: "Vacunas (30d)",
+      label: "Vacunas",
       icon: IconSyringe,
       color: "text-purple-600",
       bgColor: "bg-purple-50",
@@ -174,7 +113,7 @@ export function LiveStats() {
     },
     {
       key: "controls_7d",
-      label: "Controles (7d)",
+      label: "Controles Realizados",
       icon: IconMapPin,
       color: "text-teal-600",
       bgColor: "bg-teal-50",
@@ -191,7 +130,7 @@ export function LiveStats() {
           Estadísticas en tiempo real
         </CardTitle>
         <div className="flex flex-wrap items-center gap-2">
-          {connected ? (
+          {sseConnected ? (
             <Badge
               variant="default"
               className="bg-success-600 px-3 py-1 text-white hover:bg-success-600"
@@ -205,22 +144,27 @@ export function LiveStats() {
               Desconectado
             </Badge>
           )}
-          {stats?.timestamp && (
+          {lastUpdated && (
             <span className="text-xs text-muted-foreground">
-              {new Date(stats.timestamp).toLocaleTimeString("es-CO")}
+              {lastUpdated.toLocaleTimeString("es-CO")}
             </span>
           )}
         </div>
       </CardHeader>
       <CardContent className="p-5 sm:p-6">
-        {stats?.error ? (
+        {error && !stats ? (
           <div className="p-4 bg-destructive/5 text-destructive rounded-lg text-sm">
-            Error: {stats.error}
+            Error cargando estadísticas: {error.message}
           </div>
-        ) : stats?.kpis ? (
+        ) : loading && !stats ? (
+          <div className="flex items-center justify-center h-32 text-muted-foreground">
+            <IconRefresh size="md" className="mr-2 animate-spin" />
+            Cargando estadísticas...
+          </div>
+        ) : (
           <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-3 lg:gap-4">
             {kpiCards.map((kpi) => {
-              const value = stats.kpis[kpi.key as keyof LiveKPIs];
+              const value = kpis[kpi.key as keyof LiveKPIs];
               return (
                 <div
                   key={kpi.key}
@@ -239,11 +183,6 @@ export function LiveStats() {
                 </div>
               );
             })}
-          </div>
-        ) : (
-          <div className="flex items-center justify-center h-32 text-muted-foreground">
-            <IconRefresh size="md" className="mr-2 animate-spin" />
-            Cargando estadísticas...
           </div>
         )}
       </CardContent>

@@ -35,6 +35,7 @@ class Control(BaseModel):
         db.Index("ix_control_animal_checkup", "animal_id", "checkup_date"),
         db.Index("ix_control_created_at", "created_at"),
         db.Index("ix_control_finca_id", "finca_id"),
+        db.Index("ix_control_finca_checkup", "finca_id", "checkup_date"),
     )
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)

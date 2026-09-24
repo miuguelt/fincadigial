@@ -1,5 +1,41 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/features/auth/model/useAuth';
 import { analyticsService } from '@/features/reporting/api/analytics.service';
+
+
+
+/**
+ * Hook optimizado para obtener todas las estadísticas del dashboard
+ * usando TanStack Query (Stale-While-Revalidate).
+ * Proporciona respuesta inmediata de 0ms al regresar al Dashboard y refresco silencioso en segundo plano.
+ */
+export function useCompleteDashboardStats(
+  autoRefresh: boolean = true,
+  refreshInterval: number = 120000 // 2 minutos (mismo que el caché del backend)
+): UseCompleteDashboardStatsResult {
+  const { user } = useAuth();
+  const fincaId = user?.finca_id ?? 'all';
+
+  const query = useQuery<CompleteDashboardStats>({
+    queryKey: ['complete-dashboard-stats', fincaId],
+    queryFn: () => analyticsService.getCompleteDashboardStats(),
+    staleTime: 60 * 1000, // 1 minuto de datos frescos sin refetch
+    gcTime: 30 * 60 * 1000, // 30 minutos de persistencia en memoria
+    refetchInterval: autoRefresh ? refreshInterval : false,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
+  });
+
+  return {
+    stats: query.data ?? null,
+    loading: query.isLoading, // Solo true en primera carga sin datos en caché
+    error: (query.error as Error) ?? null,
+    refetch: async () => {
+      await query.refetch();
+    },
+    lastUpdated: query.dataUpdatedAt ? new Date(query.dataUpdatedAt) : null,
+  };
+}
 
 export interface StatTrend {
   periodo_actual: number;
@@ -92,88 +128,6 @@ interface UseCompleteDashboardStatsResult {
   refetch: () => Promise<void>;
   lastUpdated: Date | null;
 }
-
-/**
- * Hook optimizado para obtener todas las estadísticas del dashboard
- * en una sola llamada HTTP. Incluye auto-refresh cada 2 minutos
- * para aprovechar el caché del backend.
- */
-export function useCompleteDashboardStats(
-  autoRefresh: boolean = true,
-  refreshInterval: number = 120000 // 2 minutos (mismo que el caché del backend)
-): UseCompleteDashboardStatsResult {
-  const [stats, setStats] = useState<CompleteDashboardStats | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<Error | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const hasStatsRef = useRef(false);
-
-  const fetchStats = useCallback(async () => {
-    try {
-      // Keep stale data visible while reconnecting; only show the spinner on
-      // the first load of a device.
-      setLoading(!hasStatsRef.current);
-      setError(null);
-
-      const data = await analyticsService.getCompleteDashboardStats();
-
-      setStats(data);
-      hasStatsRef.current = true;
-      setLastUpdated(new Date());
-    } catch (err) {
-      const nextError = err instanceof Error ? err : new Error('Error desconocido');
-      if (typeof navigator === 'undefined' || navigator.onLine !== false) {
-        console.error('Error fetching complete dashboard stats:', nextError);
-      }
-      setError(nextError);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    const refreshWhenVisible = () => {
-      if (typeof document === 'undefined' || document.visibilityState !== 'hidden') {
-        void fetchStats();
-      }
-    };
-
-    // Load immediately. The API client serves IndexedDB when offline and
-    // fails fast when no local snapshot exists.
-    refreshWhenVisible();
-
-    const handleOnline = () => refreshWhenVisible();
-    window.addEventListener('online', handleOnline);
-    document.addEventListener('visibilitychange', refreshWhenVisible);
-
-    // Refresh only while the tab is visible to avoid wasting rural data.
-    let intervalId: ReturnType<typeof setInterval> | undefined;
-    if (autoRefresh) {
-      intervalId = setInterval(() => {
-        refreshWhenVisible();
-      }, refreshInterval);
-    }
-
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-      window.removeEventListener('online', handleOnline);
-      document.removeEventListener('visibilitychange', refreshWhenVisible);
-    };
-  }, [fetchStats, autoRefresh, refreshInterval]);
-
-  return {
-    stats,
-    loading,
-    error,
-    refetch: fetchStats,
-    lastUpdated,
-  };
-}
-
-/**
- * Función helper para obtener el valor de una estadística
- * con un valor por defecto si no existe
- */
 export function getStatValue(
   stat: DashboardStat | undefined,
   defaultValue: number = 0
