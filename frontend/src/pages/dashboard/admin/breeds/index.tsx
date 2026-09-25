@@ -17,6 +17,7 @@ import { SectionCard, InfoField, modalStyles } from '@/shared/ui/common/ModalSty
 const mapResponseToForm = (item: BreedResponse & { [k: string]: any }): BreedInput => ({
   name: item.name || '',
   species_id: item.species_id,
+  purpose: item.purpose || '',
 });
 
 // Validación mejorada
@@ -37,7 +38,26 @@ const validateForm = (formData: BreedInput): string | null => {
 // Datos iniciales - NO usar 0, usar undefined para forzar selección
 const initialFormData: BreedInput = {
   name: '',
+  purpose: '',
   species_id: undefined as any, // Forzar que el usuario seleccione
+};
+
+const purposeBadge = (purpose?: string | null) => {
+  if (!purpose) return <span className="text-muted-foreground">-</span>;
+  const p = purpose.toLowerCase();
+  if (p === 'milk' || p === 'leche') {
+    return <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20">🥛 Leche</span>;
+  }
+  if (p === 'meat' || p === 'carne') {
+    return <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/20">🥩 Carne</span>;
+  }
+  if (p === 'dual' || p === 'doble' || p === 'doble propósito' || p === 'doble proposito') {
+    return <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">⚖️ Doble Propósito</span>;
+  }
+  if (p === 'work' || p === 'trabajo') {
+    return <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">🐎 Trabajo</span>;
+  }
+  return <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-muted/20 text-foreground border border-border/40">{purpose}</span>;
 };
 
 // Página principal
@@ -85,6 +105,11 @@ function AdminBreedsPage() {
         return <SpeciesLink id={id} label={label} />;
       }
     },
+    {
+      key: 'purpose' as any,
+      label: 'Propósito Zootécnico',
+      render: (v) => purposeBadge(v as string),
+    },
     { key: 'created_at', label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
   ], [speciesMap]);
 
@@ -115,6 +140,18 @@ function AdminBreedsPage() {
           ],
         },
         { name: 'species_id', label: 'Especie', type: 'select', required: true, options: speciesOptions, placeholder: 'Seleccionar especie...' },
+        {
+          name: 'purpose' as any,
+          label: 'Propósito Zootécnico',
+          type: 'select',
+          options: [
+            { value: 'Milk', label: '🥛 Leche' },
+            { value: 'Meat', label: '🥩 Carne' },
+            { value: 'Dual', label: '⚖️ Doble Propósito' },
+            { value: 'Work', label: '🐎 Trabajo' },
+          ],
+          placeholder: 'Seleccionar propósito (opcional)...',
+        },
       ],
     },
   ];
@@ -130,6 +167,10 @@ function AdminBreedsPage() {
           <InfoField
             label="Especie"
             value={item.species_id ? <SpeciesLink id={item.species_id} label={speciesLabel} /> : '-'}
+          />
+          <InfoField
+            label="Propósito Zootécnico"
+            value={purposeBadge(item.purpose)}
           />
         </SectionCard>
         <SectionCard title="Fecha de Creación">
@@ -165,6 +206,7 @@ function AdminBreedsPage() {
               <div className={modalStyles.spacing.sectionSmall}>
                 <InfoField label="ID" value={`#${item.id}`} />
                 <InfoField label="Nombre" value={item.name || '-'} valueSize="xlarge" />
+                <InfoField label="Propósito Zootécnico" value={purposeBadge(item.purpose)} />
               </div>
             </SectionCard>
 
@@ -204,7 +246,7 @@ function AdminBreedsPage() {
     columns,
     formSections: formSectionsLocal,
     // Limitar campos para reducir payload y acelerar render
-    defaultFields: ['id,name,species_id,created_at,updated_at'],
+    defaultFields: ['id,name,species_id,purpose,created_at,updated_at'],
     searchPlaceholder: 'Buscar razas...',
     emptyStateMessage: 'No hay razas disponibles.',
     emptyStateDescription: 'Crea la primera para comenzar.',

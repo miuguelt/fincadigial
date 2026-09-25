@@ -6,6 +6,7 @@ import { Button } from '@/shared/ui/button';
 import { Plus, X, Loader2, RefreshCw, Search, Droplets } from 'lucide-react';
 import { useToast } from '@/app/providers/ToastContext';
 import { CampesinoViewShell } from '@/widgets/layout/CampesinoViewShell';
+import { ConfirmDialog } from '@/shared/ui/common/ConfirmDialog';
 
 const SOURCE_TYPES = [
   { value: 'stream',       label: 'Quebrada/Río', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', border: 'border-blue-300 dark:border-blue-700' },
@@ -81,10 +82,22 @@ const WaterSourcesPage: React.FC = () => {
     finally { setSaving(false); }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('¿Eliminar esta fuente de agua?')) return;
-    try { await campesinoServices.waterSources.delete(id); showToast('Fuente eliminada', 'success'); load(); }
-    catch { showToast('Error al eliminar', 'error'); }
+  const [deleteSource, setDeleteSource] = useState<WaterSource | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const confirmDelete = async () => {
+    if (!deleteSource?.id) return;
+    setDeleting(true);
+    try {
+      await campesinoServices.waterSources.delete(deleteSource.id);
+      showToast('Fuente eliminada', 'success');
+      setDeleteSource(null);
+      load();
+    } catch {
+      showToast('Error al eliminar la fuente de agua', 'error');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const filtered = sources.filter(s => !search || s.name?.toLowerCase().includes(search.toLowerCase()));
@@ -165,8 +178,13 @@ const WaterSourcesPage: React.FC = () => {
                       {s.notes && <p className="text-xs opacity-70 mt-2 line-clamp-1">{s.notes}</p>}
                     </div>
                     </div>
-                    <button onClick={e => { e.stopPropagation(); handleDelete(s.id); }}
-                      className="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-950/30 text-current hover:text-red-600 opacity-50 hover:opacity-100 transition-all shrink-0">
+                    <button
+                      type="button"
+                      onClick={e => { e.stopPropagation(); setDeleteSource(s); }}
+                      aria-label={`Eliminar fuente ${s.name}`}
+                      title={`Eliminar fuente ${s.name}`}
+                      className="flex items-center justify-center min-h-[42px] min-w-[42px] p-2 rounded-xl hover:bg-rose-500/10 text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 transition-colors shrink-0"
+                    >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
@@ -257,6 +275,17 @@ const WaterSourcesPage: React.FC = () => {
           </div>
         </div>
       </GenericModal>
+      <ConfirmDialog
+        open={!!deleteSource}
+        onOpenChange={(open) => !open && setDeleteSource(null)}
+        title="¿Eliminar fuente de agua?"
+        description={`¿Estás seguro de que deseas eliminar la fuente "${deleteSource?.name || ''}"? Esta acción no se puede deshacer.`}
+        confirmLabel="Eliminar fuente"
+        cancelLabel="Cancelar"
+        confirmVariant="destructive"
+        onConfirm={confirmDelete}
+        confirmDisabled={deleting}
+      />
     </CampesinoViewShell>
   );
 };

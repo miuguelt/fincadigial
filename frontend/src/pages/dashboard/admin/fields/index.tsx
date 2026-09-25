@@ -677,7 +677,7 @@ const FieldsViewSwitcher: React.FC<FieldsViewSwitcherProps> = ({
         <div
           className="flex min-w-0 flex-wrap items-center justify-end gap-1.5 self-end sm:self-auto"
           role="group"
-          aria-label="Acciones de campo"
+          aria-label="Acciones de potrero"
         >
           {highlightedTools.map((tool) => (
             <Button
@@ -881,7 +881,7 @@ function FieldsCrudPage({ viewSwitcher, onOpenAforo }: FieldsCrudPageProps) {
     title: 'Potreros',
     hideTitle: true,
     headerLeading: <FieldsStatusHeading />,
-    entityName: 'Campo',
+    entityName: 'Potrero',
     columns,
     formSections: [],
     searchPlaceholder: 'Buscar por nombre o ubicación',

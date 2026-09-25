@@ -9,6 +9,7 @@ import {
   Layers,
   ChevronRight,
   TrendingUp,
+  Edit2,
 } from 'lucide-react';
 import { GenericModal } from '@/shared/ui/common/GenericModal';
 import { Badge } from '@/shared/ui/badge';
@@ -24,6 +25,7 @@ interface FoodTypeDetailModalProps {
   item: (FoodTypeResponse & { [k: string]: any }) | null;
   fields?: FieldResponse[];
   onOpenAforo?: (item: any) => void;
+  onOpenEdit?: (item: any) => void;
 }
 
 export const FoodTypeDetailModal: React.FC<FoodTypeDetailModalProps> = ({
@@ -32,6 +34,7 @@ export const FoodTypeDetailModal: React.FC<FoodTypeDetailModalProps> = ({
   item,
   fields = [],
   onOpenAforo,
+  onOpenEdit,
 }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'profile' | 'fields' | 'agronomy'>('profile');
@@ -52,6 +55,48 @@ export const FoodTypeDetailModal: React.FC<FoodTypeDetailModalProps> = ({
     <GenericModal
       isOpen={isOpen}
       onOpenChange={(open) => !open && onClose()}
+      footer={
+        <div className="flex items-center justify-between w-full gap-2">
+          {onOpenAforo && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                onClose();
+                onOpenAforo(item);
+              }}
+              className="gap-1.5 text-xs font-bold rounded-xl"
+            >
+              <Scale className="w-3.5 h-3.5 text-emerald-500" />
+              Aforar
+            </Button>
+          )}
+          <div className="flex items-center gap-2 ml-auto">
+            {onOpenEdit && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => {
+                  onClose();
+                  onOpenEdit(item);
+                }}
+                className="gap-1.5 text-xs font-bold rounded-xl"
+              >
+                <Edit2 className="w-3.5 h-3.5" />
+                Editar Alimento
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="text-xs font-semibold rounded-xl"
+            >
+              Cerrar
+            </Button>
+          </div>
+        </div>
+      }
       title={
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xl font-black text-foreground">{name}</span>

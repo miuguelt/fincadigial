@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/app/providers/ToastContext';
 import { CampesinoViewShell } from '@/widgets/layout/CampesinoViewShell';
+import { ConfirmDialog } from '@/shared/ui/common/ConfirmDialog';
 
 // ── Config de tipos de actividad ────────────────────────────────────────────
 
@@ -87,6 +88,8 @@ const CropActivitiesPage: React.FC = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
   const [saving, setSaving] = useState(false);
+  const [deleteActivity, setDeleteActivity] = useState<CropActivity | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -138,14 +141,18 @@ const CropActivitiesPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('¿Eliminar este registro?')) return;
+  const confirmDelete = async () => {
+    if (!deleteActivity?.id) return;
+    setDeleting(true);
     try {
-      await campesinoServices.cropActivities.delete(id);
+      await campesinoServices.cropActivities.delete(deleteActivity.id);
       showToast('Registro eliminado', 'success');
+      setDeleteActivity(null);
       load();
     } catch {
-      showToast('Error al eliminar', 'error');
+      showToast('Error al eliminar la labor', 'error');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -288,10 +295,13 @@ const CropActivitiesPage: React.FC = () => {
                                 )}
                               </div>
                               <button
-                                onClick={() => handleDelete(activity.id!)}
-                                className="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-950/30 text-current hover:text-red-600 opacity-50 hover:opacity-100 transition-all shrink-0"
+                                type="button"
+                                onClick={() => setDeleteActivity(activity)}
+                                aria-label="Eliminar labor"
+                                title="Eliminar labor"
+                                className="flex items-center justify-center min-h-[42px] min-w-[42px] p-2 rounded-xl hover:bg-rose-500/10 text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 transition-colors shrink-0"
                               >
-                                <X className="w-3.5 h-3.5" />
+                                <X className="w-4 h-4" />
                               </button>
                             </div>
                           </div>
@@ -446,6 +456,18 @@ const CropActivitiesPage: React.FC = () => {
           </div>
         </div>
       </GenericModal>
+
+      <ConfirmDialog
+        open={!!deleteActivity}
+        onOpenChange={(open) => !open && setDeleteActivity(null)}
+        title="¿Eliminar labor de cultivo?"
+        description="¿Estás seguro de que deseas eliminar este registro de labor? Esta acción no se puede deshacer."
+        confirmLabel="Eliminar labor"
+        cancelLabel="Cancelar"
+        confirmVariant="destructive"
+        onConfirm={confirmDelete}
+        confirmDisabled={deleting}
+      />
     </CampesinoViewShell>
   );
 };

@@ -27,13 +27,13 @@ const formSections: CRUDFormSection<RouteAdministrationInput>[] = [
 
 // Configuración CRUD
 const crudConfig: CRUDConfig<RouteAdministrationResponse & { [k: string]: any }, RouteAdministrationInput> = {
-  title: 'Rutas de Administración',
+  title: 'Vías de Administración',
   headerDescription: 'Define las vías y pautas de administración de tratamientos',
-  entityName: 'Ruta de Administración',
+  entityName: 'Vía de Administración',
   columns,
   formSections,
-  searchPlaceholder: 'Buscar rutas...',
-  emptyStateMessage: 'No hay rutas de administración disponibles.',
+  searchPlaceholder: 'Buscar vías de administración...',
+  emptyStateMessage: 'No hay vías de administración registradas.',
   emptyStateDescription: 'Crea la primera para comenzar.',
   enableDetailModal: true,
   enableCreateModal: true,
