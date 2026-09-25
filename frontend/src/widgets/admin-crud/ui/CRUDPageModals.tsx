@@ -93,8 +93,8 @@ export function CRUDPageModals<T extends { id: number }, TInput extends Record<s
           title={detailItem && config.detailTitle
             ? typeof config.detailTitle === 'function' ? config.detailTitle(detailItem) : config.detailTitle
             : detailItem
-            ? `Detalle del ${entityLabel}${config.showIdInDetailTitle === false ? '' : `: ${detailItem.id}`}`
-            : `Detalle del ${entityLabel}`}
+            ? `Detalle: ${entityLabel}${config.showIdInDetailTitle === false ? '' : `: ${detailItem.id}`}`
+            : `Detalle: ${entityLabel}`}
           item={detailItem}
           config={config}
           onEdit={canUpdate ? openEdit : undefined}

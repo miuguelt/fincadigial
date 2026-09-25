@@ -19,6 +19,7 @@ import {
   MapPin,
   Leaf,
   Plus,
+  Edit2,
 } from 'lucide-react';
 import { ZootecnicToolsDropdown, type ZootecnicToolItem } from '@/widgets/dashboard/ZootecnicToolsDropdown';
 import {
@@ -416,8 +417,23 @@ export const AdminFoodTypesPage: React.FC = () => {
       enableEditModal: false,
       enableDelete: true,
       onOpenDetail: handleOpenDetail,
+      customActions: (item) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleOpenEdit(item);
+          }}
+          title="Editar Alimento"
+          aria-label={`Editar ${item.food_type || item.name || 'alimento'}`}
+        >
+          <Edit2 className="w-4 h-4" />
+        </Button>
+      ),
     }),
-    [columns, currentItems, fields, customToolbar, viewMode, renderFoodTypeCard, handleOpenDetail, handleOpenCreate]
+    [columns, currentItems, fields, customToolbar, viewMode, renderFoodTypeCard, handleOpenDetail, handleOpenCreate, handleOpenEdit]
   );
 
   // Filtro por categoría en memoria para la lista
@@ -474,6 +490,7 @@ export const AdminFoodTypesPage: React.FC = () => {
         item={detailItem}
         fields={fields}
         onOpenAforo={handleOpenAforo}
+        onOpenEdit={handleOpenEdit}
       />
 
       {/* Modal de Creación / Edición con Presets */}

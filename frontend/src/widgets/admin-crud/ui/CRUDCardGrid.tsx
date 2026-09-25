@@ -20,11 +20,12 @@ const DefaultCardBody = <T extends { id: number }>({ item, columns }: { item: T;
   <div className="grid grid-cols-2 gap-3 text-xs">
     {columns.map((col: any) => {
       const raw = (item as any)[col.key];
+      const rendered = col.render ? col.render(raw, item) : (raw != null && raw !== '' ? String(raw) : '-');
       return (
         <div key={String(col.key)} className="min-w-0 space-y-1">
           <div className="text-muted-foreground font-medium text-[11px] uppercase tracking-wide">{col.label}</div>
-          <div className="fit-clamp font-medium text-foreground" title={String(raw ?? '-')}>
-            {String(raw ?? '-')}
+          <div className="fit-clamp font-medium text-foreground">
+            {rendered ?? '-'}
           </div>
         </div>
       );

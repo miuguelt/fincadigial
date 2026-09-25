@@ -193,6 +193,7 @@ export interface BreedInput {
   species_id: number;
   description?: string;
   characteristics?: string;
+  purpose?: string;
 }
 
 export interface BreedResponse {
@@ -201,6 +202,7 @@ export interface BreedResponse {
   species_id: number;
   description?: string;
   characteristics?: string;
+  purpose?: string;
   species?: SpeciesResponse;
   created_at?: string;
   updated_at?: string;

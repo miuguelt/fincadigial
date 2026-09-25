@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/app/providers/ToastContext';
 import { CampesinoViewShell } from '@/widgets/layout/CampesinoViewShell';
+import { ConfirmDialog } from '@/shared/ui/common/ConfirmDialog';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -82,6 +83,8 @@ const CropPlotsPage: React.FC = () => {
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
   const [saving, setSaving] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
+  const [deletePlot, setDeletePlot] = useState<CropPlot | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -139,14 +142,18 @@ const CropPlotsPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('¿Eliminar esta parcela?')) return;
+  const confirmDelete = async () => {
+    if (!deletePlot?.id) return;
+    setDeleting(true);
     try {
-      await campesinoServices.cropPlots.delete(id);
+      await campesinoServices.cropPlots.delete(deletePlot.id);
       showToast('Parcela eliminada', 'success');
+      setDeletePlot(null);
       load();
     } catch {
-      showToast('Error al eliminar', 'error');
+      showToast('Error al eliminar la parcela', 'error');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -275,8 +282,11 @@ const CropPlotsPage: React.FC = () => {
                       </div>
                     </div>
                     <button
-                      onClick={e => { e.stopPropagation(); handleDelete(plot.id!); }}
-                      className="shrink-0 p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-950/30 text-muted-foreground hover:text-red-600 transition-colors"
+                      type="button"
+                      onClick={e => { e.stopPropagation(); setDeletePlot(plot); }}
+                      aria-label={`Eliminar parcela ${plot.name}`}
+                      title={`Eliminar parcela ${plot.name}`}
+                      className="shrink-0 flex items-center justify-center min-h-[42px] min-w-[42px] p-2 rounded-xl hover:bg-rose-500/10 text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -490,6 +500,18 @@ const CropPlotsPage: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ConfirmDialog
+        open={!!deletePlot}
+        onOpenChange={(open) => !open && setDeletePlot(null)}
+        title="¿Eliminar parcela?"
+        description={`¿Estás seguro de que deseas eliminar la parcela "${deletePlot?.name || ''}"? Esta acción no se puede deshacer.`}
+        confirmLabel="Eliminar parcela"
+        cancelLabel="Cancelar"
+        confirmVariant="destructive"
+        onConfirm={confirmDelete}
+        confirmDisabled={deleting}
+      />
     </CampesinoViewShell>
   );
 };

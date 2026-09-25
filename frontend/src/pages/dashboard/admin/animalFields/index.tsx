@@ -18,7 +18,7 @@ function AdminAnimalFieldsPage() {
 
   const { options: fieldOptions, loading: fieldLoading } = useForeignKeySelect(
     (p) => fieldService.getFields(p),
-    (f) => ({ value: f.id, label: f.name || `Campo ${f.id}` })
+    (f) => ({ value: f.id, label: f.name || `Potrero ${f.id}` })
   );
 
   // Crear mapas de búsqueda optimizados
@@ -49,11 +49,11 @@ function AdminAnimalFieldsPage() {
     },
     {
       key: 'field_id',
-      label: 'Campo',
+      label: 'Potrero',
       render: (v) => {
         if (!v) return '-';
         const id = Number(v);
-        const label = fieldMap.get(id) || `Campo ${id}`;
+        const label = fieldMap.get(id) || `Potrero ${id}`;
         return <FieldLink id={id} label={label} />;
       }
     },
@@ -99,11 +99,11 @@ function AdminAnimalFieldsPage() {
         },
         {
           name: 'field_id' as any,
-          label: 'Campo',
+          label: 'Potrero',
           type: 'select',
           required: true,
           options: fieldOptions,
-          placeholder: 'Seleccionar campo',
+          placeholder: 'Seleccionar potrero',
           loading: fieldLoading
         },
         {
@@ -116,7 +116,7 @@ function AdminAnimalFieldsPage() {
           name: 'removal_date' as any,
           label: 'Fecha de Retiro',
           type: 'date',
-          placeholder: 'Dejar vacío si aún está en el campo'
+          placeholder: 'Dejar vacío si aún está en el potrero'
         },
         {
           name: 'notes' as any,
@@ -138,7 +138,7 @@ function AdminAnimalFieldsPage() {
   const crudConfig: CRUDConfig<AnimalFieldResponse & { [k: string]: any }, AnimalFieldInput & { [k: string]: any }> = {
     title: 'Asignación de Animales a Potreros',
     headerDescription: 'Relaciona animales con potreros y consulta su ocupación',
-    entityName: 'Asignación de animal',
+    entityName: 'Asignación a potrero',
     columns,
     formSections,
     searchPlaceholder: 'Buscar asignaciones de animales...',
