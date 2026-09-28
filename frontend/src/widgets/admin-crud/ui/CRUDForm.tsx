@@ -29,6 +29,7 @@ interface CRUDFormProps<T extends { id?: number }> {
   setFormData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
   formSections: CRUDFormSection<any>[];
   fieldErrors?: FieldErrors;
+  formErrorMessages?: string[];
   onFieldValueChange?: (field: CRUDFormField<any>, value: any) => void;
   onSubmit: (e: React.FormEvent) => void;
   saving: boolean;
@@ -136,12 +137,13 @@ const FormField = memo<{
             disabled={isFieldDisabled}
             aria-invalid={showWarning}
             aria-required={isRequired}
+            aria-describedby={showWarning ? `${String(field.name)}-error` : undefined}
             className={cn(
               "w-full text-sm",
               showWarning
                 ? "border-destructive focus:border-destructive ring-1 ring-destructive/30 bg-destructive/[0.03]"
                 : "border-border/50 focus:border-primary/50",
-              isRequired && "border-l-4 border-l-destructive/40",
+              showWarning && "border-l-4 border-l-destructive/70",
               isFieldDisabled && "opacity-60 cursor-not-allowed bg-muted/40",
               "bg-background/50 focus:bg-background/80",
               "transition-all duration-300 backdrop-blur-sm"
@@ -169,12 +171,13 @@ const FormField = memo<{
               disabled={isFieldDisabled}
               aria-invalid={showWarning}
               aria-required={isRequired}
+              aria-describedby={showWarning ? `${String(field.name)}-error` : undefined}
               className={cn(
                 "w-full min-h-[44px] text-sm rounded-lg border px-3 py-2",
                 showWarning
                   ? "border-destructive focus:border-destructive ring-1 ring-destructive/30 bg-destructive/[0.03]"
                   : "border-border/50 focus:border-primary/50",
-                isRequired && "border-l-4 border-l-destructive/40",
+                showWarning && "border-l-4 border-l-destructive/70",
                 isFieldDisabled && "opacity-60 cursor-not-allowed bg-muted/40",
                 "bg-background/50 focus:bg-background/80",
                 "transition-all duration-300 backdrop-blur-sm"
@@ -220,7 +223,7 @@ const FormField = memo<{
                 showWarning
                   ? "border-destructive focus:border-destructive ring-1 ring-destructive/30 bg-destructive/[0.03]"
                   : "border-border/50 focus:border-primary/50",
-                isRequired && "border-l-4 border-l-destructive/40",
+                showWarning && "border-l-4 border-l-destructive/70",
                 isFieldDisabled && "opacity-60 cursor-not-allowed",
                 "bg-background/50 focus:bg-background/80",
                 "transition-all duration-300 backdrop-blur-sm"
@@ -276,12 +279,13 @@ const FormField = memo<{
             disabled={isFieldDisabled}
             aria-invalid={showWarning}
             aria-required={isRequired}
+            aria-describedby={showWarning ? `${String(field.name)}-error` : undefined}
             className={cn(
               "w-full min-h-[44px] text-sm",
               showWarning
                 ? "border-destructive focus:border-destructive ring-1 ring-destructive/30 bg-destructive/[0.03]"
                 : "border-border/50 focus:border-primary/50",
-              isRequired && "border-l-4 border-l-destructive/40",
+              showWarning && "border-l-4 border-l-destructive/70",
               isFieldDisabled && "opacity-60 cursor-not-allowed bg-muted/40",
               "bg-background/50 focus:bg-background/80",
               "transition-all duration-300 backdrop-blur-sm"
@@ -303,12 +307,13 @@ const FormField = memo<{
               disabled={isFieldDisabled}
               aria-invalid={showWarning}
               aria-required={isRequired}
+              aria-describedby={showWarning ? `${String(field.name)}-error` : undefined}
               className={cn(
                 "w-full min-h-[44px] text-sm",
                 showWarning
                   ? "border-destructive focus:border-destructive ring-1 ring-destructive/30 bg-destructive/[0.03]"
                   : "border-border/50 focus:border-primary/50",
-                isRequired && "border-l-4 border-l-destructive/40",
+                showWarning && "border-l-4 border-l-destructive/70",
                 isFieldDisabled && "opacity-60 cursor-not-allowed bg-muted/40",
                 "bg-background/50 focus:bg-background/80",
                 "transition-all duration-300 backdrop-blur-sm"
@@ -329,12 +334,13 @@ const FormField = memo<{
             disabled={isFieldDisabled}
             aria-invalid={showWarning}
             aria-required={isRequired}
+            aria-describedby={showWarning ? `${String(field.name)}-error` : undefined}
             className={cn(
               "w-full min-h-[44px] text-sm",
               showWarning
                 ? "border-destructive focus:border-destructive ring-1 ring-destructive/30 bg-destructive/[0.03]"
                 : "border-border/50 focus:border-primary/50",
-              isRequired && "border-l-4 border-l-destructive/40",
+              showWarning && "border-l-4 border-l-destructive/70",
               isFieldDisabled && "opacity-60 cursor-not-allowed bg-muted/40",
               "bg-background/50 focus:bg-background/80",
               "transition-all duration-300 backdrop-blur-sm"
@@ -377,7 +383,7 @@ const FormField = memo<{
 
       <div className="min-h-[16px] flex flex-col gap-1 overflow-hidden">
         {showWarning && field.type !== "checkbox" && (
-          <p className="text-[11px] font-semibold text-destructive flex items-center gap-1.5 mt-1 animate-in slide-in-from-top-1 duration-200">
+          <p id={`${String(field.name)}-error`} className="text-[11px] font-semibold text-destructive flex items-center gap-1.5 mt-1 animate-in slide-in-from-top-1 duration-200">
             <span className="h-1.5 w-1.5 rounded-full bg-destructive flex-shrink-0 animate-pulse" />
             <span>{error || "Este campo es obligatorio."}</span>
           </p>
@@ -407,6 +413,7 @@ export function CRUDForm<T extends { id?: number }>({
   setFormData,
   formSections,
   fieldErrors,
+  formErrorMessages,
   onFieldValueChange,
   onSubmit,
   saving,
@@ -419,7 +426,7 @@ export function CRUDForm<T extends { id?: number }>({
     if (!isOpen || !fieldErrors) return;
     const firstKey = Object.keys(fieldErrors)[0];
     if (!firstKey || typeof window === "undefined") return;
-    const el = document.getElementById(firstKey);
+    const el = document.getElementById(firstKey) || document.getElementById('crud-form-validation-summary');
     if (!el || !("focus" in el)) return;
     // No robar el foco mientras la persona está editando: la validación en
     // vivo re-crea fieldErrors en cada pulsación y, si saltáramos al primer
@@ -527,7 +534,21 @@ export function CRUDForm<T extends { id?: number }>({
         }}
         className="space-y-4 h-full flex flex-col text-[13px] sm:text-sm"
       >
-        {/* Los errores de validación ahora se presentan exclusivamente de forma elegante e inline debajo de cada campo */}
+        {formErrorMessages && formErrorMessages.length > 0 && (
+          <div
+            id="crud-form-validation-summary"
+            role="alert"
+            tabIndex={-1}
+            className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-sm text-destructive shadow-sm"
+          >
+            <p className="font-bold">Revisa los siguientes datos antes de guardar:</p>
+            <ul className="mt-1 list-disc space-y-0.5 pl-5 text-[13px]">
+              {formErrorMessages.slice(0, 5).map((message, index) => (
+                <li key={`${message}-${index}`}>{message}</li>
+              ))}
+            </ul>
+          </div>
+        )}
         {renderFormSections}
         {additionalFormContent && additionalFormContent(formData, editingItem || null)}
 

@@ -258,6 +258,12 @@ export function ReproductionHubView({
                   setQuickEventDefaultType('Celo');
                   setIsQuickEventModalOpen(true);
                 }}
+                onCreateEvent={() => {
+                  setQuickEventAnimalId(filterAnimalId);
+                  setQuickEventAnimalRecord(null);
+                  setQuickEventDefaultType('Celo');
+                  setIsQuickEventModalOpen(true);
+                }}
               />
             </div>
             <div className="lg:col-span-2">

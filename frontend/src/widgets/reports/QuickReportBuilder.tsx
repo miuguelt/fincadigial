@@ -1,4 +1,4 @@
-import { Card } from '@/shared/ui/card';
+import { Card, CardHeader, CardContent } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
 import { BarChart3, ArrowRight } from 'lucide-react';
 import { cn } from '@/shared/ui/cn';
@@ -19,7 +19,7 @@ export function QuickReportBuilder() {
   return (
     <div className="space-y-6">
       <Card className="bg-card shadow-sm border border-border/80 rounded-xl overflow-hidden mb-6">
-        <div className="bg-muted/30 p-5 border-b border-border/50">
+        <CardHeader className="bg-muted/30 p-5 border-b border-border/50">
           <div className="flex items-center gap-3 mb-1.5">
             <div className="bg-primary/10 p-2 rounded-lg">
               <BarChart3 className="h-5 w-5 text-primary" />
@@ -29,9 +29,9 @@ export function QuickReportBuilder() {
           <p className="text-xs text-muted-foreground">
             Crea reportes a la medida para analizar el rendimiento de tu finca
           </p>
-        </div>
+        </CardHeader>
 
-        <div className="p-5 bg-background/50">
+        <CardContent className="p-5 bg-background/50 space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {metrics.map((m) => (
               <div
@@ -46,15 +46,15 @@ export function QuickReportBuilder() {
               </div>
             ))}
           </div>
-        </div>
 
-        <div className="p-5 pt-0 bg-background/50">
-          <Button onClick={() => goTo('/admin/reports?tab=personalizados')} className="gap-2 shadow-xs transition-all hover:shadow-md">
-            <BarChart3 className="h-4 w-4" />
-            Ir al constructor de reportes
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        </div>
+          <div>
+            <Button onClick={() => goTo('/admin/reports?tab=personalizados')} className="gap-2 shadow-xs transition-all hover:shadow-md">
+              <BarChart3 className="h-4 w-4" />
+              Ir al constructor de reportes
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardContent>
       </Card>
     </div>
   );

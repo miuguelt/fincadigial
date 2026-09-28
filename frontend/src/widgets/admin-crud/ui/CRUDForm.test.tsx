@@ -112,6 +112,8 @@ describe('CRUDForm no roba el foco mientras se escribe', () => {
     // la persona aún está escribiendo.
     expect(record).toHaveFocus()
     expect(breed).not.toHaveFocus()
+    expect(breed).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByText('Debe seleccionar una raza.')).toBeVisible()
   })
 
   it('sigue enfocando el primer campo con error cuando nadie está editando (ej. tras un submit)', () => {
@@ -128,6 +130,29 @@ describe('CRUDForm no roba el foco mientras se escribe', () => {
     fireEvent.change(record, { target: { value: 'REC0001' } })
 
     expect(breed).toHaveFocus()
+  })
+
+  it('muestra en el formulario los errores que no pertenecen a un control visible', () => {
+    render(
+      <CRUDForm
+        isOpen
+        onOpenChange={vi.fn()}
+        title="Crear caso clínico"
+        formData={{ record: '' }}
+        setFormData={vi.fn()}
+        formErrorMessages={["El campo 'finca_id' es requerido"]}
+        formSections={[
+          {
+            title: 'Datos',
+            fields: [{ name: 'record', label: 'Registro', type: 'text' }],
+          },
+        ] as any}
+        onSubmit={(event) => event.preventDefault()}
+        saving={false}
+      />,
+    )
+
+    expect(screen.getByRole('alert')).toHaveTextContent("El campo 'finca_id' es requerido")
   })
 
   it('deshabilita un campo dependiente cuando el campo padre no tiene valor', () => {

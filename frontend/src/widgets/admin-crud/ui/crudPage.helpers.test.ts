@@ -24,6 +24,22 @@ describe('crudPage.helpers', () => {
     expect(extractValidationErrors({ response: { data: { errors: { name: ['required'] } } } })).toEqual({ name: ['required'] });
   });
 
+  it('extracts validation errors from the API error envelope used by CRUD endpoints', () => {
+    expect(extractValidationErrors({
+      response: {
+        data: {
+          message: 'Errores de validación',
+          error: {
+            code: 'VALIDATION_ERROR',
+            details: {
+              validation_errors: ["El campo 'instructor_id' es requerido"],
+            },
+          },
+        },
+      },
+    })).toEqual(["El campo 'instructor_id' es requerido"]);
+  });
+
   it('resolves backend messages before the generic fallback', () => {
     expect(getCrudErrorMessage({ response: { data: { detail: 'Detalle' } } }, 'Fallback')).toBe('Detalle');
     expect(getCrudErrorMessage({}, 'Fallback')).toBe('Fallback');

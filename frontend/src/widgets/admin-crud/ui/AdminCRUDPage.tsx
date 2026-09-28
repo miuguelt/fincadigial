@@ -507,6 +507,7 @@ export function AdminCRUDPage<T extends { id: number }, TInput extends Record<st
         formData={formData}
         setFormData={setFormData}
         formErrors={formErrors}
+        formErrorMessages={formErrorMessages}
         updateFieldValue={updateFieldValue}
         onSubmit={handleSubmit}
         saving={saving}
