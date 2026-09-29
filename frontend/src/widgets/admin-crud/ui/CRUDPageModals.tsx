@@ -20,6 +20,7 @@ interface CRUDPageModalsProps<T extends { id: number }, TInput extends Record<st
   formData: TInput;
   setFormData: React.Dispatch<React.SetStateAction<TInput>>;
   formErrors: Record<string, string>;
+  formErrorMessages: string[];
   updateFieldValue: (field: CRUDFormField<TInput>, value: any) => void;
   onSubmit: (e: React.FormEvent) => void;
   saving: boolean;
@@ -55,7 +56,7 @@ interface CRUDPageModalsProps<T extends { id: number }, TInput extends Record<st
  */
 export function CRUDPageModals<T extends { id: number }, TInput extends Record<string, any>>({
   config, t, canCreate, canUpdate, canDelete,
-  isModalOpen, onModalClose, editingItem, formData, setFormData, formErrors,
+  isModalOpen, onModalClose, editingItem, formData, setFormData, formErrors, formErrorMessages,
   updateFieldValue, onSubmit, saving, additionalFormContent,
   isDetailOpen, setIsDetailOpen, detailItem, setDetailItem, detailIndex, setDetailIndex,
   items, openEdit, customDetailContent,
@@ -77,6 +78,7 @@ export function CRUDPageModals<T extends { id: number }, TInput extends Record<s
           setFormData={setFormData as unknown as React.Dispatch<React.SetStateAction<Record<string, any>>>}
           formSections={config.formSections || []}
           fieldErrors={formErrors}
+          formErrorMessages={formErrorMessages}
           onFieldValueChange={updateFieldValue}
           onSubmit={onSubmit}
           saving={saving}

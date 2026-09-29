@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildConflictMessage } from './validationMessages';
+import { buildConflictMessage, formatValidationToastMessage } from './validationMessages';
 
 describe('buildConflictMessage', () => {
   it('explica el conflicto de edición simultánea, no una violación de unicidad', () => {
@@ -20,5 +20,13 @@ describe('buildConflictMessage', () => {
 
     expect(message).toContain('ya existe');
     expect(field).toBe('email');
+  });
+});
+
+describe('formatValidationToastMessage', () => {
+  it('incluye el campo que falta para que la alerta sea accionable', () => {
+    expect(formatValidationToastMessage(["Responsable: Debe seleccionar quién la atiende."])).toContain(
+      'Responsable: Debe seleccionar quién la atiende.',
+    );
   });
 });

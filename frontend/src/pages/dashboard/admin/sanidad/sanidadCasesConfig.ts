@@ -36,7 +36,7 @@ export function buildCasesFormSections({
         { name: 'disease_id' as any, label: '¿Qué tiene la res?', type: 'select' as CRUDFieldType, required: true, options: diseaseOptions, placeholder: 'Seleccione la enfermedad', loading: diseaseLoading },
         { name: 'instructor_id' as any, label: '¿Quién la atiende?', type: 'select' as CRUDFieldType, required: true, options: instructorOptions, placeholder: 'Seleccione el encargado o veterinario', loading: instructorLoading },
         { name: 'diagnosis_date' as any, label: '¿Desde cuándo está enferma?', type: 'date' as CRUDFieldType, required: true },
-        { name: 'status' as any, label: 'Estado actual', type: 'select' as CRUDFieldType, options: ANIMAL_DISEASE_STATUSES as any, placeholder: 'Seleccione el estado' },
+        { name: 'status' as any, label: 'Estado actual', type: 'select' as CRUDFieldType, required: true, options: ANIMAL_DISEASE_STATUSES as any, placeholder: 'Seleccione el estado' },
         { name: 'severity' as any, label: '¿Qué tan grave está?', type: 'select' as CRUDFieldType, options: ANIMAL_DISEASE_SEVERITIES as any, placeholder: 'Seleccione la gravedad' },
         {
           name: 'notes' as any,

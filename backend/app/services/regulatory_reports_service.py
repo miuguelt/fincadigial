@@ -39,6 +39,7 @@ class RegulatoryReportsService:
     def get_inventory_report(
         cls, finca_id, date_from_str, date_to_str, format_type, species_filter
     ):
+        from app.models.fields import Fields
         query = (
             db.session.query(
                 Animal.id,
@@ -54,9 +55,12 @@ class RegulatoryReportsService:
                 Animal.exit_reason,
                 Breeds.name.label("breed_name"),
                 Species.name.label("species_name"),
+                Fields.name.label("field_name"),
             )
             .outerjoin(Breeds, Animal.breeds_id == Breeds.id)
             .outerjoin(Species, Breeds.species_id == Species.id)
+            .outerjoin(AnimalFields, (AnimalFields.animal_id == Animal.id) & (AnimalFields.removal_date.is_(None)))
+            .outerjoin(Fields, AnimalFields.field_id == Fields.id)
             .filter(Animal.finca_id == finca_id, Animal.status.in_(["Vivo", "Vendido"]))
         )
 
@@ -68,21 +72,17 @@ class RegulatoryReportsService:
         if date_to:
             query = query.filter(Animal.entry_date <= date_to)
 
-        animals = query.all()
+        animals = query.yield_per(1000)
         inventory_data = []
+        now_date = datetime.now().date()
 
         for animal in animals:
             age_months = None
             if animal.birth_date:
-                age_days = (datetime.now().date() - animal.birth_date).days
+                age_days = (now_date - animal.birth_date).days
                 age_months = int(age_days / 30.44)
 
-            location = "Sin asignar"
-            current_field = AnimalFields.query.filter_by(
-                animal_id=animal.id, removal_date=None
-            ).first()
-            if current_field and current_field.field:
-                location = current_field.field.name
+            location = animal.field_name or "Sin asignar"
 
             inventory_data.append(
                 {
@@ -164,23 +164,9 @@ class RegulatoryReportsService:
             return {"type": "pdf", "content": pdf_content, "filename": filename}
 
         summary = {
-            "machos": len(
-                [
-                    a
-                    for a in animals
-                    if (str(a.sex.value) if hasattr(a.sex, "value") else str(a.sex))
-                    == "Macho"
-                ]
-            ),
-            "hembras": len(
-                [
-                    a
-                    for a in animals
-                    if (str(a.sex.value) if hasattr(a.sex, "value") else str(a.sex))
-                    == "Hembra"
-                ]
-            ),
-            "total_vivos": len(animals),
+            "machos": len([a for a in inventory_data if a["sexo"] == "Macho"]),
+            "hembras": len([a for a in inventory_data if a["sexo"] == "Hembra"]),
+            "total_vivos": len(inventory_data),
         }
 
         return {
@@ -205,7 +191,11 @@ class RegulatoryReportsService:
 
         # NACIMIENTOS
         if movement_type in ["births", "all"]:
-            births_query = Animal.query.filter(
+            births_query = db.session.query(
+                Animal.birth_date,
+                Animal.record,
+                Animal.sex
+            ).filter(
                 Animal.finca_id == finca_id, Animal.birth_date.isnot(None)
             )
             if date_from:
@@ -214,7 +204,7 @@ class RegulatoryReportsService:
                 )
             if date_to:
                 births_query = births_query.filter(Animal.birth_date <= date_to.date())
-            for animal in births_query.all():
+            for animal in births_query.yield_per(1000):
                 movements_data.append(
                     {
                         "fecha": animal.birth_date.isoformat()
@@ -234,7 +224,12 @@ class RegulatoryReportsService:
 
         # MUERTES
         if movement_type in ["deaths", "all"]:
-            deaths_query = Animal.query.filter(
+            deaths_query = db.session.query(
+                Animal.exit_date,
+                Animal.record,
+                Animal.sex,
+                Animal.exit_reason
+            ).filter(
                 Animal.finca_id == finca_id,
                 or_(
                     Animal.status == "Muerto",
@@ -246,7 +241,7 @@ class RegulatoryReportsService:
                 deaths_query = deaths_query.filter(Animal.exit_date >= date_from.date())
             if date_to:
                 deaths_query = deaths_query.filter(Animal.exit_date <= date_to.date())
-            for animal in deaths_query.all():
+            for animal in deaths_query.yield_per(1000):
                 movements_data.append(
                     {
                         "fecha": animal.exit_date.isoformat()
@@ -266,14 +261,18 @@ class RegulatoryReportsService:
 
         # VENTAS
         if movement_type in ["sales", "all"]:
-            sales_query = Animal.query.filter(
+            sales_query = db.session.query(
+                Animal.sale_date,
+                Animal.record,
+                Animal.sex
+            ).filter(
                 Animal.finca_id == finca_id, Animal.sale_date.isnot(None)
             )
             if date_from:
                 sales_query = sales_query.filter(Animal.sale_date >= date_from.date())
             if date_to:
                 sales_query = sales_query.filter(Animal.sale_date <= date_to.date())
-            for animal in sales_query.all():
+            for animal in sales_query.yield_per(1000):
                 movements_data.append(
                     {
                         "fecha": animal.sale_date.isoformat()
@@ -430,7 +429,21 @@ class RegulatoryReportsService:
 
         # TRATAMIENTOS
         if health_type in ["treatments", "all"]:
-            treat_query = Treatments.query.filter(Treatments.finca_id == finca_id)
+            treat_query = (
+                db.session.query(
+                    Treatments.treatment_date,
+                    Treatments.description,
+                    Treatments.dosis,
+                    Treatments.observations,
+                    Treatments.withdrawal_days,
+                    Treatments.cost,
+                    Animal.record.label("animal_record"),
+                    User.fullname.label("performer_name"),
+                )
+                .outerjoin(Animal, Treatments.animal_id == Animal.id)
+                .outerjoin(User, Treatments.performed_by == User.id)
+                .filter(Treatments.finca_id == finca_id)
+            )
             if date_from:
                 treat_query = treat_query.filter(
                     Treatments.treatment_date >= date_from.date()
@@ -440,12 +453,8 @@ class RegulatoryReportsService:
                     Treatments.treatment_date <= date_to.date()
                 )
 
-            for treat in treat_query.all():
-                animal_record = (
-                    treat.animals.record
-                    if treat.animals and treat.animals.record
-                    else "SIN_ARETE"
-                )
+            for treat in treat_query.yield_per(1000):
+                animal_record = treat.animal_record or "SIN_ARETE"
                 obs_parts = []
                 if treat.observations:
                     obs_parts.append(treat.observations)
@@ -453,9 +462,7 @@ class RegulatoryReportsService:
                     obs_parts.append(f"Tiempo de retiro: {treat.withdrawal_days} días")
                 if treat.cost:
                     obs_parts.append(f"Costo: ${treat.cost:,.2f} COP")
-                veterinario = (
-                    treat.performer.fullname if treat.performer else "MVZ General"
-                )
+                veterinario = treat.performer_name or "MVZ General"
 
                 health_data.append(
                     {
@@ -476,7 +483,16 @@ class RegulatoryReportsService:
 
         # CONTROLES SANITARIOS
         if health_type in ["controls", "all"]:
-            control_query = Control.query.filter(Control.finca_id == finca_id)
+            control_query = (
+                db.session.query(
+                    Control.checkup_date,
+                    Control.health_status,
+                    Control.description,
+                    Animal.record.label("animal_record"),
+                )
+                .outerjoin(Animal, Control.animal_id == Animal.id)
+                .filter(Control.finca_id == finca_id)
+            )
             if date_from:
                 control_query = control_query.filter(
                     Control.checkup_date >= date_from.date()
@@ -486,12 +502,9 @@ class RegulatoryReportsService:
                     Control.checkup_date <= date_to.date()
                 )
 
-            for ctrl in control_query.all():
-                animal_record = (
-                    ctrl.animals.record
-                    if ctrl.animals and ctrl.animals.record
-                    else "SIN_ARETE"
-                )
+            for ctrl in control_query.yield_per(1000):
+                animal_record = ctrl.animal_record or "SIN_ARETE"
+                status_str = str(ctrl.health_status.value) if hasattr(ctrl.health_status, 'value') else str(ctrl.health_status)
                 health_data.append(
                     {
                         "fecha": ctrl.checkup_date.isoformat()
@@ -499,7 +512,7 @@ class RegulatoryReportsService:
                         else "",
                         "tipo_registro": "CONTROL_SANITARIO",
                         "numero_arete": animal_record,
-                        "producto": f"Control Físico - Estado: {ctrl.health_status.value}",
+                        "producto": f"Control Físico - Estado: {status_str}",
                         "dosis": "N/A",
                         "via_administracion": "N/A",
                         "registro_ica": "N/A",

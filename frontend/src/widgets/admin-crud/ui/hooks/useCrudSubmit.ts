@@ -76,23 +76,13 @@ export function useCrudSubmit<T extends { id: number }, TInput extends Record<st
 
     if (validationErrors && typeof validationErrors === 'object') {
       const mapped = mapBackendFieldErrorsToLabels(validationErrors, config.formSections || []);
-      if (Object.keys(mapped.errors).length > 0) {
+      if (mapped.messages.length > 0) {
+        // Algunos errores apuntan a campos que no se muestran en este
+        // formulario (por ejemplo, finca_id). Conservamos el mensaje para el
+        // resumen del formulario y solo marcamos controles visibles.
         setFormErrors(mapped.errors);
         setFormErrorMessages(mapped.messages);
         errorMessage = formatValidationToastMessage(mapped.messages);
-      } else {
-        // Sin etiquetas conocidas: mostrar los nombres crudos antes que nada.
-        const raw: Record<string, string> = {};
-        const msgs: string[] = [];
-        Object.entries(validationErrors).forEach(([field, msgsRaw]) => {
-          const msg = Array.isArray(msgsRaw) ? msgsRaw.join(', ') : String(msgsRaw);
-          raw[String(field)] = msg;
-          msgs.push(`${String(field)}: ${msg}`);
-        });
-        if (Object.keys(raw).length > 0) {
-          setFormErrors(raw);
-          setFormErrorMessages(msgs);
-        }
       }
     } else if (
       typeof errorMessage === 'string' &&

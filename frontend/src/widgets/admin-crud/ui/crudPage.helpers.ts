@@ -23,6 +23,8 @@ export function extractValidationErrors(error: any): Record<string, unknown> | u
     error?.validationErrors,
     error?.details?.validation_errors,
     error?.details?.errors,
+    error?.response?.data?.error?.details?.validation_errors,
+    error?.response?.data?.error?.details?.errors,
     error?.response?.data?.errors,
   ];
   return candidates.find(isRecord);
