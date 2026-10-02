@@ -183,13 +183,12 @@ import re
 has_networks_block = bool(re.search(r"^\s*networks\s*:", compose_text2, re.MULTILINE))
 has_external_networks = (
     "coolify:" in compose_text2
-    and "redbd:" in compose_text2
     and "external: true" in compose_text2
 )
 check(
     has_networks_block and has_external_networks,
-    "Redes externas de infraestructura configuradas (coolify y redbd con external: true)",
-    "Faltan redes externas requeridas (coolify y redbd) en docker-compose.yaml",
+    "Red externa de infraestructura configurada (coolify con external: true para servicios y BD)",
+    "Falta red externa requerida (coolify con external: true) en docker-compose.yaml",
 )
 
 # ── 9. Volúmenes persistentes (Cero pérdida de datos en redeploys) ────

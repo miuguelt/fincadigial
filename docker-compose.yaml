@@ -10,11 +10,11 @@
 #                             pendientes e inicializa
 #                             catálogos base colombianos y el admin único.
 #
-# Redes de Infraestructura Oficiales (Coolify + redbd):
-#   * coolify: Red bridge de enrutamiento y proxy Traefik (compartida en Coolify).
-#   * redbd: Red compartida del VPS para bases de datos (PostgreSQL 18 y Redis).
-#   * Ingress Anti-504: villaluz-frontend se conecta exclusivamente a 'coolify'.
-#   * villaluz-backend se conecta a 'coolify' y 'redbd' para acceso interno seguro.
+# Red de Infraestructura Oficial (coolify):
+#   * coolify: Red bridge oficial de Coolify para enrutamiento Traefik,
+#     interconexión de servicios y acceso directo a la base de datos
+#     (PostgreSQL 18 y Redis) del servidor.
+#   * villaluz-frontend y villaluz-backend se conectan exclusivamente a 'coolify'.
 #
 # Volúmenes Persistentes (Cero pérdida de datos en redeploys y reconstrucción):
 #   * uploads_data      → Fotos de animales, documentos, marcas y certificados ICA
@@ -137,7 +137,6 @@ services:
       start_period: 120s
     networks:
       - coolify
-      - redbd
 
 # ── VOLÚMENES PERSISTENTES (Cero pérdida de datos en redeploys) ────────
 volumes:
@@ -155,7 +154,5 @@ volumes:
 # ── REDES EXTERNAS (Integración Coolify y Base de Datos del Servidor) ─
 networks:
   coolify:
-    external: true
-  redbd:
     external: true
 
