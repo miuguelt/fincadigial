@@ -203,6 +203,7 @@ export function PotrerosBoardPage({ viewSwitcher }: PotrerosBoardPageProps) {
         onPointerDown={drag.onPointerDown}
         onPointerMove={drag.onPointerMove}
         onPointerUp={drag.onPointerUp}
+        onPointerCancel={drag.onPointerCancel}
       />
     ));
 
@@ -273,7 +274,8 @@ export function PotrerosBoardPage({ viewSwitcher }: PotrerosBoardPageProps) {
       {drag.active && (
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
           <GripVertical className="h-4 w-4" />
-          Marca los animales y usa “Mover”, o arrástralos con el mouse hasta el potrero.
+          Arrastra una ficha desde el número o sus datos y suéltala sobre otro potrero. Si arrastras un animal elegido,
+          se moverá toda la selección.
         </p>
       )}
 
@@ -292,7 +294,7 @@ export function PotrerosBoardPage({ viewSwitcher }: PotrerosBoardPageProps) {
         className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
         onPointerMove={drag.onPointerMove}
         onPointerUp={drag.onPointerUp}
-        onPointerCancel={drag.onPointerUp}
+        onPointerCancel={drag.onPointerCancel}
       >
         {(totals.unassigned > 0 || onlyUnassigned) && (
           <PotreroColumn

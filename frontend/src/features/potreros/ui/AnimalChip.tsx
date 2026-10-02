@@ -15,6 +15,7 @@ interface AnimalChipProps {
   onPointerDown: (event: React.PointerEvent<HTMLElement>, animalId: number) => void;
   onPointerMove: (event: React.PointerEvent<HTMLElement>) => void;
   onPointerUp: (event: React.PointerEvent<HTMLElement>) => void;
+  onPointerCancel: (event: React.PointerEvent<HTMLElement>) => void;
 }
 
 const describeSex = (sex: string | null) => {
@@ -43,6 +44,7 @@ export function AnimalChip({
   onPointerDown,
   onPointerMove,
   onPointerUp,
+  onPointerCancel,
 }: AnimalChipProps) {
   const sex = describeSex(animal.sex);
   const age = describeAge(animal.ageMonths);
@@ -52,7 +54,7 @@ export function AnimalChip({
       onPointerDown={(event) => onPointerDown(event, animal.id)}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
+      onPointerCancel={onPointerCancel}
       className={cn(
         'flex items-center gap-3 rounded-xl border-2 bg-card p-2.5 transition-colors',
         selected ? 'border-primary bg-primary/10' : 'border-border',

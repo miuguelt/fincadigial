@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '@/shared/ui/cn';
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -45,17 +46,54 @@ const toneStyles: Record<MetricCardProps['tone'], string> = {
 };
 
 const MetricCard: React.FC<MetricCardProps> = ({ icon, label, value, caption, tone, compact = false }) => (
-  <div className={`min-w-0 rounded-xl border shadow-sm transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-md ${compact ? 'p-2.5' : 'p-3'} ${toneStyles[tone]}`}>
-    <div className="flex items-center justify-between gap-2">
-      <span className={`flex shrink-0 items-center justify-center rounded-lg bg-white/70 shadow-sm dark:bg-black/20 ${compact ? 'h-6 w-6' : 'h-8 w-8'}`}>
+  <div
+    className={cn(
+      'min-w-0 overflow-hidden rounded-xl border shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm',
+      compact ? 'p-2 sm:p-2.5' : 'p-3',
+      toneStyles[tone]
+    )}
+  >
+    <div className={cn('flex items-center justify-between min-w-0', compact ? 'gap-1' : 'gap-2')}>
+      <span
+        className={cn(
+          'flex shrink-0 items-center justify-center rounded-lg bg-white/70 shadow-2xs dark:bg-black/20',
+          compact ? 'h-5 w-5 sm:h-6 sm:w-6' : 'h-8 w-8'
+        )}
+      >
         {icon}
       </span>
-      <span className={`min-w-0 text-right font-bold uppercase opacity-75 ${compact ? 'whitespace-nowrap text-[11px] tracking-[0.02em]' : 'fit-clamp text-[11px] tracking-[0.1em]'}`}>{label}</span>
+      <span
+        className={cn(
+          'min-w-0 text-right font-bold uppercase opacity-80',
+          compact
+            ? 'truncate text-[10px] sm:text-[11px] tracking-tight'
+            : 'fit-clamp text-[11px] tracking-[0.1em]'
+        )}
+        title={label}
+      >
+        {label}
+      </span>
     </div>
-    <p className={`mt-3 whitespace-nowrap font-black tabular-nums tracking-tight text-foreground ${compact ? 'text-sm sm:text-base' : 'text-lg'}`} title={value}>
+    <p
+      className={cn(
+        'truncate font-black tabular-nums tracking-tight text-foreground',
+        compact ? 'mt-2 text-xs sm:text-sm md:text-base' : 'mt-3 text-lg'
+      )}
+      title={value}
+    >
       {value}
     </p>
-    {caption && <p className="mt-0.5 fit-clamp text-[11px] font-medium opacity-75">{caption}</p>}
+    {caption && (
+      <p
+        className={cn(
+          'truncate font-medium opacity-75',
+          compact ? 'mt-0.5 text-[10px] sm:text-[11px]' : 'mt-0.5 fit-clamp text-[11px]'
+        )}
+        title={caption}
+      >
+        {caption}
+      </p>
+    )}
   </div>
 );
 
@@ -142,7 +180,13 @@ export const FincaPerformancePanel: React.FC<FincaPerformancePanelProps> = ({
       ];
 
   return (
-    <section className="rounded-2xl border border-border/70 bg-gradient-to-br from-card via-card to-primary/[0.04] p-4 shadow-[0_14px_32px_-24px_rgba(15,23,42,0.55)] sm:p-5" aria-labelledby={compact ? undefined : 'finca-performance-title'}>
+    <section
+      className={cn(
+        'rounded-2xl border border-border/70 bg-gradient-to-br from-card via-card to-primary/[0.04] shadow-[0_14px_32px_-24px_rgba(15,23,42,0.55)]',
+        compact ? 'p-2.5 sm:p-3' : 'p-4 sm:p-5'
+      )}
+      aria-labelledby={compact ? undefined : 'finca-performance-title'}
+    >
       {!compact && (
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -154,7 +198,7 @@ export const FincaPerformancePanel: React.FC<FincaPerformancePanelProps> = ({
         </div>
       )}
 
-      <div className={compact ? 'grid grid-cols-3 gap-2' : 'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6'}>
+      <div className={compact ? 'grid grid-cols-3 gap-1.5 sm:gap-2' : 'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6'}>
         {metrics.map((metric) => <MetricCard key={metric.label} {...metric} compact={compact} />)}
       </div>
 

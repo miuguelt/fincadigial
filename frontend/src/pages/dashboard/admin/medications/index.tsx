@@ -1,11 +1,14 @@
-import  { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AdminCRUDPage } from '@/widgets/admin-crud';
 import { CRUDColumn, CRUDFormSection, CRUDConfig } from '@/shared/types/crud';
 import { medicationsService } from '@/entities/medication/api/medications.service';
+import { inventoryService } from '@/entities/inventory/api/inventory.service';
 import type { MedicationResponse } from '@/shared/api/generated/swaggerTypes';
 import { routeAdministrationsService } from '@/entities/route-administration/api/routeAdministrations.service';
-import { ItemDetailModal } from '@/widgets/dashboard/animals/ItemDetailModal';
-import { SanidadTabs } from '@/widgets/dashboard/treatments/SanidadTabs';
+import { MedicationDetailContent } from './components/MedicationDetailContent';
+import { MedicationsHeaderBanner } from './components/MedicationsHeaderBanner';
+import { Boxes, CheckCircle2, XCircle } from 'lucide-react';
 
 // Input del formulario
 type MedicationInput = {
@@ -20,9 +23,12 @@ type MedicationInput = {
 
 // Página principal
 function AdminMedicationsPage() {
+  const navigate = useNavigate();
   const [routeOptions, setRouteOptions] = useState<Array<{ value: number; label: string }>>([]);
+  const [stockMap, setStockMap] = useState<Record<number, { total: number; unit: string; lotCount: number }>>({});
   const [loading, setLoading] = useState(true);
 
+  // Carga de opciones de rutas de administración
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -41,6 +47,49 @@ function AdminMedicationsPage() {
     })();
   }, []);
 
+  // Carga del stock actual de medicamentos en la finca
+  const loadStockData = useCallback(async () => {
+    try {
+      const lotsRes: any = await inventoryService.getLots({ limit: 1000 });
+      const lotList = Array.isArray(lotsRes) ? lotsRes : lotsRes?.data ?? lotsRes?.items ?? [];
+      const map: Record<number, { total: number; unit: string; lotCount: number }> = {};
+
+      (lotList || []).forEach((lot: any) => {
+        if (lot.medication_id) {
+          const mId = Number(lot.medication_id);
+          const qty = Number(lot.current_quantity ?? lot.quantity ?? 0);
+          const unit = lot.unit || 'unidades';
+
+          if (!map[mId]) {
+            map[mId] = { total: 0, unit, lotCount: 0 };
+          }
+          map[mId].total += isNaN(qty) ? 0 : qty;
+          map[mId].lotCount += 1;
+        }
+      });
+
+      setStockMap(map);
+    } catch (err) {
+      console.warn('[medications] Error al cargar stock de inventario', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadStockData();
+
+    // Actualización reactiva al cambiar recursos en servidor
+    const handleResourceChanged = (e: CustomEvent) => {
+      if (e.detail?.endpoint?.includes('inventory')) {
+        loadStockData();
+      }
+    };
+
+    window.addEventListener('server-resource-changed' as any, handleResourceChanged);
+    return () => {
+      window.removeEventListener('server-resource-changed' as any, handleResourceChanged);
+    };
+  }, [loadStockData]);
+
   const routeMap = useMemo(() => {
     const map = new Map<number, string>();
     routeOptions.forEach(opt => map.set(opt.value, opt.label));
@@ -51,31 +100,83 @@ function AdminMedicationsPage() {
   const columns: CRUDColumn<MedicationResponse & { [k: string]: any }>[] = useMemo(() => [
     {
       key: 'name',
-      label: 'Nombre',
+      label: 'Nombre de Medicamento',
       render: (v) => (
         <span className="inline-flex items-center gap-1.5 font-bold text-foreground">
-          <span>💊</span> {v}
+          <span className="text-base">💊</span> {v}
         </span>
       )
     },
-    { key: 'dosis', label: 'Dosis', render: (v) => v || '-' },
-    { key: 'availability', label: 'Disponibilidad', render: (v) => (v ? '✅ Sí' : '❌ No') },
+    { key: 'dosis', label: 'Dosis Sugerida', render: (v) => v || '-' },
+    {
+      key: 'availability',
+      label: 'En Catálogo',
+      render: (v) => (
+        v ? (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20" title="Habilitado para formular y aplicar en tratamientos">
+            <CheckCircle2 className="w-3 h-3" /> Habilitado
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-muted/60 text-muted-foreground border border-border/50" title="Inactivo en catálogo de referencia">
+            <XCircle className="w-3 h-3" /> Inactivo
+          </span>
+        )
+      )
+    },
     {
       key: 'route_administration_id',
-      label: 'Ruta Admin.',
+      label: 'Vía de Administración',
       render: (v) => {
         if (!v) return '-';
         const id = Number(v);
         const label = routeMap.get(id) || `ID ${id}`;
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-primary/10 border border-primary/20 text-primary">
             <span>⚙️</span> {label}
           </span>
         );
       }
     },
-    { key: 'created_at', label: 'Creado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
-  ], [routeMap]);
+    {
+      key: 'stock',
+      label: 'Stock en Finca',
+      render: (_v, row) => {
+        const info = stockMap[Number(row.id)];
+        if (info && info.total > 0) {
+          return (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/admin/inventory?search=${encodeURIComponent(row.name)}`);
+              }}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 transition-all hover:scale-102"
+              title={`Ver ${info.lotCount} lote(s) en inventario`}
+            >
+              <Boxes className="w-3.5 h-3.5" />
+              <span>{Number(info.total.toFixed(2))} {info.unit}</span>
+              <span className="text-[10px] opacity-75">({info.lotCount} {info.lotCount === 1 ? 'lote' : 'lotes'})</span>
+            </button>
+          );
+        }
+        return (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate('/admin/inventory?create=1');
+            }}
+            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-xs font-medium text-muted-foreground bg-muted/40 border border-border/50 hover:bg-muted/70 transition-colors"
+            title="Sin existencias físicas registradas en el botiquín. Clic para registrar ingreso."
+          >
+            <span className="opacity-70">0 en bodega</span>
+            <span className="text-[10px] text-primary underline font-bold">Ingresar</span>
+          </button>
+        );
+      }
+    },
+    { key: 'created_at', label: 'Registrado', render: (v) => (v ? new Date(v as string).toLocaleDateString('es-CO') : '-') },
+  ], [routeMap, stockMap, navigate]);
 
   // Secciones del formulario
   const formSections: CRUDFormSection<MedicationInput>[] = [
@@ -102,9 +203,9 @@ function AdminMedicationsPage() {
         },
         {
           name: 'dosis',
-          label: 'Dosis',
+          label: 'Dosis Sugerida',
           type: 'text',
-          placeholder: 'Ej: 20mg/kg',
+          placeholder: 'Ej: 20mg/kg o 1 mL / 10 kg',
           suggestions: [
             '1 mL / 10 kg',
             '1 mL / 50 kg',
@@ -115,18 +216,18 @@ function AdminMedicationsPage() {
           ],
         },
         { name: 'route_administration_id', label: 'Ruta de Administración', type: 'select', options: routeOptions, placeholder: 'Seleccionar ruta' },
-        { name: 'availability', label: 'Disponible', type: 'checkbox' },
+        { name: 'availability', label: 'Habilitado en Catálogo', type: 'checkbox' },
       ],
     },
     {
-      title: 'Detalles',
+      title: 'Detalles Clínicos',
       gridCols: 2,
       fields: [
         {
           name: 'indications',
           label: 'Indicaciones',
           type: 'textarea',
-          placeholder: 'Ej: Enfermedades respiratorias',
+          placeholder: 'Ej: Tratamiento de infecciones respiratorias y fiebre',
           colSpan: 2,
           suggestions: [
             'Tratamiento de infecciones respiratorias y fiebre',
@@ -138,12 +239,12 @@ function AdminMedicationsPage() {
         },
         {
           name: 'contraindications',
-          label: 'Contraindicaciones',
+          label: 'Contraindicaciones y Tiempo de Retiro',
           type: 'textarea',
-          placeholder: 'Ej: No usar en leche',
+          placeholder: 'Ej: No usar en hembras en producción de leche para consumo',
           colSpan: 2,
           suggestions: [
-            'No administrar en hembras en producción de leche para consumo',
+            'No administrar en hembras en producción de leche para consumo humano',
             'No usar en animales con insuficiencia renal o hepática',
             'Respetar tiempo de retiro previo al sacrificio',
             'No aplicar vía endovenosa rápida',
@@ -151,7 +252,7 @@ function AdminMedicationsPage() {
         },
         {
           name: 'description',
-          label: 'Descripción',
+          label: 'Descripción General',
           type: 'textarea',
           placeholder: 'Descripción general del medicamento',
           colSpan: 2,
@@ -168,14 +269,14 @@ function AdminMedicationsPage() {
 
   // Configuración CRUD
   const crudConfig: CRUDConfig<MedicationResponse & { [k: string]: any }, MedicationInput> = {
-    title: 'Medicamentos',
-    headerDescription: 'Administra el catálogo de medicamentos para la atención veterinaria',
+    title: 'Catálogo de Medicamentos',
+    headerDescription: 'Vademécum de referencia con los posibles medicamentos utilizables en la finca. Consulta el stock físico en Inventario.',
     entityName: 'Medicamento',
     columns,
     formSections,
-    searchPlaceholder: 'Buscar medicamentos...',
-    emptyStateMessage: 'No hay medicamentos registrados.',
-    emptyStateDescription: 'Crea el primer registro para comenzar.',
+    searchPlaceholder: 'Buscar medicamentos en catálogo...',
+    emptyStateMessage: 'No hay medicamentos registrados en el catálogo.',
+    emptyStateDescription: 'Registra un medicamento para habilitarlo en tratamientos.',
     enableDetailModal: true,
     enableCreateModal: true,
     enableEditModal: true,
@@ -183,7 +284,9 @@ function AdminMedicationsPage() {
     showDetailTimestamps: false,
     showEditTimestamps: false,
     showIdInDetailTitle: false,
-    customHeader: <SanidadTabs />,
+    detailTitle: (item: any) =>
+      item?.name ? `Ficha de Medicamento: ${item.name} (#${item.id})` : `Ficha de Medicamento #${item?.id}`,
+    customHeader: <MedicationsHeaderBanner />,
     themeColor: 'purple',
   };
 
@@ -191,7 +294,7 @@ function AdminMedicationsPage() {
     return (
       <div className="flex items-center justify-center h-[50vh]">
         <div className="text-center animate-pulse">
-          <p className="text-muted-foreground text-sm">Cargando medicamentos...</p>
+          <p className="text-muted-foreground text-sm">Cargando catálogo de medicamentos...</p>
         </div>
       </div>
     );
@@ -204,15 +307,10 @@ function AdminMedicationsPage() {
       initialFormData={initialFormData}
       mapResponseToForm={mapResponseToForm}
       validateForm={validateForm}
-      customDetailContent={(item, handlers: any) => (
-        <ItemDetailModal
-          type="medication"
-          item={item}
-          onEdit={handlers?.onEdit}
-          onClose={() => { }}
-          options={{
-            routes: Object.fromEntries(routeOptions.map(o => [o.value, o.label]))
-          }}
+      customDetailContent={(item) => (
+        <MedicationDetailContent
+          medication={item}
+          routeLabel={routeMap.get(Number(item.route_administration_id))}
         />
       )}
       realtime={true}

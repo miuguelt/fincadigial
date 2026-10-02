@@ -52,10 +52,15 @@ export function useBoardDragDrop({ enabled, onDrop }: Options) {
   const onPointerDown = useCallback(
     (event: React.PointerEvent<HTMLElement>, animalId: number) => {
       if (!active || event.button !== 0) return;
-      if ((event.target as HTMLElement).closest('button, a, input, [data-no-drag]')) return;
+      // La ficha usa un botón para abrir el detalle, pero también debe poder
+      // iniciarse el arrastre desde el número y los datos del animal.
+      const target = event.target as HTMLElement;
+      if (target.closest('a, input, [data-no-drag]')) return;
       dragRef.current = { animalId, pointerId: event.pointerId, x: event.clientX, y: event.clientY, started: false };
       try {
-        event.currentTarget.setPointerCapture(event.pointerId);
+        // Capturar el elemento pulsado conserva el clic normal del botón que
+        // abre la ficha cuando el mouse no supera el umbral de arrastre.
+        target.setPointerCapture(event.pointerId);
       } catch {
         // Algunos navegadores embebidos no soportan pointer capture.
       }
@@ -102,6 +107,19 @@ export function useBoardDragDrop({ enabled, onDrop }: Options) {
     [onDrop, setTarget],
   );
 
+  const onPointerCancel = useCallback(
+    (event: React.PointerEvent<HTMLElement>) => {
+      const drag = dragRef.current;
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      if (drag.started) suppressClickRef.current = true;
+      dragRef.current = null;
+      setDraggingId(null);
+      setTarget(null);
+      releaseCursor();
+    },
+    [setTarget],
+  );
+
   /** El clic que cierra un arrastre no debe abrir la ficha del animal. */
   const consumeClickAfterDrag = useCallback(() => {
     if (!suppressClickRef.current) return false;
@@ -116,6 +134,7 @@ export function useBoardDragDrop({ enabled, onDrop }: Options) {
     onPointerDown,
     onPointerMove,
     onPointerUp,
+    onPointerCancel,
     consumeClickAfterDrag,
   };
 }

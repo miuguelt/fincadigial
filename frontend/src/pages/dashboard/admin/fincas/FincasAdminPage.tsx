@@ -83,7 +83,7 @@ const FincasAdminPage: React.FC = () => {
         config={{
           ...fincasConfig,
           viewMode,
-          cardGridClassName: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+          cardGridClassName: 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4',
           customHeader: (
             <FincasBentoHeader
               items={items}

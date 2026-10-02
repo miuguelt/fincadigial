@@ -67,7 +67,7 @@ export const AdminFincaCard: React.FC<AdminFincaCardProps> = ({
   const location = [finca.municipality, finca.department].filter(Boolean).join(', ');
 
   return (
-    <article className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-[1.35rem] border border-border/80 bg-gradient-to-b from-card via-card to-primary/[0.025] shadow-[0_14px_28px_-22px_rgba(15,23,42,0.65)] ring-1 ring-black/[0.025] transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_22px_42px_-24px_rgba(15,23,42,0.55)] dark:ring-white/[0.04]">
+    <article className="relative flex h-full min-w-0 flex-col bg-gradient-to-b from-card via-card to-primary/[0.025]">
       <div className="relative h-48 w-full shrink-0 overflow-hidden bg-gradient-to-br from-emerald-100 via-teal-50 to-slate-100 dark:from-emerald-950/60 dark:via-slate-900 dark:to-slate-950">
         <FincaImageCarousel
           images={images}
@@ -114,7 +114,7 @@ export const AdminFincaCard: React.FC<AdminFincaCardProps> = ({
         </Button>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-4 p-5">
+      <div className="flex min-h-0 flex-1 flex-col gap-3.5 p-4 sm:p-5">
         <div className="min-w-0">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -170,8 +170,8 @@ export const AdminFincaCard: React.FC<AdminFincaCardProps> = ({
           lastUpdated={metricsUpdatedAt}
         />
 
-        <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-4">
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-3 sm:pt-4">
+          <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
             <Button
               type="button"
               variant="outline"
@@ -180,7 +180,7 @@ export const AdminFincaCard: React.FC<AdminFincaCardProps> = ({
                 event.stopPropagation();
                 onManageImages(finca);
               }}
-              className="min-h-[42px] rounded-xl px-3 text-xs font-bold text-muted-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
+              className="min-h-[38px] sm:min-h-[42px] rounded-xl px-2.5 sm:px-3 text-xs font-bold text-muted-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
               title="Administrar galería de imágenes"
             >
               <Camera className="h-3.5 w-3.5 text-primary" />
@@ -194,7 +194,7 @@ export const AdminFincaCard: React.FC<AdminFincaCardProps> = ({
                 event.stopPropagation();
                 onInviteUsers(finca.id);
               }}
-              className="min-h-[42px] rounded-xl px-3 text-xs font-bold text-muted-foreground hover:border-emerald-500/40 hover:bg-emerald-500/5 hover:text-emerald-700 dark:hover:text-emerald-300"
+              className="min-h-[38px] sm:min-h-[42px] rounded-xl px-2.5 sm:px-3 text-xs font-bold text-muted-foreground hover:border-emerald-500/40 hover:bg-emerald-500/5 hover:text-emerald-700 dark:hover:text-emerald-300"
               title="Invitar usuarios a la finca"
             >
               <Users className="h-3.5 w-3.5 text-emerald-600" />
@@ -207,7 +207,7 @@ export const AdminFincaCard: React.FC<AdminFincaCardProps> = ({
             variant="ghost"
             size="sm"
             onClick={() => onOpenDetail?.(finca)}
-            className="min-h-[42px] rounded-xl px-3 text-xs font-black text-primary hover:bg-primary/10"
+            className="min-h-[38px] sm:min-h-[42px] rounded-xl px-2.5 sm:px-3 text-xs font-black text-primary hover:bg-primary/10"
           >
             <span>Ver ficha</span>
             <ExternalLink className="h-3.5 w-3.5" />

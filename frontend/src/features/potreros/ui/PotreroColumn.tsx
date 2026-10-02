@@ -75,7 +75,9 @@ export function PotreroColumn({
       data-drop-column={String(columnKey)}
       className={cn(
         'flex flex-col rounded-2xl border-2 bg-card shadow-sm transition-colors',
-        isDropTarget ? 'border-primary bg-primary/5' : 'border-border',
+        isDropTarget
+          ? 'scale-[1.01] border-primary bg-primary/10 shadow-lg ring-4 ring-primary/30'
+          : 'border-border',
       )}
     >
       <header
@@ -142,6 +144,15 @@ export function PotreroColumn({
           </Button>
         )}
       </header>
+
+      {isDropTarget && (
+        <p
+          role="status"
+          className="mx-2 mt-2 rounded-lg border-2 border-dashed border-primary bg-primary/10 px-3 py-2 text-center text-sm font-bold text-primary"
+        >
+          Suelta aquí para mover al potrero {label}
+        </p>
+      )}
 
       {!collapsed && (
         <div className="max-h-[26rem] space-y-2 overflow-y-auto overscroll-contain p-2 lg:max-h-[32rem]">
