@@ -4,7 +4,7 @@ import { AuthContext } from "@/app/providers/AuthenticationContext";
 import { Button } from "@/shared/ui/button";
 import { LogIn, LogOut } from 'lucide-react';
 import { normalizeRole } from "@/features/auth/api/auth.service";
-import logoSenaOrange from "@/shared/assets/logoSenaOrange.svg";
+import logoVillaluz from "@/shared/assets/logo-villaluz.jpg";
 
 interface MenuItem {
   id: string;
@@ -92,10 +92,10 @@ export default function NavBar() {
         {/* Brand */}
         <div className="flex items-center gap-3 text-foreground">
           <img
-            src={logoSenaOrange}
+            src={logoVillaluz}
             width={35}
             height={35}
-            alt="Logo SENA"
+            alt="Logo Villa Luz"
             loading="lazy"
             decoding="async"
             className="block"
