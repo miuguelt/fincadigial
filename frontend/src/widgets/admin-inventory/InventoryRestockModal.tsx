@@ -108,7 +108,7 @@ export function InventoryRestockModal({
 		<Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
 			<DialogContent className="sm:max-w-lg p-0 overflow-hidden border-border/80 shadow-2xl">
 				{/* Cabecera atractiva con tono esmeralda */}
-				<div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-5 text-white">
+				<div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-5 text-white pr-14 sm:pr-16">
 					<DialogHeader>
 						<DialogTitle className="flex items-center gap-2 text-xl font-black text-white">
 							<div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm shadow-sm">
@@ -122,7 +122,7 @@ export function InventoryRestockModal({
 					</DialogHeader>
 				</div>
 
-				<div className="p-5 space-y-4">
+				<div className="p-5 space-y-4 overflow-y-auto max-h-[calc(90dvh-5rem)]">
 					{/* Tarjeta de información del lote seleccionado */}
 					<div className="rounded-xl border border-border/70 bg-muted/40 p-4 space-y-3 shadow-sm">
 						<div className="flex items-start justify-between gap-3">

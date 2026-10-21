@@ -1,6 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Dialog, DialogContent } from '@/shared/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/shared/ui/dialog';
 import LoadingScreen from '@/shared/ui/common/LoadingScreen';
 
 // Lazy load the quick action components to avoid bloating the main bundle
@@ -53,15 +53,15 @@ export function QuickActionsModal() {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent
-        className="w-[min(640px,calc(100vw-1rem))] max-w-[640px] max-h-[min(90dvh,760px)] p-0 border border-border overflow-hidden bg-background sm:rounded-xl"
+        className="w-[min(640px,calc(100vw-1rem))] max-w-[640px] max-h-[min(90dvh,760px)] p-6 border border-border overflow-y-auto bg-background rounded-2xl"
         // Le damos un z-index alto para asegurarnos de que quede encima de todo
         zIndex={1200}
       >
-        <div className="max-h-[min(90dvh,760px)] overflow-y-auto">
+        <DialogTitle className="sr-only">Acciones Rápidas</DialogTitle>
           <Suspense fallback={<LoadingScreen message="Cargando formulario..." />}>
             {renderActionContent()}
           </Suspense>
-        </div>
+
       </DialogContent>
     </Dialog>
   );

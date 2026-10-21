@@ -35,9 +35,9 @@ describe('FincaPerformancePanel', () => {
     const metricCards = container.querySelectorAll('.overflow-hidden');
     expect(metricCards.length).toBeGreaterThanOrEqual(3);
 
-    // Los labels deben tener la clase truncate para no salirse de la tarjeta
+    // Los labels deben tener la clase fit-clamp para no salirse de la tarjeta
     const ganadoLabel = screen.getByText('Ganado');
-    expect(ganadoLabel.className).toContain('truncate');
+    expect(ganadoLabel.className).toContain('fit-clamp');
   });
 
   it('renderiza en modo extendido con los 6 indicadores y métricas calculadas', () => {

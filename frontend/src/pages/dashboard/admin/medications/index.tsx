@@ -155,7 +155,7 @@ function AdminMedicationsPage() {
             >
               <Boxes className="w-3.5 h-3.5" />
               <span>{Number(info.total.toFixed(2))} {info.unit}</span>
-              <span className="text-[10px] opacity-75">({info.lotCount} {info.lotCount === 1 ? 'lote' : 'lotes'})</span>
+              <span className="text-[11px] opacity-75">({info.lotCount} {info.lotCount === 1 ? 'lote' : 'lotes'})</span>
             </button>
           );
         }
@@ -170,7 +170,7 @@ function AdminMedicationsPage() {
             title="Sin existencias físicas registradas en el botiquín. Clic para registrar ingreso."
           >
             <span className="opacity-70">0 en bodega</span>
-            <span className="text-[10px] text-primary underline font-bold">Ingresar</span>
+            <span className="text-[11px] text-primary underline font-bold">Ingresar</span>
           </button>
         );
       }

@@ -255,7 +255,7 @@ export function ReproductiveEventQuickModal({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto p-0 rounded-2xl border border-border shadow-2xl">
-        <DialogHeader className="p-4 sm:p-6 pb-3 border-b bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 text-white">
+        <DialogHeader className="p-4 sm:p-6 pb-3 border-b bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 text-white pr-14 sm:pr-16">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="h-9 w-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-white shadow-inner">

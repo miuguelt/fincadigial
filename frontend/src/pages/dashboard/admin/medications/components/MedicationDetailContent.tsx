@@ -229,12 +229,12 @@ export function MedicationDetailContent({
 
           <div className="grid grid-cols-2 gap-2.5 text-xs">
             <div className="p-2.5 rounded-lg bg-background/50 border border-border/40 space-y-1">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground">Identificador</span>
+              <span className="text-[11px] uppercase font-bold text-muted-foreground">Identificador</span>
               <p className="font-mono font-bold text-sm">#{medication.id}</p>
             </div>
 
             <div className="p-2.5 rounded-lg bg-background/50 border border-border/40 space-y-1">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground">En Catálogo</span>
+              <span className="text-[11px] uppercase font-bold text-muted-foreground">En Catálogo</span>
               <p className="font-bold">
                 {medication.availability ? (
                   <span className="text-emerald-600 dark:text-emerald-400">Habilitado</span>
@@ -245,12 +245,12 @@ export function MedicationDetailContent({
             </div>
 
             <div className="p-2.5 rounded-lg bg-background/50 border border-border/40 space-y-1 col-span-2">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground">Dosis Sugerida</span>
+              <span className="text-[11px] uppercase font-bold text-muted-foreground">Dosis Sugerida</span>
               <p className="font-semibold text-foreground">{medication.dosis || 'No especificada'}</p>
             </div>
 
             <div className="p-2.5 rounded-lg bg-background/50 border border-border/40 space-y-1 col-span-2">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground">Vía de Administración</span>
+              <span className="text-[11px] uppercase font-bold text-muted-foreground">Vía de Administración</span>
               <p className="font-semibold text-foreground">
                 {routeLabel || (medication as any).route_administration_name || 'No especificada'}
               </p>
@@ -267,14 +267,14 @@ export function MedicationDetailContent({
 
           <div className="space-y-2.5 text-xs">
             <div className="p-2.5 rounded-lg bg-background/50 border border-border/40 space-y-1">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground">Indicaciones</span>
+              <span className="text-[11px] uppercase font-bold text-muted-foreground">Indicaciones</span>
               <p className="text-foreground leading-relaxed">
                 {medication.indications || 'Sin indicaciones clínicas especificadas.'}
               </p>
             </div>
 
             <div className="p-2.5 rounded-lg bg-background/50 border border-border/40 space-y-1">
-              <span className="text-[10px] uppercase font-bold text-amber-600 dark:text-amber-400">Contraindicaciones / Retiro</span>
+              <span className="text-[11px] uppercase font-bold text-amber-600 dark:text-amber-400">Contraindicaciones / Retiro</span>
               <p className="text-foreground leading-relaxed">
                 {medication.contraindications || 'Sin contraindicaciones registradas.'}
               </p>
@@ -286,7 +286,7 @@ export function MedicationDetailContent({
       {/* 4. Descripción general */}
       {medication.description && (
         <div className="rounded-xl border border-border/60 bg-muted/5 p-3.5 text-xs space-y-1">
-          <span className="text-[10px] uppercase font-bold text-muted-foreground">Descripción General</span>
+          <span className="text-[11px] uppercase font-bold text-muted-foreground">Descripción General</span>
           <p className="text-foreground leading-relaxed italic">
             {medication.description}
           </p>

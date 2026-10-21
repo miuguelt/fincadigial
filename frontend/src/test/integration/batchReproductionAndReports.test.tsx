@@ -102,7 +102,7 @@ describe("Módulo de Acciones Masivas y Reportes", () => {
 
       // Verificar título principal
       expect(screen.getByText("Gestión Reproductiva Masiva")).toBeInTheDocument();
-      expect(screen.getByText("2 Sujetos")).toBeInTheDocument();
+      expect(screen.getByText("2 Animales")).toBeInTheDocument();
 
       // Verificar los botones de tipo de evento
       expect(screen.getByText("Celo")).toBeInTheDocument();

@@ -1,3 +1,5 @@
+from datetime import date, datetime, timedelta
+
 from app import db
 from app.models.base_model import BaseModel
 
@@ -224,13 +226,83 @@ class Treatments(BaseModel):
             raise ValidationError("; ".join(errors), code="validation_error")
 
     @classmethod
-    def _validate_and_normalize(cls, data, is_update=False, instance_id=None):
-        data = super()._validate_and_normalize(data, is_update, instance_id)
+    def _parse_date_value(cls, val):
+        """Convierte objetos date/datetime o cadenas ISO en datetime.date."""
+        if val is None:
+            return None
+        if isinstance(val, datetime):
+            return val.date()
+        if isinstance(val, date):
+            return val
+        if isinstance(val, str):
+            val = val.strip()
+            if not val:
+                return None
+            try:
+                return date.fromisoformat(val[:10])
+            except (ValueError, TypeError):
+                try:
+                    return datetime.fromisoformat(val.replace("Z", "+00:00")).date()
+                except (ValueError, TypeError):
+                    return None
+        return None
+
+    @classmethod
+    def _validate_and_normalize(
+        cls, data, is_update=False, instance_id=None, current_instance=None, **kwargs
+    ):
+        data = super()._validate_and_normalize(
+            data, is_update=is_update, instance_id=instance_id
+        )
+        inst_id = instance_id or (
+            getattr(current_instance, "id", None) if current_instance else None
+        )
+        current = current_instance or (
+            cls.get_by_id(inst_id) if is_update and inst_id else None
+        )
+
+        # Cálculo determinista de fecha de fin de retiro sanitario (Resolución ICA 068167)
+        raw_w_days = data.get("withdrawal_days")
+        if raw_w_days is None and is_update and current:
+            raw_w_days = getattr(current, "withdrawal_days", None)
+
+        try:
+            w_days = int(raw_w_days) if raw_w_days is not None else 0
+        except (ValueError, TypeError):
+            w_days = 0
+
+        raw_t_date = data.get("treatment_date")
+        if raw_t_date is None and is_update and current:
+            raw_t_date = getattr(current, "treatment_date", None)
+
+        t_date = cls._parse_date_value(raw_t_date)
+        if t_date and "treatment_date" in data and isinstance(data["treatment_date"], datetime):
+            data["treatment_date"] = t_date
+
+        if "withdrawal_end_date" in data:
+            if data["withdrawal_end_date"] is not None:
+                data["withdrawal_end_date"] = cls._parse_date_value(
+                    data["withdrawal_end_date"]
+                )
+            elif w_days > 0 and t_date:
+                data["withdrawal_end_date"] = t_date + timedelta(days=w_days)
+        else:
+            if not is_update:
+                if w_days > 0 and t_date:
+                    data["withdrawal_end_date"] = t_date + timedelta(days=w_days)
+            else:
+                if "treatment_date" in data or "withdrawal_days" in data:
+                    if w_days > 0 and t_date:
+                        data["withdrawal_end_date"] = t_date + timedelta(days=w_days)
+                    elif "withdrawal_days" in data and w_days <= 0:
+                        data["withdrawal_end_date"] = None
+                elif current and current.withdrawal_end_date is None and w_days > 0 and t_date:
+                    data["withdrawal_end_date"] = t_date + timedelta(days=w_days)
+
         # El episodio vinculado debe existir y pertenecer al mismo animal/finca.
         # En un PATCH los campos omitidos deben resolverse contra el registro
         # actual; de lo contrario se podía cambiar la res sin validar el caso
         # existente, o vincular el tratamiento a un caso de otra res.
-        current = cls.get_by_id(instance_id) if is_update and instance_id else None
         episode_id = (
             data.get("animal_disease_id")
             if "animal_disease_id" in data

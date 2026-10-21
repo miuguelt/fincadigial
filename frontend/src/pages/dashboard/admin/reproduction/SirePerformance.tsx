@@ -209,14 +209,14 @@ export default function SirePerformance({ isEmbedded = false }: SirePerformanceP
                         <button
                           type="button"
                           onClick={() => setSelectedAnimalId(sire.sire_id)}
-                          className="font-black text-sm text-foreground hover:text-indigo-600 hover:underline text-left block truncate"
+                          className="font-black text-sm text-foreground hover:text-indigo-600 hover:underline text-left block fit-clamp"
                         >
                           {sire.record}
                         </button>
-                        <span className="text-[11px] text-muted-foreground block truncate">{sire.breed}</span>
+                        <span className="text-[11px] text-muted-foreground block fit-clamp">{sire.breed}</span>
                       </div>
                     </div>
-                    <Badge className={`${getGradeBadgeClass(sire.grade)} font-black uppercase text-[10px] tracking-wide rounded-lg px-2 py-0.5 shrink-0`}>
+                    <Badge className={`${getGradeBadgeClass(sire.grade)} font-black uppercase text-[11px] tracking-wide rounded-lg px-2 py-0.5 shrink-0`}>
                       CLASE {sire.grade}
                     </Badge>
                   </div>
@@ -244,11 +244,11 @@ export default function SirePerformance({ isEmbedded = false }: SirePerformanceP
                   {/* Cuadrícula de Métricas de Campo */}
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="p-2 rounded-lg bg-background/70 border border-border/40">
-                      <span className="text-[10px] text-muted-foreground block font-bold uppercase tracking-wider">Crías Nacidas</span>
+                      <span className="text-[11px] text-muted-foreground block font-bold uppercase tracking-wider">Crías Nacidas</span>
                       <span className="text-sm font-black text-foreground">{sire.total_offspring}</span>
                     </div>
                     <div className="p-2 rounded-lg bg-background/70 border border-border/40">
-                      <span className="text-[10px] text-muted-foreground block font-bold uppercase tracking-wider">Peso Prom. Crías</span>
+                      <span className="text-[11px] text-muted-foreground block font-bold uppercase tracking-wider">Peso Prom. Crías</span>
                       <span className="text-sm font-black text-foreground">
                         {sire.avg_birth_weight_kg > 0 ? `${sire.avg_birth_weight_kg} kg` : '—'}
                       </span>
@@ -327,7 +327,7 @@ export default function SirePerformance({ isEmbedded = false }: SirePerformanceP
             </div>
           </CardContent>
           <div className="p-3 sm:p-4 bg-muted/20 border-t border-border/30 text-center">
-            <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em]">VillaLuz Ganadería · Control Reproductivo</p>
+            <p className="text-[11px] font-black text-muted-foreground/60 uppercase tracking-[0.2em]">VillaLuz Ganadería · Control Reproductivo</p>
           </div>
         </Card>
       </motion.div>

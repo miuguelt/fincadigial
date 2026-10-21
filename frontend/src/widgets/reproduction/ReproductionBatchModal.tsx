@@ -117,7 +117,7 @@ export function ReproductionBatchModal({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl p-0 overflow-hidden max-h-[90vh] flex flex-col rounded-2xl border border-border shadow-2xl">
-        <DialogHeader className="p-6 pb-4 border-b bg-gradient-to-r from-purple-600 to-indigo-600 text-white shrink-0">
+        <DialogHeader className="p-6 pb-4 border-b bg-gradient-to-r from-purple-600 to-indigo-600 text-white shrink-0 pr-14 sm:pr-16">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-white/10 backdrop-blur-sm">
               <Users className="h-6 w-6 text-white" />

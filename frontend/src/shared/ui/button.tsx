@@ -28,10 +28,10 @@ const variants: Record<NonNullable<ButtonProps["variant"]>, string> = {
 };
 
 const sizes: Record<NonNullable<ButtonProps["size"]>, string> = {
-  sm: "h-8 px-3 text-sm gap-1.5",
-  md: "h-9 px-4 text-sm gap-2",
-  lg: "h-10 px-6 text-base gap-2",
-  icon: "h-9 w-9",
+  sm: "min-h-[44px] h-11 sm:h-8 px-3 text-sm gap-1.5",
+  md: "min-h-[44px] h-11 sm:h-9 px-4 text-sm gap-2",
+  lg: "min-h-[44px] h-11 sm:h-10 px-6 text-base gap-2",
+  icon: "min-h-[44px] min-w-[44px] h-11 w-11 sm:h-9 sm:w-9",
 };
 
 // Exported helper for compatibility with existing imports (e.g., buttonVariants in other components)

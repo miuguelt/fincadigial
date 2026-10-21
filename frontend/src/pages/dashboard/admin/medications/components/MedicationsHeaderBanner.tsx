@@ -23,7 +23,7 @@ export function MedicationsHeaderBanner() {
                 <h3 className="text-xs sm:text-sm font-black uppercase tracking-wide text-foreground">
                   Catálogo de Referencia (Vademécum de Medicamentos)
                 </h3>
-                <span className="hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-primary/15 text-primary">
+                <span className="hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-primary/15 text-primary">
                   <Info className="w-3 h-3" />
                   Guía de Formulación
                 </span>

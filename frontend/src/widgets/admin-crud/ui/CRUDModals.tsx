@@ -248,7 +248,7 @@ function DetailModalComponent<T extends { id: number }>({
                     role="tab"
                     aria-selected={isActive}
                     onClick={() => setActiveDetailTabId(tab.id)}
-                    className={`inline-flex min-h-[42px] shrink-0 items-center gap-2 rounded-t-lg border-b-2 px-3 text-sm font-semibold transition-colors ${
+                    className={`inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-t-lg border-b-2 px-3 text-sm font-semibold transition-colors ${
                       isActive
                         ? 'border-primary text-primary'
                         : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'

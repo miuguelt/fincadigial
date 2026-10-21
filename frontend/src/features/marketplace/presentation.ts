@@ -8,7 +8,7 @@ export const offerKinds = [
 export const categories = [
   { value: 'produce', label: 'Frutas, verduras y cosechas', emoji: '🌽' },
   { value: 'dairy', label: 'Leche y huevos', emoji: '🥛' },
-  { value: 'animals', label: 'Animales de granja', emoji: '🐄' },
+  { value: 'animals', label: 'Bovinos y Ganado', emoji: '🐄' },
   { value: 'seeds', label: 'Semillas y plantas', emoji: '🌱' },
   { value: 'processed', label: 'Alimentos elaborados', emoji: '🧀' },
   { value: 'supplies', label: 'Insumos y herramientas', emoji: '🛠️' },

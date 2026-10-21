@@ -268,7 +268,7 @@ export const AnimalActionModalInstance: React.FC<AnimalActionModalInstanceProps>
         if (['macho', 'male', 'm', '1', '01'].includes(sex)) {
           throw new Error("El ordeño solo se registra a vacas hembras.");
         }
-        if (!Boolean(aAny.is_lactating)) {
+        if (!aAny.is_lactating) {
           throw new Error("Esta res no figura en estado de lactancia activa. Solo se puede registrar ordeño tras un parto y antes del secado.");
         }
       }

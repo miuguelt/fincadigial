@@ -160,8 +160,8 @@ export const FincaGpsModal: React.FC<FincaGpsModalProps> = ({
 
 	return (
 		<Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-			<DialogContent className="sm:max-w-md sm:!rounded-[24px] bg-card text-card-foreground border-border/90 p-0">
-				<DialogHeader className="p-5 pb-4 sm:p-6 sm:pb-4">
+			<DialogContent className="sm:max-w-md bg-card text-card-foreground border-border/90">
+				<DialogHeader>
 					<div className="flex items-center gap-3">
 						<div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/30 shadow-sm">
 							<MapPin className="w-6 h-6 animate-pulse" />
@@ -177,7 +177,7 @@ export const FincaGpsModal: React.FC<FincaGpsModalProps> = ({
 					</div>
 				</DialogHeader>
 
-				<div className="space-y-5 px-5 pb-5 sm:px-6 sm:pb-6">
+				<div className="space-y-5">
 					<div className="p-4 rounded-2xl bg-muted border border-border space-y-4 shadow-sm">
 						<p className="text-sm sm:text-base font-medium text-foreground leading-relaxed">
 							📱 Si estás en la finca, presiona el botón para capturar automáticamente

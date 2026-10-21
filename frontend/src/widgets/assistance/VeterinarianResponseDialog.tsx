@@ -18,7 +18,7 @@ function CaseHeader({ item }: { item: TechnicalAssistanceRequest }) {
   const category = getCategoryConfig(item.category || 'otro');
   const priority = PRIORITY_CONFIG[item.priority || 'medium'] || PRIORITY_CONFIG.medium;
   return (
-    <><header className="flex min-w-0 items-start gap-3">
+    <><header className="flex min-w-0 items-start gap-3 pr-9 sm:pr-10">
       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Stethoscope className="h-5 w-5" aria-hidden /></span>
       <div className="min-w-0 flex-1">
         <p className="text-[11px] font-black uppercase tracking-[0.16em] text-primary">Respuesta veterinaria</p>
@@ -73,10 +73,10 @@ export function VeterinarianResponseDialog({ item, open, onOpenChange, onSubmit 
     try { await onSubmit(item, notes.trim(), resolved); } finally { setSaving(false); }
   };
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="max-h-[92vh] overflow-y-auto p-0 sm:max-w-xl">
+    <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="max-h-[90dvh] overflow-y-auto p-6 sm:max-w-xl">
       <DialogTitle className="sr-only">Respuesta veterinaria para {item.title}</DialogTitle>
       <DialogDescription className="sr-only">Responda la solicitud y mantenga una conversación segura con el solicitante.</DialogDescription>
-      <div className="fit-container min-w-0 space-y-5 p-4 sm:p-6">
+      <div className="fit-container min-w-0 space-y-5">
         <CaseHeader item={item} /><ResponseEditor notes={notes} setNotes={setNotes} /><ResolutionChoice resolved={resolved} setResolved={setResolved} />
         {item.requester?.id && (
           <section className="rounded-xl border border-primary/15 bg-primary/5 p-4">

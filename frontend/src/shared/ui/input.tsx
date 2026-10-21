@@ -9,9 +9,9 @@ export type InputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "size
 };
 
 const sizeMap: Record<InputSize, string> = {
-  sm: "h-8 px-3 text-sm",
-  md: "h-9 px-3 text-sm",
-  lg: "h-10 px-3 text-base",
+  sm: "min-h-[44px] sm:min-h-0 h-11 sm:h-8 px-3 text-sm",
+  md: "min-h-[44px] sm:min-h-0 h-11 sm:h-9 px-3 text-sm",
+  lg: "min-h-[44px] sm:min-h-0 h-11 sm:h-10 px-3 text-base",
 };
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(

@@ -19,6 +19,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogHeader,
   DialogTitle,
 } from '@/shared/ui/dialog';
 
@@ -1215,15 +1217,15 @@ export default function GanaderiaOperativaPage() {
 
       {/* ─── 1. MODAL DE ORDEÑO (MILKING) ─── */}
       <Dialog open={activeModal === 'milk'} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="p-0 overflow-hidden rounded-xl" fullWidth={false}>
-          <div className="bg-amber-500 px-6 py-5 text-white flex items-center gap-3">
+        <DialogContent className="p-0 overflow-hidden rounded-2xl max-h-[90dvh]" fullWidth={false}>
+          <DialogHeader className="bg-amber-500 px-6 py-5 text-white flex flex-row items-center gap-3 pr-14 sm:pr-16 text-left">
             <div className="p-2 bg-white/20 rounded-xl"><IconMilk className="w-6 h-6" /></div>
             <div>
               <DialogTitle className="text-xl font-black uppercase tracking-wider text-white">Registrar Ordeño</DialogTitle>
-              <p className="text-xs text-amber-100">Ingrese la producción de leche de la vaca seleccionada</p>
+              <DialogDescription className="text-xs text-amber-100">Ingrese la producción de leche de la vaca seleccionada</DialogDescription>
             </div>
-          </div>
-          <div className="p-6">
+          </DialogHeader>
+          <div className="p-6 overflow-y-auto max-h-[calc(90dvh-5rem)]">
             <form onSubmit={handleMilkingSubmit} className="space-y-4">
               {!isOnline && (
                 <div className="flex items-center gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-700 font-bold">
@@ -1318,15 +1320,15 @@ export default function GanaderiaOperativaPage() {
 
       {/* ─── 2. MODAL DE TRASLADO (TRANSFER) ─── */}
       <Dialog open={activeModal === 'transfer'} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="p-0 overflow-hidden rounded-xl" fullWidth={false}>
-          <div className="bg-emerald-600 px-6 py-5 text-white flex items-center gap-3">
+        <DialogContent className="p-0 overflow-hidden rounded-2xl max-h-[90dvh]" fullWidth={false}>
+          <DialogHeader className="bg-emerald-600 px-6 py-5 text-white flex flex-row items-center gap-3 pr-14 sm:pr-16 text-left">
             <div className="p-2 bg-white/20 rounded-xl"><IconRouteCattle className="w-6 h-6" /></div>
             <div>
               <DialogTitle className="text-xl font-black uppercase tracking-wider text-white">Trasladar Animal</DialogTitle>
-              <p className="text-xs text-emerald-100">Mover un animal a un potrero o lote de destino</p>
+              <DialogDescription className="text-xs text-emerald-100">Mover un animal a un potrero o lote de destino</DialogDescription>
             </div>
-          </div>
-          <div className="p-6">
+          </DialogHeader>
+          <div className="p-6 overflow-y-auto max-h-[calc(90dvh-5rem)]">
             <form onSubmit={handleTransferSubmit} className="space-y-4">
               {!isOnline && (
                 <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs text-emerald-700 font-bold">
@@ -1392,15 +1394,15 @@ export default function GanaderiaOperativaPage() {
 
       {/* ─── 3. MODAL DE ENFERMEDAD (DISEASE) ─── */}
       <Dialog open={activeModal === 'disease'} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="p-0 overflow-hidden rounded-xl" fullWidth={false}>
-          <div className="bg-rose-600 px-6 py-5 text-white flex items-center gap-3">
+        <DialogContent className="p-0 overflow-hidden rounded-2xl max-h-[90dvh]" fullWidth={false}>
+          <DialogHeader className="bg-rose-600 px-6 py-5 text-white flex flex-row items-center gap-3 pr-14 sm:pr-16 text-left">
             <div className="p-2 bg-white/20 rounded-xl"><IconHealthAlert className="w-6 h-6" /></div>
             <div>
               <DialogTitle className="text-xl font-black uppercase tracking-wider text-white">Reportar Enfermedad</DialogTitle>
-              <p className="text-xs text-rose-100">Registrar un diagnóstico clínico o caso de enfermedad</p>
+              <DialogDescription className="text-xs text-rose-100">Registrar un diagnóstico clínico o caso de enfermedad</DialogDescription>
             </div>
-          </div>
-          <div className="p-6">
+          </DialogHeader>
+          <div className="p-6 overflow-y-auto max-h-[calc(90dvh-5rem)]">
             <form onSubmit={handleDiseaseSubmit} className="space-y-4">
               {!isOnline && (
                 <div className="flex items-center gap-2 p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs text-rose-700 font-bold">
@@ -1494,15 +1496,15 @@ export default function GanaderiaOperativaPage() {
 
       {/* ─── 4. MODAL DE TRATAMIENTO (TREATMENT) ─── */}
       <Dialog open={activeModal === 'treatment'} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="p-0 overflow-hidden rounded-xl" fullWidth={false}>
-          <div className="bg-purple-600 px-6 py-5 text-white flex items-center gap-3">
+        <DialogContent className="p-0 overflow-hidden rounded-2xl max-h-[90dvh]" fullWidth={false}>
+          <DialogHeader className="bg-purple-600 px-6 py-5 text-white flex flex-row items-center gap-3 pr-14 sm:pr-16 text-left">
             <div className="p-2 bg-white/20 rounded-xl"><IconHealthCheck className="w-6 h-6" /></div>
             <div>
               <DialogTitle className="text-xl font-black uppercase tracking-wider text-white">Aplicar Medicina</DialogTitle>
-              <p className="text-xs text-purple-100">Registrar la dosis de medicamento o vacuna en el animal</p>
+              <DialogDescription className="text-xs text-purple-100">Registrar la dosis de medicamento o vacuna en el animal</DialogDescription>
             </div>
-          </div>
-          <div className="p-6">
+          </DialogHeader>
+          <div className="p-6 overflow-y-auto max-h-[calc(90dvh-5rem)]">
             <form onSubmit={handleTreatmentSubmit} className="space-y-4">
               {!isOnline && (
                 <div className="flex items-center gap-2 p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl text-xs text-purple-700 font-bold">

@@ -135,7 +135,7 @@ export const BatchActionToolbar: React.FC<BatchActionToolbarProps> = ({
             </div>
             <div className="flex flex-col">
               <span className="text-[11px] font-bold uppercase tracking-[0.2em] leading-none text-white/90">
-                Sujetos
+                Animales
               </span>
               <span className="text-[11px] font-black uppercase tracking-[0.3em] text-emerald-400 leading-none mt-1.5 flex items-center gap-1.5">
                 <div className="h-1.5 w-1.5 rounded-[var(--radius-full)] bg-emerald-400 animate-pulse" />

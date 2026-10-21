@@ -92,7 +92,7 @@ export default function GenealogyTree({ animalId }: GenealogyTreeProps) {
       </div>
       {isRoot && (
         <Badge variant="default" className="text-[11px] h-4 bg-primary text-primary-foreground font-black px-1.5 uppercase tracking-widest">
-          Sujeto Central
+          Animal Central
         </Badge>
       )}
 

@@ -111,7 +111,7 @@ export const fincasConfig: CRUDConfig<FarmAdminRecord, FarmAdminInput> = {
             'Finca La Pradera',
             'Hacienda San José',
             'Finca Bellavista',
-            'Rancho Alegre',
+            'Hacienda La Primavera',
           ],
         },
         {

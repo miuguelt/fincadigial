@@ -33,9 +33,9 @@ export const DeletionBlockedDialog = memo<DeletionBlockedDialogProps>(({ info, e
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="flex max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border-border/80 bg-card p-0 text-card-foreground sm:max-w-lg">
-        <DialogHeader className="space-y-0 border-b border-border/70 bg-card px-5 py-5 sm:px-6 sm:py-6">
-          <div className="flex items-start gap-4 pr-8">
+      <DialogContent className="sm:max-w-lg p-6 max-h-[90dvh]">
+        <DialogHeader className="pr-9 sm:pr-10 text-left">
+          <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-amber-600 ring-8 ring-amber-500/[0.04]">
               <AlertTriangle className="h-6 w-6" aria-hidden="true" />
             </div>
@@ -50,7 +50,7 @@ export const DeletionBlockedDialog = memo<DeletionBlockedDialogProps>(({ info, e
           </div>
         </DialogHeader>
 
-        <div className="mx-5 mt-5 max-h-[45dvh] space-y-3 overflow-y-auto overscroll-contain rounded-xl border border-border/70 bg-muted/35 px-4 py-3 text-sm leading-5 text-muted-foreground sm:mx-6">
+        <div className="max-h-[45dvh] space-y-3 overflow-y-auto overscroll-contain rounded-xl border border-border/70 bg-muted/35 px-4 py-3 text-sm leading-5 text-muted-foreground">
           {info.blocking.length === 0 && <p>{info.message}</p>}
           {info.blocking.map((dependency) => (
             <div key={`${dependency.table ?? dependency.label}`}>
@@ -74,7 +74,7 @@ export const DeletionBlockedDialog = memo<DeletionBlockedDialogProps>(({ info, e
           </p>
         </div>
 
-        <DialogFooter className="mt-5 gap-2 border-t border-border/70 px-5 py-4 sm:mt-6 sm:flex-row sm:px-6 sm:py-5">
+        <DialogFooter className="gap-2 sm:flex-row">
           <Button type="button" variant="primary" size="lg" className="w-full sm:w-auto" onClick={onClose}>
             Entendido
           </Button>

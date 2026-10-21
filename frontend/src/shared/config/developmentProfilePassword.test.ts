@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveDevelopmentProfilePassword } from './src/shared/config/developmentProfilePassword';
+import { resolveDevelopmentProfilePassword } from './developmentProfilePassword';
 
 describe('resolución de contraseña para perfiles de desarrollo', () => {
   it('prioriza la contraseña del backend sobre una variable Vite desactualizada', () => {

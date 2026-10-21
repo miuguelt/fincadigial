@@ -66,7 +66,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ icon, label, value, caption, to
         className={cn(
           'min-w-0 text-right font-bold uppercase opacity-80',
           compact
-            ? 'truncate text-[10px] sm:text-[11px] tracking-tight'
+            ? 'fit-clamp text-[11px] tracking-tight'
             : 'fit-clamp text-[11px] tracking-[0.1em]'
         )}
         title={label}
@@ -76,7 +76,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ icon, label, value, caption, to
     </div>
     <p
       className={cn(
-        'truncate font-black tabular-nums tracking-tight text-foreground',
+        'fit-clamp font-black tabular-nums tracking-tight text-foreground',
         compact ? 'mt-2 text-xs sm:text-sm md:text-base' : 'mt-3 text-lg'
       )}
       title={value}
@@ -86,8 +86,8 @@ const MetricCard: React.FC<MetricCardProps> = ({ icon, label, value, caption, to
     {caption && (
       <p
         className={cn(
-          'truncate font-medium opacity-75',
-          compact ? 'mt-0.5 text-[10px] sm:text-[11px]' : 'mt-0.5 fit-clamp text-[11px]'
+          'fit-clamp font-medium opacity-75',
+          compact ? 'mt-0.5 text-[11px]' : 'mt-0.5 fit-clamp text-[11px]'
         )}
         title={caption}
       >

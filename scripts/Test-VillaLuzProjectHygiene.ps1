@@ -33,7 +33,7 @@ $rootFiles = @(
     'ECOSYSTEM.md', 'GEMINI.md', 'LICENSE', 'PROJECT_GENOME.md', 'WEB-DESIGN-LEARNING.md',
     'README.md', 'codecov.yml', 'ecosystem.config.cjs', 'opencode.json', 'package.json', 'package-lock.json', 'playwright.config.ts',
     'pytest.ini', 'rules.md', 'ruff.toml', 'skills.json', 'start-windows.ps1', 'workflows.md',
-    'docker-compose.yaml', 'CONTRIBUTING.md'
+    'docker-compose.yaml', 'CONTRIBUTING.md', 'PROJECT.md', 'TEST_INFRA.md', 'TEST_READY.md'
 )
 $rootPatterns = @('^docker-compose\.override\.ya?ml$', '^\.env(\..+)?$')
 

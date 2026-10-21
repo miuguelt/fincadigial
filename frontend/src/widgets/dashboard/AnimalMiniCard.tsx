@@ -125,7 +125,7 @@ export const AnimalMiniCard: React.FC<AnimalMiniCardProps> = ({
 
   const isFather = role?.includes("Padre");
   const isMother = role?.includes("Madre");
-  const isRoot = role?.includes("Principal") || role?.includes("Sujeto") || (levelIndex === 0 && !role?.includes("Padre") && !role?.includes("Madre"));
+  const isRoot = role?.includes("Principal") || role?.includes("Animal") || role?.includes("Sujeto") || (levelIndex === 0 && !role?.includes("Padre") && !role?.includes("Madre"));
 
   const currentImage = images[currentImageIndex];
   const currentSrc =

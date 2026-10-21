@@ -78,8 +78,8 @@ export const BatchDeleteModal: React.FC<BatchDeleteModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) cerrar(); }}>
-      <DialogContent className="flex max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl bg-card p-0 text-card-foreground sm:max-w-lg">
-        <DialogHeader className="border-b border-border/70 px-5 py-5 sm:px-6">
+      <DialogContent className="sm:max-w-lg p-6 max-h-[90dvh]">
+        <DialogHeader className="pr-9 sm:pr-10 text-left">
           <DialogTitle className="text-lg font-bold text-foreground">
             {resultado ? 'Resultado de la eliminación' : `Eliminar ${total} animal${total === 1 ? '' : 'es'}`}
           </DialogTitle>
@@ -90,7 +90,7 @@ export const BatchDeleteModal: React.FC<BatchDeleteModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="mx-5 mt-5 max-h-[45dvh] space-y-3 overflow-y-auto overscroll-contain rounded-xl border border-border/70 bg-muted/35 px-4 py-3 text-sm leading-5 text-muted-foreground sm:mx-6">
+        <div className="max-h-[45dvh] space-y-3 overflow-y-auto overscroll-contain rounded-xl border border-border/70 bg-muted/35 px-4 py-3 text-sm leading-5 text-muted-foreground">
           {error && <p className="text-destructive">{error}</p>}
 
           {!resultado && !error && (
@@ -121,7 +121,7 @@ export const BatchDeleteModal: React.FC<BatchDeleteModalProps> = ({
           )}
         </div>
 
-        <DialogFooter className="mt-5 gap-2 border-t border-border/70 px-5 py-4 sm:flex-row sm:px-6">
+        <DialogFooter className="gap-2 sm:flex-row">
           {resultado ? (
             <Button type="button" variant="primary" size="lg" className="w-full sm:w-auto" onClick={cerrar}>
               Entendido

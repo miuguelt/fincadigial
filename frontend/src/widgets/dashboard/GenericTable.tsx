@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import {
   Table,
   TableBody,
@@ -450,7 +450,7 @@ const GenericTable = React.memo(
                 onClick={() => handlePageChange(page - 1)}
                 disabled={!hasPreviousPage}
                 aria-label="Anterior"
-                className="inline-flex items-center justify-center rounded-md border border-input bg-background h-8 w-8 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                className="inline-flex items-center justify-center rounded-md border border-input bg-background h-11 w-11 sm:h-8 sm:w-8 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
               >
                 <ChevronLeft className="h-4 w-4" aria-hidden />
               </button>
@@ -458,7 +458,7 @@ const GenericTable = React.memo(
                 onClick={() => handlePageChange(page + 1)}
                 disabled={!hasNextPage}
                 aria-label="Siguiente"
-                className="inline-flex items-center justify-center rounded-md border border-input bg-background h-8 w-8 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                className="inline-flex items-center justify-center rounded-md border border-input bg-background h-11 w-11 sm:h-8 sm:w-8 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
               >
                 <ChevronRight className="h-4 w-4" aria-hidden />
               </button>

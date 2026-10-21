@@ -56,11 +56,11 @@ function ModuleRow({ type, label, createLabel, viewLabel, icon: Icon, iconClassN
         <span className="min-w-0 break-normal text-xs font-semibold leading-snug text-foreground [overflow-wrap:normal]">{label}</span>
       </div>
       <div className="grid shrink-0 grid-cols-2 gap-1.5">
-        <button type="button" aria-label={createLabel} title={createLabel} onClick={() => onOpen(type, 'create')} className="inline-flex min-h-[42px] min-w-[42px] items-center justify-center gap-1.5 rounded-lg border border-border/70 bg-muted/50 px-2 text-xs font-semibold text-foreground transition-colors hover:border-primary/50 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+        <button type="button" aria-label={createLabel} title={createLabel} onClick={() => onOpen(type, 'create')} className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-lg border border-border/70 bg-muted/50 px-2 text-xs font-semibold text-foreground transition-colors hover:border-primary/50 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
           <IconPlus className="h-4 w-4" aria-hidden={true} />
           <span className="hidden min-[360px]:inline">Registrar</span>
         </button>
-        <button type="button" aria-label={viewLabel} title={viewLabel} onClick={() => onOpen(type, 'list')} className="inline-flex min-h-[42px] min-w-[42px] items-center justify-center gap-1.5 rounded-lg border border-border/70 bg-muted/50 px-2 text-xs font-semibold text-foreground transition-colors hover:border-primary/50 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+        <button type="button" aria-label={viewLabel} title={viewLabel} onClick={() => onOpen(type, 'list')} className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-lg border border-border/70 bg-muted/50 px-2 text-xs font-semibold text-foreground transition-colors hover:border-primary/50 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
           <IconEye className="h-4 w-4" aria-hidden={true} />
           <span className="hidden min-[360px]:inline">Ver</span>
         </button>
@@ -144,7 +144,7 @@ export function AnimalActionsPanel({
           <p className="mt-0.5 text-sm font-bold leading-tight text-foreground">{animalName}</p>
           <p className="mt-0.5 text-xs leading-tight text-muted-foreground">{breedName || 'Sin raza'} · {sexName || 'Sexo sin registrar'}</p>
         </div>
-        <button type="button" aria-label="Cerrar acciones" onClick={onClose} className="flex min-h-[42px] min-w-[42px] shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+        <button type="button" aria-label="Cerrar acciones" onClick={onClose} className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
           <X className="h-4 w-4" aria-hidden="true" />
         </button>
       </header>

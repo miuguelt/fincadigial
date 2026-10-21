@@ -76,9 +76,9 @@ export function QuickFormShell({
       )}
 
       {/* ── CUERPO ──────────────────────────────────────────────── */}
-      <main className={`w-full px-4 ${isModal ? "pt-6 pb-6" : "-mt-6"}`}>
+      <main className={`w-full ${isModal ? "px-0 pt-0 pb-0" : "px-4 -mt-6"}`}>
         {isModal && (
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-6 pr-9 sm:pr-10">
             {Icon && (
               <div className={`p-3 rounded-lg ${colorHeader} text-white shadow-sm`}>
                 <Icon className="w-6 h-6 stroke-[2.5]" />

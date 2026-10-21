@@ -199,9 +199,9 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent fullWidth className="!h-[96dvh] p-0 overflow-hidden bg-background border border-border rounded-xl shadow-md flex flex-col transition-all duration-300 select-none">
+      <DialogContent fullWidth className="max-h-[90dvh] p-0 overflow-hidden bg-background border border-border rounded-2xl shadow-md flex flex-col transition-all duration-300 select-none">
         {/* 1. HEADER */}
-        <DialogHeader className="px-6 py-4 bg-gradient-to-r from-purple-700 via-indigo-700 to-indigo-800 dark:from-purple-900 dark:via-indigo-950 dark:to-slate-900 shadow-md border-none relative z-20 flex flex-row items-center justify-between gap-6 shrink-0">
+        <DialogHeader className="px-6 py-4 pr-14 sm:pr-16 bg-gradient-to-r from-purple-700 via-indigo-700 to-indigo-800 dark:from-purple-900 dark:via-indigo-950 dark:to-slate-900 shadow-md border-none relative z-20 flex flex-row items-center justify-between gap-6 shrink-0">
           <div className="relative z-10 flex items-center gap-4 min-w-0">
             <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center border border-white/20 shrink-0 shadow-sm backdrop-blur-sm">
               <IconDna className="h-5 w-5 text-white" />
@@ -210,7 +210,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
               <DialogTitle className="text-xl font-bold tracking-tight text-white flex items-center gap-3 fit-clamp drop-shadow-sm">
                 Gestión Reproductiva Masiva
                 <Badge className="bg-white/20 text-white font-bold text-[11px] px-2.5 py-0.5 rounded-[var(--radius-full)] border-white/10 shadow-sm">
-                  {selectedAnimalIds.length} Sujetos
+                  {selectedAnimalIds.length} Animales
                 </Badge>
               </DialogTitle>
               <DialogDescription className="text-white/80 text-[11px] font-medium uppercase tracking-wider mt-0.5 opacity-90 drop-shadow-sm">
@@ -317,7 +317,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
                         <IconFingerprint className="h-4 w-4 text-primary" />
                       </div>
                       <h4 className="font-bold text-[12px] uppercase tracking-wider text-muted-foreground/80">
-                        Sujetos Destinatarios
+                        Animales Destinatarios
                       </h4>
                     </div>
                     <Badge className="bg-muted text-muted-foreground border-none text-[11px] font-bold px-2 py-0.5">

@@ -43,8 +43,8 @@ function ConfirmDialogHeader({
   intentIcon,
 }: Pick<ConfirmDialogProps, 'title' | 'description'> & { intentIcon: ReactNode }) {
   return (
-    <DialogHeader className="space-y-0 border-b border-border/70 bg-card px-5 py-5 sm:px-6 sm:py-6">
-      <div className="flex items-start gap-4 pr-8">
+    <DialogHeader className="pr-9 sm:pr-10 text-left">
+      <div className="flex items-start gap-4">
         {intentIcon && (
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive ring-8 ring-destructive/[0.04]">
             {intentIcon}
@@ -79,7 +79,7 @@ function ConfirmDialogActions({
   onConfirm: () => void;
 }) {
   return (
-    <DialogFooter className="mt-5 gap-2 border-t border-border/70 px-5 py-4 sm:mt-6 sm:flex-row sm:px-6 sm:py-5">
+    <DialogFooter className="gap-2 sm:flex-row">
       <Button
         type="button"
         variant="outline"
@@ -131,14 +131,13 @@ export function ConfirmDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          'flex max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border-border/80 bg-card p-0 text-card-foreground',
-          'shadow-[0_24px_70px_hsl(223_47%_11%_/_0.25),0_8px_24px_hsl(223_47%_11%_/_0.12)]',
+          'p-6 max-h-[90dvh]',
           sizeClasses[size],
         )}
       >
         <ConfirmDialogHeader title={title} description={description} intentIcon={intentIcon} />
         {detailedMessage && (
-          <div className="mx-5 mt-5 max-h-[45dvh] overflow-y-auto overscroll-contain whitespace-pre-line break-words rounded-xl border border-border/70 bg-muted/35 px-4 py-3 text-sm leading-5 text-muted-foreground sm:mx-6">
+          <div className="max-h-[45dvh] overflow-y-auto overscroll-contain whitespace-pre-line break-words rounded-xl border border-border/70 bg-muted/35 px-4 py-3 text-sm leading-5 text-muted-foreground">
             {detailedMessage.replaceAll('**', '')}
           </div>
         )}

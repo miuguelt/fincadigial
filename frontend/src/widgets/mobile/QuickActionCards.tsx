@@ -210,7 +210,7 @@ export default function QuickActionCards() {
               {/* Modal Body */}
               <form onSubmit={handleSubmit} className="p-8 space-y-6">
                 <div className="space-y-2">
-                  <Label className="text-[11px] font-black uppercase tracking-[0.2em] ml-1">Sujeto / Animal</Label>
+                  <Label className="text-[11px] font-black uppercase tracking-[0.2em] ml-1">Animal</Label>
                   <div className="relative">
                     <select
                       id="animal_id"
