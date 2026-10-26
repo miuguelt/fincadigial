@@ -104,7 +104,7 @@ export function KPICard({
         )}
       >
         <div className="flex items-center justify-between gap-2 mb-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground line-clamp-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             {label}
           </span>
           {Icon && (
@@ -118,7 +118,7 @@ export function KPICard({
             {loading ? '…' : typeof value === 'number' ? value.toLocaleString('es-CO') : value}
           </p>
           {subtitle && (
-            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground mt-1 line-clamp-1">
+            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground mt-1">
               {subtitle}
             </p>
           )}

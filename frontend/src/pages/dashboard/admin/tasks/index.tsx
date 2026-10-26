@@ -264,7 +264,7 @@ const TasksPage: React.FC = () => {
         render: (val: string, item: Task) => (
           <div className="flex flex-col min-w-0 py-1">
             <span className="font-bold text-foreground fit-clamp">{val}</span>
-            <span className="text-xs text-muted-foreground line-clamp-1">
+            <span className="text-xs text-muted-foreground whitespace-normal break-words">
               {item.description || 'Sin notas de faena'}
             </span>
           </div>

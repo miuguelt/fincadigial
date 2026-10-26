@@ -221,7 +221,7 @@ export const AnimalMilkTab: React.FC<AnimalMilkTabProps> = ({
           <Milk className="h-6 w-6" />
         </div>
         <h3 className="text-base font-bold text-foreground">Registro Lechero No Aplicable</h3>
-        <p className="text-xs text-muted-foreground max-w-md mx-auto">
+        <p className="text-xs text-muted-foreground mx-auto">
           Este animal está registrado como Macho ({animal.record || `#${animal.id}`}). El módulo de
           producción lechera aplica para vacas y novillas en ordeño.
         </p>

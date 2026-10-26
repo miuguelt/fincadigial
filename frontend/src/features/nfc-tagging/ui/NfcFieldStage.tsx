@@ -72,7 +72,7 @@ export const NfcFieldStage: React.FC<NfcFieldStageProps> = ({ state, progress })
         </FitText>
       )}
 
-      <p className="mx-auto mt-4 max-w-md text-balance text-lg leading-7 text-white/85 sm:text-xl">
+      <p className="mx-auto mt-4 text-balance text-lg leading-7 text-white/85 sm:text-xl">
         {state.instruction}
       </p>
 

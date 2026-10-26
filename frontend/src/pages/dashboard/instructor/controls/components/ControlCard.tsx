@@ -97,7 +97,7 @@ export const ControlCard: React.FC<ControlCardProps> = ({
           {control.description && (
             <div className="space-y-1">
               <span className="text-sm font-medium">Descripción:</span>
-              <p className="text-sm text-muted-foreground line-clamp-2">{control.description}</p>
+              <p className="text-sm text-muted-foreground">{control.description}</p>
             </div>
           )}
 

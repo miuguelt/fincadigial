@@ -473,7 +473,7 @@ export const UserActivityTimeline: React.FC<UserActivityTimelineProps> = ({
 						<h3 className="text-base font-semibold text-foreground">
 							Sin actividad con estos filtros
 						</h3>
-						<p className="text-sm text-muted-foreground mt-1 max-w-md">
+						<p className="text-sm text-muted-foreground mt-1">
 							Ajusta los rangos de fechas, selecciona otra entidad o registra
 							una nueva acción.
 						</p>

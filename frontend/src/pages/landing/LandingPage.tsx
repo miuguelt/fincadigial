@@ -80,7 +80,7 @@ const LandingPage = () => {
           <div className="text-center mb-12">
             <p className="text-success-700 dark:text-success-300 font-semibold uppercase tracking-wide">Plataforma integral</p>
             <h2 className="text-3xl font-bold text-foreground mt-2">Todo lo que necesitas para administrar la finca</h2>
-            <p className="mt-4 text-muted-foreground max-w-3xl mx-auto">
+            <p className="mt-4 text-muted-foreground mx-auto">
               Construimos cada módulo a partir de las operaciones reales de Villa Luz. Estos son los beneficios que ya están funcionando en el campo.
             </p>
           </div>

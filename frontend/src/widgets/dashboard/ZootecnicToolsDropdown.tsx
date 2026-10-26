@@ -126,7 +126,7 @@ export const ZootecnicToolsDropdown: React.FC<ZootecnicToolsDropdownProps> = ({
                     )}
                   </div>
                   {tool.description && (
-                    <p className="text-[11px] text-muted-foreground line-clamp-2 leading-tight mt-0.5">
+                    <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">
                       {tool.description}
                     </p>
                   )}

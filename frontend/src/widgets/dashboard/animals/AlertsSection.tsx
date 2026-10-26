@@ -236,9 +236,9 @@ export function AlertsSection({ animalId, healthAlerts = [] }: AlertsSectionProp
                     {alert.priority}
                   </Badge>
                 </div>
-                <p className="text-foreground/90 mt-1 leading-relaxed line-clamp-3 text-[11px] font-medium">{alert.message}</p>
+                <p className="text-foreground/90 mt-1 leading-relaxed text-[11px] font-medium">{alert.message}</p>
                 {alert.recommendation && (
-                  <p className="text-muted-foreground italic mt-1 text-[11px] line-clamp-2 bg-background/40 p-1.5 rounded-md border border-border/40">
+                  <p className="text-muted-foreground italic mt-1 text-[11px] bg-background/40 p-1.5 rounded-md border border-border/40">
                     💡 {alert.recommendation}
                   </p>
                 )}

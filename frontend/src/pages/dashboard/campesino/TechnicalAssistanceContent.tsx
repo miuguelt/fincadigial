@@ -214,7 +214,7 @@ export function TechnicalAssistanceContent({
             <div className="flex flex-col items-center justify-center text-center p-8 sm:p-12 rounded-2xl border border-dashed border-border bg-card/50">
               <Filter className="w-8 h-8 text-muted-foreground mb-3" />
               <p className="font-bold text-sm text-foreground">No se encontraron solicitudes con los filtros aplicados</p>
-              <p className="text-xs text-muted-foreground mt-1 max-w-sm">Prueba cambiando la pestaña de estado o limpiando el texto de búsqueda.</p>
+              <p className="text-xs text-muted-foreground mt-1">Prueba cambiando la pestaña de estado o limpiando el texto de búsqueda.</p>
               <button
                 type="button"
                 onClick={() => { setActiveTab('all'); setSelectedCategory('all'); setSearch(''); }}

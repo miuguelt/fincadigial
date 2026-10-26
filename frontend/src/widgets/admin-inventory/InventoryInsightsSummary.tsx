@@ -46,7 +46,7 @@ export function InventorySummaryIntro({
 					Qué tienes y qué está cambiando
 				</h2>
 			</div>
-			<p className="max-w-xl text-xs text-muted-foreground sm:text-right">
+			<p className="text-xs text-muted-foreground sm:text-right">
 				{getSummaryMessage(summary)}
 			</p>
 		</div>

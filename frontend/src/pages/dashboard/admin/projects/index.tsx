@@ -130,7 +130,7 @@ export default function ProjectsPage() {
 			render: (val: string, item: ManagementPlan) => (
 				<div className="flex flex-col">
 					<span className="font-bold text-foreground">{val}</span>
-					<span className="text-xs text-muted-foreground line-clamp-1">
+					<span className="text-xs text-muted-foreground whitespace-normal break-words">
 						{item.description || "Sin descripción"}
 					</span>
 				</div>

@@ -87,7 +87,7 @@ const StatisticsCard = ({
               {value}
             </h3>
             {description && (
-              <p className="text-xs text-text-secondary opacity-80 leading-snug max-w-[150px]">
+              <p className="text-xs text-text-secondary opacity-80 leading-snug">
                 {description}
               </p>
             )}

@@ -85,7 +85,7 @@ export const RegulatoryReportsDashboard: React.FC<RegulatoryReportsDashboardProp
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto bg-background/60 p-3 rounded-xl border border-border/50">
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <Label htmlFor="date-from" className="text-xs sm:text-sm font-semibold whitespace-nowrap text-muted-foreground">
+              <Label htmlFor="date-from" className="text-xs sm:text-sm font-semibold text-muted-foreground">
                 Desde
               </Label>
               <Input
@@ -98,7 +98,7 @@ export const RegulatoryReportsDashboard: React.FC<RegulatoryReportsDashboardProp
             </div>
             <div className="hidden sm:block w-px h-8 bg-border"></div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <Label htmlFor="date-to" className="text-xs sm:text-sm font-semibold whitespace-nowrap text-muted-foreground">
+              <Label htmlFor="date-to" className="text-xs sm:text-sm font-semibold text-muted-foreground">
                 Hasta
               </Label>
               <Input

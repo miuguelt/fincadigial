@@ -270,7 +270,7 @@ export const FoodTypeDetailModal: React.FC<FoodTypeDetailModalProps> = ({
               <div className="p-8 text-center bg-muted/20 rounded-2xl border border-dashed border-border/60 space-y-2">
                 <MapPin className="w-8 h-8 text-muted-foreground mx-auto opacity-50" />
                 <h4 className="text-sm font-bold text-foreground">Sin potreros asociados</h4>
-                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                <p className="text-xs text-muted-foreground mx-auto">
                   Este forraje aún no está asignado a ningún potrero. Puedes vincularlo editando un potrero en el
                   módulo de Potreros.
                 </p>

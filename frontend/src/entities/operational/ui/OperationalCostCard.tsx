@@ -33,7 +33,7 @@ export function OperationalCostCard({ cost, onClick }: OperationalCostCardProps)
             </div>
           </div>
           {cost.notes && (
-            <p className="text-sm text-muted-foreground line-clamp-2">{cost.notes}</p>
+            <p className="text-sm text-muted-foreground">{cost.notes}</p>
           )}
         </div>
       </CardContent>

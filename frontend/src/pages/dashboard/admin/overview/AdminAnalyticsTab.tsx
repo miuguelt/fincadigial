@@ -86,7 +86,7 @@ export const AdminAnalyticsTab: React.FC<AdminAnalyticsTabProps> = ({ dashboardS
                 </div>
                 <div>
                   <h3 className="text-xl sm:text-2xl font-black mb-1 sm:mb-2 leading-tight tracking-tight">{card.title}</h3>
-                  <p className="text-xs sm:text-sm opacity-85 line-clamp-2 mb-3 sm:mb-4">{card.description}</p>
+                  <p className="text-xs sm:text-sm opacity-85 mb-3 sm:mb-4">{card.description}</p>
                   <div className="flex items-center gap-2 text-[11px] sm:text-xs font-bold uppercase tracking-widest">
                     <span>Explorar</span>
                     <div className="h-5 w-5 rounded-full bg-white/10 flex items-center justify-center transition-transform duration-300 group-hover:translate-x-1">

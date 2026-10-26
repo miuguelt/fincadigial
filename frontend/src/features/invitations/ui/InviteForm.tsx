@@ -208,7 +208,7 @@ export const InviteForm = ({ fincaId, onSuccess }: InviteFormProps) => {
                 {/* Visual fallback for QR data */}
                 <div className="w-40 h-40 flex flex-col items-center justify-center border-2 border-dashed border-muted rounded bg-muted/10 p-2 text-center">
                   <QrCode className="h-12 w-12 text-muted-foreground mb-2" />
-                  <span className="text-[11px] text-muted-foreground font-mono break-anywhere line-clamp-3">
+                  <span className="text-[11px] text-muted-foreground font-mono break-anywhere whitespace-normal break-words" data-text-layout-exception="URL de invitación; texto completo visible y disponible para copiar">
                     {createdInvitation.url}
                   </span>
                 </div>

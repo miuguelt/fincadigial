@@ -118,7 +118,7 @@ export function CorralRapidoModal({
         {/* Potrero / Lote filter */}
         {fields.length > 0 && (
           <div className="flex items-center gap-2">
-            <label className="text-xs font-bold text-muted-foreground whitespace-nowrap">Potrero / Lote:</label>
+            <label className="text-xs font-bold text-muted-foreground">Potrero / Lote:</label>
             <select
               value={selectedFieldId}
               onChange={(e) => {

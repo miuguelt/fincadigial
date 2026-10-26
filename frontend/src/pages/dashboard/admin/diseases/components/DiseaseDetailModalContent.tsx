@@ -243,7 +243,7 @@ export function DiseaseDetailModalContent({ disease }: DiseaseDetailModalContent
                   ID #{diseaseId}
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground mt-1 line-clamp-2 max-w-xl">
+              <p className="text-xs text-muted-foreground mt-1">
                 <span className="font-semibold text-foreground/80">Síntomas clave: </span>
                 {diseaseSymptoms}
               </p>
@@ -682,7 +682,7 @@ export function DiseaseDetailModalContent({ disease }: DiseaseDetailModalContent
                               label={(rec as any)?.animal?.record || `Res #${rec.animal_id}`}
                             />
                           </td>
-                          <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                          <td className="px-4 py-3 text-muted-foreground">
                             {rec.diagnosis_date
                               ? new Date(rec.diagnosis_date).toLocaleDateString('es-CO', {
                                   day: '2-digit',

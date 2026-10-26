@@ -117,7 +117,7 @@ export const TaskTemplatesModal: React.FC<TaskTemplatesModalProps> = ({
                       {template.priority}
                     </Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
                     {template.description}
                   </p>
                 </div>

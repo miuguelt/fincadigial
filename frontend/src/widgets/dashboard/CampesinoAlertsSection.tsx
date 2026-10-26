@@ -150,7 +150,7 @@ export function CampesinoAlertsSection() {
 										{alert.message}
 									</p>
 									{alert.recommendation && (
-										<p className="text-xs text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
+										<p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
 											{alert.recommendation}
 										</p>
 									)}

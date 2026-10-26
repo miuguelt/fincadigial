@@ -94,7 +94,7 @@ export function PendingAlertsStack({ maxAlerts = 5 }: { maxAlerts?: number }) {
 							</div>
 							<p
 								className={cn(
-									"text-xs font-semibold leading-snug line-clamp-2",
+									"text-xs font-semibold leading-snug whitespace-normal break-words",
 									style.text,
 								)}
 							>

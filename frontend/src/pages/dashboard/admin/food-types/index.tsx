@@ -270,7 +270,7 @@ export const AdminFoodTypesPage: React.FC = () => {
         render: (v, item) => {
           const text = v || item.description || '-';
           return (
-            <span className="text-xs text-muted-foreground line-clamp-1 max-w-[260px]" title={String(text)}>
+            <span className="text-xs text-muted-foreground whitespace-normal break-words" title={String(text)}>
               {text}
             </span>
           );

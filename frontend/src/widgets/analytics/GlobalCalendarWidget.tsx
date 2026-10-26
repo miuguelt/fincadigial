@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
 import { useCallback } from 'react';
 import { Button } from '@/shared/ui/button';
@@ -165,7 +165,7 @@ export default function GlobalCalendarWidget() {
                               </Badge>
                             </div>
                             {event.description && (
-                              <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                              <p className="text-xs text-muted-foreground leading-relaxed">
                                 {event.description}
                               </p>
                             )}

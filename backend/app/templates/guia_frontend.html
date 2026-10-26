@@ -35,7 +35,7 @@
     .btn.primary { background: linear-gradient(180deg, var(--primary), var(--primary-600)); border-color: transparent; box-shadow: 0 10px 22px rgba(59,130,246,0.25); }
     .btn[aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
     .btn .emoji { font-size: 16px; }
-    .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    .container { max-width:100%; margin: 0 auto; padding: 24px; }
     .hero { margin: 16px 0 20px; padding: 18px 18px; background: linear-gradient(180deg, rgba(63,81,181,0.18), rgba(63,81,181,0.06)); border: 1px solid var(--border); border-radius: 14px; }
     .hero h1 { margin: 0 0 6px; font-size: 28px; }
     .hero p { margin: 0; color: var(--muted); }
@@ -68,11 +68,32 @@
     .content-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
     @media (min-width: 1024px) { .content-grid { grid-template-columns: 1fr 300px; } }
     mark { background: #f59e0b44; color: inherit; padding: 0 2px; border-radius: 3px; }
-  </style>
+
+/* devbrain-prose-contract:start */
+/* Contrato 7.4: cada región ocupa su espacio y conserva sus controles. */
+:where(p, dd, blockquote) {
+    --text-align-reading: start;
+    box-sizing: border-box;
+    inline-size: 100%;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+    text-align: var(--text-align-reading);
+    text-align-last: start;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
+    -webkit-hyphens: none;
+}
+:where(dd, blockquote) { margin-inline: 0; }
+/* devbrain-prose-contract:end */
+</style>
   <!-- Markdown-it + highlight.js (client-side) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" integrity="sha512-rO+olRTkcf304DQBxSWxln8JXCzTHlKnIdnMUwYvQa9/Jd4cQaNkItIUj6Z4nvW1dqK0SKXLbn9h4KwZTNtAyw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/13.0.1/markdown-it.min.js" integrity="sha512-SYfDUYPg5xspsG6OOpXU366G8SZsdHOhqk/icdrYJ2E/WKZxPxze7d2HD3AyXpT7U22PZ5y74xRpqZ6A2bJ+kQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/devbrain-prose.css') }}" data-devbrain-prose>
+<script defer src="{{ url_for('static', filename='css/devbrain-prose.js') }}" data-devbrain-prose-runtime></script>
 </head>
 <body>
   <div class="navbar">

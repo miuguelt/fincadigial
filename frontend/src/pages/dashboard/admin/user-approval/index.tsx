@@ -161,7 +161,7 @@ const UserApprovalPage = () => {
                 {requireVerification ? "Activada" : "Desactivada (Inicio Rápido)"}
               </Badge>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
               {requireVerification
                 ? "Los nuevos usuarios registrados quedarán en estado 'Pendiente' hasta que un administrador los apruebe."
                 : "Todo usuario que se registre queda activo de inmediato y tiene acceso a todas las funcionalidades."}

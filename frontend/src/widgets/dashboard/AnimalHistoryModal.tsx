@@ -1361,7 +1361,7 @@ export const AnimalHistoryModal = ({
                           </div>
                           <div>
                             <p className="font-semibold text-foreground mb-1">Sin movimientos de campo</p>
-                            <p className="text-sm text-muted-foreground max-w-xs">
+                            <p className="text-sm text-muted-foreground">
                               Este animal no ha sido asignado a ningún potrero. Usa el menú de acciones para asignarlo.
                             </p>
                           </div>

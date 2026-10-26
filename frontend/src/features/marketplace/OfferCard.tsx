@@ -26,7 +26,7 @@ export function OfferCard({ offer, onOpen }: { offer: MarketOffer; onOpen: (offe
             )}
           </div>
         </div>
-        <h2 className="text-base sm:text-lg font-bold text-foreground mb-1 line-clamp-1">{offer.product_name}</h2>
+        <h2 className="text-base sm:text-lg font-bold text-foreground mb-1">{offer.product_name}</h2>
         <p className="text-xs text-muted-foreground mb-2">{offer.quantity?.toLocaleString('es-CO')} {offer.unit}</p>
         <p className="text-xl font-black text-foreground mb-3">
           {offerPrice(offer)}

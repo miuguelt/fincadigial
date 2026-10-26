@@ -247,7 +247,7 @@ export function MarketplaceView({
               ? 'Dale un lugar a lo que produce tu finca'
               : 'El mercado está listo para la comunidad'}
           </h3>
-          <p className="text-xs sm:text-sm text-muted-foreground max-w-md mb-4 leading-relaxed">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-4 leading-relaxed">
             {space === 'conversations'
               ? 'Abre una publicación y escríbele a la persona. Aquí encontrarás los mensajes, propuestas y resultados.'
               : filtered
@@ -270,7 +270,7 @@ export function MarketplaceView({
                   <Badge variant="outline">{statusLabels[thread.status]}</Badge>
                   {thread.needs_reply && <Badge variant="destructive">Por responder</Badge>}
                 </div>
-                <h3 className="text-base font-bold text-foreground line-clamp-1">{thread.offer.product_name}</h3>
+                <h3 className="text-base font-bold text-foreground">{thread.offer.product_name}</h3>
                 <p className="text-xs text-muted-foreground">Con {thread.partner_name}</p>
                 <p className="text-[11px] text-muted-foreground mt-2">Última actividad: {marketDate(thread.updated_at, true)}</p>
               </div>

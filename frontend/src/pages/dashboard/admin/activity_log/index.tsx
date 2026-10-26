@@ -73,9 +73,9 @@ case 'error': return <Badge variant="destructive" className="flex gap-1"><IconAl
       label: 'Descripción',
       render: (val: string, item: ActivityLog) => (
         <div className="flex flex-col max-w-[150px] sm:max-w-[300px]">
-          <span className="text-[11px] sm:text-xs font-medium line-clamp-1">{val || item.description || '-'}</span>
+          <span className="text-[11px] sm:text-xs font-medium whitespace-normal break-words">{val || item.description || '-'}</span>
           {item.description && val !== item.description && (
-            <span className="text-[11px] sm:text-[11px] text-muted-foreground line-clamp-1 italic">{item.description}</span>
+            <span className="text-[11px] sm:text-[11px] text-muted-foreground whitespace-normal break-words italic">{item.description}</span>
           )}
         </div>
       )

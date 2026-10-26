@@ -122,7 +122,7 @@ export const AssistanceCard = React.memo<AssistanceCardProps>(({ item, onDetail,
       {/* Cuerpo de la tarjeta: Extracto de descripción y metadatos */}
       <div className="px-3.5 sm:px-4 py-2 flex-1 min-w-0 space-y-2 text-fluid-xs">
         {item.description ? (
-          <p className="text-muted-foreground/90 line-clamp-2 leading-relaxed text-fluid-xs">
+          <p className="text-muted-foreground/90 leading-relaxed text-fluid-xs">
             {item.description}
           </p>
         ) : (
@@ -162,7 +162,7 @@ export const AssistanceCard = React.memo<AssistanceCardProps>(({ item, onDetail,
               <MessageCircle className="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
               <span>Diagnóstico veterinario:</span>
             </div>
-            <p className="text-emerald-950/90 dark:text-emerald-100/90 line-clamp-2 italic text-fluid-xs leading-relaxed">
+            <p className="text-emerald-950/90 dark:text-emerald-100/90 italic text-fluid-xs leading-relaxed">
               &ldquo;{item.resolution_notes}&rdquo;
             </p>
           </div>

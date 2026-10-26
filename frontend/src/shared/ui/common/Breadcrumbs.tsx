@@ -174,7 +174,7 @@ export const Breadcrumbs: React.FC = () => {
               <React.Fragment key={value}>
                 <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40" />
                 <li className={cn(
-                  "fit-clamp max-w-[100px] sm:max-w-[150px]",
+                  "min-w-0 whitespace-normal break-words",
                   last ? "font-bold text-foreground" : "text-muted-foreground hover:text-primary transition-colors"
                 )}>
                   {last ? (

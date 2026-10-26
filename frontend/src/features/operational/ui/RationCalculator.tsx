@@ -311,7 +311,7 @@ export const RationCalculator: React.FC = () => {
                   </div>{" "}
                   <div>
                     {" "}
-                    <p className="text-[11px] font-black uppercase text-foreground line-clamp-1">
+                    <p className="text-[11px] font-black uppercase text-foreground">
                       {lot.product_name || "Insumo"}
                     </p>{" "}
                     <p className="text-[11px] font-bold text-muted-foreground">

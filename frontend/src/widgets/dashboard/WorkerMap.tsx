@@ -129,7 +129,7 @@ export const WorkerMap: React.FC = () => {
                   className="overflow-visible pointer-events-none"
                 >
                   <div className="bg-card/90 backdrop-blur-sm border border-border/50 rounded-lg p-1.5 shadow-xl">
-                    <p className="text-[11px] font-bold text-foreground leading-none whitespace-nowrap">
+                    <p className="text-[11px] font-bold text-foreground leading-none">
                       Usuario #{worker.user_id}
                     </p>
                     <p className="text-[11px] text-muted-foreground mt-0.5">

@@ -82,7 +82,7 @@ export const SearchTooShortState = () => (
       <Search className="h-5 w-5" />
     </span>
     <p className="text-sm font-semibold text-foreground">Escribe al menos 2 caracteres</p>
-    <p className="mx-auto mt-1 max-w-[300px] text-xs text-muted-foreground">
+    <p className="mx-auto mt-1 text-xs text-muted-foreground">
       Usa el número de arete, el nombre del potrero o una palabra del registro que buscas
     </p>
   </div>
@@ -96,7 +96,7 @@ export const SearchEmptyState = ({ query }: { query: string }) => (
     <p className="text-sm font-semibold text-foreground">
       Todavía no hay resultados para <span className="font-bold text-primary">«{query}»</span>
     </p>
-    <p className="mx-auto mt-1 max-w-[300px] text-xs text-muted-foreground">
+    <p className="mx-auto mt-1 text-xs text-muted-foreground">
       Prueba con el número de arete, el nombre del potrero, un medicamento, una vacuna o una tarea
     </p>
   </div>

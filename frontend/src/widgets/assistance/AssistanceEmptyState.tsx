@@ -14,7 +14,7 @@ export function AssistanceEmptyState({ onCreate }: AssistanceEmptyStateProps) {
           </div>
         </div>
         <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">¿Tienes un problema en tu finca?</h3>
-        <p className="text-sm text-muted-foreground max-w-prose mx-auto mb-6">
+        <p className="text-sm text-muted-foreground mx-auto mb-6">
           Puedes pedir ayuda a la red veterinaria de tu finca. Recibirás la respuesta dentro de Villa Luz.
         </p>
         <button

@@ -96,7 +96,7 @@ export function MilkTrendChart({
           <div className="h-64 flex flex-col items-center justify-center text-center">
             <BarChart3 className="h-12 w-12 text-gray-300 mb-3" />
             <p className="text-sm font-semibold text-gray-500 mb-1">Sin datos de producción</p>
-            <p className="text-xs text-gray-400 max-w-xs">
+            <p className="text-xs text-gray-400">
               El gráfico aparecerá cuando registres los primeros ordeños.
             </p>
           </div>

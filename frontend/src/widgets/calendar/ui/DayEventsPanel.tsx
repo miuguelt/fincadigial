@@ -50,7 +50,7 @@ export function DayEventsPanel({
 				<div className="flex-1 flex flex-col items-center justify-center text-muted-foreground gap-2 py-10">
 					<CalendarDays className="h-9 w-9 opacity-30" />
 					<p className="text-sm font-medium">Sin eventos este día</p>
-					<p className="text-xs text-center max-w-[220px]">
+					<p className="text-xs text-center">
 						Toque otro día con puntos de color para ver su agenda
 					</p>
 				</div>

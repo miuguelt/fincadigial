@@ -116,13 +116,13 @@ export const FoodTypeCard: React.FC<FoodTypeCardProps> = ({
         {/* Title */}
         <div>
           <h3
-            className="text-base sm:text-lg font-black text-foreground tracking-tight line-clamp-1 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors cursor-pointer"
+            className="text-base sm:text-lg font-black text-foreground tracking-tight group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors cursor-pointer"
             onClick={() => onOpenDetail?.(item)}
             title={name}
           >
             {name}
           </h3>
-          <p className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
+          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
             {description || 'Sin recomendaciones o manejo registrado.'}
           </p>
         </div>
@@ -150,7 +150,7 @@ export const FoodTypeCard: React.FC<FoodTypeCardProps> = ({
 
         {/* Gauges / Aforo snippet if exists */}
         {gauges && (
-          <div className="text-[11px] bg-secondary/40 rounded-xl p-2 text-muted-foreground border border-border/30 line-clamp-1">
+          <div className="text-[11px] bg-secondary/40 rounded-xl p-2 text-muted-foreground border border-border/30">
             <span className="font-bold text-foreground">Aforo / Calibre: </span>
             {gauges}
           </div>

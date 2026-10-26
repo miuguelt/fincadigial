@@ -226,7 +226,7 @@ export default function ReproductionCalendar() {
                               {event.title}
                             </p>
                             {event.extendedProps.notes && (
-                              <p className="text-[11px] text-muted-foreground/80 italic line-clamp-1">
+                              <p className="text-[11px] text-muted-foreground/80 italic">
                                 {event.extendedProps.notes}
                               </p>
                             )}

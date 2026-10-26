@@ -287,7 +287,7 @@ const UserDetail = () => {
                  <div className="flex flex-col items-center justify-center py-16 bg-muted/10 rounded-xl border border-dashed border-border/60">
                     <Building2 className="w-12 h-12 text-muted-foreground/30 mb-4" />
                     <h4 className="text-lg font-medium text-foreground mb-2">Sin Fincas Asignadas</h4>
-                    <p className="text-muted-foreground text-center max-w-sm mb-6">Este usuario actualmente no está vinculado a ninguna finca. Vincula al usuario para que pueda acceder al sistema.</p>
+                    <p className="text-muted-foreground text-center mb-6">Este usuario actualmente no está vinculado a ninguna finca. Vincula al usuario para que pueda acceder al sistema.</p>
                     <Button variant="outline" className="border-success/30 text-success hover:bg-success/5">
                       Vincular Ahora
                     </Button>

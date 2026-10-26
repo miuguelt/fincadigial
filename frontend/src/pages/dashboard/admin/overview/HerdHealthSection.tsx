@@ -184,7 +184,7 @@ export function HerdHealthSection({ cards, ventanaDias, trend, onOpenAnalytics, 
               <p className="text-sm font-semibold text-foreground">
                 Aún no hay controles suficientes para mostrar una tendencia.
               </p>
-              <p className="max-w-md text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Registra controles para comenzar a comparar la salud del ganado por semana.
               </p>
               <Button type="button" variant="outline" size="sm" onClick={onRegisterControls ?? onOpenAnalytics} className="mt-1 h-9">

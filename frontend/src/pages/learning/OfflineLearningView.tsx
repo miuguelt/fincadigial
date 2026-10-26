@@ -369,7 +369,7 @@ export default function OfflineLearningView() {
                 </CardHeader>
 
                 <CardContent className="flex-1 space-y-3 p-4 pt-1">
-                  <p className="line-clamp-3 text-xs sm:text-sm leading-relaxed text-muted-foreground">
+                  <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground">
                     {guide.summary}
                   </p>
 
@@ -447,7 +447,7 @@ export default function OfflineLearningView() {
                         <Badge variant="secondary" className="bg-emerald-100 text-xs font-semibold text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
                           {material.category || 'General'}
                         </Badge>
-                        <CardTitle className="mt-1.5 line-clamp-2 text-base font-bold leading-snug">
+                        <CardTitle className="mt-1.5 text-base font-bold leading-snug">
                           {material.title}
                         </CardTitle>
                       </div>
@@ -457,7 +457,7 @@ export default function OfflineLearningView() {
                     </CardHeader>
 
                     <CardContent className="flex-1 space-y-2.5 p-4 pt-1">
-                      <p className="line-clamp-3 text-xs sm:text-sm leading-relaxed text-muted-foreground">
+                      <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground">
                         {material.summary || 'Publicación técnica para consulta en la finca.'}
                       </p>
                       <div className="flex flex-wrap gap-2 text-xs font-medium text-muted-foreground">

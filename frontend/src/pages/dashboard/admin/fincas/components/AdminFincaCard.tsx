@@ -126,7 +126,7 @@ export const AdminFincaCard: React.FC<AdminFincaCardProps> = ({
                 title={finca.name}
                 aria-label={`Abrir ficha de ${finca.name}`}
               >
-                <span className="line-clamp-2">{finca.name}</span>
+                <span className="whitespace-normal break-words">{finca.name}</span>
               </button>
             </div>
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-primary/15 bg-primary/10 text-primary shadow-sm" aria-hidden="true">

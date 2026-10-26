@@ -43,7 +43,7 @@ export function ErrorState({
         {title}
       </h3>
 
-      <p className="text-xs sm:text-sm text-muted-foreground max-w-md mb-5 leading-relaxed">
+      <p className="text-xs sm:text-sm text-muted-foreground mb-5 leading-relaxed">
         {message}
       </p>
 

@@ -99,7 +99,7 @@ const AdminDashboardOverview: React.FC = () => {
                 </span>
               )}
             </div>
-            <p className="text-muted-foreground text-sm sm:text-base max-w-xl leading-relaxed">
+            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
               Gestión integral de Villa Luz. Monitoreo sanitario en tiempo real, alertas del ganado y coordinación operativa.
             </p>
           </div>

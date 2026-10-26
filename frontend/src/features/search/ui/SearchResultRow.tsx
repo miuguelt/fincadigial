@@ -68,7 +68,7 @@ export function SearchResultRow({ result, query, index, isSelected, onSelect }: 
           <HighlightMatch
             text={description}
             query={query}
-            className="mt-0.5 line-clamp-1 block text-xs text-muted-foreground"
+            className="mt-0.5 whitespace-normal break-words block text-xs text-muted-foreground"
           />
         )}
 

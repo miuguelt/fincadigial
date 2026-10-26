@@ -56,7 +56,7 @@ export function EmptyState({
         {title}
       </h3>
 
-      <p className="text-sm sm:text-base text-muted-foreground max-w-sm mb-8 leading-relaxed">
+      <p className="text-sm sm:text-base text-muted-foreground mb-8 leading-relaxed">
         {description}
       </p>
 

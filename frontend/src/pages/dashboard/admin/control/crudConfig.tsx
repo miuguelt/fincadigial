@@ -133,7 +133,7 @@ function renderControlCard(animalOptions: { value: number; label: string }[]) {
 
           {desc && (
             <div className="rounded-lg border border-border/60 bg-background/80 p-2.5 text-xs text-foreground/90">
-              <p className="line-clamp-2 leading-relaxed text-muted-foreground">
+              <p className="leading-relaxed text-muted-foreground">
                 <span className="font-semibold text-foreground">Nota: </span>
                 {desc}
               </p>

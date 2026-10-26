@@ -308,7 +308,7 @@ export default function FertilityDashboard({
       <Card className="rounded-2xl"><CardContent className="flex flex-col items-center gap-3 p-8 text-center">
         <Activity className="h-10 w-10 text-muted-foreground" />
         <h2 className="text-base font-bold">{failed ? 'No se pudo cargar la fertilidad' : 'Todavía no hay datos de fertilidad'}</h2>
-        <p className="max-w-md text-sm text-muted-foreground">Registra celos, servicios, diagnósticos y partos para que el sistema pueda orientar las decisiones de la finca.</p>
+        <p className="text-sm text-muted-foreground">Registra celos, servicios, diagnósticos y partos para que el sistema pueda orientar las decisiones de la finca.</p>
         <Button onClick={() => void loadDashboard()} className="gap-2"><RefreshCw className="h-4 w-4" /> Reintentar</Button>
       </CardContent></Card>
     );
@@ -343,7 +343,7 @@ export default function FertilityDashboard({
 
       <section className="grid grid-cols-1 gap-3 lg:grid-cols-[1.1fr_0.9fr]">
         <Card className="rounded-2xl border-emerald-500/25 bg-gradient-to-br from-emerald-500/[0.10] via-card to-card"><CardContent className="p-4 sm:p-5">
-          <div className="flex items-start justify-between gap-3"><div><p className="text-[11px] font-black uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-400">Lectura rápida</p><h2 className="mt-1 text-lg font-black">{attentionCount > 0 ? `${attentionCount} seguimientos para priorizar` : 'El ganado no tiene alertas prioritarias'}</h2><p className="mt-1 max-w-xl text-xs leading-relaxed text-muted-foreground">{attentionCount > 0 ? 'Abre la ficha de cada animal para revisar reproducción, sanidad, condición y próximos pasos.' : 'Continúa registrando cada celo, servicio y diagnóstico para sostener la trazabilidad.'}</p></div><div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-600 sm:flex"><ClipboardCheck className="h-5 w-5" /></div></div>
+          <div className="flex items-start justify-between gap-3"><div><p className="text-[11px] font-black uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-400">Lectura rápida</p><h2 className="mt-1 text-lg font-black">{attentionCount > 0 ? `${attentionCount} seguimientos para priorizar` : 'El ganado no tiene alertas prioritarias'}</h2><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{attentionCount > 0 ? 'Abre la ficha de cada animal para revisar reproducción, sanidad, condición y próximos pasos.' : 'Continúa registrando cada celo, servicio y diagnóstico para sostener la trazabilidad.'}</p></div><div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-600 sm:flex"><ClipboardCheck className="h-5 w-5" /></div></div>
           <div className="mt-4 flex flex-wrap gap-2"><Button size="sm" onClick={() => goTo('/admin/reproduction?tab=eventos')} className="h-9 gap-2 rounded-lg bg-emerald-600 font-bold text-white hover:bg-emerald-700"><Plus className="h-4 w-4" /> Registrar evento</Button><Button variant="outline" size="sm" onClick={() => goTo('/admin/reproduction?tab=indicadores')} className="h-9 gap-2 rounded-lg font-semibold">Ver listas completas <ChevronRight className="h-4 w-4" /></Button></div>
         </CardContent></Card>
 

@@ -175,7 +175,7 @@ const WaterSourcesPage: React.FC = () => {
                           )}
                         </div>
                       )}
-                      {s.notes && <p className="text-xs opacity-70 mt-2 line-clamp-1">{s.notes}</p>}
+                      {s.notes && <p className="text-xs opacity-70 mt-2">{s.notes}</p>}
                     </div>
                     </div>
                     <button

@@ -168,7 +168,7 @@ export default function AnimalScannerPage() {
               <Badge variant={stateVariant} size="sm" aria-live="polite">{stateLabel[scanState]}</Badge>
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Escáner de animales</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+            <p className="mt-2 text-sm leading-6 text-muted-foreground sm:text-base">
               Identifica un animal en segundos con su código de arete. Puedes usar la cámara o buscar el registro manualmente.
             </p>
           </div>

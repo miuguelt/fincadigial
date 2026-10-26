@@ -281,7 +281,7 @@ export const BatchReproductionModal: React.FC<BatchReproductionModalProps> = ({
                           >
                             {item.label}
                           </p>
-                          <p className="text-[11px] font-medium text-muted-foreground/75 mt-1 leading-relaxed line-clamp-2">
+                          <p className="text-[11px] font-medium text-muted-foreground/75 mt-1 leading-relaxed">
                             {item.desc}
                           </p>
                         </div>

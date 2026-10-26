@@ -138,7 +138,7 @@ export const EmergencyKit: React.FC = () => {
                       <h3 className="text-sm font-black text-foreground uppercase fit-clamp">
                         {disease.name}
                       </h3>{" "}
-                      <p className="text-[11px] font-medium text-muted-foreground line-clamp-1 italic">
+                      <p className="text-[11px] font-medium text-muted-foreground italic">
                         {disease.symptoms || "Sin descripción de síntomas"}
                       </p>{" "}
                     </div>{" "}

@@ -154,7 +154,7 @@ export function ClimateAlertList({
                     <p className="text-sm font-semibold text-muted-foreground">
                       No hay alertas locales registradas para este filtro
                     </p>
-                    <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                    <p className="text-xs text-muted-foreground mx-auto">
                       Puedes reportar heladas, daños por granizo, plagas o crecientes observadas en tus potreros.
                     </p>
                     <Button onClick={openNew} size="sm" className="bg-orange-600 hover:bg-orange-700 text-white rounded-xl mt-2">

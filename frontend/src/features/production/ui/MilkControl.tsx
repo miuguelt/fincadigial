@@ -119,7 +119,7 @@ const MilkControl: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4 w-full max-w-sm">
+                  <div className="grid grid-cols-3 gap-4 w-full max-w-sm" data-text-layout-exception="teclado numérico de captura; conserva controles compactos con sus valores completos">
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, ".", 0].map((n) => (
                       <Button
                         key={n}
@@ -150,7 +150,7 @@ const MilkControl: React.FC = () => {
                 <h3 className="text-2xl font-black text-muted-foreground">
                   Seleccione una vaca
                 </h3>
-                <p className="font-bold max-w-xs mt-2 opacity-60">
+                <p className="font-bold mt-2 opacity-60">
                   Toque una vaca de la lista de la izquierda para ingresar su
                   pesaje de hoy.
                 </p>

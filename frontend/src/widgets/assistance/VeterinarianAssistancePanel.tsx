@@ -100,7 +100,7 @@ function InboxContent({ state, veterinarianId, filter }: { state: InboxState; ve
         <CheckCircle2 className="h-7 w-7" aria-hidden />
       </span>
       <h3 className="text-sm font-black text-foreground">{filter === 'mine' ? 'No tienes casos asignados' : filter === 'waiting' ? 'No hay casos esperando' : 'Bandeja al día'}</h3>
-      <p className="mt-1 max-w-md text-xs leading-relaxed text-muted-foreground">Las nuevas solicitudes aparecerán aquí y se avisarán de forma agrupada.</p>
+      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Las nuevas solicitudes aparecerán aquí y se avisarán de forma agrupada.</p>
     </div>
   );
   return <>

@@ -175,7 +175,8 @@ frontend/certificates/
 .qoder/
 .entire/
 .srclight/
-.devbrain/
+.devbrain/*
+!.devbrain/invariants.json
 .playwright-mcp/
 .agents/
 

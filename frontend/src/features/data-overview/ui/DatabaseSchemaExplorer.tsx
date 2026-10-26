@@ -58,7 +58,7 @@ export function DatabaseSchemaExplorer({ counts = {} }: DatabaseSchemaExplorerPr
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Database className="h-5 w-5" aria-hidden="true" /></span>
             <div className="min-w-0">
               <CardTitle className="text-xl">Mapa de tablas y relaciones</CardTitle>
-              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">Metadatos del esquema real del servidor: campos, relaciones, filtros disponibles y acceso a cada vista.</p>
+              <p className="mt-1 text-sm text-muted-foreground">Metadatos del esquema real del servidor: campos, relaciones, filtros disponibles y acceso a cada vista.</p>
             </div>
           </div>
           <Button variant="outline" size="sm" onClick={() => void schemaQuery.refetch()} loading={schemaQuery.isFetching} className="min-h-[42px] self-start"><RefreshCw className="h-4 w-4" /> Actualizar esquema</Button>

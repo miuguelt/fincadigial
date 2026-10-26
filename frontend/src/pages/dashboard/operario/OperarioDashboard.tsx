@@ -113,7 +113,7 @@ export default function OperarioDashboard() {
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             Panel de Operario
           </h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
+          <p className="mt-2 text-sm leading-6 text-muted-foreground sm:text-base">
             Hola, {user?.fullname}. Consulta el estado de{' '}
             <span className="font-semibold text-foreground">
               {user?.finca_name || 'tu finca asignada'}

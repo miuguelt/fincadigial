@@ -40,7 +40,7 @@ export function TreatmentCard({ treatment, onClick }: TreatmentCardProps) {
             <strong>Dosis:</strong> {treatment.dosis} | <strong>Frecuencia:</strong> {treatment.frequency}
           </div>
           {treatment.observations && (
-            <p className="line-clamp-2">{treatment.observations}</p>
+            <p className="">{treatment.observations}</p>
           )}
           {treatment.performed_by && (
             <div className="flex items-center gap-1 text-xs">

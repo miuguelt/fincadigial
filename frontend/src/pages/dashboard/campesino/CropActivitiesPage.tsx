@@ -245,7 +245,7 @@ const CropActivitiesPage: React.FC = () => {
                 {/* Separador de fecha */}
                 <div className="flex items-center gap-3 mb-3">
                   <div className="h-px flex-1 bg-border" />
-                  <span className="text-xs font-bold text-muted-foreground capitalize whitespace-nowrap">
+                  <span className="text-xs font-bold text-muted-foreground capitalize">
                     {formatGroupDate(dateKey)}
                   </span>
                   <div className="h-px flex-1 bg-border" />
@@ -285,7 +285,7 @@ const CropActivitiesPage: React.FC = () => {
                                   )}
                                 </div>
                                 {activity.description && (
-                                  <p className="text-xs mt-1 opacity-80 line-clamp-2">{activity.description}</p>
+                                  <p className="text-xs mt-1 opacity-80">{activity.description}</p>
                                 )}
                                 {(inputName || cost) && (
                                   <div className="flex gap-3 mt-1.5 text-[11px] font-medium opacity-75">

@@ -200,7 +200,7 @@ export const CalendarioSanitarioWidget: React.FC<Props> = ({
                   </span>
                 )}{" "}
               </div>{" "}
-              <p className="text-[11px] text-muted-foreground font-medium leading-relaxed mb-3 line-clamp-2">
+              <p className="text-[11px] text-muted-foreground font-medium leading-relaxed mb-3">
                 {" "}
                 {normalizeColombianLivestockText(ev.descripcion)}{" "}
               </p>{" "}

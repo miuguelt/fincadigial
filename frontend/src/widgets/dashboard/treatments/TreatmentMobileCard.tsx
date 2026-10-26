@@ -171,7 +171,7 @@ export const TreatmentMobileCard: React.FC<TreatmentMobileCardProps> = ({
 					type="button"
 					onClick={handleSelectClick}
 					className="absolute top-3 left-3 z-10 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors
-						hover:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
+ hover:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
 					style={{
 						borderColor: isSelected ? "rgb(168, 85, 247)" : undefined,
 						backgroundColor: isSelected ? "rgb(168, 85, 247)" : undefined,
@@ -207,7 +207,7 @@ export const TreatmentMobileCard: React.FC<TreatmentMobileCardProps> = ({
 				{/* Row 2: Diagnosis */}
 				<div className="flex items-start gap-2 mb-2">
 					<span className="text-base mt-0.5" role="img" aria-label="diagnosis">🩺</span>
-					<p className="text-sm font-bold text-foreground line-clamp-2 leading-snug">
+					<p className="text-sm font-bold text-foreground leading-snug">
 						{diagnosis}
 					</p>
 				</div>

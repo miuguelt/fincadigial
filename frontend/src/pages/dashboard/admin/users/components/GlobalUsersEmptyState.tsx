@@ -13,7 +13,7 @@ export const GlobalUsersEmptyState = ({ hasActiveFilters, onResetFilters }: Glob
     <div className="flex flex-col items-center justify-center text-muted-foreground space-y-3">
       <Users className="h-16 w-16 opacity-20" />
       <h3 className="text-lg font-bold text-foreground">No se encontraron usuarios</h3>
-      <p className="text-sm max-w-md">
+      <p className="text-sm">
         No hay registros que coincidan con los filtros seleccionados o el término de búsqueda.
       </p>
       {hasActiveFilters && (

@@ -70,7 +70,7 @@ export function GanaderiaTodayPanel({
           <h2 id="ganaderia-today-title" className="text-xl font-black text-slate-900 dark:text-slate-50">
             ¿Qué necesita atención hoy?
           </h2>
-          <p className="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Registra lo que haces en el potrero y deja la bitácora lista para la siguiente persona.
           </p>
         </div>

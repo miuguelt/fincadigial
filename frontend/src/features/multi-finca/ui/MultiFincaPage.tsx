@@ -178,7 +178,7 @@ export const MultiFincaPage: React.FC = () => {
             <p className="text-foreground font-black text-lg uppercase tracking-widest">
               No perteneces a ninguna finca todavía
             </p>
-            <p className="text-muted-foreground text-sm mt-1 max-w-md mx-auto">
+            <p className="text-muted-foreground text-sm mt-1 mx-auto">
               Crea tu primera finca para comenzar a gestionar animales, potreros y producción lechera.
             </p>
             <Button

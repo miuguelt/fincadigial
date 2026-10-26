@@ -335,7 +335,7 @@ export const AnimalReproductionTab: React.FC<AnimalReproductionTabProps> = ({
               <p className="text-xs font-semibold text-foreground">
                 No hay novedades reproductivas registradas para este animal
               </p>
-              <p className="text-[11px] text-muted-foreground max-w-sm mx-auto">
+              <p className="text-[11px] text-muted-foreground mx-auto">
                 Registre celos, servicios, tactos rectales o partos para construir la hoja de vida zootécnica.
               </p>
               <Button
@@ -688,7 +688,7 @@ export const AnimalReproductionTab: React.FC<AnimalReproductionTabProps> = ({
                         </Badge>
                       </div>
                       {(item.description || item.details) && (
-                        <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">
+                        <p className="text-[11px] text-muted-foreground mt-1">
                           {item.description || item.details}
                         </p>
                       )}

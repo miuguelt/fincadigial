@@ -166,13 +166,13 @@ export const CampesinoTaskCard: React.FC<CampesinoTaskCardProps> = ({
         </div>
 
         {/* Título de la labor */}
-        <h3 className="text-base sm:text-lg font-black text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+        <h3 className="text-base sm:text-lg font-black text-foreground group-hover:text-primary transition-colors leading-snug">
           {task.title}
         </h3>
 
         {/* Descripción o notas */}
         {task.description && (
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 leading-relaxed">
             {task.description}
           </p>
         )}

@@ -681,7 +681,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hideToggleButton = false
                         </AvatarFallback>
                       </Avatar>
                       <div className="leading-tight">
-                        <p className="text-sm font-bold text-foreground fit-clamp max-w-[150px]">
+                        <p className="text-sm font-bold text-foreground fit-clamp">
                           {selectedContact.fullname}
                         </p>
                         <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold">

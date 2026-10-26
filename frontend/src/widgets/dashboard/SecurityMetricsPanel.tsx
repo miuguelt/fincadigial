@@ -156,7 +156,7 @@ export const SecurityMetricsPanel = () => {
                   className="p-2 rounded border bg-muted text-[11px]"
                 >
                   <div className="flex justify-between items-start">
-                    <span className="font-medium line-clamp-1">{al.title}</span>
+                    <span className="font-medium">{al.title}</span>
                     {al.severity && (
                       <span
                         className={`px-1.5 py-0.5 rounded text-[11px] font-medium ${severityColor[al.severity] || "bg-muted text-muted-foreground"}`}
@@ -166,7 +166,7 @@ export const SecurityMetricsPanel = () => {
                     )}
                   </div>
                   {al.message && (
-                    <p className="text-muted-foreground line-clamp-2">
+                    <p className="text-muted-foreground">
                       {al.message}
                     </p>
                   )}

@@ -255,7 +255,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 										</Badge>
 									)}
 								</div>
-								<p className="max-w-[38rem] text-xs font-medium text-muted-foreground">
+								<p className="text-xs font-medium text-muted-foreground">
 									{item.email || "Sin correo registrado"}
 									{primaryFinca && (
 										<> · {primaryFinca.finca_name || primaryFinca.name || "Sin finca principal"}</>

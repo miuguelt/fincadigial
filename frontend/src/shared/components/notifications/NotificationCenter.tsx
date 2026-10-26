@@ -150,7 +150,7 @@ export function NotificationCenter() {
                                     <div className="flex-1 min-w-0">
                                         <p className="text-xs font-black uppercase tracking-tighter text-muted-foreground">{r.farm_name}</p>
                                         <p className="text-sm font-bold text-foreground fit-clamp">{r.type === 'INVITE' ? `De: ${r.user_name}` : 'Solicitud de unión'}</p>
-                                        {r.message && <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 italic italic-muted">"{r.message}"</p>}
+                                        {r.message && <p className="text-[11px] text-muted-foreground mt-1 italic italic-muted">"{r.message}"</p>}
 
                                         {accesoTab === 'recibidas' && r.status === 'pending' && (
                                             <div className="flex gap-2 mt-4">
@@ -196,7 +196,7 @@ const EmptyNotifications: React.FC<{ icon: React.ReactNode, title: string, descr
     <div className="flex flex-col items-center justify-center py-20 text-center px-6">
         <div className="text-primary/20 mb-4">{icon}</div>
         <h4 className="font-bold text-foreground">{title}</h4>
-        <p className="text-xs text-muted-foreground mt-1 max-w-[200px] mx-auto">{description}</p>
+        <p className="text-xs text-muted-foreground mt-1 mx-auto">{description}</p>
     </div>
 );
 

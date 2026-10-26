@@ -39,7 +39,7 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
       <CardContent>
         <div className="space-y-2 text-sm text-muted-foreground">
           {task.description && (
-            <p className="line-clamp-2">{task.description}</p>
+            <p className="">{task.description}</p>
           )}
           <div className="flex items-center justify-between">
             <Badge className={priorityColors[task.priority]} variant="outline">

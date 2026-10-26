@@ -28,7 +28,7 @@ export function MedicationsHeaderBanner() {
                   Guía de Formulación
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 Esta lista reúne los posibles medicamentos aprobados para recetar y aplicar en la finca.
                 Para consultar o ingresar las cantidades físicas que tienes en el botiquín, revisa el inventario.
               </p>

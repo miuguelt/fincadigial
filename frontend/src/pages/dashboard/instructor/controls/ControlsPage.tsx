@@ -213,7 +213,7 @@ const ControlsPage = () => {
                     </div>
                   )}
                   {control.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">{control.description}</p>
+                    <p className="text-sm text-muted-foreground">{control.description}</p>
                   )}
                 </div>
               </CardContent>

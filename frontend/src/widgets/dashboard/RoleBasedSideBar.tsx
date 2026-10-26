@@ -520,7 +520,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                             <div className="min-w-0 flex-1">
                               <span className="block text-sm text-foreground/80 font-medium group-hover:text-primary transition-colors">{child.title}</span>
                               {child.subtitle && (
-                                <span className="block text-[11px] text-muted-foreground/75 leading-tight line-clamp-1 group-hover:text-muted-foreground">
+                                <span className="block text-[11px] text-muted-foreground/75 leading-tight whitespace-normal break-words group-hover:text-muted-foreground">
                                   {child.subtitle}
                                 </span>
                               )}
@@ -590,7 +590,7 @@ const RoleBasedSideBar: React.FC<SidebarProps> = ({
                             <div className="min-w-0 flex-1">
                               <span className="block font-medium">{child.title}</span>
                               {child.subtitle && (
-                                <span className="block text-[11px] text-muted-foreground/75 leading-tight line-clamp-1 group-hover:text-muted-foreground">
+                                <span className="block text-[11px] text-muted-foreground/75 leading-tight whitespace-normal break-words group-hover:text-muted-foreground">
                                   {child.subtitle}
                                 </span>
                               )}

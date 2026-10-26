@@ -169,7 +169,7 @@ export const JoinFincaPage: React.FC = () => {
                 <h3 className="text-foreground font-black text-3xl uppercase tracking-tighter">
                   Sin coincidencias
                 </h3>{" "}
-                <p className="text-muted-foreground font-bold text-sm max-w-xs mx-auto leading-relaxed">
+                <p className="text-muted-foreground font-bold text-sm mx-auto leading-relaxed">
                   No pudimos encontrar predios que coincidan con"
                   <span className="text-primary">{searchQuery}</span>". Prueba
                   con otros términos.
@@ -209,7 +209,7 @@ export const JoinFincaPage: React.FC = () => {
                 <h4 className="text-3xl font-black uppercase tracking-tighter italic leading-none">
                   ¿Gestionas tu propio predio?
                 </h4>{" "}
-                <p className="text-muted-foreground font-medium text-lg leading-snug max-w-xl">
+                <p className="text-muted-foreground font-medium text-lg leading-snug">
                   {" "}
                   Registra tu finca en el sistema para digitalizar tus procesos,
                   gestionar operarios y recibir solicitudes de aprendices del
