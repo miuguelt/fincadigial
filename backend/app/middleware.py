@@ -2,6 +2,7 @@ import flask
 import time
 import logging
 import json
+import urllib.parse
 
 logger = logging.getLogger(__name__)
 
@@ -12,8 +13,22 @@ def register_middleware(app):
         path = flask.request.path or ""
         if path.startswith("/api/v1/food-types"):
             new_path = path.replace("/api/v1/food-types", "/api/v1/food_types", 1)
+            parsed = urllib.parse.urlsplit(new_path)
+            if (
+                parsed.scheme
+                or parsed.netloc
+                or "//" in new_path
+                or "\\" in new_path
+                or "@" in new_path
+                or not new_path.startswith("/api/v1/food_types")
+            ):
+                return flask.abort(400)
             if flask.request.query_string:
-                new_path += "?" + flask.request.query_string.decode("utf-8")
+                safe_qs = flask.request.query_string.decode("utf-8", errors="ignore")
+                unquoted_qs = urllib.parse.unquote(safe_qs)
+                if "\r" in unquoted_qs or "\n" in unquoted_qs or "\x00" in unquoted_qs:
+                    return flask.abort(400)
+                new_path += "?" + safe_qs
             return flask.redirect(new_path, code=308)
 
     @app.before_request

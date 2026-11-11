@@ -1,3 +1,6 @@
+import os
+import re
+import urllib.parse
 import logging
 import pathlib
 import flask
@@ -51,7 +54,7 @@ def register_api(app, limiter=None):
         return flask.render_template(
             "swagger_ui_custom.html",
             title=api.title,
-            specs_url=api.specs_url,
+            specs_url="/api/v1/swagger.json",
             cookie_config={
                 "access": access_cookie_name,
                 "refresh": app.config.get(
@@ -107,40 +110,57 @@ def register_api(app, limiter=None):
                 return flask.jsonify({"error": "URL de archivo inválida o vencida"}), 403
 
             uploads_folder = app.config.get("UPLOAD_FOLDER", "static/uploads")
-            file_path = (
-                pathlib.Path(app.root_path).parent / uploads_folder / filename
-            ).resolve()
-            allowed_base = (
-                pathlib.Path(app.root_path).parent / uploads_folder
-            ).resolve()
+            uploads_path = pathlib.Path(uploads_folder)
+            if uploads_path.is_absolute():
+                allowed_base = uploads_path.resolve()
+            else:
+                allowed_base = (
+                    pathlib.Path(app.root_path).parent / uploads_folder
+                ).resolve()
 
-            if (
-                not file_path.exists()
-                or not str(file_path).startswith(str(allowed_base))
-            ) and filename.startswith("animals/"):
-                requested_name = pathlib.Path(filename).name
-                animals_base = (allowed_base / "animals").resolve()
-                matches = [
-                    candidate.resolve()
-                    for candidate in animals_base.glob(f"*/{requested_name}")
-                    if candidate.is_file()
-                ]
-                valid_matches = [
-                    candidate
-                    for candidate in matches
-                    if str(candidate).startswith(str(animals_base))
-                ]
-                if valid_matches:
-                    file_path = valid_matches[0]
+            # Normalizar decodificación para prevenir secuencias codificadas complejas
+            decoded_name = filename
+            for _ in range(2):
+                unquoted = urllib.parse.unquote(decoded_name)
+                if unquoted == decoded_name:
+                    break
+                decoded_name = unquoted
 
-            if not file_path.exists() or not str(file_path).startswith(
-                str(allowed_base)
-            ):
+            if "\x00" in decoded_name:
+                resp = flask.make_response(b"", 403)
+                resp.mimetype = "image/jpeg"
+                return resp
+
+            clean_rel = os.path.normpath(decoded_name.replace("\\", "/")).lstrip("/\\")
+            file_path = (allowed_base / clean_rel).resolve()
+            if not file_path.is_relative_to(allowed_base):
+                resp = flask.make_response(b"", 403)
+                resp.mimetype = "image/jpeg"
+                return resp
+
+            if (not file_path.exists()) and filename.startswith("animals/"):
+                requested_name = pathlib.Path(clean_rel).name
+                # Evitar inyección de patrones glob y nombres ocultos
+                if re.match(r"^[a-zA-Z0-9_\-\.]+$", requested_name) and not requested_name.startswith("."):
+                    animals_base = (allowed_base / "animals").resolve()
+                    if animals_base.is_dir():
+                        matches = [
+                            candidate.resolve()
+                            for candidate in animals_base.glob(f"*/{requested_name}")
+                            if candidate.is_file() and candidate.resolve().is_relative_to(animals_base)
+                        ]
+                        if matches:
+                            file_path = matches[0]
+
+            if not file_path.is_file() or not file_path.is_relative_to(allowed_base):
                 resp = flask.make_response(b"", 404)
                 resp.mimetype = "image/jpeg"
                 return resp
-            return flask.send_file(str(file_path))
-        except Exception:
+
+            rel_to_base = file_path.relative_to(allowed_base).as_posix()
+            return flask.send_from_directory(str(allowed_base), rel_to_base)
+        except Exception as e:
+            logger.error("Error sirviendo archivo público %s: %s", filename, e, exc_info=True)
             resp = flask.make_response(b"", 500)
             resp.mimetype = "image/jpeg"
             return resp

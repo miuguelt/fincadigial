@@ -15,12 +15,11 @@ export function sanitizeInput(input: string): string {
   if (!input || typeof input !== 'string') return '';
 
   return input
-    .replace(/[<>]/g, '')           // Eliminar tags HTML básicos
-    .replace(/javascript:/gi, '')   // Eliminar protocolos javascript
-    .replace(/on\w+=/gi, '')        // Eliminar event handlers
-    .replace(/&/g, '&amp;')         // Escapar ampersands
-    .replace(/"/g, '&quot;')        // Escapar comillas dobles
-    .replace(/'/g, '&#x27;')        // Escapar comillas simples
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
     .trim();
 }
 
@@ -31,16 +30,16 @@ export function containsMaliciousCode(input: string): boolean {
   if (!input || typeof input !== 'string') return false;
 
   const maliciousPatterns = [
-    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-    /javascript:/gi,
-    /on\w+\s*=/gi,
-    /eval\s*\(/gi,
-    /expression\s*\(/gi,
-    /url\s*\(/gi,
-    /data:text\/html/gi,
-    /<iframe/gi,
-    /<object/gi,
-    /<embed/gi,
+    /<script\b/i,
+    /javascript:\s*/i,
+    /on\w+\s*=/i,
+    /eval\s*\(/i,
+    /expression\s*\(/i,
+    /url\s*\(/i,
+    /data:text\/html/i,
+    /<iframe\b/i,
+    /<object\b/i,
+    /<embed\b/i,
   ];
 
   return maliciousPatterns.some(pattern => pattern.test(input));

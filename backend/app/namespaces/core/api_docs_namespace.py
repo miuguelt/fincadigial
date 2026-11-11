@@ -498,7 +498,7 @@ class PostmanCollectionResource(Resource):
         except Exception as e:
             logger.error(f"Error generando Postman collection: {e}", exc_info=True)
             return APIResponse.error(
-                "Error al generar colección", details={"error": str(e)}, status_code=500
+                "Error al generar colección", details=None, status_code=500
             )
 
 

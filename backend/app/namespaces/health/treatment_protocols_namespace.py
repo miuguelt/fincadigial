@@ -247,7 +247,7 @@ class TreatmentProtocolApply(Resource):
                 f"Error aplicando protocolo {protocol_id}: {e}", exc_info=True
             )
             body, status = APIResponse.error(
-                message=f"Error al aplicar el protocolo: {str(e)}",
+                message="Error al aplicar el protocolo",
                 status_code=500,
             )
             return _json_response(body, status)

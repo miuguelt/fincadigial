@@ -177,6 +177,7 @@ frontend/certificates/
 .srclight/
 .devbrain/*
 !.devbrain/invariants.json
+!.devbrain/modularity-baseline.json
 .playwright-mcp/
 .agents/
 

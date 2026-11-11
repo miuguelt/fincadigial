@@ -337,8 +337,7 @@ def sse_events_handler():
             json.dumps(
                 {
                     "success": False,
-                    "message": f"Error inicializando stream: {str(e)}",
-                    "error_type": type(e).__name__,
+                    "message": "Error inicializando stream",
                 }
             ),
             status=500,

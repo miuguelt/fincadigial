@@ -90,14 +90,22 @@ const initialState: AppState = {
 /**
  * Genera un ID de sesión único
  */
-function generateSessionId(): string {
-  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+export function generateSessionId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `session_${Date.now()}_${crypto.randomUUID()}`;
+  }
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const array = new Uint32Array(2);
+    crypto.getRandomValues(array);
+    return `session_${Date.now()}_${array[0].toString(36)}_${array[1].toString(36)}`;
+  }
+  return `session_${Date.now()}`;
 }
 
 /**
  * Reducer para gestionar el estado de la aplicación
  */
-function appStateReducer(state: AppState, action: AppStateAction): AppState {
+export function appStateReducer(state: AppState, action: AppStateAction): AppState {
   switch (action.type) {
     case 'SET_STATUS':
       return {

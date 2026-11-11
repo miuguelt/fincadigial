@@ -1,6 +1,8 @@
+import re
 import os
 import json
 import logging
+from pathlib import Path
 from datetime import datetime, UTC
 from flask_restx import Namespace, Resource
 from app.utils.response_handler import APIResponse
@@ -51,12 +53,32 @@ class LogList(Resource):
         return APIResponse.success(data={"logs": logs, "total": len(logs)})
 
 
+ALLOWED_LOG_PATTERN = re.compile(r'^[a-zA-Z0-9_\-\.]+\.(log|txt|json)$')
+
+
+def _resolve_safe_log_path(filename: str):
+    if not filename or not isinstance(filename, str):
+        return None
+    # Rechazar estrictamente separadores de directorio o cruces relativos
+    if "/" in filename or "\\" in filename or ".." in filename:
+        return None
+    if not ALLOWED_LOG_PATTERN.match(filename):
+        return None
+    base_dir = Path(LOG_DIR).resolve()
+    target_path = (base_dir / filename).resolve()
+    try:
+        if not target_path.is_relative_to(base_dir) or not target_path.is_file():
+            return None
+    except ValueError:
+        return None
+    return str(target_path)
+
+
 @monitor_ns.route("/logs/<path:filename>")
 class LogDetail(Resource):
     def get(self, filename):
-        safe = os.path.basename(filename.replace("\\", "/"))
-        fp = os.path.join(LOG_DIR, safe)
-        if not os.path.isfile(fp):
+        fp = _resolve_safe_log_path(filename)
+        if not fp:
             return APIResponse.error(message="Log file not found", status_code=404)
         try:
             max_bytes = 1024 * 512
@@ -68,22 +90,22 @@ class LogDetail(Resource):
                 content = f.read()
             return APIResponse.success(
                 data={
-                    "name": safe,
+                    "name": os.path.basename(fp),
                     "size_kb": round(size / 1024, 1),
                     "truncated": size > max_bytes,
                     "content": content,
                 }
             )
         except Exception as e:
-            return APIResponse.error(message=str(e), status_code=500)
+            logger.error("Error leyendo log %s: %s", filename, e, exc_info=True)
+            return APIResponse.error(message="Error al leer el archivo de log", status_code=500)
 
 
 @monitor_ns.route("/logs/<path:filename>/tail")
 class LogTail(Resource):
     def get(self, filename):
-        safe = os.path.basename(filename.replace("\\", "/"))
-        fp = os.path.join(LOG_DIR, safe)
-        if not os.path.isfile(fp):
+        fp = _resolve_safe_log_path(filename)
+        if not fp:
             return APIResponse.error(message="Log file not found", status_code=404)
         try:
             lines_count = 100
@@ -92,13 +114,14 @@ class LogTail(Resource):
             tail = lines[-lines_count:]
             return APIResponse.success(
                 data={
-                    "name": safe,
+                    "name": os.path.basename(fp),
                     "total_lines": len(lines),
                     "lines": tail,
                 }
             )
         except Exception as e:
-            return APIResponse.error(message=str(e), status_code=500)
+            logger.error("Error leyendo tail de log %s: %s", filename, e, exc_info=True)
+            return APIResponse.error(message="Error al leer el archivo de log", status_code=500)
 
 
 @monitor_ns.route("/ecosystem")
@@ -264,11 +287,36 @@ class GuideContent(Resource):
         from flask import request
 
         filepath = request.args.get("path", "")
-        if not filepath or not os.path.isfile(filepath):
+        if not filepath or not isinstance(filepath, str):
             return APIResponse.error(message="File not found", status_code=404)
         try:
-            with open(filepath, encoding="utf-8", errors="replace") as f:
+            target_file = None
+            for base in DOCS_DIRS:
+                if not os.path.isdir(base):
+                    continue
+                base_abs = Path(base).resolve()
+                candidate = (
+                    Path(filepath).resolve()
+                    if os.path.isabs(filepath)
+                    else (base_abs / filepath).resolve()
+                )
+                try:
+                    if (
+                        candidate.is_relative_to(base_abs)
+                        and candidate.is_file()
+                        and candidate.suffix.lower() in (".md", ".txt")
+                    ):
+                        target_file = candidate
+                        break
+                except ValueError:
+                    continue
+
+            if not target_file:
+                return APIResponse.error(message="File not found", status_code=404)
+
+            with open(target_file, encoding="utf-8", errors="replace") as f:
                 content = f.read()
             return APIResponse.success(data={"path": filepath, "content": content})
         except Exception as e:
-            return APIResponse.error(message=str(e), status_code=500)
+            logger.error("Error leyendo guía: %s", e, exc_info=True)
+            return APIResponse.error(message="Error al leer la guía", status_code=500)

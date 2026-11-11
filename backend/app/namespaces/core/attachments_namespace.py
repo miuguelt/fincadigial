@@ -1,3 +1,4 @@
+import re
 import base64
 import hashlib
 import os
@@ -15,7 +16,17 @@ attachments_ns = Namespace("attachments", description="Adjuntos offline por chun
 
 
 def _attachment_dir(finca_id):
-    base = os.path.join("static", "uploads", "offline_attachments", str(finca_id))
+    raw_finca = "" if finca_id is None else str(finca_id)
+    safe_finca_id = re.sub(r"[^a-zA-Z0-9_-]", "", raw_finca)
+    if not safe_finca_id:
+        raise ValueError("finca_id inválido")
+    upload_root = os.path.abspath(flask.current_app.config.get("UPLOAD_FOLDER", os.path.join("static", "uploads")))
+    base = os.path.abspath(os.path.join(upload_root, "offline_attachments", safe_finca_id))
+    try:
+        if os.path.commonpath([upload_root, base]) != upload_root:
+            raise ValueError("finca_id fuera de límites autorizados")
+    except ValueError:
+        raise ValueError("finca_id fuera de límites autorizados")
     os.makedirs(base, exist_ok=True)
     return base
 
@@ -41,9 +52,13 @@ class AttachmentChunkResource(Resource):
         except Exception:
             return APIResponse.error("chunk no es base64 valido", status_code=400)
 
-        path = os.path.join(
-            _attachment_dir(finca_id), f"{secure_filename(attachment_id)}.part"
-        )
+        if not re.match(r"^[a-zA-Z0-9_-]+$", str(attachment_id or "")):
+            return APIResponse.validation_error({"attachment_id": "Formato de ID inválido"})
+        base_dir = _attachment_dir(finca_id)
+        clean_part_name = f"{secure_filename(attachment_id)}.part"
+        path = os.path.abspath(os.path.join(base_dir, clean_part_name))
+        if os.path.commonpath([base_dir, path]) != base_dir:
+            return APIResponse.error("Ruta no autorizada", status_code=400)
         with open(path, "ab") as fh:
             fh.write(chunk)
         size = os.path.getsize(path)
@@ -71,8 +86,12 @@ class AttachmentCompleteResource(Resource):
                 }
             )
 
+        if not re.match(r"^[a-zA-Z0-9_-]+$", str(attachment_id or "")):
+            return APIResponse.validation_error({"attachment_id": "Formato de ID inválido"})
         base = _attachment_dir(finca_id)
-        part_path = os.path.join(base, f"{secure_filename(attachment_id)}.part")
+        part_path = os.path.abspath(os.path.join(base, f"{secure_filename(attachment_id)}.part"))
+        if os.path.commonpath([base, part_path]) != base:
+            return APIResponse.error("Ruta no autorizada", status_code=400)
         if not os.path.exists(part_path):
             return APIResponse.not_found("Adjunto parcial")
 
@@ -97,7 +116,9 @@ class AttachmentCompleteResource(Resource):
                     status_code=413,
                 )
 
-        final_path = os.path.join(base, filename)
+        final_path = os.path.abspath(os.path.join(base, filename))
+        if os.path.commonpath([base, final_path]) != base:
+            return APIResponse.error("Ruta de archivo no autorizada", status_code=400)
         os.replace(part_path, final_path)
         size = os.path.getsize(final_path)
 

@@ -1026,7 +1026,6 @@ def create_optimized_namespace(
                 resp_body, status = APIResponse.error(
                     "Error interno del servidor",
                     details={
-                        "error": str(e),
                         "context": f"list {model_class.__name__}",
                     },
                     status_code=500,
@@ -1333,7 +1332,6 @@ def create_optimized_namespace(
                 return APIResponse.error(
                     "Error interno del servidor",
                     details={
-                        "error": str(e),
                         "context": f"create {model_class.__name__}",
                     },
                     status_code=500,
@@ -1488,7 +1486,7 @@ def create_optimized_namespace(
                         )
                 body, status = APIResponse.error(
                     "Error interno del servidor",
-                    details={"error": str(e), "context": f"get {model_class.__name__}"},
+                    details={"context": f"get {model_class.__name__}"},
                     status_code=500,
                 )
                 resp = flask_make_response(jsonify(body), status)
@@ -1672,7 +1670,6 @@ def create_optimized_namespace(
                 return APIResponse.error(
                     "Error interno del servidor",
                     details={
-                        "error": str(e),
                         "context": f"update {model_class.__name__}",
                     },
                     status_code=500,
@@ -1857,7 +1854,6 @@ def create_optimized_namespace(
                     return APIResponse.error(
                         "Error interno del servidor",
                         details={
-                            "error": str(e),
                             "context": f"patch {model_class.__name__}",
                         },
                         status_code=500,
@@ -1965,7 +1961,6 @@ def create_optimized_namespace(
                 body, status = APIResponse.error(
                     "Error interno del servidor",
                     details={
-                        "error": str(e),
                         "context": f"delete {model_class.__name__}",
                     },
                     status_code=500,
@@ -2020,7 +2015,7 @@ def create_optimized_namespace(
                     exc_info=True,
                 )
                 body, status = APIResponse.error(
-                    message=f"Error al verificar dependencias: {str(e)}",
+                    message="Error al verificar dependencias",
                     status_code=500,
                 )
                 return flask_make_response(jsonify(body), status)
@@ -2105,7 +2100,7 @@ def create_optimized_namespace(
                     exc_info=True,
                 )
                 return APIResponse.error(
-                    message=f"Error en verificación batch: {str(e)}", status_code=500
+                    message="Error en verificación batch", status_code=500
                 )
 
     ns.add_resource(ModelListResource, "/", "")
@@ -2184,7 +2179,7 @@ def create_optimized_namespace(
                 )
                 body, status = APIResponse.error(
                     "Error interno del servidor",
-                    details={"error": str(e)},
+                    details=None,
                     status_code=500,
                 )
                 return flask_make_response(jsonify(body), status)
@@ -2243,7 +2238,7 @@ def create_optimized_namespace(
                     )
                     return APIResponse.error(
                         "Error interno del servidor",
-                        details={"error": str(e)},
+                        details=None,
                         status_code=500,
                     )
 
@@ -2283,7 +2278,7 @@ def create_optimized_namespace(
                     )
                     return APIResponse.error(
                         "Error interno del servidor",
-                        details={"error": str(e)},
+                        details=None,
                         status_code=500,
                     )
 
@@ -2323,7 +2318,7 @@ def create_optimized_namespace(
                     )
                     return APIResponse.error(
                         "Error interno del servidor",
-                        details={"error": str(e)},
+                        details=None,
                         status_code=500,
                     )
 
@@ -2352,7 +2347,7 @@ def create_optimized_namespace(
                     )
                     body, status = APIResponse.error(
                         "Error interno del servidor",
-                        details={"error": str(e)},
+                        details=None,
                         status_code=500,
                     )
                     return flask_make_response(jsonify(body), status)

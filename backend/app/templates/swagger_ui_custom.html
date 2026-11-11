@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <title>{{ title or 'API Docs' }} - Swagger UI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css" integrity="sha384-4c3vsE5f+trhFyHrFrLM1fFGUn531NIaC7dcqEWIJdoRQJ5CkJbSuSCwXLpaS1KF" crossorigin="anonymous" />
   <style>
     body { background:#f7f9fb; }
     .topbar { background: linear-gradient(135deg, #2c5530 0%, #4a7c59 100%); }
@@ -63,9 +63,9 @@
 
   <div id="swagger-ui"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js" integrity="sha384-XFYN47VzPiDY6qPtxYKg0nqUeW/upo20xf1j2SUE7gT/i35FJB4cuS/71Iegzk8Z" crossorigin="anonymous" defer></script>
   <script>
-    window.JWT_COOKIE_CONFIG = {{ cookie_config|tojson|safe }};
+    window.JWT_COOKIE_CONFIG = {{ cookie_config|tojson }};
     window.onload = () => {
       const specUrl = document.body.getAttribute('data-specs-url');
       const COOKIE_CONFIG = Object.assign({

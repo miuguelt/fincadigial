@@ -1,3 +1,4 @@
+import re
 import os
 import shutil
 import uuid
@@ -108,8 +109,11 @@ def get_animal_upload_path(animal_id):
     Genera la ruta de almacenamiento para las imágenes de un animal.
     Formato: static/uploads/animals/{animal_id}/
     """
+    raw_id = ("" if animal_id is None else str(animal_id)).strip()
+    if not re.match(r"^[a-zA-Z0-9_-]+$", raw_id):
+        raise ValueError("animal_id no válido")
     upload_folder = flask.current_app.config.get("UPLOAD_FOLDER", "static/uploads")
-    return os.path.join(upload_folder, "animals", str(animal_id))
+    return os.path.join(upload_folder, "animals", raw_id)
 
 
 def get_user_avatar_path(user_id):
@@ -155,9 +159,26 @@ def save_user_avatar(user_id, file):
 
 
 def ensure_upload_directory(directory_path):
-    """Crea el directorio de uploads si no existe"""
+    """Crea el directorio de uploads si no existe de forma segura"""
     try:
-        os.makedirs(directory_path, exist_ok=True)
+        if not directory_path:
+            return False
+        resolved = os.path.abspath(directory_path)
+        upload_folder = flask.current_app.config.get("UPLOAD_FOLDER", "static/uploads")
+        upload_root = os.path.abspath(upload_folder)
+        alt_root = os.path.abspath(os.path.join(flask.current_app.root_path, "..", upload_folder))
+        try:
+            c1 = os.path.commonpath([upload_root, resolved]) == upload_root
+        except ValueError:
+            c1 = False
+        try:
+            c2 = os.path.commonpath([alt_root, resolved]) == alt_root
+        except ValueError:
+            c2 = False
+        if not (c1 or c2):
+            logger.error(f"Intento de creación fuera del directorio autorizado: {directory_path}")
+            return False
+        os.makedirs(resolved, exist_ok=True)
         return True
     except Exception as e:
         logger.error(f"Error creando directorio {directory_path}: {str(e)}")
@@ -197,8 +218,11 @@ def get_finca_upload_path(finca_id):
     Genera la ruta de almacenamiento para las imágenes de una finca.
     Formato: static/uploads/fincas/{finca_id}/
     """
+    raw_id = ("" if finca_id is None else str(finca_id)).strip()
+    if not re.match(r"^[a-zA-Z0-9_-]+$", raw_id):
+        raise ValueError("finca_id no válido")
     upload_folder = flask.current_app.config.get("UPLOAD_FOLDER", "static/uploads")
-    return os.path.join(upload_folder, "fincas", str(finca_id))
+    return os.path.join(upload_folder, "fincas", raw_id)
 
 
 def save_finca_image(
@@ -257,6 +281,10 @@ def _save_image(
 
         # Generar nombres
         unique_filename = generate_unique_filename(original_filename)
+        upload_dir_abs = os.path.abspath(upload_dir)
+        full_path_check = os.path.abspath(os.path.join(upload_dir_abs, unique_filename))
+        if os.path.commonpath([upload_dir_abs, full_path_check]) != upload_dir_abs:
+            raise ValueError("Ruta de archivo no autorizada")
         thumb_filename = f"thumb_{unique_filename}"
 
         if not ensure_upload_directory(upload_dir):
@@ -326,24 +354,21 @@ def _save_image(
 
 
 def delete_animal_image(filepath):
-    """
-    Elimina físicamente un archivo de imagen.
-
-    Args:
-        filepath: Ruta relativa del archivo (ej: static/uploads/animals/123/image.jpg)
-
-    Returns:
-        bool: True si se eliminó correctamente, False en caso contrario
-    """
     try:
         if not filepath:
             return False
 
-        # Construir ruta absoluta
-        full_path = os.path.join(flask.current_app.root_path, "..", filepath)
-        full_path = os.path.normpath(full_path)
+        upload_folder = flask.current_app.config.get("UPLOAD_FOLDER", "static/uploads")
+        upload_root = os.path.abspath(os.path.join(flask.current_app.root_path, "..", upload_folder))
+        full_path = os.path.abspath(os.path.join(flask.current_app.root_path, "..", filepath))
 
-        # Verificar que existe
+        try:
+            if os.path.commonpath([upload_root, full_path]) != upload_root:
+                logger.warning(f"Ruta fuera de uploads para eliminación: {filepath}")
+                return False
+        except ValueError:
+            return False
+
         if os.path.exists(full_path) and os.path.isfile(full_path):
             os.remove(full_path)
             logger.info(f"Archivo eliminado: {full_path}")

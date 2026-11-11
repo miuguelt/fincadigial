@@ -331,7 +331,7 @@ class ChatSendResource(Resource):
                 import re
 
                 m = re.search(
-                    r"q=([+-]?\d+\.?\d*),([+-]?\d+\.?\d*)",
+                    r"q=([+-]?\d+(?:\.\d+)?),([+-]?\d+(?:\.\d+)?)",
                     str(attachment_url or ""),
                 )
                 if m:
