@@ -57,7 +57,8 @@ services:
       - coolify
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ || curl -fsS http://127.0.0.1/ || exit 1"]
-      interval: 30s
+      interval: 5m
+      start_interval: 5s
       timeout: 5s
       retries: 3
       start_period: 15s
@@ -131,7 +132,8 @@ services:
       - backups_data:/app/backups
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8081/api/v1/health/live || exit 1"]
-      interval: 15s
+      interval: 5m
+      start_interval: 5s
       timeout: 15s
       retries: 3
       start_period: 120s
