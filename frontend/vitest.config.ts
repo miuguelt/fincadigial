@@ -10,6 +10,11 @@ export default defineConfig((env) => {
   }
 
   return mergeConfig(baseConfig, {
+    server: {
+      fs: {
+        allow: ['..', 'D:/Aplicaciones', 'C:/Users/Miguel/Documents/Aplicaciones']
+      }
+    },
     test: {
       environment: 'jsdom',
       globals: true,
