@@ -274,3 +274,94 @@ class AnimalBatchVaccinate(Resource):
         except Exception as e:
             db.session.rollback()
             return APIResponse.error(message=f"Error en vacunación masiva: {str(e)}")
+
+
+sinigan_payload_model = animals_ns.model(
+    "AnimalSiniganPayload",
+    {
+        "arete_sinigan": fields.String(
+            required=True,
+            description="Arete oficial SINIGAN (15 dígitos ISO 11784 ej: 170000123456789 o visual COL-XXX-XXXX)",
+        ),
+        "guia_movilizacion": fields.String(
+            description="Guía Sanitaria de Movilización (GSMI) si ampara el ingreso oficial"
+        ),
+        "fecha_registro": fields.Date(
+            description="Fecha de colocación o registro del arete (YYYY-MM-DD)"
+        ),
+        "predio_origen": fields.String(
+            description="Nombre o RPP del predio de origen del animal"
+        ),
+        "notes": fields.String(description="Observaciones o referencia de chapeteo"),
+    },
+)
+
+
+@animals_ns.route("/<int:animal_id>/sinigan")
+class AnimalSiniganResource(Resource):
+    """Consulta y asignación del arete oficial SINIGAN e identidad del animal."""
+
+    @animals_ns.doc("get_animal_sinigan", description="Obtener datos oficiales SINIGAN del animal")
+    @jwt_required()
+    def get(self, animal_id):
+        from app.utils.tenant_context import get_current_finca_id
+        from app.services.sinigan_service import SiniganService
+
+        finca_id = get_current_finca_id()
+        data = SiniganService.get_animal_sinigan_details(animal_id, finca_id=finca_id)
+        if not data:
+            return APIResponse.error("Animal no encontrado o no pertenece a la finca activa", status_code=404)
+        return APIResponse.success(data=data, message="Detalles SINIGAN obtenidos exitosamente")
+
+    @animals_ns.doc("assign_animal_sinigan", description="Registrar o actualizar arete oficial SINIGAN")
+    @animals_ns.expect(sinigan_payload_model)
+    @jwt_required()
+    def put(self, animal_id):
+        from app.utils.tenant_context import get_current_finca_id
+        from app.services.sinigan_service import (
+            SiniganService,
+            SiniganValidationError,
+            SiniganConflictError,
+        )
+
+        finca_id = get_current_finca_id()
+        payload = flask.request.get_json() or {}
+
+        arete_sinigan = payload.get("arete_sinigan")
+        if not arete_sinigan:
+            return APIResponse.validation_error({"arete_sinigan": "El código de arete SINIGAN es requerido"})
+
+        fecha_reg = None
+        if payload.get("fecha_registro"):
+            try:
+                from datetime import datetime
+                fecha_reg = datetime.strptime(str(payload["fecha_registro"])[:10], "%Y-%m-%d").date()
+            except ValueError:
+                return APIResponse.validation_error({"fecha_registro": "Formato de fecha inválido. Usar YYYY-MM-DD"})
+
+        try:
+            reg, identity = SiniganService.assign_sinigan_to_animal(
+                animal_id=animal_id,
+                arete_sinigan=arete_sinigan,
+                finca_id=finca_id,
+                guia_movilizacion=payload.get("guia_movilizacion"),
+                fecha_registro=fecha_reg,
+                predio_origen=payload.get("predio_origen"),
+                notes=payload.get("notes"),
+                commit=True,
+            )
+            _cache_clear("Animals")
+            _cache_clear("SiniganRegistrations")
+
+            details = SiniganService.get_animal_sinigan_details(animal_id, finca_id=finca_id)
+            return APIResponse.success(
+                data=details,
+                message=f"Arete SINIGAN {reg.arete_sinigan} asignado exitosamente (Identidad: {identity.status.value})",
+            )
+        except SiniganValidationError as ve:
+            return APIResponse.validation_error({"arete_sinigan": str(ve)})
+        except SiniganConflictError as ce:
+            return APIResponse.error(message=str(ce), status_code=409, error_code="SINIGAN_CONFLICT")
+        except Exception as e:
+            db.session.rollback()
+            return APIResponse.error(message=f"Error asignando arete SINIGAN: {str(e)}", status_code=500)
