@@ -13,6 +13,10 @@ import unittest
 import json
 from app import create_app, db
 from app.models import User, Finca, FarmType, Role, Animal, Species, Breed
+from app.models.fields import Fields
+from app.models.animalFields import AnimalFields
+from app.models.sinigan_registrations import SiniganRegistrations
+from app.models.animal_movements import AnimalMovement, MovementType
 from app.models.user import ApprovalStatus
 from datetime import date
 
@@ -41,6 +45,10 @@ class TestRegulatoryReports(unittest.TestCase):
     def setUp(self):
         """Preparar datos para cada test."""
         with self.app.app_context():
+            db.session.query(AnimalMovement).delete()
+            db.session.query(SiniganRegistrations).delete()
+            db.session.query(AnimalFields).delete()
+            db.session.query(Fields).delete()
             db.session.query(Animal).delete()
             db.session.query(User).delete()
             db.session.query(Finca).delete()
@@ -279,6 +287,109 @@ class TestRegulatoryReports(unittest.TestCase):
 
         data = json.loads(response.data)
         self.assertTrue(data["success"])
+
+    def test_inventory_report_includes_sinigan_and_potrero(self):
+        """El reporte de inventario incluye arete_sinigan y ubicación de potrero sin N+1."""
+        with self.app.app_context():
+            animal = Animal.query.filter_by(record="ARETE-000").first()
+            # Asociar potrero
+            potrero = Fields(
+                name="Potrero La Vega",
+                finca_id=self.finca_tradicional.id,
+                area="15 ha"
+            )
+            db.session.add(potrero)
+            db.session.flush()
+
+            animal_field = AnimalFields(
+                animal_id=animal.id,
+                field_id=potrero.id,
+                assignment_date=date(2024, 1, 1),
+                finca_id=self.finca_tradicional.id
+            )
+            db.session.add(animal_field)
+
+            # Asociar arete SINIGAN
+            sinigan = SiniganRegistrations(
+                animal_id=animal.id,
+                arete_sinigan="170123456789012",
+                fecha_registro=date(2024, 1, 10),
+                finca_id=self.finca_tradicional.id
+            )
+            db.session.add(sinigan)
+            db.session.commit()
+
+        token = self.login_user("propietario@test.com", "TestPass123!")
+
+        # 1. Probar JSON
+        response = self.client.get(
+            "/api/v1/regulatory-reports/inventory?format=json",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        item = next(a for a in data["data"]["animals"] if a["numero_arete"] == "ARETE-000")
+        self.assertEqual(item["arete_sinigan"], "170123456789012")
+        self.assertEqual(item["ubicacion"], "Potrero La Vega")
+
+        # 2. Probar CSV
+        response_csv = self.client.get(
+            "/api/v1/regulatory-reports/inventory?format=csv",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        self.assertEqual(response_csv.status_code, 200)
+        csv_text = response_csv.data.decode("utf-8")
+        self.assertIn("arete_sinigan", csv_text.splitlines()[0])
+        self.assertIn("170123456789012", csv_text)
+        self.assertIn("Potrero La Vega", csv_text)
+
+    def test_movements_report_includes_animal_movements_with_gsmi(self):
+        """El reporte de movimientos incluye traslados y ventas con soporte GSMI oficial."""
+        with self.app.app_context():
+            animal = Animal.query.filter_by(record="ARETE-001").first()
+            # Crear movimiento oficial con GSMI
+            mov = AnimalMovement(
+                animal_id=animal.id,
+                finca_origen_id=self.finca_tradicional.id,
+                finca_destino_externa="Frigorífico Central",
+                tipo_movimiento=MovementType.Venta_Traslado_Externo,
+                fecha_movimiento=date(2024, 5, 20),
+                guia_movilizacion="GSMI-2024-998877",
+                arete_sinigan="170987654321098",
+                comprador="Carnes del Llano",
+                precio_venta=3500000.0,
+            )
+            db.session.add(mov)
+            db.session.commit()
+
+        token = self.login_user("propietario@test.com", "TestPass123!")
+
+        # 1. Probar type=sales
+        response = self.client.get(
+            "/api/v1/regulatory-reports/movements?type=sales",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertEqual(data["data"]["total_records"], 1)
+        mov_record = data["data"]["movements"][0]
+        self.assertEqual(mov_record["tipo_movimiento"], "VENTA EXTERNA")
+        self.assertEqual(mov_record["numero_arete"], "ARETE-001")
+        self.assertEqual(mov_record["arete_sinigan"], "170987654321098")
+        self.assertEqual(mov_record["documento_soporte"], "GSMI-2024-998877")
+        self.assertIn("Frigorífico Central", mov_record["destino_origen"])
+        self.assertIn("Carnes del Llano", mov_record["detalle"])
+
+        # 2. Probar CSV
+        response_csv = self.client.get(
+            "/api/v1/regulatory-reports/movements?type=sales&format=csv",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        self.assertEqual(response_csv.status_code, 200)
+        csv_text = response_csv.data.decode("utf-8")
+        self.assertIn("documento_soporte", csv_text.splitlines()[0])
+        self.assertIn("GSMI-2024-998877", csv_text)
+        self.assertIn("170987654321098", csv_text)
 
 
 if __name__ == "__main__":

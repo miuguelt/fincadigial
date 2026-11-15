@@ -40,6 +40,8 @@ class RegulatoryReportsService:
         cls, finca_id, date_from_str, date_to_str, format_type, species_filter
     ):
         from app.models.fields import Fields
+        from app.models.sinigan_registrations import SiniganRegistrations
+
         query = (
             db.session.query(
                 Animal.id,
@@ -56,11 +58,13 @@ class RegulatoryReportsService:
                 Breeds.name.label("breed_name"),
                 Species.name.label("species_name"),
                 Fields.name.label("field_name"),
+                SiniganRegistrations.arete_sinigan.label("arete_sinigan"),
             )
             .outerjoin(Breeds, Animal.breeds_id == Breeds.id)
             .outerjoin(Species, Breeds.species_id == Species.id)
             .outerjoin(AnimalFields, (AnimalFields.animal_id == Animal.id) & (AnimalFields.removal_date.is_(None)))
             .outerjoin(Fields, AnimalFields.field_id == Fields.id)
+            .outerjoin(SiniganRegistrations, SiniganRegistrations.animal_id == Animal.id)
             .filter(Animal.finca_id == finca_id, Animal.status.in_(["Vivo", "Vendido"]))
         )
 
@@ -71,6 +75,8 @@ class RegulatoryReportsService:
             query = query.filter(Animal.entry_date >= date_from)
         if date_to:
             query = query.filter(Animal.entry_date <= date_to)
+        if species_filter:
+            query = query.filter(Species.name.ilike(f"%{species_filter}%"))
 
         animals = query.yield_per(1000)
         inventory_data = []
@@ -88,6 +94,7 @@ class RegulatoryReportsService:
                 {
                     "id_animal": animal.id,
                     "numero_arete": animal.record or "SIN_ARETE",
+                    "arete_sinigan": animal.arete_sinigan or "",
                     "especie": animal.species_name or "Bovino",
                     "raza": animal.breed_name or "Por definir",
                     "sexo": str(animal.sex.value)
@@ -118,6 +125,7 @@ class RegulatoryReportsService:
             headers = [
                 "id_animal",
                 "numero_arete",
+                "arete_sinigan",
                 "especie",
                 "raza",
                 "sexo",
@@ -259,9 +267,88 @@ class RegulatoryReportsService:
                     }
                 )
 
-        # VENTAS
+        handled_sales = set()
+
+        # MOVIMIENTOS OFICIALES (AnimalMovement con Guía GSMI y SINIGAN)
+        if movement_type in ["sales", "transfers", "all"]:
+            from app.models.animal_movements import AnimalMovement, MovementType
+
+            mov_filter = [
+                (AnimalMovement.finca_origen_id == finca_id)
+                | (AnimalMovement.finca_destino_id == finca_id)
+            ]
+            if movement_type == "sales":
+                mov_filter.append(
+                    AnimalMovement.tipo_movimiento.in_(
+                        [
+                            MovementType.Venta_Traslado_Externo,
+                            MovementType.Venta_En_Predio,
+                        ]
+                    )
+                )
+            elif movement_type == "transfers":
+                mov_filter.append(
+                    AnimalMovement.tipo_movimiento == MovementType.Traslado_Interno
+                )
+
+            if date_from:
+                mov_filter.append(AnimalMovement.fecha_movimiento >= date_from.date())
+            if date_to:
+                mov_filter.append(AnimalMovement.fecha_movimiento <= date_to.date())
+
+            movements = (
+                AnimalMovement.query.filter(*mov_filter)
+                .order_by(AnimalMovement.fecha_movimiento.desc())
+                .all()
+            )
+
+            for mov in movements:
+                tipo_str = "TRASLADO"
+                if mov.tipo_movimiento == MovementType.Venta_Traslado_Externo:
+                    tipo_str = "VENTA EXTERNA"
+                    handled_sales.add((mov.animal_id, mov.fecha_movimiento))
+                elif mov.tipo_movimiento == MovementType.Venta_En_Predio:
+                    tipo_str = "VENTA EN PREDIO"
+                    handled_sales.add((mov.animal_id, mov.fecha_movimiento))
+                elif mov.tipo_movimiento == MovementType.Traslado_Interno:
+                    tipo_str = "TRASLADO INTERNO"
+
+                animal = mov.animal
+                dest = mov.finca_destino_externa or (
+                    mov.finca_destino.name if mov.finca_destino else "Predio"
+                )
+                detalle_parts = [f"Destino: {dest}"]
+                if mov.comprador:
+                    detalle_parts.append(f"Comprador: {mov.comprador}")
+                if mov.precio_venta:
+                    detalle_parts.append(f"Monto: ${float(mov.precio_venta):,.0f}")
+
+                movements_data.append(
+                    {
+                        "fecha": mov.fecha_movimiento.isoformat()
+                        if mov.fecha_movimiento
+                        else "",
+                        "tipo_movimiento": tipo_str,
+                        "numero_arete": (animal.record if animal else "SIN_ARETE"),
+                        "arete_sinigan": mov.arete_sinigan or "",
+                        "sexo": (
+                            animal.sex.value
+                            if hasattr(animal.sex, "value")
+                            else str(animal.sex)
+                        )
+                        if animal
+                        else "",
+                        "especie": "Bovino",
+                        "detalle": " | ".join(detalle_parts),
+                        "destino_origen": dest,
+                        "documento_soporte": mov.guia_movilizacion or "",
+                    }
+                )
+
+        # VENTAS HISTÓRICAS LEGADAS (animales con sale_date no registrados en AnimalMovement)
         if movement_type in ["sales", "all"]:
             sales_query = db.session.query(
+                Animal.id,
                 Animal.sale_date,
                 Animal.record,
                 Animal.sex
@@ -273,22 +360,24 @@ class RegulatoryReportsService:
             if date_to:
                 sales_query = sales_query.filter(Animal.sale_date <= date_to.date())
             for animal in sales_query.yield_per(1000):
-                movements_data.append(
-                    {
-                        "fecha": animal.sale_date.isoformat()
-                        if animal.sale_date
-                        else "",
-                        "tipo_movimiento": "VENTA",
-                        "numero_arete": animal.record or "SIN_ARETE",
-                        "sexo": str(animal.sex.value)
-                        if hasattr(animal.sex, "value")
-                        else str(animal.sex),
-                        "especie": "Bovino",
-                        "detalle": "Venta de animal",
-                        "destino_origen": "Finca",
-                        "documento_soporte": "",
-                    }
-                )
+                if (animal.id, animal.sale_date) not in handled_sales:
+                    movements_data.append(
+                        {
+                            "fecha": animal.sale_date.isoformat()
+                            if animal.sale_date
+                            else "",
+                            "tipo_movimiento": "VENTA",
+                            "numero_arete": animal.record or "SIN_ARETE",
+                            "arete_sinigan": "",
+                            "sexo": str(animal.sex.value)
+                            if hasattr(animal.sex, "value")
+                            else str(animal.sex),
+                            "especie": "Bovino",
+                            "detalle": "Venta de animal",
+                            "destino_origen": "Finca",
+                            "documento_soporte": "",
+                        }
+                    )
 
         movements_data.sort(
             key=lambda x: x["fecha"] if x["fecha"] else "", reverse=True
@@ -299,6 +388,7 @@ class RegulatoryReportsService:
                 "fecha",
                 "tipo_movimiento",
                 "numero_arete",
+                "arete_sinigan",
                 "sexo",
                 "especie",
                 "detalle",
@@ -344,7 +434,10 @@ class RegulatoryReportsService:
                 [m for m in movements_data if m["tipo_movimiento"] == "MUERTE"]
             ),
             "ventas": len(
-                [m for m in movements_data if m["tipo_movimiento"] == "VENTA"]
+                [m for m in movements_data if "VENTA" in m["tipo_movimiento"]]
+            ),
+            "traslados": len(
+                [m for m in movements_data if "TRASLADO" in m["tipo_movimiento"]]
             ),
         }
 
