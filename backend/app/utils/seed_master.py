@@ -307,7 +307,7 @@ def seed_learning_materials():
             "category": "Sanidad y Bioseguridad",
             "content_type": LearningContentType.PDF,
             "reading_level": "Productores y Mayordomos",
-            "summary": "Publicación técnica de AGROSAVIA orientada a la medicina preventiva en hatos de doble propósito, control integral de parásitos y manejo sanitario del lote.",
+            "summary": "Publicación técnica de AGROSAVIA orientada a la medicina preventiva en ganaderías de doble propósito, control integral de parásitos y manejo sanitario del lote.",
             "uri": "https://repository.agrosavia.co",
         },
         {

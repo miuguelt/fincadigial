@@ -5,7 +5,7 @@ Verifica:
 2. Reconocimiento de aplicaciones a través de Treatments (Desparasitación, tratamientos orales/inyectables).
 3. Transición de estados de vigencia: ok -> due_soon -> overdue -> missing.
 4. Cálculo determinista del semáforo general (overall: green, yellow, red).
-5. Paridad total entre la evaluación individual (check_animal_ica) y la del hato (herd_ica_compliance).
+5. Paridad total entre la evaluación individual (check_animal_ica) y la del ganado de la finca (herd_ica_compliance).
 6. Respeto al borrado lógico (is_deleted=True) y aislamiento multi-tenant.
 """
 
@@ -244,7 +244,7 @@ def test_check_animal_ica_ignora_vacunaciones_eliminadas_logicamente(app, ica_se
 
 
 def test_paridad_total_entre_check_animal_ica_y_herd_ica_compliance(app, ica_setup):
-    """Asegura que el semáforo individual coincida exactamente con el reporte del hato."""
+    """Asegura que el semáforo individual coincida exactamente con el reporte general del ganado."""
     with app.app_context():
         finca = ica_setup["finca"]
         flask.g.finca_id = finca.id
@@ -315,7 +315,7 @@ def test_paridad_total_entre_check_animal_ica_y_herd_ica_compliance(app, ica_set
         assert indiv_2["overall"] == "red"
         assert indiv_3["overall"] == "yellow"
 
-        # 2. Evaluación colectiva de hato
+        # 2. Evaluación colectiva del ganado de la finca
         herd = herd_ica_compliance(finca.id, today=hoy)
         assert herd["total"] == 3
         assert herd["counts"]["green"] == 1

@@ -59,7 +59,7 @@ describe('AdminFincaCard', () => {
     expect(article?.className).not.toContain('hover:-translate-y-1');
   });
 
-  it('ejecuta los callbacks al pulsar los botones correspondientes', () => {
+  it('ejecuta los callbacks al hacer clic en los botones correspondientes', () => {
     const handleManageImages = vi.fn();
     const handleInviteUsers = vi.fn();
     const handleOpenDetail = vi.fn();

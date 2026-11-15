@@ -309,7 +309,7 @@
     "_projects/villaluz/backend/app/utils/response_handler.py": 361,
     "_projects/villaluz/backend/app/utils/security_logger.py": 270,
     "_projects/villaluz/backend/app/utils/seed_knowledge_base.py": 755,
-    "_projects/villaluz/backend/app/utils/seed_master.py": 387,
+    "_projects/villaluz/backend/app/utils/seed_master.py": 466,
     "_projects/villaluz/backend/app/utils/tenant_context.py": 363,
     "_projects/villaluz/backend/app/utils/tree_builder.py": 428,
     "_projects/villaluz/backend/app/utils/validators.py": 470,

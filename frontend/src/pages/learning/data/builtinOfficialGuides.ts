@@ -57,7 +57,7 @@ export const OFFICIAL_REPOSITORIES: OfficialRepository[] = [
     url: 'https://www.ica.gov.co',
     badge: 'Autoridad Sanitaria',
     description:
-      'Plataforma oficial que alberga resoluciones vigentes (Res. 068167 / Res. 115708 ASI), calendarios de vacunación contra Aftosa y Brucelosis, guías para el plan sanitario del hato y listas de chequeo oficial.',
+      'Plataforma oficial que alberga resoluciones vigentes (Res. 068167 / Res. 115708 ASI), calendarios de vacunación contra Aftosa y Brucelosis, guías para el plan sanitario del ganado y listas de chequeo oficial.',
     bestFor: 'Requisitos sanitarios obligatorios, trazabilidad, botiquín ganadero y tiempos de retiro.',
     freeAccessNote: 'Normas técnicas y formatos de libre acceso ciudadano.',
   },
@@ -552,7 +552,7 @@ export const BUILTIN_OFFICIAL_CATALOG: OfflineLearningMaterial[] = [
     category: 'Sanidad y Bioseguridad',
     content_type: 'PDF' as any,
     summary:
-      'Publicación técnica oficial de AGROSAVIA orientada a la medicina preventiva en hatos de doble propósito, control integral de parásitos y manejo sanitario del lote.',
+      'Publicación técnica oficial de AGROSAVIA orientada a la medicina preventiva en ganaderías de doble propósito, control integral de parásitos y manejo sanitario del lote.',
     local_uri: 'https://repository.agrosavia.co',
     reading_level: 'Productores y Mayordomos',
     language: 'es',
