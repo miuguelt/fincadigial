@@ -22,6 +22,9 @@ def test_health_trend_marks_weeks_without_controls_as_unknown(monkeypatch):
         def query(self, *args, **kwargs):
             return EmptyQuery()
 
+        def remove(self):
+            pass
+
     monkeypatch.setattr(herd_kpis.db, "session", EmptySession())
 
     trend = herd_kpis.health_trend(finca_id=1, has_animals=True)

@@ -14,6 +14,7 @@ Uso:
 
 import unittest
 from datetime import date, timedelta
+import flask
 
 from app import create_app, db
 from app.models import Animal, Finca, FarmType, Breeds, Species
@@ -50,6 +51,10 @@ class TestAnimalSmartFilters(unittest.TestCase):
             self.finca = Finca.create(
                 name="Finca Filtros", type=FarmType.Tradicional, is_active=True
             )
+            def _set_tenant(sender, **kwargs):
+                flask.g.finca_id = self.finca.id
+            flask.appcontext_pushed.connect(_set_tenant, self.app)
+            self.addCleanup(lambda: flask.appcontext_pushed.disconnect(_set_tenant, self.app))
             self.species = Species(name="Bovino")
             db.session.add(self.species)
             db.session.commit()

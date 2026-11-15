@@ -42,9 +42,11 @@ class TestTreatmentsWithdrawalDate:
     def test_withdrawal_date_calculated_on_create_with_date_object(self, app):
         """Al crear con treatment_date=2026-10-18 y withdrawal_days=5, withdrawal_end_date es 2026-10-23."""
         with app.app_context():
+            import flask
             finca = Finca.query.first() or Finca.create(
                 name="Finca Retiro Test", type=FarmType.Tradicional
             )
+            flask.g.finca_id = finca.id
             cow = _seed_cow(finca.id, record="COW-RET-01")
 
             treatment = Treatments.create(
@@ -134,9 +136,11 @@ class TestTreatmentsWithdrawalDate:
     def test_withdrawal_date_synchronized_on_update(self, app):
         """Verifica que al actualizar treatment_date o withdrawal_days se sincronice withdrawal_end_date."""
         with app.app_context():
+            import flask
             finca = Finca.query.first() or Finca.create(
                 name="Finca Retiro Test 4", type=FarmType.Tradicional
             )
+            flask.g.finca_id = finca.id
             cow = _seed_cow(finca.id, record="COW-RET-04")
 
             treatment = Treatments.create(

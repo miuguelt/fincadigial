@@ -13,6 +13,7 @@ Verifica:
 
 import unittest
 from datetime import date
+import flask
 from app import create_app, db
 from app.models import Animals, Breeds, Species, Finca, FarmType
 from app.models.animals import Sex, AnimalStatus
@@ -44,6 +45,11 @@ class TestAnimalSearchQuery(unittest.TestCase):
             self.finca = Finca(name="La Esperanza", type=FarmType.Tradicional)
             db.session.add(self.finca)
             db.session.flush()
+
+            def _set_tenant(sender, **kwargs):
+                flask.g.finca_id = self.finca.id
+            flask.appcontext_pushed.connect(_set_tenant, self.app)
+            self.addCleanup(lambda: flask.appcontext_pushed.disconnect(_set_tenant, self.app))
 
             self.sp_bov = Species(name="Bovino")
             self.sp_buf = Species(name="Bufalino")

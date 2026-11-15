@@ -34,7 +34,9 @@ class AnimalICACompliance(Resource):
         """Semáforo de cumplimiento ICA para un animal (verde/amarillo/rojo)"""
         from datetime import date
 
-        result = MedicalAnalyticsService._check_ica_compliance(animal_id, date.today())
+        from app.utils.tenant_context import get_current_finca_id
+        finca_id = get_current_finca_id()
+        result = MedicalAnalyticsService._check_ica_compliance(animal_id, today=date.today(), finca_id=finca_id)
         return APIResponse.success(result)
 
 

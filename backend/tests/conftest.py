@@ -68,7 +68,8 @@ def db_session(app):
     with app.app_context():
         _db.create_all()
         yield _db
-        _db.session.remove()
+        if hasattr(_db.session, "remove") and callable(_db.session.remove):
+            _db.session.remove()
         _db.drop_all()
 
 

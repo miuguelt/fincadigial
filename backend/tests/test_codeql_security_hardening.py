@@ -75,7 +75,7 @@ class TestPathTraversalHardening:
             assert _resolve_safe_log_path("../../audit_probe.log") is None
             assert _resolve_safe_log_path("..\\audit_probe.log") is None
             assert _resolve_safe_log_path("sub/audit_probe.log") is None
-            assert _resolve_safe_log_path("audit_probe.log") == test_file
+            assert Path(_resolve_safe_log_path("audit_probe.log")).resolve() == Path(test_file).resolve()
 
             # El endpoint HTTP debe responder 404
             resp = client.get("/api/v1/system/logs/../../audit_probe.log", headers=auth_headers)

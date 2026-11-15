@@ -307,7 +307,7 @@ def get_animal_medical_history(
             "total_bitacora": bitacora_q.count(),
             "unread_alerts": alerts_q.filter(AnimalAlert.is_read.is_(False)).count(),
         },
-        "ica_compliance": check_animal_ica(animal_id, date.today()),
+        "ica_compliance": check_animal_ica(animal_id, date.today(), finca_id=animal.finca_id),
         "alerts": [
             {
                 "message": alert.message,

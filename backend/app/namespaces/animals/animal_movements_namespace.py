@@ -65,6 +65,13 @@ movement_post_model = animal_movements_ns.model(
         "precinto_seguridad": fields.String(
             description="Precinto de seguridad oficial colocado por el ICA"
         ),
+        "traslado_sanitario_emergencia": fields.Boolean(
+            description="Permite traslados internos de emergencia médica o aislamiento con justificación",
+            default=False,
+        ),
+        "justificacion_sanitaria": fields.String(
+            description="Justificación médica/veterinaria del traslado sanitario de emergencia"
+        ),
         "notes": fields.String(description="Observaciones"),
     },
 )
@@ -178,6 +185,16 @@ class AnimalMovementsResource(Resource):
             finca_destino_externa = data.get("finca_destino_externa")
             rpp_destino_externo = data.get("rpp_destino_externo")
             guia_movilizacion = data.get("guia_movilizacion")
+            arete_sinigan = data.get("arete_sinigan")
+
+            if arete_sinigan:
+                from app.services.sinigan_service import SiniganService
+                is_valid, norm_code, _, err_msg = SiniganService.validate_sinigan_code(arete_sinigan)
+                if not is_valid:
+                    return APIResponse.validation_error(
+                        {"arete_sinigan": err_msg}
+                    )
+                data["arete_sinigan"] = norm_code
 
             if tipo_movimiento == MovementType.Traslado_Interno:
                 if not finca_destino_id:
@@ -228,6 +245,28 @@ class AnimalMovementsResource(Resource):
                             }
                         )
 
+            # 4.1 Compuerta sanitaria y regulatoria ICA (retiro activo y vacunación de aftosa)
+            from app.services.sanitary_movement_gate import SanitaryMovementGate
+
+            traslado_emergencia = bool(data.get("traslado_sanitario_emergencia", False))
+            justificacion_sanitaria = data.get("justificacion_sanitaria")
+
+            sanitary_check = SanitaryMovementGate.check_movement_eligibility(
+                animal=animal,
+                fecha_movimiento=fecha_movimiento,
+                tipo_movimiento=tipo_movimiento,
+                traslado_sanitario_emergencia=traslado_emergencia,
+                justificacion_sanitaria=justificacion_sanitaria,
+                finca_id=finca_id,
+            )
+            if not sanitary_check.allowed:
+                return APIResponse.error(
+                    message=sanitary_check.message,
+                    status_code=422,
+                    error_code="SANITARY_LOCK",
+                    details=sanitary_check.metadata,
+                )
+
             # 5. DB execution inside transaction context
             try:
                 # Active field removal
@@ -241,29 +280,18 @@ class AnimalMovementsResource(Resource):
                 # Record SINIGAN registration if provided
                 arete_sinigan = data.get("arete_sinigan")
                 if arete_sinigan:
-                    from app.models.sinigan_registrations import SiniganRegistrations
+                    from app.services.sinigan_service import SiniganService
 
-                    reg = SiniganRegistrations.query.filter_by(
-                        animal_id=animal.id
-                    ).first()
-                    if reg:
-                        reg.arete_sinigan = arete_sinigan
-                        reg.guia_movilizacion = guia_movilizacion
-                        reg.fecha_registro = fecha_movimiento
-                        db.session.add(reg)
-                    else:
-                        SiniganRegistrations.create(
-                            finca_id=finca_id,
-                            animal_id=animal.id,
-                            arete_sinigan=arete_sinigan,
-                            fecha_registro=fecha_movimiento,
-                            predio_origen=animal.finca.name
-                            if animal.finca
-                            else "Origen",
-                            guia_movilizacion=guia_movilizacion,
-                            notes=data.get("notes")
-                            or "Registro automático por movimiento",
-                        )
+                    SiniganService.assign_sinigan_to_animal(
+                        animal_id=animal.id,
+                        arete_sinigan=arete_sinigan,
+                        finca_id=finca_id,
+                        guia_movilizacion=guia_movilizacion,
+                        fecha_registro=fecha_movimiento,
+                        predio_origen=animal.finca.name if animal.finca else "Origen",
+                        notes=data.get("notes") or "Registro automático por movimiento",
+                        commit=False,
+                    )
 
                 # Financial Transaction
                 precio_venta = data.get("precio_venta")
@@ -336,7 +364,11 @@ class AnimalMovementsResource(Resource):
                     nombre_conductor=data.get("nombre_conductor"),
                     cedula_conductor=data.get("cedula_conductor"),
                     precinto_seguridad=data.get("precinto_seguridad"),
-                    notes=data.get("notes"),
+                    notes=(
+                        f"[TRASLADO SANITARIO DE EMERGENCIA: {justificacion_sanitaria.strip()}] {data.get('notes') or ''}".strip()
+                        if traslado_emergencia and justificacion_sanitaria
+                        else data.get("notes")
+                    ),
                 )
 
                 db.session.commit()

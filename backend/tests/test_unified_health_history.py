@@ -119,6 +119,8 @@ def test_domains_mirror_into_bitacora(client, auth_headers, app):
         assert _mirror_count("animal_movement") == 1
 
     with app.app_context():
+        import flask
+        flask.g.finca_id = finca_id
         row = AHH.query.filter_by(reference_kind="milk_production").first()
         assert row is not None
         assert row.event_type == HET.Milk

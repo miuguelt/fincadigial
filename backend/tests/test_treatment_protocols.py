@@ -175,6 +175,8 @@ def test_apply_protocol_creates_treatment(client, auth_headers, app):
     assert treatment["withdrawal_days"] == 5
 
     with app.app_context():
+        import flask
+        flask.g.finca_id = finca_id
         stored = Treatments.get_by_id(treatment["id"])
         assert stored is not None
         assert stored.animal_disease_id is None

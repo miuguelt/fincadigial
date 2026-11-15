@@ -2,9 +2,8 @@
 
 Both views answer the same question — when was each mandatory application last
 done and is it still valid — so the keyword lists, the validity windows and the
-green/yellow/red ladder live here once. They used to be copied in two places
-and had already drifted: the herd view also reads vaccinations, the per-animal
-view only treatments.
+green/yellow/red ladder live here once. Both views now load both treatments and
+official vaccinations, evaluating them under unified business rules.
 """
 
 from collections import defaultdict
@@ -59,39 +58,15 @@ def overall_light(checks: dict[str, dict]) -> str:
     return "green"
 
 
-def _build_checks(find_date) -> dict[str, dict]:
+def _build_checks(find_date, today: date | None = None) -> dict[str, dict]:
     """Arma las cuatro casillas llamando a `find_date(keywords)` por cada una."""
-    today = date.today()
+    ref_date = today or date.today()
     return {
         name: compliance_status(
-            find_date(ICA_KEYWORDS[name]), ICA_MAX_DAYS[name], today
+            find_date(ICA_KEYWORDS[name]), ICA_MAX_DAYS[name], ref_date
         )
         for name in ICA_KEYWORDS
     }
-
-
-def check_animal_ica(animal_id: int, today: date) -> dict:
-    """Semáforo ICA de un animal, mirando sólo sus tratamientos."""
-    from app.models.treatments import Treatments
-
-    def last_treatment_date(keywords):
-        treatment = (
-            Treatments.query.filter(
-                Treatments.animal_id == animal_id,
-                or_(*[Treatments.description.ilike(f"%{word}%") for word in keywords]),
-            )
-            .order_by(desc(Treatments.treatment_date))
-            .first()
-        )
-        return treatment.treatment_date if treatment else None
-
-    checks = {
-        name: compliance_status(
-            last_treatment_date(ICA_KEYWORDS[name]), ICA_MAX_DAYS[name], today
-        )
-        for name in ICA_KEYWORDS
-    }
-    return {"overall": overall_light(checks), "checks": checks}
 
 
 def _event_date(event):
@@ -103,21 +78,90 @@ def _event_date(event):
 def _event_text(event) -> str:
     """Texto donde buscar las palabras clave, según sea tratamiento o vacunación."""
     from app.models.vaccinations import Vaccinations
+    from app.models.treatments import Treatments
 
     if isinstance(event, Vaccinations):
-        vaccine = event.vaccines
+        vaccine = getattr(event, "vaccines", None)
         disease = getattr(getattr(vaccine, "diseases", None), "name", "")
-        parts = [getattr(vaccine, "name", ""), disease, event.notes or ""]
+        parts = [
+            getattr(vaccine, "name", ""),
+            getattr(vaccine, "national_plan", ""),
+            disease,
+            getattr(event, "batch_number", "") or "",
+            getattr(event, "notes", "") or "",
+        ]
         return " ".join(filter(None, parts)).lower()
-    return (event.description or "").lower()
+
+    if isinstance(event, Treatments):
+        parts = [getattr(event, "description", "") or ""]
+        for tm in getattr(event, "treatment_medications", []) or []:
+            med = getattr(tm, "medications", None)
+            if med:
+                parts.append(getattr(med, "name", "") or "")
+        for tv in getattr(event, "treatment_vaccines", []) or []:
+            vac = getattr(tv, "vaccines", None)
+            if vac:
+                parts.append(getattr(vac, "name", "") or "")
+                parts.append(getattr(vac, "national_plan", "") or "")
+        return " ".join(filter(None, parts)).lower()
+
+    return (getattr(event, "description", "") or "").lower()
+
+
+def _load_animal_events(animal_id: int, finca_id: int | None = None) -> list:
+    """Carga y unifica en memoria todos los eventos ICA de un animal."""
+    from app.models.treatments import Treatments
+    from app.models.vaccinations import Vaccinations
+
+    t_filter = [
+        Treatments.animal_id == animal_id,
+        or_(*[Treatments.description.ilike(f"%{word}%") for word in ALL_ICA_KEYWORDS]),
+    ]
+    if finca_id is not None:
+        t_filter.append(Treatments.finca_id == finca_id)
+
+    treatments = (
+        Treatments.query.filter(*t_filter)
+        .order_by(desc(Treatments.treatment_date))
+        .all()
+    )
+
+    v_filter = [
+        Vaccinations.animal_id == animal_id,
+        Vaccinations.is_deleted.is_(False),
+    ]
+    if finca_id is not None:
+        v_filter.append(Vaccinations.finca_id == finca_id)
+
+    vaccinations = (
+        Vaccinations.query.filter(*v_filter)
+        .order_by(desc(Vaccinations.vaccination_date))
+        .all()
+    )
+
+    events = [*treatments, *vaccinations]
+    events.sort(key=lambda event: _event_date(event) or date.min, reverse=True)
+    return events
+
+
+def check_animal_ica(animal_id: int, today: date | None = None, finca_id: int | None = None) -> dict:
+    """Semáforo ICA de un animal, evaluando tanto vacunaciones oficiales como tratamientos."""
+    ref_date = today or date.today()
+    events = _load_animal_events(animal_id, finca_id=finca_id)
+
+    def last_matching_date(keywords):
+        for event in events:
+            text = _event_text(event)
+            if any(word in text for word in keywords):
+                return _event_date(event)
+        return None
+
+    checks = _build_checks(last_matching_date, today=ref_date)
+    return {"overall": overall_light(checks), "checks": checks}
 
 
 def _load_herd_events(finca_id: int, animal_ids: list[int]) -> dict[int, list]:
-    """Trae de una vez todos los eventos ICA del ganado, agrupados por animal.
-
-    Una consulta por animal convertía el semáforo del ganado en cientos de
-    consultas; aquí son dos, y el ordenamiento se hace en memoria.
-    """
+    """Trae de una vez todos los eventos ICA del ganado, agrupados por animal."""
     from app.models.treatments import Treatments
     from app.models.vaccinations import Vaccinations
 
@@ -153,10 +197,11 @@ def _load_herd_events(finca_id: int, animal_ids: list[int]) -> dict[int, list]:
     return events_by_animal
 
 
-def herd_ica_compliance(finca_id: int) -> dict:
+def herd_ica_compliance(finca_id: int, today: date | None = None) -> dict:
     """Semáforo ICA de todo el ganado, con el detalle por animal."""
     from app.models.animals import AnimalStatus, Animals
 
+    ref_date = today or date.today()
     animals = Animals.query.filter_by(finca_id=finca_id, status=AnimalStatus.Vivo).all()
     if not animals:
         return {
@@ -180,7 +225,7 @@ def herd_ica_compliance(finca_id: int) -> dict:
                     return _event_date(event)
             return None
 
-        checks = _build_checks(last_matching_date)
+        checks = _build_checks(last_matching_date, today=ref_date)
         light = overall_light(checks)
         counts[light] += 1
 
