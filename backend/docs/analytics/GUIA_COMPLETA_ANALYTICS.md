@@ -738,7 +738,7 @@ export const DashboardPage = () => {
 
       {/* Metadata */}
       <div className="mt-8 text-center text-sm text-gray-500">
-        <p>Última actualización: {new Date(data.metadata.generado_en).toLocaleString('es-ES')}</p>
+        <p>Última actualización: {new Date(data.metadata.generado_en).toLocaleString('es-CO')}</p>
         <p>Cache TTL: {data.metadata.cache_ttl} segundos | Versión: {data.metadata.version}</p>
       </div>
     </div>

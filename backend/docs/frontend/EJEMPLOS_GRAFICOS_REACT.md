@@ -906,7 +906,7 @@ export const ExecutiveDashboard = () => {
             🔄 Actualizar
           </button>
           <p className="text-xs text-gray-500 mt-2">
-            Última actualización: {new Date(data.metadata.generado_en).toLocaleString('es-ES')}
+            Última actualización: {new Date(data.metadata.generado_en).toLocaleString('es-CO')}
           </p>
         </div>
       </div>
