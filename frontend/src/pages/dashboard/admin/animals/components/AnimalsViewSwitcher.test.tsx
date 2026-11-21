@@ -31,4 +31,17 @@ describe('AnimalsViewSwitcher: controles responsive', () => {
     expect(screen.getByRole('button', { name: 'Filtros' }).className).toContain('h-11');
     expect(screen.getByRole('button', { name: /en gestación/i }).className).toContain('h-11');
   });
+
+  it('mantiene visibles las etiquetas de vista también en pantalla móvil', () => {
+    render(
+      <MemoryRouter>
+        <AnimalsViewSwitcher />
+      </MemoryRouter>
+    );
+
+    ['Tabla', 'Tarjetas', 'Potreros'].forEach((label) => {
+      const span = screen.getByText(label);
+      expect(span.className).not.toContain('hidden');
+    });
+  });
 });

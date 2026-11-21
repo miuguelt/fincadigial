@@ -26,7 +26,7 @@ export function AnimalsViewSwitcher() {
   };
 
   const viewButtonClass =
-    'h-11 min-h-[44px] flex-1 sm:flex-none justify-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 sm:px-3 text-xs font-bold';
+    'h-11 min-h-[44px] flex-1 sm:flex-none justify-center gap-1.5 whitespace-nowrap rounded-lg px-2 sm:px-3 text-xs font-bold';
 
   return (
     <div className="flex min-w-0 flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full">
@@ -46,7 +46,7 @@ export function AnimalsViewSwitcher() {
           title="Vista en tabla"
         >
           <Table className="h-3.5 w-3.5 shrink-0" />
-          <span className="hidden sm:inline">Tabla</span>
+          <span>Tabla</span>
         </Button>
         <Button
           variant={!isPotreros && viewMode === 'cards' ? 'primary' : 'ghost'}
@@ -58,7 +58,7 @@ export function AnimalsViewSwitcher() {
           title="Vista en tarjetas"
         >
           <LayoutGrid className="h-3.5 w-3.5 shrink-0" />
-          <span className="hidden sm:inline">Tarjetas</span>
+          <span>Tarjetas</span>
         </Button>
         <Button
           variant={isPotreros ? 'primary' : 'ghost'}
@@ -70,7 +70,7 @@ export function AnimalsViewSwitcher() {
           title="Vista potreros"
         >
           <MapIcon size={14} className="shrink-0" />
-          <span className="hidden sm:inline">Potreros</span>
+          <span>Potreros</span>
         </Button>
       </div>
 
