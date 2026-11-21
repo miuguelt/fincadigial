@@ -21,6 +21,8 @@ import { fieldService } from '@/entities/field/api/field.service';
 import { fetchAssignableUsers } from '@/entities/user/api/assignableUsers.service';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { useToast } from '@/app/providers/ToastContext';
+import { roleCan } from '@/shared/lib/rbac';
+import { formatMessageFromCode, readStandardErrorPayload } from '@/shared/api/error-parser';
 import { cn } from '@/shared/ui/cn';
 
 // Componentes modulares campesinos
@@ -35,6 +37,8 @@ import { TaskFilterKey, TaskMetrics, TaskTemplate } from './tasks.types';
 const TasksPage: React.FC = () => {
   const { user, role } = useAuth() as any;
   const currentRole = role || user?.role || null;
+  const canCreateTask = roleCan(currentRole, 'tasks', 'create');
+  const canUpdateTask = roleCan(currentRole, 'tasks', 'update');
   const { showToast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -195,7 +199,13 @@ const TasksPage: React.FC = () => {
         );
       } catch (err) {
         console.error('Error al actualizar estado de la labor:', err);
-        showToast('No se pudo actualizar el estado de la labor', 'error');
+        const serverMessage = formatMessageFromCode(readStandardErrorPayload(err));
+        showToast(
+          serverMessage && serverMessage !== 'Error en la solicitud'
+            ? serverMessage
+            : 'No se pudo actualizar el estado de la labor',
+          'error'
+        );
       } finally {
         setLoadingStatusId(null);
       }
@@ -500,13 +510,13 @@ const TasksPage: React.FC = () => {
               size="sm"
               onClick={() => setViewMode('cards')}
               className={cn(
-                'rounded-lg px-2.5 py-1 text-xs font-semibold h-7 flex items-center gap-1 transition-all',
+                'rounded-lg px-2.5 py-1 text-xs font-semibold h-11 min-h-[44px] sm:h-11 flex items-center gap-1 transition-all',
                 viewMode === 'cards' && 'bg-background shadow-xs text-foreground font-bold'
               )}
               title="Ver Cuaderno de Labores"
             >
               <IconLayoutGrid size="sm" />
-              <span className="hidden sm:inline">Cuaderno</span>
+              <span>Cuaderno</span>
             </Button>
 
             <Button
@@ -515,13 +525,13 @@ const TasksPage: React.FC = () => {
               size="sm"
               onClick={() => setViewMode('table')}
               className={cn(
-                'rounded-lg px-2.5 py-1 text-xs font-semibold h-7 flex items-center gap-1 transition-all',
+                'rounded-lg px-2.5 py-1 text-xs font-semibold h-11 min-h-[44px] sm:h-11 flex items-center gap-1 transition-all',
                 viewMode === 'table' && 'bg-background shadow-xs text-foreground font-bold'
               )}
               title="Ver Tabla de Control"
             >
               <IconTable size="sm" />
-              <span className="hidden sm:inline">Tabla</span>
+              <span>Tabla</span>
             </Button>
           </div>
 
@@ -537,21 +547,23 @@ const TasksPage: React.FC = () => {
         </div>
 
         {/* Lado derecho: Acción secundaria / Plantillas */}
-        <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setTemplatesModalOpen(true)}
-            className="rounded-xl h-8 px-3 text-xs font-bold border-emerald-600/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/10 flex items-center gap-1.5 shadow-2xs"
-          >
-            <IconPlus size="sm" />
-            <span>Plantillas de Faena</span>
-          </Button>
-        </div>
+        {canCreateTask && (
+          <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setTemplatesModalOpen(true)}
+              className="rounded-xl h-11 min-h-[44px] sm:h-11 px-3 text-xs font-bold border-emerald-600/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/10 flex items-center gap-1.5 shadow-2xs"
+            >
+              <IconPlus size="sm" />
+              <span>Plantillas de Faena</span>
+            </Button>
+          </div>
+        )}
       </div>
     ),
-    [viewMode, activeFilter, filterCounts, setViewMode]
+    [viewMode, activeFilter, filterCounts, setViewMode, canCreateTask]
   );
 
   // Configuración completa del CRUD
@@ -575,7 +587,7 @@ const TasksPage: React.FC = () => {
         <CampesinoTaskCard
           task={item}
           onOpenDetail={openDetail}
-          onStatusChange={handle1TapStatusChange}
+          onStatusChange={canUpdateTask ? handle1TapStatusChange : undefined}
           fieldsMap={fieldsMap}
           animalsMap={animalsMap}
           usersMap={usersMap}
@@ -584,7 +596,7 @@ const TasksPage: React.FC = () => {
       ),
       customActions: (item: Task) => (
         <div className="flex items-center gap-1">
-          {item.status !== 'Completada' && (
+          {canUpdateTask && item.status !== 'Completada' && (
             <Button
               type="button"
               variant="ghost"
@@ -614,6 +626,7 @@ const TasksPage: React.FC = () => {
       animalsMap,
       usersMap,
       loadingStatusId,
+      canUpdateTask,
     ]
   );
 
@@ -636,7 +649,7 @@ const TasksPage: React.FC = () => {
           />
         )}
         additionalFormContent={(_formData, editingItem) => {
-          if (editingItem) return null;
+          if (editingItem || !canCreateTask) return null;
           return (
             <div className="mb-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-2">
               <span className="text-xs font-semibold text-emerald-950 dark:text-emerald-100">

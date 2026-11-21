@@ -208,25 +208,43 @@ export const CampesinoTaskCard: React.FC<CampesinoTaskCardProps> = ({
         )}
       </div>
 
-      {/* Botones de acción táctiles de 1 Toque (Min 44px de alto) */}
-      <div className="mt-4 pt-3 border-t border-border/50 flex items-center gap-2">
-        {task.status === 'Pendiente' && (
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={isUpdating}
-              onClick={(e) => {
-                e.stopPropagation();
-                onStatusChange?.(task, 'En Progreso');
-              }}
-              className="flex-1 min-h-[44px] rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border-sky-500/40 text-sky-700 hover:bg-sky-500/10 dark:text-sky-300"
-            >
-              <IconClockCheck size="sm" />
-              <span>Iniciar faena</span>
-            </Button>
+      {(onStatusChange || task.status === 'Completada') && (
+        <div className="mt-4 pt-3 border-t border-border/50 flex items-center gap-2">
+          {onStatusChange && task.status === 'Pendiente' && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isUpdating}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onStatusChange(task, 'En Progreso');
+                }}
+                className="flex-1 min-h-[44px] rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border-sky-500/40 text-sky-700 hover:bg-sky-500/10 dark:text-sky-300"
+              >
+                <IconClockCheck size="sm" />
+                <span>Iniciar faena</span>
+              </Button>
 
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                disabled={isUpdating}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onStatusChange(task, 'Completada');
+                }}
+                className="flex-1 min-h-[44px] rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+              >
+                <IconCheck size="sm" />
+                <span>¡Completar!</span>
+              </Button>
+            </>
+          )}
+
+          {onStatusChange && task.status === 'En Progreso' && (
             <Button
               type="button"
               variant="primary"
@@ -234,56 +252,41 @@ export const CampesinoTaskCard: React.FC<CampesinoTaskCardProps> = ({
               disabled={isUpdating}
               onClick={(e) => {
                 e.stopPropagation();
-                onStatusChange?.(task, 'Completada');
+                onStatusChange(task, 'Completada');
               }}
-              className="flex-1 min-h-[44px] rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+              className="w-full min-h-[44px] rounded-xl font-black text-sm flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md active:scale-95"
             >
-              <IconCheck size="sm" />
-              <span>¡Completar!</span>
+              <IconCheck size="md" />
+              <span>✓ ¡Terminar y Guardar Labor!</span>
             </Button>
-          </>
-        )}
+          )}
 
-        {task.status === 'En Progreso' && (
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            disabled={isUpdating}
-            onClick={(e) => {
-              e.stopPropagation();
-              onStatusChange?.(task, 'Completada');
-            }}
-            className="w-full min-h-[44px] rounded-xl font-black text-sm flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md active:scale-95"
-          >
-            <IconCheck size="md" />
-            <span>✓ ¡Terminar y Guardar Labor!</span>
-          </Button>
-        )}
+          {task.status === 'Completada' && (
+            <div className="w-full flex items-center justify-between gap-2">
+              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                <IconCheck size="sm" /> Labor realizada con éxito
+              </span>
 
-        {task.status === 'Completada' && (
-          <div className="w-full flex items-center justify-between gap-2">
-            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
-              <IconCheck size="sm" /> Labor realizada con éxito
-            </span>
-
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              disabled={isUpdating}
-              onClick={(e) => {
-                e.stopPropagation();
-                onStatusChange?.(task, 'Pendiente');
-              }}
-              className="min-h-[36px] text-xs font-medium text-muted-foreground hover:text-foreground flex items-center gap-1"
-            >
-              <IconRotate size="sm" />
-              Reabrir
-            </Button>
-          </div>
-        )}
-      </div>
+              {onStatusChange && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={isUpdating}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onStatusChange(task, 'Pendiente');
+                  }}
+                  className="min-h-[44px] text-xs font-medium text-muted-foreground hover:text-foreground flex items-center gap-1"
+                >
+                  <IconRotate size="sm" />
+                  Reabrir
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
