@@ -9,6 +9,8 @@ import { offlineQueue } from '@/shared/api/offline/offlineQueue';
 import api from '@/shared/api/client';
 import { wasQueuedOffline } from '@/shared/api/offlineResult';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
+import { roleCan } from '@/shared/lib/rbac';
+import { formatMessageFromCode, readStandardErrorPayload } from '@/shared/api/error-parser';
 
 import { Card, CardContent } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
@@ -86,8 +88,14 @@ interface UnifiedRecord {
   raw: any;
 }
 
+const getServerErrorMessage = (err: unknown, fallback: string): string => {
+  const formatted = formatMessageFromCode(readStandardErrorPayload(err));
+  return formatted && formatted !== 'Error en la solicitud' ? formatted : fallback;
+};
+
 export default function GanaderiaOperativaPage() {
-  const { user } = useAuth();
+  const { user, role } = useAuth() as any;
+  const currentRole = role || user?.role || null;
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { showToast } = useToast();
@@ -117,7 +125,7 @@ export default function GanaderiaOperativaPage() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      const date = new Date().toISOString().split('T')[0];
+      const date = getTodayColombia();
       link.setAttribute('download', `ficha_${record}_${date}.pdf`);
       document.body.appendChild(link);
       link.click();
@@ -412,7 +420,7 @@ export default function GanaderiaOperativaPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `VillaLuz_Actividades_Ganaderas_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `VillaLuz_Actividades_Ganaderas_${getTodayColombia()}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -575,7 +583,7 @@ export default function GanaderiaOperativaPage() {
       doc.text('Firma del Capataz / Campesino', 20, finalY + 16);
       doc.text('Firma del Veterinario / Administrador', 130, finalY + 16);
 
-      const filename = `VillaLuz_ReporteOperativo_${new Date().toISOString().split('T')[0]}.pdf`;
+      const filename = `VillaLuz_ReporteOperativo_${getTodayColombia()}.pdf`;
       doc.save(filename);
       showToast('Reporte PDF descargado con éxito', 'success');
     } catch (err) {
@@ -600,7 +608,7 @@ export default function GanaderiaOperativaPage() {
   const handleMilkingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!milkForm.animalId) { showToast('Selecciona el animal', 'error'); return; }
-    if (!milkForm.liters || Number(milkForm.liters) < 0) { showToast('Ingresa los litros correctamente', 'error'); return; }
+    if (!milkForm.liters || Number(milkForm.liters) <= 0) { showToast('Ingresa los litros correctamente (mayor a 0)', 'error'); return; }
 
     setSavingForm(true);
     const sessionMapped = milkForm.session === 'Mañana' ? 'AM' : milkForm.session === 'Tarde' ? 'PM' : 'Extra';
@@ -621,8 +629,8 @@ export default function GanaderiaOperativaPage() {
       closeModal();
       loadHistoryRecords();
       setMilkForm({ animalId: '', liters: '', session: 'Mañana', date: getTodayColombia(), notes: '' });
-    } catch {
-      showToast('Error al registrar ordeño. Intente nuevamente.', 'error');
+    } catch (err) {
+      showToast(getServerErrorMessage(err, 'Error al registrar ordeño. Intenta de nuevo.'), 'error');
     } finally {
       setSavingForm(false);
     }
@@ -638,7 +646,7 @@ export default function GanaderiaOperativaPage() {
   const handleTransferSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!transferForm.animalId || !transferForm.fieldId) {
-      showToast('Seleccione animal y potrero de destino', 'error');
+      showToast('Selecciona el animal y el potrero de destino', 'error');
       return;
     }
 
@@ -660,8 +668,8 @@ export default function GanaderiaOperativaPage() {
       closeModal();
       loadHistoryRecords();
       setTransferForm({ animalId: '', fieldId: '', date: getTodayColombia() });
-    } catch {
-      showToast('Error al registrar traslado', 'error');
+    } catch (err) {
+      showToast(getServerErrorMessage(err, 'Error al registrar traslado'), 'error');
     } finally {
       setSavingForm(false);
     }
@@ -679,7 +687,7 @@ export default function GanaderiaOperativaPage() {
   const handleDiseaseSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!diseaseForm.animalId || !diseaseForm.diseaseId) {
-      showToast('Seleccione el animal y diagnóstico', 'error');
+      showToast('Selecciona el animal y el diagnóstico', 'error');
       return;
     }
 
@@ -690,7 +698,7 @@ export default function GanaderiaOperativaPage() {
       diagnosis_date: diseaseForm.date,
       status: diseaseForm.status,
       notes: diseaseForm.notes || undefined,
-      instructor_id: user?.id || 0
+      ...(user?.id ? { instructor_id: user.id } : {}),
     };
 
     try {
@@ -698,14 +706,14 @@ export default function GanaderiaOperativaPage() {
         await offlineQueue.enqueue('POST', 'animal-diseases', payload);
         showToast('Caso clínico guardado sin señal. Se sincronizará pronto.', 'success');
       } else {
-        await animalDiseasesService.createAnimalDisease(payload);
+        await animalDiseasesService.createAnimalDisease(payload as any);
         showToast('Diagnóstico registrado exitosamente', 'success');
       }
       closeModal();
       loadHistoryRecords();
       setDiseaseForm({ animalId: '', diseaseId: '', status: 'Activo', date: getTodayColombia(), notes: '' });
-    } catch {
-      showToast('Error al reportar enfermedad', 'error');
+    } catch (err) {
+      showToast(getServerErrorMessage(err, 'Error al reportar enfermedad'), 'error');
     } finally {
       setSavingForm(false);
     }
@@ -723,7 +731,7 @@ export default function GanaderiaOperativaPage() {
   const handleTreatmentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!treatmentForm.animalId || !treatmentForm.medicationId || !treatmentForm.dose) {
-      showToast('Por favor, rellene todos los campos requeridos', 'error');
+      showToast('Completa todos los campos obligatorios', 'error');
       return;
     }
 
@@ -748,8 +756,8 @@ export default function GanaderiaOperativaPage() {
       closeModal();
       loadHistoryRecords();
       setTreatmentForm({ animalId: '', medicationId: '', dose: '', date: getTodayColombia(), description: 'Tratamiento rápido' });
-    } catch {
-      showToast('Error al aplicar tratamiento', 'error');
+    } catch (err) {
+      showToast(getServerErrorMessage(err, 'Error al aplicar tratamiento'), 'error');
     } finally {
       setSavingForm(false);
     }
@@ -766,7 +774,7 @@ export default function GanaderiaOperativaPage() {
   });
 
   const handleFinanceSubmit = async (): Promise<boolean> => {
-    if (!financeForm.amount || !financeForm.category) { showToast('Complete monto y categoría', 'error'); return false; }
+    if (!financeForm.amount || Number(financeForm.amount) <= 0 || !financeForm.category) { showToast('Ingresa un monto mayor a cero y elige una categoría', 'error'); return false; }
     setSavingForm(true);
     const payload: any = {
       transaction_type: financeForm.transaction_type,
@@ -788,8 +796,8 @@ export default function GanaderiaOperativaPage() {
       closeModal();
       loadHistoryRecords();
       return true;
-    } catch {
-      showToast('Error al registrar transacción', 'error');
+    } catch (err) {
+      showToast(getServerErrorMessage(err, 'Error al registrar transacción'), 'error');
       return false;
     } finally {
       setSavingForm(false);
@@ -840,65 +848,69 @@ export default function GanaderiaOperativaPage() {
         <section className="space-y-3">
           <h2 className="text-sm font-extrabold text-slate-700 dark:text-slate-300 px-1">¿Qué vas a registrar?</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            {/* Milk Register */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => openModal('milk')}
-              className="min-h-32 p-4 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-md hover:shadow-lg transition-all text-left flex flex-col justify-between border-0 cursor-pointer relative overflow-hidden"
-            >
-              <div className="bg-white/20 p-2.5 rounded-xl w-fit"><IconMilk className="w-6 h-6" /></div>
-              <div>
-                <span className="block font-extrabold text-[15px] leading-tight">Registrar ordeño</span>
-                <span className="block text-xs text-white/80 mt-1">Anota litros por vaca</span>
-              </div>
-              <div className="absolute right-3 top-3 text-white/10 font-bold text-6xl select-none leading-none pointer-events-none">🥛</div>
-            </motion.button>
+            {roleCan(currentRole, 'milk-production', 'create') && (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => openModal('milk')}
+                className="min-h-32 p-4 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-md hover:shadow-lg transition-all text-left flex flex-col justify-between border-0 cursor-pointer relative overflow-hidden"
+              >
+                <div className="bg-white/20 p-2.5 rounded-xl w-fit"><IconMilk className="w-6 h-6" /></div>
+                <div>
+                  <span className="block font-extrabold text-[15px] leading-tight">Registrar ordeño</span>
+                  <span className="block text-xs text-white/80 mt-1">Anota litros por vaca</span>
+                </div>
+                <div className="absolute right-3 top-3 text-white/10 font-bold text-6xl select-none leading-none pointer-events-none">🥛</div>
+              </motion.button>
+            )}
 
-            {/* Transfer Animal */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => openModal('transfer')}
-              className="min-h-32 p-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md hover:shadow-lg transition-all text-left flex flex-col justify-between border-0 cursor-pointer relative overflow-hidden"
-            >
-              <div className="bg-white/20 p-2.5 rounded-xl w-fit"><IconRouteCattle className="w-6 h-6" /></div>
-              <div>
-                <span className="block font-extrabold text-[15px] leading-tight">Mover ganado</span>
-                <span className="block text-xs text-white/80 mt-1">Cambia de potrero</span>
-              </div>
-              <div className="absolute right-3 top-3 text-white/10 font-bold text-6xl select-none leading-none pointer-events-none">🛣️</div>
-            </motion.button>
+            {roleCan(currentRole, 'animal-fields', 'create') && (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => openModal('transfer')}
+                className="min-h-32 p-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md hover:shadow-lg transition-all text-left flex flex-col justify-between border-0 cursor-pointer relative overflow-hidden"
+              >
+                <div className="bg-white/20 p-2.5 rounded-xl w-fit"><IconRouteCattle className="w-6 h-6" /></div>
+                <div>
+                  <span className="block font-extrabold text-[15px] leading-tight">Mover ganado</span>
+                  <span className="block text-xs text-white/80 mt-1">Cambia de potrero</span>
+                </div>
+                <div className="absolute right-3 top-3 text-white/10 font-bold text-6xl select-none leading-none pointer-events-none">🛣️</div>
+              </motion.button>
+            )}
 
-            {/* Disease Register */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => openModal('disease')}
-              className="min-h-32 p-4 rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-md hover:shadow-lg transition-all text-left flex flex-col justify-between border-0 cursor-pointer relative overflow-hidden"
-            >
-              <div className="bg-white/20 p-2.5 rounded-xl w-fit"><IconHealthAlert className="w-6 h-6" /></div>
-              <div>
-                <span className="block font-extrabold text-[15px] leading-tight">Avisar un animal enfermo</span>
-                <span className="block text-xs text-white/80 mt-1">Registra síntomas</span>
-              </div>
-              <div className="absolute right-3 top-3 text-white/10 font-bold text-6xl select-none leading-none pointer-events-none">🤒</div>
-            </motion.button>
+            {roleCan(currentRole, 'animal-diseases', 'create') && (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => openModal('disease')}
+                className="min-h-32 p-4 rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-md hover:shadow-lg transition-all text-left flex flex-col justify-between border-0 cursor-pointer relative overflow-hidden"
+              >
+                <div className="bg-white/20 p-2.5 rounded-xl w-fit"><IconHealthAlert className="w-6 h-6" /></div>
+                <div>
+                  <span className="block font-extrabold text-[15px] leading-tight">Avisar un animal enfermo</span>
+                  <span className="block text-xs text-white/80 mt-1">Registra síntomas</span>
+                </div>
+                <div className="absolute right-3 top-3 text-white/10 font-bold text-6xl select-none leading-none pointer-events-none">🤒</div>
+              </motion.button>
+            )}
 
-            {/* Treatment Register */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => openModal('treatment')}
-              className="min-h-32 p-4 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-md hover:shadow-lg transition-all text-left flex flex-col justify-between border-0 cursor-pointer relative overflow-hidden"
-            >
-              <div className="bg-white/20 p-2.5 rounded-xl w-fit"><IconHealthCheck className="w-6 h-6" /></div>
-              <div>
-                <span className="block font-extrabold text-[15px] leading-tight">Registrar tratamiento</span>
-                <span className="block text-xs text-white/80 mt-1">Anota dosis y motivo</span>
-              </div>
-              <div className="absolute right-3 top-3 text-white/10 font-bold text-6xl select-none leading-none pointer-events-none">💉</div>
-            </motion.button>
+            {roleCan(currentRole, 'treatments', 'create') && (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => openModal('treatment')}
+                className="min-h-32 p-4 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-md hover:shadow-lg transition-all text-left flex flex-col justify-between border-0 cursor-pointer relative overflow-hidden"
+              >
+                <div className="bg-white/20 p-2.5 rounded-xl w-fit"><IconHealthCheck className="w-6 h-6" /></div>
+                <div>
+                  <span className="block font-extrabold text-[15px] leading-tight">Registrar tratamiento</span>
+                  <span className="block text-xs text-white/80 mt-1">Anota dosis y motivo</span>
+                </div>
+                <div className="absolute right-3 top-3 text-white/10 font-bold text-6xl select-none leading-none pointer-events-none">💉</div>
+              </motion.button>
+            )}
 
             {/* Finance Register */}
             <motion.button
@@ -1180,7 +1192,7 @@ export default function GanaderiaOperativaPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-8 w-8 p-0 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-red-500 transition-colors"
+                                className="h-11 w-11 p-0 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-red-500 transition-colors"
                                 title="Descargar Ficha PDF"
                                 onClick={(e) => { e.stopPropagation(); handleDownloadReport(r.animalId, r.animalLabel); }}
                                 disabled={downloadingId === `report-${r.animalId}`}
@@ -1195,7 +1207,7 @@ export default function GanaderiaOperativaPage() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-8 w-8 p-0 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-emerald-500 transition-colors"
+                                  className="h-11 w-11 p-0 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-emerald-500 transition-colors"
                                   title="Ver Historial Completo"
                                 >
                                   <History className="h-3.5 w-3.5" />
@@ -1222,7 +1234,7 @@ export default function GanaderiaOperativaPage() {
             <div className="p-2 bg-white/20 rounded-xl"><IconMilk className="w-6 h-6" /></div>
             <div>
               <DialogTitle className="text-xl font-black uppercase tracking-wider text-white">Registrar Ordeño</DialogTitle>
-              <DialogDescription className="text-xs text-amber-100">Ingrese la producción de leche de la vaca seleccionada</DialogDescription>
+              <DialogDescription className="text-xs text-amber-100">Ingresa la producción de leche de la vaca seleccionada</DialogDescription>
             </div>
           </DialogHeader>
           <div className="p-6 overflow-y-auto max-h-[calc(90dvh-5rem)]">
@@ -1236,8 +1248,8 @@ export default function GanaderiaOperativaPage() {
               <div className="space-y-2">
                 <Label htmlFor="milk-animal">¿De qué vaca estás ordeñando? *</Label>
                 <Select value={milkForm.animalId} onValueChange={(v) => setMilkForm(prev => ({ ...prev, animalId: v }))}>
-                  <SelectTrigger id="milk-animal" className="rounded-xl border h-11 bg-white">
-                    <SelectValue placeholder="— Seleccione la vaca —" />
+                  <SelectTrigger id="milk-animal" className="rounded-xl border h-11 bg-background">
+                    <SelectValue placeholder="— Selecciona la vaca —" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
                     {animals.filter(a => a.sex === 'Hembra').map(a => (
@@ -1257,20 +1269,20 @@ export default function GanaderiaOperativaPage() {
                     type="number"
                     inputMode="decimal"
                     step="0.1"
-                    min="0"
+                    min="0.1"
                     max="80"
                     placeholder="Ej: 8.5"
                     value={milkForm.liters}
                     onChange={e => setMilkForm(prev => ({ ...prev, liters: e.target.value }))}
                     required
-                    className="rounded-xl h-11 border bg-white text-sm font-bold"
+                    className="rounded-xl h-11 border bg-background text-sm font-bold"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="milk-session">Turno / Sesión</Label>
                   <Select value={milkForm.session} onValueChange={(v) => setMilkForm(prev => ({ ...prev, session: v }))}>
-                    <SelectTrigger id="milk-session" className="rounded-xl border h-11 bg-white">
+                    <SelectTrigger id="milk-session" className="rounded-xl border h-11 bg-background">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
@@ -1287,10 +1299,11 @@ export default function GanaderiaOperativaPage() {
                 <Input
                   id="milk-date"
                   type="date"
+                  max={getTodayColombia()}
                   value={milkForm.date}
                   onChange={e => setMilkForm(prev => ({ ...prev, date: e.target.value }))}
                   required
-                  className="rounded-xl h-11 border bg-white"
+                  className="rounded-xl h-11 border bg-background"
                 />
               </div>
 
@@ -1302,7 +1315,7 @@ export default function GanaderiaOperativaPage() {
                   placeholder="Ej: mastitis, celo, etc."
                   value={milkForm.notes}
                   onChange={e => setMilkForm(prev => ({ ...prev, notes: e.target.value }))}
-                  className="rounded-xl h-11 border bg-white"
+                  className="rounded-xl h-11 border bg-background"
                 />
               </div>
 
@@ -1337,10 +1350,10 @@ export default function GanaderiaOperativaPage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="tf-animal">Seleccione el animal *</Label>
+                <Label htmlFor="tf-animal">Selecciona el animal *</Label>
                 <Select value={transferForm.animalId} onValueChange={(v) => setTransferForm(prev => ({ ...prev, animalId: v }))}>
-                  <SelectTrigger id="tf-animal" className="rounded-xl border h-11 bg-white">
-                    <SelectValue placeholder="— Seleccione el animal —" />
+                  <SelectTrigger id="tf-animal" className="rounded-xl border h-11 bg-background">
+                    <SelectValue placeholder="— Selecciona el animal —" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
                     {animals.map(a => (
@@ -1355,8 +1368,8 @@ export default function GanaderiaOperativaPage() {
               <div className="space-y-2">
                 <Label htmlFor="tf-field">Potrero / Lote de Destino *</Label>
                 <Select value={transferForm.fieldId} onValueChange={(v) => setTransferForm(prev => ({ ...prev, fieldId: v }))}>
-                  <SelectTrigger id="tf-field" className="rounded-xl border h-11 bg-white">
-                    <SelectValue placeholder="— Seleccionar potrero —" />
+                  <SelectTrigger id="tf-field" className="rounded-xl border h-11 bg-background">
+                    <SelectValue placeholder="— Selecciona un potrero —" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
                     {fields.map(f => (
@@ -1373,10 +1386,11 @@ export default function GanaderiaOperativaPage() {
                 <Input
                   id="tf-date"
                   type="date"
+                  max={getTodayColombia()}
                   value={transferForm.date}
                   onChange={e => setTransferForm(prev => ({ ...prev, date: e.target.value }))}
                   required
-                  className="rounded-xl h-11 border bg-white"
+                  className="rounded-xl h-11 border bg-background"
                 />
               </div>
 
@@ -1399,7 +1413,7 @@ export default function GanaderiaOperativaPage() {
             <div className="p-2 bg-white/20 rounded-xl"><IconHealthAlert className="w-6 h-6" /></div>
             <div>
               <DialogTitle className="text-xl font-black uppercase tracking-wider text-white">Reportar Enfermedad</DialogTitle>
-              <DialogDescription className="text-xs text-rose-100">Registrar un diagnóstico clínico o caso de enfermedad</DialogDescription>
+              <DialogDescription className="text-xs text-rose-100">Registra un diagnóstico clínico o caso de enfermedad</DialogDescription>
             </div>
           </DialogHeader>
           <div className="p-6 overflow-y-auto max-h-[calc(90dvh-5rem)]">
@@ -1413,8 +1427,8 @@ export default function GanaderiaOperativaPage() {
               <div className="space-y-2">
                 <Label htmlFor="dis-animal">Animal afectado *</Label>
                 <Select value={diseaseForm.animalId} onValueChange={(v) => setDiseaseForm(prev => ({ ...prev, animalId: v }))}>
-                  <SelectTrigger id="dis-animal" className="rounded-xl border h-11 bg-white">
-                    <SelectValue placeholder="— Seleccione el animal —" />
+                  <SelectTrigger id="dis-animal" className="rounded-xl border h-11 bg-background">
+                    <SelectValue placeholder="— Selecciona el animal —" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
                     {animals.map(a => (
@@ -1430,8 +1444,8 @@ export default function GanaderiaOperativaPage() {
                 <div className="space-y-2">
                   <Label htmlFor="dis-disease">Diagnóstico / Patología *</Label>
                   <Select value={diseaseForm.diseaseId} onValueChange={(v) => setDiseaseForm(prev => ({ ...prev, diseaseId: v }))}>
-                    <SelectTrigger id="dis-disease" className="rounded-xl border h-11 bg-white">
-                      <SelectValue placeholder="— Seleccione —" />
+                    <SelectTrigger id="dis-disease" className="rounded-xl border h-11 bg-background">
+                      <SelectValue placeholder="— Selecciona —" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
                       {diseases.map(d => (
@@ -1446,7 +1460,7 @@ export default function GanaderiaOperativaPage() {
                 <div className="space-y-2">
                   <Label htmlFor="dis-status">Estado inicial del caso</Label>
                   <Select value={diseaseForm.status} onValueChange={(v) => setDiseaseForm(prev => ({ ...prev, status: v }))}>
-                    <SelectTrigger id="dis-status" className="rounded-xl border h-11 bg-white">
+                    <SelectTrigger id="dis-status" className="rounded-xl border h-11 bg-background">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
@@ -1463,10 +1477,11 @@ export default function GanaderiaOperativaPage() {
                 <Input
                   id="dis-date"
                   type="date"
+                  max={getTodayColombia()}
                   value={diseaseForm.date}
                   onChange={e => setDiseaseForm(prev => ({ ...prev, date: e.target.value }))}
                   required
-                  className="rounded-xl h-11 border bg-white"
+                  className="rounded-xl h-11 border bg-background"
                 />
               </div>
 
@@ -1478,7 +1493,7 @@ export default function GanaderiaOperativaPage() {
                   placeholder="Ej: fiebre, diarrea, herida en pezuña"
                   value={diseaseForm.notes}
                   onChange={e => setDiseaseForm(prev => ({ ...prev, notes: e.target.value }))}
-                  className="rounded-xl h-11 border bg-white"
+                  className="rounded-xl h-11 border bg-background"
                 />
               </div>
 
@@ -1501,7 +1516,7 @@ export default function GanaderiaOperativaPage() {
             <div className="p-2 bg-white/20 rounded-xl"><IconHealthCheck className="w-6 h-6" /></div>
             <div>
               <DialogTitle className="text-xl font-black uppercase tracking-wider text-white">Aplicar Medicina</DialogTitle>
-              <DialogDescription className="text-xs text-purple-100">Registrar la dosis de medicamento o vacuna en el animal</DialogDescription>
+              <DialogDescription className="text-xs text-purple-100">Registra la dosis de medicamento o vacuna en el animal</DialogDescription>
             </div>
           </DialogHeader>
           <div className="p-6 overflow-y-auto max-h-[calc(90dvh-5rem)]">
@@ -1515,8 +1530,8 @@ export default function GanaderiaOperativaPage() {
               <div className="space-y-2">
                 <Label htmlFor="tx-animal">Animal de Tratamiento *</Label>
                 <Select value={treatmentForm.animalId} onValueChange={(v) => setTreatmentForm(prev => ({ ...prev, animalId: v }))}>
-                  <SelectTrigger id="tx-animal" className="rounded-xl border h-11 bg-white">
-                    <SelectValue placeholder="— Seleccione el animal —" />
+                  <SelectTrigger id="tx-animal" className="rounded-xl border h-11 bg-background">
+                    <SelectValue placeholder="— Selecciona el animal —" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
                     {animals.map(a => (
@@ -1532,8 +1547,8 @@ export default function GanaderiaOperativaPage() {
                 <div className="space-y-2">
                   <Label htmlFor="tx-med">Medicamento / Vacuna *</Label>
                   <Select value={treatmentForm.medicationId} onValueChange={(v) => setTreatmentForm(prev => ({ ...prev, medicationId: v }))}>
-                    <SelectTrigger id="tx-med" className="rounded-xl border h-11 bg-white">
-                      <SelectValue placeholder="— Seleccione —" />
+                    <SelectTrigger id="tx-med" className="rounded-xl border h-11 bg-background">
+                      <SelectValue placeholder="— Selecciona —" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
                       {medications.map(m => (
@@ -1554,7 +1569,7 @@ export default function GanaderiaOperativaPage() {
                     value={treatmentForm.dose}
                     onChange={e => setTreatmentForm(prev => ({ ...prev, dose: e.target.value }))}
                     required
-                    className="rounded-xl h-11 border bg-white"
+                    className="rounded-xl h-11 border bg-background"
                   />
                 </div>
               </div>
@@ -1564,10 +1579,11 @@ export default function GanaderiaOperativaPage() {
                 <Input
                   id="tx-date"
                   type="date"
+                  max={getTodayColombia()}
                   value={treatmentForm.date}
                   onChange={e => setTreatmentForm(prev => ({ ...prev, date: e.target.value }))}
                   required
-                  className="rounded-xl h-11 border bg-white"
+                  className="rounded-xl h-11 border bg-background"
                 />
               </div>
 
@@ -1579,7 +1595,7 @@ export default function GanaderiaOperativaPage() {
                   placeholder="Ej: desparasitación de rutina, mastitis, etc."
                   value={treatmentForm.description}
                   onChange={e => setTreatmentForm(prev => ({ ...prev, description: e.target.value }))}
-                  className="rounded-xl h-11 border bg-white"
+                  className="rounded-xl h-11 border bg-background"
                 />
               </div>
 

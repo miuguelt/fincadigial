@@ -92,7 +92,7 @@ export function FinanceModal({ open, onClose, form, setForm, animals, saving, on
           <label htmlFor="finanza-monto" className="block text-sm font-medium text-foreground mb-1.5">Monto <span className="text-danger">*</span></label>
           <input
             id="finanza-monto"
-            type="number" inputMode="numeric" min="0" step="1" placeholder="0"
+            type="number" inputMode="numeric" min="1" step="1" placeholder="0"
             value={form.amount}
             onChange={e => setForm({ ...form, amount: e.target.value })}
             className={`w-full px-4 py-3 min-h-11 rounded-xl border border-border bg-background text-base tabular-nums focus:outline-none focus:ring-2 ${RING}`}
@@ -130,7 +130,7 @@ export function FinanceModal({ open, onClose, form, setForm, animals, saving, on
             rows={2}
             value={form.description}
             onChange={e => setForm({ ...form, description: e.target.value })}
-            placeholder="A quién le compró o le vendió, qué fue exactamente..."
+            placeholder="A quién le compraste o vendiste, qué fue exactamente..."
             className={`w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 ${RING} resize-none`}
           />
         </div>
