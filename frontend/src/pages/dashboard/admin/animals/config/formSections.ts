@@ -1,6 +1,9 @@
 import type { CRUDFormSection } from '@/shared/types/crud';
 import type { AnimalInput } from '@/shared/api/generated/swaggerTypes';
+import { getTodayColombia } from '@/shared/utils/dateUtils';
 import { ANIMAL_GENDERS, ANIMAL_STATUS_OPTIONS } from './animals.config';
+
+const showExitOrEdit = (data: any) => Boolean(data?.id) || (Boolean(data?.status) && data.status !== 'Vivo');
 
 interface AnimalFormOptions {
   breedOptions: Array<{ value: string | number; label: string }>;
@@ -44,15 +47,16 @@ export const buildAnimalFormSections = ({ breedOptions, fatherOptions, motherOpt
   {
     title: 'Trazabilidad y Registro ICA', gridCols: 3,
     fields: [
-      { name: 'entry_date', label: 'Fecha de Ingreso', type: 'date', placeholder: 'Fecha de llegada a la finca' },
-      { name: 'purchase_date', label: 'Fecha de Compra', type: 'date', placeholder: 'Fecha de adquisición' },
-      { name: 'exit_date', label: 'Fecha de Salida', type: 'date', placeholder: 'Fecha de egreso' },
-      { name: 'sale_date', label: 'Fecha de Venta', type: 'date', placeholder: 'Fecha de comercialización' },
+      { name: 'entry_date', label: 'Fecha de Ingreso', type: 'date', maxDate: getTodayColombia(), placeholder: 'Fecha de llegada a la finca' },
+      { name: 'purchase_date', label: 'Fecha de Compra', type: 'date', maxDate: getTodayColombia(), placeholder: 'Fecha de adquisición' },
+      { name: 'exit_date', label: 'Fecha de Salida', type: 'date', maxDate: getTodayColombia(), placeholder: 'Fecha de egreso', showIf: showExitOrEdit },
+      { name: 'sale_date', label: 'Fecha de Venta', type: 'date', maxDate: getTodayColombia(), placeholder: 'Fecha de comercialización', showIf: showExitOrEdit },
       {
         name: 'exit_reason',
         label: 'Motivo de Salida',
         type: 'text',
         placeholder: 'Ej: Venta, Traslado, Muerte',
+        showIf: showExitOrEdit,
         suggestions: [
           'Venta en báscula',
           'Venta para cría',
@@ -74,7 +78,7 @@ export const buildAnimalFormSections = ({ breedOptions, fatherOptions, motherOpt
         type: 'text',
         placeholder: 'Ej: VL-ABC123...',
         showIf: (data: any) => !data?.id,
-        helperText: 'Si recibió un código al comprar el animal, introdúzcalo para solicitar la asociación del historial.',
+        helperText: 'Si recibiste un código al comprar el animal, escríbelo para solicitar el historial.',
       },
       {
         name: 'request_history',
