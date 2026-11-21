@@ -21,9 +21,18 @@ vi.mock('./reproductionCrudConfig', () => ({
 }));
 
 vi.mock('./ReproductionHubView', () => ({
-  ReproductionHubView: ({ activeTab, handleTabChange }: { activeTab: string; handleTabChange: (tab: string) => void }) => (
+  ReproductionHubView: ({
+    activeTab,
+    handleTabChange,
+    isCalvingModalOpen,
+  }: {
+    activeTab: string;
+    handleTabChange: (tab: string) => void;
+    isCalvingModalOpen?: boolean;
+  }) => (
     <div>
       <output data-testid="active-tab">{activeTab}</output>
+      <output data-testid="calving-open">{String(Boolean(isCalvingModalOpen))}</output>
       <button type="button" onClick={() => handleTabChange('eventos')}>Eventos</button>
     </div>
   ),
@@ -75,5 +84,16 @@ describe('ReproductionHub', () => {
 
     await waitFor(() => expect(screen.getByTestId('location-search')).toHaveTextContent('?tab=eventos'));
     expect(screen.getByTestId('active-tab')).toHaveTextContent('eventos');
+  });
+
+  it('abre el modal de parto asistido cuando llega ?calving=1 en la URL', async () => {
+    render(
+      <MemoryRouter initialEntries={['/admin/reproduction?calving=1']}>
+        <ReproductionHub />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByTestId('calving-open')).toHaveTextContent('true');
+    await waitFor(() => expect(reproductionService.getSummary).toHaveBeenCalledTimes(1));
   });
 });

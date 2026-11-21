@@ -22,7 +22,7 @@ export default function ReproductionHub() {
   const [selectedAnimalId, setSelectedAnimalId] = useState<number | null>(null);
 
   // Modales flotantes de acciones rápidas
-  const [isCalvingModalOpen, setIsCalvingModalOpen] = useState(false);
+  const [isCalvingModalOpen, setIsCalvingModalOpen] = useState(() => searchParams.get('calving') === '1');
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -35,6 +35,21 @@ export default function ReproductionHub() {
   // Sub-tab para Fertilidad vs Toros con sincronización de URL
   const initialSubTab = searchParams.get('subtab') === 'toros' || searchParams.get('subtab') === 'sires' ? 'sires' : 'fertility';
   const [fertilitySubTab, setFertilitySubTab] = useState<'fertility' | 'sires'>(initialSubTab);
+
+  const handleCalvingModalChange = useCallback((open: boolean) => {
+    setIsCalvingModalOpen(open);
+    if (!open && searchParams.has('calving')) {
+      const next = new URLSearchParams(searchParams);
+      next.delete('calving');
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
+  useEffect(() => {
+    if (searchParams.get('calving') === '1') {
+      setIsCalvingModalOpen(true);
+    }
+  }, [searchParams]);
 
   const handleOpenQuickEvent = (animalId: number, record?: string, eventType: EventTypeOption = 'Celo') => {
     setQuickEventAnimalId(animalId);
@@ -162,7 +177,7 @@ export default function ReproductionHub() {
       setFertilitySubTab={handleFertilitySubTabChange}
       onOpenQuickEvent={handleOpenQuickEvent}
       isCalvingModalOpen={isCalvingModalOpen}
-      setIsCalvingModalOpen={setIsCalvingModalOpen}
+      setIsCalvingModalOpen={handleCalvingModalChange}
       isBatchModalOpen={isBatchModalOpen}
       setIsBatchModalOpen={setIsBatchModalOpen}
       isQuickEventModalOpen={isQuickEventModalOpen}

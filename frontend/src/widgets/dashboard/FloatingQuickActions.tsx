@@ -47,7 +47,7 @@ export interface QuickAction {
 }
 
 // ─── Catálogo Completo ─────────────────────────────────────────
-const CATALOG: QuickAction[] = [
+export const QUICK_ACTIONS_CATALOG: QuickAction[] = [
   // Categoría: Registro diario
   {
     id: "milk",
@@ -114,7 +114,7 @@ const CATALOG: QuickAction[] = [
     icon: <Baby className="h-[20px] w-[20px]" />,
     label: "Parto",
     sub: "Nacimiento",
-    path: "/quick/birth",
+    path: "/admin/reproduction?calving=1",
     bg: "bg-pink-500",
     ring: "ring-pink-400",
     category: 'registro',
@@ -363,7 +363,7 @@ export const FloatingQuickActions: React.FC = () => {
    * del rol y se descartan las acciones que su RBAC no permite.
    */
   const allowedCatalog = useMemo(
-    () => CATALOG
+    () => QUICK_ACTIONS_CATALOG
       .map((action) => ({ ...action, path: toRolePath(currentRole, action.path) }))
       .filter((action) => canAccessRoutePath(currentRole, action.path)),
     [currentRole],

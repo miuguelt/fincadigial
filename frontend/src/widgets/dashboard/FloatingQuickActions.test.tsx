@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { ActionGrid, DEFAULT_FIELD_MESSAGES, type QuickAction } from './FloatingQuickActions';
+import { ActionGrid, DEFAULT_FIELD_MESSAGES, QUICK_ACTIONS_CATALOG, type QuickAction } from './FloatingQuickActions';
+
+const VALID_QUICK_MODALS = new Set(['control', 'transfer', 'disease', 'treatment', 'milk', 'water', 'care']);
 
 const milkAction: QuickAction = {
   id: 'milk',
@@ -48,5 +50,16 @@ describe('FloatingQuickActions', () => {
       expect(screen.getByText(message.title)).toBeInTheDocument();
       expect(screen.getByText(message.text)).toBeInTheDocument();
     }
+  });
+
+  it('dirige todas las acciones /quick/* a modales existentes y enlaza Parto al módulo de reproducción', () => {
+    const quickPaths = QUICK_ACTIONS_CATALOG.filter((a) => a.path.startsWith('/quick/'));
+    for (const action of quickPaths) {
+      const slug = action.path.replace('/quick/', '');
+      expect(VALID_QUICK_MODALS.has(slug)).toBe(true);
+    }
+
+    const birthAction = QUICK_ACTIONS_CATALOG.find((a) => a.id === 'births');
+    expect(birthAction?.path).toBe('/admin/reproduction?calving=1');
   });
 });
