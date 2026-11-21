@@ -191,7 +191,7 @@ export default function QuickCare() {
       status: 'Activo',
       severity,
       notes: notes || undefined,
-      instructor_id: user?.id || 0,
+      ...(user?.id ? { instructor_id: user.id } : {}),
     };
     try {
       if (!isOnline) {
@@ -199,7 +199,7 @@ export default function QuickCare() {
         showToast('Diagnóstico guardado sin señal. Se sincronizará al volver.', 'success');
         handleClose();
       } else {
-        const resp = await animalDiseasesService.createAnimalDisease(payload);
+        const resp = await animalDiseasesService.createAnimalDisease(payload as any);
         const episode: any = (resp as any)?.data ?? resp;
         const id = episode?.id ?? episode?.record_id ?? null;
         const label =

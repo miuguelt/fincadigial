@@ -25,7 +25,6 @@ import {
 const ESTADOS_ENFERMEDAD: { label: string; value: string }[] = [
   { label: "Activo", value: "Activo" },
   { label: "En Tratamiento", value: "En Tratamiento" },
-  { label: "Sospecha", value: "Sospecha" },
   { label: "Recuperado", value: "Recuperado" },
 ];
 
@@ -113,7 +112,7 @@ export default function QuickDisease() {
       diagnosis_date: date,
       status,
       notes: notes || undefined,
-      instructor_id: user?.id || 0,
+      ...(user?.id ? { instructor_id: user.id } : {}),
     };
 
     try {
@@ -123,7 +122,7 @@ export default function QuickDisease() {
         showToast("Diagnóstico guardado sin señal. Se sincronizará al volver la conexión.", "success");
       } else {
         // Online: enviar directamente
-        await animalDiseasesService.createAnimalDisease(payload);
+        await animalDiseasesService.createAnimalDisease(payload as any);
         showToast("Diagnóstico de enfermedad registrado exitosamente", "success");
       }
       if (isOnline) emitDataRefresh("animal-diseases");
@@ -189,6 +188,7 @@ export default function QuickDisease() {
             <QInput
               id="date"
               type="date"
+              max={getTodayColombia()}
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
