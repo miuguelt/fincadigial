@@ -73,7 +73,7 @@ def test_animal_movements_flow(client, auth_headers, app):
             "fecha_movimiento": date.today().strftime("%Y-%m-%d"),
             "finca_destino_id": finca_destino_id,
             "guia_movilizacion": "GSMI-100200",
-            "arete_sinigan": "DIB-790123456",
+            "arete_sinigan": "COL-790-1234",
             "ruv_vacunacion": "RUV-556677",
             "placa_vehiculo": "STV123",
             "nombre_conductor": "Juan Perez",
@@ -108,7 +108,7 @@ def test_animal_movements_flow(client, auth_headers, app):
         assert movement.finca_origen_id == finca_origen_id
         assert movement.finca_destino_id == finca_destino_id
         assert movement.guia_movilizacion == "GSMI-100200"
-        assert movement.arete_sinigan == "DIB-790123456"
+        assert movement.arete_sinigan == "COL-790-1234"
 
         # --- ESCENARIO 2: VENTA CON TRASLADO EXTERNO ---
         # Creamos otro animal en Finca B para venderlo hacia afuera (simulando que estamos operando en Finca B)
@@ -137,7 +137,7 @@ def test_animal_movements_flow(client, auth_headers, app):
             "comprador": "Ganados de Colombia SAS",
             "comprador_nit": "900.123.456-1",
             "guia_movilizacion": "GSMI-300400",
-            "arete_sinigan": "DIB-790555666",
+            "arete_sinigan": "COL-790-5556",
             "placa_vehiculo": "TLK789",
         }
 

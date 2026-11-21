@@ -1218,6 +1218,8 @@ class TestAnimalMovementsCRUD:
                 "finca_id": finca_id,
                 "finca_destino_id": finca2_id,
                 "guia_movilizacion": f"GSMI-{fecha.replace('-', '')}",
+                "traslado_sanitario_emergencia": True,
+                "justificacion_sanitaria": "Traslado interno de manejo para prueba CRUD",
             },
             token_for(ADMIN),
         )
