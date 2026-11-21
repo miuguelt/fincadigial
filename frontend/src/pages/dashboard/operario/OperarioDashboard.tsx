@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '@/features/auth/model/useAuth';
+import { normalizeRole } from '@/features/auth/api/auth.service';
+import { roleCan, type RbacAction } from '@/shared/lib/rbac';
 import { useToast } from '@/app/providers/ToastContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 // import { Button } from '@/shared/ui/button';
@@ -12,6 +14,7 @@ import {
   IconClipboardList,
   IconHistory,
   IconMapPin,
+  IconMilk,
   IconRefresh,
   IconScale,
   IconWifi,
@@ -24,6 +27,7 @@ import { FincaHeroBanner } from '@/widgets/finca/hero';
 
 import {
   useRegistroOperativo,
+  MilkModal,
   TransferModal,
   DiseaseModal,
   TreatmentModal,
@@ -37,57 +41,75 @@ interface QuickAction {
   icon: typeof IconScale;
   modalKey?: string;
   color: string;
+  permission?: { entity: string; action: RbacAction };
 }
 
 export default function OperarioDashboard() {
-  const { user } = useAuth();
+  const { user, role } = useAuth() as any;
   const { showToast } = useToast();
   const { isOnline, totalOperations } = useOnlineStatus();
   const [activeTab, setActiveTab] = useState('acciones');
+  const currentRole = normalizeRole(role || user?.role) || String(role || user?.role || '');
 
-  const quickActions: QuickAction[] = [
-    {
-      id: 'nuevo-control',
-      label: 'Registrar control o pesaje',
-      description: 'Actualiza peso, condición y seguimiento del animal.',
-      icon: IconScale,
-      modalKey: 'control',
-      color: 'bg-info-600',
-    },
-    {
-      id: 'traslado',
-      label: 'Trasladar Animal',
-      description: 'Registra el movimiento entre potreros de la finca.',
-      icon: IconMapPin,
-      modalKey: 'transfer',
-      color: 'bg-success-600',
-    },
-    {
-      id: 'enfermedad',
-      label: 'Registrar Enfermedad',
-      description: 'Reporta síntomas y novedades de salud del ganado.',
-      icon: IconHistory,
-      modalKey: 'disease',
-      color: 'bg-danger-600',
-    },
-    {
-      id: 'tratamiento',
-      label: 'Registrar Tratamiento',
-      description: 'Deja constancia de medicamentos y procedimientos.',
-      icon: IconClipboardList,
-      modalKey: 'treatment',
-      color: 'bg-primary',
-    },
-  ];
+  const quickActions: QuickAction[] = useMemo(() => {
+    const actions: QuickAction[] = [
+      {
+        id: 'ordeno',
+        label: 'Registrar ordeño',
+        description: 'Anota los litros producidos por vaca y turno.',
+        icon: IconMilk,
+        modalKey: 'milk',
+        color: 'bg-sky-600',
+        permission: { entity: 'milk-production', action: 'create' },
+      },
+      {
+        id: 'nuevo-control',
+        label: 'Registrar control o pesaje',
+        description: 'Actualiza peso, condición y seguimiento del animal.',
+        icon: IconScale,
+        modalKey: 'control',
+        color: 'bg-info-600',
+        permission: { entity: 'controls', action: 'create' },
+      },
+      {
+        id: 'traslado',
+        label: 'Trasladar Animal',
+        description: 'Registra el movimiento entre potreros de la finca.',
+        icon: IconMapPin,
+        modalKey: 'transfer',
+        color: 'bg-success-600',
+        permission: { entity: 'animal-fields', action: 'create' },
+      },
+      {
+        id: 'enfermedad',
+        label: 'Registrar Enfermedad',
+        description: 'Reporta síntomas y novedades de salud del ganado.',
+        icon: IconHistory,
+        modalKey: 'disease',
+        color: 'bg-danger-600',
+        permission: { entity: 'animal-diseases', action: 'create' },
+      },
+      {
+        id: 'tratamiento',
+        label: 'Registrar Tratamiento',
+        description: 'Deja constancia de medicamentos y procedimientos.',
+        icon: IconClipboardList,
+        modalKey: 'treatment',
+        color: 'bg-primary',
+        permission: { entity: 'treatments', action: 'create' },
+      },
+    ];
+    return actions.filter((action) => !action.permission || roleCan(currentRole, action.permission.entity, action.permission.action));
+  }, [currentRole]);
 
   const {
     activeModal, savingForm,
-    animals, fields, diseases, medications, inventoryLots,
-    transferForm, setTransferForm,
+    animals, fields, diseases, medications, inventoryLots, withdrawalAnimals,
+    milkForm, setMilkForm, transferForm, setTransferForm,
     diseaseForm, setDiseaseForm, treatmentForm, setTreatmentForm,
     controlForm, setControlForm,
     openModal, closeModal,
-    handleTransferSubmit, handleDiseaseSubmit, handleTreatmentSubmit, handleControlSubmit
+    handleMilkingSubmit, handleTransferSubmit, handleDiseaseSubmit, handleTreatmentSubmit, handleControlSubmit
   } = useRegistroOperativo();
 
   const handleAction = (action: QuickAction) => {
@@ -240,6 +262,10 @@ export default function OperarioDashboard() {
                   </li>
                   <li className="flex items-center gap-2">
                     <IconCheck size="sm" className="text-success" />
+                    Registrar ordeños diarios
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <IconCheck size="sm" className="text-success" />
                     Registrar controles y pesajes
                   </li>
                   <li className="flex items-center gap-2">
@@ -262,6 +288,7 @@ export default function OperarioDashboard() {
       </Tabs>
 
       {/* Modales Operativos Reutilizados */}
+      <MilkModal open={activeModal === 'milk'} onClose={closeModal} form={milkForm} setForm={setMilkForm} animals={animals} withdrawalAnimals={withdrawalAnimals} saving={savingForm} onSubmit={handleMilkingSubmit} />
       <TransferModal open={activeModal === 'transfer'} onClose={closeModal} form={transferForm} setForm={setTransferForm} animals={animals} fields={fields} saving={savingForm} onSubmit={handleTransferSubmit} />
       <DiseaseModal open={activeModal === 'disease'} onClose={closeModal} form={diseaseForm} setForm={setDiseaseForm} animals={animals} diseases={diseases} saving={savingForm} onSubmit={handleDiseaseSubmit} />
       <TreatmentModal open={activeModal === 'treatment'} onClose={closeModal} form={treatmentForm} setForm={setTreatmentForm} animals={animals} medications={medications} inventoryLots={inventoryLots} saving={savingForm} onSubmit={handleTreatmentSubmit} />
