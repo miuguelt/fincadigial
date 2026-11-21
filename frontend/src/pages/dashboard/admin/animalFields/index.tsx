@@ -5,14 +5,14 @@ import { animalFieldsService } from '@/entities/animal-field/api/animalFields.se
 import { animalsService } from '@/entities/animal/api/animal.service';
 import { fieldService } from '@/entities/field/api/field.service';
 import type { AnimalFieldResponse, AnimalFieldInput } from '@/shared/api/generated/swaggerTypes';
-import { getTodayColombia } from '@/shared/utils/dateUtils';
+import { formatDateColombia, getTodayColombia } from '@/shared/utils/dateUtils';
 import { AnimalLink } from '@/entities/animal/ui';
 import { FieldLink } from '@/entities/field/ui';
 import { useForeignKeySelect } from '@/shared/hooks/useForeignKeySelect';
 
 function AdminAnimalFieldsPage() {
   const { options: animalOptions, loading: animalLoading } = useForeignKeySelect(
-    (p) => animalsService.getAnimals(p),
+    (p) => animalsService.getAnimals({ ...p, status: 'Vivo' }),
     (a) => ({ value: a.id, label: a.record || `Animal ${a.id}` })
   );
 
@@ -60,12 +60,12 @@ function AdminAnimalFieldsPage() {
     {
       key: 'assignment_date',
       label: 'Fecha Asignación',
-      render: (v) => v ? new Date(v as string).toLocaleDateString('es-CO') : '-'
+      render: (v) => v ? formatDateColombia(String(v)) : '-'
     },
     {
       key: 'removal_date',
       label: 'Fecha Retiro',
-      render: (v) => v ? new Date(v as string).toLocaleDateString('es-CO') : '-'
+      render: (v) => v ? formatDateColombia(String(v)) : '-'
     },
     {
       key: 'notes',
@@ -79,7 +79,7 @@ function AdminAnimalFieldsPage() {
     {
       key: 'created_at' as any,
       label: 'Creado',
-      render: (v) => v ? new Date(v as string).toLocaleDateString('es-CO') : '-'
+      render: (v) => v ? formatDateColombia(String(v)) : '-'
     },
   ], [animalMap, fieldMap]);
 
@@ -109,12 +109,14 @@ function AdminAnimalFieldsPage() {
         {
           name: 'assignment_date' as any,
           label: 'Fecha de Asignación',
+          maxDate: getTodayColombia(),
           type: 'date',
           required: true
         },
         {
           name: 'removal_date' as any,
           label: 'Fecha de Retiro',
+          maxDate: getTodayColombia(),
           type: 'date',
           placeholder: 'Dejar vacío si aún está en el potrero'
         },

@@ -7,7 +7,13 @@ import { AlertNotificationCard } from '@/shared/components/notifications/compone
 import { AlertStatsCards } from '@/widgets/alerts/AlertStatsCards';
 import { AlertFilterBar, type PriorityFilter, type TypeFilter, type ReadFilter } from '@/widgets/alerts/AlertFilterBar';
 import { useToast } from '@/app/providers/ToastContext';
+import { formatMessageFromCode, readStandardErrorPayload } from '@/shared/api/error-parser';
 import { DataScreenHeader } from '@/widgets/layout/DataScreenHeader';
+
+const getAlertErrorMessage = (error: unknown, fallback: string): string => {
+  const formatted = formatMessageFromCode(readStandardErrorPayload(error));
+  return formatted && formatted !== 'Error en la solicitud' ? formatted : fallback;
+};
 
 /** Tope de la API para una sola página; el resto se refleja en los contadores del servidor. */
 const PAGE_SIZE = 200;
@@ -58,7 +64,7 @@ export function AlertsPage() {
       }
     } catch (error) {
       console.error('[Alerts] Error evaluating:', error);
-      showToast('Error evaluando alertas', 'error');
+      showToast(getAlertErrorMessage(error, 'Error evaluando alertas'), 'error');
     } finally {
       setEvaluating(false);
     }
@@ -78,8 +84,8 @@ export function AlertsPage() {
           ? Math.max(0, prev.criticalUnread - 1)
           : prev.criticalUnread,
       });
-    } catch {
-      showToast('Error marcando alerta', 'error');
+    } catch (error) {
+      showToast(getAlertErrorMessage(error, 'Error marcando alerta'), 'error');
     }
   };
 
@@ -89,8 +95,8 @@ export function AlertsPage() {
       setAlerts(prev => prev.map(a => ({ ...a, is_read: true })));
       setStats(prev => prev && { ...prev, unread: 0, criticalUnread: 0 });
       showToast('Todas las alertas marcadas como leídas', 'success');
-    } catch {
-      showToast('Error marcando todas', 'error');
+    } catch (error) {
+      showToast(getAlertErrorMessage(error, 'Error marcando todas'), 'error');
     }
   };
 
@@ -154,7 +160,7 @@ export function AlertsPage() {
               size="sm"
               onClick={handleEvaluate}
               disabled={evaluating}
-              className="gap-2 rounded-xl text-xs font-semibold h-9 shadow-sm"
+              className="gap-2 rounded-xl text-xs font-semibold h-11 min-h-[44px] sm:h-11 shadow-sm"
             >
               {evaluating
                 ? <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -168,7 +174,7 @@ export function AlertsPage() {
                 variant="ghost"
                 size="sm"
                 onClick={handleMarkAllAsRead}
-                className="gap-2 rounded-xl text-xs text-muted-foreground hover:text-foreground h-9"
+                className="gap-2 rounded-xl text-xs text-muted-foreground hover:text-foreground h-11 min-h-[44px] sm:h-11"
               >
                 <CheckCheck className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Marcar todas leídas</span>

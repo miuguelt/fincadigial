@@ -46,6 +46,9 @@ export const getNowColombiaISO = (): string => {
  * @returns {string} Fecha en formato YYYY-MM-DD
  */
 export const formatDateColombia = (date: Date | string): string => {
+  if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date.trim())) {
+    return date.trim();
+  }
   const dateObj = typeof date === 'string' ? new Date(date) : date;
 
   // Usar toLocaleString con zona horaria específica

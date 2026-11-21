@@ -17,6 +17,10 @@ describe('dateUtils', () => {
       // pero el formato debe ser consistente.
       expect(formatted).toMatch(/^\d{4}-\d{2}-\d{2}$/)
     })
+
+    it('conserva el día exacto cuando recibe una cadena YYYY-MM-DD sin hora', () => {
+      expect(formatDateColombia('2026-11-21')).toBe('2026-11-21')
+    })
   })
 
   describe('calculateAge', () => {

@@ -5,13 +5,14 @@ import type {
 	InventoryLotResponse,
 } from "@/shared/api/generated/swaggerTypes";
 import type { CRUDFormSection } from "@/shared/types/crud";
+import { getTodayColombia } from "@/shared/utils/dateUtils";
 
 export const initialInventoryFormData: InventoryLotInput = {
 	product_type: "Medicamento",
 	lot_number: "",
 	quantity: 0,
 	unit: "ml",
-	expiry_date: new Date().toISOString().split("T")[0],
+	expiry_date: getTodayColombia(),
 	min_stock: 5,
 };
 

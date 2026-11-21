@@ -100,15 +100,15 @@ const FincasAdminPage: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setViewMode('cards')}
-                  className={`h-8 px-2.5 rounded-lg text-xs font-semibold transition-all ${
+                  className={`h-11 min-h-[44px] sm:h-11 px-2.5 rounded-lg text-xs font-semibold transition-all ${
                     viewMode === 'cards'
                       ? 'bg-background shadow-xs text-foreground font-bold'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                   title="Ver en formato de tarjetas con fotos"
                 >
-                  <LayoutGrid className="h-4 w-4 sm:mr-1.5" />
-                  <span className="hidden sm:inline">Tarjetas</span>
+                  <LayoutGrid className="h-4 w-4 mr-1.5" />
+                  <span>Tarjetas</span>
                 </Button>
 
                 <Button
@@ -116,15 +116,15 @@ const FincasAdminPage: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setViewMode('table')}
-                  className={`h-8 px-2.5 rounded-lg text-xs font-semibold transition-all ${
+                  className={`h-11 min-h-[44px] sm:h-11 px-2.5 rounded-lg text-xs font-semibold transition-all ${
                     viewMode === 'table'
                       ? 'bg-background shadow-xs text-foreground font-bold'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                   title="Ver en formato de tabla"
                 >
-                  <Table className="h-4 w-4 sm:mr-1.5" />
-                  <span className="hidden sm:inline">Tabla</span>
+                  <Table className="h-4 w-4 mr-1.5" />
+                  <span>Tabla</span>
                 </Button>
               </div>
 
@@ -135,7 +135,7 @@ const FincasAdminPage: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setPrivacyModalOpen(true)}
-                  className="h-8 px-3 text-xs font-semibold flex items-center gap-1.5 text-muted-foreground hover:text-foreground border-border/70 rounded-xl shadow-2xs"
+                  className="h-11 min-h-[44px] sm:h-11 px-3 text-xs font-semibold flex items-center gap-1.5 text-muted-foreground hover:text-foreground border-border/70 rounded-xl shadow-2xs"
                   title="Consultar marco de políticas de privacidad y visibilidad"
                 >
                   <ShieldCheck className="h-4 w-4 text-amber-600" />
