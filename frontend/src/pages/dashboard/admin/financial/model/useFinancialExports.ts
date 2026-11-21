@@ -7,8 +7,7 @@
 import { useCallback, useState } from 'react';
 import { apiClient } from '@/shared/api/client';
 import { useToast } from '@/app/providers/ToastContext';
-
-const fileDate = () => new Date().toISOString().split('T')[0];
+import { getTodayColombia } from '@/shared/utils/dateUtils';
 
 const saveBlob = (blob: Blob, filename: string) => {
   const url = window.URL.createObjectURL(blob);
@@ -49,14 +48,14 @@ export function useFinancialExports() {
     exportExcel: () =>
       download(
         '/exports/financials.xlsx',
-        `transacciones_financieras_${fileDate()}.xlsx`,
+        `transacciones_financieras_${getTodayColombia()}.xlsx`,
         'Libro en Excel',
         setExportingExcel,
       ),
     exportPdf: () =>
       download(
         '/exports/financial-report.pdf',
-        `reporte_financiero_${fileDate()}.pdf`,
+        `reporte_financiero_${getTodayColombia()}.pdf`,
         'Informe en PDF',
         setExportingPdf,
       ),

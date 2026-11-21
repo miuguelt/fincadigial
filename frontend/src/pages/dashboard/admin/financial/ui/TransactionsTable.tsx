@@ -54,7 +54,7 @@ function DeleteButton({ id, onDelete, deleting }: { id: number; onDelete: (id: n
       onClick={() => {
         if (window.confirm('¿Eliminar este movimiento? No se puede deshacer.')) onDelete(id);
       }}
-      className="h-9 w-9 rounded-xl p-0 text-rose-600 hover:bg-rose-500/10 hover:text-rose-700"
+      className="h-11 w-11 rounded-xl p-0 text-rose-600 hover:bg-rose-500/10 hover:text-rose-700"
     >
       <Trash className="h-4 w-4" />
     </Button>

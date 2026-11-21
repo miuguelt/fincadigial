@@ -38,7 +38,7 @@ const FinancialDashboard = () => {
               loading={exportingExcel}
               disabled={nothingToExport}
               variant="outline"
-              className="h-10 gap-2"
+              className="h-11 min-h-[44px] gap-2"
             >
               <FileSpreadsheet className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
               Exportar Excel
@@ -48,12 +48,12 @@ const FinancialDashboard = () => {
               loading={exportingPdf}
               disabled={nothingToExport}
               variant="outline"
-              className="h-10 gap-2"
+              className="h-11 min-h-[44px] gap-2"
             >
               <FileText className="h-4 w-4 text-destructive" />
               Informe PDF
             </Button>
-            <Button onClick={() => setIsModalOpen(true)} className="h-10 gap-2 font-bold">
+            <Button onClick={() => setIsModalOpen(true)} className="h-11 min-h-[44px] gap-2 font-bold">
               <Plus className="h-4 w-4" />
               Nuevo movimiento
             </Button>

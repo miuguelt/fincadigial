@@ -15,7 +15,13 @@ import {
   type Transaction,
 } from '@/entities/financial/api/financial.service';
 import { useToast } from '@/app/providers/ToastContext';
+import { formatMessageFromCode, readStandardErrorPayload } from '@/shared/api/error-parser';
 import { expensesByCategory, monthlyCashFlow } from './financialCharts';
+
+const getServerError = (err: unknown, fallback: string): string => {
+  const formatted = formatMessageFromCode(readStandardErrorPayload(err));
+  return formatted && formatted !== 'Error en la solicitud' ? formatted : fallback;
+};
 
 export type { Transaction };
 
@@ -67,7 +73,7 @@ export function useFinancialDashboard() {
       refreshBoth();
       showToast('Movimiento registrado', 'success');
     },
-    onError: () => showToast('No se pudo registrar el movimiento', 'error'),
+    onError: (err) => showToast(getServerError(err, 'No se pudo registrar el movimiento'), 'error'),
   });
 
   const deleteTransaction = useMutation({
@@ -77,7 +83,7 @@ export function useFinancialDashboard() {
       refreshBoth();
       showToast('Movimiento eliminado', 'success');
     },
-    onError: () => showToast('No se pudo eliminar el movimiento', 'error'),
+    onError: (err) => showToast(getServerError(err, 'No se pudo eliminar el movimiento'), 'error'),
   });
 
   // El backend puede devolver el mismo movimiento por más de una vía; se

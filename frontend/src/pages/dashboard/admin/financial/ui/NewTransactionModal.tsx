@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { SuggestionChips } from '@/shared/ui/SuggestionChips';
+import { getTodayColombia } from '@/shared/utils/dateUtils';
 import type { NewTransaction } from '../model/useFinancialDashboard';
 
 const CATEGORIES: Record<string, string[]> = {
@@ -18,13 +19,11 @@ const CATEGORIES: Record<string, string[]> = {
   Gasto: ['Medicamentos', 'Alimento', 'Servicios Veterinarios', 'Otros'],
 };
 
-const today = () => new Date().toISOString().split('T')[0];
-
 const emptyForm = (): NewTransaction => ({
   transaction_type: 'Ingreso',
   category: CATEGORIES.Ingreso[0],
   amount: '',
-  date: today(),
+  date: getTodayColombia(),
   description: '',
 });
 
@@ -41,8 +40,12 @@ interface Props {
 
 export function NewTransactionModal({ onClose, onSubmit, submitting }: Props) {
   const [form, setForm] = useState<NewTransaction>(emptyForm);
+  const [amountError, setAmountError] = useState<string | null>(null);
 
-  const update = (patch: Partial<NewTransaction>) => setForm((prev) => ({ ...prev, ...patch }));
+  const update = (patch: Partial<NewTransaction>) => {
+    if (patch.amount !== undefined) setAmountError(null);
+    setForm((prev) => ({ ...prev, ...patch }));
+  };
 
   const changeType = (transaction_type: string) =>
     update({ transaction_type, category: CATEGORIES[transaction_type][0] });
@@ -56,9 +59,9 @@ export function NewTransactionModal({ onClose, onSubmit, submitting }: Props) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="nuevo-movimiento"
-        className="vl-modal-surface w-full max-w-md overflow-hidden rounded-2xl border border-border/80 text-foreground shadow-2xl"
+        className="vl-modal-surface flex max-h-[90dvh] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-border/80 text-foreground shadow-2xl"
       >
-        <div className="flex items-center justify-between bg-emerald-700 p-6 text-white">
+        <div className="flex shrink-0 items-center justify-between bg-emerald-700 p-6 text-white">
           <div>
             <h2 id="nuevo-movimiento" className="text-xl font-bold">Nuevo Movimiento</h2>
             <p className="mt-0.5 text-xs text-emerald-50">Registra una entrada o una salida de plata</p>
@@ -67,7 +70,7 @@ export function NewTransactionModal({ onClose, onSubmit, submitting }: Props) {
             variant="ghost"
             onClick={onClose}
             aria-label="Cerrar"
-            className="h-9 w-9 rounded-full p-0 text-white hover:bg-white/10"
+            className="h-11 w-11 rounded-full p-0 text-white hover:bg-white/10"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -76,9 +79,13 @@ export function NewTransactionModal({ onClose, onSubmit, submitting }: Props) {
         <form
           onSubmit={(event) => {
             event.preventDefault();
+            if (!(Number(form.amount) > 0)) {
+              setAmountError('Ingresa un monto mayor a cero.');
+              return;
+            }
             onSubmit(form);
           }}
-          className="space-y-4 p-6"
+          className="space-y-4 overflow-y-auto p-6"
         >
           <div className="space-y-1.5">
             <label className={LABEL_CLASS} htmlFor="tipo-movimiento">Tipo de movimiento</label>
@@ -116,7 +123,7 @@ export function NewTransactionModal({ onClose, onSubmit, submitting }: Props) {
                 type="number"
                 inputMode="numeric"
                 step="1"
-                min="0"
+                min="1"
                 required
                 placeholder="0"
                 className="h-11 rounded-xl border-border/50 bg-background/50 pl-7 font-semibold"
@@ -124,6 +131,11 @@ export function NewTransactionModal({ onClose, onSubmit, submitting }: Props) {
                 onChange={(event) => update({ amount: event.target.value })}
               />
             </div>
+            {amountError && (
+              <p role="alert" className="text-xs font-semibold text-rose-600 dark:text-rose-400">
+                {amountError}
+              </p>
+            )}
             <SuggestionChips
               suggestions={['50000', '100000', '250000', '500000', '1000000', '2500000']}
               value={form.amount}
@@ -137,6 +149,7 @@ export function NewTransactionModal({ onClose, onSubmit, submitting }: Props) {
             <Input
               id="fecha-movimiento"
               type="date"
+              max={getTodayColombia()}
               required
               className="h-11 rounded-xl border-border/50 bg-background/50"
               value={form.date}
