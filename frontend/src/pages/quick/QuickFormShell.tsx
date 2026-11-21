@@ -249,6 +249,7 @@ export function QNumberStepper({
   min = 0,
   max = 9999,
   step = 1,
+  inputStep = "any",
   presets = [],
   placeholder = "0",
   disabled = false,
@@ -260,6 +261,7 @@ export function QNumberStepper({
   min?: number;
   max?: number;
   step?: number;
+  inputStep?: number | "any";
   presets?: number[];
   placeholder?: string;
   disabled?: boolean;
@@ -294,10 +296,10 @@ export function QNumberStepper({
             onChange={(e) => onChange(e.target.value)}
             min={min}
             max={max}
-            step={step}
+            step={inputStep}
             placeholder={placeholder}
             disabled={disabled}
-            className="w-full rounded-xl border-2 border-border bg-card px-4 py-4 text-2xl sm:text-3xl font-black text-foreground text-center outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10 disabled:opacity-50"
+            className={`w-full rounded-xl border-2 border-border bg-card py-4 text-2xl sm:text-3xl font-black text-foreground text-center outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10 disabled:opacity-50 ${unit ? "pl-4 pr-12" : "px-4"}`}
           />
           {unit && (
             <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold uppercase tracking-wider text-muted-foreground pointer-events-none">

@@ -9,6 +9,7 @@ import { animalsService } from "@/entities/animal/api/animal.service";
 import { controlService } from "@/entities/control/api/control.service";
 import { getTodayColombia } from "@/shared/utils/dateUtils";
 import { emitDataRefresh } from "@/shared/utils/dataRefresh";
+import { formatMessageFromCode, readStandardErrorPayload } from "@/shared/api/error-parser";
 import {
   QuickFormShell,
   QCard,
@@ -88,8 +89,14 @@ export default function QuickControl() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!animalId || !weight) {
-      showToast("Por favor selecciona el animal y digita el peso", "error");
+    if (!animalId) {
+      showToast("Por favor selecciona el animal", "error");
+      return;
+    }
+
+    const parsedWeight = Number(weight);
+    if (!weight.trim() || !Number.isFinite(parsedWeight) || parsedWeight <= 0 || parsedWeight > 2000) {
+      showToast("Digita un peso válido mayor a 0 y máximo 2000 kg", "error");
       return;
     }
 
@@ -97,7 +104,7 @@ export default function QuickControl() {
     const payload = {
       animal_id: Number(animalId),
       checkup_date: date,
-      weight: parseInt(weight, 10),
+      weight: parsedWeight,
       health_status: healthStatus as any,
     };
 
@@ -115,7 +122,8 @@ export default function QuickControl() {
       handleClose();
     } catch (error) {
       console.error("Error creating control:", error);
-      showToast("Error al registrar control de pesaje", "error");
+      const parsedError = readStandardErrorPayload(error);
+      showToast(formatMessageFromCode(parsedError) || "Error al registrar control de pesaje", "error");
     } finally {
       setLoading(false);
     }

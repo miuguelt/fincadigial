@@ -15,6 +15,7 @@ import { vaccinationsService } from '@/entities/vaccination/api/vaccinations.ser
 import { controlService } from '@/entities/control/api/control.service';
 import { getTodayColombia } from '@/shared/utils/dateUtils';
 import { emitDataRefresh } from '@/shared/utils/dataRefresh';
+import { formatMessageFromCode, readStandardErrorPayload } from '@/shared/api/error-parser';
 import {
   QuickFormShell,
   QCard,
@@ -215,7 +216,7 @@ export default function QuickCare() {
       }
     } catch (error) {
       console.error('Error registrando enfermedad:', error);
-      showToast('Error al registrar la enfermedad', 'error');
+      showToast(formatMessageFromCode(readStandardErrorPayload(error)) || 'Error al registrar la enfermedad', 'error');
     } finally {
       submitInFlightRef.current = false;
       setLoading(false);
@@ -236,7 +237,7 @@ export default function QuickCare() {
       showToast('Tratamiento aplicado a la res', 'success');
     } catch (error) {
       console.error('Error aplicando protocolo:', error);
-      showToast('No se pudo aplicar el protocolo (revisa la conexión)', 'error');
+      showToast(formatMessageFromCode(readStandardErrorPayload(error)) || 'No se pudo aplicar el protocolo (revisa la conexión)', 'error');
     } finally {
       submitInFlightRef.current = false;
       setLoading(false);
@@ -286,7 +287,7 @@ export default function QuickCare() {
       handleClose();
     } catch (error) {
       console.error('Error registrando tratamiento:', error);
-      showToast('Error al registrar el tratamiento', 'error');
+      showToast(formatMessageFromCode(readStandardErrorPayload(error)) || 'Error al registrar el tratamiento', 'error');
     } finally {
       submitInFlightRef.current = false;
       setLoading(false);
@@ -322,7 +323,7 @@ export default function QuickCare() {
       handleClose();
     } catch (error) {
       console.error('Error registrando vacunación:', error);
-      showToast('Error al registrar la vacunación', 'error');
+      showToast(formatMessageFromCode(readStandardErrorPayload(error)) || 'Error al registrar la vacunación', 'error');
     } finally {
       submitInFlightRef.current = false;
       setLoading(false);
@@ -332,8 +333,9 @@ export default function QuickCare() {
   const submitControl = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!requireAnimal()) return;
-    if (!weight) {
-      showToast('Digita el peso de la res', 'error');
+    const parsedWeight = Number(weight);
+    if (!weight.trim() || !Number.isFinite(parsedWeight) || parsedWeight <= 0 || parsedWeight > 2000) {
+      showToast('Digita un peso válido mayor a 0 y máximo 2000 kg', 'error');
       return;
     }
     if (submitInFlightRef.current) return;
@@ -342,7 +344,7 @@ export default function QuickCare() {
     const payload = {
       animal_id: Number(animalId),
       checkup_date: date,
-      weight: parseInt(weight, 10),
+      weight: parsedWeight,
       health_status: healthStatus as any,
     };
     try {
@@ -357,7 +359,7 @@ export default function QuickCare() {
       handleClose();
     } catch (error) {
       console.error('Error registrando control:', error);
-      showToast('Error al registrar el control', 'error');
+      showToast(formatMessageFromCode(readStandardErrorPayload(error)) || 'Error al registrar el control', 'error');
     } finally {
       submitInFlightRef.current = false;
       setLoading(false);
