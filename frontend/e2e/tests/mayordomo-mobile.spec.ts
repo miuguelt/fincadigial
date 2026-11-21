@@ -1,40 +1,64 @@
-import { test, expect } from '../fixtures/auth.fixture';
+import { test, expect, testUsers } from '../fixtures/auth.fixture';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-test.describe('Flujo móvil del mayordomo (390x844)', () => {
-  test('carga login móvil sin desbordamiento horizontal', async ({ page }) => {
+function getTodayColombiaString(): string {
+  const now = new Date();
+  const colombia = new Date(now.toLocaleString('en-US', { timeZone: 'America/Bogota' }));
+  const y = colombia.getFullYear();
+  const m = String(colombia.getMonth() + 1).padStart(2, '0');
+  const d = String(colombia.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+test.describe('Flujo móvil del mayordomo y roles de finca (390x844)', () => {
+  test('1. carga login móvil sin desbordamiento horizontal y valida campos obligatorios', async ({
+    page,
+  }) => {
     await page.goto('/login');
     await expect(page.locator('input[name="identifier"]')).toBeVisible();
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth > window.innerWidth,
     );
     expect(overflow).toBe(false);
+
+    await page.click('button[type="submit"]');
+    await expect(page.locator('#documento-error')).toBeVisible();
+    await expect(page.locator('#password-error')).toBeVisible();
   });
 
-  test('operario abre Acción, registra ordeño y consulta inventario con etiquetas de vista', async ({
+  test('2. operario abre Acción, registra ordeño y consulta inventario con etiquetas de vista', async ({
     loginAs,
   }) => {
     test.skip(
-      !process.env.E2E_WORKER_PASS,
-      'Pendiente: definir E2E_WORKER_PASS en el entorno para ejecutar flujo autenticado de operario',
+      !testUsers.operario.password,
+      'Pendiente: definir contraseña semilla local o E2E_WORKER_PASS',
     );
 
     const page = await loginAs('operario');
+    const today = getTodayColombiaString();
+
+    // Verificar acciones rápidas en OperarioDashboard filtradas por RBAC
+    await expect(page.getByRole('button', { name: /registrar ordeño/i }).first()).toBeVisible();
+    await expect(page.getByRole('button', { name: /registrar control o pesaje/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /trasladar animal/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /registrar enfermedad/i })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /registrar tratamiento/i })).toHaveCount(0);
 
     // 1. Abrir «Acción» en la barra inferior y validar que solo muestra acciones permitidas
     const actionBtn = page.getByRole('button', { name: /acciones rápidas de la finca/i });
     await expect(actionBtn).toBeVisible();
     await actionBtn.click();
 
-    await expect(page.getByText('Leche')).toBeVisible();
-    await expect(page.getByText('Peso')).toBeVisible();
-    await expect(page.getByText('Traslado')).toBeVisible();
-    await expect(page.getByText('Salud')).toHaveCount(0);
+    await expect(page.getByText('Leche', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Peso', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Traslado', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Salud', { exact: true })).toHaveCount(0);
 
-    // 2. Abrir y cerrar el modal de ordeño
+    // 2. Abrir modal rápido de ordeño, verificar tope de fecha y cerrar
     await page.getByRole('button', { name: /leche/i }).first().click();
     await expect(page.getByRole('heading', { name: /registrar leche/i })).toBeVisible();
+    await expect(page.locator('input[type="date"]').first()).toHaveAttribute('max', today);
     await page.keyboard.press('Escape');
     await expect(page.getByRole('heading', { name: /registrar leche/i })).toHaveCount(0);
 
@@ -44,5 +68,101 @@ test.describe('Flujo móvil del mayordomo (390x844)', () => {
     await expect(page.getByRole('button', { name: /vista en tabla/i })).toContainText('Tabla');
     await expect(page.getByRole('button', { name: /vista en tarjetas/i })).toContainText('Tarjetas');
     await expect(page.getByRole('button', { name: /vista potreros/i })).toContainText('Potreros');
+  });
+
+  test('3. operario usa Ganadería Operativa y Cuaderno de Labores con filtros RBAC y fechas Colombia', async ({
+    loginAs,
+  }) => {
+    test.skip(
+      !testUsers.operario.password,
+      'Pendiente: definir contraseña semilla local o E2E_WORKER_PASS',
+    );
+
+    const page = await loginAs('operario');
+    const today = getTodayColombiaString();
+
+    await page.goto('/campesino/ganaderia');
+    await expect(page.getByRole('button', { name: /registrar ordeño.*anota litros/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /mover ganado/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /avisar un animal enfermo/i })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /registrar tratamiento/i })).toHaveCount(0);
+
+    // Abrir modal de ordeño en Ganadería Operativa y verificar límites de litros y fecha
+    await page.getByRole('button', { name: /registrar ordeño.*anota litros/i }).click();
+    await expect(page.locator('#milk-liters')).toHaveAttribute('min', '0.1');
+    await expect(page.locator('#milk-date')).toHaveAttribute('max', today);
+    await page.keyboard.press('Escape');
+
+    // Cuaderno de Labores para Operario: etiquetas visibles, sin botón de crear plantillas
+    await page.goto('/operario/tasks');
+    await expect(page.getByRole('button', { name: /cuaderno/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /tabla/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /plantillas de faena/i })).toHaveCount(0);
+  });
+
+  test('4. aprendiz consulta Cuaderno de Labores en modo solo lectura sin botones de mutación', async ({
+    loginAs,
+  }) => {
+    test.skip(
+      !testUsers.aprendiz.password,
+      'Pendiente: definir contraseña semilla local o E2E_APPRENTICE_PASS',
+    );
+
+    const page = await loginAs('aprendiz');
+
+    await page.goto('/apprentice/tasks');
+    await expect(page.getByRole('button', { name: /cuaderno/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /tabla/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /plantillas de faena/i })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^iniciar faena$/i })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^¡completar!$/i })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^cumplir$/i })).toHaveCount(0);
+  });
+
+  test('5. administrador ejecuta flujos móviles de parto asistido, finanzas, tareas, fincas y alertas', async ({
+    loginAs,
+  }) => {
+    test.skip(
+      !testUsers.admin.password,
+      'Pendiente: definir contraseña semilla local o E2E_ADMIN_PASS',
+    );
+
+    const page = await loginAs('admin');
+    const today = getTodayColombiaString();
+
+    // 1. Enlace directo de Parto (?calving=1) abre modal de parto asistido
+    await page.goto('/admin/reproduction?calving=1');
+    await expect(page.getByText(/asistente de parto|registrar parto/i).first()).toBeVisible({
+      timeout: 15000,
+    });
+
+    // 2. Finanzas: Nuevo movimiento con scroll móvil, botón cerrar de 44 px y fecha Colombia
+    await page.goto('/admin/financial');
+    const newTxBtn = page.getByRole('button', { name: /nuevo movimiento/i });
+    await expect(newTxBtn).toBeVisible();
+    await newTxBtn.click();
+
+    const financeDialog = page.getByRole('dialog');
+    await expect(financeDialog).toBeVisible();
+    await expect(financeDialog).toHaveClass(/max-h-\[90dvh\]/);
+    await expect(page.locator('#fecha-movimiento')).toHaveAttribute('max', today);
+    await expect(page.locator('#monto-movimiento')).toHaveAttribute('min', '1');
+    await page.getByRole('button', { name: /cerrar/i }).click();
+
+    // 3. Tareas: Administrador sí ve Plantillas de Faena y etiquetas móviles
+    await page.goto('/admin/tasks');
+    await expect(page.getByRole('button', { name: /plantillas de faena/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /cuaderno/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /tabla/i })).toBeVisible();
+
+    // 4. Fincas y Alertas: etiquetas móviles visibles y botones táctiles
+    await page.goto('/admin/fincas');
+    await expect(page.getByRole('button', { name: /tarjetas/i })).toContainText('Tarjetas');
+    await expect(page.getByRole('button', { name: /tabla/i })).toContainText('Tabla');
+
+    await page.goto('/admin/alerts');
+    const evalBtn = page.getByRole('button', { name: /evaluar ahora/i });
+    await expect(evalBtn).toBeVisible();
+    await expect(evalBtn).toHaveClass(/min-h-\[44px\]/);
   });
 });

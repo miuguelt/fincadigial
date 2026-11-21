@@ -106,9 +106,9 @@ export function OnboardingTour() {
     const force = query.get('tour') === '1';
     const alwaysActive = (() => {
       try {
-        return localStorage.getItem(TOUR_KEYS.alwaysActive) !== '0';
+        return localStorage.getItem(TOUR_KEYS.alwaysActive) === '1';
       } catch {
-        return true;
+        return false;
       }
     })();
     const completed = (() => {
@@ -126,7 +126,7 @@ export function OnboardingTour() {
       }
     })();
 
-    const shouldRun = force || (alwaysActive ? !alreadyRan : !completed);
+    const shouldRun = force || (alwaysActive ? !alreadyRan : !completed && !alreadyRan);
     if (!shouldRun) return;
     try {
       sessionStorage.setItem(TOUR_KEYS.sessionRun, '1');
@@ -134,8 +134,30 @@ export function OnboardingTour() {
       /* ignore */
     }
 
-    const t = window.setTimeout(start, 900);
-    return () => window.clearTimeout(t);
+    const t = window.setTimeout(() => {
+      const activeParams = new URLSearchParams(window.location.search);
+      if (
+        !force &&
+        (document.querySelector('[role="dialog"], [aria-modal="true"]') ||
+          window.location.pathname.startsWith('/quick/') ||
+          activeParams.has('quick') ||
+          activeParams.has('modal') ||
+          activeParams.has('create') ||
+          activeParams.has('calving'))
+      ) {
+        return;
+      }
+      start();
+    }, 900);
+    const cancelOnQuickAction = () => {
+      window.clearTimeout(t);
+      close();
+    };
+    window.addEventListener('toggle-quick-actions', cancelOnQuickAction);
+    return () => {
+      window.clearTimeout(t);
+      window.removeEventListener('toggle-quick-actions', cancelOnQuickAction);
+    };
   }, [isAuthenticated, hasFinca, start]);
 
   // Medir y posicionar la tarjeta cuando hay ancla.
@@ -218,7 +240,7 @@ export function OnboardingTour() {
             <button
               type="button"
               onClick={close}
-              className="inline-flex h-9 items-center gap-1 rounded-lg px-2.5 text-xs font-bold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="inline-flex h-11 min-h-[44px] items-center gap-1 rounded-lg px-2.5 text-xs font-bold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <X className="h-3.5 w-3.5" />
               {isLast ? 'Cerrar' : 'Saltar'}
@@ -228,14 +250,14 @@ export function OnboardingTour() {
               onClick={prev}
               disabled={isFirst}
               aria-label="Paso anterior"
-              className="inline-flex h-9 items-center rounded-lg border border-border px-2.5 text-xs font-bold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40"
+              className="inline-flex h-11 min-h-[44px] items-center rounded-lg border border-border px-2.5 text-xs font-bold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
               type="button"
               onClick={isLast ? close : next}
-              className="inline-flex h-9 items-center gap-1 rounded-lg bg-primary px-3 text-xs font-black text-primary-foreground shadow-md shadow-primary/20 transition-all hover:bg-primary/90 active:scale-95"
+              className="inline-flex h-11 min-h-[44px] items-center gap-1 rounded-lg bg-primary px-3 text-xs font-black text-primary-foreground shadow-md shadow-primary/20 transition-all hover:bg-primary/90 active:scale-95"
             >
               {isLast ? 'Entendido' : 'Siguiente'}
               {!isLast && <ChevronRight className="h-4 w-4" />}
@@ -253,7 +275,12 @@ export function OnboardingTour() {
   // atenuado para que la guía responda de inmediato.
   if (isCenterStep || !anchorRect) {
     return (
-      <div className="fixed inset-0 z-[1300] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-[2px]">
+      <div
+        onClick={(e) => {
+          if (e.target === e.currentTarget) close();
+        }}
+        className="fixed inset-0 z-[1300] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-[2px]"
+      >
         {card}
       </div>
     );
