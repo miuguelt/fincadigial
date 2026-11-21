@@ -10,6 +10,7 @@ import { medicationsService } from "@/entities/medication/api/medications.servic
 import { treatmentsService } from "@/entities/treatment/api/treatments.service";
 import { getTodayColombia } from "@/shared/utils/dateUtils";
 import { emitDataRefresh } from "@/shared/utils/dataRefresh";
+import { formatMessageFromCode, readStandardErrorPayload } from "@/shared/api/error-parser";
 import {
   QuickFormShell,
   QCard,
@@ -127,7 +128,7 @@ export default function QuickTreatment() {
       handleClose();
     } catch (error) {
       console.error("Error creating treatment:", error);
-      showToast("Error al registrar tratamiento", "error");
+      showToast(formatMessageFromCode(readStandardErrorPayload(error)) || "Error al registrar tratamiento", "error");
     } finally {
       setLoading(false);
     }

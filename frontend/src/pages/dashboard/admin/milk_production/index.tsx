@@ -70,9 +70,10 @@ const MilkProductionPage = ({ initialTab = 'overview', focusDate = null }: MilkP
   useEffect(() => {
     const loadAnimals = async () => {
       try {
-        const data = await animalService.getAll();
+        const rawData = await animalService.getAll({ sex: 'Hembra', status: 'Vivo', is_lactating: true, limit: 250 });
+        const data = (Array.isArray(rawData) ? rawData : []).filter((a: any) => Boolean(a?.is_lactating) && String(a?.sex || '').toLowerCase() !== 'macho');
         setAnimals(data.map((a: any) => ({
-          label: (a.record || a.registro) ? `${a.record || a.registro} - ${a.name || a.nombre || ''}` : `Animal #${a.id}`,
+          label: (a.record || a.registro) ? ((a.name || a.nombre) ? `${a.record || a.registro} — ${a.name || a.nombre}` : `${a.record || a.registro}`) : (a.name || a.nombre || `Animal #${a.id}`),
           value: a.id
         })));
       } catch (error) {
@@ -169,7 +170,9 @@ const MilkProductionPage = ({ initialTab = 'overview', focusDate = null }: MilkP
       fields: [
         {
           name: 'animal_id',
-          label: 'Animal',
+          label: 'Vaca en lactancia',
+          placeholder: 'Seleccionar vaca en lactancia',
+          emptyMessage: 'No hay vacas en lactancia activa',
           type: 'select',
           required: true,
           options: animals,

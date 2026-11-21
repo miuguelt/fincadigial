@@ -85,4 +85,22 @@ describe('QuickMilk', () => {
     expect(mensajes.some((m) => /sin señal|pendiente|se enviará/i.test(m))).toBe(true);
     expect(mensajes.some((m) => /registrada correctamente/i.test(m))).toBe(false);
   });
+
+  it('muestra el mensaje detallado del servidor si rechaza por retiro sanitario', async () => {
+    apiPost.mockRejectedValue({
+      response: {
+        status: 400,
+        data: {
+          message: 'La res está en período de retiro hasta 2026-11-30: la leche debe descartarse',
+        },
+      },
+    });
+
+    await registrarOrdeno();
+
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith(
+      expect.stringMatching(/período de retiro/i),
+      'error',
+    ));
+  });
 });

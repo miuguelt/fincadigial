@@ -14,6 +14,7 @@ import {
 import api from '@/shared/api/client';
 import { wasQueuedOffline } from '@/shared/api/offlineResult';
 import { emitDataRefresh } from '@/shared/utils/dataRefresh';
+import { formatMessageFromCode, readStandardErrorPayload } from '@/shared/api/error-parser';
 
 type Turno = 'Mañana' | 'Tarde' | 'Total';
 
@@ -95,13 +96,17 @@ export default function QuickMilk() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!animalId) { showToast('Selecciona una vaca en lactancia', 'error'); return; }
-    if (!litros || Number(litros) < 0) { showToast('Ingresa los litros correctamente', 'error'); return; }
+    const parsedLiters = Number(litros);
+    if (!litros.trim() || !Number.isFinite(parsedLiters) || parsedLiters < 0 || parsedLiters > 80) {
+      showToast('Ingresa los litros correctamente (entre 0 y 80 L)', 'error');
+      return;
+    }
 
     setGuardando(true);
     const payload = {
       animal_id: Number(animalId),
       date: fecha,
-      liters: Number(litros),
+      liters: parsedLiters,
       milking_session: turnoToSession(turno),
       notes: notas || undefined,
     };
@@ -120,8 +125,8 @@ export default function QuickMilk() {
         : 'Producción de leche registrada correctamente.', 'success');
       if (!pendiente) emitDataRefresh('milk-production');
       handleClose();
-    } catch {
-      showToast('No se pudo guardar. Intenta de nuevo.', 'error');
+    } catch (error) {
+      showToast(formatMessageFromCode(readStandardErrorPayload(error)) || 'No se pudo guardar. Intenta de nuevo.', 'error');
     } finally {
       setGuardando(false);
     }
