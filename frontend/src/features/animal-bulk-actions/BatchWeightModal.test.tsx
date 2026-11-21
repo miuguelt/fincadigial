@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BatchWeightModal } from './BatchWeightModal';
 import { animalsService } from '@/entities/animal/api/animal.service';
+import { getTodayColombia } from '@/shared/utils/dateUtils';
 
 const mockShowToast = vi.fn();
 
@@ -113,5 +114,27 @@ describe('BatchWeightModal — Pruebas de Integración y Usabilidad Móvil', () 
 
     const submitButton = screen.getByRole('button', { name: /Confirmar Pesaje/i });
     expect(submitButton).not.toBeDisabled();
+  });
+
+  it('limita la fecha a hoy y mantiene contraste y diseño adaptable a 390 px', () => {
+    render(
+      <BatchWeightModal
+        isOpen={true}
+        onClose={vi.fn()}
+        selectedAnimalIds={[5]}
+        onSuccess={vi.fn()}
+      />
+    );
+
+    const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
+    expect(dateInput).toHaveAttribute('max', getTodayColombia());
+
+    const cancelBtn = screen.getByRole('button', { name: /Cancelar/i });
+    expect(cancelBtn.className).not.toContain('text-muted-foreground/40');
+    expect(cancelBtn.className).toContain('text-muted-foreground');
+
+    const footer = cancelBtn.parentElement;
+    expect(footer?.className).toContain('flex-col-reverse');
+    expect(footer?.className).toContain('sm:flex-row');
   });
 });

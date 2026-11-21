@@ -114,7 +114,7 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
             {" "}
             <ScrollArea className="flex-1">
               {" "}
-              <div className="p-8 space-y-8">
+              <div className="p-4 sm:p-8 space-y-5 sm:space-y-8">
                 {" "}
                 <div className="space-y-4">
                   {" "}
@@ -135,7 +135,7 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
                       placeholder="0.00"
                       value={weight}
                       onChange={(e) => setWeight(e.target.value)}
-                      className="bg-muted/40 border-border rounded-lg h-32 sm:h-44 pl-10 text-6xl sm:text-8xl font-bold focus:border-primary focus:bg-background focus:ring-4 focus:ring-primary/10 transition-all text-foreground placeholder:text-muted-foreground/20 tracking-tighter"
+                      className="bg-muted/40 border-border rounded-lg h-24 sm:h-44 pl-5 sm:pl-10 pr-16 text-4xl sm:text-8xl font-bold focus:border-primary focus:bg-background focus:ring-4 focus:ring-primary/10 transition-all text-foreground placeholder:text-muted-foreground/30 tracking-tighter"
                     />{" "}
                     <div className="absolute right-8 top-1/2 -translate-y-1/2">
                       {" "}
@@ -156,11 +156,11 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
                   {" "}
                   <div className="space-y-2">
                     {" "}
-                    <Label className="text-[11px] font-bold uppercase text-muted-foreground/40 tracking-wider">
+                    <Label className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider">
                       Fecha Operativo
                     </Label>{" "}
                     <Input
-                      type="date"
+                      type="date" max={getTodayColombia()}
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
                       className="h-12 rounded-xl bg-muted/40 border-border font-bold text-sm text-foreground focus:border-primary focus:bg-background transition-all px-4 shadow-sm"
@@ -168,7 +168,7 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
                   </div>{" "}
                   <div className="space-y-2">
                     {" "}
-                    <Label className="text-[11px] font-bold uppercase text-muted-foreground/40 tracking-wider">
+                    <Label className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider">
                       Notas de Seguimiento
                     </Label>{" "}
                     <Input
@@ -198,7 +198,7 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
             {" "}
             <ScrollArea className="flex-1">
               {" "}
-              <div className="p-8 space-y-10">
+              <div className="p-4 sm:p-8 space-y-6 sm:space-y-10">
                 {" "}
                 <div className="flex items-center gap-3">
                   {" "}
@@ -222,7 +222,7 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
                       {" "}
                       <div className="relative z-10">
                         {" "}
-                        <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/40 mb-2">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
                           Impacto Lote
                         </p>{" "}
                         <h5 className="text-5xl font-bold tabular-nums tracking-tighter text-primary">
@@ -270,13 +270,13 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
           </div>{" "}
         </div>{" "}
         {/* 3. FOOTER */}{" "}
-        <DialogFooter className="px-8 py-5 bg-background border-t border-border flex flex-row items-center justify-between shrink-0 z-50">
+        <DialogFooter className="px-4 py-4 sm:px-8 sm:py-5 bg-background border-t border-border flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0 z-50">
           {" "}
           <Button
             variant="ghost"
             onClick={onClose}
             disabled={loading}
-            className="h-11 px-6 rounded-xl font-bold uppercase text-[11px] tracking-wider text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-all"
+            className="h-11 px-4 sm:px-6 rounded-xl font-bold uppercase text-[11px] tracking-wider text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
           >
             {" "}
             Cancelar Proceso{" "}
@@ -309,7 +309,7 @@ export const BatchWeightModal: React.FC<BatchWeightModalProps> = ({
               onClick={handleSave}
               disabled={!weight || loading}
               className={cn(
-                "h-12 px-10 rounded-xl font-bold uppercase tracking-wider text-[12px] gap-3 transition-all active:scale-95 shadow-md",
+                "h-12 w-full sm:w-auto px-6 sm:px-10 rounded-xl font-bold uppercase tracking-wider text-[12px] gap-3 transition-all active:scale-95 shadow-md",
                 weight
                   ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20"
                   : "bg-muted text-muted-foreground/40 border border-border",
