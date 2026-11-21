@@ -1,4 +1,5 @@
 import type { AnimalResponse } from '@/shared/api/generated/swaggerTypes';
+import { normalizeRole } from '@/features/auth/api/auth.service';
 import { animalFields, initialFormData, mapResponseToForm, validateForm } from '../config/animals.config';
 import { buildAnimalFormSections } from '../config/formSections';
 import { buildAnimalColumns } from '../config/columns';
@@ -20,12 +21,13 @@ export function useAnimalCrudModel() {
   const rendererOptions = { breedOptions, fatherOptions, motherOptions, onOpenAnimal: details.openAnimal };
   const renderCard = (item: AnimalResponse & { [key: string]: any }) => renderCardContent(item, rendererOptions);
   const renderDetail = (item: AnimalResponse & { [key: string]: any }) => renderDetailContent(item, { ...rendererOptions, currentUserId: user?.id, navigate, onOpenHistory: details.openHistory, onOpenAncestors: openAncestors, onOpenDescendants: openDescendants, showToast });
+  const currentRole = normalizeRole(user?.role) || user?.role || null;
   const config = buildAnimalCrudConfig({
     columns,
     formSections,
     viewMode: runtime.viewMode,
     defaultFields: animalFields,
-    batchActions: createBatchActions({ clearSelectionRef: runtime.clearSelectionRef, selectedIdsRef: runtime.selectedIdsRef, setBulkModal: runtime.setBulkModal, setSelectedAnimals: runtime.setSelectedAnimalsForPrint }),
+    batchActions: createBatchActions({ clearSelectionRef: runtime.clearSelectionRef, selectedIdsRef: runtime.selectedIdsRef, setBulkModal: runtime.setBulkModal, setSelectedAnimals: runtime.setSelectedAnimalsForPrint, currentRole }),
     renderCard,
     // Las columnas se calculan sobre el ancho real de la rejilla, no del
     // viewport: con el menú de la finca abierto los breakpoints seguían

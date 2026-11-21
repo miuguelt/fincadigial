@@ -19,7 +19,7 @@ import { cn } from '@/shared/ui/cn';
 interface BatchActionToolbarProps {
   selectedCount: number;
   onClear: () => void;
-  onTransfer: () => void;
+  onTransfer?: () => void;
   onVaccinate?: () => void;
   onWeight?: () => void;
   onReproduction?: () => void;
@@ -56,7 +56,7 @@ const ActionItem: React.FC<ActionItemProps> = ({
       onClick();
     }}
     className={cn(
-      'group flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] px-1 sm:px-1.5 py-1.5 rounded-lg transition-all duration-500 active:scale-95 relative overflow-hidden',
+      'group flex min-h-[44px] flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] px-1 sm:px-1.5 py-1.5 rounded-lg transition-all duration-500 active:scale-95 relative overflow-hidden',
       'hover:bg-card/[0.05] border border-transparent hover:border-white/10'
     )}
   >
@@ -107,13 +107,7 @@ export const BatchActionToolbar: React.FC<BatchActionToolbarProps> = ({
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}
-        className="fixed inset-x-0 bottom-3 sm:bottom-4 z-[1000] flex justify-center pointer-events-none"
-        style={{
-          // Espacio reservado por el menú lateral (escritorio) y por el botón flotante de
-          // acciones rápidas (esquina inferior derecha), publicado por DashboardLayout.
-          paddingLeft: 'calc(var(--app-content-left, 0px) + 0.5rem)',
-          paddingRight: '4.5rem',
-        }}
+        className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:bottom-4 z-[1045] flex justify-center pointer-events-none px-2 md:pl-[calc(var(--app-content-left,0px)+0.5rem)] md:pr-[4.5rem]"
       >
         <div
           className="flex w-auto max-w-full flex-wrap sm:flex-nowrap items-center justify-center gap-x-2 gap-y-2 rounded-3xl border border-white/10 bg-slate-900/85 dark:bg-slate-900/90 p-2 shadow-2xl backdrop-blur-xl relative overflow-hidden text-white ring-1 ring-white/10 transition-opacity duration-300"
@@ -147,13 +141,15 @@ export const BatchActionToolbar: React.FC<BatchActionToolbarProps> = ({
           {/* ── Acciones ──────────────────────────────────────────────── */}
           {/* Envuelven en varias filas antes que recortarse: todas las opciones deben verse. */}
           <div className="order-last basis-full sm:order-none sm:basis-auto sm:flex-1 flex min-w-0 flex-wrap items-center justify-center gap-1 px-1 relative z-10">
-            <ActionItem
-              icon={IconSwitchHorizontal}
-              label="Traslado"
-              onClick={onTransfer}
-              color="text-indigo-400"
-              glowColor="bg-indigo-500/20"
-            />
+            {onTransfer && (
+              <ActionItem
+                icon={IconSwitchHorizontal}
+                label="Traslado"
+                onClick={onTransfer}
+                color="text-indigo-400"
+                glowColor="bg-indigo-500/20"
+              />
+            )}
             {onPrintTags && (
               <ActionItem
                 icon={IconPrinter}
@@ -230,7 +226,7 @@ export const BatchActionToolbar: React.FC<BatchActionToolbarProps> = ({
                 e.stopPropagation();
                 onClear();
               }}
-              className="h-11 w-11 flex items-center justify-center rounded-lg text-foreground hover:text-white hover:bg-card/10 transition-all active:scale-90 group"
+              className="h-11 w-11 flex items-center justify-center rounded-lg text-white/80 hover:text-white hover:bg-card/10 transition-all active:scale-90 group"
               aria-label="Cerrar selección"
             >
               <IconX className="h-6 w-6 group-hover:rotate-90 transition-transform duration-500" />
