@@ -433,6 +433,7 @@ export default function AssistedCalvingForm({
             </Label>
             <Input
               id="event_date"
+              max={getTodayColombia()}
               type="date"
               value={eventDate}
               onChange={(e) => setEventDate(e.target.value)}

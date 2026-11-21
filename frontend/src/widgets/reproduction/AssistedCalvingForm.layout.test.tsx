@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { getTodayColombia } from '@/shared/utils/dateUtils';
 import AssistedCalvingForm from './AssistedCalvingForm';
 
 vi.mock('@/app/providers/ToastContext', () => ({
@@ -52,5 +53,10 @@ describe('distribución adaptable del registro de parto', () => {
 
     expect(pageSource).toMatch(/<DialogContent[\s\S]*?fullWidth[\s\S]*?assisted-calving-dialog/);
     expect(pageSource).toContain('max-w-[1180px]');
+  });
+
+  it('limita la fecha de parto a hoy en Colombia', () => {
+    render(<AssistedCalvingForm />);
+    expect(screen.getByLabelText(/fecha del parto/i)).toHaveAttribute('max', getTodayColombia());
   });
 });

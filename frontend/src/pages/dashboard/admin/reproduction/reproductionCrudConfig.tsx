@@ -2,7 +2,7 @@ import { animalService } from '@/entities/animal/api/animal.service';
 import { Badge } from '@/shared/ui/badge';
 import type { ReproductiveEventInput, ReproductiveEventResponse } from '@/shared/api/generated/swaggerTypes';
 import type { CRUDConfig } from '@/shared/types/crud';
-import { formatDateColombia } from '@/shared/utils/dateUtils';
+import { formatDateColombia, getTodayColombia } from '@/shared/utils/dateUtils';
 import { getAutoStatusClass } from '@/shared/utils/badgeStyles';
 
 const animalLabel = (animal: { record: string; breed?: { name?: string } | null }) =>
@@ -189,6 +189,7 @@ export function createReproductionCrudConfig(onSelectAnimal: (id: number) => voi
             label: 'Fecha del Evento',
             type: 'date',
             required: true,
+            maxDate: getTodayColombia(),
           },
         ],
       },

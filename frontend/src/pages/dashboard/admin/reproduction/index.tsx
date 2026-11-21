@@ -3,6 +3,7 @@ import { reproductionService, type ReproductionSummary } from '@/entities/reprod
 import type { ReproductiveEventResponse, ReproductiveEventInput } from '@/shared/api/generated/swaggerTypes';
 import type { EventTypeOption } from '@/widgets/reproduction/ReproductiveEventQuickModal';
 import { useToast } from '@/app/providers/ToastContext';
+import { getTodayColombia } from '@/shared/utils/dateUtils';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import { ReproductionHubView } from './ReproductionHubView';
 import { createReproductionCrudConfig } from './reproductionCrudConfig';
@@ -129,7 +130,7 @@ export default function ReproductionHub() {
   const initialFormData: ReproductiveEventInput = {
     animal_id: 0,
     event_type: 'Celo',
-    event_date: new Date().toISOString().split('T')[0],
+    event_date: getTodayColombia(),
   };
 
   const crudConfig = createReproductionCrudConfig(setSelectedAnimalId, handleDataRefresh);

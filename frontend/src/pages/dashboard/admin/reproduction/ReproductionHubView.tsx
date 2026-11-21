@@ -78,7 +78,7 @@ export function ReproductionHubView({
                 setQuickEventDefaultType('Celo');
                 setIsQuickEventModalOpen(true);
               }}
-              className="h-9 w-full gap-2 rounded-lg font-bold sm:w-auto"
+              className="h-11 min-h-[44px] w-full gap-2 rounded-lg font-bold sm:w-auto"
             >
               <Plus className="h-4 w-4" />
               <span className="sm:hidden">Nueva Novedad</span>
@@ -89,7 +89,7 @@ export function ReproductionHubView({
               variant="outline"
               size="sm"
               onClick={() => setIsBatchModalOpen(true)}
-              className="h-9 w-full gap-2 rounded-lg font-bold sm:w-auto"
+              className="h-11 min-h-[44px] w-full gap-2 rounded-lg font-bold sm:w-auto"
             >
               <Users className="h-4 w-4" />
               <span className="sm:hidden">Jornada por lote</span>
@@ -100,7 +100,7 @@ export function ReproductionHubView({
               variant="secondary"
               size="sm"
               onClick={() => setIsCalvingModalOpen(true)}
-              className="h-9 w-full gap-2 rounded-lg font-bold sm:w-auto"
+              className="h-11 min-h-[44px] w-full gap-2 rounded-lg font-bold sm:w-auto"
             >
               <Baby className="h-4 w-4" />
               <span className="sm:hidden">Registrar parto</span>
@@ -111,7 +111,7 @@ export function ReproductionHubView({
               variant="ghost"
               size="icon"
               onClick={handleDataRefresh}
-              className="h-9 w-9 rounded-lg"
+              className="h-11 w-11 min-h-[44px] min-w-[44px] rounded-lg"
               title="Actualizar datos"
             >
               <RefreshCw className="h-4 w-4" />

@@ -34,6 +34,7 @@ import {
 import { reproductionService } from '@/entities/reproduction/api/reproduction.service';
 import { animalService } from '@/entities/animal/api/animal.service';
 import { useToast } from '@/app/providers/ToastContext';
+import { getTodayColombia } from '@/shared/utils/dateUtils';
 import type { ReproductiveEventInput } from '@/shared/api/generated/swaggerTypes';
 
 export type EventTypeOption = 'Celo' | 'Inseminacion' | 'Diagnostico' | 'Parto' | 'Secado';
@@ -121,7 +122,7 @@ export function ReproductiveEventQuickModal({
   const { showToast } = useToast();
   const [eventType, setEventType] = useState<EventTypeOption>(defaultEventType);
   const [animalId, setAnimalId] = useState<number | null>(defaultAnimalId || null);
-  const [eventDate, setEventDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
+  const [eventDate, setEventDate] = useState<string>(() => getTodayColombia());
 
   // Campos Inseminación
   const [technique, setTechnique] = useState<'Natural' | 'Artificial' | 'Transferencia_Embrionaria'>('Artificial');
@@ -149,7 +150,7 @@ export function ReproductiveEventQuickModal({
     if (isOpen) {
       if (defaultAnimalId) setAnimalId(defaultAnimalId);
       if (defaultEventType) setEventType(defaultEventType);
-      setEventDate(new Date().toISOString().split('T')[0]);
+      setEventDate(getTodayColombia());
       setNotes('');
       setSubmitting(false);
     }
@@ -352,9 +353,10 @@ export function ReproductiveEventQuickModal({
               </Label>
               <Input
                 type="date"
+                max={getTodayColombia()}
                 value={eventDate}
                 onChange={(e) => setEventDate(e.target.value)}
-                className="h-10 rounded-xl text-xs font-semibold"
+                className="h-11 rounded-xl text-xs font-semibold"
                 required
               />
             </div>
