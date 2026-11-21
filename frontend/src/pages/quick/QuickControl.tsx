@@ -181,6 +181,7 @@ export default function QuickControl() {
             <QInput
               id="date"
               type="date"
+              max={getTodayColombia()}
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required

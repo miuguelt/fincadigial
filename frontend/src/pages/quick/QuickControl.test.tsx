@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { getTodayColombia } from '@/shared/utils/dateUtils';
 import QuickControl from './QuickControl';
 
 const { showToast, createControl } = vi.hoisted(() => ({
@@ -86,5 +87,17 @@ describe('QuickControl', () => {
       expect.stringMatching(/fecha de control no puede ser futura/i),
       'error',
     ));
+  });
+
+  it('limita la fecha a hoy y usa botones de preset de al menos 44 px', async () => {
+    render(
+      <MemoryRouter>
+        <QuickControl />
+      </MemoryRouter>,
+    );
+
+    const dateInput = screen.getByLabelText(/fecha del control/i);
+    expect(dateInput).toHaveAttribute('max', getTodayColombia());
+    expect(screen.getByRole('button', { name: /\+5kg/i }).className).toContain('min-h-[44px]');
   });
 });

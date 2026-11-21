@@ -295,7 +295,7 @@ const FormField = memo<{
 
       case "date":
         {
-          const maxDate = isBirthDateField ? today : undefined;
+          const maxDate = field.maxDate ?? (isBirthDateField ? today : undefined);
 
           return (
             <Input

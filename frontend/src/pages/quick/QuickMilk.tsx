@@ -193,6 +193,7 @@ export default function QuickMilk() {
             <QInput
               id="fecha"
               type="date"
+              max={getTodayColombia()}
               value={fecha}
               onChange={(e) => setFecha(e.target.value)}
               required

@@ -180,6 +180,7 @@ const MilkProductionPage = ({ initialTab = 'overview', focusDate = null }: MilkP
         },
         {
           name: 'date',
+          maxDate: getTodayColombia(),
           label: 'Fecha',
           type: 'date',
           required: true,

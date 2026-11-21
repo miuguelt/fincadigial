@@ -24,6 +24,7 @@ export interface CRUDFormField<T = any> {
   type: CRUDFieldType;
   required?: boolean;
   placeholder?: string;
+  maxDate?: string;
   options?: CRUDFieldOption[];
   section?: string;
   disabled?: boolean;

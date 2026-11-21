@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { getTodayColombia } from '@/shared/utils/dateUtils';
 import QuickMilk from './QuickMilk';
 
 /**
@@ -102,5 +103,15 @@ describe('QuickMilk', () => {
       expect.stringMatching(/período de retiro/i),
       'error',
     ));
+  });
+
+  it('limita la fecha de ordeño a hoy', () => {
+    render(
+      <MemoryRouter>
+        <QuickMilk />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByLabelText(/fecha del ordeño/i)).toHaveAttribute('max', getTodayColombia());
   });
 });

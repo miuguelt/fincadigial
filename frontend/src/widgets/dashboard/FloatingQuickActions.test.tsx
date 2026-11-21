@@ -62,4 +62,19 @@ describe('FloatingQuickActions', () => {
     const birthAction = QUICK_ACTIONS_CATALOG.find((a) => a.id === 'births');
     expect(birthAction?.path).toBe('/admin/reproduction?calving=1');
   });
+
+  it('mantiene el botón Editar con objetivo táctil mínimo de 44 px', () => {
+    render(
+      <ActionGrid
+        items={[milkAction]}
+        badgesMap={{}}
+        totalBadgeCount={0}
+        favIds={['milk']}
+        onAction={() => undefined}
+        onEdit={() => undefined}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: /editar/i }).className).toContain('min-h-[44px]');
+  });
 });

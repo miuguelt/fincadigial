@@ -331,7 +331,7 @@ export function QNumberStepper({
               type="button"
               disabled={disabled}
               onClick={() => adjust(preset)}
-              className="h-9 px-3 rounded-lg border border-border/80 bg-muted/40 hover:bg-primary/15 hover:text-primary hover:border-primary/40 text-xs font-black transition-all active:scale-95 shadow-sm"
+              className="h-11 min-h-[44px] px-3 rounded-lg border border-border/80 bg-muted/40 hover:bg-primary/15 hover:text-primary hover:border-primary/40 text-xs font-black transition-all active:scale-95 shadow-sm"
             >
               +{preset}{unit}
             </button>
@@ -341,7 +341,7 @@ export function QNumberStepper({
               type="button"
               disabled={disabled}
               onClick={() => onChange("")}
-              className="h-9 px-2.5 rounded-lg border border-border/60 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all ml-auto"
+              className="h-11 min-h-[44px] px-3 rounded-lg border border-border/60 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all ml-auto"
             >
               Borrar
             </button>

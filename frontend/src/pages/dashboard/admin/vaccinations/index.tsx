@@ -202,7 +202,7 @@ function AdminVaccinationsPage() {
       fields: [
         { name: 'animal_id', label: 'Animal', type: 'select', required: true, options: animalOptions, placeholder: 'Seleccionar animal' },
         { name: 'vaccine_id', label: 'Vacuna', type: 'select', required: true, options: vaccineOptions, placeholder: 'Seleccionar vacuna' },
-        { name: 'vaccination_date', label: 'Fecha de Vacunación', type: 'date', required: true },
+        { name: 'vaccination_date', label: 'Fecha de Vacunación', type: 'date', required: true, maxDate: getTodayColombia() },
         { name: 'apprentice_id' as any, label: 'Aprendiz', type: 'select', options: apprenticeOptions, placeholder: 'Seleccionar aprendiz' },
         { name: 'instructor_id' as any, label: 'Instructor', type: 'select', options: instructorOptions, placeholder: 'Seleccionar instructor', colSpan: 2 },
       ],

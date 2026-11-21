@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { getTodayColombia } from '@/shared/utils/dateUtils';
 import QuickTreatment from './QuickTreatment';
 
 const { showToast, createTreatment } = vi.hoisted(() => ({
@@ -69,5 +70,15 @@ describe('QuickTreatment', () => {
       expect.stringMatching(/episodio no corresponde/i),
       'error',
     ));
+  });
+
+  it('limita la fecha de aplicación a hoy', () => {
+    render(
+      <MemoryRouter>
+        <QuickTreatment />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByLabelText(/fecha de aplicación/i)).toHaveAttribute('max', getTodayColombia());
   });
 });
