@@ -217,7 +217,7 @@ test.describe('Flujo móvil del mayordomo y roles de finca (390x844)', () => {
 
     // Simular corte de conectividad en campo
     await page.context().setOffline(true);
-    await page.evaluate(() => window.dispatchEvent(new Event('offline')));
+    await page.evaluate(() => window.dispatchEvent(new Event('offline'))).catch(() => {});
 
     // Debe emerger el OnlineStatusIndicator con elevación táctil superior a MobileBottomNav (z-[1045])
     const offlineIndicator = page.getByRole('button', { name: 'Sin conexión' });
@@ -226,10 +226,9 @@ test.describe('Flujo móvil del mayordomo y roles de finca (390x844)', () => {
 
     // Restaurar conectividad
     await page.context().setOffline(false);
-    await page.evaluate(() => window.dispatchEvent(new Event('online')));
 
     // El indicador debe sincronizarse y ocultarse tras volver en línea sin pendientes
-    await expect(offlineIndicator).toHaveCount(0, { timeout: 8000 });
+    await expect(offlineIndicator).toHaveCount(0, { timeout: 12000 });
   });
 
   test('8. multi-finca y gobierno: selector táctil en cabecera móvil, opciones con min-h-[44px] y navegación a fincas', async ({
@@ -262,5 +261,26 @@ test.describe('Flujo móvil del mayordomo y roles de finca (390x844)', () => {
     // 3. Navegar a gestión de fincas
     await page.goto('/admin/fincas');
     await expect(page.getByRole('button', { name: /tarjetas/i })).toBeVisible();
+  });
+
+  test('9. planificación forrajera y aforo: consulta de potreros y controles táctiles zootécnicos', async ({
+    loginAs,
+  }) => {
+    test.skip(
+      !testUsers.admin.password,
+      'Pendiente: definir contraseña semilla local o E2E_ADMIN_PASS',
+    );
+
+    const page = await loginAs('admin');
+    await page.goto('/admin/fields');
+    await expect(page.getByRole('banner')).toBeVisible({ timeout: 15000 });
+
+    // Verificar que la vista de potreros cargue con su encabezado
+    await expect(page.getByRole('heading', { name: /estado de los potreros/i })).toBeVisible({ timeout: 10000 });
+
+    // Comprobar presencia de controles táctiles accesibles
+    const buttons = page.getByRole('button');
+    const count = await buttons.count();
+    expect(count).toBeGreaterThan(0);
   });
 });

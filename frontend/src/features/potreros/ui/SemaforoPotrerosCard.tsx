@@ -156,7 +156,7 @@ export const SemaforoPotrerosCard: React.FC<SemaforoPotrerosCardProps> = ({
           <button
             type="button"
             onClick={() => navigate('/admin/fields')}
-            className="text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-200 flex items-center gap-1 bg-emerald-100/70 dark:bg-emerald-900/40 px-3 py-1.5 rounded-xl transition-colors"
+            className="text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-200 flex items-center gap-1 bg-emerald-100/70 dark:bg-emerald-900/40 px-3 py-1.5 rounded-xl transition-colors min-h-[44px] sm:min-h-[36px]"
           >
             <span>Ver Tablero de Potreros</span>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -169,7 +169,7 @@ export const SemaforoPotrerosCard: React.FC<SemaforoPotrerosCardProps> = ({
         <button
           type="button"
           onClick={() => setFilter('ready')}
-          className={`p-3 rounded-2xl border text-left transition-all ${
+          className={`p-3 rounded-2xl border text-left transition-all min-h-[44px] ${
             filter === 'ready'
               ? 'bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-600/20'
               : 'bg-card border-border/80 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
@@ -186,7 +186,7 @@ export const SemaforoPotrerosCard: React.FC<SemaforoPotrerosCardProps> = ({
         <button
           type="button"
           onClick={() => setFilter('growing')}
-          className={`p-3 rounded-2xl border text-left transition-all ${
+          className={`p-3 rounded-2xl border text-left transition-all min-h-[44px] ${
             filter === 'growing'
               ? 'bg-amber-600 text-white border-amber-600 shadow-md shadow-amber-600/20'
               : 'bg-card border-border/80 hover:bg-amber-50 dark:hover:bg-amber-950/30'
@@ -203,7 +203,7 @@ export const SemaforoPotrerosCard: React.FC<SemaforoPotrerosCardProps> = ({
         <button
           type="button"
           onClick={() => setFilter('occupied')}
-          className={`p-3 rounded-2xl border text-left transition-all ${
+          className={`p-3 rounded-2xl border text-left transition-all min-h-[44px] ${
             filter === 'occupied'
               ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/20'
               : 'bg-card border-border/80 hover:bg-blue-50 dark:hover:bg-blue-950/30'
@@ -220,7 +220,7 @@ export const SemaforoPotrerosCard: React.FC<SemaforoPotrerosCardProps> = ({
         <button
           type="button"
           onClick={() => setFilter('all')}
-          className={`p-3 rounded-2xl border text-left transition-all ${
+          className={`p-3 rounded-2xl border text-left transition-all min-h-[44px] ${
             filter === 'all'
               ? 'bg-zinc-800 text-white border-zinc-800 shadow-md shadow-zinc-800/20'
               : 'bg-card border-border/80 hover:bg-muted/40'

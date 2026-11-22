@@ -196,7 +196,7 @@ export const AforoCalculatorModal: React.FC<AforoCalculatorModalProps> = ({
             <span>1 UGM = 450 kg de peso vivo (consumo ~10% PV en forraje verde).</span>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <Button variant="outline" onClick={onClose} disabled={isSaving}>
+            <Button variant="outline" onClick={onClose} disabled={isSaving} className="min-h-[44px]">
               Cerrar
             </Button>
             <Button
@@ -204,7 +204,7 @@ export const AforoCalculatorModal: React.FC<AforoCalculatorModalProps> = ({
               onClick={handleSaveAforo}
               loading={isSaving}
               disabled={isSaving || !activeField || calculations.avgKgPerM2 <= 0}
-              className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20"
+              className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 min-h-[44px]"
             >
               <Save className="w-4 h-4" />
               Guardar Aforo en Potrero
@@ -225,7 +225,7 @@ export const AforoCalculatorModal: React.FC<AforoCalculatorModalProps> = ({
                 <select
                   value={selectedFieldId || ''}
                   onChange={(e) => setSelectedFieldId(Number(e.target.value))}
-                  className="w-full sm:w-72 bg-background border border-input rounded-xl px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-primary focus:outline-none"
+                  className="w-full sm:w-72 bg-background border border-input rounded-xl px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-primary focus:outline-none min-h-[44px]"
                 >
                   {fields.map((f) => (
                     <option key={f.id} value={f.id}>
@@ -272,7 +272,7 @@ export const AforoCalculatorModal: React.FC<AforoCalculatorModalProps> = ({
               size="sm"
               onClick={addSample}
               disabled={samples.length >= 8}
-              className="h-8 gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+              className="min-h-[38px] sm:h-8 gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
             >
               <Plus className="w-3.5 h-3.5" />
               Añadir Muestra
