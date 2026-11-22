@@ -28,17 +28,24 @@ export function getPullCursorKey(fincaId: number, deviceId: string): string {
 }
 
 export function inferEntityFromUrl(url: string): { entityType: string; entityId?: string } {
-  const parts = url.split('/');
-  // Buscar la parte después de /api/v1/ o similar
-  const apiIndex = parts.findIndex(p => p === 'v1' || p === 'api');
-  const entityPart = apiIndex !== -1 ? parts[apiIndex + 1] : parts[parts.length - 2] || 'unknown';
+  const parts = url.split('/').filter(Boolean);
+  // Omitir prefijos api o v1/v2/...
+  const cleanParts = parts.filter(p => p !== 'api' && !/^v\d+$/i.test(p));
+  if (cleanParts.length === 0) {
+    return { entityType: 'unknown' };
+  }
 
-  // Si el último componente es un número o UUID, es el entityId
-  const lastPart = parts[parts.length - 1];
-  const isId = lastPart && (
-    !isNaN(Number(lastPart)) ||
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(lastPart)
+  const lastPart = cleanParts[cleanParts.length - 1];
+  const isId = Boolean(
+    lastPart && (
+      !isNaN(Number(lastPart)) ||
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(lastPart)
+    )
   );
+
+  const entityPart = isId && cleanParts.length > 1
+    ? cleanParts[cleanParts.length - 2]
+    : cleanParts[0] || 'unknown';
 
   return {
     entityType: entityPart.replace(/-/g, '_'),

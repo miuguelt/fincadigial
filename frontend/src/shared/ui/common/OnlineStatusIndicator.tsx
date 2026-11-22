@@ -114,7 +114,7 @@ export const OnlineStatusIndicator: React.FC = () => {
   return (
     <div
       className={cn(
-        "fixed bottom-4 z-40 transition-all duration-500 ease-out",
+        "fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:bottom-4 z-[1045] transition-all duration-500 ease-out",
         "left-3 w-auto max-w-[calc(100vw-6rem)] sm:max-w-sm",
         hasSidebarOffset ? "lg:left-[316px]" : "left-3 sm:left-6"
       )}
@@ -147,23 +147,40 @@ export const OnlineStatusIndicator: React.FC = () => {
               </div>
             )}
 
-            <div className="flex gap-1.5 md:gap-2">
+            <div className="flex gap-2">
               {(pendingCount > 0 || syncStatus.failed > 0) && (
-                <button onClick={handleSyncNow} disabled={syncStatus.syncing || isSyncing || !isOnline} className={cn("flex-1 px-2 md:px-3 py-1.5 md:py-2 rounded-md text-[11px] md:text-xs font-medium flex items-center justify-center gap-1 transition-all", !isOnline ? "bg-muted text-muted-foreground cursor-not-allowed" : syncStatus.syncing || isSyncing ? "bg-info/10 text-info cursor-wait" : "bg-primary text-primary-foreground hover:bg-primary/90")}>
-                  <Upload className="h-3 w-3 md:h-3.5 md:w-3.5" />
-                  {syncStatus.syncing || isSyncing ? 'Sync...' : 'Sincronizar'}
+                <button
+                  onClick={handleSyncNow}
+                  disabled={syncStatus.syncing || isSyncing || !isOnline}
+                  className={cn(
+                    "flex-1 px-3 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all min-h-[44px]",
+                    !isOnline
+                      ? "bg-muted text-muted-foreground cursor-not-allowed"
+                      : syncStatus.syncing || isSyncing
+                      ? "bg-info/10 text-info cursor-wait"
+                      : "bg-primary text-primary-foreground hover:bg-primary/90"
+                  )}
+                >
+                  <Upload className="h-4 w-4" />
+                  {syncStatus.syncing || isSyncing ? 'Sincronizando...' : 'Sincronizar ahora'}
                 </button>
               )}
               {syncStatus.failed > 0 && (
-                <button onClick={() => offlineQueue.retryFailedOperations()} className="px-2 md:px-3 py-1.5 md:py-2 rounded-md text-[11px] md:text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 hover:bg-orange-200 transition-colors flex items-center gap-1">
-                  <RefreshCw className="h-3 w-3 md:h-3.5 md:w-3.5" />
-                  <span className="hidden sm:inline">Reintentar</span>
+                <button
+                  onClick={() => offlineQueue.retryFailedOperations()}
+                  className="px-3 py-2 rounded-lg text-xs font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 hover:bg-orange-200 transition-colors flex items-center gap-1.5 min-h-[44px]"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  <span>Reintentar</span>
                 </button>
               )}
               {syncStatus.failed > 0 && (
-                <button onClick={() => offlineQueue.clearFailedOperations()} className="px-2 md:px-3 py-1.5 md:py-2 rounded-md text-[11px] md:text-xs font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors flex items-center gap-1">
-                  <X className="h-3 w-3 md:h-3.5 md:w-3.5" />
-                  <span className="hidden sm:inline">Limpiar</span>
+                <button
+                  onClick={() => offlineQueue.clearFailedOperations()}
+                  className="px-3 py-2 rounded-lg text-xs font-bold bg-muted text-muted-foreground hover:bg-muted/80 transition-colors flex items-center gap-1.5 min-h-[44px]"
+                >
+                  <X className="h-4 w-4" />
+                  <span>Limpiar</span>
                 </button>
               )}
             </div>

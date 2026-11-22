@@ -202,4 +202,33 @@ test.describe('Flujo móvil del mayordomo y roles de finca (390x844)', () => {
     await page.keyboard.press('Escape');
     await expect(page.getByRole('heading', { name: /trasladar a potrero/i })).toHaveCount(0);
   });
+
+  test('7. resiliencia offline: indicador muestra estado sin conexión sobre MobileBottomNav y restaura conectividad', async ({
+    loginAs,
+  }) => {
+    test.skip(
+      !testUsers.admin.password,
+      'Pendiente: definir contraseña semilla local o E2E_ADMIN_PASS',
+    );
+
+    const page = await loginAs('admin');
+    await page.goto('/dashboard');
+    await expect(page.getByRole('banner')).toBeVisible({ timeout: 15000 });
+
+    // Simular corte de conectividad en campo
+    await page.context().setOffline(true);
+    await page.evaluate(() => window.dispatchEvent(new Event('offline')));
+
+    // Debe emerger el OnlineStatusIndicator con elevación táctil superior a MobileBottomNav (z-[1045])
+    const offlineIndicator = page.getByRole('button', { name: 'Sin conexión' });
+    await expect(offlineIndicator).toBeVisible({ timeout: 8000 });
+    await expect(page.getByText('Trabajando sin conexión')).toBeVisible();
+
+    // Restaurar conectividad
+    await page.context().setOffline(false);
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+
+    // El indicador debe sincronizarse y ocultarse tras volver en línea sin pendientes
+    await expect(offlineIndicator).toHaveCount(0, { timeout: 8000 });
+  });
 });
