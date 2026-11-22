@@ -309,4 +309,39 @@ test.describe('Flujo móvil del mayordomo y roles de finca (390x844)', () => {
     await expect(pdfBtn).toBeVisible();
     await expect(pdfBtn).toHaveClass(/min-h-\[44px\]/);
   });
+
+  test('11. academia SENA y formación ganadera fuera de línea: consulta de guías de campo, lectura táctil y catálogo oficial', async ({
+    loginAs,
+  }) => {
+    test.skip(
+      !testUsers.aprendiz.password,
+      'Pendiente: definir contraseña semilla local o E2E_APPRENTICE_PASS',
+    );
+
+    const page = await loginAs('aprendiz');
+    await page.goto('/campesino/aprender');
+    await expect(page.getByRole('banner')).toBeVisible({ timeout: 15000 });
+
+    // Verificar título principal y descripción del módulo formativo
+    await expect(page.getByText('Aprender en la Finca')).toBeVisible({ timeout: 10000 });
+
+    // Comprobar presencia de las tres pestañas de aprendizaje
+    await expect(page.getByRole('tab', { name: /guías rápidas/i })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /biblioteca/i })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /repositorios oficiales/i })).toBeVisible();
+
+    // Comprobar botón táctil de consulta en la primera guía disponible (min-h-11 = 44px)
+    const guideBtn = page.getByRole('button', { name: /consultar guía de campo/i }).first();
+    await expect(guideBtn).toBeVisible();
+    await expect(guideBtn).toHaveClass(/min-h-11/);
+
+    // Abrir la guía práctica y verificar el modal con procedimiento paso a paso
+    await guideBtn.click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByText(/procedimiento operativo paso a paso/i)).toBeVisible();
+
+    // Cerrar el modal con Escape
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+  });
 });
