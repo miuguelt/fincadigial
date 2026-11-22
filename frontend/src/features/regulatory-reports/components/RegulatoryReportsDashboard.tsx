@@ -93,7 +93,7 @@ export const RegulatoryReportsDashboard: React.FC<RegulatoryReportsDashboardProp
                 type="date"
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
-                className="bg-background shadow-sm border-border/80 w-full sm:w-[160px] h-9 text-xs sm:text-sm"
+                className="bg-background shadow-sm border-border/80 w-full sm:w-[160px] min-h-[44px] sm:h-9 text-xs sm:text-sm"
               />
             </div>
             <div className="hidden sm:block w-px h-8 bg-border"></div>
@@ -106,7 +106,7 @@ export const RegulatoryReportsDashboard: React.FC<RegulatoryReportsDashboardProp
                 type="date"
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
-                className="bg-background shadow-sm border-border/80 w-full sm:w-[160px] h-9 text-xs sm:text-sm"
+                className="bg-background shadow-sm border-border/80 w-full sm:w-[160px] min-h-[44px] sm:h-9 text-xs sm:text-sm"
               />
             </div>
           </div>
@@ -142,7 +142,7 @@ export const RegulatoryReportsDashboard: React.FC<RegulatoryReportsDashboardProp
             </CardContent>
             <CardFooter className="p-5 sm:p-6 pt-5 flex gap-3">
               <Button
-                className="flex-1 gap-2 bg-background hover:bg-muted border border-border shadow-sm text-xs font-semibold h-9"
+                className="flex-1 gap-2 bg-background hover:bg-muted border border-border shadow-sm text-xs font-semibold min-h-[44px]"
                 onClick={() => handleDownload(report.id, 'csv')}
                 disabled={loading}
                 variant="outline"
@@ -151,7 +151,7 @@ export const RegulatoryReportsDashboard: React.FC<RegulatoryReportsDashboardProp
                 CSV
               </Button>
               <Button
-                className="flex-1 gap-2 shadow-sm text-xs font-bold h-9"
+                className="flex-1 gap-2 shadow-sm text-xs font-bold min-h-[44px]"
                 onClick={() => handleDownload(report.id, 'pdf')}
                 disabled={loading}
               >

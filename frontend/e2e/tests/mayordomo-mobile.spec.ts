@@ -283,4 +283,30 @@ test.describe('Flujo móvil del mayordomo y roles de finca (390x844)', () => {
     const count = await buttons.count();
     expect(count).toBeGreaterThan(0);
   });
+
+  test('10. cumplimiento regulatorio oficial ICA y SINIGAN: acceso a reportes oficiales con exportación táctil CSV y PDF', async ({
+    loginAs,
+  }) => {
+    test.skip(
+      !testUsers.admin.password,
+      'Pendiente: definir contraseña semilla local o E2E_ADMIN_PASS',
+    );
+
+    const page = await loginAs('admin');
+    await page.goto('/admin/regulatory-reports');
+    await expect(page.getByRole('banner')).toBeVisible({ timeout: 15000 });
+
+    // Verificar título de reportes oficiales
+    await expect(page.getByText(/reportes regulatorios/i).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Inventario de Ganado')).toBeVisible();
+
+    // Comprobar botones táctiles de exportación CSV y PDF (min-h-[44px])
+    const csvBtn = page.getByRole('button', { name: /^csv$/i }).first();
+    await expect(csvBtn).toBeVisible();
+    await expect(csvBtn).toHaveClass(/min-h-\[44px\]/);
+
+    const pdfBtn = page.getByRole('button', { name: /^pdf$/i }).first();
+    await expect(pdfBtn).toBeVisible();
+    await expect(pdfBtn).toHaveClass(/min-h-\[44px\]/);
+  });
 });
