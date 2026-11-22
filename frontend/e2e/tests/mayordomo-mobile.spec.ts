@@ -231,4 +231,36 @@ test.describe('Flujo móvil del mayordomo y roles de finca (390x844)', () => {
     // El indicador debe sincronizarse y ocultarse tras volver en línea sin pendientes
     await expect(offlineIndicator).toHaveCount(0, { timeout: 8000 });
   });
+
+  test('8. multi-finca y gobierno: selector táctil en cabecera móvil, opciones con min-h-[44px] y navegación a fincas', async ({
+    loginAs,
+  }) => {
+    test.skip(
+      !testUsers.admin.password,
+      'Pendiente: definir contraseña semilla local o E2E_ADMIN_PASS',
+    );
+
+    const page = await loginAs('admin');
+    await page.goto('/dashboard');
+    await expect(page.getByRole('banner')).toBeVisible({ timeout: 15000 });
+
+    // 1. Selector de finca visible en cabecera con dimensión táctil
+    const fincaSelector = page.getByTestId('finca-selector');
+    await expect(fincaSelector).toBeVisible();
+    await expect(fincaSelector).toHaveClass(/min-h-\[44px\]/);
+
+    // 2. Desplegar selector y verificar opciones táctiles
+    await fincaSelector.click();
+    await expect(page.getByText('Mis Fincas')).toBeVisible();
+    const panoramaOption = page.getByText('Vista Panorámica Multi-Finca');
+    await expect(panoramaOption).toBeVisible();
+    await expect(panoramaOption.locator('..')).toHaveClass(/min-h-\[44px\]/);
+
+    // Cerrar menú
+    await page.keyboard.press('Escape');
+
+    // 3. Navegar a gestión de fincas
+    await page.goto('/admin/fincas');
+    await expect(page.getByRole('button', { name: /tarjetas/i })).toBeVisible();
+  });
 });

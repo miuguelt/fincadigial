@@ -296,6 +296,46 @@ class TestMultiFincaEndpoints(unittest.TestCase):
             # Retorna 404 si la finca o el acceso no existe en export_finca_detail_pdf
             self.assertEqual(response.status_code, 404)
 
+    def test_switch_finca_success(self):
+        """POST /api/v1/multi-finca/switch exitoso con regeneración de token."""
+        with self.app.app_context():
+            token = self.login_user("test@example.com", "TestPass123!")
+            response = self.client.post(
+                "/api/v1/multi-finca/switch",
+                headers={"Authorization": f"Bearer {token}"},
+                data=json.dumps({"finca_id": self.finca_b.id}),
+                content_type="application/json",
+            )
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.data)["data"]
+            self.assertEqual(data["finca"]["finca_id"], self.finca_b.id)
+            self.assertEqual(data["finca"]["role"], "Instructor")
+            self.assertIn("access_token", data)
+
+            # Verificar persistencia en UserFinca
+            active = UserFinca.get_active_finca(self.user.id)
+            self.assertIsNotNone(active)
+            self.assertEqual(active["finca_id"], self.finca_b.id)
+
+    def test_switch_finca_forbidden(self):
+        """POST /api/v1/multi-finca/switch a finca no asignada debe retornar 403."""
+        with self.app.app_context():
+            finca_c = Finca.create(
+                name="Finca C Ajena", type=FarmType.Tradicional, is_active=True
+            )
+            db.session.commit()
+
+            token = self.login_user("test@example.com", "TestPass123!")
+            response = self.client.post(
+                "/api/v1/multi-finca/switch",
+                headers={"Authorization": f"Bearer {token}"},
+                data=json.dumps({"finca_id": finca_c.id}),
+                content_type="application/json",
+            )
+            self.assertEqual(response.status_code, 403)
+            data = json.loads(response.data)
+            self.assertIn("ACCESS_DENIED", str(data))
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -64,7 +64,7 @@ export const InviteUserDialog: React.FC<InviteUserDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
+        <DialogHeader className="pr-9 sm:pr-10">
           <DialogTitle className="flex items-center gap-2">
             <Mail className="h-5 w-5 text-primary" />
             Invitar Usuario a Finca
@@ -111,15 +111,20 @@ export const InviteUserDialog: React.FC<InviteUserDialogProps> = ({
             </p>
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="gap-2 sm:gap-0">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={loading}
+            className="min-h-[44px]"
           >
             Cancelar
           </Button>
-          <Button onClick={handleInvite} disabled={loading || !email}>
+          <Button
+            onClick={handleInvite}
+            disabled={loading || !email}
+            className="min-h-[44px]"
+          >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Enviar Invitación
           </Button>

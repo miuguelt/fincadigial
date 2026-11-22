@@ -54,14 +54,14 @@ export const PendingJoinRequests: React.FC<PendingJoinRequestsProps> = ({
 									<div className="mt-auto flex gap-3">
 										<Button
 											onClick={() => onApprove(request.id)}
-											className="flex-1 rounded-xl font-bold"
+											className="flex-1 rounded-xl font-bold min-h-[44px]"
 										>
 											Aprobar
 										</Button>
 										<Button
 											variant="outline"
 											onClick={() => onReject(request.id)}
-											className="flex-1 rounded-xl font-bold text-danger"
+											className="flex-1 rounded-xl font-bold text-danger min-h-[44px]"
 										>
 											Rechazar
 										</Button>
