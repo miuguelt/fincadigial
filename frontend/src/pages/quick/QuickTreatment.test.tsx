@@ -81,4 +81,36 @@ describe('QuickTreatment', () => {
 
     expect(screen.getByLabelText(/fecha de aplicación/i)).toHaveAttribute('max', getTodayColombia());
   });
+
+  it('permite seleccionar días de retiro, muestra alerta de inocuidad y los envía en el payload', async () => {
+    createTreatment.mockResolvedValueOnce({ id: 101 });
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter>
+        <QuickTreatment />
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => expect(screen.getByLabelText(/qué animal recibe/i)).not.toBeDisabled());
+    await user.selectOptions(screen.getByLabelText(/qué animal recibe/i), '7');
+    await user.selectOptions(screen.getByLabelText(/medicamento/i), '3');
+    await user.type(screen.getByLabelText(/dosis administrada/i), '15 ml');
+
+    // Seleccionar preset de 5 días
+    await user.click(screen.getByRole('button', { name: /5 días/i }));
+
+    // Comprobar que aparece la alerta de retiro sanitario
+    expect(screen.getByText(/retiro sanitario activo/i)).toBeInTheDocument();
+    expect(screen.getByText(/no se podrá registrar ordeño ni movilizar la res para venta/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /guardar tratamiento/i }));
+
+    await waitFor(() => expect(createTreatment).toHaveBeenCalledWith(expect.objectContaining({
+      animal_id: 7,
+      medication_id: 3,
+      dosis: '15 ml',
+      withdrawal_days: 5,
+    })));
+  });
 });

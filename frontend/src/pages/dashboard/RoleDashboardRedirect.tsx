@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import LoadingScreen from '@/shared/ui/common/LoadingScreen';
 import { useAuth } from '@/features/auth/model/useAuth';
 import { Role } from '@/entities/user/model/types';
@@ -17,6 +17,7 @@ const roleDestinations: Record<string, string> = {
 
 const RoleDashboardRedirect: React.FC = () => {
   const { role, loading, isAuthenticated } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return <LoadingScreen message="Preparando tu panel..." />;
@@ -28,8 +29,9 @@ const RoleDashboardRedirect: React.FC = () => {
 
   const normalizedRole = role as Role;
   const destination = roleDestinations[normalizedRole] ?? '/admin/animals';
+  const target = location.search ? `${destination}${location.search}` : destination;
 
-  return <Navigate to={destination} replace />;
+  return <Navigate to={target} replace />;
 };
 
 export default RoleDashboardRedirect;

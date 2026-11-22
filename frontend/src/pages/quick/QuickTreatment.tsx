@@ -29,6 +29,14 @@ const FRECUENCIAS: { label: string; value: string }[] = [
   { label: "Cada 48 Horas", value: "Cada 48 horas" },
 ];
 
+const WITHDRAWAL_PRESETS: { label: string; value: string }[] = [
+  { label: "0 d (Sin retiro)", value: "0" },
+  { label: "3 días", value: "3" },
+  { label: "5 días", value: "5" },
+  { label: "7 días", value: "7" },
+  { label: "14 días", value: "14" },
+];
+
 export default function QuickTreatment() {
   useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -45,12 +53,26 @@ export default function QuickTreatment() {
   const [medicationId, setMedicationId] = useState<string>("");
   const [dose, setDose] = useState<string>("");
   const [frequency, setFrequency] = useState<string>("Dosis única");
+  const [withdrawalDays, setWithdrawalDays] = useState<string>("0");
   const [date, setDate] = useState(getTodayColombia());
   const [notes, setNotes] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [animalOptions, setAnimalOptions] = useState<{ value: string; label: string }[]>([]);
   const [medicationOptions, setMedicationOptions] = useState<{ value: string; label: string }[]>([]);
+
+  const calculatedWithdrawalEndDate = React.useMemo(() => {
+    const days = Number(withdrawalDays);
+    if (!days || days <= 0 || !date) return null;
+    const [year, month, day] = date.split('-').map(Number);
+    if (!year || !month || !day) return null;
+    const d = new Date(year, month - 1, day);
+    d.setDate(d.getDate() + days);
+    const endYear = d.getFullYear();
+    const endMonth = String(d.getMonth() + 1).padStart(2, '0');
+    const endDay = String(d.getDate()).padStart(2, '0');
+    return `${endYear}-${endMonth}-${endDay}`;
+  }, [date, withdrawalDays]);
 
   // Cargar animales activos y medicamentos
   useEffect(() => {
@@ -111,6 +133,7 @@ export default function QuickTreatment() {
       dosis: dose,
       frequency,
       treatment_date: date,
+      withdrawal_days: Math.max(0, Number(withdrawalDays) || 0),
       description: notes || "Tratamiento rápido de campo",
     };
 
@@ -188,6 +211,35 @@ export default function QuickTreatment() {
               options={FRECUENCIAS}
               onChange={setFrequency}
             />
+          </QField>
+        </QCard>
+
+        <QCard>
+          <QField>
+            <QLabel htmlFor="withdrawal-days">Días de retiro de leche / carne (ICA)</QLabel>
+            <QChipGroup
+              value={withdrawalDays}
+              options={WITHDRAWAL_PRESETS}
+              onChange={setWithdrawalDays}
+            />
+            <div className="mt-3 flex items-center gap-3">
+              <span className="text-xs font-semibold text-muted-foreground">O escribe los días:</span>
+              <QInput
+                id="withdrawal-days"
+                type="number"
+                min="0"
+                step="1"
+                className="w-24 px-3 py-2 text-center text-lg font-black min-h-[44px]"
+                value={withdrawalDays}
+                onChange={(e) => setWithdrawalDays(e.target.value)}
+                disabled={loading}
+              />
+            </div>
+            {Number(withdrawalDays) > 0 && calculatedWithdrawalEndDate && (
+              <div className="mt-3 rounded-xl border border-amber-300/80 bg-amber-50/90 p-3 text-xs leading-relaxed text-amber-900 dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-200">
+                <span className="font-bold">⚠️ Retiro sanitario activo hasta {calculatedWithdrawalEndDate}:</span> Por normativa del ICA y seguridad alimentaria, no se podrá registrar ordeño ni movilizar la res para venta durante este período.
+              </div>
+            )}
           </QField>
         </QCard>
 

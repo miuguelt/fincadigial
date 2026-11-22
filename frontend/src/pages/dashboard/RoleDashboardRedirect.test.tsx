@@ -11,7 +11,8 @@ vi.mock('@/features/auth/model/useAuth', () => ({
 const mockedUseAuth = vi.mocked(useAuth);
 
 function LocationProbe() {
-  return <output data-testid="location">{useLocation().pathname}</output>;
+  const loc = useLocation();
+  return <output data-testid="location">{`${loc.pathname}${loc.search}`}</output>;
 }
 
 describe('RoleDashboardRedirect', () => {
@@ -42,6 +43,28 @@ describe('RoleDashboardRedirect', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('location')).toHaveTextContent('/admin/animals');
+    });
+  });
+
+  it('conserva los parámetros de búsqueda como ?quick=treatment', async () => {
+    render(
+      <MemoryRouter initialEntries={['/dashboard?quick=treatment']}>
+        <Routes>
+          <Route
+            path="*"
+            element={
+              <>
+                <RoleDashboardRedirect />
+                <LocationProbe />
+              </>
+            }
+          />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('location')).toHaveTextContent('/admin/animals?quick=treatment');
     });
   });
 });

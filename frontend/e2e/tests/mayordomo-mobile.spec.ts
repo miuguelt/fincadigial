@@ -165,4 +165,41 @@ test.describe('Flujo móvil del mayordomo y roles de finca (390x844)', () => {
     await expect(evalBtn).toBeVisible();
     await expect(evalBtn).toHaveClass(/min-h-\[44px\]/);
   });
+
+  test('6. veterinario o administrador valida días de retiro e inocuidad en QuickTreatment y fechas en QuickTransfer', async ({
+    loginAs,
+  }) => {
+    test.skip(
+      !testUsers.admin.password,
+      'Pendiente: definir contraseña semilla local o E2E_ADMIN_PASS',
+    );
+
+    const page = await loginAs('admin');
+    const today = getTodayColombiaString();
+
+    // 1. Abrir QuickTreatment y verificar selector de días de retiro con alerta de inocuidad
+    await page.goto('/dashboard?quick=treatment');
+    await expect(page.getByRole('heading', { name: /registrar tratamiento/i })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(/días de retiro de leche \/ carne/i)).toBeVisible();
+
+    // Presionar preset de 5 días
+    await page.getByRole('button', { name: /^5 días$/i }).click();
+    await expect(page.getByText(/retiro sanitario activo/i)).toBeVisible();
+    await expect(page.getByText(/por normativa del ica y seguridad alimentaria/i)).toBeVisible();
+
+    // Comprobar que la fecha de aplicación tiene tope de hoy
+    await expect(page.locator('#date')).toHaveAttribute('max', today);
+
+    // Cerrar modal
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('heading', { name: /registrar tratamiento/i })).toHaveCount(0);
+
+    // 2. Abrir QuickTransfer y verificar fecha tope con getTodayColombia
+    await page.goto('/dashboard?quick=transfer');
+    await expect(page.getByRole('heading', { name: /trasladar a potrero/i })).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('#date')).toHaveAttribute('max', today);
+
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('heading', { name: /trasladar a potrero/i })).toHaveCount(0);
+  });
 });

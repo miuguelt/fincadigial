@@ -10,6 +10,7 @@ import { fieldService } from "@/entities/field/api/field.service";
 import { animalFieldsService } from "@/entities/animal-field/api/animalFields.service";
 import { getTodayColombia } from "@/shared/utils/dateUtils";
 import { emitDataRefresh } from "@/shared/utils/dataRefresh";
+import { formatMessageFromCode, readStandardErrorPayload } from "@/shared/api/error-parser";
 import {
   QuickFormShell,
   QCard,
@@ -117,7 +118,7 @@ export default function QuickTransfer() {
       handleClose();
     } catch (error) {
       console.error("Error creating transfer:", error);
-      showToast("Error al registrar traslado", "error");
+      showToast(formatMessageFromCode(readStandardErrorPayload(error)) || "Error al registrar traslado", "error");
     } finally {
       setLoading(false);
     }
@@ -160,6 +161,7 @@ export default function QuickTransfer() {
             <QInput
               id="date"
               type="date"
+              max={getTodayColombia()}
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
